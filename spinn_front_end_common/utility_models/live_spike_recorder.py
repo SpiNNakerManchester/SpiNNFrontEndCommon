@@ -2,13 +2,16 @@ import os
 
 from pacman.model.partitionable_graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
+from pacman.model.constraints.placer_chip_and_core_constraint \
+    import PlacerChipAndCoreConstraint
+
 from spinn_front_end_common.abstract_models.abstract_iptagable_vertex import \
     AbstractIPTagableVertex
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-from pacman.model.constraints.placer_chip_and_core_constraint \
-    import PlacerChipAndCoreConstraint
+from spinn_front_end_common import common_model_binaries
+
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
 
@@ -46,7 +49,7 @@ class LiveSpikeRecorder(
     def generate_data_spec(self, subvertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_sub_graph_mapper,
                            report_folder, write_text_specs,
-                           has_binary_folder_set, binary_folder):
+                           application_run_time_folder):
         """
         Model-specific construction of the data blocks necessary to build a
         single Application Monitor on one core.
@@ -54,7 +57,7 @@ class LiveSpikeRecorder(
         data_writer, report_writer = \
             self.get_data_spec_file_writers(
                 placement.x, placement.y, placement.p, hostname, report_folder,
-                write_text_specs, has_binary_folder_set, binary_folder)
+                write_text_specs, application_run_time_folder)
 
         spec = DataSpecificationGenerator(data_writer, report_writer)
 
@@ -111,9 +114,10 @@ class LiveSpikeRecorder(
         spec.write_value(data=self._machine_time_step)
         spec.write_value(data=self._no_machine_time_steps)
 
-    def get_binary_file_name(self, common_binary_folder):
-        binary_name = os.path.join(common_binary_folder,
-                                   'live_spike_recorder.aplx')
+    def get_binary_file_name(self):
+        binary_name = \
+            os.path.join(os.path.dirname(common_model_binaries.__file__),
+                         'live_spike_recorder.aplx')
         return binary_name
 
     #inherited from partitionable vertex

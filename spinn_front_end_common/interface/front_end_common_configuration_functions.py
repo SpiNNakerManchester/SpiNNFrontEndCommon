@@ -2,18 +2,17 @@ import os
 import datetime
 import shutil
 import logging
-import re
-import inspect
 
-from pacman.model.partitionable_graph.partitionable_graph import \
-    PartitionableGraph
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities.report_states import ReportState
+from spinn_front_end_common.utilities import helpful_functions
+
 from pacman.operations import partition_algorithms
 from pacman.operations import placer_algorithms
 from pacman.operations import router_algorithms
 from pacman.operations import routing_info_allocator_algorithms
-
+from pacman.model.partitionable_graph.partitionable_graph import \
+    PartitionableGraph
 
 logger = logging.getLogger(__name__)
 
@@ -198,37 +197,36 @@ class FrontEndCommonConfigurationFunctions(object):
         self._common_binary_folder = binary_path
 
     def _set_up_pacman_algorthms_listings(
-            self, partitioner_algorithum, placer_algorithum,
-            key_allocator_algorithum, routing_algorithum):
+            self, partitioner_algorithum=None, placer_algorithum=None,
+            key_allocator_algorithum=None, routing_algorithum=None):
          #algorithum lists
-        partitioner_algorithms_list = self._get_valid_components(
-            partition_algorithms, "Partitioner")
-        self._partitioner_algorithm = \
-            partitioner_algorithms_list[partitioner_algorithum]
+        if partitioner_algorithum is not None:
+            partitioner_algorithms_list = \
+                helpful_functions.get_valid_components(partition_algorithms,
+                                                       "Partitioner")
+            self._partitioner_algorithm = \
+                partitioner_algorithms_list[partitioner_algorithum]
 
-        placer_algorithms_list = \
-            self._get_valid_components(placer_algorithms, "Placer")
-        self._placer_algorithm = placer_algorithms_list[placer_algorithum]
+        if placer_algorithum is not None:
+            placer_algorithms_list = \
+                helpful_functions.get_valid_components(placer_algorithms,
+                                                       "Placer")
+            self._placer_algorithm = placer_algorithms_list[placer_algorithum]
 
         #get common key allocator algorithms
-        key_allocator_algorithms_list = \
-            self._get_valid_components(routing_info_allocator_algorithms,
-                                       "RoutingInfoAllocator")
-        self._key_allocator_algorithm = \
-            key_allocator_algorithms_list[key_allocator_algorithum]
+        if key_allocator_algorithum is not None:
+            key_allocator_algorithms_list = \
+                helpful_functions.get_valid_components(
+                    routing_info_allocator_algorithms, "RoutingInfoAllocator")
+            self._key_allocator_algorithm = \
+                key_allocator_algorithms_list[key_allocator_algorithum]
 
-        routing_algorithms_list = \
-            self._get_valid_components(router_algorithms, "Routing")
-        self._router_algorithm = \
-            routing_algorithms_list[routing_algorithum]
-
-    # Get lists of appropriate routers, placers and partitioners
-    @staticmethod
-    def _get_valid_components(module, terminator):
-        terminator = re.compile(terminator + '$')
-        return dict(map(lambda (name, router): (terminator.sub('', name),
-                                                router),
-                    inspect.getmembers(module, inspect.isclass)))
+        if routing_algorithum is not None:
+            routing_algorithms_list = \
+                helpful_functions.get_valid_components(router_algorithms,
+                                                       "Routing")
+            self._router_algorithm = \
+                routing_algorithms_list[routing_algorithum]
 
     @staticmethod
     def _move_report_and_binary_files(max_to_keep, starting_directory):

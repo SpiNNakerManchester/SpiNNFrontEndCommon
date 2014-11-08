@@ -31,14 +31,14 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
     def generate_data_spec(self, subvertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_subgraph_mapper,
                            report_folder, write_text_specs,
-                           has_binary_folder_set, binary_folder):
+                           application_run_time_folder):
         """
         method to determine how to generate their data spec for a non neural
         application
         """
 
     @abstractmethod
-    def get_binary_file_name(self, common_binary_folder_name):
+    def get_binary_file_name(self):
         """
         method to return the binary name for a given dataspecable vertex
         """
@@ -74,12 +74,12 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
     @staticmethod
     def get_data_spec_file_writers(
             processor_chip_x, processor_chip_y, processor_id, hostname,
-            report_directory, write_text_specs, has_binary_folder_set,
-            binary_folder):
+            report_directory, write_text_specs,
+            application_run_time_report_folder):
         binary_file_path = \
             AbstractDataSpecableVertex.get_data_spec_file_path(
                 processor_chip_x, processor_chip_y, processor_id, hostname,
-                has_binary_folder_set, binary_folder)
+                application_run_time_report_folder)
         data_writer = FileDataWriter(binary_file_path)
         #check if text reports are needed and if so initilise the reprot writer
         #to send down to dsg
@@ -100,25 +100,26 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
 
     @staticmethod
     def get_data_spec_file_path(processor_chip_x, processor_chip_y,
-                                processor_id, hostname, has_binary_folder_set,
-                                binary_folder):
+                                processor_id, hostname,
+                                application_run_time_folder):
 
-        if not has_binary_folder_set:
-            binary_folder = tempfile.gettempdir()
+        if application_run_time_folder == "TEMP":
+            application_run_time_folder = tempfile.gettempdir()
 
-        binary_file_path = binary_folder + os.sep + "{}_dataSpec_{}_{}_{}.dat"\
+        binary_file_path = \
+            application_run_time_folder + os.sep + "{}_dataSpec_{}_{}_{}.dat"\
             .format(hostname, processor_chip_x, processor_chip_y, processor_id)
         return binary_file_path
 
     @staticmethod
     def get_application_data_file_path(
             processor_chip_x, processor_chip_y, processor_id, hostname,
-            has_binary_folder_set, binary_folder):
+            application_run_time_folder):
 
-        if not has_binary_folder_set:
-            binary_folder = tempfile.gettempdir()
+        if application_run_time_folder == "TEMP":
+            application_run_time_folder = tempfile.gettempdir()
 
-        application_data_file_name = binary_folder + os.sep + \
+        application_data_file_name = application_run_time_folder + os.sep + \
             "{}_appData_{}_{}_{}.dat".format(hostname, processor_chip_x,
                                              processor_chip_y, processor_id)
         return application_data_file_name
