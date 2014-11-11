@@ -6,8 +6,10 @@ from data_specification.data_specification_executor import \
 from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 from pacman.utilities.progress_bar import ProgressBar
+
 from spinn_machine.sdram import SDRAM
 from spinn_machine.virutal_machine import VirtualMachine
+
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
 from spinnman.transceiver import create_transceiver_from_hostname
@@ -70,7 +72,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
             self._txrx.ensure_board_is_ready(int(machine_version))
-            self._txrx.discover_connections()
+            self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
         else:
             self._machine = VirtualMachine(

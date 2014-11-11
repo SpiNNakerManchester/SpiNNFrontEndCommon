@@ -12,7 +12,8 @@ class AbstractReverseIPTagableVertex(object):
         self._address = address
 
     def get_reverse_ip_tag(self):
-        return IPTag(tag=self._tag, port=self._port, address=self._address)
+        return IPTag(
+            tag=self._tag, port=self._port, address=self._address)
 
     def set_reverse_iptag_tag(self, new_tag):
         self._tag = new_tag
