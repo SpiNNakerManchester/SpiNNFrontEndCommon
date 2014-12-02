@@ -18,7 +18,7 @@ class AbstractIPTagableVertex(object):
 
     def get_ip_tag(self):
         return IPTag(tag=self._tag, port=self._port, address=self._address,
-                strip_sdp=self._strip_sdp)
+                     strip_sdp=self._strip_sdp)
 
     @abstractmethod
     def is_ip_tagable_vertex(self):

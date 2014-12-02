@@ -31,7 +31,8 @@ class CommandSender(AbstractMultiCastSource):
         self._commands = list()
 
         routing_key_constraint =\
-            KeyAllocatorRoutingConstraint(self.generate_routing_info)
+            KeyAllocatorRoutingConstraint(self.generate_routing_info,
+                                          self._generate_routing_neuron_id_keys)
         self.add_constraint(routing_key_constraint)
 
     def generate_data_spec(
@@ -165,6 +166,39 @@ class CommandSender(AbstractMultiCastSource):
             # then treat them with the subedge routing key
             return subedge.key_combo, self._app_mask
 
+    def _generate_routing_neuron_id_keys(self, vertex_slice, vertex, placement,
+                                         subedge):
+        """ generates a list of keys with neuron ids
+
+        :param vertex_slice: the vertex slice of this subvertex
+        :param vertex: the vertex this subvertex is associated with
+        :param placement: the placment of this subvertex
+        :param subedge: the subedge associated with this key
+        :return: list of keys with neuron ids
+        """
+        keys = dict()
+        for atom in range(0, vertex_slice.n_atoms):
+            key_with_neuron_id = self._get_key_with_neuron_id(subedge, atom)
+            keys[vertex_slice.lo_atom + atom] = key_with_neuron_id
+        return keys
+
+    def _get_key_with_neuron_id(self, subedge, atom):
+        """ generates a key with a neuron id based off the placement and atom
+
+        :param subedge: the subedge of the subvertex
+        :param atom: the aton of this subvertex
+        :return:the key with a neuron id added to it
+        """
+        key = None
+        if self._edge_map[subedge.edge] is not None:
+            key = self._edge_map[subedge.edge][0]['key']
+        else:
+            # if the subedge doesnt have any predefined messages to send,
+            # then treat them with the subedge routing key
+            key = subedge.key_combo
+        key += atom
+        return key
+
     def reserve_memory_regions(self, spec, command_size):
         """
         Reserve SDRAM space for memory areas:
@@ -233,7 +267,7 @@ class CommandSender(AbstractMultiCastSource):
         """
         return the name of the model
         """
-        return "multi_cast_source"
+        return "command_sender_multi_cast_source"
 
     #inhirrted from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
@@ -250,5 +284,5 @@ class CommandSender(AbstractMultiCastSource):
     def get_binary_file_name(self):
         binary_name = \
             os.path.join(os.path.dirname(common_model_binaries.__file__),
-                         'command_sender.aplx')
+                         'command_sender_multicast_source.aplx')
         return binary_name

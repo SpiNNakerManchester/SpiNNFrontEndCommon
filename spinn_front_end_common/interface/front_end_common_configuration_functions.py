@@ -27,9 +27,12 @@ class FrontEndCommonConfigurationFunctions(object):
         self._runtime = None
 
         #specific utility vertexes
-        self._live_spike_recorder = None
+        self._live_spike_recorder = dict()
         self._multi_cast_vertex = None
         self._txrx = None
+
+        #debug flag
+        self._in_debug_mode = None
 
         #visualiser_framework objects
         self._visualiser = None
@@ -57,9 +60,8 @@ class FrontEndCommonConfigurationFunctions(object):
         self._key_allocator_algorithm = None
         self._router_algorithm = None
         self._report_default_directory = None
-        self._application_default_folder = None
-        self._common_binary_folder = None
-        self._this_run_time_string_repenstation = None
+        self._app_data_runtime_folder = None
+        self._this_run_time_string_representation = None
 
         #exeuctable params
         self._do_load = None
@@ -69,6 +71,10 @@ class FrontEndCommonConfigurationFunctions(object):
 
         #helper data stores
         self._current_max_tag_value = 0
+        
+        #database objects
+        self._create_database = False
+        self._database_thread = None
 
     def _set_up_output_application_data_specifics(
             self, where_to_write_application_data_files,
@@ -103,17 +109,31 @@ class FrontEndCommonConfigurationFunctions(object):
                                       self._this_run_time_string_repenstation))
             writer.flush()
             writer.close()
+
         elif where_to_write_application_data_files == "TEMP":
             pass  # just dont set the config param, code downstairs
             #  from here will create temp folders if needed
         else:
             #add time stamped folder for this run
             this_run_time_folder = \
-                os.path.join(where_to_write_application_data_files,
-                             self._this_run_time_string_repenstation)
+                os.path.join(where_to_write_application_data_files, "latest")
             if not os.path.exists(this_run_time_folder):
                 os.makedirs(this_run_time_folder)
-        self._application_default_folder = this_run_time_folder
+            else:
+                self._move_report_and_binary_files(
+                    max_application_binaries_kept,
+                    where_to_write_application_data_files)
+
+            #store timestamp in latest/time_stamp
+            time_of_run_file_name = os.path.join(this_run_time_folder,
+                                                 "time_stamp")
+            writer = open(time_of_run_file_name, "w")
+            writer.writelines("app_{}_{}".format(self._app_id,
+                                                 self._this_run_time_string_representation))
+
+            if not os.path.exists(this_run_time_folder):
+                os.makedirs(this_run_time_folder)
+        self._app_data_runtime_folder = this_run_time_folder
 
     def _set_up_report_specifics(self, reports_are_enabled, write_text_specs,
                                  default_report_file_path, max_reports_kept,
@@ -171,7 +191,10 @@ class FrontEndCommonConfigurationFunctions(object):
             execute_router_dat_based_report, execute_routing_info_report,
             execute_data_spec_report, execute_write_reload_steps,
             generate_transciever_report,
-            generate_time_recordings_for_performance_measurements):
+            generate_time_recordings_for_performance_measurements,
+            in_debug_mode):
+        self._in_debug_mode = in_debug_mode
+        
         #report object
         if reports_are_enabled:
             self._reports_states = ReportState(
@@ -189,12 +212,6 @@ class FrontEndCommonConfigurationFunctions(object):
         #loading and running config params
         self._do_load = load_machine
         self._do_run = run_machine
-
-        #sort out the executable folder location
-        binary_path = os.path.abspath(exceptions.__file__)
-        binary_path = os.path.abspath(os.path.join(binary_path, os.pardir))
-        binary_path = os.path.join(binary_path, "model_binaries")
-        self._common_binary_folder = binary_path
 
     def _set_up_pacman_algorthms_listings(
             self, partitioner_algorithum=None, placer_algorithum=None,
