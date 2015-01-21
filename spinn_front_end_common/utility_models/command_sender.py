@@ -4,8 +4,6 @@ from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models.abstract_multi_cast_source import \
     AbstractMultiCastSource
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common import common_model_binaries
-
 
 from pacman.model.constraints.key_allocator_routing_constraint \
     import KeyAllocatorRoutingConstraint
@@ -20,11 +18,12 @@ class CommandSender(AbstractMultiCastSource):
 
     CORE_APP_IDENTIFER = constants.COMMAND_SENDER_CORE_APPLICATION_ID
 
-    def __init__(self, machine_time_step):
+    def __init__(self, machine_time_step, timescale_factor):
         """
         constructor that depends upon the Component vertex
         """
-        AbstractMultiCastSource.__init__(self, machine_time_step)
+        AbstractMultiCastSource.__init__(
+            self, machine_time_step, timescale_factor)
         self._writes = None
         self._memory_requirements = None
         self._edge_map = dict()
@@ -49,19 +48,14 @@ class CommandSender(AbstractMultiCastSource):
                 write_text_specs, application_run_time_folder)
 
         spec = DataSpecificationGenerator(data_writer, report_writer)
-        self._write_basic_setup_info(spec, CommandSender.CORE_APP_IDENTIFER,
-                                     self.SYSTEM_REGION)
-
         spec.comment("\n*** Spec for multi case source ***\n\n")
 
         #reserve regions
         self.reserve_memory_regions(spec, self._memory_requirements)
         
         #write system region
-        spec.switch_write_focus(region=self.SYSTEM_REGION)
-        spec.write_value(data=0xBEEF0000)
-        spec.write_value(data=self._machine_time_step)
-        spec.write_value(data=self._no_machine_time_steps)
+        self._write_basic_setup_info(spec, CommandSender.CORE_APP_IDENTIFER,
+                                     self.SYSTEM_REGION)
         spec.write_value(data=0)
 
         #write commands to memory
@@ -282,7 +276,7 @@ class CommandSender(AbstractMultiCastSource):
         return 0
 
     def get_binary_file_name(self):
-        binary_name = \
-            os.path.join(os.path.dirname(common_model_binaries.__file__),
-                         'command_sender_multicast_source.aplx')
-        return binary_name
+        return 'command_sender_multicast_source.aplx'
+
+    def is_multi_cast_source(self):
+        return True

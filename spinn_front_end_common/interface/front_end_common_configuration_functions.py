@@ -34,13 +34,6 @@ class FrontEndCommonConfigurationFunctions(object):
         #debug flag
         self._in_debug_mode = None
 
-        #visualiser_framework objects
-        self._visualiser = None
-        self._wait_for_run = False
-        self._visualiser_port = None
-        self._visualiser_vertices = None
-        self._visualiser_vertex_to_page_mapping = None
-
         #main objects
         self._partitionable_graph = PartitionableGraph(label=graph_label)
         self._partitioned_graph = None
@@ -128,8 +121,9 @@ class FrontEndCommonConfigurationFunctions(object):
             time_of_run_file_name = os.path.join(this_run_time_folder,
                                                  "time_stamp")
             writer = open(time_of_run_file_name, "w")
-            writer.writelines("app_{}_{}".format(self._app_id,
-                                                 self._this_run_time_string_representation))
+            writer.writelines("app_{}_{}"
+                              .format(self._app_id,
+                              self._this_run_time_string_representation))
 
             if not os.path.exists(this_run_time_folder):
                 os.makedirs(this_run_time_folder)
@@ -152,9 +146,13 @@ class FrontEndCommonConfigurationFunctions(object):
             if not os.path.exists(self._report_default_directory):
                 os.makedirs(self._report_default_directory)
                 created_folder = True
+        elif config_param == "REPORTS":
+            self._report_default_directory = 'reports'
+            if not os.path.exists(self._report_default_directory):
+                os.makedirs(self._report_default_directory)
         else:
-            self._report_default_directory = os.path.join(config_param,
-                                                          'reports')
+            self._report_default_directory = \
+                os.path.join(config_param, 'reports')
             if not os.path.exists(self._report_default_directory):
                 os.makedirs(self._report_default_directory)
 
@@ -192,7 +190,7 @@ class FrontEndCommonConfigurationFunctions(object):
             execute_data_spec_report, execute_write_reload_steps,
             generate_transciever_report,
             generate_time_recordings_for_performance_measurements,
-            in_debug_mode):
+            in_debug_mode, create_database):
         self._in_debug_mode = in_debug_mode
         
         #report object
@@ -203,7 +201,9 @@ class FrontEndCommonConfigurationFunctions(object):
                 execute_routing_info_report, execute_data_spec_report,
                 execute_write_reload_steps, generate_transciever_report,
                 generate_time_recordings_for_performance_measurements)
-
+        
+        self._create_database = create_database
+        
         #communication objects
         self._iptags = list()
         self._app_id = app_id
@@ -253,8 +253,16 @@ class FrontEndCommonConfigurationFunctions(object):
             time_stamp_in = open(app_name_file, "r")
             time_stamp_in_string = time_stamp_in.readline()
             time_stamp_in.close()
+            os.remove(app_name_file)
             new_app_folder = os.path.join(starting_directory,
                                           time_stamp_in_string)
+            extra = 2
+            while os.path.exists(new_app_folder):
+                new_app_folder = os.path.join(
+                    starting_directory,
+                    time_stamp_in_string + "_" + str(extra))
+                extra += 1
+
             os.makedirs(new_app_folder)
             list_of_files = os.listdir(app_folder_name)
             for file_to_move in list_of_files:
