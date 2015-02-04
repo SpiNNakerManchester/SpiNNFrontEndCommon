@@ -5,3 +5,6 @@ BITS_PER_WORD = 32.0
 SDRAM_BASE_ADDR = 0x70000000
 MAX_SAFE_BINARY_SIZE = 28 * 1024
 MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
+
+# The number of words in the AbstractDataSpecable basic setup information
+DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 3

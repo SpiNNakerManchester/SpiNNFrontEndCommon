@@ -358,12 +358,12 @@ class FrontEndCommonInterfaceFunctions(object):
     def _load_application_data(
             self, placements, router_tables, vertex_to_subvertex_mapper,
             processor_to_app_data_base_address, hostname, app_id,
-            application_run_time_report_folder, machine_version):
+            app_data_folder, machine_version):
 
         #if doing reload, start script
         if self._reports_states.transciever_report:
             reports.start_transceiver_rerun_script(
-                application_run_time_report_folder, hostname, machine_version)
+                app_data_folder, hostname, machine_version)
 
         #go through the placements and see if theres any application data to
         # load
@@ -386,7 +386,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 file_path_for_application_data = \
                     associated_vertex.get_application_data_file_path(
                         placement.x, placement.y, placement.p, hostname,
-                        application_run_time_report_folder)
+                        app_data_folder)
                 application_data_file_reader = \
                     SpinnmanFileDataReader(file_path_for_application_data)
                 logger.debug("writing application data for vertex {}"
@@ -409,7 +409,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     reports.re_load_script_application_data_load(
                         file_path_for_application_data, placement,
                         start_address, memory_written, user_o_register_address,
-                        application_run_time_report_folder)
+                        app_data_folder)
             progress_bar.update()
         progress_bar.end()
 
@@ -424,19 +424,19 @@ class FrontEndCommonInterfaceFunctions(object):
                     router_table.multicast_routing_entries, app_id=app_id)
                 if self._reports_states.transciever_report:
                     reports.re_load_script_load_routing_tables(
-                        router_table, application_run_time_report_folder, app_id)
+                        router_table, app_data_folder, app_id)
             progress_bar.update()
         progress_bar.end()
 
     def _load_executable_images(self, executable_targets, app_id,
-                                application_run_time_report_folder):
+                                app_data_folder):
         """
         go through the exeuctable targets and load each binary to everywhere and
         then set each given core to sync0 that require it
         """
         if self._reports_states.transciever_report:
             reports.re_load_script_load_executables_init(
-                application_run_time_report_folder, executable_targets)
+                app_data_folder, executable_targets)
 
         progress_bar = ProgressBar(len(executable_targets.keys()),
                                    "Loading executables onto the machine")
@@ -471,7 +471,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
             if self._reports_states.transciever_report:
                 reports.re_load_script_load_executables_individual(
-                    application_run_time_report_folder, exectuable_target_key,
+                    app_data_folder, exectuable_target_key,
                     app_id, size)
             progress_bar.update()
         progress_bar.end()

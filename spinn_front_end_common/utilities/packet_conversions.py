@@ -1,11 +1,10 @@
-#define key_x(k) (k >> 24)
-#define key_y(k) ((k >> 16) & 0xFF)
-#define key_p(k) ((k >> 11) & 0xF)
-#define nid(k) (k & 0x8FF)
+# define key_x(k) (k >> 24)
+# define key_y(k) ((k >> 16) & 0xFF)
+# define key_p(k) ((k >> 11) & 0xF)
+# define nid(k) (k & 0x8FF)
+
 
 # basic key to coordinates converters
-
-
 def get_x_from_key(key):
     return key >> 24
 
@@ -16,7 +15,6 @@ def get_y_from_key(key):
 
 def get_p_from_key(key):
     return (key >> 11) & 0x1F
-    #modified by ABS to reflect the fact that there are 5 bits for p
 
 
 def get_nid_from_key(key):
@@ -27,14 +25,9 @@ def get_key_from_coords(chip_x, chip_y, chip_p):
     return chip_x << 24 | chip_y << 16 | chip_p << 11
 
 
-def get_mpt_sb_mem_addrs_from_coords(x, y, p):  # used to
-    return (p + (18 * y) + (18 * 8 * x)) * 2   # two bytes per entry
-
-
 # robot with 7 7 1
 def get_x_from_robot_retina(key):
     return (key >> 7) & 0x7f
-    #return (key >> 8) & 0x7f
 
 
 def get_y_from_robot_retina(key):

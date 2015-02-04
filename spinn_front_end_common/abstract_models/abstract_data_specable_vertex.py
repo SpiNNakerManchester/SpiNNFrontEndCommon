@@ -2,7 +2,7 @@ from data_specification.file_data_writer import FileDataWriter
 
 from pacman.model.partitionable_graph.abstract_constrained_vertex \
     import AbstractConstrainedVertex
-    
+
 from spinn_front_end_common.utilities import exceptions
 
 from abc import ABCMeta

@@ -13,6 +13,10 @@
 
 #include "common-typedefs.h"
 
+//! \brief The number of words that will be read by
+//         simulation_read_timing_details
+#define SIMULATION_N_TIMING_DETAIL_WORDS 3
+
 //! \brief Reads the timing details for the simulation out of a region,
 //!        which is formatted as:
 //!            uint32_t magic_number;
