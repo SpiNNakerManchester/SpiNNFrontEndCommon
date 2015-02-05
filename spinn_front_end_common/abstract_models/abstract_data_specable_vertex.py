@@ -86,8 +86,8 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
                 processor_chip_x, processor_chip_y, processor_id, hostname,
                 application_run_time_report_folder)
         data_writer = FileDataWriter(binary_file_path)
-        #check if text reports are needed and if so initilise the reprot writer
-        #to send down to dsg
+        # check if text reports are needed and if so initilise the report
+        # writer to send down to dsg
         report_writer = None
         if write_text_specs:
             new_report_directory = os.path.join(report_directory,

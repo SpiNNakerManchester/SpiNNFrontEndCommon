@@ -23,7 +23,8 @@ def generate_synaptic_matrix_reports(common_report_directory,
         except IOError:
             logger.error("Generate_placement_reports: Can't open file"
                          " {} for writing.".format(file_name))
-        #extract matrix
+
+        # extract matrix
         synaptic_matrix = partitioned_edge.get_synapse_sublist(graph_mapper)
         counter = 0
         for synaptic_row in synaptic_matrix.get_rows():
@@ -63,7 +64,7 @@ def generate_synaptic_matrix_report(common_report_directory, partitioned_edge):
     except IOError:
         logger.error("Generate_placement_reports: Can't open file"
                      " {} for writing.".format(file_name))
-    #extract matrix
+    # extract matrix
     synaptic_matrix = partitioned_edge.synapse_sublist
     counter = 0
     for synaptic_row in synaptic_matrix.get_rows():
@@ -136,25 +137,21 @@ def network_specification_report(report_folder, graph, hostname):
     f_network_specification.write("Generated: {}".format(time_date_string))
     f_network_specification.write(" for target machine '{}'".format(hostname))
     f_network_specification.write("\n\n")
+
     # Print information on vertices:
     f_network_specification.write("*** Vertices:\n")
     for vertex in graph.vertices:
         label = vertex.label
         model = vertex.model_name
         size = vertex.n_atoms
-        #params = vertex.parameters
         constraints = vertex.constraints
-        f_network_specification.write("AbstractConstrainedVertex {}, size: {}\n"
-                                      .format(label, size))
+        f_network_specification.write(
+            "AbstractConstrainedVertex {}, size: {}\n".format(label, size))
         f_network_specification.write("Model: {}\n".format(model))
         for constraint in constraints:
             constraint_str = constraint.label
             f_network_specification.write("constraint: {}\n"
                                           .format(constraint_str))
-        #if params is None or len(params.keys()) == 0:
-        #    f_network_specification.write("  Parameters: None\n\n")
-        #else:
-        #    f_network_specification.write("  Parameters: %s\n\n" % params)
         f_network_specification.write("\n")
 
     # Print information on edges:
@@ -175,10 +172,6 @@ def network_specification_report(report_folder, graph, hostname):
                                          post_v_label, post_v_sz)
         f_network_specification.write(edge_str)
         f_network_specification.write("  Model: {}\n".format(model))
-        #if params is None or len(params.keys()) == 0:
-        #    f_network_specification.write("  Parameters: None\n\n")
-        #else:
-        #    f_network_specification.write("  Parameters: %s\n\n" % params)
         f_network_specification.write("\n")
     # Close file:
     f_network_specification.close()
@@ -209,7 +202,8 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
     output.write("import pickle \n\n")
     output.write("txrx = create_transceiver_from_hostname(hostname=\"{}\", "
                  "discover=False)\n\n".format(hostname))
-    output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(board_version))
+    output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(
+        board_version))
     output.write("txrx.discover_connections() \n \n")
     output.close()
 
@@ -217,11 +211,11 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
 def _append_to_rerun_script(report_directory, appended_strings):
     """helper method to add stuff to the rerun python script
 
-    :param report_directory: the directory to which the reload script is stored\
-     in
-    :param appended_strings: the iterable list of strings where each string is a\
-    command in string form
+    :param report_directory: the directory to which the reload script is\
+                             stored in
     :type report_directory: str
+    :param appended_strings: the iterable list of strings where each string is\
+                             a command in string form
     :type appended_strings: iterable str
     :return: None
     :rtype: None
@@ -246,8 +240,7 @@ def re_load_script_application_data_load(
     lines = list()
     lines.append("application_data_file_reader = "
                  "SpinnmanFileDataReader(\"{}\")"
-                 .format(ntpath.basename(
-                 file_path_for_application_data)))
+                 .format(ntpath.basename(file_path_for_application_data)))
 
     lines.append("txrx.write_memory({}, {}, {}, application_data_file_reader,"
                  " {})".format(placement.x, placement.y, start_address,
@@ -301,10 +294,79 @@ def re_load_script_running_aspects(
     lines = list()
     lines.append("executable_targets = pickle.load(open(\"{}\","" \"rb\"))"
                  .format(ntpath.basename(pickled_point)))
-    lines.append("spinnaker_comms = FrontEndCommonInterfaceFunctions(None, None)")
+    lines.append(
+        "spinnaker_comms = FrontEndCommonInterfaceFunctions(None, None)")
     lines.append("spinnaker_comms._setup_interfaces(\"{}\")"
                  .format(hostname))
     lines.append("spinnaker_comms._start_execution_on_machine("
                  "executable_targets, {}, {})".format(app_id,
                                                       runtime))
     _append_to_rerun_script(binary_folder, lines)
+
+
+def _write_router_diag(parent_xml_element, router_diagnostic_coords,
+                       router_diagnostic):
+    from lxml import etree
+    router = etree.SubElement(
+        parent_xml_element, "router_at_chip_{}_{}".format(
+            router_diagnostic_coords[0], router_diagnostic_coords[1]))
+    etree.SubElement(router, "Loc__MC").text = \
+        str(router_diagnostic.n_local_multicast_packets)
+    etree.SubElement(router, "Ext__MC").text = \
+        str(router_diagnostic.n_external_multicast_packets)
+    etree.SubElement(router, "Dump_MC").text = \
+        str(router_diagnostic.n_dropped_multicast_packets)
+    etree.SubElement(router, "Loc__PP").text = \
+        str(router_diagnostic.n_local_peer_to_peer_packets)
+    etree.SubElement(router, "Ext__PP")\
+        .text = str(router_diagnostic.n_external_peer_to_peer_packets)
+    etree.SubElement(router, "Dump_PP")\
+        .text = str(router_diagnostic.n_dropped_peer_to_peer_packets)
+    etree.SubElement(router, "Loc__NN")\
+        .text = str(router_diagnostic.n_local_nearest_neighbour_packets)
+    etree.SubElement(router, "Ext__NN")\
+        .text = str(router_diagnostic.n_external_nearest_neighbour_packets)
+    etree.SubElement(router, "Dump_NN")\
+        .text = str(router_diagnostic.n_dropped_nearest_neighbour_packets)
+    etree.SubElement(router, "Loc__FR").text = \
+        str(router_diagnostic.n_local_fixed_route_packets)
+    etree.SubElement(router, "Ext__FR")\
+        .text = str(router_diagnostic.n_external_fixed_route_packets)
+    etree.SubElement(router, "Dump_FR")\
+        .text = str(router_diagnostic.n_dropped_fixed_route_packets)
+
+
+def generate_provance_routings(routing_tables, machine, txrx,
+                               report_default_directory):
+
+    # acquire diagnostic data
+    router_diagnostics = dict()
+    for router_table in routing_tables.routing_tables:
+        router_diagnostic = txrx.\
+            get_router_diagnostics(router_table.x, router_table.y)
+        router_diagnostics[router_table.x, router_table.y] = \
+            router_diagnostic
+    from lxml import etree
+    root = etree.Element("root")
+    doc = etree.SubElement(root, "router_counters")
+    expected_routers = etree.SubElement(doc, "Used_Routers")
+    for router_diagnostic_coords in router_diagnostics.keys():
+        _write_router_diag(
+            expected_routers, router_diagnostic_coords,
+            router_diagnostics[router_diagnostic_coords])
+    unexpected_routers = etree.SubElement(doc, "Unexpected_Routers")
+    for chip in machine.chips:
+        coords = (chip.x, chip.y)
+        if coords not in router_diagnostics.keys():
+            router_diagnostic = \
+                txrx.get_router_diagnostics(chip.x, chip.y)
+            if (router_diagnostic.n_dropped_multicast_packets != 0 or
+                    router_diagnostic.n_local_multicast_packets != 0 or
+                    router_diagnostic.n_external_multicast_packets != 0):
+                _write_router_diag(
+                    unexpected_routers, router_diagnostic_coords,
+                    router_diagnostics[router_diagnostic_coords])
+    file_path = \
+        os.path.join(report_default_directory, "provance_data.xml")
+    writer = open(file_path, "w")
+    writer.write(etree.tostring(root, pretty_print=True))

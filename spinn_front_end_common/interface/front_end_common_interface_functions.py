@@ -6,13 +6,10 @@ from data_specification.data_specification_executor import \
 from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 
-
 from pacman.utilities.progress_bar import ProgressBar
-from spinn_machine.diagnostic_filter import DiagnosticFilter
 
 from spinn_machine.sdram import SDRAM
 from spinn_machine.virutal_machine import VirtualMachine
-
 
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
@@ -71,7 +68,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 ignore_chips=ignored_chips,
                 ignore_cores=ignored_cores)
 
-            #do autoboot if possible
+            # do autoboot if possible
             if machine_version is None:
                 raise exceptions.ConfigurationException(
                     "Please set a machine version number in the configuration "
@@ -99,8 +96,12 @@ class FrontEndCommonInterfaceFunctions(object):
         for reverse_iptag in self._reverse_iptags:
             self._txrx.set_reverse_ip_tag(reverse_iptag)
 
-    def _retieve_provance_data_from_machine(self, executable_targets):
-        pass
+    def _retieve_provance_data_from_machine(
+            self, executable_targets, routing_tables, machine):
+
+        # create writer to a report in reports
+        reports.generate_provance_routings(routing_tables, machine, self._txrx,
+                                           self._report_default_directory)
 
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
@@ -120,14 +121,16 @@ class FrontEndCommonInterfaceFunctions(object):
             application_data_runtime_folder):
         space_based_memory_tracker = dict()
         processor_to_app_data_base_address = dict()
-         #create a progress bar for end users
+
+        # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
                                    "on executing data specifications on the "
                                    "host machine")
 
         for placement in placements.placements:
-            associated_vertex = graph_mapper.\
-                get_vertex_from_subvertex(placement.subvertex)
+            associated_vertex = graph_mapper.get_vertex_from_subvertex(
+                placement.subvertex)
+
             # if the vertex can generate a DSG, call it
             if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
@@ -142,53 +145,53 @@ class FrontEndCommonInterfaceFunctions(object):
                 data_spec_reader = FileDataReader(data_spec_file_path)
                 data_writer = FileDataWriter(app_data_file_path)
 
-                #locate current memory requirement
+                # locate current memory requirement
                 current_memory_available = SDRAM.DEFAULT_SDRAM_BYTES
                 memory_tracker_key = (placement.x, placement.y)
                 if memory_tracker_key in space_based_memory_tracker.keys():
-                    current_memory_available = \
-                        space_based_memory_tracker[memory_tracker_key]
+                    current_memory_available = space_based_memory_tracker[
+                        memory_tracker_key]
 
-                #generate a file writer for dse report (app pointer table)
+                # generate a file writer for dse report (app pointer table)
                 report_writer = None
                 if write_text_specs:
-                    new_report_directory = \
-                        os.path.join(self._report_default_directory,
-                                     "data_spec_text_files")
+                    new_report_directory = os.path.join(
+                        self._report_default_directory, "data_spec_text_files")
 
                     if not os.path.exists(new_report_directory):
                         os.mkdir(new_report_directory)
 
-                    file_name = "{}_DSE_report_for_{}_{}_{}.txt"\
-                                .format(hostname, placement.x, placement.y,
-                                        placement.p)
+                    file_name = "{}_DSE_report_for_{}_{}_{}.txt".format(
+                        hostname, placement.x, placement.y, placement.p)
                     report_file_path = os.path.join(new_report_directory,
                                                     file_name)
                     report_writer = FileDataWriter(report_file_path)
 
-                #generate data spec executor
+                # generate data spec executor
                 host_based_data_spec_executor = DataSpecificationExecutor(
                     data_spec_reader, data_writer, current_memory_available,
                     report_writer)
 
-                #update memory calc and run data spec executor
+                # update memory calc and run data spec executor
                 bytes_used_by_spec, bytes_written_by_spec = \
                     host_based_data_spec_executor.execute()
 
-                #update base address mapper
+                # update base address mapper
                 processor_mapping_key = (placement.x, placement.y, placement.p)
-                processor_to_app_data_base_address[processor_mapping_key] = \
-                    {'start_address':
+                processor_to_app_data_base_address[processor_mapping_key] = {
+                    'start_address':
                         ((SDRAM.DEFAULT_SDRAM_BYTES - current_memory_available)
                          + constants.SDRAM_BASE_ADDR),
-                     'memory_used': bytes_used_by_spec,
-                     'memory_written': bytes_written_by_spec}
+                    'memory_used': bytes_used_by_spec,
+                    'memory_written': bytes_written_by_spec
+                }
 
                 space_based_memory_tracker[memory_tracker_key] = \
                     current_memory_available - bytes_used_by_spec
 
-            #update the progress bar
+            # update the progress bar
             progress_bar.update()
+
         # close the progress bar
         progress_bar.end()
         return processor_to_app_data_base_address
@@ -260,8 +263,8 @@ class FrontEndCommonInterfaceFunctions(object):
                             "transmissions. Could be a sign of an error")
             else:
                 sucessful_cores, unsucessful_cores = \
-                    self._break_down_of_failure_to_reach_state(total_cores,
-                                                               CPUState.RUNNING)
+                    self._break_down_of_failure_to_reach_state(
+                        total_cores, CPUState.RUNNING)
                 # break_down the successful cores and unsuccessful cores into
                 # string reps
                 break_down = self.turn_break_downs_into_string(
@@ -279,16 +282,15 @@ class FrontEndCommonInterfaceFunctions(object):
             time.sleep(time_to_wait)
             processors_not_finished = processors_ready
             while processors_not_finished != 0:
-                processors_not_finished = \
-                    self._txrx.get_core_state_count(app_id,
-                                                    CPUState.RUNNING)
-                processors_rte = \
-                    self._txrx.get_core_state_count(app_id,
-                                                    CPUState.RUN_TIME_EXCEPTION)
+                processors_not_finished = self._txrx.get_core_state_count(
+                    app_id, CPUState.RUNNING)
+                processors_rte = self._txrx.get_core_state_count(
+                    app_id, CPUState.RUN_TIME_EXCEPTION)
                 if processors_rte > 0:
                     sucessful_cores, unsucessful_cores = \
                         self._break_down_of_failure_to_reach_state(
                             total_cores, CPUState.RUNNING)
+
                     # break_down the successful cores and unsuccessful cores
                     # into string reps
                     break_down = self.turn_break_downs_into_string(
@@ -301,15 +303,16 @@ class FrontEndCommonInterfaceFunctions(object):
                             "waiting a bit longer...")
                 time.sleep(0.5)
 
-            processors_exited =\
-                self._txrx.get_core_state_count(app_id, CPUState.FINSHED)
+            processors_exited = self._txrx.get_core_state_count(
+                app_id, CPUState.FINSHED)
 
             if processors_exited < total_processors:
                 sucessful_cores, unsucessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         total_cores, CPUState.RUNNING)
+
                 # break_down the successful cores and unsuccessful cores into
-                #  string reps
+                # string reps
                 break_down = self.turn_break_downs_into_string(
                     total_cores, sucessful_cores, unsucessful_cores,
                     CPUState.RUNNING)
@@ -319,7 +322,7 @@ class FrontEndCommonInterfaceFunctions(object):
                         total_processors - processors_exited, break_down))
             logger.info("Application has run to completion")
         else:
-            logger.info("Application is set to run forever - PACMAN is exiting")
+            logger.info("Application is set to run forever - exiting")
 
     def _break_down_of_failure_to_reach_state(self, total_cores, state):
         sucessful_cores = list()
@@ -341,18 +344,17 @@ class FrontEndCommonInterfaceFunctions(object):
             for processor_id in core_info.processor_ids:
                 core_coord = (core_info.x, core_info.y, processor_id)
                 if core_coord in successful_cores:
-                    break_down += "{}:{}:{} sucessfully in state {}{}"\
-                        .format(core_info.x, core_info.y, processor_id,
-                                state.name, os.linesep)
+                    break_down += ("{}:{}:{} sucessfully in state {}{}"
+                                   .format(core_info.x, core_info.y,
+                                           processor_id, state.name,
+                                           os.linesep))
                 else:
-                    real_state = \
-                        unsuccessful_cores[(core_info.x, core_info.y,
-                                           processor_id)]
-                    break_down += \
-                        "{}:{}:{} failed to be in state {} and was in " \
-                        "state {} instead{}"\
-                        .format(core_info.x, core_info.y, processor_id,
-                                state, real_state, os.linesep)
+                    real_state = unsuccessful_cores[(core_info.x, core_info.y,
+                                                     processor_id)]
+                    break_down += ("{}:{}:{} failed to be in state {} and was"
+                                   " in state {} instead{}".format(
+                                       core_info.x, core_info.y, processor_id,
+                                       state, real_state, os.linesep))
         return break_down
 
     def _load_application_data(
@@ -360,14 +362,13 @@ class FrontEndCommonInterfaceFunctions(object):
             processor_to_app_data_base_address, hostname, app_id,
             app_data_folder, machine_version):
 
-        #if doing reload, start script
+        # if doing reload, start script
         if self._reports_states.transciever_report:
             reports.start_transceiver_rerun_script(
                 app_data_folder, hostname, machine_version)
 
-        #go through the placements and see if theres any application data to
+        # go through the placements and see if there's any application data to
         # load
-
         progress_bar = ProgressBar(len(list(placements.placements)),
                                    "Loading application data onto the machine")
         for placement in placements.placements:
@@ -387,14 +388,16 @@ class FrontEndCommonInterfaceFunctions(object):
                     associated_vertex.get_application_data_file_path(
                         placement.x, placement.y, placement.p, hostname,
                         app_data_folder)
-                application_data_file_reader = \
-                    SpinnmanFileDataReader(file_path_for_application_data)
+                application_data_file_reader = SpinnmanFileDataReader(
+                    file_path_for_application_data)
                 logger.debug("writing application data for vertex {}"
                              .format(associated_vertex.label))
-                self._txrx.write_memory(placement.x, placement.y, start_address,
+                self._txrx.write_memory(placement.x, placement.y,
+                                        start_address,
                                         application_data_file_reader,
                                         memory_written)
-                #update user 0 so that it points to the start of the \
+
+                # update user 0 so that it points to the start of the \
                 # applications data region on sdram
                 logger.debug("writing user 0 address for vertex {}"
                              .format(associated_vertex.label))
@@ -404,7 +407,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 self._txrx.write_memory(placement.x, placement.y,
                                         user_o_register_address, start_address)
 
-                #add lines to rerun_script if requested
+                # add lines to rerun_script if requested
                 if self._reports_states.transciever_report:
                     reports.re_load_script_application_data_load(
                         file_path_for_application_data, placement,
@@ -415,7 +418,8 @@ class FrontEndCommonInterfaceFunctions(object):
 
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")
-        #load each router table thats needed for the application to run into
+
+        # load each router table thats needed for the application to run into
         # the chips sdram
         for router_table in router_tables.routing_tables:
             if len(router_table.multicast_routing_entries) > 0:
@@ -431,8 +435,8 @@ class FrontEndCommonInterfaceFunctions(object):
     def _load_executable_images(self, executable_targets, app_id,
                                 app_data_folder):
         """
-        go through the exeuctable targets and load each binary to everywhere and
-        then set each given core to sync0 that require it
+        go through the execuctable targets and load each binary to everywhere
+        and then set each given core to sync0 that require it
         """
         if self._reports_states.transciever_report:
             reports.re_load_script_load_executables_init(
@@ -453,18 +457,18 @@ class FrontEndCommonInterfaceFunctions(object):
             # checks which may not be accurate enough.
             if size > constants.MAX_SAFE_BINARY_SIZE:
                 logger.warn(
-                    "The size of this binary is large enough that its possible "
-                    "that the binary may be larger than what is supported by "
-                    "spinnaker currently. Please reduce the binary size if it "
-                    "starts to behave strangely, or goes into the wdog state "
-                    "before starting.")
+                    "The size of this binary is large enough that its"
+                    " possible that the binary may be larger than what is"
+                    " supported by spinnaker currently. Please reduce the"
+                    " binary size if it starts to behave strangely, or goes"
+                    " into the wdog state before starting.")
                 if size > constants.MAX_POSSIBLE_BINARY_SIZE:
                     raise exceptions.ConfigurationException(
-                        "The size of the binary is too large and therefore will "
-                        "very likely cause a WDOG state. Until a more precise"
-                        " measurement of ITCM and DTCM can be produced, this "
-                        "is deemed as an error state. Please reduce the size of"
-                        " your binary or circumvent this error check.")
+                        "The size of the binary is too large and therefore"
+                        " will very likely cause a WDOG state. Until a more"
+                        " precise measurement of ITCM and DTCM can be produced"
+                        " this is deemed as an error state. Please reduce the"
+                        " size of your binary or circumvent this error check.")
 
             self._txrx.execute_flood(core_subset, file_reader, app_id,
                                      size)

@@ -1,5 +1,5 @@
 class SpinnFrontEndException(Exception):
-    """rasied when the pynn front end detects that a routing error has occured
+    """rasied when the pynn front end detects that a routing error has occurred
     (during multicast soruce)
 
     :raise None: does not raise any known exceptions
@@ -8,7 +8,7 @@ class SpinnFrontEndException(Exception):
 
 
 class RallocException(SpinnFrontEndException):
-    """rasied when the pynn front end detects that a routing error has occured
+    """rasied when the pynn front end detects that a routing error has occurred
     (during multicast soruce)
 
     :raise None: does not raise any known exceptions
@@ -24,8 +24,8 @@ class ConfigurationException(SpinnFrontEndException):
 
 
 class ExecutableFailedToStartException(SpinnFrontEndException):
-    """ raised when the messgaes from the trnasicever state that some or all the
-    application images pushed to the board have failed to start when asked
+    """ raised when the messgaes from the trnasicever state that some or all
+    the application images pushed to the board have failed to start when asked
 
 
     :raise None: does not raise any known exceptions
@@ -34,8 +34,9 @@ class ExecutableFailedToStartException(SpinnFrontEndException):
 
 
 class ExecutableFailedToStopException(SpinnFrontEndException):
-    """ raised when the messgaes from the trnasicever state that some or all the
-    application images pushed to the board have failed to stop when expected
+    """ raised when the messgaes from the trnasicever state that some or all
+    the application images pushed to the board have failed to stop when
+    expected
 
 
     :raise None: does not raise any known exceptions

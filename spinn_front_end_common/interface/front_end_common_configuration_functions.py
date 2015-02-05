@@ -103,9 +103,12 @@ class FrontEndCommonConfigurationFunctions(object):
             writer.close()
 
         elif where_to_write_application_data_files == "TEMP":
-            pass  # just dont set the config param, code downstairs
+
+            # just dont set the config param, code downstairs
             #  from here will create temp folders if needed
+            pass
         else:
+
             # add time stamped folder for this run
             this_run_time_folder = \
                 os.path.join(where_to_write_application_data_files, "latest")
@@ -166,6 +169,7 @@ class FrontEndCommonConfigurationFunctions(object):
                                        "latest")
         if not os.path.exists(app_folder_name):
                 os.makedirs(app_folder_name)
+
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
         writer = open(time_of_run_file_name, "w")
@@ -175,9 +179,8 @@ class FrontEndCommonConfigurationFunctions(object):
         self._this_run_time_string_repenstation = \
             str(this_run_time.date()) + "-" + str(this_run_time.hour) + "-" + \
             str(this_run_time.minute) + "-" + str(this_run_time.second)
-        writer.writelines("app_{}_{}"
-                          .format(self._app_id,
-                                  self._this_run_time_string_repenstation))
+        writer.writelines("app_{}_{}".format(
+            self._app_id, self._this_run_time_string_repenstation))
         writer.flush()
         writer.close()
         self._report_default_directory = app_folder_name
@@ -217,34 +220,30 @@ class FrontEndCommonConfigurationFunctions(object):
     def _set_up_pacman_algorthms_listings(
             self, partitioner_algorithm=None, placer_algorithm=None,
             key_allocator_algorithm=None, routing_algorithm=None):
-        # algorithum lists
+
+        # algorithm lists
         if partitioner_algorithm is not None:
-            partitioner_algorithms_list = \
-                helpful_functions.get_valid_components(partition_algorithms,
-                                                       "Partitioner")
-            self._partitioner_algorithm = \
-                partitioner_algorithms_list[partitioner_algorithm]
+            partitioner_algorithms = helpful_functions.get_valid_components(
+                partition_algorithms, "Partitioner")
+            self._partitioner_algorithm = partitioner_algorithms[
+                partitioner_algorithm]
 
         if placer_algorithm is not None:
-            placer_algorithms_list = \
-                helpful_functions.get_valid_components(placer_algorithms,
-                                                       "Placer")
-            self._placer_algorithm = placer_algorithms_list[placer_algorithm]
+            placer_algorithms = helpful_functions.get_valid_components(
+                placer_algorithms, "Placer")
+            self._placer_algorithm = placer_algorithms[placer_algorithm]
 
         # get common key allocator algorithms
         if key_allocator_algorithm is not None:
-            key_allocator_algorithms_list = \
-                helpful_functions.get_valid_components(
-                    routing_info_allocator_algorithms, "RoutingInfoAllocator")
-            self._key_allocator_algorithm = \
-                key_allocator_algorithms_list[key_allocator_algorithm]
+            key_allocator_algorithms = helpful_functions.get_valid_components(
+                routing_info_allocator_algorithms, "RoutingInfoAllocator")
+            self._key_allocator_algorithm = key_allocator_algorithms[
+                key_allocator_algorithm]
 
         if routing_algorithm is not None:
-            routing_algorithms_list = \
-                helpful_functions.get_valid_components(router_algorithms,
-                                                       "Routing")
-            self._router_algorithm = \
-                routing_algorithms_list[routing_algorithm]
+            routing_algorithms = helpful_functions.get_valid_components(
+                router_algorithms, "Routing")
+            self._router_algorithm = routing_algorithms[routing_algorithm]
 
     @staticmethod
     def _move_report_and_binary_files(max_to_keep, starting_directory):
@@ -270,6 +269,7 @@ class FrontEndCommonConfigurationFunctions(object):
                 file_path = os.path.join(app_folder_name, file_to_move)
                 shutil.move(file_path, new_app_folder)
             files_in_report_folder = os.listdir(starting_directory)
+
             # while theres more than the valid max, remove the oldest one
             while len(files_in_report_folder) > max_to_keep:
                 files_in_report_folder.sort(
