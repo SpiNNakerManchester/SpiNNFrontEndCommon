@@ -6,20 +6,6 @@ endif
 SPINN_COMMON_BUILD = build
 include $(SPINN_DIRS)/Makefile.common
 
-# General tool setup
-CAT = cat
-LS  = ls -l
-MKDIR = mkdir -p
-CP  = cp
-
-# Libraries
-ifneq ($(GNU), 1)
-    LIBS = $(SPINN_LIB_DIR)/libspin1_api.a
-else
-    LIBS = $(SPINN_LIB_DIR)/spin1_api.a
-endif
-
-# Include our own include directory
 CFLAGS += -I include
 LDFLAGS += -lspinn_common
 
