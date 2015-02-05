@@ -31,6 +31,14 @@ BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 HEADERS = common-typedefs.h data_specification.h simulation.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
+# Makefile
+MAKEFILES = Makefile.SpiNNFrontEndCommon
+INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
+
+# Libraries
+LIBS = libspinn_frontend_common.a
+INSTALL_LIBS = $(LIBS:%.a=$(SPINN_LIB_DIR)/%.a)
+
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a: $(BUILD_OBJS) 
 	$(RM) $@
@@ -43,13 +51,19 @@ $(SPINN_COMMON_BUILD):
 	$(MKDIR) $@
 
 # Installing rules
-install: $(SPINN_LIB_DIR)/libspinn_frontend_common.a $(INSTALL_HEADERS)
+install: $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
 
-$(SPINN_LIB_DIR)/libspinn_frontend_common.a: $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a
+$(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
 	$(CP) $< $@
 
 $(SPINN_INC_DIR)/%.h: include/%.h
 	$(CP) $< $@
 
+$(SPINN_MAKE_LIB_DIR)/%: %
+	$(CP) $< $@
+
 clean:
 	$(RM) $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a $(BUILD_OBJS)
+
+install-clean:
+	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
