@@ -229,9 +229,9 @@ class FrontEndCommonConfigurationFunctions(object):
                 partitioner_algorithm]
 
         if placer_algorithm is not None:
-            placer_algorithms = helpful_functions.get_valid_components(
+            place_algorithms = helpful_functions.get_valid_components(
                 placer_algorithms, "Placer")
-            self._placer_algorithm = placer_algorithms[placer_algorithm]
+            self._placer_algorithm = place_algorithms[placer_algorithm]
 
         # get common key allocator algorithms
         if key_allocator_algorithm is not None:

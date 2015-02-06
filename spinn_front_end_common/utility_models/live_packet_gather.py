@@ -65,7 +65,7 @@ class LivePacketGather(
                 "spinnman..messages.eieio.eieio_prefix_type")
 
         AbstractDataSpecableVertex.__init__(
-            self, n_atoms=1, label="Monitor",
+            self, n_atoms=1, label="LivePacketGather",
             machine_time_step=machine_time_step,
             timescale_factor=timescale_factor)
         AbstractPartitionableVertex.__init__(self, n_atoms=1, label="Monitor",

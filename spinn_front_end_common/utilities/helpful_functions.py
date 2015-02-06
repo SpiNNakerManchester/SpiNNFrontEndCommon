@@ -11,8 +11,7 @@ def get_valid_components(module, terminator):
                 inspect.getmembers(module, inspect.isclass)))
 
 
-def read_and_convert(self, x, y, address, length, data_format,
-                     transceiver):
+def read_and_convert(x, y, address, length, data_format, transceiver):
     """ Reads and converts a single data item from memory
     """
 
