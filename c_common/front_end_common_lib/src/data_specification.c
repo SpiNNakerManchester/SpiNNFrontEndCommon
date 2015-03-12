@@ -6,11 +6,14 @@
 // A magic number that identifies the start of an executed data specification
 #define DATA_SPECIFICATION_MAGIC_NUMBER 0xAD130AD6
 
-// The index of the magic number within the executed data specification
-#define MAGIC_NUMBER_INDEX 0
+#define DATA_SPECIFICATION_VERSION 0x00010000
 
-// The index of the version of the data specification within the data
-#define VERSION_INDEX 1
+// The mask to apply to the version number to get the minor version
+#define VERSION_MASK 0xFFFF
+
+typedef enum region_elements{
+	dse_magic_number, dse_version,
+}region_elements;
 
 // The index of the start of the region table within the data
 #define REGION_START_INDEX 2
@@ -18,9 +21,9 @@
 // The amount of shift to apply to the version number to get the major version
 #define VERSION_SHIFT 16
 
-// The mask to apply to the version number to get the minor version
-#define VERSION_MASK 0xFFFF
-
+//! \ method that locates the start address for a core in SDRAM. This value is
+//! loaded into the user0 register of the core during the tool chain loading.
+//! \return the SDRAM start address for this core.
 address_t data_specification_get_data_address() {
 
     // Get pointer to 1st virtual processor info struct in SRAM
@@ -36,24 +39,42 @@ address_t data_specification_get_data_address() {
     return address;
 }
 
-bool data_specification_read_header(uint32_t* address, uint32_t* version) {
+//! \ reads the header written by a DSE and checks that the magic number
+//! which is written by every DSE is consistent. Inconsistent DSE magic numbers
+//! would reflect a model being used with an different DSE interface than the
+//! DSE used by the host machine.
+//! \param[in] address the absolute memory address in SDRAM to read the
+//! header from.
+//! \return boolean where True is when the header is correct and False if there
+//! is a conflict with the DSE magic number
+bool data_specification_read_header(uint32_t* address) {
 
     // Check for the magic number
-    if (address[MAGIC_NUMBER_INDEX] != DATA_SPECIFICATION_MAGIC_NUMBER) {
-        log_error("Magic number is incorrect: %08x",
-                address[MAGIC_NUMBER_INDEX]);
+    if (address[dse_magic_number] != DATA_SPECIFICATION_MAGIC_NUMBER) {
+        log_error("Magic number is incorrect: %08x", address[dse_magic_number]);
         return (false);
     }
 
-    // Get the version
-    *version = address[VERSION_INDEX];
+    if (address[dse_version] != DATA_SPECIFICATION_VERSION) {
+    	log_error("Version number is incorrect: %08x", address[dse_version]);
+    	return (false);
+    }
 
     // Log what we have found
-    log_info("magic = %08x, version = %d.%d", address[MAGIC_NUMBER_INDEX],
-            address[VERSION_INDEX] >> VERSION_SHIFT,
-            address[VERSION_INDEX] & VERSION_MASK);
+    log_info("magic = %08x, version = %d.%d", address[dse_magic_number],
+             address[dse_version] >> VERSION_SHIFT,
+             address[dse_version] & VERSION_MASK);
     return (true);
 }
+
+//! method that returns the absolute SDRAM memory address for a given region
+//! value.
+//! \param[in] region The region id (between 0 and 15) to which the absolute
+//! memory address in SDRAM is to be located
+//! \param[in] data_address The absolute SDRAM address for the start of the
+//! app_pointer table as created by the host DSE.
+//! \return a address_t which represents the absolute SDRAM address for the
+//!start of the requested region.
 
 address_t data_specification_get_region(
         uint32_t region, address_t data_address) {
@@ -62,49 +83,4 @@ address_t data_specification_get_region(
     // in the region table by 4 (hence down-shift by 2) to get the position in
     // the "address array"
     return (&data_address[data_address[REGION_START_INDEX + region] >> 2]);
-}
-
-void data_specification_copy_word_vector(
-        uint32_t* target, uint32_t size, uint32_t* data_source) {
-    log_debug("v32[%u] = {%08x, ...}", 0, data_source[0]);
-
-    for (uint32_t i = 0; i < size; i++) {
-        target[i] = data_source[i];
-    }
-}
-
-void data_specification_copy_half_word_vector(
-        uint16_t* target, uint32_t size, uint32_t* data_source) {
-
-    log_info("v16[%u] = {%04x, ...}", size, data_source[0] & 0xFFFF);
-
-    for (uint32_t i = 0; i < (size >> 1); i++) {
-        ((uint32_t*) target)[i] = data_source[i];
-    }
-}
-
-void data_specification_copy_byte_vector(
-        uint8_t* target, uint32_t size, uint32_t* data_source) {
-
-    log_info("v8 [%u] = {%02x, ...}", size, data_source[0] & 0xFF);
-
-    for (uint32_t i = 0; i < size; i++) {
-        target[i] = data_source[i] & 0xFF;
-    }
-}
-
-bool data_specification_is_vector_single_valued(
-        uint32_t size, uint32_t* vector) {
-
-    assert(size > 0);
-
-    uint32_t first_value = vector[0];
-
-    for (uint32_t i = 1; i < size; i++) {
-        if (first_value != vector[i]) {
-            return false;
-        }
-    }
-
-    return true;
 }

@@ -19,12 +19,11 @@
 //! \return The address of the generated data
 address_t data_specification_get_data_address();
 
-//! \brief Reads the header from the address given and returns the version
-//!        and flags
+//! \brief Reads the header from the address given and checks if the parameters
+//! are of the correct values
 //! \param[in] data_address The address of the start of the data generated
-//! \param[out] version A pointer to an int to be filled with the version
 //! \return true if the header was found, or false if was not
-bool data_specification_read_header(address_t data_address, uint32_t* version);
+bool data_specification_read_header(address_t data_address);
 
 //! \brief Gets the address of a region
 //! \param[in] region the id of the region, starting at 0
@@ -32,17 +31,5 @@ bool data_specification_read_header(address_t data_address, uint32_t* version);
 //! \return The address of the specified region
 address_t data_specification_get_region(
         uint32_t region, address_t data_address);
-
-void data_specification_copy_word_vector(
-        uint32_t* target, uint32_t size, uint32_t* data_source);
-
-void data_specification_copy_half_word_vector(
-        uint16_t* target, uint32_t size, uint32_t* data_source);
-
-void data_specification_copy_byte_vector(
-        uint8_t* target, uint32_t size, uint32_t* data_source);
-
-bool data_specification_is_vector_single_valued(
-        uint32_t size, uint32_t* vector);
 
 #endif
