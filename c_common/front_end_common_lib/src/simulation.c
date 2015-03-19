@@ -1,3 +1,8 @@
+/*!
+ * \file
+ * \brief implementation of simulation.h
+ */
+
 #include "simulation.h"
 
 #include <debug.h>
@@ -27,7 +32,7 @@ bool simulation_read_timing_details(
         uint32_t* timer_period, uint32_t* n_simulation_ticks) {
 
     if (address[application_magic_number] != expected_app_magic_number) {
-        log_info("Unexpected magic number 0x%.8x instead of 0x%.8x",
+        log_error("Unexpected magic number 0x%.8x instead of 0x%.8x",
         		 address[application_magic_number],
 				 expected_app_magic_number);
         return false;
