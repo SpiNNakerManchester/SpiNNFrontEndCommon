@@ -7,7 +7,7 @@ class ExecutableFinder(object):
         and allows for binaries to be discovered within this path
     """
 
-    def __init__(self, binary_search_paths=[],
+    def __init__(self, binary_search_paths=None,
                  include_common_binaries_folder=True):
         """
 
@@ -23,6 +23,8 @@ class ExecutableFinder(object):
                     binary_search_paths, so the common binary search path will\
                     be looked in last.
         """
+        if binary_search_paths is None:
+            binary_search_paths = list()
         self._binary_search_paths = binary_search_paths
         if include_common_binaries_folder:
             self._binary_search_paths.append(os.path.dirname(

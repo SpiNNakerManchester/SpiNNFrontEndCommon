@@ -98,7 +98,7 @@ class FrontEndCommonConfigurationFunctions(object):
                                                  "time_stamp")
             writer = open(time_of_run_file_name, "w")
             writer.writelines("app_{}_{}".format(
-                self._app_id, self._this_run_time_string_repenstation))
+                self._app_id, self._this_run_time_string_representation))
             writer.flush()
             writer.close()
 
@@ -280,3 +280,6 @@ class FrontEndCommonConfigurationFunctions(object):
                 shutil.rmtree(os.path.join(starting_directory, oldest_file),
                               ignore_errors=True)
                 files_in_report_folder.remove(oldest_file)
+
+    def set_runtime(self, value):
+        self._runtime = value
