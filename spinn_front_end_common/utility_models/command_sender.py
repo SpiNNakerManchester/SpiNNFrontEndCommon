@@ -3,13 +3,17 @@ from spinn_front_end_common.abstract_models.abstract_multi_cast_source import \
     AbstractMultiCastSource
 from spinn_front_end_common.utilities import constants
 
-from pacman.model.constraints.key_allocator_routing_constraint \
+from pacman.model.constraints.key_allocator_constraints\
+    .key_allocator_routing_constraint \
     import KeyAllocatorRoutingConstraint
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
 
 
 class CommandSender(AbstractMultiCastSource):
+    """
+    command sender
+    """
 
     SYSTEM_REGION = 0
     COMMANDS = 1
@@ -33,11 +37,24 @@ class CommandSender(AbstractMultiCastSource):
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_subgraph_mapper, report_folder, write_text_specs,
-            application_run_time_folder):
+            hostname, graph_subgraph_mapper, report_folder, iptags,
+            reverse_iptags, write_text_specs, application_run_time_folder):
         """
         Model-specific construction of the data blocks necessary to build a
         single external retina device.
+        :param subvertex:
+        :param placement:
+        :param sub_graph:
+        :param graph:
+        :param routing_info:
+        :param hostname:
+        :param graph_subgraph_mapper:
+        :param report_folder:
+        :param iptags:
+        :param reverse_iptags:
+        :param write_text_specs:
+        :param application_run_time_folder:
+        :return:
         """
         data_writer, report_writer = \
             self.get_data_spec_file_writers(
@@ -123,12 +140,19 @@ class CommandSender(AbstractMultiCastSource):
         self._memory_requirements += 4
 
     def add_commands(self, commands, edge):
+        """
+
+        :param commands:
+        :param edge:
+        :return:
+        """
         self._edge_map[edge] = commands
         self._commands += commands
 
     def deal_with_command_block(self, commands_in_same_time_slot):
         """
         writes a command block and keeps memory tracker
+        :param commands_in_same_time_slot:
         """
 
         # sort by cp
@@ -168,6 +192,7 @@ class CommandSender(AbstractMultiCastSource):
     def generate_routing_info(self, subedge):
         """
         overloaded from component vertex
+        :param subedge
         """
         if self._edge_map[subedge.edge] is not None:
             return self._edge_map[subedge.edge][0]['key'], 0xFFFFFC00
@@ -200,7 +225,6 @@ class CommandSender(AbstractMultiCastSource):
         :param atom: the aton of this subvertex
         :return:the key with a neuron id added to it
         """
-        key = None
         if self._edge_map[subedge.edge] is not None:
             key = self._edge_map[subedge.edge][0]['key']
         else:
@@ -217,6 +241,8 @@ class CommandSender(AbstractMultiCastSource):
         1) Area for information on what data to record
         2) area for start commands
         3) area for end commands
+        :param spec:
+        :param command_size:
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -233,6 +259,7 @@ class CommandSender(AbstractMultiCastSource):
     def size_of_message(start_command):
         """
         returns the expected size of the command message
+        :param start_command:
         """
         count = 0
         if start_command['payload'] is None:
@@ -248,6 +275,7 @@ class CommandSender(AbstractMultiCastSource):
         """
         iterates though a collection of commands and counts how many have
          payloads
+         :param messages
         """
         count = 0
         for message in messages:
@@ -259,6 +287,8 @@ class CommandSender(AbstractMultiCastSource):
     def check_sub_edge_key_mask_consistancy(edge_map, app_mask):
         """
         check that all keys for a subedge are the same when masked
+        :param edge_map:
+        :param app_mask:
         """
         for subedge in edge_map.keys():
             combo = None
@@ -283,18 +313,50 @@ class CommandSender(AbstractMultiCastSource):
 
     # inherited from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
+        """
+        returns how much cpu resoruces this model is expectex to use
+        for a given number of atoms
+        :param vertex_slice: the chunk of a partitionable vertex to determine
+        resources for
+        :param graph: the partitionable graph
+        :return:int represenring used resoruces
+        """
         return 0
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
+        """ returns how much sdram resoruces this model is expectex to use
+        for a given number of atoms
+
+        :param vertex_slice: the chunk of a partitionable vertex to determine
+        resources for
+        :param graph: the partitionable graph
+        :return:int represenring used resoruces
+        """
         if self._memory_requirements is None:
             self._calculate_memory_requirements()
         return self._memory_requirements
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
+        """ returns how much dtcm resoruces this model is expectex to use
+        for a given number of atoms
+
+        :param vertex_slice: the chunk of a partitionable vertex to determine
+        resources for
+        :param graph: the partitionable graph
+        :return: int represenring used resoruces
+        """
         return 0
 
     def get_binary_file_name(self):
+        """ returns the binary name for this model
+
+        :return: string representing the binary name
+        """
         return 'command_sender_multicast_source.aplx'
 
     def is_multi_cast_source(self):
+        """
+        helper method for is instance
+        :return: bool
+        """
         return True
