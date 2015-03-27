@@ -42,3 +42,13 @@ class ExecutableFailedToStopException(SpinnFrontEndException):
     :raise None: does not raise any known exceptions
     """
     pass
+
+
+class ExecutableNotFoundException(SpinnFrontEndException):
+    """ raised when a suitable executable cannot be found
+    to load onto SpiNNaker for a particular vertex
+
+
+    :raise None: does not raise any known exceptions
+    """
+    pass
