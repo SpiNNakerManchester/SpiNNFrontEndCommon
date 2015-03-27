@@ -1,6 +1,6 @@
 from data_specification.file_data_writer import FileDataWriter
 
-from pacman.model.partitionable_graph.abstract_constrained_vertex \
+from pacman.model.abstract_classes.abstract_constrained_vertex \
     import AbstractConstrainedVertex
 
 from spinn_front_end_common.utilities import exceptions
@@ -11,10 +11,17 @@ from abc import abstractmethod
 
 import tempfile
 import os
+import threading
 
+# used to stop file conflicts
+_lock_condition = threading.Condition()
 
 @add_metaclass(ABCMeta)
 class AbstractDataSpecableVertex(AbstractConstrainedVertex):
+    """
+    AbstractDataSpecableVertex (molde that forced the methods for generating
+    a dsg and gives some very basic impliemntation of a setup info method.
+    """
 
     def __init__(self, n_atoms, label, machine_time_step, timescale_factor,
                  constraints=None):
@@ -33,13 +40,31 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
         spec.write_value(data=self._no_machine_time_steps)
 
     @abstractmethod
-    def generate_data_spec(self, subvertex, placement, sub_graph, graph,
-                           routing_info, hostname, graph_subgraph_mapper,
-                           report_folder, write_text_specs,
-                           application_run_time_folder):
+    def generate_data_spec(
+            self, subvertex, placement, sub_graph, graph, routing_info,
+            hostname, graph_subgraph_mapper, report_folder, ip_tags,
+            reverse_ip_tags, write_text_specs, application_run_time_folder):
         """
         method to determine how to generate their data spec for a non neural
         application
+
+        :param subvertex: the partitioned_vertex whcih this live packet gather
+        is associated
+        :param placement: the placement object associated with this
+        partitioned vertex
+        :param sub_graph: the partitioned_graph
+        :param graph: the partitionable graph
+        :param routing_info: the keys for this partitioned vertex
+        :param hostname: the hostname associated with this spinnaker machine
+        :param graph_subgraph_mapper: the mapper between the two graphs
+        :param report_folder: where reports are to be written
+        :param ip_tags: the lsit of iptags allcoated to the machine
+        :param reverse_ip_tags: the list of reverse iptags allocated to the
+        machine
+        :param write_text_specs: boolean to write text specs
+        :param application_run_time_folder: location where application data is
+               stored.
+        :return: Nothing
         """
 
     @abstractmethod
@@ -50,17 +75,34 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
 
     @property
     def machine_time_step(self):
+        """
+
+        :return:
+        """
         return self._machine_time_step
 
     @property
     def no_machine_time_steps(self):
+        """
+
+        :return:
+        """
         return self._no_machine_time_steps
 
     @property
     def application_run_time(self):
+        """
+
+        :return:
+        """
         return self._application_runtime
 
     def set_application_runtime(self, new_runtime):
+        """
+
+        :param new_runtime:
+        :return:
+        """
         if self._application_runtime is None:
             self._application_runtime = new_runtime
         else:
@@ -69,6 +111,11 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
                 "already been set")
 
     def set_no_machine_time_steps(self, new_no_machine_time_steps):
+        """
+
+        :param new_no_machine_time_steps:
+        :return:
+        """
         if self._no_machine_time_steps is None:
             self._no_machine_time_steps = new_no_machine_time_steps
         else:
@@ -81,6 +128,17 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
             processor_chip_x, processor_chip_y, processor_id, hostname,
             report_directory, write_text_specs,
             application_run_time_report_folder):
+        """
+
+        :param processor_chip_x:
+        :param processor_chip_y:
+        :param processor_id:
+        :param hostname:
+        :param report_directory:
+        :param write_text_specs:
+        :param application_run_time_report_folder:
+        :return:
+        """
         binary_file_path = \
             AbstractDataSpecableVertex.get_data_spec_file_path(
                 processor_chip_x, processor_chip_y, processor_id, hostname,
@@ -92,8 +150,13 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
         if write_text_specs:
             new_report_directory = os.path.join(report_directory,
                                                 "data_spec_text_files")
+            # uses locks to stop multiple instances of this writing the same
+            # folder at the same time (os breaks down and throws exception
+            # therwise)
+            _lock_condition.acquire()
             if not os.path.exists(new_report_directory):
                 os.mkdir(new_report_directory)
+            _lock_condition.release()
 
             file_name = "{}_dataSpec_{}_{}_{}.txt"\
                         .format(hostname, processor_chip_x, processor_chip_y,
@@ -107,6 +170,15 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
     def get_data_spec_file_path(processor_chip_x, processor_chip_y,
                                 processor_id, hostname,
                                 application_run_time_folder):
+        """
+
+        :param processor_chip_x:
+        :param processor_chip_y:
+        :param processor_id:
+        :param hostname:
+        :param application_run_time_folder:
+        :return:
+        """
 
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
@@ -120,6 +192,15 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
     def get_application_data_file_path(
             processor_chip_x, processor_chip_y, processor_id, hostname,
             application_run_time_folder):
+        """
+
+        :param processor_chip_x:
+        :param processor_chip_y:
+        :param processor_id:
+        :param hostname:
+        :param application_run_time_folder:
+        :return:
+        """
 
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
@@ -128,7 +209,3 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
             "{}_appData_{}_{}_{}.dat".format(hostname, processor_chip_x,
                                              processor_chip_y, processor_id)
         return application_data_file_name
-
-    @staticmethod
-    def get_mem_write_base_address(processor_id):
-        return 0xe5007000 + 128 * processor_id + 112

@@ -1,13 +1,20 @@
+"""
+DataGeneratorInterface
+"""
 import sys
 from threading import Condition
 
 
 class DataGeneratorInterface(object):
+    """
+    DataGeneratorInterface: interface for parallelisation of dsg generation
+    """
 
     def __init__(self, associated_vertex, subvertex, placement,
                  partitioned_graph, partitionable_graph, routing_infos,
-                 hostname, graph_mapper, report_default_directory,
-                 write_text_specs, application_run_time_folder, progress_bar):
+                 hostname, graph_mapper, report_default_directory, ip_tags,
+                 reverse_ip_tags, write_text_specs, application_run_time_folder,
+                 progress_bar):
         self._associated_vertex = associated_vertex
         self._subvertex = subvertex
         self._placement = placement
@@ -17,6 +24,8 @@ class DataGeneratorInterface(object):
         self._hostname = hostname
         self._graph_mapper = graph_mapper
         self._report_default_directory = report_default_directory
+        self._ip_tags = ip_tags
+        self._reverse_ip_tags = reverse_ip_tags
         self._progress_bar = progress_bar
         self._write_text_specs = write_text_specs
         self._application_run_time_folder = application_run_time_folder
@@ -26,12 +35,17 @@ class DataGeneratorInterface(object):
         self._wait_condition = Condition()
 
     def start(self):
+        """
+
+        :return:
+        """
         try:
             self._associated_vertex.generate_data_spec(
                 self._subvertex, self._placement, self._partitioned_graph,
                 self._partitionable_graph, self._routing_infos, self._hostname,
                 self._graph_mapper, self._report_default_directory,
-                self._write_text_specs, self._application_run_time_folder)
+                self._ip_tags, self._reverse_ip_tags, self._write_text_specs,
+                self._application_run_time_folder)
             self._progress_bar.update()
             self._wait_condition.acquire()
             self._done = True
@@ -45,6 +59,10 @@ class DataGeneratorInterface(object):
             self._wait_condition.release()
 
     def wait_for_finish(self):
+        """
+
+        :return:
+        """
         self._wait_condition.acquire()
         while not self._done and self._exception is None:
             self._wait_condition.wait()

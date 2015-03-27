@@ -1,16 +1,19 @@
-import os
-import logging
-
+"""
+interface for communciating with spinnaker machine easily.
+"""
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
 from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 
+# pacman imports
 from pacman.utilities.progress_bar import ProgressBar
 
+# spinnmachine imports
 from spinn_machine.sdram import SDRAM
 from spinn_machine.virutal_machine import VirtualMachine
 
+# spinnman imports
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
 from spinnman.transceiver import create_transceiver_from_hostname
@@ -19,18 +22,29 @@ from spinnman.data.file_data_reader import FileDataReader \
 from spinnman.model.core_subsets import CoreSubsets
 from spinnman.model.core_subset import CoreSubset
 
+# front end common imports
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import reports
-import time
 
+# general imports
+import time
+import os
+import logging
 
 logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonInterfaceFunctions(object):
+    """
+    the front end common interface which supports functions such as :
+    setting up the python spinnMachine
+    writing data to spinnaker machine
+    loading tags
+    etc
+    """
 
     def __init__(self, reports_states, report_default_directory):
         self._reports_states = reports_states
@@ -106,6 +120,16 @@ class FrontEndCommonInterfaceFunctions(object):
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
             write_text_specs, runtime_application_data_folder):
+        """
+
+        :param host_based_execution:
+        :param hostname:
+        :param placements:
+        :param graph_mapper:
+        :param write_text_specs:
+        :param runtime_application_data_folder:
+        :return:
+        """
         if host_based_execution:
             return self.host_based_data_specificiation_execution(
                 hostname, placements, graph_mapper, write_text_specs,
@@ -119,6 +143,15 @@ class FrontEndCommonInterfaceFunctions(object):
     def host_based_data_specificiation_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
             application_data_runtime_folder):
+        """
+
+        :param hostname:
+        :param placements:
+        :param graph_mapper:
+        :param write_text_specs:
+        :param application_data_runtime_folder:
+        :return:
+        """
         space_based_memory_tracker = dict()
         processor_to_app_data_base_address = dict()
 
@@ -148,7 +181,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 # locate current memory requirement
                 current_memory_available = SDRAM.DEFAULT_SDRAM_BYTES
                 memory_tracker_key = (placement.x, placement.y)
-                if memory_tracker_key in space_based_memory_tracker.keys():
+                if memory_tracker_key in space_based_memory_tracker:
                     current_memory_available = space_based_memory_tracker[
                         memory_tracker_key]
 
@@ -180,11 +213,11 @@ class FrontEndCommonInterfaceFunctions(object):
                 processor_mapping_key = (placement.x, placement.y, placement.p)
                 processor_to_app_data_base_address[processor_mapping_key] = {
                     'start_address':
-                        ((SDRAM.DEFAULT_SDRAM_BYTES - current_memory_available)
-                         + constants.SDRAM_BASE_ADDR),
+                        ((SDRAM.DEFAULT_SDRAM_BYTES -
+                          current_memory_available) +
+                         constants.SDRAM_BASE_ADDR),
                     'memory_used': bytes_used_by_spec,
-                    'memory_written': bytes_written_by_spec
-                }
+                    'memory_written': bytes_written_by_spec}
 
                 space_based_memory_tracker[memory_tracker_key] = \
                     current_memory_available - bytes_used_by_spec
@@ -196,9 +229,10 @@ class FrontEndCommonInterfaceFunctions(object):
         progress_bar.end()
         return processor_to_app_data_base_address
 
-    def _start_execution_on_machine(self, executable_targets, app_id, runtime,
-                                    time_scaling, waiting_on_confirmation,
-                                    database_thread, in_debug_mode):
+    def _start_execution_on_machine(
+            self, executable_targets, app_id, runtime, time_scaling,
+            waiting_on_confirmation, send_start_notification, in_debug_mode,
+            database_thread=None):
         # deduce how many processors this application uses up
         total_processors = 0
         total_cores = list()
@@ -232,17 +266,16 @@ class FrontEndCommonInterfaceFunctions(object):
                 # break_down the successful cores and unsuccessful cores into
                 # string
                 # reps
-                break_down = \
-                    self.turn_break_downs_into_string(
-                        total_cores, successful_cores, unsucessful_cores,
-                        CPUState.SYNC0)
+                break_down = self.turn_break_downs_into_string(
+                    total_cores, successful_cores, unsucessful_cores,
+                    CPUState.SYNC0)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have sucessfully reached "
                     "sync0 with breakdown of: {}"
                     .format(processors_ready, total_processors, break_down))
 
         # wait till vis is ready for us to start if required
-        if waiting_on_confirmation:
+        if waiting_on_confirmation and database_thread is not None:
             logger.info("*** Awaiting for a response from the visualiser to "
                         "state its ready for the simulation to start ***")
             database_thread.wait_for_confirmation()
@@ -250,6 +283,8 @@ class FrontEndCommonInterfaceFunctions(object):
         # if correct, start applications
         logger.info("Starting application")
         self._txrx.send_signal(app_id, SCPSignal.SYNC0)
+        if database_thread is not None and send_start_notification:
+            database_thread.send_start_notification()
 
         # check all apps have gone into run state
         logger.info("Checking that the application has started")
@@ -265,6 +300,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 sucessful_cores, unsucessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         total_cores, CPUState.RUNNING)
+
                 # break_down the successful cores and unsuccessful cores into
                 # string reps
                 break_down = self.turn_break_downs_into_string(
@@ -312,7 +348,7 @@ class FrontEndCommonInterfaceFunctions(object):
                         total_cores, CPUState.RUNNING)
 
                 # break_down the successful cores and unsuccessful cores into
-                # string reps
+                #  string reps
                 break_down = self.turn_break_downs_into_string(
                     total_cores, sucessful_cores, unsucessful_cores,
                     CPUState.RUNNING)
@@ -333,12 +369,20 @@ class FrontEndCommonInterfaceFunctions(object):
                 sucessful_cores.append((core_info.x, core_info.y, core_info.p))
             else:
                 unsucessful_cores[(core_info.x, core_info.y, core_info.p)] = \
-                    core_info.state.name
+                    core_info
         return sucessful_cores, unsucessful_cores
 
     @staticmethod
     def turn_break_downs_into_string(total_cores, successful_cores,
                                      unsuccessful_cores, state):
+        """
+
+        :param total_cores:
+        :param successful_cores:
+        :param unsuccessful_cores:
+        :param state:
+        :return:
+        """
         break_down = os.linesep
         for core_info in total_cores:
             for processor_id in core_info.processor_ids:
@@ -351,10 +395,19 @@ class FrontEndCommonInterfaceFunctions(object):
                 else:
                     real_state = unsuccessful_cores[(core_info.x, core_info.y,
                                                      processor_id)]
-                    break_down += ("{}:{}:{} failed to be in state {} and was"
-                                   " in state {} instead{}".format(
-                                       core_info.x, core_info.y, processor_id,
-                                       state, real_state, os.linesep))
+                    if real_state.state == CPUState.RUN_TIME_EXCEPTION:
+                        break_down += \
+                            ("{}:{}:{} failed to be in state {} and was"
+                             " in state {}:{} instead{}".format
+                             (core_info.x, core_info.y, processor_id,
+                              state, real_state.state.name,
+                              real_state.run_time_error.name, os.linesep))
+                    else:
+                        break_down += \
+                            ("{}:{}:{} failed to be in state {} and was"
+                             " in state {} instead{}".format
+                             (core_info.x, core_info.y, processor_id,
+                              state, real_state.state.name, os.linesep))
         return break_down
 
     def _load_application_data(
@@ -392,12 +445,11 @@ class FrontEndCommonInterfaceFunctions(object):
                     file_path_for_application_data)
                 logger.debug("writing application data for vertex {}"
                              .format(associated_vertex.label))
-                self._txrx.write_memory(placement.x, placement.y,
-                                        start_address,
-                                        application_data_file_reader,
-                                        memory_written)
+                self._txrx.write_memory(
+                    placement.x, placement.y, start_address,
+                    application_data_file_reader, memory_written)
 
-                # update user 0 so that it points to the start of the \
+                # update user 0 so that it points to the start of the
                 # applications data region on sdram
                 logger.debug("writing user 0 address for vertex {}"
                              .format(associated_vertex.label))
@@ -422,13 +474,20 @@ class FrontEndCommonInterfaceFunctions(object):
         # load each router table thats needed for the application to run into
         # the chips sdram
         for router_table in router_tables.routing_tables:
-            if len(router_table.multicast_routing_entries) > 0:
-                self._txrx.load_multicast_routes(
-                    router_table.x, router_table.y,
-                    router_table.multicast_routing_entries, app_id=app_id)
-                if self._reports_states.transciever_report:
-                    reports.re_load_script_load_routing_tables(
-                        router_table, app_data_folder, app_id)
+            if not self._machine.get_chip_at(router_table.x,
+                                             router_table.y).virtual:
+                self._txrx.clear_multicast_routes(router_table.x,
+                                                  router_table.y)
+                self._txrx.clear_router_diagnostic_counters(router_table.x,
+                                                            router_table.y)
+
+                if len(router_table.multicast_routing_entries) > 0:
+                    self._txrx.load_multicast_routes(
+                        router_table.x, router_table.y,
+                        router_table.multicast_routing_entries, app_id=app_id)
+                    if self._reports_states.transciever_report:
+                        reports.re_load_script_load_routing_tables(
+                            router_table, app_data_folder, app_id)
             progress_bar.update()
         progress_bar.end()
 
@@ -442,9 +501,9 @@ class FrontEndCommonInterfaceFunctions(object):
             reports.re_load_script_load_executables_init(
                 app_data_folder, executable_targets)
 
-        progress_bar = ProgressBar(len(executable_targets.keys()),
+        progress_bar = ProgressBar(len(executable_targets),
                                    "Loading executables onto the machine")
-        for exectuable_target_key in executable_targets.keys():
+        for exectuable_target_key in executable_targets:
             file_reader = SpinnmanFileDataReader(exectuable_target_key)
             core_subset = executable_targets[exectuable_target_key]
 

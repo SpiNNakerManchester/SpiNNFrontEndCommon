@@ -9,6 +9,13 @@ logger = logging.getLogger(__name__)
 
 def generate_synaptic_matrix_reports(common_report_directory,
                                      partitioned_graph, graph_mapper):
+    """
+
+    :param common_report_directory:
+    :param partitioned_graph:
+    :param graph_mapper:
+    :return:
+    """
     top_level_folder = os.path.join(common_report_directory,
                                     "synaptic_matrix_reports")
     if not os.path.exists(top_level_folder):
@@ -51,6 +58,12 @@ def generate_synaptic_matrix_reports(common_report_directory,
 
 
 def generate_synaptic_matrix_report(common_report_directory, partitioned_edge):
+    """
+
+    :param common_report_directory:
+    :param partitioned_edge:
+    :return:
+    """
     top_level_folder = os.path.join(common_report_directory,
                                     "synaptic_matrix_reports")
     if not os.path.exists(top_level_folder):
@@ -64,7 +77,7 @@ def generate_synaptic_matrix_report(common_report_directory, partitioned_edge):
     except IOError:
         logger.error("Generate_placement_reports: Can't open file"
                      " {} for writing.".format(file_name))
-    # extract matrix
+    #extract matrix
     synaptic_matrix = partitioned_edge.synapse_sublist
     counter = 0
     for synaptic_row in synaptic_matrix.get_rows():
@@ -92,6 +105,12 @@ def generate_synaptic_matrix_report(common_report_directory, partitioned_edge):
 
 def write_memory_map_report(report_default_directory,
                             processor_to_app_data_base_address):
+    """
+
+    :param report_default_directory:
+    :param processor_to_app_data_base_address:
+    :return:
+    """
     file_name = os.path.join(report_default_directory,
                              "memory_map_from_processor_to_address_space")
     output = None
@@ -101,7 +120,7 @@ def write_memory_map_report(report_default_directory,
         logger.error("Generate_placement_reports: Can't open file"
                      " {} for writing.".format(file_name))
 
-    for key in processor_to_app_data_base_address.keys():
+    for key in processor_to_app_data_base_address:
         output.write(str(key) + ": ")
         data = processor_to_app_data_base_address[key]
         output.write(
@@ -116,12 +135,23 @@ def write_memory_map_report(report_default_directory,
 def generate_synaptic_matrix_report_from_dat_file(
         common_report_directory, application_generated_data_files_directory,
         partitioned_graph):
+    """
+
+    :param common_report_directory:
+    :param application_generated_data_files_directory:
+    :param partitioned_graph:
+    :return:
+    """
     pass
 
 
 def network_specification_report(report_folder, graph, hostname):
     """
     Generate report on the user's network specification.
+    :param report_folder:
+    :param graph:
+    :param hostname:
+    :return:
     """
     filename = report_folder + os.sep + "network_specification.rpt"
     f_network_specification = None
@@ -145,8 +175,8 @@ def network_specification_report(report_folder, graph, hostname):
         model = vertex.model_name
         size = vertex.n_atoms
         constraints = vertex.constraints
-        f_network_specification.write(
-            "AbstractConstrainedVertex {}, size: {}\n".format(label, size))
+        f_network_specification.write("AbstractConstrainedVertex {}, size: {}\n"
+                                      .format(label, size))
         f_network_specification.write("Model: {}\n".format(model))
         for constraint in constraints:
             constraint_str = constraint.label
@@ -182,6 +212,10 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
 
     :param report_directory: the directroy to which reports are stored
     :type report_directory: str
+    :param hostname: the machine name
+    :type hostname: str
+    :param board_version: the version of the board (aka, 3,4,5)
+    :type board_version: int
     :return None
     :rtype: None
     :raise IOError: when a file cannot be opened for some reason
@@ -202,8 +236,7 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
     output.write("import pickle \n\n")
     output.write("txrx = create_transceiver_from_hostname(hostname=\"{}\", "
                  "discover=False)\n\n".format(hostname))
-    output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(
-        board_version))
+    output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(board_version))
     output.write("txrx.discover_connections() \n \n")
     output.close()
 
@@ -237,6 +270,16 @@ def _append_to_rerun_script(report_directory, appended_strings):
 def re_load_script_application_data_load(
         file_path_for_application_data, placement, start_address,
         memory_written, user_o_register_address, binary_folder):
+    """
+
+    :param file_path_for_application_data:
+    :param placement:
+    :param start_address:
+    :param memory_written:
+    :param user_o_register_address:
+    :param binary_folder:
+    :return:
+    """
     lines = list()
     lines.append("application_data_file_reader = "
                  "SpinnmanFileDataReader(\"{}\")"
@@ -253,6 +296,13 @@ def re_load_script_application_data_load(
 
 
 def re_load_script_load_routing_tables(router_table, binary_folder, app_id):
+    """
+
+    :param router_table:
+    :param binary_folder:
+    :param app_id:
+    :return:
+    """
     pickled_point = os.path.join(binary_folder,
                                  "picked_routing_table_for_{}_{}"
                                  .format(router_table.x, router_table.y))
@@ -267,6 +317,12 @@ def re_load_script_load_routing_tables(router_table, binary_folder, app_id):
 
 
 def re_load_script_load_executables_init(binary_folder, executable_targets):
+    """
+
+    :param binary_folder:
+    :param executable_targets:
+    :return:
+    """
     pickled_point = os.path.join(binary_folder, "picked_executables_mappings")
     pickle.dump(executable_targets, open(pickled_point, 'wb'))
     lines = list()
@@ -277,6 +333,14 @@ def re_load_script_load_executables_init(binary_folder, executable_targets):
 
 def re_load_script_load_executables_individual(
         binary_folder, exectuable_target_key, app_id, size):
+    """
+
+    :param binary_folder:
+    :param exectuable_target_key:
+    :param app_id:
+    :param size:
+    :return:
+    """
     lines = list()
     lines.append("core_subset = executable_targets[\"{}\"]"
                  .format(exectuable_target_key))
@@ -289,6 +353,15 @@ def re_load_script_load_executables_individual(
 
 def re_load_script_running_aspects(
         binary_folder, executable_targets, hostname, app_id, runtime):
+    """
+
+    :param binary_folder:
+    :param executable_targets:
+    :param hostname:
+    :param app_id:
+    :param runtime:
+    :return:
+    """
     pickled_point = os.path.join(binary_folder, "picked_executable_targets")
     pickle.dump(executable_targets, open(pickled_point, 'wb'))
     lines = list()
@@ -338,34 +411,44 @@ def _write_router_diag(parent_xml_element, router_diagnostic_coords,
 
 def generate_provance_routings(routing_tables, machine, txrx,
                                report_default_directory):
+    """
 
-    # acquire diagnostic data
+    :param routing_tables:
+    :param machine:
+    :param txrx:
+    :param report_default_directory:
+    :return:
+    """
+
+    #acquire diagnostic data
     router_diagnostics = dict()
     for router_table in routing_tables.routing_tables:
-        router_diagnostic = txrx.\
-            get_router_diagnostics(router_table.x, router_table.y)
-        router_diagnostics[router_table.x, router_table.y] = \
-            router_diagnostic
+        if not machine.get_chip_at(router_table.x, router_table.y).virtual:
+            router_diagnostic = txrx.\
+                get_router_diagnostics(router_table.x, router_table.y)
+            router_diagnostics[router_table.x, router_table.y] = \
+                router_diagnostic
     from lxml import etree
     root = etree.Element("root")
     doc = etree.SubElement(root, "router_counters")
     expected_routers = etree.SubElement(doc, "Used_Routers")
-    for router_diagnostic_coords in router_diagnostics.keys():
+    for router_diagnostic_coords in router_diagnostics:
         _write_router_diag(
             expected_routers, router_diagnostic_coords,
             router_diagnostics[router_diagnostic_coords])
     unexpected_routers = etree.SubElement(doc, "Unexpected_Routers")
     for chip in machine.chips:
-        coords = (chip.x, chip.y)
-        if coords not in router_diagnostics.keys():
-            router_diagnostic = \
-                txrx.get_router_diagnostics(chip.x, chip.y)
-            if (router_diagnostic.n_dropped_multicast_packets != 0 or
-                    router_diagnostic.n_local_multicast_packets != 0 or
-                    router_diagnostic.n_external_multicast_packets != 0):
-                _write_router_diag(
-                    unexpected_routers, router_diagnostic_coords,
-                    router_diagnostics[router_diagnostic_coords])
+        if not chip.virtual:
+            coords = (chip.x, chip.y)
+            if coords not in router_diagnostics:
+                router_diagnostic = \
+                    txrx.get_router_diagnostics(chip.x, chip.y)
+                if (router_diagnostic.n_dropped_multicast_packets != 0 or
+                        router_diagnostic.n_local_multicast_packets != 0 or
+                        router_diagnostic.n_external_multicast_packets != 0):
+                    _write_router_diag(
+                        unexpected_routers, router_diagnostic_coords,
+                        router_diagnostics[router_diagnostic_coords])
     file_path = \
         os.path.join(report_default_directory, "provance_data.xml")
     writer = open(file_path, "w")

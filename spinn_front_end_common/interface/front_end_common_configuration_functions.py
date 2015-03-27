@@ -1,22 +1,34 @@
+"""
+configuration class for common front ends
+"""
+
+# front end common imports
+from spinn_front_end_common.utilities.report_states import ReportState
+from spinn_front_end_common.utilities import helpful_functions
+
+# pacman inports
+from pacman.operations import partition_algorithms
+from pacman.operations import placer_algorithms
+from pacman.operations import router_algorithms
+from pacman.operations import routing_info_allocator_algorithms
+from pacman.operations import tag_allocator_algorithms
+from pacman.model.partitionable_graph.partitionable_graph import \
+    PartitionableGraph
+
+
+# general imports
 import os
 import datetime
 import shutil
 import logging
 
-from spinn_front_end_common.utilities.report_states import ReportState
-from spinn_front_end_common.utilities import helpful_functions
-
-from pacman.operations import partition_algorithms
-from pacman.operations import placer_algorithms
-from pacman.operations import router_algorithms
-from pacman.operations import routing_info_allocator_algorithms
-from pacman.model.partitionable_graph.partitionable_graph import \
-    PartitionableGraph
-
 logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonConfigurationFunctions(object):
+    """
+    FrontEndCommonConfigurationFunctions : api inrt
+    """
 
     def __init__(self, host_name, graph_label):
 
@@ -46,17 +58,19 @@ class FrontEndCommonConfigurationFunctions(object):
         self._has_ran = False
         self._reports_states = None
         self._app_id = None
+        self._tags = None
 
         # pacman mapping objects
         self._partitioner_algorithm = None
         self._placer_algorithm = None
+        self._tag_allocator_algorithm = None
         self._key_allocator_algorithm = None
         self._router_algorithm = None
         self._report_default_directory = None
         self._app_data_runtime_folder = None
         self._this_run_time_string_representation = None
 
-        # exeuctable params
+        # executable params
         self._do_load = None
         self._do_run = None
         self._writeTextSpecs = None
@@ -67,13 +81,19 @@ class FrontEndCommonConfigurationFunctions(object):
 
         # database objects
         self._create_database = False
-        self._database_thread = None
+        self._database_interface = None
 
     def _set_up_output_application_data_specifics(
             self, where_to_write_application_data_files,
             max_application_binaries_kept):
+        """
+
+        :param where_to_write_application_data_files:
+        :param max_application_binaries_kept:
+        :return:
+        """
         created_folder = False
-        this_run_time_folder = None
+
         if where_to_write_application_data_files == "DEFAULT":
             directory = os.getcwd()
             application_generated_data_file_folder = \
@@ -98,7 +118,7 @@ class FrontEndCommonConfigurationFunctions(object):
                                                  "time_stamp")
             writer = open(time_of_run_file_name, "w")
             writer.writelines("app_{}_{}".format(
-                self._app_id, self._this_run_time_string_repenstation))
+                self._app_id, self._this_run_time_string_representation))
             writer.flush()
             writer.close()
 
@@ -128,11 +148,20 @@ class FrontEndCommonConfigurationFunctions(object):
 
             if not os.path.exists(this_run_time_folder):
                 os.makedirs(this_run_time_folder)
-        self._app_data_runtime_folder = this_run_time_folder
+            self._app_data_runtime_folder = this_run_time_folder
 
     def _set_up_report_specifics(self, reports_are_enabled, write_text_specs,
                                  default_report_file_path, max_reports_kept,
                                  write_provance_data):
+        """
+
+        :param reports_are_enabled:
+        :param write_text_specs:
+        :param default_report_file_path:
+        :param max_reports_kept:
+        :param write_provance_data:
+        :return:
+        """
         self._writeTextSpecs = False
         if reports_are_enabled:
             self._writeTextSpecs = write_text_specs
@@ -191,9 +220,26 @@ class FrontEndCommonConfigurationFunctions(object):
             execute_placer_report, execute_router_report,
             execute_router_dat_based_report, execute_routing_info_report,
             execute_data_spec_report, execute_write_reload_steps,
-            generate_transciever_report,
+            generate_transciever_report, generate_tag_report,
             generate_performance_measurements,
             in_debug_mode, create_database):
+        """
+
+        :param reports_are_enabled:
+        :param app_id:
+        :param execute_partitioner_report:
+        :param execute_placer_report:
+        :param execute_router_report:
+        :param execute_router_dat_based_report:
+        :param execute_routing_info_report:
+        :param execute_data_spec_report:
+        :param execute_write_reload_steps:
+        :param generate_transciever_report:
+        :param generate_performance_measurements:
+        :param in_debug_mode:
+        :param create_database:
+        :return:
+        """
         self._in_debug_mode = in_debug_mode
 
         # report object
@@ -203,7 +249,7 @@ class FrontEndCommonConfigurationFunctions(object):
                 execute_router_report, execute_router_dat_based_report,
                 execute_routing_info_report, execute_data_spec_report,
                 execute_write_reload_steps, generate_transciever_report,
-                generate_performance_measurements)
+                generate_performance_measurements, generate_tag_report)
 
         self._create_database = create_database
 
@@ -213,13 +259,29 @@ class FrontEndCommonConfigurationFunctions(object):
 
     def _set_up_executable_specifics(self, load_machine=True,
                                      run_machine=True):
+        """
+
+        :param load_machine:
+        :param run_machine:
+        :return:
+        """
         # loading and running config params
         self._do_load = load_machine
         self._do_run = run_machine
 
     def _set_up_pacman_algorthms_listings(
             self, partitioner_algorithm=None, placer_algorithm=None,
-            key_allocator_algorithm=None, routing_algorithm=None):
+            key_allocator_algorithm=None, routing_algorithm=None,
+            tag_allocator_algorithm=None):
+        """
+
+        :param partitioner_algorithm:
+        :param placer_algorithm:
+        :param key_allocator_algorithm:
+        :param routing_algorithm:
+        :param tag_allocator_algorithm
+        :return:
+        """
 
         # algorithm lists
         if partitioner_algorithm is not None:
@@ -232,6 +294,12 @@ class FrontEndCommonConfigurationFunctions(object):
             place_algorithms = helpful_functions.get_valid_components(
                 placer_algorithms, "Placer")
             self._placer_algorithm = place_algorithms[placer_algorithm]
+
+        if tag_allocator_algorithm is not None:
+            tag_algorithms = helpful_functions.get_valid_components(
+                tag_allocator_algorithms, "TagAllocator")
+            self._tag_allocator_algorithm = tag_algorithms[
+                tag_allocator_algorithm]
 
         # get common key allocator algorithms
         if key_allocator_algorithm is not None:
@@ -280,3 +348,11 @@ class FrontEndCommonConfigurationFunctions(object):
                 shutil.rmtree(os.path.join(starting_directory, oldest_file),
                               ignore_errors=True)
                 files_in_report_folder.remove(oldest_file)
+
+    def set_runtime(self, value):
+        """
+
+        :param value:
+        :return:
+        """
+        self._runtime = value

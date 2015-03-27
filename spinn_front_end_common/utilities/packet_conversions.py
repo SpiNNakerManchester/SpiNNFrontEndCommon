@@ -1,78 +1,69 @@
+"""
+helper functions for converting a key
+"""
+
+# TODO Should this even exist anymore. given the virtual key space?
+
 # define key_x(k) (k >> 24)
 # define key_y(k) ((k >> 16) & 0xFF)
 # define key_p(k) ((k >> 11) & 0xF)
 # define nid(k) (k & 0x8FF)
 
-
 # basic key to coordinates converters
 def get_x_from_key(key):
+    """
+
+    :param key:
+    :return:
+    """
     return key >> 24
 
 
 def get_y_from_key(key):
+    """
+
+    :param key:
+    :return:
+    """
     return (key >> 16) & 0xFF
 
 
 def get_p_from_key(key):
+    """
+
+    :param key:
+    :return:
+    """
     return (key >> 11) & 0x1F
 
 
 def get_nid_from_key(key):
+    """
+
+    :param key:
+    :return:
+    """
     return key & 0x7FF
 
 
-def get_key_from_coords(chip_x, chip_y, chip_p):
-    return chip_x << 24 | chip_y << 16 | chip_p << 11
+def get_key_from_coords(chipX, chipY, chipP):
+    """
+
+    :param chipX:
+    :param chipY:
+    :param chipP:
+    :return:
+    """
+    return chipX << 24 | chipY << 16 | chipP << 11
 
 
-# robot with 7 7 1
-def get_x_from_robot_retina(key):
-    return (key >> 7) & 0x7f
+def get_mpt_sb_mem_addrs_from_coords(x, y, p):
+    """
 
-
-def get_y_from_robot_retina(key):
-    return key & 0x7f
-
-
-def get_spike_value_from_robot_retina(key):
-    return (key >> 14) & 0x1
-
-
-# fpga conversion
-def get_y_from_fpga_retina(key, mode):
-    if mode == 128:
-        return key & 0x7f
-    elif mode == 64:
-        return key & 0x3f
-    elif mode == 32:
-        return key & 0x1f
-    elif mode == 16:
-        return key & 0xf
-    else:
-        return None
-
-
-def get_x_from_fpga_retina(key, mode):
-    if mode == 128:
-        return (key >> 7) & 0x7f
-    elif mode == 64:
-        return (key >> 6) & 0x3f
-    elif mode == 32:
-        return (key >> 5) & 0x1f
-    elif mode == 16:
-        return (key >> 4) & 0xf
-    else:
-        return None
-
-
-def get_spike_value_from_fpga_retina(key, mode):
-    if mode == 128:
-        return (key >> 14) & 0x1
-    elif mode == 64:
-        return (key >> 14) & 0x1
-    elif mode == 32:
-        return (key >> 14) & 0x1
-    elif mode == 16:
-        return (key >> 14) & 0x1
-    else:
-        return None
+    :param x:
+    :param y:
+    :param p:
+    :return:
+    """
+    # two bytes per entry
+    return (p + (18 * y) + (18 * 8 * x)) * 2
