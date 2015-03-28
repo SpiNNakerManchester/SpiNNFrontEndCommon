@@ -35,13 +35,14 @@ class ReverseIpTagMultiCastSource(AbstractPartitionableVertex,
 
     # constructor
     def __init__(self, n_atoms, machine_time_step, timescale_factor,
-                 host_port_number, host_ip_address, virtual_key, label,
+                 host_port_number, host_ip_address, label, virtual_key=None,
                  check_key=True, prefix=None, prefix_type=None, tag=None,
-                 key_left_shift=0):
+                 key_left_shift=0, constraints=None):
 
         AbstractPartitionableVertex.__init__(self, n_atoms, label, n_atoms)
         AbstractDataSpecableVertex.__init__(
-            self, n_atoms, label, machine_time_step, timescale_factor)
+            self, n_atoms, label, machine_time_step, timescale_factor,
+            constraints)
         AbstractReverseIPTagableVertex.__init__(
             self, tag=tag, address=host_ip_address, port=host_port_number)
 

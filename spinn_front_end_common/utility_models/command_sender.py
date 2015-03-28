@@ -21,12 +21,10 @@ from data_specification.data_specification_generator \
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-
-# spynnaker imports
-from spynnaker.pyNN.models.abstract_models\
-    .abstract_provides_outgoing_edge_constraints \
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_outgoing_edge_constraints \
     import AbstractProvidesOutgoingEdgeConstraints
-from spynnaker.pyNN import exceptions
+from spinn_front_end_common.utilities import exceptions
 
 
 _COMMAND_WITH_PAYLOAD_SIZE = 12
