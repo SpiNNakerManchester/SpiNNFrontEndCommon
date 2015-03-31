@@ -148,7 +148,7 @@ class FrontEndCommonConfigurationFunctions(object):
 
             if not os.path.exists(this_run_time_folder):
                 os.makedirs(this_run_time_folder)
-            self._app_data_runtime_folder = this_run_time_folder
+        self._app_data_runtime_folder = this_run_time_folder
 
     def _set_up_report_specifics(self, reports_are_enabled, write_text_specs,
                                  default_report_file_path, max_reports_kept,

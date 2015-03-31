@@ -124,7 +124,8 @@ class FrontEndCommonInterfaceFunctions(object):
         """
         if host_based_execution:
             return self.host_based_data_specification_execution(
-                hostname, placements, graph_mapper)
+                hostname, placements, graph_mapper, write_text_specs,
+                runtime_application_data_folder)
         else:
             return self._chip_based_data_specification_execution(hostname)
 
@@ -220,19 +221,24 @@ class FrontEndCommonInterfaceFunctions(object):
         progress_bar.end()
         return processor_to_app_data_base_address
 
-    def _start_execution_on_machine(
-            self, executable_targets, app_id, runtime, time_scaling,
-            waiting_on_confirmation, send_start_notification, in_debug_mode,
-            database_thread=None):
+    @staticmethod
+    def _get_processors(executable_targets):
         # deduce how many processors this application uses up
         total_processors = 0
-        total_cores = list()
+        all_core_subsets = list()
         for executable_target in executable_targets:
             core_subsets = executable_targets[executable_target]
             for core_subset in core_subsets:
                 for _ in core_subset.processor_ids:
                     total_processors += 1
-                total_cores.append(core_subset)
+                all_core_subsets.append(core_subset)
+
+        return total_processors, all_core_subsets
+
+    def _wait_for_cores_to_be_ready(self, executable_targets, app_id):
+
+        total_processors, all_core_subsets = self._get_processors(
+            executable_targets)
 
         processor_c_main = self._txrx.get_core_state_count(app_id,
                                                            CPUState.C_MAIN)
@@ -249,31 +255,29 @@ class FrontEndCommonInterfaceFunctions(object):
 
         if processors_ready != total_processors:
             successful_cores, unsuccessful_cores = \
-                self._break_down_of_failure_to_reach_state(total_cores,
+                self._break_down_of_failure_to_reach_state(all_core_subsets,
                                                            CPUState.SYNC0)
+
             # last chance to slip out of error check
             if len(successful_cores) != total_processors:
                 # break_down the successful cores and unsuccessful cores into
                 # string
                 break_down = self.turn_break_downs_into_string(
-                    total_cores, successful_cores, unsuccessful_cores,
+                    all_core_subsets, successful_cores, unsuccessful_cores,
                     CPUState.SYNC0)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
                     "sync0 with breakdown of: {}"
                     .format(processors_ready, total_processors, break_down))
 
-        # wait till vis is ready for us to start if required
-        if database_thread is not None and waiting_on_confirmation:
-            logger.info("*** Awaiting for a response from the visualiser to "
-                        "state its ready for the simulation to start ***")
-            database_thread.wait_for_confirmation()
+    def _start_all_cores(self, executable_targets, app_id):
+
+        total_processors, all_core_subsets = self._get_processors(
+            executable_targets)
 
         # if correct, start applications
         logger.info("Starting application")
         self._txrx.send_signal(app_id, SCPSignal.SYNC0)
-        if database_thread is not None and send_start_notification:
-            database_thread.send_start_notification()
 
         # check all apps have gone into run state
         logger.info("Checking that the application has started")
@@ -288,66 +292,68 @@ class FrontEndCommonInterfaceFunctions(object):
             else:
                 successful_cores, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
-                        total_cores, CPUState.RUNNING)
+                        all_core_subsets, CPUState.RUNNING)
 
                 # break_down the successful cores and unsuccessful cores into
                 # string reps
                 break_down = self.turn_break_downs_into_string(
-                    total_cores, successful_cores, unsuccessful_cores,
+                    all_core_subsets, successful_cores, unsuccessful_cores,
                     CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started with breakdown {}"
                     .format(processors_running, total_processors, break_down))
 
-        # if not running for infinity, check that applications stop correctly
-        if runtime is not None:
-            time_to_wait = ((runtime * time_scaling) / 1000.0) + 1.0
-            logger.info("Application started - waiting {} seconds for it to"
-                        " stop".format(time_to_wait))
-            time.sleep(time_to_wait)
-            processors_not_finished = processors_ready
-            while processors_not_finished != 0:
-                processors_not_finished = self._txrx.get_core_state_count(
-                    app_id, CPUState.RUNNING)
-                processors_rte = self._txrx.get_core_state_count(
-                    app_id, CPUState.RUN_TIME_EXCEPTION)
-                if processors_rte > 0:
-                    successful_cores, unsuccessful_cores = \
-                        self._break_down_of_failure_to_reach_state(
-                            total_cores, CPUState.RUNNING)
+    def _wait_for_execution_to_complete(
+            self, executable_targets, app_id, runtime, time_scaling):
 
-                    # break_down the successful cores and unsuccessful cores
-                    # into string reps
-                    break_down = self.turn_break_downs_into_string(
-                        total_cores, successful_cores, unsuccessful_cores,
-                        CPUState.RUNNING)
-                    raise exceptions.ExecutableFailedToStopException(
-                        "{} cores have gone into a run time error state with "
-                        "breakdown {}.".format(processors_rte, break_down))
-                logger.info("Simulation still not finished or failed - "
-                            "waiting a bit longer...")
-                time.sleep(0.5)
+        total_processors, all_core_subsets = self._get_processors(
+            executable_targets)
 
-            processors_exited = self._txrx.get_core_state_count(
-                app_id, CPUState.FINSHED)
-
-            if processors_exited < total_processors:
+        time_to_wait = ((runtime * time_scaling) / 1000.0) + 1.0
+        logger.info("Application started - waiting {} seconds for it to"
+                    " stop".format(time_to_wait))
+        time.sleep(time_to_wait)
+        processors_not_finished = total_processors
+        while processors_not_finished != 0:
+            processors_not_finished = self._txrx.get_core_state_count(
+                app_id, CPUState.RUNNING)
+            processors_rte = self._txrx.get_core_state_count(
+                app_id, CPUState.RUN_TIME_EXCEPTION)
+            if processors_rte > 0:
                 successful_cores, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
-                        total_cores, CPUState.RUNNING)
+                        all_core_subsets, CPUState.RUNNING)
 
-                # break_down the successful cores and unsuccessful cores into
-                #  string reps
+                # break_down the successful cores and unsuccessful cores
+                # into string reps
                 break_down = self.turn_break_downs_into_string(
-                    total_cores, successful_cores, unsuccessful_cores,
+                    all_core_subsets, successful_cores, unsuccessful_cores,
                     CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStopException(
-                    "{} of the processors failed to exit successfully with"
-                    " breakdown {}.".format(
-                        total_processors - processors_exited, break_down))
-            logger.info("Application has run to completion")
-        else:
-            logger.info("Application is set to run forever - exiting")
+                    "{} cores have gone into a run time error state with "
+                    "breakdown {}.".format(processors_rte, break_down))
+            logger.info("Simulation still not finished or failed - "
+                        "waiting a bit longer...")
+            time.sleep(0.5)
+
+        processors_exited = self._txrx.get_core_state_count(
+            app_id, CPUState.FINSHED)
+
+        if processors_exited < total_processors:
+            successful_cores, unsuccessful_cores = \
+                self._break_down_of_failure_to_reach_state(
+                    all_core_subsets, CPUState.RUNNING)
+
+            # break_down the successful cores and unsuccessful cores into
+            #  string reps
+            break_down = self.turn_break_downs_into_string(
+                all_core_subsets, successful_cores, unsuccessful_cores,
+                CPUState.RUNNING)
+            raise exceptions.ExecutableFailedToStopException(
+                "{} of the processors failed to exit successfully with"
+                " breakdown {}.".format(
+                    total_processors - processors_exited, break_down))
+        logger.info("Application has run to completion")
 
     def _break_down_of_failure_to_reach_state(self, total_cores, state):
         successful_cores = list()
@@ -359,7 +365,7 @@ class FrontEndCommonInterfaceFunctions(object):
                                          core_info.p))
             else:
                 unsuccessful_cores[(core_info.x, core_info.y, core_info.p)] = \
-                    core_info.state.name
+                    core_info
         return successful_cores, unsuccessful_cores
 
     @staticmethod

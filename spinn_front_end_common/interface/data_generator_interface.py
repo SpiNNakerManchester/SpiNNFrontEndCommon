@@ -13,8 +13,8 @@ class DataGeneratorInterface(object):
     def __init__(self, associated_vertex, subvertex, placement,
                  partitioned_graph, partitionable_graph, routing_infos,
                  hostname, graph_mapper, report_default_directory, ip_tags,
-                 reverse_ip_tags, write_text_specs, application_run_time_folder,
-                 progress_bar):
+                 reverse_ip_tags, write_text_specs,
+                 application_run_time_folder, progress_bar):
         self._associated_vertex = associated_vertex
         self._subvertex = subvertex
         self._placement = placement
