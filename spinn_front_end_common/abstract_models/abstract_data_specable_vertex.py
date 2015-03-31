@@ -1,8 +1,5 @@
 from data_specification.file_data_writer import FileDataWriter
 
-from pacman.model.abstract_classes.abstract_constrained_vertex \
-    import AbstractConstrainedVertex
-
 from spinn_front_end_common.utilities import exceptions
 
 from abc import ABCMeta
@@ -16,16 +13,14 @@ import threading
 # used to stop file conflicts
 _lock_condition = threading.Condition()
 
+
 @add_metaclass(ABCMeta)
-class AbstractDataSpecableVertex(AbstractConstrainedVertex):
-    """
-    AbstractDataSpecableVertex (molde that forced the methods for generating
-    a dsg and gives some very basic impliemntation of a setup info method.
+class AbstractDataSpecableVertex(object):
+    """ A Vertex that enforces the methods for generating
+       a dsg and gives some very basic impliemntation of a setup info method.
     """
 
-    def __init__(self, n_atoms, label, machine_time_step, timescale_factor,
-                 constraints=None):
-        AbstractConstrainedVertex.__init__(self, label, constraints)
+    def __init__(self, machine_time_step, timescale_factor):
         self._machine_time_step = machine_time_step
         self._timescale_factor = timescale_factor
         self._application_runtime = None
@@ -144,12 +139,14 @@ class AbstractDataSpecableVertex(AbstractConstrainedVertex):
                 processor_chip_x, processor_chip_y, processor_id, hostname,
                 application_run_time_report_folder)
         data_writer = FileDataWriter(binary_file_path)
+
         # check if text reports are needed and if so initilise the report
         # writer to send down to dsg
         report_writer = None
         if write_text_specs:
             new_report_directory = os.path.join(report_directory,
                                                 "data_spec_text_files")
+
             # uses locks to stop multiple instances of this writing the same
             # folder at the same time (os breaks down and throws exception
             # therwise)

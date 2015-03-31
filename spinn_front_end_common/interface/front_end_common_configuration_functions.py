@@ -68,7 +68,7 @@ class FrontEndCommonConfigurationFunctions(object):
         self._router_algorithm = None
         self._report_default_directory = None
         self._app_data_runtime_folder = None
-        self._this_run_time_string_representation = None
+        self._this_run_time_string = None
 
         # executable params
         self._do_load = None
@@ -93,7 +93,7 @@ class FrontEndCommonConfigurationFunctions(object):
         :return:
         """
         created_folder = False
-
+        this_run_time_folder = None
         if where_to_write_application_data_files == "DEFAULT":
             directory = os.getcwd()
             application_generated_data_file_folder = \
@@ -118,7 +118,7 @@ class FrontEndCommonConfigurationFunctions(object):
                                                  "time_stamp")
             writer = open(time_of_run_file_name, "w")
             writer.writelines("app_{}_{}".format(
-                self._app_id, self._this_run_time_string_representation))
+                self._app_id, self._this_run_time_string))
             writer.flush()
             writer.close()
 
@@ -144,7 +144,7 @@ class FrontEndCommonConfigurationFunctions(object):
                                                  "time_stamp")
             writer = open(time_of_run_file_name, "w")
             writer.writelines("app_{}_{}".format(
-                self._app_id, self._this_run_time_string_representation))
+                self._app_id, self._this_run_time_string))
 
             if not os.path.exists(this_run_time_folder):
                 os.makedirs(this_run_time_folder)
@@ -205,11 +205,13 @@ class FrontEndCommonConfigurationFunctions(object):
 
         # determine the time slot for later
         this_run_time = datetime.datetime.now()
-        self._this_run_time_string_repenstation = \
-            str(this_run_time.date()) + "-" + str(this_run_time.hour) + "-" + \
-            str(this_run_time.minute) + "-" + str(this_run_time.second)
-        writer.writelines("app_{}_{}".format(
-            self._app_id, self._this_run_time_string_repenstation))
+        self._this_run_time_string = (
+            "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+                this_run_time.year, this_run_time.month, this_run_time.day,
+                this_run_time.hour, this_run_time.minute,
+                this_run_time.second))
+        writer.writelines("app_{}_{}".format(self._app_id,
+                                             self._this_run_time_string))
         writer.flush()
         writer.close()
         self._report_default_directory = app_folder_name

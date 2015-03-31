@@ -49,8 +49,6 @@ class FrontEndCommonInterfaceFunctions(object):
     def __init__(self, reports_states, report_default_directory):
         self._reports_states = reports_states
         self._report_default_directory = report_default_directory
-        self._iptags = list()
-        self._reverse_iptags = list()
         self._machine = None
 
     def _setup_interfaces(
@@ -96,19 +94,13 @@ class FrontEndCommonInterfaceFunctions(object):
                 y_dimension=virtual_y_dimension,
                 with_wrap_arounds=requires_wrap_around)
 
-    def _add_iptag(self, iptag):
-        self._iptags.append(iptag)
-
-    def _add_reverse_tag(self, reverse_iptag):
-        self._reverse_iptags.append(reverse_iptag)
-
-    def _load_iptags(self):
-        for iptag in self._iptags:
-            self._txrx.set_ip_tag(iptag)
-
-    def _load_reverse_ip_tags(self):
-        for reverse_iptag in self._reverse_iptags:
-            self._txrx.set_reverse_ip_tag(reverse_iptag)
+    def _load_tags(self, tags):
+        """ loads all the tags onto all the boards
+        """
+        for ip_tag in tags.ip_tags:
+            self._txrx.set_ip_tag(ip_tag)
+        for reverse_ip_tag in tags.reverse_ip_tags:
+            self._txrx.set_reverse_ip_tag(reverse_ip_tag)
 
     def _retieve_provance_data_from_machine(
             self, executable_targets, routing_tables, machine):
@@ -131,16 +123,15 @@ class FrontEndCommonInterfaceFunctions(object):
         :return:
         """
         if host_based_execution:
-            return self.host_based_data_specificiation_execution(
-                hostname, placements, graph_mapper, write_text_specs,
-                runtime_application_data_folder)
+            return self.host_based_data_specification_execution(
+                hostname, placements, graph_mapper)
         else:
-            return self._chip_based_data_specificiation_execution(hostname)
+            return self._chip_based_data_specification_execution(hostname)
 
-    def _chip_based_data_specificiation_execution(self, hostname):
+    def _chip_based_data_specification_execution(self, hostname):
         raise NotImplementedError
 
-    def host_based_data_specificiation_execution(
+    def host_based_data_specification_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
             application_data_runtime_folder):
         """
@@ -236,8 +227,7 @@ class FrontEndCommonInterfaceFunctions(object):
         # deduce how many processors this application uses up
         total_processors = 0
         total_cores = list()
-        executable_keys = executable_targets.keys()
-        for executable_target in executable_keys:
+        for executable_target in executable_targets:
             core_subsets = executable_targets[executable_target]
             for core_subset in core_subsets:
                 for _ in core_subset.processor_ids:
@@ -258,24 +248,23 @@ class FrontEndCommonInterfaceFunctions(object):
                                                            CPUState.SYNC0)
 
         if processors_ready != total_processors:
-            successful_cores, unsucessful_cores = \
+            successful_cores, unsuccessful_cores = \
                 self._break_down_of_failure_to_reach_state(total_cores,
                                                            CPUState.SYNC0)
             # last chance to slip out of error check
             if len(successful_cores) != total_processors:
                 # break_down the successful cores and unsuccessful cores into
                 # string
-                # reps
                 break_down = self.turn_break_downs_into_string(
-                    total_cores, successful_cores, unsucessful_cores,
+                    total_cores, successful_cores, unsuccessful_cores,
                     CPUState.SYNC0)
                 raise exceptions.ExecutableFailedToStartException(
-                    "Only {} processors out of {} have sucessfully reached "
+                    "Only {} processors out of {} have successfully reached "
                     "sync0 with breakdown of: {}"
                     .format(processors_ready, total_processors, break_down))
 
         # wait till vis is ready for us to start if required
-        if waiting_on_confirmation and database_thread is not None:
+        if database_thread is not None and waiting_on_confirmation:
             logger.info("*** Awaiting for a response from the visualiser to "
                         "state its ready for the simulation to start ***")
             database_thread.wait_for_confirmation()
@@ -297,14 +286,14 @@ class FrontEndCommonInterfaceFunctions(object):
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                sucessful_cores, unsucessful_cores = \
+                successful_cores, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         total_cores, CPUState.RUNNING)
 
                 # break_down the successful cores and unsuccessful cores into
                 # string reps
                 break_down = self.turn_break_downs_into_string(
-                    total_cores, sucessful_cores, unsucessful_cores,
+                    total_cores, successful_cores, unsuccessful_cores,
                     CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started with breakdown {}"
@@ -323,14 +312,14 @@ class FrontEndCommonInterfaceFunctions(object):
                 processors_rte = self._txrx.get_core_state_count(
                     app_id, CPUState.RUN_TIME_EXCEPTION)
                 if processors_rte > 0:
-                    sucessful_cores, unsucessful_cores = \
+                    successful_cores, unsuccessful_cores = \
                         self._break_down_of_failure_to_reach_state(
                             total_cores, CPUState.RUNNING)
 
                     # break_down the successful cores and unsuccessful cores
                     # into string reps
                     break_down = self.turn_break_downs_into_string(
-                        total_cores, sucessful_cores, unsucessful_cores,
+                        total_cores, successful_cores, unsuccessful_cores,
                         CPUState.RUNNING)
                     raise exceptions.ExecutableFailedToStopException(
                         "{} cores have gone into a run time error state with "
@@ -343,14 +332,14 @@ class FrontEndCommonInterfaceFunctions(object):
                 app_id, CPUState.FINSHED)
 
             if processors_exited < total_processors:
-                sucessful_cores, unsucessful_cores = \
+                successful_cores, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         total_cores, CPUState.RUNNING)
 
                 # break_down the successful cores and unsuccessful cores into
                 #  string reps
                 break_down = self.turn_break_downs_into_string(
-                    total_cores, sucessful_cores, unsucessful_cores,
+                    total_cores, successful_cores, unsuccessful_cores,
                     CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} of the processors failed to exit successfully with"
@@ -361,16 +350,17 @@ class FrontEndCommonInterfaceFunctions(object):
             logger.info("Application is set to run forever - exiting")
 
     def _break_down_of_failure_to_reach_state(self, total_cores, state):
-        sucessful_cores = list()
-        unsucessful_cores = dict()
+        successful_cores = list()
+        unsuccessful_cores = dict()
         core_infos = self._txrx.get_cpu_information(total_cores)
         for core_info in core_infos:
             if core_info.state == state:
-                sucessful_cores.append((core_info.x, core_info.y, core_info.p))
+                successful_cores.append((core_info.x, core_info.y,
+                                         core_info.p))
             else:
-                unsucessful_cores[(core_info.x, core_info.y, core_info.p)] = \
-                    core_info
-        return sucessful_cores, unsucessful_cores
+                unsuccessful_cores[(core_info.x, core_info.y, core_info.p)] = \
+                    core_info.state.name
+        return successful_cores, unsuccessful_cores
 
     @staticmethod
     def turn_break_downs_into_string(total_cores, successful_cores,
@@ -388,10 +378,9 @@ class FrontEndCommonInterfaceFunctions(object):
             for processor_id in core_info.processor_ids:
                 core_coord = (core_info.x, core_info.y, processor_id)
                 if core_coord in successful_cores:
-                    break_down += ("{}:{}:{} sucessfully in state {}{}"
-                                   .format(core_info.x, core_info.y,
-                                           processor_id, state.name,
-                                           os.linesep))
+                    break_down += "{}:{}:{} successfully in state {}{}"\
+                        .format(core_info.x, core_info.y, processor_id,
+                                state.name, os.linesep)
                 else:
                     real_state = unsuccessful_cores[(core_info.x, core_info.y,
                                                      processor_id)]
@@ -471,7 +460,7 @@ class FrontEndCommonInterfaceFunctions(object):
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")
 
-        # load each router table thats needed for the application to run into
+        # load each router table that is needed for the application to run into
         # the chips sdram
         for router_table in router_tables.routing_tables:
             if not self._machine.get_chip_at(router_table.x,
@@ -493,9 +482,9 @@ class FrontEndCommonInterfaceFunctions(object):
 
     def _load_executable_images(self, executable_targets, app_id,
                                 app_data_folder):
-        """
-        go through the execuctable targets and load each binary to everywhere
-        and then set each given core to sync0 that require it
+        """ Go through the executable targets and load each binary to \
+            everywhere and then send a start request to the cores that \
+            actually use it
         """
         if self._reports_states.transciever_report:
             reports.re_load_script_load_executables_init(
@@ -503,11 +492,11 @@ class FrontEndCommonInterfaceFunctions(object):
 
         progress_bar = ProgressBar(len(executable_targets),
                                    "Loading executables onto the machine")
-        for exectuable_target_key in executable_targets:
-            file_reader = SpinnmanFileDataReader(exectuable_target_key)
-            core_subset = executable_targets[exectuable_target_key]
+        for executable_target_key in executable_targets:
+            file_reader = SpinnmanFileDataReader(executable_target_key)
+            core_subset = executable_targets[executable_target_key]
 
-            statinfo = os.stat(exectuable_target_key)
+            statinfo = os.stat(executable_target_key)
             size = statinfo.st_size
 
             # TODO there is a need to parse the binary and see if its
@@ -534,7 +523,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
             if self._reports_states.transciever_report:
                 reports.re_load_script_load_executables_individual(
-                    app_data_folder, exectuable_target_key,
+                    app_data_folder, executable_target_key,
                     app_id, size)
             progress_bar.update()
         progress_bar.end()

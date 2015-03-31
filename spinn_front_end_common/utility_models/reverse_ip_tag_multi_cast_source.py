@@ -6,8 +6,7 @@ ReverseIpTagMultiCastSource
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
 
-# pacman imports
-from pacman.model.abstract_classes.abstract_partitionable_vertex import \
+from pacman.model.partitionable_graph.abstract_partitionable_vertex import \
     AbstractPartitionableVertex
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
@@ -19,6 +18,9 @@ from pacman.model.routing_info.key_and_mask import KeyAndMask
 from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
+from pacman.model.constraints.tag_allocator_constraints\
+    .tag_allocator_require_iptag_constraint\
+    import TagAllocatorRequireIptagConstraint
 from pacman.model.constraints.tag_allocator_constraints \
     .tag_allocator_require_reverse_iptag_constraint \
     import TagAllocatorRequireReverseIptagConstraint
@@ -26,17 +28,17 @@ from pacman.model.constraints.placer_constraints\
     .placer_radial_placement_from_chip_constraint \
     import PlacerRadialPlacementFromChipConstraint
 
-#front end common imports
+# front end common imports
 from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_edge_constraints \
     import AbstractProvidesOutgoingEdgeConstraints
-from spinn_front_end_common.abstract_models.\
-    abstract_data_specable_vertex import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
+    import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 # spinnman imports
-from spinnman.messages.eieio.eieio_prefix_type import EIEIOPrefixType
+from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 # general imports
 from enum import Enum
@@ -54,18 +56,22 @@ class ReverseIpTagMultiCastSource(
     _SPIKE_INJECTOR_REGIONS = Enum(
         value="SPIKE_INJECTOR_REGIONS",
         names=[('SYSTEM', 0),
-               ('CONFIGURATION', 1)])
+               ('CONFIGURATION', 1),
+               ('BUFFER', 2)])
 
-    _CONFIGURATION_REGION_SIZE = 28
+    _CONFIGURATION_REGION_SIZE = 36
     _max_atoms_per_core = 2048
 
     CORE_APP_IDENTIFIER = constants.SPIKE_INJECTOR_CORE_APPLICATION_ID
 
-    def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
-                 label, spikes_per_second=None, ring_buffer_sigma=None,
-                 board_address=None, virtual_key=None, check_key=True,
+    def __init__(self, n_neurons, machine_time_step, timescale_factor,
+                 spikes_per_second, ring_buffer_sigma, port,
+                 label, board_address=None, virtual_key=None, check_key=True,
                  prefix=None, prefix_type=None, tag=None, key_left_shift=0,
-                 sdp_port=1, constraints=None):
+                 sdp_port=1, buffer_space=0, notify_buffer_space=False,
+                 space_before_notification=0, notification_tag=None,
+                 notification_ip_address=None, notification_port=None,
+                 notification_strip_sdp=True, constraints=None):
 
         if n_neurons > ReverseIpTagMultiCastSource._max_atoms_per_core:
             raise Exception("This model can currently only cope with {} atoms"
@@ -73,17 +79,20 @@ class ReverseIpTagMultiCastSource(
                                     ._max_atoms_per_core))
 
         AbstractDataSpecableVertex.__init__(
-            self, n_neurons, label, machine_time_step,
-            timescale_factor)
+            self, machine_time_step, timescale_factor)
         AbstractPartitionableVertex.__init__(
             self, n_neurons, label,
             ReverseIpTagMultiCastSource._max_atoms_per_core, constraints)
-        self.add_constraint(TagAllocatorRequireReverseIptagConstraint(
-            port, sdp_port, board_address, tag))
         PartitionedVertex.__init__(
             self, label=label, resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(123), dtcm=DTCMResource(123),
                 sdram=SDRAMResource(123)))
+        self.add_constraint(TagAllocatorRequireReverseIptagConstraint(
+            port, sdp_port, board_address, tag))
+        if notify_buffer_space:
+            self.add_constraint(TagAllocatorRequireIptagConstraint(
+                notification_ip_address, notification_port,
+                notification_strip_sdp, board_address, notification_tag))
 
         # set params
         self._port = port
@@ -92,10 +101,13 @@ class ReverseIpTagMultiCastSource(
         self._check_key = check_key
         self._prefix_type = prefix_type
         self._key_left_shift = key_left_shift
+        self._buffer_space = buffer_space
+        self._space_before_notification = space_before_notification
+        self._notify_buffer_space = notify_buffer_space
 
         # validate params
         if self._prefix is not None and self._prefix_type is None:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "To use a prefix, you must declaire which position to use the "
                 "prefix in on the prefix_type parameter.")
 
@@ -105,9 +117,9 @@ class ReverseIpTagMultiCastSource(
             # key =( key  ored prefix )and mask
             temp_vertual_key = virtual_key
             if self._prefix is not None:
-                if self._prefix_type == EIEIOPrefixType.LOWER_HALF_WORD:
+                if self._prefix_type == EIEIOPrefix.LOWER_HALF_WORD:
                     temp_vertual_key |= self._prefix
-                if self._prefix_type == EIEIOPrefixType.UPPER_HALF_WORD:
+                if self._prefix_type == EIEIOPrefix.UPPER_HALF_WORD:
                     temp_vertual_key |= (self._prefix << 16)
             else:
                 self._prefix = self._generate_prefix(virtual_key, prefix_type)
@@ -117,7 +129,7 @@ class ReverseIpTagMultiCastSource(
                 # check that mask key combo = key
                 masked_key = temp_vertual_key & self._mask
                 if self._virtual_key != masked_key:
-                    raise exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "The mask calculated from your number of neurons has "
                         "the potential to interfere with the key, please "
                         "reduce the number of neurons or reduce the virtual"
@@ -125,17 +137,17 @@ class ReverseIpTagMultiCastSource(
 
                 # check that neuron mask does not interfere with key
                 if self._virtual_key < 0:
-                    raise exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "Virtual keys must be positive")
                 if n_neurons > max_key:
-                    raise exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "The mask calculated from your number of neurons has "
                         "the capability to interfere with the key due to its "
                         "size please reduce the number of neurons or reduce "
                         "the virtual key")
 
                 if self._key_left_shift > 16 or self._key_left_shift < 0:
-                    raise exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "the key left shift must be within a range of "
                         "0 and 16. Please change this param and try again")
 
@@ -145,7 +157,7 @@ class ReverseIpTagMultiCastSource(
 
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
-        if prefix_type == EIEIOPrefixType.LOWER_HALF_WORD:
+        if prefix_type == EIEIOPrefix.LOWER_HALF_WORD:
             return virtual_key & 0xFFFF
         return (virtual_key >> 16) & 0xFFFF
 
@@ -210,6 +222,10 @@ class ReverseIpTagMultiCastSource(
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
+        if self._buffer_space is not None and self._buffer_space > 0:
+            spec.reserve_memory_region(
+                region=self._SPIKE_INJECTOR_REGIONS.BUFFER.value,
+                self._buffer_space, label="BUFFER", empty=True)
 
         # set up system region writes
         self._write_basic_setup_info(
@@ -230,7 +246,7 @@ class ReverseIpTagMultiCastSource(
 
             if self._prefix is None:
                 if self._prefix_type is None:
-                    self._prefix_type = EIEIOPrefixType.UPPER_HALF_WORD
+                    self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._generate_prefix(self._virtual_key,
                                                      self._prefix_type)
 
@@ -244,7 +260,7 @@ class ReverseIpTagMultiCastSource(
         if self._prefix is None:
             spec.write_value(data=0)
         else:
-            if self._prefix_type is EIEIOPrefixType.LOWER_HALF_WORD:
+            if self._prefix_type is EIEIOPrefix.LOWER_HALF_WORD:
                 spec.write_value(data=self._prefix)
             else:
                 spec.write_value(data=self._prefix << 16)
@@ -261,6 +277,17 @@ class ReverseIpTagMultiCastSource(
         # add key and mask
         spec.write_value(data=self._virtual_key)
         spec.write_value(data=self._mask)
+
+        # Buffering control
+        spec.write_value(data=self._buffer_space)
+        spec.write_value(data=self._space_before_notification)
+
+        # Notification
+        if self._notify_buffer_space:
+            ip_tag = iter(ip_tags).next()
+            spec.write_value(data=ip_tag.tag)
+        else:
+            spec.write_value(data=0)
 
         # close spec
         spec.end_specification()

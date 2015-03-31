@@ -10,7 +10,7 @@ from pacman.model.constraints.key_allocator_constraints.\
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.abstract_classes.abstract_partitionable_vertex \
+from pacman.model.partitionable_graph.abstract_partitionable_vertex\
     import AbstractPartitionableVertex
 
 # data spec imports
@@ -49,7 +49,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
         AbstractPartitionableVertex.__init__(self, 1, "Command Sender", 1)
         AbstractDataSpecableVertex.__init__(
-            self, 1, "Command Sender", machine_time_step, timescale_factor)
+            self, machine_time_step, timescale_factor)
 
         self._edge_constraints = dict()
         self._command_edge = dict()
@@ -73,7 +73,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
         # Check if the edge already exists
         if edge in self._edge_constraints:
-            raise exceptions.SpynnakerException(
+            raise exceptions.ConfigurationException(
                 "The edge has already got commands")
 
         # Go through the commands
@@ -82,6 +82,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         for command in commands:
 
             # Add the command to the appropriate dictionary
+            dictionary = None
             if command.is_payload:
                 dictionary = self._commands_with_payloads
             else:
@@ -117,25 +118,21 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                 [KeyAllocatorFixedMaskConstraint(command_mask)])
         else:
 
-            # if there is no mask consensus, check that all the masks are
-            # actually 0xffffffff, as otherwise it will not be possible
+            # If there is no mask consensus, check that all the masks are
+            # actually 0xFFFFFFFF, as otherwise it will not be possible
             # to assign keys to the edge
             for (key, mask) in command_keys:
-                if mask != 0xffffffff:
-                    raise exceptions.SpynnakerException(
-                        "command masks are too different to make a mask"
-                        " consistent with all the keys.  this can be resolved"
+                if mask != 0xFFFFFFFF:
+                    raise exceptions.ConfigurationException(
+                        "Command masks are too different to make a mask"
+                        " consistent with all the keys.  This can be resolved"
                         " by either specifying a consistent mask, or by using"
-                        " the mask 0xffffffff and providing exact keys")
+                        " the mask 0xFFFFFFFF and providing exact keys")
 
-            # if the keys are all fixed keys, keep them
-            keys_and_masks = list()
-            for (key, mask) in command_keys:
-                keys_and_masks.append(KeyAndMask(key, mask))
-
-            fixed_key_and_mask_constraint = \
-                KeyAllocatorFixedKeyAndMaskConstraint(keys_and_masks)
-            self._edge_constraints[edge] = [fixed_key_and_mask_constraint]
+            # If the keys are all fixed keys, keep them
+            self._edge_constraints[edge] = list(
+                KeyAllocatorFixedKeyAndMaskConstraint(
+                    [KeyAndMask(key, mask) for (key, mask) in command_keys]))
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,

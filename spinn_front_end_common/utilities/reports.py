@@ -77,7 +77,8 @@ def generate_synaptic_matrix_report(common_report_directory, partitioned_edge):
     except IOError:
         logger.error("Generate_placement_reports: Can't open file"
                      " {} for writing.".format(file_name))
-    #extract matrix
+
+    # extract matrix
     synaptic_matrix = partitioned_edge.synapse_sublist
     counter = 0
     for synaptic_row in synaptic_matrix.get_rows():
@@ -175,7 +176,7 @@ def network_specification_report(report_folder, graph, hostname):
         model = vertex.model_name
         size = vertex.n_atoms
         constraints = vertex.constraints
-        f_network_specification.write("AbstractConstrainedVertex {}, size: {}\n"
+        f_network_specification.write("Vertex {}, size: {}\n"
                                       .format(label, size))
         f_network_specification.write("Model: {}\n".format(model))
         for constraint in constraints:
@@ -197,7 +198,7 @@ def network_specification_report(report_folder, graph, hostname):
         post_v_sz = post_v.n_atoms
         pre_v_label = pre_v.label
         post_v_label = post_v.label
-        edge_str = "PartitionableEdge {} from vertex: '{}' ({} atoms) to vertex: '{}' " \
+        edge_str = "Edge {} from vertex: '{}' ({} atoms) to vertex: '{}' " \
                    "({} atoms)\n".format(label, pre_v_label, pre_v_sz,
                                          post_v_label, post_v_sz)
         f_network_specification.write(edge_str)
@@ -236,7 +237,8 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
     output.write("import pickle \n\n")
     output.write("txrx = create_transceiver_from_hostname(hostname=\"{}\", "
                  "discover=False)\n\n".format(hostname))
-    output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(board_version))
+    output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(
+                 board_version))
     output.write("txrx.discover_connections() \n \n")
     output.close()
 
@@ -420,7 +422,7 @@ def generate_provance_routings(routing_tables, machine, txrx,
     :return:
     """
 
-    #acquire diagnostic data
+    # acquire diagnostic data
     router_diagnostics = dict()
     for router_table in routing_tables.routing_tables:
         if not machine.get_chip_at(router_table.x, router_table.y).virtual:
