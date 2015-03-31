@@ -178,8 +178,8 @@ class ReverseIpTagMultiCastSource(
         return mask, max_key
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-                self._CONFIGURATION_REGION_SIZE)
+        return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4 +
+                self._CONFIGURATION_REGION_SIZE + self._buffer_space)
 
     @property
     def model_name(self):
@@ -217,7 +217,7 @@ class ReverseIpTagMultiCastSource(
         # Reserve memory regions:
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.SYSTEM.value,
-            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS,
+            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
             label='SYSTEM')
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
@@ -225,12 +225,12 @@ class ReverseIpTagMultiCastSource(
         if self._buffer_space is not None and self._buffer_space > 0:
             spec.reserve_memory_region(
                 region=self._SPIKE_INJECTOR_REGIONS.BUFFER.value,
-                self._buffer_space, label="BUFFER", empty=True)
+                size=self._buffer_space, label="BUFFER", empty=True)
 
         # set up system region writes
         self._write_basic_setup_info(
             spec, ReverseIpTagMultiCastSource.CORE_APP_IDENTIFIER,
-            ReverseIpTagMultiCastSource.CORE_APP_IDENTIFIER)
+            self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
 
         # set up configuration region writes
         spec.switch_write_focus(

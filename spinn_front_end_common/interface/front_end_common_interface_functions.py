@@ -33,6 +33,7 @@ from spinn_front_end_common.utilities import reports
 import time
 import os
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -198,8 +199,13 @@ class FrontEndCommonInterfaceFunctions(object):
                     report_writer)
 
                 # update memory calc and run data spec executor
-                bytes_used_by_spec, bytes_written_by_spec = \
-                    host_based_data_spec_executor.execute()
+                try:
+                    bytes_used_by_spec, bytes_written_by_spec = \
+                        host_based_data_spec_executor.execute()
+                except:
+                    logger.error("Error executing data specification for {}"
+                                 .format(associated_vertex))
+                    traceback.print_exc()
 
                 # update base address mapper
                 processor_mapping_key = (placement.x, placement.y, placement.p)

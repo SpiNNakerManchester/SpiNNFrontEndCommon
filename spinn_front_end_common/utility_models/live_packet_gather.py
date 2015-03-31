@@ -266,7 +266,7 @@ class LivePacketGather(
             region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
         self._write_basic_setup_info(
             spec, constants.LIVE_GATHERER_CORE_APPLICATION_ID,
-            self.CORE_APP_IDENTIFIER)
+            self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'

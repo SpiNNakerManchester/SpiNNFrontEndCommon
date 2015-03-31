@@ -438,12 +438,16 @@ static inline void process_32_bit_packets(
     log_debug("payload on: %d", pkt_has_payload);
     log_debug("pkt_format: %d", pkt_prefix_upper);
 
-    uint32_t *next_event = (uint32_t *) event_pointer;
+    uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = *(next_event++);
+        log_debug("Processing key %d at 0x%.8x", i, (uint32_t) next_event);
+        uint32_t key = next_event[1] << 16 | next_event[0];
+        next_event += 2;
+        log_debug("Processing payload %d", i);
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = *(next_event++);
+            payload = next_event[1] << 16 | next_event[0];
+            next_event += 2;
         }
 
         if (!pkt_prefix_upper) {
@@ -733,7 +737,7 @@ void fetch_and_process_packet() {
                 spin1_memcpy(dst_ptr, src_ptr, len);
                 read_pointer += len;
                 if (read_pointer >= end_of_buffer_region) {
-                    read_pointer -= buffer_region_size;
+                    read_pointer = buffer_region;
                 }
             }
 
@@ -816,6 +820,12 @@ bool setup_buffer_region(address_t region_address) {
     buffer_region = (uint8_t *) region_address;
     read_pointer = buffer_region;
     write_pointer = buffer_region;
+    end_of_buffer_region = buffer_region + buffer_region_size;
+
+    log_info("buffer_region: 0x%.8x", buffer_region);
+    log_info("buffer_region_size: %d", buffer_region_size);
+    log_info("end_of_buffer_region: 0x%.8x", end_of_buffer_region);
+
     return true;
 }
 
@@ -844,7 +854,6 @@ bool read_parameters(address_t region_address) {
     msg_from_sdram_in_use = false;
     next_buffer_time = 0;
     pkt_last_sequence_seen = MAX_SEQUENCE_NO;
-    end_of_buffer_region = buffer_region + buffer_region_size;
     send_ack_last_state = false;
     send_packet_reqs = true;
 
@@ -877,7 +886,6 @@ bool read_parameters(address_t region_address) {
     log_info("check: %d", check);
     log_info("key_space: 0x%08x", key_space);
     log_info("mask: 0x%08x", mask);
-    log_info("buffer_region_size: %d", buffer_region_size);
     log_info("space_before_read_request: %d", space_before_data_request);
     log_info("return_tag_id: %d", return_tag_id);
 
