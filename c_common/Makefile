@@ -1,7 +1,9 @@
 INSTALL_DIRS = front_end_common_lib
-BUILD_DIRS = $(INSTALL_DIRS) models
+BUILD_DIRS = models
 
-all: $(BUILD_DIRS)
+all: install build
+	
+build: install $(BUILD_DIRS)
 	for d in $(BUILD_DIRS); do (cd $$d; "$(MAKE)") || exit $$?; done
 
 install: $(INSTALL_DIRS)

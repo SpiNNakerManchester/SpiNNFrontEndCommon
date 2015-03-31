@@ -86,6 +86,7 @@ sdp_msg_t req;
 req_packet_sdp_t *req_ptr;
 static eieio_msg_t msg_from_sdram;
 static bool msg_from_sdram_in_use;
+static int msg_from_sdram_length;
 static uint32_t next_buffer_time;
 static uint8_t pkt_last_sequence_seen;
 static bool send_ack_last_state;
@@ -201,6 +202,8 @@ static inline void print_packet(eieio_msg_t eieio_msg_ptr) {
 
 static inline void signal_software_error(eieio_msg_t eieio_msg_ptr,
                                          uint16_t length) {
+    use(eieio_msg_ptr);
+    use(length);
 #if LOG_LEVEL >= LOG_DEBUG
     print_packet_bytes(eieio_msg_ptr, length);
     rt_error(RTE_SWERR);
@@ -228,8 +231,6 @@ static inline uint32_t get_sdram_buffer_space_available() {
 }
 
 static inline bool is_eieio_packet_in_buffer(void) {
-    uint32_t write_ptr_value = (uint32_t) write_pointer;
-    uint32_t read_ptr_value = (uint32_t) read_pointer;
 
     // If there is no buffering being done, there are no packets
     if (buffer_region_size == 0) {
@@ -264,8 +265,6 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
         // If there is a payload prefix
         if (pkt_payload_prefix_apply) {
 
-            uint16_t *payload_prefix;
-
             // If there is a key prefix, the payload prefix is after that
             if (pkt_apply_prefix) {
                 event_ptr += 1;
@@ -274,11 +273,13 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
             if (pkt_type & 0x2) {
 
                 // 32 bit packet
-                payload_time = *(event_ptr++) << 16 | *(event_ptr++);
+                payload_time = event_ptr[1] << 16 | event_ptr[0];
+                event_ptr += 2;
             } else {
 
                 // 16 bit packet
-                payload_time = *(event_ptr++);
+                payload_time = event_ptr[0];
+                event_ptr += 1;
             }
             got_payload_time = true;
         }
@@ -288,11 +289,11 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
             if (pkt_type & 0x2) {
 
                 // 32 bit packet
-                payload_time |= *(event_ptr++) << 16 | *(event_ptr++);
+                payload_time |= event_ptr[1] << 16 | event_ptr[0];
             } else {
 
                 // 16 bit packet
-                payload_time |= *(event_ptr++);
+                payload_time |= event_ptr[0];
             }
             got_payload_time = true;
         }
@@ -429,7 +430,7 @@ static inline void process_32_bit_packets(
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool pkt_has_payload, bool pkt_payload_is_timestamp) {
 
-    log_debug("process_16_bit_packets");
+    log_debug("process_32_bit_packets");
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     log_debug("count: %d", pkt_count);
     log_debug("pkt_prefix: %08x", pkt_key_prefix);
@@ -507,11 +508,13 @@ static inline bool eieio_data_parse_packet(
     log_debug("pkt_count: %d", pkt_count);
     log_debug("payload_on: %d", pkt_has_payload);
 
+    uint16_t *hdr_pointer = (uint16_t *) event_pointer;
+
     if (pkt_apply_prefix) {
 
         // Key prefix in the packet
-        pkt_key_prefix = (uint32_t) event_pointer[0];
-        event_pointer = (void*) (((uint16_t *) event_pointer) + 1);
+        pkt_key_prefix = (uint32_t) hdr_pointer[0];
+        hdr_pointer += 1;
 
         // If the prefix is in the upper part, shift the prefix
         if (pkt_prefix_upper) {
@@ -529,26 +532,30 @@ static inline bool eieio_data_parse_packet(
     }
 
     if (pkt_payload_apply_prefix) {
+
         if (!(pkt_type & 0x2)) {
 
             // If there is a payload prefix and the payload is 16-bit
-            pkt_payload_prefix = (uint32_t) event_pointer[0];
-            event_pointer = (void*) (((uint16_t *) event_pointer) + 1);
+            pkt_payload_prefix = (uint32_t) hdr_pointer[0];
+            hdr_pointer += 1;
         } else {
 
             // If there is a payload prefix and the payload is 32-bit
             pkt_payload_prefix =
-                (uint32_t) event_pointer[1] << 16 | event_pointer[0];
-            event_pointer = (void*) (((uint16_t *) event_pointer) + 2);
+                (uint32_t) hdr_pointer[1] << 16 | hdr_pointer[0];
+            hdr_pointer += 2;
         }
     }
+
+    // Take the event pointer to start at the header pointer
+    event_pointer = (void *) hdr_pointer;
 
     // If the packet has a payload that is a timestamp, but the timestamp
     // is not the current time, buffer it
     if (pkt_has_payload && pkt_payload_is_timestamp &&
             pkt_payload_prefix != time) {
         if (pkt_payload_prefix > time) {
-            add_eieio_packet_to_sdram(eieio_msg_ptr);
+            add_eieio_packet_to_sdram(eieio_msg_ptr, length);
             return true;
         }
         return false;
@@ -683,7 +690,8 @@ void fetch_and_process_packet() {
     while ((!msg_from_sdram_in_use) && is_eieio_packet_in_buffer()) {
 
         // If there is padding, move on 2 bytes
-        if (*read_pointer == 0x4002) {
+        uint16_t next_header = (uint16_t) *read_pointer;
+        if (next_header == 0x4002) {
             read_pointer += 2;
             if (read_pointer >= end_of_buffer_region) {
                 read_pointer = buffer_region;
@@ -740,6 +748,7 @@ void fetch_and_process_packet() {
                 packet_handler_selector(msg_from_sdram, len);
             } else {
                 msg_from_sdram_in_use = true;
+                msg_from_sdram_length = len;
             }
         }
     }
@@ -786,7 +795,7 @@ void timer_callback(uint unused0, uint unused1) {
     } else if (next_buffer_time < time) {
         fetch_and_process_packet();
     } else if (next_buffer_time == time) {
-        eieio_data_parse_packet(msg_from_sdram);
+        eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
         fetch_and_process_packet();
     }
 }
@@ -803,7 +812,7 @@ void sdp_packet_callback(uint mailbox, uint port) {
     spin1_msg_free(msg);
 }
 
-bool setup_buffer_region(address_t, region_address) {
+bool setup_buffer_region(address_t region_address) {
     buffer_region = (uint8_t *) region_address;
     read_pointer = buffer_region;
     write_pointer = buffer_region;
@@ -893,10 +902,17 @@ bool initialize(uint32_t *timer_period) {
     }
 
     // Read the parameters
-    read_parameters(data_specification_get_region(1, address));
+    if (!read_parameters(data_specification_get_region(1, address))) {
+        return false;
+    }
 
     // Read the buffer region
-    setup_buffer_region(region_start(BUFFER_REGION, address));
+    if (buffer_region_size > 0) {
+        if (!setup_buffer_region(data_specification_get_region(
+                BUFFER_REGION, address))) {
+            return false;
+        }
+    }
 
     return true;
 }
@@ -924,4 +940,3 @@ void c_main(void) {
     time = UINT32_MAX;
     simulation_run();
 }
-
