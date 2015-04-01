@@ -10,4 +10,4 @@ install: $(INSTALL_DIRS)
 	for d in $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" install) || exit $$?; done
 
 clean: $(BUILD_DIRS)
-	for d in $(BUILD_DIRS); do (cd $$d; "$(MAKE)" clean) || exit $$?; done
+	for d in $(BUILD_DIRS) $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" clean) || exit $$?; done
