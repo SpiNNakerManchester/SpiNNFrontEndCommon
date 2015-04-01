@@ -396,10 +396,12 @@ static inline void process_16_bit_packets(
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = (uint32_t) *(next_event++);
+        uint32_t key = (uint32_t) next_event;
+        next_event += 1;
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = (uint32_t) *(next_event++);
+            payload = (uint32_t) next_event;
+            next_event += 1;
         }
 
         if (!pkt_prefix_upper) {
@@ -426,7 +428,7 @@ static inline void process_16_bit_packets(
 }
 
 static inline void process_32_bit_packets(
-        void* event_pointer, bool pkt_prefix_upper, uint32_t pkt_count,
+        void* event_pointer, uint32_t pkt_count,
         uint32_t pkt_key_prefix, uint32_t pkt_payload_prefix,
         bool pkt_has_payload, bool pkt_payload_is_timestamp) {
 
@@ -436,12 +438,12 @@ static inline void process_32_bit_packets(
     log_debug("pkt_prefix: %08x", pkt_key_prefix);
     log_debug("pkt_payload_prefix: %08x", pkt_payload_prefix);
     log_debug("payload on: %d", pkt_has_payload);
-    log_debug("pkt_format: %d", pkt_prefix_upper);
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
         log_debug("Processing key %d at 0x%.8x", i, (uint32_t) next_event);
         uint32_t key = next_event[1] << 16 | next_event[0];
+        log_debug("Packet key = %d", key);
         next_event += 2;
         log_debug("Processing payload %d", i);
         uint32_t payload = 0;
@@ -450,9 +452,6 @@ static inline void process_32_bit_packets(
             next_event += 2;
         }
 
-        if (!pkt_prefix_upper) {
-            key <<= 16;
-        }
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
@@ -529,9 +528,9 @@ static inline bool eieio_data_parse_packet(
         // If there isn't a key prefix, but the config applies a prefix,
         // apply the prefix depending on the key_left_shift
         if (key_left_shift == 0) {
-            pkt_prefix_upper = 1;
+            pkt_prefix_upper = true;
         } else {
-            pkt_prefix_upper = 0;
+            pkt_prefix_upper = false;
         }
     }
 
@@ -572,7 +571,7 @@ static inline bool eieio_data_parse_packet(
         return true;
     } else {
         process_32_bit_packets(
-            event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
+            event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         return false;
     }
