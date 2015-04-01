@@ -295,3 +295,6 @@ class ReverseIpTagMultiCastSource(
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
         return self
+
+    def is_data_specable(self):
+        return True
