@@ -58,6 +58,7 @@ class LivePacketGather(
     forwarding them to the host
 
     """
+
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
                  use_prefix=False, key_prefix=None, prefix_type=None,
@@ -301,3 +302,6 @@ class LivePacketGather(
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
         return self
+
+    def is_data_specable(self):
+        return True

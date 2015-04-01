@@ -84,27 +84,6 @@ class AbstractDataSpecableVertex(object):
         """
         return self._no_machine_time_steps
 
-    @property
-    def application_run_time(self):
-        """
-
-        :return:
-        """
-        return self._application_runtime
-
-    def set_application_runtime(self, new_runtime):
-        """
-
-        :param new_runtime:
-        :return:
-        """
-        if self._application_runtime is None:
-            self._application_runtime = new_runtime
-        else:
-            raise exceptions.ConfigurationException(
-                "cannot set the runtime of a given model once it has"
-                "already been set")
-
     def set_no_machine_time_steps(self, new_no_machine_time_steps):
         """
 
@@ -206,3 +185,10 @@ class AbstractDataSpecableVertex(object):
             "{}_appData_{}_{}_{}.dat".format(hostname, processor_chip_x,
                                              processor_chip_y, processor_id)
         return application_data_file_name
+
+    @abstractmethod
+    def is_data_specable(self):
+        """
+        helper method for isinstance
+        :return:
+        """

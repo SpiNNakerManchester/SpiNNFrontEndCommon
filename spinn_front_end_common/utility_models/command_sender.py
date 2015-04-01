@@ -368,3 +368,10 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         :return:
         """
         return 'command_sender_multicast_source.aplx'
+
+    def is_data_specable(self):
+        """
+        helper method for is instance
+        :return:
+        """
+        return True
