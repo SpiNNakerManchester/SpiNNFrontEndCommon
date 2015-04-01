@@ -759,7 +759,8 @@ void fetch_and_process_packet() {
 
 void send_buffer_request_pkt(void) {
     uint32_t space = get_sdram_buffer_space_available();
-    if (space >= space_before_data_request && space != last_space) {
+    if (send_ack_last_state ||
+            (space >= space_before_data_request && space != last_space)) {
         log_debug("sending request packet with space: %d and seq_no: %d",
                   space, pkt_last_sequence_seen);
 
@@ -769,6 +770,7 @@ void send_buffer_request_pkt(void) {
         spin1_send_sdp_msg(&req, 1);
         req_ptr->sequence &= 0;
         req_ptr->space_available = 0;
+        send_ack_last_state = false;
     }
 }
 
@@ -789,7 +791,7 @@ void timer_callback(uint unused0, uint unused1) {
         return;
     }
 
-    if (send_packet_reqs || send_ack_last_state) {
+    if (send_packet_reqs) {
         send_buffer_request_pkt();
     }
 
