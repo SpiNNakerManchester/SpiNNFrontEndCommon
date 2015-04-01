@@ -619,7 +619,7 @@ static inline void eieio_command_parse_sequenced_data(
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");
         bool ret_value = add_eieio_packet_to_sdram(eieio_content_pkt,
-                                                   length - 2);
+                                                   length - 4);
         log_debug("add_eieio_packet_to_sdram return value: %d", ret_value);
 
         if (ret_value) {
