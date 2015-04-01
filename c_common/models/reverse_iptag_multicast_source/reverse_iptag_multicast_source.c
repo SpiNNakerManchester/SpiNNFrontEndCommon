@@ -396,11 +396,12 @@ static inline void process_16_bit_packets(
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = (uint32_t) next_event;
+        uint32_t key = (uint32_t) next_event[0];
+        log_debug("Packet key = %d", key);
         next_event += 1;
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = (uint32_t) next_event;
+            payload = (uint32_t) next_event[0];
             next_event += 1;
         }
 
@@ -410,7 +411,8 @@ static inline void process_16_bit_packets(
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: %d",
+        log_debug("check before send packet: check=%d, key=%d, mask=%d,"
+                  " key_space=%d: %d", check, key, mask, key_space,
                   (!check) || (check && ((key & mask) == key_space)));
 
         if (!check || (check && ((key & mask) == key_space))) {
@@ -441,11 +443,9 @@ static inline void process_32_bit_packets(
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        log_debug("Processing key %d at 0x%.8x", i, (uint32_t) next_event);
         uint32_t key = next_event[1] << 16 | next_event[0];
         log_debug("Packet key = %d", key);
         next_event += 2;
-        log_debug("Processing payload %d", i);
         uint32_t payload = 0;
         if (pkt_has_payload) {
             payload = next_event[1] << 16 | next_event[0];
@@ -619,7 +619,7 @@ static inline void eieio_command_parse_sequenced_data(
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");
         bool ret_value = add_eieio_packet_to_sdram(eieio_content_pkt,
-                                                   length - 2);
+                                                   length - 4);
         log_debug("add_eieio_packet_to_sdram return value: %d", ret_value);
 
         if (ret_value) {

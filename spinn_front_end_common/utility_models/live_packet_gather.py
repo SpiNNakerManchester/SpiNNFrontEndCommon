@@ -58,15 +58,14 @@ class LivePacketGather(
     forwarding them to the host
 
     """
-
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
                  use_prefix=False, key_prefix=None, prefix_type=None,
-                 message_type=EIEIOType.KEY_32_BIT, label=None,
-                 right_shift=0, payload_as_time_stamps=True,
-                 use_payload_prefix=True, payload_prefix=None,
-                 payload_right_shift=0, constraints=None,
-                 number_of_packets_sent_per_time_step=0):
+                 message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+                 payload_as_time_stamps=True, use_payload_prefix=True,
+                 payload_prefix=None, payload_right_shift=0,
+                 number_of_packets_sent_per_time_step=0, constraints=None,
+                 label=None):
         """
         Creates a new AppMonitor Object.
         """
@@ -90,7 +89,7 @@ class LivePacketGather(
                 "which can be located in :"
                 "spinnman..messages.eieio.eieio_prefix_type")
         if label is None:
-            label = "Live pakcet Gatherer"
+            label = "Live Packet Gatherer"
 
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step=machine_time_step,
