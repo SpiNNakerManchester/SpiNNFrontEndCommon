@@ -418,10 +418,14 @@ static inline void process_16_bit_packets(
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
                 log_debug("mc packet 16-bit key=%d", key);
-                spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
+                while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                    spin1_delay_us(1);
+                }
             } else {
                 log_debug("mc packet 16-bit key=%d, payload=%d", key, payload);
-                spin1_send_mc_packet(key, 0, NO_PAYLOAD);
+                while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                    spin1_delay_us(1);
+                }
             }
         } else {
             incorrect_keys++;
@@ -461,10 +465,14 @@ static inline void process_32_bit_packets(
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
                 log_debug("mc packet 32-bit key=%d", key);
-                spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
+                while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                    spin1_delay_us(1);
+                }
             } else {
                 log_debug("mc packet 32-bit key=%d, payload=%d", key, payload);
-                spin1_send_mc_packet(key, 0, NO_PAYLOAD);
+                while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                    spin1_delay_us(1);
+                }
             }
         } else {
             incorrect_keys++;
