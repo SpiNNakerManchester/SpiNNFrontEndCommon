@@ -13,6 +13,12 @@ from pacman.model.partitionable_graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
 
 # spinn front end imports
+from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
+from pacman.model.resources.cpu_cycles_per_tick_resource import \
+    CPUCyclesPerTickResource
+from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.sdram_resource import SDRAMResource
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
@@ -31,7 +37,8 @@ from enum import Enum
 
 
 class LivePacketGather(
-        AbstractDataSpecableVertex, AbstractPartitionableVertex):
+        AbstractDataSpecableVertex, AbstractPartitionableVertex,
+        PartitionedVertex):
     """
     LivePacketGather: a model which stores all the events it recieves during an
     timer tick and then compresses them into ethernet pakcets and sends them
@@ -54,10 +61,10 @@ class LivePacketGather(
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
                  use_prefix=False, key_prefix=None, prefix_type=None,
-                 message_type=EIEIOType.KEY_32_BIT,
+                 message_type=EIEIOType.KEY_32_BIT, label=None,
                  right_shift=0, payload_as_time_stamps=True,
                  use_payload_prefix=True, payload_prefix=None,
-                 payload_right_shift=0,
+                 payload_right_shift=0, constraints=None,
                  number_of_packets_sent_per_time_step=0):
         """
         Creates a new AppMonitor Object.
@@ -81,12 +88,21 @@ class LivePacketGather(
                 "the type of a prefix type should be of a EIEIOPrefix, "
                 "which can be located in :"
                 "spinnman..messages.eieio.eieio_prefix_type")
+        if label is None:
+            label = "Live pakcet Gatherer"
 
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step=machine_time_step,
             timescale_factor=timescale_factor)
-        AbstractPartitionableVertex.__init__(self, n_atoms=1, label="Monitor",
-                                             max_atoms_per_core=1)
+        AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
+                                             max_atoms_per_core=1,
+                                             constraints=constraints)
+        PartitionedVertex.__init__(
+            self, label=label, resources_required=ResourceContainer(
+                cpu=CPUCyclesPerTickResource(
+                    self.get_cpu_usage_for_atoms(1, None)),
+                dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
+                sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))))
 
         # Try to place this near the ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
@@ -281,3 +297,7 @@ class LivePacketGather(
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         return self._CONFIG_SIZE
+
+    def create_subvertex(self, vertex_slice, resources_required, label=None,
+                         constraints=None):
+        return self
