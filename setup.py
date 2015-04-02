@@ -1,5 +1,4 @@
 from setuptools import setup
-exec(open("spynnaker/pyNN/_version.py").read())
 
 setup(
     name="SpiNNFrontEndCommon",
