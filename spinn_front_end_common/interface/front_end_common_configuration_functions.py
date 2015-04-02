@@ -81,7 +81,6 @@ class FrontEndCommonConfigurationFunctions(object):
 
         # database objects
         self._create_database = False
-        self._database_interface = None
 
     def _set_up_output_application_data_specifics(
             self, where_to_write_application_data_files,
@@ -223,8 +222,7 @@ class FrontEndCommonConfigurationFunctions(object):
             execute_router_dat_based_report, execute_routing_info_report,
             execute_data_spec_report, execute_write_reload_steps,
             generate_transciever_report, generate_tag_report,
-            generate_performance_measurements,
-            in_debug_mode, create_database):
+            generate_performance_measurements, in_debug_mode):
         """
 
         :param reports_are_enabled:
@@ -239,7 +237,6 @@ class FrontEndCommonConfigurationFunctions(object):
         :param generate_transciever_report:
         :param generate_performance_measurements:
         :param in_debug_mode:
-        :param create_database:
         :return:
         """
         self._in_debug_mode = in_debug_mode
@@ -252,8 +249,6 @@ class FrontEndCommonConfigurationFunctions(object):
                 execute_routing_info_report, execute_data_spec_report,
                 execute_write_reload_steps, generate_transciever_report,
                 generate_performance_measurements, generate_tag_report)
-
-        self._create_database = create_database
 
         # communication objects
         self._iptags = list()
