@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="SpiNNFrontEndCommon",
-    version="2015.001-rc-02",
+    version="2015.001-rc-03",
     description="Common Spinnaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     packages=['spinn_front_end_common',
