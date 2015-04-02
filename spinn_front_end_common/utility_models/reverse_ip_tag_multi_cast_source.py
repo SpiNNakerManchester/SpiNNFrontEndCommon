@@ -42,6 +42,8 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 # general imports
 from enum import Enum
+import sys
+import math
 
 
 class ReverseIpTagMultiCastSource(
@@ -60,7 +62,7 @@ class ReverseIpTagMultiCastSource(
                ('BUFFER', 2)])
 
     _CONFIGURATION_REGION_SIZE = 36
-    _max_atoms_per_core = 2048
+    _max_atoms_per_core = sys.maxint
 
     CORE_APP_IDENTIFIER = constants.SPIKE_INJECTOR_CORE_APPLICATION_ID
 
@@ -168,11 +170,8 @@ class ReverseIpTagMultiCastSource(
 
     @staticmethod
     def _calculate_mask(n_neurons):
-
-        # TODO: Re-enable once allowed by the neuron models
-        # temp_value = int(math.ceil(math.log(n_neurons, 2)))
-        # max_key = (int(math.pow(2, temp_value)) - 1)
-        max_key = 2047
+        temp_value = int(math.ceil(math.log(n_neurons, 2)))
+        max_key = (int(math.pow(2, temp_value)) - 1)
         mask = 0xFFFFFFFF - max_key
         return mask, max_key
 
