@@ -2,3 +2,5 @@
 /.pydevproject
 *.pyc
 *build/
+/dist/
+/SpiNNFrontEndCommon.egg-info/
