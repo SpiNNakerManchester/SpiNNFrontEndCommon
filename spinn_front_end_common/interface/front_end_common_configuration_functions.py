@@ -79,9 +79,6 @@ class FrontEndCommonConfigurationFunctions(object):
         # helper data stores
         self._current_max_tag_value = 0
 
-        # database objects
-        self._create_database = False
-
     def _set_up_output_application_data_specifics(
             self, where_to_write_application_data_files,
             max_application_binaries_kept):
