@@ -119,4 +119,3 @@ class ReportState(object):
             self._partitioner_report, self._placer_report, self._router_report,
             self._router_dat_based_report, self._routing_info_report,
             self._tag_allocator_report)
-
