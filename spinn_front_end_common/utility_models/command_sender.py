@@ -10,7 +10,7 @@ from pacman.model.constraints.key_allocator_constraints.\
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.partitionable_graph.abstract_partitionable_vertex\
+from pacman.model.abstract_classes.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
 
 # data spec imports
