@@ -300,8 +300,8 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
     output.write("from spynnaker.pyNN.spynnaker_comms_functions import "
                  "FrontEndCommonInterfaceFunctions \n \n")
     output.write("import pickle \n\n")
-    output.write("txrx = create_transceiver_from_hostname(hostname=\"{}\", "
-                 "discover=False)\n\n".format(hostname))
+    output.write("txrx = create_transceiver_from_hostname(hostname=\"{}\""
+                 ")\n\n".format(hostname))
     output.write("txrx.ensure_board_is_ready(int({})) \n\n".format(
                  board_version))
     output.write("txrx.discover_connections() \n \n")
