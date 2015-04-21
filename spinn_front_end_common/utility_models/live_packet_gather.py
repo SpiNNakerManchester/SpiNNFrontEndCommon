@@ -9,7 +9,7 @@ from pacman.model.constraints.placer_constraints\
 from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint \
     import TagAllocatorRequireIptagConstraint
-from pacman.model.abstract_classes.abstract_partitionable_vertex \
+from pacman.model.partitionable_graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
 
 # spinn front end imports

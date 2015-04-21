@@ -6,7 +6,7 @@ ReverseIpTagMultiCastSource
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
 
-from pacman.model.abstract_classes.abstract_partitionable_vertex import \
+from pacman.model.partitionable_graph.abstract_partitionable_vertex import \
     AbstractPartitionableVertex
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
