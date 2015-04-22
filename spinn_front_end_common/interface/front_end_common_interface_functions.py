@@ -102,13 +102,6 @@ class FrontEndCommonInterfaceFunctions(object):
         for reverse_ip_tag in tags.reverse_ip_tags:
             self._txrx.set_reverse_ip_tag(reverse_ip_tag)
 
-    def _retieve_provance_data_from_machine(
-            self, executable_targets, routing_tables, machine):
-
-        # create writer to a report in reports
-        reports.generate_provance_routings(routing_tables, machine, self._txrx,
-                                           self._report_default_directory)
-
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
             write_text_specs, runtime_application_data_folder):
