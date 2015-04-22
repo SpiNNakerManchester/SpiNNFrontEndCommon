@@ -77,7 +77,6 @@ class FrontEndCommonInterfaceFunctions(object):
 
             self._txrx = create_transceiver_from_hostname(
                 hostname=hostname,
-                discover=False,
                 ignore_chips=ignored_chips,
                 ignore_cores=ignored_cores)
 
