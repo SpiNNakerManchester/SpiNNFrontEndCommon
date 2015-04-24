@@ -1,0 +1,8 @@
+language: python
+matrix:
+  include:
+    - python: "2.7"
+      env: TEST_SUITE=suite_2_7
+before_script:
+  - python ./setup.py install
+script: python ./unittests/run_tests.py $TEST_SUITE
