@@ -26,11 +26,20 @@ class AbstractDataSpecableVertex(object):
         self._application_runtime = None
         self._no_machine_time_steps = None
 
-    def _write_basic_setup_info(self, spec, core_app_identifier, region_id):
+    def _write_basic_setup_info(self, spec, core_app_identifiers, region_id):
+        """
+        writes the basic configuration info including any constants expected
+        by the c code on its configuration
+        :param spec: the spec writer to write values to
+        :param core_app_identifiers:  the iterable of identifiers
+        :param region_id: the region id to write these params to
+        :return: None
+        """
 
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=region_id)
-        spec.write_value(data=core_app_identifier)
+        for identifier in core_app_identifiers:
+            spec.write_value(data=identifier)
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
         spec.write_value(data=self._no_machine_time_steps)
 

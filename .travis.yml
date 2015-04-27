@@ -2,7 +2,11 @@ language: python
 matrix:
   include:
     - python: "2.7"
-      env: TEST_SUITE=suite_2_7
+    - pytest
+
+virtualenv:
+  system_site_packages: true
+
 before_script:
   - python ./setup.py install
-script: python ./unittests/run_tests.py $TEST_SUITE
+script: "py.test ."
