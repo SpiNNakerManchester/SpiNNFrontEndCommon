@@ -28,7 +28,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
         uint32_t with_payload_count = schedule[++next_pos];
-        log_debug("Sending %d packets with payloads at time %d",
+        log_debug("Sending %u packets with payloads at time %u",
                   with_payload_count, time);
         for (uint32_t i = 0; i < with_payload_count; i++) {
             uint32_t key = schedule[++next_pos];
@@ -39,8 +39,8 @@ void timer_callback(uint unused0, uint unused1) {
             if (delay_and_repeat_data != 0) {
                 uint16_t repeat = delay_and_repeat_data >> 8;
                 uint16_t delay = delay_and_repeat_data & 0x0000ffff;
-                log_debug("Sending %d, %d at time %d with %d repeats and"
-                          "%d delay ", key, payload, time, repeat, delay);
+                log_debug("Sending %u, %u at time %u with %u repeats and "
+                          "%u delay ", key, payload, time, repeat, delay);
                 for (uint16_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
@@ -58,11 +58,11 @@ void timer_callback(uint unused0, uint unused1) {
         }
 
         uint32_t without_payload_count = schedule[++next_pos];
-        log_debug("Sending %d packets without payloads at time %d",
+        log_debug("Sending %u packets without payloads at time %u",
                   without_payload_count, time);
         for (uint32_t i = 0; i < without_payload_count; i++) {
             uint32_t key = schedule[++next_pos];
-            log_debug("Sending %d", key);
+            log_debug("Sending %u", key);
 
             //check for delays and repeats
             uint32_t delay_and_repeat_data = schedule[++next_pos];
@@ -88,7 +88,7 @@ void timer_callback(uint unused0, uint unused1) {
         ++next_pos;
 
         if (next_pos < schedule_size) {
-            log_debug("Next packets will be sent at %d", schedule[next_pos]);
+            log_debug("Next packets will be sent at %u", schedule[next_pos]);
         } else {
             log_debug("End of Schedule");
         }
