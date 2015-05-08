@@ -42,7 +42,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
     SYSTEM_REGION = 0
     COMMANDS = 1
 
-    CORE_APP_IDENTIFER = constants.COMMAND_SENDER_CORE_APPLICATION_ID
+    CORE_APP_IDENTIFER = constants.COMMAND_SENDER_MAGIC_NUMBER
 
     def __init__(self, machine_time_step, timescale_factor):
 
@@ -140,20 +140,22 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
             write_text_specs, application_run_time_folder):
         """
         Model-specific construction of the data blocks necessary to build a
-        single external retina device.
-        :param subvertex:
-        :param placement:
-        :param sub_graph:
-        :param graph:
-        :param routing_info:
-        :param hostname:
-        :param graph_mapper:
-        :param report_folder:
-        :param ip_tags:
-        :param reverse_ip_tags:
-        :param write_text_specs:
-        :param application_run_time_folder:
-        :return:
+        single Application Monitor on one core.
+        :param subvertex: the partitioned vertex to write the dataspec for
+        :param placement: the placement object
+        :param sub_graph: the partitioned graph object
+        :param graph: the partitionable graph object
+        :param routing_info: the routing infos object
+        :param hostname: the hostname of the machine
+        :param graph_mapper: the graph mapper
+        :param report_folder: the folder to write reports in
+        :param ip_tags: the iptags object
+        :param reverse_ip_tags: the reverse iptags object
+        :param write_text_specs: bool saying if we should write text
+        specifications
+        :param application_run_time_folder: where application data should
+         be written to
+        :return: nothing
         """
 
         data_writer, report_writer = \
@@ -165,12 +167,23 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
         # reserve region - add a word for the region size
         n_command_bytes = self._get_n_command_bytes()
-        self._reserve_memory_regions(spec, n_command_bytes + 4)
+
+        # collect assoicated indentifers
+        component_indetifers = list()
+        component_indetifers.append(self.CORE_APP_IDENTIFIER)
+
+        # Calculate the size of the tables to be reserved in SDRAM:
+        system_region_size = \
+            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
+             len(component_indetifers)) * 4
+
+        self._reserve_memory_regions(spec, n_command_bytes + 4,
+                                     system_region_size)
 
         # Write system region
         spec.comment("\n*** Spec for multi cast source ***\n\n")
-        self._write_basic_setup_info(spec, CommandSender.CORE_APP_IDENTIFER,
-                                     self.SYSTEM_REGION)
+        self._write_timings_region_info(
+            spec, component_indetifers, self.SYSTEM_REGION)
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -236,10 +249,11 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
     def _get_key(self, command, graph_mapper, routing_info):
         """ returns a key for a command
 
-        :param command:
-        :param graph_mapper:
-        :param routing_info:
-        :return:
+        :param command: the command to locate the key for
+        :param graph_mapper: the mappings between parttiionable and
+        partitioned graphs
+        :param routing_info: the routing infos object
+        :return: the key for the command
         """
 
         if command.mask == 0xFFFFFFFF:
@@ -263,7 +277,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
     def _get_n_command_bytes(self):
         """
-
+        calculates the size of memory in bytes that the commands require
         :return:
         """
         n_bytes = 0
@@ -286,10 +300,11 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
         """
-
-        :param partitioned_edge:
-        :param graph_mapper:
-        :return:
+        overlaoded from AbstractProvidesOutgoingEdgeConstraints
+        returns any constraints that need to be placed on outgoing edges.
+        :param partitioned_edge: the partitioned edge thats outgoing
+        :param graph_mapper: the graph mapper.
+        :return: iterable of constraints.
         """
         edge = graph_mapper.get_partitionable_edge_from_partitioned_edge(
             partitioned_edge)
@@ -297,7 +312,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
             return self._edge_constraints[edge]
         return list()
 
-    def _reserve_memory_regions(self, spec, command_size):
+    def _reserve_memory_regions(self, spec, command_size, system_region_size):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -308,7 +323,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
         # Reserve memory:
         spec.reserve_memory_region(region=self.SYSTEM_REGION,
-                                   size=12,
+                                   size=system_region_size,
                                    label='setup')
         if command_size > 0:
             spec.reserve_memory_region(region=self.COMMANDS,

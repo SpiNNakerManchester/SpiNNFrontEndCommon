@@ -23,17 +23,28 @@
 //!            uint32_t timer_period;
 //!            uint32_t n_simulation_ticks;
 //! \param[in] address The address of the region
-//! \param[in] expected_application_magic_number The expected value of the magic
-//!                                          number that checks if the data was
-//!                                          meant for this code
-//! \param timer_period[out] a pointer to an int to receive the timer period,
+//! \param[out] timer_period a pointer to an int to receive the timer period,
 //!                          in microseconds
-//! \param n_simulation_ticks[out] a pointer to an int to receive the number
+//! \param[out] n_simulation_ticks a pointer to an int to receive the number
 //!                                of simulation time steps to be performed
 //! \return True if the data was found, false otherwise
 bool simulation_read_timing_details(
-        address_t address, uint32_t expected_application_magic_number,
-        uint32_t* timer_period, uint32_t* n_simulation_ticks);
+        address_t address, uint32_t* timer_period,
+        uint32_t* n_simulation_ticks);
+
+//! \brief Reads a piece of memory to extract a collection of component
+//! magic numbers for parts of models to read and deduce if they are reading
+//!the correct data in memory.
+//!
+//!
+//! \param[in]  region_start A pointer to the start of the region (or to the
+//!                          first 32-bit word if included as part of another
+//!                          region
+//! \param[in] num_components the number of components to read from memory
+//! \param[out] component_magic_numbers A pointer to the array of components
+bool simulation_read_components(
+        address_t address, uint32_t num_components,
+        uint32_t component_magic_numbers[]);
 
 //! \brief Starts the simulation running, returning when it is complete
 void simulation_run();

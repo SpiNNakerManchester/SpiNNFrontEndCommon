@@ -3,8 +3,7 @@
 #include <debug.h>
 #include <simulation.h>
 #include <spin1_api.h>
-
-#define APPLICATION_MAGIC_NUMBER 0xAC0
+#include "../../front_end_common_lib/include/front_end_common_constants.h"
 
 // Globals
 static sdp_msg_t g_event_message;
@@ -303,7 +302,19 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_MAGIC_NUMBER, timer_period, &simulation_ticks)) {
+            timer_period, &simulation_ticks)) {
+        return false;
+    }
+
+    // get the components that build up a comand sender multicast source
+    uint32_t components[1];
+    if (!simulation_read_components(
+            data_specification_get_region(0, address), 1, components)) {
+        return false;
+    }
+
+    // verify the components are correct
+    if (components[0] != LIVE_PACKET_GATHERER_MAGIC_NUMBER){
         return false;
     }
 

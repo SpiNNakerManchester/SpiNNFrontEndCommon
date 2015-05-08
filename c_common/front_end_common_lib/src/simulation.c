@@ -11,7 +11,7 @@
 // the position and human readable terms for each element from the region
 // containing the timing details.
 typedef enum region_elements{
-	application_magic_number, simulation_timer_period, n_simulation_tics,
+	simulation_timer_period, n_simulation_tics
 }region_elements;
 
 //! \method that checks that the data in this region has the correct identifier
@@ -28,20 +28,40 @@ typedef enum region_elements{
 //! application magic number corresponded to the magic number in memory.
 //! Otherwise the method will return False.
 bool simulation_read_timing_details(
-        address_t address, uint32_t expected_app_magic_number,
-        uint32_t* timer_period, uint32_t* n_simulation_ticks) {
-
-    if (address[application_magic_number] != expected_app_magic_number) {
-        log_error("Unexpected magic number 0x%.8x instead of 0x%.8x",
-        		 address[application_magic_number],
-				 expected_app_magic_number);
-        return false;
-    }
+        address_t address, uint32_t* timer_period,
+        uint32_t* n_simulation_ticks) {
 
     *timer_period = address[simulation_timer_period];
     *n_simulation_ticks = address[n_simulation_tics];
-
+    log_info("timer tic is %d, n_simulation_ticks is %d",
+             *timer_period, *n_simulation_ticks);
     return true;
+}
+
+//! \brief Reads a piece of memory to extract a collection of component
+//! magic numbers for parts of models to read and deduce if they are reading
+//!the correct data in memory.
+//!
+//!
+//! \param[in]  region_start A pointer to the start of the region (or to the
+//!                          first 32-bit word if included as part of another
+//!                          region
+//! \param[in] num_components the number of components to read from memory
+//! \param[out] component_magic_numbers A pointer to the array of components
+bool simulation_read_components(
+        address_t address, uint32_t num_components,
+        uint32_t component_magic_numbers[]){
+
+   // get each number of components, bypassing the first two elements
+   for (uint32_t index = 0; index < num_components; index++){
+       component_magic_numbers[index] = address[index];
+   }
+   log_info("read in components magic numebrs of :[");
+   for (uint32_t index = 0; index < num_components; index++){
+       log_info("%d", component_magic_numbers[index]);
+   }
+   log_info("]");
+   return true;
 }
 
 //! \general method to encapsulate the setting off of any executable.

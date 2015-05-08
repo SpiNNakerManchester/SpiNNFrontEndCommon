@@ -35,7 +35,7 @@ from spinn_front_end_common.abstract_models.\
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities import exceptions
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
@@ -64,7 +64,7 @@ class ReverseIpTagMultiCastSource(
     _CONFIGURATION_REGION_SIZE = 36
     _max_atoms_per_core = sys.maxint
 
-    CORE_APP_IDENTIFIER = constants.SPIKE_INJECTOR_CORE_APPLICATION_ID
+    CORE_APP_IDENTIFIER = constants.REVERSE_IP_TAG_MULTICAST_SOURCE_MAGIC_NUMBER
 
     def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
                  label, board_address=None, virtual_key=None, check_key=True,
@@ -108,7 +108,7 @@ class ReverseIpTagMultiCastSource(
 
         # validate params
         if self._prefix is not None and self._prefix_type is None:
-            raise ConfigurationException(
+            raise exceptions.ConfigurationException(
                 "To use a prefix, you must declaire which position to use the "
                 "prefix in on the prefix_type parameter.")
 
@@ -130,7 +130,7 @@ class ReverseIpTagMultiCastSource(
                 # check that mask key combo = key
                 masked_key = temp_vertual_key & self._mask
                 if self._virtual_key != masked_key:
-                    raise ConfigurationException(
+                    raise exceptions.ConfigurationException(
                         "The mask calculated from your number of neurons has "
                         "the potential to interfere with the key, please "
                         "reduce the number of neurons or reduce the virtual"
@@ -138,17 +138,17 @@ class ReverseIpTagMultiCastSource(
 
                 # check that neuron mask does not interfere with key
                 if self._virtual_key < 0:
-                    raise ConfigurationException(
+                    raise exceptions.ConfigurationException(
                         "Virtual keys must be positive")
                 if n_neurons > max_key:
-                    raise ConfigurationException(
+                    raise exceptions.ConfigurationException(
                         "The mask calculated from your number of neurons has "
                         "the capability to interfere with the key due to its "
                         "size please reduce the number of neurons or reduce "
                         "the virtual key")
 
                 if self._key_left_shift > 16 or self._key_left_shift < 0:
-                    raise ConfigurationException(
+                    raise exceptions.ConfigurationException(
                         "the key left shift must be within a range of "
                         "0 and 16. Please change this param and try again")
 
@@ -163,6 +163,13 @@ class ReverseIpTagMultiCastSource(
         return (virtual_key >> 16) & 0xFFFF
 
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
+        """
+        overlaoded from AbstractProvidesOutgoingEdgeConstraints
+        returns any constraints that need to be placed on outgoing edges.
+        :param partitioned_edge: the partitioned edge thats outgoing
+        :param graph_mapper: the graph mapper.
+        :return: iterable of constraints.
+        """
         if self._virtual_key is not None:
             return list([KeyAllocatorFixedKeyAndMaskConstraint(
                 [KeyAndMask(self._virtual_key, self._mask)])])
@@ -176,29 +183,73 @@ class ReverseIpTagMultiCastSource(
         return mask, max_key
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
+        """
+        overridden from partitionable vertex
+        :param vertex_slice: the slice of atoms to consider
+        :param graph: the partitionable graph
+        :return: the size of sdram (in bytes) used by this model will use for
+        this number of atoms
+        """
         return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4 +
                 self._CONFIGURATION_REGION_SIZE + self._buffer_space)
 
     @property
     def model_name(self):
+        """
+        returns a human readable version of this model
+        :return:
+        """
         return "ReverseIpTagMultiCastSource"
 
-    def is_reverse_ip_tagable_vertex(self):
-        return True
-
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
+        """
+
+        :param vertex_slice:
+        :param graph:
+        :return:
+        """
         return self._CONFIGURATION_REGION_SIZE
 
     def get_binary_file_name(self):
+        """
+        returns the binary name of this model
+        :return:
+        """
         return 'reverse_iptag_multicast_source.aplx'
 
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
+        """
+        overridden from partitionable vertex
+        :param vertex_slice: the slice of atoms to consider
+        :param graph: the partitionable graph
+        :return: the number of cpu cycles this model will use for
+        this number of atoms
+        """
         return 1
 
     def generate_data_spec(self, subvertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_mapper,
                            report_folder, ip_tags, reverse_ip_tags,
                            write_text_specs, application_run_time_folder):
+        """
+        Model-specific construction of the data blocks necessary to build a
+        single Application Monitor on one core.
+        :param subvertex: the partitioned vertex to write the dataspec for
+        :param placement: the placement object
+        :param sub_graph: the partitioned graph object
+        :param graph: the partitionable graph object
+        :param routing_info: the routing infos object
+        :param hostname: the hostname of the machine
+        :param graph_mapper: the graph mapper
+        :param report_folder: the folder to write reports in
+        :param ip_tags: the iptags object
+        :param reverse_ip_tags: the reverse iptags object
+        :param write_text_specs: bool saying if we should write text
+        specifications
+        :param application_run_time_folder: where application data should
+         be written to
+        :return: nothing
+        """
         # Create new DataSpec for this processor:
         data_writer, report_writer = \
             self.get_data_spec_file_writers(
@@ -212,11 +263,19 @@ class ReverseIpTagMultiCastSource(
 
         spec.comment("\nReserving memory space for data regions:\n\n")
 
+        # collect assoicated indentifers
+        component_indetifers = list()
+        component_indetifers.append(self.CORE_APP_IDENTIFIER)
+
+        # Calculate the size of the tables to be reserved in SDRAM:
+        system_region_size = \
+            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
+             len(component_indetifers)) * 4
+
         # Reserve memory regions:
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.SYSTEM.value,
-            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
-            label='SYSTEM')
+            size=system_region_size, label='SYSTEM')
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
@@ -226,8 +285,8 @@ class ReverseIpTagMultiCastSource(
                 size=self._buffer_space, label="BUFFER", empty=True)
 
         # set up system region writes
-        self._write_basic_setup_info(
-            spec, ReverseIpTagMultiCastSource.CORE_APP_IDENTIFIER,
+        self._write_timings_region_info(
+            spec, component_indetifers,
             self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
 
         # set up configuration region writes
@@ -293,7 +352,26 @@ class ReverseIpTagMultiCastSource(
 
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
+        """
+        returns a partioned vertex from the partionable vertex. in this case,
+        they are the same object.
+        :param vertex_slice:  the slice of atoms to consider
+        :param resources_required: the resources used by the partitioned vertex
+        :param label: the label of the partitioned vertex
+        :param constraints: the constraints to add to the partitioned vertex
+        :return: the partitioned vertex
+        """
+        if vertex_slice.n_atoms != self._n_atoms:
+            raise exceptions.ConfigurationException(
+                "You cannot partition a reverse multicast source into multiple"
+                " partitiooned vertices, therefore this is deemed an error "
+                "when the vertex slice is not equal to the number of atoms "
+                "for the live packet gather.")
         return self
 
     def is_data_specable(self):
+        """
+        helper method for isinstance
+        :return:
+        """
         return True
