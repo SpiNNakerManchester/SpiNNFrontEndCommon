@@ -57,9 +57,10 @@ class ReverseIpTagMultiCastSource(
     # internal params
     _SPIKE_INJECTOR_REGIONS = Enum(
         value="SPIKE_INJECTOR_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIGURATION', 1),
-               ('BUFFER', 2)])
+        names=[('TIMINGS', 0),
+               ('COMPONENTS', 1),
+               ('CONFIGURATION', 2),
+               ('BUFFER', 3)])
 
     _CONFIGURATION_REGION_SIZE = 36
     _max_atoms_per_core = sys.maxint
@@ -277,6 +278,10 @@ class ReverseIpTagMultiCastSource(
             region=self._SPIKE_INJECTOR_REGIONS.SYSTEM.value,
             size=system_region_size, label='SYSTEM')
         spec.reserve_memory_region(
+            region=self._SPIKE_INJECTOR_REGIONS.TIMINGS.value,
+            size=constants.TIMINGS_REGION_BYTES, label="")
+
+        spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
         if self._buffer_space is not None and self._buffer_space > 0:
@@ -286,8 +291,10 @@ class ReverseIpTagMultiCastSource(
 
         # set up system region writes
         self._write_timings_region_info(
-            spec, component_indetifers,
-            self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
+            spec, self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
+        self._write_component_to_region(
+            spec, self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
+            component_indetifers)
 
         # set up configuration region writes
         spec.switch_write_focus(
