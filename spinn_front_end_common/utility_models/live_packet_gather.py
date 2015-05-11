@@ -50,8 +50,9 @@ class LivePacketGather(
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1)])
+        names=[('TIMINGS', 0),
+               ('COMPONENTS', 1),
+               ('CONFIG', 2)])
     _CONFIG_SIZE = 44
 
     """
@@ -174,40 +175,46 @@ class LivePacketGather(
         spec.comment("\n*** Spec for AppMonitor Instance ***\n\n")
 
         # colelct assoicated indentifers
-        component_indetifers = list()
-        component_indetifers.append(self.CORE_APP_IDENTIFIER)
-
-        # Calculate the size of the tables to be reserved in SDRAM:
-        system_region_size = \
-            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-             len(component_indetifers)) * 4
+        component_indetifers = self._get_components()
 
         # Construct the data images needed for the Neuron:
-        self.reserve_memory_regions(spec, system_region_size)
-        self.write_setup_info(spec, component_indetifers)
+        self.reserve_memory_regions(spec, component_indetifers)
+        self._write_timings_region_info(
+            spec, self._LIVE_DATA_GATHER_REGIONS.TIMINGS.value)
+        self._write_component_to_region(
+            spec, self._LIVE_DATA_GATHER_REGIONS.COMPONENTS.value,
+            component_indetifers)
         self.write_configuration_region(spec, ip_tags)
 
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
 
-    def reserve_memory_regions(self, spec, setup_sz):
+    def _get_components(self):
+        component_indetifers = list()
+        component_indetifers.append(self.CORE_APP_IDENTIFIER)
+        return component_indetifers
+
+    def reserve_memory_regions(self, spec, components):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
         :param spec: the spec object for the dsg
-        :param setup_sz: the size of the system region
+        :param components: the list of components to identify this model
         """
 
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value,
-            size=setup_sz, label='setup')
+            region=self._LIVE_DATA_GATHER_REGIONS.TIMINGS.value,
+            size=constants.TIMINGS_REGION_BYTES, label='timings')
+        spec.reserve_memory_region(
+            region=self._LIVE_DATA_GATHER_REGIONS.COMPONENTS.value,
+            size=len(components) * 4, label='components')
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
-            size=self._CONFIG_SIZE, label='setup')
+            size=self._CONFIG_SIZE, label='config')
 
     def write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
@@ -275,33 +282,6 @@ class LivePacketGather(
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
 
-    def write_setup_info(self, spec, component_indetifers):
-        """
-        Write information used to control the simulation and gathering of
-        results. Currently, this means the flag word used to signal whether
-        information on neuron firing and neuron potential is either stored
-        locally in a buffer or passed out of the simulation for storage/display
-        as the simulation proceeds.
-
-        The format of the information is as follows:
-        Word 0: Flags selecting data to be gathered during simulation.
-            Bit 0: Record spike history
-            Bit 1: Record neuron potential
-            Bit 2: Record gsyn values
-            Bit 3: Reserved
-            Bit 4: Output spike history on-the-fly
-            Bit 5: Output neuron potential
-            Bit 6: Output spike rate
-        :param spec: the spec writer to put data into
-        """
-
-        # Write this to the system region (to be picked up by the simulation):
-        spec.switch_write_focus(
-            region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
-        self._write_timings_region_info(
-            spec, component_indetifers,
-            self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
-
     def get_binary_file_name(self):
         """
         returns the binary namae for this model
@@ -328,8 +308,8 @@ class LivePacketGather(
         :return: the size of sdram (in bytes) used by this model will use for
         this number of atoms
         """
-        return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-                self._CONFIG_SIZE)
+        return (constants.TIMINGS_REGION_BYTES +
+                (len(self._get_components()) * 4) + self._CONFIG_SIZE)
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         """

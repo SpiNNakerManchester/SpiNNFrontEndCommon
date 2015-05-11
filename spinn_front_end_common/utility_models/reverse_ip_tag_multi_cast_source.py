@@ -191,7 +191,8 @@ class ReverseIpTagMultiCastSource(
         :return: the size of sdram (in bytes) used by this model will use for
         this number of atoms
         """
-        return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4 +
+        return (constants.TIMINGS_REGION_BYTES +
+                (len(self._get_components()) * 4) +
                 self._CONFIGURATION_REGION_SIZE + self._buffer_space)
 
     @property
@@ -227,6 +228,11 @@ class ReverseIpTagMultiCastSource(
         this number of atoms
         """
         return 1
+
+    def _get_components(self):
+        component_indetifers = list()
+        component_indetifers.append(self.CORE_APP_IDENTIFIER)
+        return component_indetifers
 
     def generate_data_spec(self, subvertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_mapper,
@@ -265,22 +271,15 @@ class ReverseIpTagMultiCastSource(
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # collect assoicated indentifers
-        component_indetifers = list()
-        component_indetifers.append(self.CORE_APP_IDENTIFIER)
-
-        # Calculate the size of the tables to be reserved in SDRAM:
-        system_region_size = \
-            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-             len(component_indetifers)) * 4
+        component_indetifers = self._get_components()
 
         # Reserve memory regions:
         spec.reserve_memory_region(
-            region=self._SPIKE_INJECTOR_REGIONS.SYSTEM.value,
-            size=system_region_size, label='SYSTEM')
-        spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.TIMINGS.value,
-            size=constants.TIMINGS_REGION_BYTES, label="")
-
+            size=constants.TIMINGS_REGION_BYTES, label="timings")
+        spec.reserve_memory_region(
+            region=self._SPIKE_INJECTOR_REGIONS.COMPONENTS.value,
+            size=len(component_indetifers) * 4, label="timings")
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
@@ -291,9 +290,9 @@ class ReverseIpTagMultiCastSource(
 
         # set up system region writes
         self._write_timings_region_info(
-            spec, self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
+            spec, self._SPIKE_INJECTOR_REGIONS.TIMINGS.value)
         self._write_component_to_region(
-            spec, self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
+            spec, self._SPIKE_INJECTOR_REGIONS.COMPONENTS.value,
             component_indetifers)
 
         # set up configuration region writes

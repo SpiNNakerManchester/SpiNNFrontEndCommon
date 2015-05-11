@@ -26,6 +26,9 @@ from spinn_front_end_common.abstract_models.\
     import AbstractProvidesOutgoingEdgeConstraints
 from spinn_front_end_common.utilities import exceptions
 
+# general imports
+from enum import Enum
+
 
 _COMMAND_WITH_PAYLOAD_SIZE = 12
 
@@ -39,8 +42,11 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         device) at fixed times in the simulation
     """
 
-    SYSTEM_REGION = 0
-    COMMANDS = 1
+    _COMMAND_SENDER_REGIONS = Enum(
+        value="_COMMAND_SENDER_REGIONS",
+        names=[('TIMINGS', 0),
+               ('COMPONENTS', 1),
+               ('COMMANDS', 2)])
 
     CORE_APP_IDENTIFER = constants.COMMAND_SENDER_MAGIC_NUMBER
 
@@ -134,6 +140,11 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                 KeyAllocatorFixedKeyAndMaskConstraint(
                     [KeyAndMask(key, mask) for (key, mask) in command_keys]))
 
+    def _get_components(self):
+        component_indetifers = list()
+        component_indetifers.append(self.CORE_APP_IDENTIFIER)
+        return component_indetifers
+
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
@@ -169,21 +180,17 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         n_command_bytes = self._get_n_command_bytes()
 
         # collect assoicated indentifers
-        component_indetifers = list()
-        component_indetifers.append(self.CORE_APP_IDENTIFIER)
+        component_indetifers = self._get_components()
 
-        # Calculate the size of the tables to be reserved in SDRAM:
-        system_region_size = \
-            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-             len(component_indetifers)) * 4
-
-        self._reserve_memory_regions(spec, n_command_bytes + 4,
-                                     system_region_size)
+        self._reserve_memory_regions(spec, n_command_bytes + 4)
 
         # Write system region
         spec.comment("\n*** Spec for multi cast source ***\n\n")
         self._write_timings_region_info(
-            spec, component_indetifers, self.SYSTEM_REGION)
+            spec, self._COMMAND_SENDER_REGIONS.TIMINGS.value)
+        self._write_component_to_region(
+            spec, self._COMMAND_SENDER_REGIONS.COMPONENTS.value,
+            component_indetifers)
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -312,7 +319,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
             return self._edge_constraints[edge]
         return list()
 
-    def _reserve_memory_regions(self, spec, command_size, system_region_size):
+    def _reserve_memory_regions(self, spec, command_size):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -322,13 +329,17 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
-        spec.reserve_memory_region(region=self.SYSTEM_REGION,
-                                   size=system_region_size,
-                                   label='setup')
+        spec.reserve_memory_region(region=self._COMMAND_SENDER_REGIONS.TIMINGS,
+                                   size=constants.TIMINGS_REGION_BYTES,
+                                   label='timings')
+        spec.reserve_memory_region(
+            region=self._COMMAND_SENDER_REGIONS.COMPONENTS,
+            size=len(self._get_components()) * 4, label='components')
+
         if command_size > 0:
-            spec.reserve_memory_region(region=self.COMMANDS,
-                                       size=command_size,
-                                       label='commands')
+            spec.reserve_memory_region(
+                region=self._COMMAND_SENDER_REGIONS.COMMANDS,
+                size=command_size, label='commands')
 
     @property
     def model_name(self):
