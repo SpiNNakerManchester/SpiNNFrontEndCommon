@@ -45,8 +45,6 @@ class LivePacketGather(
     out of a spinnaker machine.
     """
 
-    CORE_APP_IDENTIFIER = constants.LIVE_GATHERER_CORE_APPLICATION_ID
-
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
         names=[('SYSTEM', 0),
