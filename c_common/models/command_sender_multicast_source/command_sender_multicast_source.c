@@ -4,8 +4,6 @@
 #include <simulation.h>
 #include <string.h>
 
-#define APPLICATION_MAGIC_NUMBER 0xAC6
-
 // Globals
 static uint32_t time;
 static uint32_t simulation_ticks;
@@ -125,7 +123,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_MAGIC_NUMBER, timer_period, &simulation_ticks)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
         return false;
     }
 
