@@ -279,8 +279,7 @@ class LivePacketGather(
         spec.switch_write_focus(
             region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
         self._write_basic_setup_info(
-            spec, constants.LIVE_GATHERER_CORE_APPLICATION_ID,
-            self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
+            spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
