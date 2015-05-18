@@ -314,7 +314,7 @@ bool initialize(uint32_t *timer_period) {
     }
 
     // verify the components are correct
-    if (components[0] != LIVE_PACKET_GATHERER_MAGIC_NUMBER){
+    if (components[0] != APPLICATION_NAME_HASH){
         return false;
     }
 
