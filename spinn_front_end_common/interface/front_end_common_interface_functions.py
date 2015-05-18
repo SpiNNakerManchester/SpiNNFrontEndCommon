@@ -261,8 +261,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 # break_down the successful cores and unsuccessful cores into
                 # string
                 break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, successful_cores, unsuccessful_cores,
-                    CPUState.SYNC0)
+                    all_core_subsets, unsuccessful_cores, CPUState.SYNC0)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
                     "sync0 with breakdown of: {}"
@@ -295,8 +294,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 # break_down the successful cores and unsuccessful cores into
                 # string reps
                 break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, successful_cores, unsuccessful_cores,
-                    CPUState.RUNNING)
+                    all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started with breakdown {}"
                     .format(processors_running, total_processors, break_down))
@@ -325,8 +323,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 # break_down the successful cores and unsuccessful cores
                 # into string reps
                 break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, successful_cores, unsuccessful_cores,
-                    CPUState.RUNNING)
+                    all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state with "
                     "breakdown {}.".format(processors_rte, break_down))
@@ -345,8 +342,7 @@ class FrontEndCommonInterfaceFunctions(object):
             # break_down the successful cores and unsuccessful cores into
             #  string reps
             break_down = self.turn_break_downs_into_string(
-                all_core_subsets, successful_cores, unsuccessful_cores,
-                CPUState.RUNNING)
+                all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
             raise exceptions.ExecutableFailedToStopException(
                 "{} of the processors failed to exit successfully with"
                 " breakdown {}.".format(
@@ -367,12 +363,10 @@ class FrontEndCommonInterfaceFunctions(object):
         return successful_cores, unsuccessful_cores
 
     @staticmethod
-    def turn_break_downs_into_string(total_cores, successful_cores,
-                                     unsuccessful_cores, state):
+    def turn_break_downs_into_string(total_cores, unsuccessful_cores, state):
         """
 
         :param total_cores:
-        :param successful_cores:
         :param unsuccessful_cores:
         :param state:
         :return:
@@ -381,11 +375,7 @@ class FrontEndCommonInterfaceFunctions(object):
         for core_info in total_cores:
             for processor_id in core_info.processor_ids:
                 core_coord = (core_info.x, core_info.y, processor_id)
-                if core_coord in successful_cores:
-                    break_down += "{}:{}:{} successfully in state {}{}"\
-                        .format(core_info.x, core_info.y, processor_id,
-                                state.name, os.linesep)
-                else:
+                if core_coord in unsuccessful_cores:
                     real_state = unsuccessful_cores[(core_info.x, core_info.y,
                                                      processor_id)]
                     if real_state.state == CPUState.RUN_TIME_EXCEPTION:
