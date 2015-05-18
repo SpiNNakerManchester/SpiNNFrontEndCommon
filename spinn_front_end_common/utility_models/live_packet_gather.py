@@ -35,6 +35,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 # general imports
 from enum import Enum
+import hashlib
 
 
 class LivePacketGather(
@@ -46,7 +47,8 @@ class LivePacketGather(
     out of a spinnaker machine.
     """
 
-    CORE_APP_IDENTIFIER = constants.LIVE_PACKET_GATHERER_MAGIC_NUMBER
+    CORE_APP_IDENTIFIER = \
+        hashlib.md5("live_packet_gather").hexdigest()[:8]
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",

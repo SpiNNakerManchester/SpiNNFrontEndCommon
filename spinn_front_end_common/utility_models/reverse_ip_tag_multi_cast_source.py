@@ -44,6 +44,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 from enum import Enum
 import sys
 import math
+import hashlib
 
 
 class ReverseIpTagMultiCastSource(
@@ -65,7 +66,8 @@ class ReverseIpTagMultiCastSource(
     _CONFIGURATION_REGION_SIZE = 36
     _max_atoms_per_core = sys.maxint
 
-    CORE_APP_IDENTIFIER = constants.REVERSE_IP_TAG_MULTICAST_SOURCE_MAGIC_NUMBER
+    CORE_APP_IDENTIFIER = \
+        hashlib.md5("reverse_iptag_multicast_source").hexdigest()[:8]
 
     def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
                  label, board_address=None, virtual_key=None, check_key=True,

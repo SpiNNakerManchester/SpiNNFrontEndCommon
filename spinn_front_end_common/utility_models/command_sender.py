@@ -28,6 +28,7 @@ from spinn_front_end_common.utilities import exceptions
 
 # general imports
 from enum import Enum
+import hashlib
 
 
 _COMMAND_WITH_PAYLOAD_SIZE = 12
@@ -48,7 +49,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                ('COMPONENTS', 1),
                ('COMMANDS', 2)])
 
-    CORE_APP_IDENTIFER = constants.COMMAND_SENDER_MAGIC_NUMBER
+    CORE_APP_IDENTIFER = \
+        hashlib.md5("command_sender_multicast_source").hexdigest()[:8]
 
     def __init__(self, machine_time_step, timescale_factor):
 
