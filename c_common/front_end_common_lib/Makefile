@@ -10,7 +10,7 @@ CFLAGS += -I include
 LDFLAGS += -lspinn_common
 
 # Objects
-OBJS = data_specification.o simulation.o
+OBJS = data_specification.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers

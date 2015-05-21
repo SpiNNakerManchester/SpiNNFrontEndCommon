@@ -12,6 +12,14 @@
 #define _SIMULATION_H_
 
 #include "common-typedefs.h"
+#include <debug.h>
+#include <spin1_api.h>
+
+// the position and human readable terms for each element from the region
+// containing the timing details.
+typedef enum region_elements{
+	APPLICATION_MD5_HASH, SIMULATION_TIMER_PERIOD, N_SIMULATION_TICS
+}region_elements;
 
 //! \brief The number of words that will be read by
 //         simulation_read_timing_details
@@ -28,25 +36,24 @@
 //! \param[out] n_simulation_ticks a pointer to an int to receive the number
 //!                                of simulation time steps to be performed
 //! \return True if the data was found, false otherwise
-bool simulation_read_timing_details(
+static inline bool simulation_read_header(
         address_t address, uint32_t* timer_period,
-        uint32_t* n_simulation_ticks);
+        uint32_t* n_simulation_ticks){
 
-//! \brief Reads a piece of memory to extract a collection of component
-//! magic numbers for parts of models to read and deduce if they are reading
-//!the correct data in memory.
-//!
-//!
-//! \param[in]  region_start A pointer to the start of the region (or to the
-//!                          first 32-bit word if included as part of another
-//!                          region
-//! \param[in] num_components the number of components to read from memory
-//! \param[out] component_magic_numbers A pointer to the array of components
-bool simulation_read_components(
-        address_t address, uint32_t num_components,
-        uint32_t component_magic_numbers[]);
+    if (address[APPLICATION_MD5_HASH] != APPLICATION_NAME_HASH){
+        log_error("this application is reading");
+        return false;
+    }
+    *timer_period = address[SIMULATION_TIMER_PERIOD];
+    *n_simulation_ticks = address[N_SIMULATION_TICS];
+    log_info("timer tic is %d, n_simulation_ticks is %d",
+             *timer_period, *n_simulation_ticks);
+    return true;
+}
 
 //! \brief Starts the simulation running, returning when it is complete
-void simulation_run();
+static inline void simulation_run() {
+    spin1_start(SYNC_WAIT);
+}
 
 #endif // _SIMULATION_H_

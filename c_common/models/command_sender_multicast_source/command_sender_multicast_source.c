@@ -122,21 +122,9 @@ bool initialize(uint32_t *timer_period) {
     }
 
     // Get the timing details
-    if (!simulation_read_timing_details(
+    if (!simulation_read_header(
             data_specification_get_region(0, address),
             timer_period, &simulation_ticks)) {
-        return false;
-    }
-
-    // get the components that build up a comand sender multicast source
-    uint32_t components[1];
-    if (!simulation_read_components(
-            data_specification_get_region(0, address), 1, components)) {
-        return false;
-    }
-
-    // verify the components are correct
-    if (components[0] != APPLICATION_NAME_HASH){
         return false;
     }
 

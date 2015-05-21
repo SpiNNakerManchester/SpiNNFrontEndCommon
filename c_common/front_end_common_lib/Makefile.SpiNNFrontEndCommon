@@ -16,16 +16,13 @@ ifndef BUILD_DIR
 endif
 
 # Convert the objs into the correct format to work here
-ABSOBJS = $(abspath $(OBJECTS))
-ABSDIR = $(abspath $(SOURCE_DIRS))
-ifdef EXTRA_SRC_DIR
-    ABS_EXTRA_SRC_DIR = $(abspath $(EXTRA_SRC_DIR))
-    EXTRA_OBJS = $(ABSOBJS:$(ABS_EXTRA_SRC_DIR)/%.o=%.o)
-else
-    EXTRA_OBJS = $(ABSOBJS)
-endif
-RELOBJS := $(EXTRA_OBJS:$(ABSDIR)/%.o=%.o)
-OBJECTS := $(RELOBJS:%.o=$(BUILD_DIR)%.o)
+# convert_dirs = $(ifneq (EXTRA_SRC_DIR, ""), $(patsubst $(abspath $(SOURCE_DIRS))/%.o, $(BUILD_DIR)/%.o, $(patsubst $(abspath $(EXTRA_SRC_DIR))/%.o, $(BUILD_DIR)/%.o, $(abspath $(1)))), $(patsubst $(abspath $(SOURCE_DIRS))/%.o, $(BUILD_DIR)/%.o, $(abspath $(1)))
+# convert_dirs = $(patsubst $(abspath $(SOURCE_DIRS))/%.o, $(BUILD_DIR)/%.o, $(abspath $(1)))
+convert_dirs = $(if $(filter(EXTRA_SRC_DIR, "")), \
+    $(patsubst $(abspath $(SOURCE_DIRS))/%.o, $(BUILD_DIR)/%.o, $(abspath $(1))), \
+    $(patsubst $(abspath $(SOURCE_DIRS))/%.o, $(BUILD_DIR)/%.o, $(patsubst $(abspath $(EXTRA_SRC_DIR))/%.o, $(BUILD_DIR)/%.o, $(abspath $(1)))))
+
+OBJECTS := $(call convert_dirs, $(OBJECTS))
 
 LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
 ifndef DEBUG
