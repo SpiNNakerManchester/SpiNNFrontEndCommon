@@ -28,6 +28,7 @@ from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import reports
+from spinn_front_end_common.utilities.reload.reload_script import ReloadScript
 
 # general imports
 import time
@@ -47,10 +48,13 @@ class FrontEndCommonInterfaceFunctions(object):
     etc
     """
 
-    def __init__(self, reports_states, report_default_directory):
+    def __init__(self, reports_states, report_default_directory,
+                 app_data_folder):
         self._reports_states = reports_states
         self._report_default_directory = report_default_directory
         self._machine = None
+        self._app_data_folder = app_data_folder
+        self._reload_script = None
 
     def _setup_interfaces(
             self, hostname, requires_virtual_board, downed_chips, downed_cores,
@@ -88,6 +92,8 @@ class FrontEndCommonInterfaceFunctions(object):
             self._txrx.ensure_board_is_ready(int(machine_version))
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
+            self._reload_script = ReloadScript(
+                self._app_data_folder, hostname, machine_version)
         else:
             self._machine = VirtualMachine(
                 x_dimension=virtual_x_dimension,
@@ -99,8 +105,10 @@ class FrontEndCommonInterfaceFunctions(object):
         """
         for ip_tag in tags.ip_tags:
             self._txrx.set_ip_tag(ip_tag)
+            self._reload_script.add_ip_tag(ip_tag)
         for reverse_ip_tag in tags.reverse_ip_tags:
             self._txrx.set_reverse_ip_tag(reverse_ip_tag)
+            self._reload_script.add_reverse_ip_tag(reverse_ip_tag)
 
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
@@ -218,6 +226,10 @@ class FrontEndCommonInterfaceFunctions(object):
         # close the progress bar
         progress_bar.end()
         return processor_to_app_data_base_address
+
+    def _finish_loading(self):
+        if self._reports_states.transciever_report:
+            self._reload_script.close()
 
     @staticmethod
     def _get_processors(executable_targets):
@@ -408,11 +420,6 @@ class FrontEndCommonInterfaceFunctions(object):
             processor_to_app_data_base_address, hostname, app_id,
             app_data_folder, machine_version):
 
-        # if doing reload, start script
-        if self._reports_states.transciever_report:
-            reports.start_transceiver_rerun_script(
-                app_data_folder, hostname, machine_version)
-
         # go through the placements and see if there's any application data to
         # load
         progress_bar = ProgressBar(len(list(placements.placements)),
@@ -454,10 +461,9 @@ class FrontEndCommonInterfaceFunctions(object):
 
                 # add lines to rerun_script if requested
                 if self._reports_states.transciever_report:
-                    reports.re_load_script_application_data_load(
+                    self._reload_script.add_application_data(
                         file_path_for_application_data, placement,
-                        start_address, memory_written, user_o_register_address,
-                        app_data_folder)
+                        start_address)
             progress_bar.update()
         progress_bar.end()
 
@@ -479,8 +485,7 @@ class FrontEndCommonInterfaceFunctions(object):
                         router_table.x, router_table.y,
                         router_table.multicast_routing_entries, app_id=app_id)
                     if self._reports_states.transciever_report:
-                        reports.re_load_script_load_routing_tables(
-                            router_table, app_data_folder, app_id)
+                        self._reload_script.add_routing_table(router_table)
             progress_bar.update()
         progress_bar.end()
 
@@ -490,9 +495,6 @@ class FrontEndCommonInterfaceFunctions(object):
             everywhere and then send a start request to the cores that \
             actually use it
         """
-        if self._reports_states.transciever_report:
-            reports.re_load_script_load_executables_init(
-                app_data_folder, executable_targets)
 
         progress_bar = ProgressBar(len(executable_targets),
                                    "Loading executables onto the machine")
@@ -526,8 +528,8 @@ class FrontEndCommonInterfaceFunctions(object):
                                      size)
 
             if self._reports_states.transciever_report:
-                reports.re_load_script_load_executables_individual(
-                    app_data_folder, executable_target_key,
-                    app_id, size)
+                self._reload_script.add_binary(executable_target_key,
+                                               core_subset)
             progress_bar.update()
         progress_bar.end()
+        self._finish_loading()
