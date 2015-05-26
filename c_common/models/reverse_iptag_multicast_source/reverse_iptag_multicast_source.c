@@ -4,12 +4,10 @@
 #include <simulation.h>
 #include <sark.h>
 #include <string.h>
-#include "../../front_end_common_lib/include/front_end_common_constants.h"
 
 //! human readable definitions of each region in SDRAM
 typedef enum regions_e {
-    TIMINGS_REGION,
-    COMPONENTS_REGION,
+    HEADER_REGION,
     CONFIGURATION_REGION,
     BUFFER_REGION
 } regions_e;
@@ -919,7 +917,7 @@ bool initialize(uint32_t *timer_period) {
 
     // Get the timing details
     if (!simulation_read_header(
-            data_specification_get_region(TIMINGS_REGION, address),
+            data_specification_get_region(HEADER_REGION, address),
             timer_period, &simulation_ticks)) {
         return false;
     }

@@ -28,7 +28,6 @@ from spinn_front_end_common.utilities import exceptions
 
 # general imports
 from enum import Enum
-import hashlib
 
 
 _COMMAND_WITH_PAYLOAD_SIZE = 12
@@ -45,12 +44,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
     _COMMAND_SENDER_REGIONS = Enum(
         value="_COMMAND_SENDER_REGIONS",
-        names=[('TIMINGS', 0),
-               ('COMPONENTS', 1),
-               ('COMMANDS', 2)])
-
-    CORE_APP_IDENTIFER = \
-        hashlib.md5("command_sender_multicast_source").hexdigest()[:8]
+        names=[('HEADER', 0),
+               ('COMMANDS', 1)])
 
     def __init__(self, machine_time_step, timescale_factor):
 
@@ -142,11 +137,6 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                 KeyAllocatorFixedKeyAndMaskConstraint(
                     [KeyAndMask(key, mask) for (key, mask) in command_keys]))
 
-    def _get_components(self):
-        component_indetifers = list()
-        component_indetifers.append(self.CORE_APP_IDENTIFIER)
-        return component_indetifers
-
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
@@ -180,19 +170,13 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
         # reserve region - add a word for the region size
         n_command_bytes = self._get_n_command_bytes()
-
-        # collect assoicated indentifers
-        component_indetifers = self._get_components()
-
         self._reserve_memory_regions(spec, n_command_bytes + 4)
 
         # Write system region
         spec.comment("\n*** Spec for multi cast source ***\n\n")
-        self._write_timings_region_info(
-            spec, self._COMMAND_SENDER_REGIONS.TIMINGS.value)
-        self._write_component_to_region(
-            spec, self._COMMAND_SENDER_REGIONS.COMPONENTS.value,
-            component_indetifers)
+        self._write_header_region(
+            spec, "command_sender", 
+            self._COMMAND_SENDER_REGIONS.HEADER.value)
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -259,8 +243,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         """ returns a key for a command
 
         :param command: the command to locate the key for
-        :param graph_mapper: the mappings between parttiionable and
-        partitioned graphs
+        :param graph_mapper: the mappings between parttiionable and\
+                    partitioned graphs
         :param routing_info: the routing infos object
         :return: the key for the command
         """
@@ -332,12 +316,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
         # Reserve memory:
         spec.reserve_memory_region(region=self._COMMAND_SENDER_REGIONS.TIMINGS,
-                                   size=constants.TIMINGS_REGION_BYTES,
-                                   label='timings')
-        spec.reserve_memory_region(
-            region=self._COMMAND_SENDER_REGIONS.COMPONENTS,
-            size=len(self._get_components()) * 4, label='components')
-
+                                   size=AbstractDataSpecableVertex._HEADER_REGION_BYTES,
+                                   label='header')
         if command_size > 0:
             spec.reserve_memory_region(
                 region=self._COMMAND_SENDER_REGIONS.COMMANDS,

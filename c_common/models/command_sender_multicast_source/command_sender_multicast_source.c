@@ -3,7 +3,6 @@
 #include <debug.h>
 #include <simulation.h>
 #include <string.h>
-#include "../../front_end_common_lib/include/front_end_common_constants.h"
 
 // Globals
 static uint32_t time;

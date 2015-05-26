@@ -44,7 +44,6 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 from enum import Enum
 import sys
 import math
-import hashlib
 
 
 class ReverseIpTagMultiCastSource(
@@ -58,16 +57,12 @@ class ReverseIpTagMultiCastSource(
     # internal params
     _SPIKE_INJECTOR_REGIONS = Enum(
         value="SPIKE_INJECTOR_REGIONS",
-        names=[('TIMINGS', 0),
-               ('COMPONENTS', 1),
-               ('CONFIGURATION', 2),
-               ('BUFFER', 3)])
+        names=[('HEADER', 0),
+               ('CONFIGURATION', 1),
+               ('BUFFER', 2)])
 
     _CONFIGURATION_REGION_SIZE = 36
     _max_atoms_per_core = sys.maxint
-
-    CORE_APP_IDENTIFIER = \
-        hashlib.md5("reverse_iptag_multicast_source").hexdigest()[:8]
 
     def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
                  label, board_address=None, virtual_key=None, check_key=True,
@@ -231,11 +226,6 @@ class ReverseIpTagMultiCastSource(
         """
         return 1
 
-    def _get_components(self):
-        component_indetifers = list()
-        component_indetifers.append(self.CORE_APP_IDENTIFIER)
-        return component_indetifers
-
     def generate_data_spec(self, subvertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_mapper,
                            report_folder, ip_tags, reverse_ip_tags,
@@ -272,16 +262,11 @@ class ReverseIpTagMultiCastSource(
 
         spec.comment("\nReserving memory space for data regions:\n\n")
 
-        # collect assoicated indentifers
-        component_indetifers = self._get_components()
-
         # Reserve memory regions:
         spec.reserve_memory_region(
-            region=self._SPIKE_INJECTOR_REGIONS.TIMINGS.value,
-            size=constants.TIMINGS_REGION_BYTES, label="timings")
-        spec.reserve_memory_region(
-            region=self._SPIKE_INJECTOR_REGIONS.COMPONENTS.value,
-            size=len(component_indetifers) * 4, label="timings")
+            region=self._SPIKE_INJECTOR_REGIONS.HEADER.value,
+            size=AbstractDataSpecableVertex._HEADER_REGION_BYTES, 
+            label="timings")
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
@@ -291,11 +276,8 @@ class ReverseIpTagMultiCastSource(
                 size=self._buffer_space, label="BUFFER", empty=True)
 
         # set up system region writes
-        self._write_timings_region_info(
-            spec, self._SPIKE_INJECTOR_REGIONS.TIMINGS.value)
-        self._write_component_to_region(
-            spec, self._SPIKE_INJECTOR_REGIONS.COMPONENTS.value,
-            component_indetifers)
+        self._write_header_region(
+            spec, "reverse_ip_tag_multicast_source", self._SPIKE_INJECTOR_REGIONS.HEADER.value)
 
         # set up configuration region writes
         spec.switch_write_focus(

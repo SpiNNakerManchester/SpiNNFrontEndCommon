@@ -1,6 +1,7 @@
 from data_specification.file_data_writer import FileDataWriter
 
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import helpful_functions
 
 from abc import ABCMeta
 from six import add_metaclass
@@ -19,6 +20,8 @@ class AbstractDataSpecableVertex(object):
     """ A Vertex that enforces the methods for generating
        a dsg and gives some very basic impliemntation of a setup info method.
     """
+    
+    _HEADER_REGION_BYTES = 12
 
     def __init__(self, machine_time_step, timescale_factor):
         self._machine_time_step = machine_time_step
@@ -26,7 +29,7 @@ class AbstractDataSpecableVertex(object):
         self._application_runtime = None
         self._no_machine_time_steps = None
 
-    def _write_timings_region_info(self, spec, region_id):
+    def _write_header_region(self, spec, application_name, region_id):
         """
         writes the timing configuration info including any constants expected
         by the c code on its configuration
@@ -37,22 +40,9 @@ class AbstractDataSpecableVertex(object):
 
         # Write this to the timings region (to be picked up by the simulation):
         spec.switch_write_focus(region=region_id)
+        spec.write_value(data=helpful_functions.get_hash(application_name))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
         spec.write_value(data=self._no_machine_time_steps)
-
-    def _write_component_to_region(self, spec, region_id, components):
-        """
-        writes the component magic numbers to a region for c code invesitgation.
-        :param spec: the spec writer to write values to
-        :param components: the iterable of identifiers
-        :param region_id:  the region id to write these params to
-        :return:None
-        """
-
-        # write these to a given region (to be picked up by the simulation)
-        spec.switch_write_focus(region=region_id)
-        for identifier in components:
-            spec.write_value(data=identifier)
 
     @abstractmethod
     def generate_data_spec(

@@ -47,14 +47,10 @@ class LivePacketGather(
     out of a spinnaker machine.
     """
 
-    CORE_APP_IDENTIFIER = \
-        hashlib.md5("live_packet_gather").hexdigest()[:8]
-
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
-        names=[('TIMINGS', 0),
-               ('COMPONENTS', 1),
-               ('CONFIG', 2)])
+        names=[('HEADER', 0),
+               ('CONFIG', 1)])
     _CONFIG_SIZE = 44
 
     """
@@ -176,28 +172,18 @@ class LivePacketGather(
 
         spec.comment("\n*** Spec for AppMonitor Instance ***\n\n")
 
-        # colelct assoicated indentifers
-        component_indetifers = self._get_components()
-
         # Construct the data images needed for the Neuron:
-        self.reserve_memory_regions(spec, component_indetifers)
-        self._write_timings_region_info(
-            spec, self._LIVE_DATA_GATHER_REGIONS.TIMINGS.value)
-        self._write_component_to_region(
-            spec, self._LIVE_DATA_GATHER_REGIONS.COMPONENTS.value,
-            component_indetifers)
+        self.reserve_memory_regions(spec)
+        self._write_header_region(
+            spec, "live_packet_gather", 
+            self._LIVE_DATA_GATHER_REGIONS.HEADER.value)
         self.write_configuration_region(spec, ip_tags)
 
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
 
-    def _get_components(self):
-        component_indetifers = list()
-        component_indetifers.append(self.CORE_APP_IDENTIFIER)
-        return component_indetifers
-
-    def reserve_memory_regions(self, spec, components):
+    def reserve_memory_regions(self, spec):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -209,11 +195,8 @@ class LivePacketGather(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.TIMINGS.value,
-            size=constants.TIMINGS_REGION_BYTES, label='timings')
-        spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.COMPONENTS.value,
-            size=len(components) * 4, label='components')
+            region=self._LIVE_DATA_GATHER_REGIONS.HEADER.value,
+            size=AbstractDataSpecableVertex._HEADER_REGION_BYTES, label='header')
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')

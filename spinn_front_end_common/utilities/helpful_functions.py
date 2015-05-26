@@ -1,6 +1,7 @@
 import re
 import inspect
 import struct
+import hashlib
 
 
 # Get lists of appropriate routers, placers and partitioners
@@ -19,3 +20,13 @@ def read_and_convert(x, y, address, length, data_format, transceiver):
     data = str(list(transceiver.read_memory(x, y, address, length))[0])
     result = struct.unpack(data_format, data)[0]
     return result
+
+
+def get_hash(string):
+    """ Create a hash of string as an int
+
+    :param string: The string to create the hash of
+    :return: The hash of the string
+    :rtype: int
+    """
+    return int(hashlib.md5(string).hexdigest()[:8], 16)

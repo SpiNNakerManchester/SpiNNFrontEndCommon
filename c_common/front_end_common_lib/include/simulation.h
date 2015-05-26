@@ -41,7 +41,8 @@ static inline bool simulation_read_header(
         uint32_t* n_simulation_ticks){
 
     if (address[APPLICATION_MD5_HASH] != APPLICATION_NAME_HASH){
-        log_error("this application is reading");
+        log_error("The application hash 0x%.8x does not match the expected hash 0x%.8x",
+                  address[APPLICATION_MD5_HASH], APPLICATION_NAME_HASH);
         return false;
     }
     *timer_period = address[SIMULATION_TIMER_PERIOD];
