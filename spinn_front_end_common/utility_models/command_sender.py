@@ -175,7 +175,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         # Write system region
         spec.comment("\n*** Spec for multi cast source ***\n\n")
         self._write_header_region(
-            spec, "command_sender", 
+            spec, "command_sender",
             self._COMMAND_SENDER_REGIONS.HEADER.value)
 
         # Go through the times and replace negative times with positive ones
@@ -315,12 +315,11 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
-        spec.reserve_memory_region(region=self._COMMAND_SENDER_REGIONS.TIMINGS,
-                                   size=AbstractDataSpecableVertex._HEADER_REGION_BYTES,
-                                   label='header')
+        self._reserve_header_region(
+            spec, self._COMMAND_SENDER_REGIONS.HEADER.value)
         if command_size > 0:
             spec.reserve_memory_region(
-                region=self._COMMAND_SENDER_REGIONS.COMMANDS,
+                region=self._COMMAND_SENDER_REGIONS.COMMANDS.value,
                 size=command_size, label='commands')
 
     @property

@@ -19,7 +19,6 @@ from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 
 # spinn front end imports
-from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import exceptions
@@ -35,7 +34,6 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 # general imports
 from enum import Enum
-import hashlib
 
 
 class LivePacketGather(
@@ -175,7 +173,7 @@ class LivePacketGather(
         # Construct the data images needed for the Neuron:
         self.reserve_memory_regions(spec)
         self._write_header_region(
-            spec, "live_packet_gather", 
+            spec, "live_packet_gather",
             self._LIVE_DATA_GATHER_REGIONS.HEADER.value)
         self.write_configuration_region(spec, ip_tags)
 
@@ -194,9 +192,8 @@ class LivePacketGather(
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
-        spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.HEADER.value,
-            size=AbstractDataSpecableVertex._HEADER_REGION_BYTES, label='header')
+        self._reserve_header_region(
+            spec, self._LIVE_DATA_GATHER_REGIONS.HEADER.value)
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')
@@ -293,7 +290,7 @@ class LivePacketGather(
         :return: the size of sdram (in bytes) used by this model will use for
         this number of atoms
         """
-        return (constants.TIMINGS_REGION_BYTES +
+        return (AbstractDataSpecableVertex._HEADER_REGION_BYTES +
                 (len(self._get_components()) * 4) + self._CONFIG_SIZE)
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):

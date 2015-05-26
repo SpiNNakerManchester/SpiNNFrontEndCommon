@@ -34,7 +34,6 @@ from spinn_front_end_common.abstract_models.\
     import AbstractProvidesOutgoingEdgeConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
 # spinnman imports
@@ -188,7 +187,7 @@ class ReverseIpTagMultiCastSource(
         :return: the size of sdram (in bytes) used by this model will use for
         this number of atoms
         """
-        return (constants.TIMINGS_REGION_BYTES +
+        return (AbstractDataSpecableVertex._HEADER_REGION_BYTES +
                 (len(self._get_components()) * 4) +
                 self._CONFIGURATION_REGION_SIZE + self._buffer_space)
 
@@ -263,10 +262,8 @@ class ReverseIpTagMultiCastSource(
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory regions:
-        spec.reserve_memory_region(
-            region=self._SPIKE_INJECTOR_REGIONS.HEADER.value,
-            size=AbstractDataSpecableVertex._HEADER_REGION_BYTES, 
-            label="timings")
+        self._reserve_header_region(
+            spec, self._SPIKE_INJECTOR_REGIONS.HEADER.value)
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
@@ -277,7 +274,8 @@ class ReverseIpTagMultiCastSource(
 
         # set up system region writes
         self._write_header_region(
-            spec, "reverse_ip_tag_multicast_source", self._SPIKE_INJECTOR_REGIONS.HEADER.value)
+            spec, "reverse_ip_tag_multicast_source",
+            self._SPIKE_INJECTOR_REGIONS.HEADER.value)
 
         # set up configuration region writes
         spec.switch_write_focus(

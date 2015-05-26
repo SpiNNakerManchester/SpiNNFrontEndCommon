@@ -20,7 +20,7 @@ class AbstractDataSpecableVertex(object):
     """ A Vertex that enforces the methods for generating
        a dsg and gives some very basic impliemntation of a setup info method.
     """
-    
+
     _HEADER_REGION_BYTES = 12
 
     def __init__(self, machine_time_step, timescale_factor):
@@ -28,6 +28,17 @@ class AbstractDataSpecableVertex(object):
         self._timescale_factor = timescale_factor
         self._application_runtime = None
         self._no_machine_time_steps = None
+
+    def _reserve_header_region(self, spec, region_id):
+        """ Reserve the memory region for the header
+
+        :param spec: The spec writer to reserve the region in
+        :param region_id: The id of the region to reserve
+        """
+        spec.reserve_memory_region(
+            region=region_id,
+            size=AbstractDataSpecableVertex._HEADER_REGION_BYTES,
+            label="header")
 
     def _write_header_region(self, spec, application_name, region_id):
         """
