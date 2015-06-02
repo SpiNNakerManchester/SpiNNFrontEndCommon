@@ -1,103 +1,154 @@
+"""
+reload script for loading onto a amchien wtihout going through the mapper
+"""
+from spinn_front_end_common.interface.buffer_management.buffer_manager import \
+    BufferManager
+from spinn_front_end_common.interface.front_end_common_interface_functions \
+    import FrontEndCommonInterfaceFunctions
+from spinn_front_end_common.utilities.notification_protocol\
+    .notification_protocol import NotificationProtocol
 
-from spynnaker.pyNN.exceptions import ExecutableFailedToStartException
-
-from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.data.file_data_reader import FileDataReader
-from spinnman.model.cpu_state import CPUState
 
 from pacman.utilities.progress_bar import ProgressBar
-
-import time
-from spinnman.messages.scp.scp_signal import SCPSignal
+from pacman.model.routing_tables.multicast_routing_tables import \
+    MulticastRoutingTables
 
 
 class Reload(object):
     """ Reload functions for reload scripts
     """
 
-    def __init__(self, machine_name, version, app_id=30):
-        self._transceiver = create_transceiver_from_hostname(machine_name,
-                                                             discover=False)
-        self._transceiver.ensure_board_is_ready(version)
-        self._transceiver.discover_scamp_connections()
-        self._transceiver.enable_dropped_packet_reinjection()
+    def __init__(self, machine_name, version, reports_states, app_id=30):
+        self._spinnaker_interface = \
+            FrontEndCommonInterfaceFunctions(reports_states, None, None)
+        self._spinnaker_interface.setup_interfaces(
+            machine_name, False, None, None, None, None, None, version)
         self._app_id = app_id
+        self._reports_states = reports_states
         self._total_processors = 0
+        self._buffer_manager = None
 
     def reload_application_data(self, reload_application_data_items,
                                 load_data=True):
+        """
+
+        :param reload_application_data_items:
+        :param load_data:
+        :return:
+        """
+
         progress = ProgressBar(len(reload_application_data_items),
                                "Reloading Application Data")
         for reload_application_data in reload_application_data_items:
             if load_data:
                 data_file = FileDataReader(reload_application_data.data_file)
-                self._transceiver.write_memory(
+                self._spinnaker_interface._txrx.write_memory(
                     reload_application_data.chip_x,
                     reload_application_data.chip_y,
                     reload_application_data.base_address, data_file,
                     reload_application_data.data_size)
                 data_file.close()
-            user_0_register_address = \
-                self._transceiver.get_user_0_register_address_from_core(
+            user_0_register_address = self._spinnaker_interface._txrx.\
+                get_user_0_register_address_from_core(
                     reload_application_data.chip_x,
                     reload_application_data.chip_y,
                     reload_application_data.processor_id)
-            self._transceiver.write_memory(
+            self._spinnaker_interface._txrx.write_memory(
                 reload_application_data.chip_x, reload_application_data.chip_y,
                 user_0_register_address, reload_application_data.base_address)
             progress.update()
             self._total_processors += 1
         progress.end()
 
-    def reload_routes(self, reload_routing_tables):
-        progress = ProgressBar(len(reload_routing_tables),
-                               "Reloading Routing Tables")
-        for reload_routing_table in reload_routing_tables:
-            routing_table = reload_routing_table.routing_table
-            self._transceiver.load_multicast_routes(
-                routing_table.x, routing_table.y,
-                routing_table.multicast_routing_entries, self._app_id)
-            progress.update()
-        progress.end()
+    def reload_routes(self, routing_tables, app_id=30):
+        """
+        reloads a set of routing tables
+        :param reload_routing_tables:
+        :param app_id:
+        :return:
+        """
+        self._spinnaker_interface.load_routing_tables(routing_tables, app_id)
 
-    def reload_binaries(self, reload_binaries):
-        progress = ProgressBar(len(reload_binaries), "Reloading Binaries")
-        for binary in reload_binaries:
-            binary_file = FileDataReader(binary.binary_path)
-            self._transceiver.execute_flood(
-                binary.core_subsets, binary_file, self._app_id,
-                binary.binary_size)
-            binary_file.close()
-            progress.update()
-        progress.end()
+    def reload_binaries(self, executable_targets, app_id=30):
+        """
 
-    def reload_ip_tags(self, ip_tags):
-        for ip_tag in ip_tags:
-            self._transceiver.set_ip_tag(ip_tag)
+        :param executable_targets:
+        :param app_id:
+        :return:
+        """
+        self._spinnaker_interface.load_executable_images(executable_targets,
+                                                         app_id)
 
-    def reload_reverse_ip_tags(self, reverse_ip_tags):
-        for reverse_ip_tag in reverse_ip_tags:
-            self._transceiver.set_reverse_ip_tag(reverse_ip_tag)
+    def reload_tags(self, iptags, reverse_iptags):
+        """
+        reloads the tags required to get the simualtion exeucting
+        :param iptags: the iptags from the preivous run
+        :param reverse_iptags: the reverse iptags from the preivous run
+        :return:
+        """
+        self._spinnaker_interface.load_iptags(iptags)
+        self._spinnaker_interface.load_reverse_iptags(reverse_iptags)
 
-    def restart(self):
-        processor_c_main = self._transceiver.get_core_state_count(
-            self._app_id, CPUState.C_MAIN)
+    def restart(self, socket_addresses, executable_targets, runtime,
+                time_scaling, app_id=30):
+        """
 
-        # check that everything has gone though c main to reach sync0 or
-        # failing for some unknown reason
-        while processor_c_main != 0:
-            time.sleep(0.1)
-            processor_c_main = self._transceiver.get_core_state_count(
-                self._app_id, CPUState.C_MAIN)
+        :param socket_addresses:
+        :param executable_targets:
+        :param runtime:
+        :param time_scaling:
+        :param app_id:
+        :return:
+        """
+        self._buffer_manager.load_initial_buffers()
+        self._spinnaker_interface.\
+            wait_for_cores_to_be_ready(executable_targets, app_id)
+        self._execute_start_messages(socket_addresses)
+        self._spinnaker_interface.start_all_cores(executable_targets, app_id)
+        self._spinnaker_interface.wait_for_execution_to_complete(
+            executable_targets, app_id, runtime, time_scaling)
 
-        # check that the right number of processors are in sync0
-        processors_ready = self._transceiver.get_core_state_count(
-            self._app_id, CPUState.SYNC0)
+    def enable_buffer_manager(self, buffered_placements, buffered_tags,
+                              application_folder_path):
+        """
+        enables the buffer manager with the placements and buffered tags
+        :param buffered_placements: the placements which contain buffered vertices
+        :param buffered_tags: the tags which contain buffered vertices
+        :param application_folder_path: the application folder
+        :return:
+        """
+        self._buffer_manager = BufferManager(
+            buffered_placements, buffered_tags, self._spinnaker_interface._txrx,
+            self._reports_states, application_folder_path, None)
 
-        if processors_ready < self._total_processors:
-            raise ExecutableFailedToStartException(
-                "Only {} processors out of {} have sucessfully reached sync0"
-                .format(processors_ready, self._total_processors))
+    @staticmethod
+    def execute_notification_protocol_read_messages(
+            socket_addresses, wait_for_confirmations, database_path):
+        """
+        writes the interface for sending confirmations for database readers
+        :param socket_addresses: the socket-addresses of the devices which
+        need to read the database
+        :param wait_for_confirmations bool saying if we should wait for
+        confirmations
+        :param database_path the path to the database
+        :return:
+        """
+        notification_protocol = NotificationProtocol(socket_addresses,
+                                                     wait_for_confirmations)
+        notification_protocol.send_read_notification(database_path)
 
-        # Send SYNC0
-        self._transceiver.send_signal(self._app_id, SCPSignal.SYNC0)
+    @staticmethod
+    def _execute_start_messages(socket_addresses):
+        """
+
+        :param socket_addresses: the socket-addresses of the devices which
+        need to read the database, and thus can do with start
+        :return:
+        """
+        notification_protocol = NotificationProtocol(socket_addresses, False)
+        notification_protocol.send_start_notification()
+
+
+
+

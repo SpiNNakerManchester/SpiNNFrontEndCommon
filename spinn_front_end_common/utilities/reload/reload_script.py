@@ -1,7 +1,16 @@
-from spynnaker.pyNN.exceptions import SpynnakerException
+"""
+ReloadScript
+"""
 
+# front end common imports
+from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import reload
+from spinn_front_end_common.utilities.reload.reload_routing_table import \
+    ReloadRoutingTable
+
+# general imports
 import os
-import pickle
+import shutil
 
 
 class ReloadScript(object):
@@ -10,41 +19,77 @@ class ReloadScript(object):
 
     def __init__(self, binary_directory, hostname, board_version):
         self._binary_directory = binary_directory
+        self._wait_on_confiramtion = None
+        self._runtime = None
+        self._time_scale_factor = None
         if not self._binary_directory.endswith(os.sep):
             self._binary_directory += os.sep
+
         file_name = self._binary_directory + "rerun_script.py"
+        shutil.copyfile(os.path.join(
+            os.path.split(
+                os.path.abspath(reload.__file__))[0],
+            "rerun_script_template.py"),
+            file_name)
         try:
-            self._file = open(file_name, "w")
+            self._file = open(file_name, "a")
         except IOError:
-            raise SpynnakerException("Cannot open {} to write the rerun script"
-                                     .format(file_name))
-        self._println("from spinn_machine.tags.iptag import IPTag")
-        self._println("from spinn_machine.tags.reverse_iptag"
-                      " import ReverseIPTag")
-        self._println("")
-        self._println("from spinnman.model.core_subsets import CoreSubsets")
-        self._println("from spinnman.model.core_subset import CoreSubset")
-        self._println("")
-        self._println("from spynnaker.pyNN.utilities.reload.reload"
-                      " import Reload")
-        self._println("from spynnaker.pyNN.utilities.reload"
-                      ".reload_application_data \\")
-        self._println("    import ReloadApplicationData")
-        self._println("from spynnaker.pyNN.utilities.reload.reload_binary"
-                      " import ReloadBinary")
-        self._println("from spynnaker.pyNN.utilities.reload"
-                      ".reload_routing_table \\")
-        self._println("    import ReloadRoutingTable")
-        self._println("")
+            raise exceptions.SpinnFrontEndException(
+                "Cannot open {} to write the rerun script".format(file_name))
+
         self._println("machine_name = \"{}\"".format(hostname))
         self._println("machine_version = {}".format(board_version))
-        self._println("")
-        self._println("application_data = list()")
-        self._println("routing_tables = list()")
-        self._println("binaries = list()")
-        self._println("iptags = list()")
-        self._println("reverse_iptags = list()")
-        self._println("")
+
+    @property
+    def wait_on_confirmation(self):
+        """
+        property method for wait on confirmation
+        :return:
+        """
+        return self._wait_on_confiramtion
+
+    @wait_on_confirmation.setter
+    def wait_on_confirmation(self, wait_on_confirmation):
+        """
+        sets the write on confirmation value for ackhnoeldge protocol
+        :param wait_on_confirmation:
+        :return:
+        """
+        self._wait_on_confiramtion = wait_on_confirmation
+
+    @property
+    def runtime(self):
+        """
+        property for runtime
+        :return:
+        """
+        return self._runtime
+
+    @property
+    def time_scale_factor(self):
+        """
+        property for time scale factor
+        :return:
+        """
+        return self._time_scale_factor
+
+    @runtime.setter
+    def runtime(self, new_value):
+        """
+        sets the runtime for the reload script
+        :param new_value: new value for runtime
+        :return:
+        """
+        self._runtime = new_value
+
+    @time_scale_factor.setter
+    def time_scale_factor(self, new_value):
+        """
+        sets the timescale factor for the relaod script
+        :param new_value: the new value for timescalefactor
+        :return:
+        """
+        self._time_scale_factor = new_value
 
     def _println(self, line):
         """ Write a line to the script
@@ -55,8 +100,30 @@ class ReloadScript(object):
         self._file.write(line)
         self._file.write("\n")
 
+    def add_socket_address(self, socket_address):
+        """
+        stores a socket address for database usages
+        :param socket_address: the socket addresses to be stored by the reload
+        :return:
+        """
+        self._println(
+            "socket_addresses.append(SocketAddress({}, {}, {}))"
+            .format(socket_address.notify_host_name,
+                    socket_address.notify_port_no,
+                    socket_address.listen_port))
+
     def add_application_data(self, application_data_file_name, placement,
                              base_address):
+        """
+        stores a placer for an applciation data block
+        :param application_data_file_name: the file name where the
+        application data is stored.
+        :param placement: the core location of the machine where this data
+        needs to be stored
+        :param base_address: the address in SDRAM where this data should be
+         stored.
+        :return:
+        """
         relative_file_name = application_data_file_name.replace(
             self._binary_directory, "").replace("\\", "\\\\")
         self._println("application_data.append(ReloadApplicationData(")
@@ -65,16 +132,28 @@ class ReloadScript(object):
                                                     placement.p, base_address))
 
     def add_routing_table(self, routing_table):
-        pickle_file_name = "picked_routing_table_for_{}_{}".format(
-            routing_table.x, routing_table.y)
-        pickle_file_path = self._binary_directory + pickle_file_name
-        pickle_file = open(pickle_file_path, "wb")
-        pickle.dump(routing_table, pickle_file)
-        pickle_file.close()
-        self._println("routing_tables.append(ReloadRoutingTable(")
-        self._println("    \"{}\"))".format(pickle_file_name))
+        """
+        stores a routertable object for reloading pruposes
+        :param routing_table: the routing table to reload
+        :return:
+        """
+        reload_routing_table = ReloadRoutingTable()
+        location = \
+            reload_routing_table.store(self._binary_directory, routing_table)
+
+        self._println("reload_routing_table = ReloadRoutingTable()")
+        self._println(
+            "routing_tables.add_routing_table(reload_routing_table."
+            "reload(\"{}\"))".format(location))
 
     def add_binary(self, binary_path, core_subsets):
+        """
+        stores a binary for reload purposes
+        :param binary_path: the absoluete path to the binary needed to be loaded
+        :param core_subsets: the set of cores to which this binary needs to
+        be loaded on the machine.
+        :return:
+        """
         create_cs = "CoreSubsets(["
         for core_subset in core_subsets:
             create_cs += "CoreSubset({}, {}, ".format(core_subset.x,
@@ -84,30 +163,76 @@ class ReloadScript(object):
                 create_cs += "{}, ".format(processor_id)
             create_cs += "]),"
         create_cs += "])"
-        self._println("binaries.append(ReloadBinary(")
-        self._println("    \"{}\",".format(binary_path.replace("\\", "\\\\")))
-        self._println("    {}))".format(create_cs))
+        self._println("binaries.add_subsets(\"{}\", {})".format(
+            binary_path.replace("\\", "\\\\"), create_cs))
 
     def add_ip_tag(self, iptag):
-        self._println("iptags.append(IPTag(\"{}\", {}, \"{}\", {}, {}))"
-                      .format(iptag.board_address, iptag.tag, iptag.ip_address,
-                              iptag.port, iptag.strip_sdp))
+        """
+        stores a iptag for loading purposes
+        :param iptag: the iptag object to be loaded.
+        :return:
+        """
+        self._println("iptags.append(")
+        self._println("    IPTag(\"{}\", {}, \"{}\", {}, {})) ".format(
+            iptag.board_address, iptag.tag, iptag.ip_address, iptag.port,
+            iptag.strip_sdp))
 
     def add_reverse_ip_tag(self, reverse_ip_tag):
+        """
+        stores a reverse iptag for loading purposes
+        :param reverse_ip_tag: the reverse iptag to be loaded.
+        :return:
+        """
         self._println(
-            "reverse_iptags.append(ReverseIPTag(\"{}\", {}, {}, {}, {}, {}))"
+            "reverse_iptags.append(ReverseIPTag(\"{}\", {}, {}, {}, {}, {})) "
             .format(reverse_ip_tag.board_address, reverse_ip_tag.tag,
                     reverse_ip_tag.port, reverse_ip_tag.destination_x,
                     reverse_ip_tag.destination_y, reverse_ip_tag.destination_p,
                     reverse_ip_tag.sdp_port))
 
+    def add_buffered_vertex(self, vertex, iptag, placement,
+                            application_data_folder):
+        """
+        stores a buffered vertex for loading purposes.
+        :param vertex: the buffered vertex to be used in reload purposes
+        :param application_data_folder: the file path to which the send buffers
+        are stored
+        :param iptag: the iptag being used by this vertex
+        :param placement: the placement object for this vertex
+        :return:
+        """
+        self._println(
+            "vertex = ReloadBufferedVertex(\"{}\", \"{}\")"
+            .format(application_data_folder, vertex.label))
+        self._println(
+            "buffered_placements.add_placement(Placement({}, {}, {}, vertex))"
+            .format(placement.x, placement.y, placement.p))
+        self._println(
+            "buffered_tags.add_ip_tag(IPTag(\"{}\", {}, \"{}\", {}, {}), "
+            "vertex) ".format(
+                iptag.board_address, iptag.tag, iptag.ip_address, iptag.port,
+                iptag.strip_sdp))
+
     def close(self):
+        """
+        cleans up the loading process with whatever is needed to stop
+        the applciation
+        :return:
+        """
         self._println("")
-        self._println("reloader = Reload(machine_name, machine_version)")
+        self._println("reloader = Reload(machine_name, machine_version, "
+                      "reports_states)")
+        self._println("if len(socket_addresses) > 0:")
+        self._println(
+            "    reloader.execute_notification_protocol_read_messages("
+            "socket_addresses, {}, \"input_output_database.db\")"
+            .format(self._wait_on_confiramtion))
         self._println("reloader.reload_application_data(application_data)")
         self._println("reloader.reload_routes(routing_tables)")
-        self._println("reloader.reload_ip_tags(iptags)")
-        self._println("reloader.reload_reverse_ip_tags(reverse_iptags)")
+        self._println("reloader.reload_tags(iptags, reverse_iptags)")
         self._println("reloader.reload_binaries(binaries)")
-        self._println("reloader.restart()")
+        self._println("reloader.enable_buffer_manager(buffered_placements, "
+                      "buffered_tags, \"{}\")".format(self._binary_directory))
+        self._println("reloader.restart(socket_addresses, binaries, {}, {})"
+                      .format(self._runtime, self._time_scale_factor))
         self._file.close()

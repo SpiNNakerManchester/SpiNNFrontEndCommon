@@ -27,7 +27,6 @@ from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities import reports
 from spinn_front_end_common.utilities.reload.reload_script import ReloadScript
 
 # general imports
@@ -56,10 +55,10 @@ class FrontEndCommonInterfaceFunctions(object):
         self._app_data_folder = app_data_folder
         self._reload_script = None
 
-    def _setup_interfaces(
-            self, hostname, requires_virtual_board, downed_chips, downed_cores,
-            virtual_x_dimension, virtual_y_dimension, requires_wrap_around,
-            machine_version):
+    def setup_interfaces(
+        self, hostname, requires_virtual_board, downed_chips, downed_cores,
+        virtual_x_dimension, virtual_y_dimension, requires_wrap_around,
+        machine_version):
         """Set up the interfaces for communicating with the SpiNNaker board
         """
 
@@ -91,24 +90,46 @@ class FrontEndCommonInterfaceFunctions(object):
                     "file (spynnaker.cfg or pacman.cfg)")
             self._txrx.ensure_board_is_ready(int(machine_version))
             self._txrx.discover_scamp_connections()
+            self._txrx.enable_dropped_packet_reinjection()
             self._machine = self._txrx.get_machine_details()
-            self._reload_script = ReloadScript(
-                self._app_data_folder, hostname, machine_version)
+            if self._reports_states.transciever_report:
+                self._reload_script = ReloadScript(
+                    self._app_data_folder, hostname, machine_version)
         else:
             self._machine = VirtualMachine(
                 x_dimension=virtual_x_dimension,
                 y_dimension=virtual_y_dimension,
                 with_wrap_arounds=requires_wrap_around)
 
-    def _load_tags(self, tags):
+    def load_tags(self, tags):
         """ loads all the tags onto all the boards
+        :param tags: the tags object which contains ip and reverse ip tags.
+        :return none
         """
-        for ip_tag in tags.ip_tags:
+        self.load_iptags(tags.ip_tags)
+        self.load_reverse_iptags(tags.reverse_ip_tags)
+
+    def load_iptags(self, iptags):
+        """
+        loads all the iptags individually.
+        :param iptags: the iptags to be loaded.
+        :return: none
+        """
+        for ip_tag in iptags:
             self._txrx.set_ip_tag(ip_tag)
-            self._reload_script.add_ip_tag(ip_tag)
-        for reverse_ip_tag in tags.reverse_ip_tags:
+            if self._reports_states.transciever_report:
+                self._reload_script.add_ip_tag(ip_tag)
+
+    def load_reverse_iptags(self, reverse_ip_tags):
+        """
+        loads all the reverse iptags individually.
+        :param reverse_iptags: the reverse iptags to be loaded
+        :return: None
+        """
+        for reverse_ip_tag in reverse_ip_tags:
             self._txrx.set_reverse_ip_tag(reverse_ip_tag)
-            self._reload_script.add_reverse_ip_tag(reverse_ip_tag)
+            if self._reports_states.transciever_report:
+                self._reload_script.add_reverse_ip_tag(reverse_ip_tag)
 
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
@@ -227,28 +248,10 @@ class FrontEndCommonInterfaceFunctions(object):
         progress_bar.end()
         return processor_to_app_data_base_address
 
-    def _finish_loading(self):
-        if self._reports_states.transciever_report:
-            self._reload_script.close()
+    def wait_for_cores_to_be_ready(self, executable_targets, app_id):
 
-    @staticmethod
-    def _get_processors(executable_targets):
-        # deduce how many processors this application uses up
-        total_processors = 0
-        all_core_subsets = list()
-        for executable_target in executable_targets:
-            core_subsets = executable_targets[executable_target]
-            for core_subset in core_subsets:
-                for _ in core_subset.processor_ids:
-                    total_processors += 1
-                all_core_subsets.append(core_subset)
-
-        return total_processors, all_core_subsets
-
-    def _wait_for_cores_to_be_ready(self, executable_targets, app_id):
-
-        total_processors, all_core_subsets = self._get_processors(
-            executable_targets)
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
 
         processor_c_main = self._txrx.get_core_state_count(app_id,
                                                            CPUState.C_MAIN)
@@ -280,10 +283,16 @@ class FrontEndCommonInterfaceFunctions(object):
                     "sync0 with breakdown of: {}"
                     .format(processors_ready, total_processors, break_down))
 
-    def _start_all_cores(self, executable_targets, app_id):
+    def start_all_cores(self, executable_targets, app_id):
+        """
 
-        total_processors, all_core_subsets = self._get_processors(
-            executable_targets)
+        :param executable_targets:
+        :param app_id:
+        :return:
+        """
+
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
 
         # if correct, start applications
         logger.info("Starting application")
@@ -313,11 +322,19 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Only {} of {} processors started with breakdown {}"
                     .format(processors_running, total_processors, break_down))
 
-    def _wait_for_execution_to_complete(
+    def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling):
+        """
 
-        total_processors, all_core_subsets = self._get_processors(
-            executable_targets)
+        :param executable_targets:
+        :param app_id:
+        :param runtime:
+        :param time_scaling:
+        :return:
+        """
+
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
 
         time_to_wait = ((runtime * time_scaling) / 1000.0) + 1.0
         logger.info("Application started - waiting {} seconds for it to"
@@ -363,6 +380,9 @@ class FrontEndCommonInterfaceFunctions(object):
                 "{} of the processors failed to exit successfully with"
                 " breakdown {}.".format(
                     total_processors - processors_exited, break_down))
+
+        if self._reports_states.transciever_report:
+            self._reload_script.close()
         logger.info("Application has run to completion")
 
     def _break_down_of_failure_to_reach_state(self, total_cores, state):
@@ -416,9 +436,8 @@ class FrontEndCommonInterfaceFunctions(object):
         return break_down
 
     def _load_application_data(
-            self, placements, router_tables, vertex_to_subvertex_mapper,
-            processor_to_app_data_base_address, hostname, app_id,
-            app_data_folder, machine_version):
+            self, placements, vertex_to_subvertex_mapper,
+            processor_to_app_data_base_address, hostname, app_data_folder):
 
         # go through the placements and see if there's any application data to
         # load
@@ -467,6 +486,7 @@ class FrontEndCommonInterfaceFunctions(object):
             progress_bar.update()
         progress_bar.end()
 
+    def load_routing_tables(self, router_tables, app_id):
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")
 
@@ -489,18 +509,18 @@ class FrontEndCommonInterfaceFunctions(object):
             progress_bar.update()
         progress_bar.end()
 
-    def _load_executable_images(self, executable_targets, app_id,
-                                app_data_folder):
+    def load_executable_images(self, executable_targets, app_id):
         """ Go through the executable targets and load each binary to \
             everywhere and then send a start request to the cores that \
             actually use it
         """
 
-        progress_bar = ProgressBar(len(executable_targets),
+        progress_bar = ProgressBar(executable_targets.total_processors,
                                    "Loading executables onto the machine")
-        for executable_target_key in executable_targets:
+        for executable_target_key in executable_targets.binary_paths():
             file_reader = SpinnmanFileDataReader(executable_target_key)
-            core_subset = executable_targets[executable_target_key]
+            core_subset = executable_targets.\
+                retrieve_cores_for_a_executable_target(executable_target_key)
 
             statinfo = os.stat(executable_target_key)
             size = statinfo.st_size
@@ -530,6 +550,9 @@ class FrontEndCommonInterfaceFunctions(object):
             if self._reports_states.transciever_report:
                 self._reload_script.add_binary(executable_target_key,
                                                core_subset)
-            progress_bar.update()
+            acutal_cores_loaded = 0
+            for chip_based in core_subset.core_subsets:
+                for _ in chip_based.processor_ids:
+                    acutal_cores_loaded += 1
+            progress_bar.update(amount_to_add=acutal_cores_loaded)
         progress_bar.end()
-        self._finish_loading()

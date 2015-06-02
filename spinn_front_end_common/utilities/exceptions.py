@@ -52,3 +52,16 @@ class ExecutableNotFoundException(SpinnFrontEndException):
     :raise None: does not raise any known exceptions
     """
     pass
+
+
+class BufferableRegionTooSmall(SpinnFrontEndException):
+    """ raised when the SDRAM space of the region for buffered packets is
+    too small to contain any packet at all
+    """
+    pass
+
+
+class BufferedRegionNotPresent(SpinnFrontEndException):
+    """ raised when trying to issue buffered packets for a region not managed
+    """
+    pass
