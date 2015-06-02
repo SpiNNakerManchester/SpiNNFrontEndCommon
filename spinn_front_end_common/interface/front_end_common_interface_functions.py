@@ -10,6 +10,10 @@ from data_specification.file_data_reader import FileDataReader
 from pacman.utilities.progress_bar import ProgressBar
 
 # spinnmachine imports
+from spinn_front_end_common.interface.buffer_management.buffer_manager import \
+    BufferManager
+from spinn_front_end_common.interface.buffer_management.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex import \
+    AbstractSendsBuffersFromHostPartitionedVertex
 from spinn_machine.sdram import SDRAM
 from spinn_machine.virutal_machine import VirtualMachine
 
@@ -54,6 +58,7 @@ class FrontEndCommonInterfaceFunctions(object):
         self._machine = None
         self._app_data_folder = app_data_folder
         self._reload_script = None
+        self._send_buffer_manager = None
 
     def setup_interfaces(
         self, hostname, requires_virtual_board, downed_chips, downed_cores,
@@ -100,6 +105,34 @@ class FrontEndCommonInterfaceFunctions(object):
                 x_dimension=virtual_x_dimension,
                 y_dimension=virtual_y_dimension,
                 with_wrap_arounds=requires_wrap_around)
+
+    def set_up_send_buffering(self, partitioned_graph, placements, tags):
+        """
+        interface for buffered vertices
+        :param partitioned_graph: the partitioned graph object
+        :param placements: the placements object
+        :param tags: the tags object
+        :return: None
+        """
+        progress_bar = ProgressBar(
+            len(partitioned_graph.subvertices),
+            "on initialising the buffer managers for vertices which require"
+            " buffering")
+
+        # Create the buffer manager
+        self._send_buffer_manager = BufferManager(
+            placements, tags, self._txrx, self._reports_states,
+            self._app_data_folder, self._reload_script)
+
+        for partitioned_vertex in partitioned_graph.subvertices:
+            if isinstance(partitioned_vertex,
+                          AbstractSendsBuffersFromHostPartitionedVertex):
+
+                # Add the vertex to the managed vertices
+                self._send_buffer_manager.add_sender_vertex(
+                    partitioned_vertex)
+            progress_bar.update()
+        progress_bar.end()
 
     def load_tags(self, tags):
         """ loads all the tags onto all the boards
