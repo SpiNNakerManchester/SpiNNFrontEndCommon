@@ -55,37 +55,54 @@ class FrontEndCommonInterfaceFunctions(object):
     def _setup_interfaces(
             self, hostname, requires_virtual_board, downed_chips, downed_cores,
             virtual_x_dimension, virtual_y_dimension, requires_wrap_around,
-            machine_version):
-        """Set up the interfaces for communicating with the SpiNNaker board
+            board_version, number_of_boards, machines_bmp_hostnames,
+            max_machines_x_dimension, max_machines_y_dimension):
+        """
+        Set up the interfaces for communicating with the SpiNNaker board
+        :param hostname: the ipaddress of the spinnaker machine
+        :param requires_virtual_board: a boolean which says if the machine to
+        be used is a virtual one
+        :param downed_chips: the chips that are down which sark thinks are alive
+        :param downed_cores: the cores that are down which sark thinks are alive
+        :param virtual_x_dimension: the virtual machines x dimension (only used
+        in conjunction of a true requires_virtual_board)
+        :param virtual_y_dimension: the virtual machines y dimension (only used
+        in conjunction of a true requires_virtual_board)
+        :param requires_wrap_around: bool saying if the virutal machine requires
+        wrap around links to make a toriod (only used in conjunction of a
+        true requires_virtual_board)
+        :param board_version: the version of the boards being used within the
+        machine (spinn1,2,3,4,5 by int value)
+        :param number_of_boards: the number of boards used within the machine
+        :param max_machines_x_dimension: the max x dimension the machine is
+         expected to have
+        :param max_machines_y_dimension: the max y dimension the machine is
+        expected to have
+        :param machines_bmp_hostnames: the ipaddress's of the spinnaker bmp
+        connection in one string seperated by :
+        :return: None
         """
 
         if not requires_virtual_board:
-            ignored_chips = None
-            ignored_cores = None
-            if downed_chips is not None and downed_chips != "None":
-                ignored_chips = CoreSubsets()
-                for downed_chip in downed_chips.split(":"):
-                    x, y = downed_chip.split(",")
-                    ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
-                                                             []))
-            if downed_cores is not None and downed_cores != "None":
-                ignored_cores = CoreSubsets()
-                for downed_core in downed_cores.split(":"):
-                    x, y, processor_id = downed_core.split(",")
-                    ignored_cores.add_processor(int(x), int(y),
-                                                int(processor_id))
+            # sort out down chips and down cores if needed
+            ignored_chips, ignored_cores = \
+                self._sort_out_downed_chips_cores(downed_chips, downed_cores)
+            # sort out bmp connections into list of strings
+            bmp_host_names = self._sort_out_bmp_string(machines_bmp_hostnames)
 
             self._txrx = create_transceiver_from_hostname(
-                hostname=hostname,
+                hostname=hostname, bmp_addresseses=bmp_host_names,
                 ignore_chips=ignored_chips,
                 ignore_cores=ignored_cores)
 
             # do autoboot if possible
-            if machine_version is None:
+            if board_version is None:
                 raise exceptions.ConfigurationException(
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
-            self._txrx.ensure_board_is_ready(int(machine_version))
+            self._txrx.ensure_board_is_ready(
+                int(board_version), number_of_boards, max_machines_x_dimension,
+                max_machines_y_dimension)
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
         else:
@@ -93,6 +110,49 @@ class FrontEndCommonInterfaceFunctions(object):
                 x_dimension=virtual_x_dimension,
                 y_dimension=virtual_y_dimension,
                 with_wrap_arounds=requires_wrap_around)
+
+    @staticmethod
+    def _sort_out_bmp_string(bmp_string):
+        """
+        trnaslates the bmp ipaddresses string into a list of ipaddresses
+        :param bmp_string: the bmp string to seperate
+        :return: a iterable of str
+        """
+        bmp_ip_addresses = list()
+        if bmp_string != "None":
+            for bmp_ip_address in bmp_string.split(":"):
+                bmp_ip_addresses.append(bmp_ip_address)
+        else:
+            return bmp_ip_addresses
+        return bmp_ip_addresses
+
+    @staticmethod
+    def _sort_out_downed_chips_cores(downed_cores, downed_chips):
+        """
+        translates the down cores and down chips string into stuff spinnman
+        can understand
+        :param downed_cores: string representing down cores
+        :type downed_cores: str
+        :param downed_chips: string representing down chips
+        :type: downed_chips: str
+        :return: a list of down cores and down chips in processor and coreset
+        format
+        """
+        ignored_chips = None
+        ignored_cores = None
+        if downed_chips is not None and downed_chips != "None":
+            ignored_chips = CoreSubsets()
+            for downed_chip in downed_chips.split(":"):
+                x, y = downed_chip.split(",")
+                ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
+                                                         []))
+        if downed_cores is not None and downed_cores != "None":
+            ignored_cores = CoreSubsets()
+            for downed_core in downed_cores.split(":"):
+                x, y, processor_id = downed_core.split(",")
+                ignored_cores.add_processor(int(x), int(y),
+                                            int(processor_id))
+        return ignored_cores, ignored_chips
 
     def _load_tags(self, tags):
         """ loads all the tags onto all the boards
