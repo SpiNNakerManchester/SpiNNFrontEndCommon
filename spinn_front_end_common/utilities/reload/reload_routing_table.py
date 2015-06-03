@@ -8,6 +8,12 @@ class ReloadRoutingTable(object):
 
     @staticmethod
     def reload(routing_table_file_name):
+        """
+        reloads a routing table via a pickled filename
+        :param routing_table_file_name: the filepath for the pickled
+        rotuing table
+        :return: None
+        """
         routing_table_file = open(routing_table_file_name, "rb")
         routing_table = pickle.load(routing_table_file)
         routing_table_file.close()

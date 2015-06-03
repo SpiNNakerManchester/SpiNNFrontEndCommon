@@ -30,9 +30,12 @@ from spinn_front_end_common.utilities.reload.reload_routing_table import \
     ReloadRoutingTable
 from spinn_front_end_common.utilities.reload.reload_buffered_vertex import \
     ReloadBufferedVertex
+from spinn_front_end_common.utilities.notification_protocol.\
+    socket_address import SocketAddress
 
 # general imports
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -28,18 +28,22 @@ class Reload(object):
         self._reports_states = reports_states
         self._total_processors = 0
         self._buffer_manager = None
+        self._notification_protocol = None
 
     def reload_application_data(self, reload_application_data_items,
                                 load_data=True):
         """
 
-        :param reload_application_data_items:
-        :param load_data:
-        :return:
+        :param reload_application_data_items:  the application data for each
+        core which needs data to be reloaded to work
+        :param load_data: a boolean which will not reload if set to false.
+        :return: None
         """
 
         progress = ProgressBar(len(reload_application_data_items),
                                "Reloading Application Data")
+        # fixme need to find a way to remove these private accesses (maybe when the dsg in partitioned it will clear up)
+
         for reload_application_data in reload_application_data_items:
             if load_data:
                 data_file = FileDataReader(reload_application_data.data_file)
@@ -64,18 +68,20 @@ class Reload(object):
     def reload_routes(self, routing_tables, app_id=30):
         """
         reloads a set of routing tables
-        :param reload_routing_tables:
-        :param app_id:
-        :return:
+        :param routing_tables: the routing tables which need to be reloaded
+        for the application to run successfully
+        :param app_id: the id used to distinquish this for other applications
+        :return: None
         """
         self._spinnaker_interface.load_routing_tables(routing_tables, app_id)
 
     def reload_binaries(self, executable_targets, app_id=30):
         """
 
-        :param executable_targets:
-        :param app_id:
-        :return:
+        :param executable_targets:the executable targets which needs to
+        be loaded onto the machine
+        :param app_id: the id used to distinquish this for other applications
+        :return: None
         """
         self._spinnaker_interface.load_executable_images(executable_targets,
                                                          app_id)
@@ -90,21 +96,20 @@ class Reload(object):
         self._spinnaker_interface.load_iptags(iptags)
         self._spinnaker_interface.load_reverse_iptags(reverse_iptags)
 
-    def restart(self, socket_addresses, executable_targets, runtime,
-                time_scaling, app_id=30):
+    def restart(self, executable_targets, runtime, time_scaling, app_id=30):
         """
-
-        :param socket_addresses:
-        :param executable_targets:
-        :param runtime:
-        :param time_scaling:
-        :param app_id:
-        :return:
+        :param executable_targets: the executable targets which needs to
+        be loaded onto the machine
+        :param runtime: the amount of time this application is expected to run
+        for
+        :param time_scaling: the time scale factor for timing purposes
+        :param app_id: the id used to distinquish this for other applications
+        :return: None
         """
         self._buffer_manager.load_initial_buffers()
         self._spinnaker_interface.\
             wait_for_cores_to_be_ready(executable_targets, app_id)
-        self._execute_start_messages(socket_addresses)
+        self._execute_start_messages()
         self._spinnaker_interface.start_all_cores(executable_targets, app_id)
         self._spinnaker_interface.wait_for_execution_to_complete(
             executable_targets, app_id, runtime, time_scaling)
@@ -122,9 +127,8 @@ class Reload(object):
             buffered_placements, buffered_tags, self._spinnaker_interface._txrx,
             self._reports_states, application_folder_path, None)
 
-    @staticmethod
     def execute_notification_protocol_read_messages(
-            socket_addresses, wait_for_confirmations, database_path):
+            self, socket_addresses, wait_for_confirmations, database_path):
         """
         writes the interface for sending confirmations for database readers
         :param socket_addresses: the socket-addresses of the devices which
@@ -134,20 +138,16 @@ class Reload(object):
         :param database_path the path to the database
         :return:
         """
-        notification_protocol = NotificationProtocol(socket_addresses,
-                                                     wait_for_confirmations)
-        notification_protocol.send_read_notification(database_path)
+        self._notification_protocol = NotificationProtocol(
+            socket_addresses, wait_for_confirmations)
+        self._notification_protocol.send_read_notification(database_path)
 
-    @staticmethod
-    def _execute_start_messages(socket_addresses):
+    def _execute_start_messages(self):
         """
-
-        :param socket_addresses: the socket-addresses of the devices which
-        need to read the database, and thus can do with start
+        sends the start messages to the external devices which need them
         :return:
         """
-        notification_protocol = NotificationProtocol(socket_addresses, False)
-        notification_protocol.send_start_notification()
+        self._notification_protocol.send_start_notification()
 
 
 

@@ -32,66 +32,34 @@ class NotificationProtocol(object):
         # has been read before starting the simulation
         self._wait_for_read_confirmation = wait_for_read_confirmation
         self._wait_pool = ThreadPool(processes=1)
-
-    def _send_notification(self, database_path):
-        data_base_message_connections = list()
-        for socket_address in self._socket_addresses:
-            data_base_message_connection = EieioCommandConnection(
+        self._data_base_message_connections = list()
+        for socket_address in socket_addresses:
+            self._data_base_message_connections.append(EieioCommandConnection(
                 socket_address.listen_port, socket_address.notify_host_name,
-                socket_address.notify_port_no)
-            data_base_message_connections.append(data_base_message_connection)
-
-        # add file path to database into command message.
-        number_of_chars = len(database_path)
-        if number_of_chars > constants.MAX_DATABASE_PATH_LENGTH:
-            raise exceptions.ConfigurationException(
-                "The file path to the database is too large to be "
-                "transmitted via the command packet, "
-                "please set the file path manually and "
-                "set the .cfg parameter [Database] send_file_path "
-                "to False")
-        eieio_command_message = DatabaseConfirmation(database_path)
-
-        # Send command and wait for response
-        logger.info("*** Notifying visualiser that the database is ready ***")
-        # noinspection PyBroadException
-        try:
-            for connection in data_base_message_connections:
-                connection.send_eieio_command_message(eieio_command_message)
-
-            # if the system needs to wait, try recieving a packet back
-            if self._wait_for_read_confirmation:
-                for connection in data_base_message_connections:
-                    connection.receive_eieio_command_message()
-            logger.info("*** Confirmation received, continuing ***")
-        except Exception:
-            logger.warning("*** Failed to notify external application about"
-                           " the database - continuing ***")
+                socket_address.notify_port_no))
 
     def wait_for_confirmation(self):
-        """
+        """ if asked to wait for confirmation, waits for all external systems to
+        confirm that they are configured and have read the dataabse
 
         :return:
         """
+        logger.info("*** Awaiting for a response from an external source "
+                    "to state its ready for the simulation to start ***")
         self._wait_pool.close()
         self._wait_pool.join()
 
     def send_start_notification(self):
-        """
+        """ either waits till all soruces have confirmed read the database and
+        are configured, and/or just sends the start notification
+         (when the system is executeing)
 
         :return:
         """
-        data_base_message_connections = list()
-        for socket_address in self._socket_addresses:
-            data_base_message_connection = EieioCommandConnection(
-                socket_address.listen_port,
-                socket_address.notify_host_name,
-                socket_address.notify_port_no)
-            data_base_message_connections.append(
-                data_base_message_connection)
-
+        if self._wait_for_read_confirmation:
+            self.wait_for_confirmation()
         eieio_command_message = DatabaseConfirmation()
-        for connection in data_base_message_connections:
+        for connection in self._data_base_message_connections:
             connection.send_eieio_command_message(eieio_command_message)
 
     # noinspection PyPep8
@@ -106,10 +74,46 @@ class NotificationProtocol(object):
                                     args=[database_path])
 
     def _send_read_notification(self, database_path):
+        """
+        sends notfications to a list of socket addresses that the database has
+        been written. Messgae also includes the path to the database
+
+        :param database_path: the path to the database
+        :return: None
+
+        """
         # noinspection PyBroadException
         try:
             self._sent_visualisation_confirmation = True
-            self._send_notification(database_path)
+            # add file path to database into command message.
+            number_of_chars = len(database_path)
+            if number_of_chars > constants.MAX_DATABASE_PATH_LENGTH:
+                raise exceptions.ConfigurationException(
+                    "The file path to the database is too large to be "
+                    "transmitted via the command packet, "
+                    "please set the file path manually and "
+                    "set the .cfg parameter [Database] send_file_path "
+                    "to False")
+            eieio_command_message = DatabaseConfirmation(database_path)
+
+            # Send command and wait for response
+            logger.info(
+                "*** Notifying external sources that the database is ready "
+                "for reading ***")
+            # noinspection PyBroadException
+            try:
+                for connection in self._data_base_message_connections:
+                    connection.send_eieio_command_message(eieio_command_message)
+
+                # if the system needs to wait, try recieving a packet back
+                if self._wait_for_read_confirmation:
+                    for connection in self._data_base_message_connections:
+                        connection.receive_eieio_command_message()
+                logger.info("*** Confirmation received, continuing ***")
+            except Exception:
+                logger.warning("*** Failed to notify external application about"
+                               " the database - continuing ***")
+
         except Exception:
             traceback.print_exc()
 

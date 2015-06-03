@@ -107,7 +107,7 @@ class ReloadScript(object):
         :return:
         """
         self._println(
-            "socket_addresses.append(SocketAddress({}, {}, {}))"
+            "socket_addresses.append(SocketAddress(\"{}\", {}, {}))"
             .format(socket_address.notify_host_name,
                     socket_address.notify_port_no,
                     socket_address.listen_port))
@@ -223,9 +223,14 @@ class ReloadScript(object):
         self._println("reloader = Reload(machine_name, machine_version, "
                       "reports_states)")
         self._println("if len(socket_addresses) > 0:")
+        # note that this needs to be added into the script, as it needs to
+        # be able to find its database no matter where it is or where its
+        # ran from.
         self._println(
             "    reloader.execute_notification_protocol_read_messages("
-            "socket_addresses, {}, \"input_output_database.db\")"
+            "socket_addresses, {}, os.path.join("
+            "os.path.dirname(os.path.abspath(__file__)), "
+            "\"input_output_database.db\"))"
             .format(self._wait_on_confiramtion))
         self._println("reloader.reload_application_data(application_data)")
         self._println("reloader.reload_routes(routing_tables)")
@@ -233,6 +238,6 @@ class ReloadScript(object):
         self._println("reloader.reload_binaries(binaries)")
         self._println("reloader.enable_buffer_manager(buffered_placements, "
                       "buffered_tags, \"{}\")".format(self._binary_directory))
-        self._println("reloader.restart(socket_addresses, binaries, {}, {})"
+        self._println("reloader.restart(binaries, {}, {})"
                       .format(self._runtime, self._time_scale_factor))
         self._file.close()

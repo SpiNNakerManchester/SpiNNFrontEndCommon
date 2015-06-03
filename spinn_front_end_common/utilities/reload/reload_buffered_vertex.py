@@ -27,10 +27,11 @@ class ReloadBufferedVertex(SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
             self, self._send_buffers)
 
     def _read_in_send_buffers_from_folder(self, base_folder):
-        """
+        """ with a base folder, searches for its own buffered regions and
+        reads them in to buffered sneding regions
 
-        :param base_folder:
-        :return:
+        :param base_folder: the folder which contains its buffered regions
+        :return: the send buffers as a dict of region id and bufferedSendRegion
         """
         files_in_folder = os.listdir(base_folder)
         send_buffers = dict()
