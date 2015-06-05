@@ -73,6 +73,7 @@ class FrontEndCommonInterfaceFunctions(object):
         true requires_virtual_board)
         :param board_version: the version of the boards being used within the
         machine (spinn1,2,3,4,5 by int value)
+        :type board_version: int
         :param number_of_boards: the number of boards used within the machine
         :param max_machines_x_dimension: the max x dimension the machine is
          expected to have
@@ -91,8 +92,8 @@ class FrontEndCommonInterfaceFunctions(object):
             bmp_host_names = self._sort_out_bmp_string(machines_bmp_hostnames)
 
             self._txrx = create_transceiver_from_hostname(
-                hostname=hostname, bmp_addresseses=bmp_host_names,
-                ignore_chips=ignored_chips,
+                hostname=hostname, bmp_ip_addresses=bmp_host_names,
+                version=board_version, ignore_chips=ignored_chips,
                 ignore_cores=ignored_cores)
 
             # do autoboot if possible
@@ -101,7 +102,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
             self._txrx.ensure_board_is_ready(
-                int(board_version), number_of_boards, max_machines_x_dimension,
+                board_version, number_of_boards, max_machines_x_dimension,
                 max_machines_y_dimension)
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
