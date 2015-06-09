@@ -21,6 +21,7 @@ from spinnman.data.file_data_reader import FileDataReader \
     as SpinnmanFileDataReader
 from spinnman.model.core_subsets import CoreSubsets
 from spinnman.model.core_subset import CoreSubset
+from spinnman import constants as spinnman_constants
 
 # front end common imports
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
@@ -158,6 +159,13 @@ class FrontEndCommonInterfaceFunctions(object):
     def _load_tags(self, tags):
         """ loads all the tags onto all the boards
         """
+        # clear all the tags from the ethernet connection, as nothing should
+        # be allowed to use it (no two sims should use the same etiehrnet
+        # connection at the same time
+        for tag_id in range(spinnman_constants.MAX_TAG_ID):
+            self._txrx.clear_ip_tag(tag_id)
+
+        # load the tags for this application
         for ip_tag in tags.ip_tags:
             self._txrx.set_ip_tag(ip_tag)
         for reverse_ip_tag in tags.reverse_ip_tags:
