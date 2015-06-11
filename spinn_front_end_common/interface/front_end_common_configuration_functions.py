@@ -21,6 +21,7 @@ import os
 import datetime
 import shutil
 import logging
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -66,89 +67,81 @@ class FrontEndCommonConfigurationFunctions(object):
         self._tag_allocator_algorithm = None
         self._key_allocator_algorithm = None
         self._router_algorithm = None
-        self._report_default_directory = None
-        self._app_data_runtime_folder = None
-        self._this_run_time_string = None
+
+        # Output objects
+        self._report_folder = None
+        self._output_folder = None
+        self._write_text_specs = None
+
+        # Run time string - used for file names
+        this_run_time = datetime.datetime.now()
+        self._this_run_time_string = (
+            "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+                this_run_time.year, this_run_time.month, this_run_time.day,
+                this_run_time.hour, this_run_time.minute,
+                this_run_time.second))
 
         # executable params
         self._do_load = None
         self._do_run = None
-        self._writeTextSpecs = None
         self._retrieve_provance_data = True
 
         # helper data stores
         self._current_max_tag_value = 0
 
-    def _set_up_output_application_data_specifics(
-            self, where_to_write_application_data_files,
-            max_application_binaries_kept):
+    def _write_timestamp_file(self, folder):
+        """ Write a file containing the timestamp string for this run
+
+        :param folder: The folder where the file should be written
         """
+        timestamp_filename = os.path.join(folder, "time_stamp")
+        writer = open(timestamp_filename, "w")
+        writer.writelines(self._this_run_time_string)
+        writer.close()
 
-        :param where_to_write_application_data_files:
-        :param max_application_binaries_kept:
-        :return:
+    def _set_up_output(self, output_folder, max_to_keep, sub_folder_name=None):
+        """ Set up an output folder for some sort of data, with some\
+            historical storage of past runs
+
+        :param output_folder: Specification of where the output is to be\
+                written.  This can be a specific folder for the output, \
+                "DEFAULT", in which case the output is written to the current\
+                working directory, or "TEMP", in which case the output is\
+                written to a folder in the system temporary directory
+        :param max_to_keep: The maximum number of historical runs to be kept
+        :param sub_folder_name: The name of the folder to be created if \
+                output_folder is "DEFAULT" or "TEMP"; ignored otherwise
         """
-        created_folder = False
-        this_run_time_folder = None
-        if where_to_write_application_data_files == "DEFAULT":
-            directory = os.getcwd()
-            application_generated_data_file_folder = \
-                os.path.join(directory, 'application_generated_data_files')
-            if not os.path.exists(application_generated_data_file_folder):
-                os.makedirs(application_generated_data_file_folder)
-                created_folder = True
-
-            if not created_folder:
-                self._move_report_and_binary_files(
-                    max_application_binaries_kept,
-                    application_generated_data_file_folder)
-
-            # add time stamped folder for this run
-            this_run_time_folder = \
-                os.path.join(application_generated_data_file_folder, "latest")
-            if not os.path.exists(this_run_time_folder):
-                os.makedirs(this_run_time_folder)
-
-            # store timestamp in latest/time_stamp
-            time_of_run_file_name = os.path.join(this_run_time_folder,
-                                                 "time_stamp")
-            writer = open(time_of_run_file_name, "w")
-            writer.writelines("app_{}_{}".format(
-                self._app_id, self._this_run_time_string))
-            writer.flush()
-            writer.close()
-
-        elif where_to_write_application_data_files == "TEMP":
-
-            # just dont set the config param, code downstairs
-            #  from here will create temp folders if needed
-            pass
+        output_data_folder = None
+        if output_folder == "DEFAULT":
+            output_data_folder = os.path.join(os.getcwd(), sub_folder_name)
+        elif output_folder == "TEMP":
+            output_data_folder = os.path.join(tempfile.gettempdir(),
+                                              sub_folder_name)
         else:
+            output_data_folder = output_folder
 
-            # add time stamped folder for this run
-            this_run_time_folder = \
-                os.path.join(where_to_write_application_data_files, "latest")
-            if not os.path.exists(this_run_time_folder):
-                os.makedirs(this_run_time_folder)
-            else:
-                self._move_report_and_binary_files(
-                    max_application_binaries_kept,
-                    where_to_write_application_data_files)
+        if not os.path.exists(output_data_folder):
+            os.makedirs(output_data_folder)
 
-            # store timestamp in latest/time_stamp
-            time_of_run_file_name = os.path.join(this_run_time_folder,
-                                                 "time_stamp")
-            writer = open(time_of_run_file_name, "w")
-            writer.writelines("app_{}_{}".format(
-                self._app_id, self._this_run_time_string))
+        self._output_folder = os.path.join(output_data_folder, "latest")
+        if os.path.exists(self._output_folder):
+            self._rotate_files(output_data_folder, max_to_keep)
+        self._write_timestamp_file(self._output_folder)
 
-            if not os.path.exists(this_run_time_folder):
-                os.makedirs(this_run_time_folder)
-        self._app_data_runtime_folder = this_run_time_folder
+    def _set_up_application_data_output(
+            self, output_folder, max_to_keep):
+        """ Set up the output of application data
 
-    def _set_up_report_specifics(self, reports_are_enabled, write_text_specs,
-                                 default_report_file_path, max_reports_kept,
-                                 write_provance_data):
+        :param output_folder: The output folder specification for the data;\
+                see _set_up_output for description
+        :param max_to_keep: The maximum number of historical runs to keep
+        """
+        self._set_up_output(output_folder, max_to_keep,
+                            'application_generated_data_files')
+
+    def _set_up_report_output(self, reports_enabled, write_text_specs,
+                              write_provance_data, report_folder, max_to_keep):
         """
 
         :param reports_are_enabled:
@@ -158,60 +151,9 @@ class FrontEndCommonConfigurationFunctions(object):
         :param write_provance_data:
         :return:
         """
-        self._writeTextSpecs = False
-        if reports_are_enabled:
-            self._writeTextSpecs = write_text_specs
-
-        # determine common report folder
-        config_param = default_report_file_path
-        created_folder = False
-        if config_param == "DEFAULT":
-            directory = os.getcwd()
-
-            # global reports folder
-            self._report_default_directory = os.path.join(directory, 'reports')
-            if not os.path.exists(self._report_default_directory):
-                os.makedirs(self._report_default_directory)
-                created_folder = True
-        elif config_param == "REPORTS":
-            self._report_default_directory = 'reports'
-            if not os.path.exists(self._report_default_directory):
-                os.makedirs(self._report_default_directory)
-        else:
-            self._report_default_directory = \
-                os.path.join(config_param, 'reports')
-            if not os.path.exists(self._report_default_directory):
-                os.makedirs(self._report_default_directory)
-
-        # clear and clean out folders considered not useful anymore
-        if not created_folder \
-                and len(os.listdir(self._report_default_directory)) > 0:
-            self._move_report_and_binary_files(max_reports_kept,
-                                               self._report_default_directory)
-
-        # handle timing app folder and cleaning of report folder from last run
-        app_folder_name = os.path.join(self._report_default_directory,
-                                       "latest")
-        if not os.path.exists(app_folder_name):
-                os.makedirs(app_folder_name)
-
-        # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
-        writer = open(time_of_run_file_name, "w")
-
-        # determine the time slot for later
-        this_run_time = datetime.datetime.now()
-        self._this_run_time_string = (
-            "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-                this_run_time.year, this_run_time.month, this_run_time.day,
-                this_run_time.hour, this_run_time.minute,
-                this_run_time.second))
-        writer.writelines("app_{}_{}".format(self._app_id,
-                                             self._this_run_time_string))
-        writer.flush()
-        writer.close()
-        self._report_default_directory = app_folder_name
-        self._retrieve_provance_data = write_provance_data
+        self._write_text_specs = write_text_specs and reports_enabled
+        self._retrieve_provance_data = write_provance_data and reports_enabled
+        self._set_up_output(report_folder, max_to_keep, "reports")
 
     def _set_up_main_objects(
             self, reports_are_enabled, app_id, execute_partitioner_report,
@@ -308,36 +250,31 @@ class FrontEndCommonConfigurationFunctions(object):
             self._router_algorithm = routing_algorithms[routing_algorithm]
 
     @staticmethod
-    def _move_report_and_binary_files(max_to_keep, starting_directory):
-        app_folder_name = os.path.join(starting_directory, "latest")
-        app_name_file = os.path.join(app_folder_name, "time_stamp")
-        if os.path.isfile(app_name_file):
-            time_stamp_in = open(app_name_file, "r")
+    def _rotate_files(starting_directory, max_to_keep):
+        folder_name = os.path.join(starting_directory, "latest")
+        timestamp_file = os.path.join(folder_name, "time_stamp")
+        if os.path.isfile(timestamp_file):
+            time_stamp_in = open(timestamp_file, "r")
             time_stamp_in_string = time_stamp_in.readline()
             time_stamp_in.close()
-            os.remove(app_name_file)
-            new_app_folder = os.path.join(starting_directory,
-                                          time_stamp_in_string)
+            os.remove(timestamp_file)
+            new_folder = os.path.join(starting_directory,
+                                      time_stamp_in_string)
             extra = 2
-            while os.path.exists(new_app_folder):
-                new_app_folder = os.path.join(
+            while os.path.exists(new_folder):
+                new_folder = os.path.join(
                     starting_directory,
                     time_stamp_in_string + "_" + str(extra))
                 extra += 1
+            shutil.move(folder_name, new_folder)
 
-            os.makedirs(new_app_folder)
-            list_of_files = os.listdir(app_folder_name)
-            for file_to_move in list_of_files:
-                file_path = os.path.join(app_folder_name, file_to_move)
-                shutil.move(file_path, new_app_folder)
+            # while there's more than the valid max, remove the oldest one
             files_in_report_folder = os.listdir(starting_directory)
-
-            # while theres more than the valid max, remove the oldest one
+            files_in_report_folder.sort(
+                cmp,
+                key=lambda temp_file: os.path.getmtime(
+                    os.path.join(starting_directory, temp_file)))
             while len(files_in_report_folder) > max_to_keep:
-                files_in_report_folder.sort(
-                    cmp, key=lambda temp_file:
-                    os.path.getmtime(os.path.join(starting_directory,
-                                                  temp_file)))
                 oldest_file = files_in_report_folder[0]
                 shutil.rmtree(os.path.join(starting_directory, oldest_file),
                               ignore_errors=True)

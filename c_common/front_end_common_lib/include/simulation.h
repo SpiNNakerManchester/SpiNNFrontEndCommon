@@ -17,9 +17,9 @@
 
 // the position and human readable terms for each element from the region
 // containing the timing details.
-typedef enum region_elements{
-	APPLICATION_MD5_HASH, SIMULATION_TIMER_PERIOD, N_SIMULATION_TICS
-}region_elements;
+typedef enum region_elements {
+    APPLICATION_MD5_HASH, SIMULATION_TIMER_PERIOD, N_SIMULATION_TICS
+} region_elements;
 
 //! \brief The number of words that will be read by
 //         simulation_read_timing_details
@@ -40,8 +40,9 @@ static inline bool simulation_read_header(
         address_t address, uint32_t* timer_period,
         uint32_t* n_simulation_ticks){
 
-    if (address[APPLICATION_MD5_HASH] != APPLICATION_NAME_HASH){
-        log_error("The application hash 0x%.8x does not match the expected hash 0x%.8x",
+    if (address[APPLICATION_MD5_HASH] != APPLICATION_NAME_HASH) {
+        log_error("The application hash 0x%.8x does not match the expected"
+                  "hash 0x%.8x",
                   address[APPLICATION_MD5_HASH], APPLICATION_NAME_HASH);
         return false;
     }

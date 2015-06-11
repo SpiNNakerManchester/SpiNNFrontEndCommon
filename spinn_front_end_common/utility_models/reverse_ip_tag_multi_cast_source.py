@@ -1,23 +1,16 @@
 """
-ReverseIpTagMultiCastSource
 """
 
 # data spec imports
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
 
-from pacman.model.partitionable_graph.abstract_partitionable_vertex import \
-    AbstractPartitionableVertex
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
     CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.routing_info.key_and_mask import KeyAndMask
-from pacman.model.constraints.key_allocator_constraints\
-    .key_allocator_fixed_key_and_mask_constraint \
-    import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint\
     import TagAllocatorRequireIptagConstraint
@@ -29,25 +22,38 @@ from pacman.model.constraints.placer_constraints\
     import PlacerRadialPlacementFromChipConstraint
 
 # front end common imports
+from spinn_front_end_common.utility_models\
+    .reverse_ip_tag_multicast_source_partitionable_vertex \
+    import ReverseIPTagMulticastSourcePartitionableVertex
 from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_edge_constraints \
     import AbstractProvidesOutgoingEdgeConstraints
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
-    import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models\
+    .abstract_data_specable_partitioned_vertex \
+    import AbstractDataSpecablePartitionedVertex
+from spinn_front_end_common.interface.has_n_machine_timesteps \
+    import HasNMachineTimesteps
+from spinn_front_end_common.abstract_models.abstract_executable \
+    import AbstractExecutable
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import simulation_utilities
+from spinn_front_end_common.utilities import data_spec_utilities
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 # general imports
 from enum import Enum
-import sys
 import math
 
 
 class ReverseIpTagMultiCastSource(
-        AbstractPartitionableVertex, AbstractDataSpecableVertex,
-        AbstractProvidesOutgoingEdgeConstraints, PartitionedVertex):
+        AbstractDataSpecablePartitionedVertex,
+        ReverseIPTagMulticastSourcePartitionableVertex,
+        AbstractProvidesOutgoingEdgeConstraints,
+        PartitionedVertex,
+        AbstractExecutable,
+        HasNMachineTimesteps):
     """
     ReverseIpTagMultiCastSource: a model which will allow events to be injected
     into a spinnaker machine and converted into multi-cast packets.
@@ -61,36 +67,58 @@ class ReverseIpTagMultiCastSource(
                ('BUFFER', 2)])
 
     _CONFIGURATION_REGION_SIZE = 36
-    _max_atoms_per_core = sys.maxint
 
-    def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
-                 label, board_address=None, virtual_key=None, check_key=True,
-                 prefix=None, prefix_type=None, tag=None, key_left_shift=0,
-                 sdp_port=1, buffer_space=0, notify_buffer_space=False,
+    def __init__(self, label, n_keys, machine_time_step, timescale_factor,
+                 listen=True, port=None, tag=None, sdp_port=1,
+                 board_address=None, check_key=True, virtual_key=None,
+                 prefix=None, prefix_type=None, key_left_shift=0,
+                 buffer_space=0, notify_buffer_space=False,
                  space_before_notification=0, notification_tag=None,
                  notification_ip_address=None, notification_port=None,
                  notification_strip_sdp=True, constraints=None):
+        """
 
-        if n_neurons > ReverseIpTagMultiCastSource._max_atoms_per_core:
-            raise Exception("This model can currently only cope with {} atoms"
-                            .format(ReverseIpTagMultiCastSource
-                                    ._max_atoms_per_core))
+        :param label: A label for the vertex
+        :param n_keys: The number of keys to be sent with the source
+        :param machine_time_step: The machine timestep to use
+        :param timescale_factor: The scaling of the machine timestep
+        :param listen: True if the source should listen for packets using a \
+                reverse iptag (otherwise packets can be sent using SDP)
+        :param port: The port that the board should listen on if listen=True
+        :param tag: The receive tag that the board should use if listen=True
+        :param sdp_port: The SDP port to send received packets to
+        :param board_address: The board that the source should be placed on
+        :param check_key: True if the keys sent should be checked against the \
+                specified virtual key or prefix (depending on which is \
+                specified)
+        :param virtual_key: The base key of the messages to be sent
+        :param prefix: A prefix to apply to all 16-bit keys received
+        :param prefix_type: Where the prefix should be added to the keys
+        :param key_left_shift: Determines if the key should be shifted left
+        :param buffer_space: The amount of space to set up for buffering
+        :param notify_buffer_space: True if a message should be sent when\
+                there is space in the buffer
+        :param space_before_notification: How much space should be available\
+                before a notification is sent
+        :param notification_tag: The IP tag to use for notification
+        :param notification_ip_address: The ip address that will receive the\
+                notification
+        :param notification_port: The port that will receive the notification
+        :param notification_strip_sdp: True if the SDP headers should be\
+                stripped from the notification message
+        :param constraints: Constraints to be given to the source
+        """
 
-        AbstractDataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
-        AbstractPartitionableVertex.__init__(
-            self, n_neurons, label,
-            ReverseIpTagMultiCastSource._max_atoms_per_core, constraints)
+        AbstractDataSpecablePartitionedVertex.__init__(self)
+        AbstractExecutable.__init__(self)
         PartitionedVertex.__init__(
             self, label=label, resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(123), dtcm=DTCMResource(123),
                 sdram=SDRAMResource(123)))
-        self.add_constraint(TagAllocatorRequireReverseIptagConstraint(
-            port, sdp_port, board_address, tag))
-        if notify_buffer_space:
-            self.add_constraint(TagAllocatorRequireIptagConstraint(
-                notification_ip_address, notification_port,
-                notification_strip_sdp, board_address, notification_tag))
+        HasNMachineTimesteps.__init__(self)
+
+        self._machine_time_step = machine_time_step
+        self._timescale_factor = timescale_factor
 
         # set params
         self._port = port
@@ -99,18 +127,17 @@ class ReverseIpTagMultiCastSource(
         self._check_key = check_key
         self._prefix_type = prefix_type
         self._key_left_shift = key_left_shift
-        self._buffer_space = buffer_space
         self._space_before_notification = space_before_notification
         self._notify_buffer_space = notify_buffer_space
 
         # validate params
-        if self._prefix is not None and self._prefix_type is None:
+        if prefix is not None and prefix_type is None:
             raise exceptions.ConfigurationException(
                 "To use a prefix, you must declaire which position to use the "
                 "prefix in on the prefix_type parameter.")
 
         if virtual_key is not None:
-            self._mask, max_key = self._calculate_mask(n_neurons)
+            self._mask, max_key = self._calculate_mask(n_keys)
 
             # key =( key  ored prefix )and mask
             temp_vertual_key = virtual_key
@@ -137,7 +164,7 @@ class ReverseIpTagMultiCastSource(
                 if self._virtual_key < 0:
                     raise exceptions.ConfigurationException(
                         "Virtual keys must be positive")
-                if n_neurons > max_key:
+                if n_keys > max_key:
                     raise exceptions.ConfigurationException(
                         "The mask calculated from your number of neurons has "
                         "the capability to interfere with the key due to its "
@@ -149,28 +176,27 @@ class ReverseIpTagMultiCastSource(
                         "the key left shift must be within a range of "
                         "0 and 16. Please change this param and try again")
 
+        ReverseIPTagMulticastSourcePartitionableVertex.__init__(
+            self, label, n_keys, self._virtual_key, self._buffer_space,
+            constraints)
+
         # add placement constraint
         placement_constraint = PlacerRadialPlacementFromChipConstraint(0, 0)
         self.add_constraint(placement_constraint)
+
+        if listen:
+            self.add_constraint(TagAllocatorRequireReverseIptagConstraint(
+                port, sdp_port, board_address, tag))
+        if notify_buffer_space:
+            self.add_constraint(TagAllocatorRequireIptagConstraint(
+                notification_ip_address, notification_port,
+                notification_strip_sdp, board_address, notification_tag))
 
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
         if prefix_type == EIEIOPrefix.LOWER_HALF_WORD:
             return virtual_key & 0xFFFF
         return (virtual_key >> 16) & 0xFFFF
-
-    def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
-        """
-        overlaoded from AbstractProvidesOutgoingEdgeConstraints
-        returns any constraints that need to be placed on outgoing edges.
-        :param partitioned_edge: the partitioned edge thats outgoing
-        :param graph_mapper: the graph mapper.
-        :return: iterable of constraints.
-        """
-        if self._virtual_key is not None:
-            return list([KeyAllocatorFixedKeyAndMaskConstraint(
-                [KeyAndMask(self._virtual_key, self._mask)])])
-        return list()
 
     @staticmethod
     def _calculate_mask(n_neurons):
@@ -179,81 +205,22 @@ class ReverseIpTagMultiCastSource(
         mask = 0xFFFFFFFF - max_key
         return mask, max_key
 
-    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        """
-        overridden from partitionable vertex
-        :param vertex_slice: the slice of atoms to consider
-        :param graph: the partitionable graph
-        :return: the size of sdram (in bytes) used by this model will use for
-        this number of atoms
-        """
-        return (AbstractDataSpecableVertex._HEADER_REGION_BYTES +
-                (len(self._get_components()) * 4) +
-                self._CONFIGURATION_REGION_SIZE + self._buffer_space)
-
-    @property
-    def model_name(self):
-        """
-        returns a human readable version of this model
-        :return:
-        """
-        return "ReverseIpTagMultiCastSource"
-
-    def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        """
-
-        :param vertex_slice:
-        :param graph:
-        :return:
-        """
-        return self._CONFIGURATION_REGION_SIZE
-
     def get_binary_file_name(self):
         """
-        returns the binary name of this model
-        :return:
         """
         return 'reverse_iptag_multicast_source.aplx'
 
-    def get_cpu_usage_for_atoms(self, vertex_slice, graph):
+    def generate_data_spec(
+            self, placement, graph, routing_info, ip_tags, reverse_ip_tags,
+            report_folder, output_folder, write_text_specs):
         """
-        overridden from partitionable vertex
-        :param vertex_slice: the slice of atoms to consider
-        :param graph: the partitionable graph
-        :return: the number of cpu cycles this model will use for
-        this number of atoms
         """
-        return 1
-
-    def generate_data_spec(self, subvertex, placement, sub_graph, graph,
-                           routing_info, hostname, graph_mapper,
-                           report_folder, ip_tags, reverse_ip_tags,
-                           write_text_specs, application_run_time_folder):
-        """
-        Model-specific construction of the data blocks necessary to build a
-        single Application Monitor on one core.
-        :param subvertex: the partitioned vertex to write the dataspec for
-        :param placement: the placement object
-        :param sub_graph: the partitioned graph object
-        :param graph: the partitionable graph object
-        :param routing_info: the routing infos object
-        :param hostname: the hostname of the machine
-        :param graph_mapper: the graph mapper
-        :param report_folder: the folder to write reports in
-        :param ip_tags: the iptags object
-        :param reverse_ip_tags: the reverse iptags object
-        :param write_text_specs: bool saying if we should write text
-        specifications
-        :param application_run_time_folder: where application data should
-         be written to
-        :return: nothing
-        """
-        # Create new DataSpec for this processor:
-        data_writer, report_writer = \
-            self.get_data_spec_file_writers(
-                placement.x, placement.y, placement.p, hostname, report_folder,
-                write_text_specs, application_run_time_folder)
-
+        data_path, data_writer = data_spec_utilities.get_data_spec_data_writer(
+            placement, output_folder)
+        report_writer = None
+        if write_text_specs:
+            report_writer = data_spec_utilities.get_data_spec_report_writer(
+                placement, report_folder)
         spec = DataSpecificationGenerator(data_writer, report_writer)
 
         spec.comment("\n*** Spec for block of {} neurons ***\n"
@@ -262,20 +229,22 @@ class ReverseIpTagMultiCastSource(
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory regions:
-        self._reserve_header_region(
+        simulation_utilities.simulation_reserve_header(
             spec, self._SPIKE_INJECTOR_REGIONS.HEADER.value)
         spec.reserve_memory_region(
             region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
-            size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
+            size=ReverseIpTagMultiCastSource._CONFIGURATION_REGION_SIZE,
+            label='CONFIGURATION')
         if self._buffer_space is not None and self._buffer_space > 0:
             spec.reserve_memory_region(
                 region=self._SPIKE_INJECTOR_REGIONS.BUFFER.value,
                 size=self._buffer_space, label="BUFFER", empty=True)
 
         # set up system region writes
-        self._write_header_region(
-            spec, "reverse_ip_tag_multicast_source",
-            self._SPIKE_INJECTOR_REGIONS.HEADER.value)
+        simulation_utilities.simulation_write_header(
+            spec, self._SPIKE_INJECTOR_REGIONS.HEADER.value,
+            "reverse_ip_tag_multicast_source", self._machine_time_step,
+            self._timescale_factor, self.n_machine_timesteps)
 
         # set up configuration region writes
         spec.switch_write_focus(
@@ -284,7 +253,7 @@ class ReverseIpTagMultiCastSource(
         if self._virtual_key is None:
             subedge_routing_info = \
                 routing_info.get_subedge_information_from_subedge(
-                    sub_graph.outgoing_subedges_from_subvertex(subvertex)[0])
+                    graph.outgoing_subedges_from_subvertex(self)[0])
             key_and_mask = subedge_routing_info.keys_and_masks[0]
             self._mask = key_and_mask.mask
             self._virtual_key = key_and_mask.key
@@ -337,17 +306,14 @@ class ReverseIpTagMultiCastSource(
         # close spec
         spec.end_specification()
         data_writer.close()
+        if write_text_specs:
+            report_writer.close()
+
+        return data_path
 
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
         """
-        returns a partioned vertex from the partionable vertex. in this case,
-        they are the same object.
-        :param vertex_slice:  the slice of atoms to consider
-        :param resources_required: the resources used by the partitioned vertex
-        :param label: the label of the partitioned vertex
-        :param constraints: the constraints to add to the partitioned vertex
-        :return: the partitioned vertex
         """
         if vertex_slice.n_atoms != self._n_atoms:
             raise exceptions.ConfigurationException(
@@ -356,10 +322,3 @@ class ReverseIpTagMultiCastSource(
                 "when the vertex slice is not equal to the number of atoms "
                 "for the live packet gather.")
         return self
-
-    def is_data_specable(self):
-        """
-        helper method for isinstance
-        :return:
-        """
-        return True

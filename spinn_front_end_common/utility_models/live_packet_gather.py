@@ -19,10 +19,16 @@ from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 
 # spinn front end imports
-from spinn_front_end_common.abstract_models.\
-    abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import exceptions
-
+from spinn_front_end_common.utilities import data_spec_utilities
+from spinn_front_end_common.utilities import simulation_utilities
+from spinn_front_end_common.abstract_models\
+    .abstract_data_specable_partitioned_vertex \
+    import AbstractDataSpecablePartitionedVertex
+from spinn_front_end_common.abstract_models.abstract_executable \
+    import AbstractExecutable
+from spinn_front_end_common.interface.has_n_machine_timesteps \
+    import HasNMachineTimesteps
 
 # data spec imports
 from data_specification.data_specification_generator import \
@@ -36,9 +42,11 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 from enum import Enum
 
 
-class LivePacketGather(
-        AbstractDataSpecableVertex, AbstractPartitionableVertex,
-        PartitionedVertex):
+class LivePacketGather(AbstractPartitionableVertex,
+                       AbstractDataSpecablePartitionedVertex,
+                       AbstractExecutable,
+                       PartitionedVertex,
+                       HasNMachineTimesteps):
     """
     LivePacketGather: a model which stores all the events it recieves during an
     timer tick and then compresses them into ethernet pakcets and sends them
@@ -51,11 +59,6 @@ class LivePacketGather(
                ('CONFIG', 1)])
     _CONFIG_SIZE = 44
 
-    """
-    A AbstractConstrainedVertex for the Monitoring application data and
-    forwarding them to the host
-
-    """
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
                  use_prefix=False, key_prefix=None, prefix_type=None,
@@ -65,7 +68,6 @@ class LivePacketGather(
                  number_of_packets_sent_per_time_step=0, constraints=None,
                  label=None):
         """
-        Creates a new AppMonitor Object.
         """
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
@@ -89,18 +91,18 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        AbstractDataSpecableVertex.__init__(
-            self, machine_time_step=machine_time_step,
-            timescale_factor=timescale_factor)
         AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
                                              max_atoms_per_core=1,
                                              constraints=constraints)
+        AbstractDataSpecablePartitionedVertex.__init__(self)
+        AbstractExecutable.__init__(self)
         PartitionedVertex.__init__(
             self, label=label, resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(
                     self.get_cpu_usage_for_atoms(1, None)),
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
                 sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))))
+        HasNMachineTimesteps.__init__(self)
 
         # Try to place this near the ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
@@ -108,6 +110,9 @@ class LivePacketGather(
         # Add the IP Tag requirement
         self.add_constraint(TagAllocatorRequireIptagConstraint(
             ip_address, port, strip_sdp, board_address, tag))
+
+        self._machine_time_step = machine_time_step
+        self._timescale_factor = timescale_factor
 
         self._prefix_type = prefix_type
         self._use_prefix = use_prefix
@@ -123,82 +128,61 @@ class LivePacketGather(
 
     @property
     def number_of_packets_sent_per_time_step(self):
-        """
-        retuens how many packets are epxetced to be sent per timer tic
-        :return:
+        """ The number of packets expected per time step
         """
         return self._number_of_packets_sent_per_time_step
 
     @number_of_packets_sent_per_time_step.setter
     def number_of_packets_sent_per_time_step(self, new_value):
-        """
-
-        :param new_value:
-        :return:
+        """ Set the number of packets expected per timestep
         """
         self._number_of_packets_sent_per_time_step = new_value
 
-    def generate_data_spec(self, subvertex, placement, sub_graph, graph,
-                           routing_info, hostname, graph_sub_graph_mapper,
-                           report_folder, ip_tags, reverse_ip_tags,
-                           write_text_specs, application_run_time_folder):
+    def generate_data_spec(
+            self, placement, graph, routing_info, ip_tags, reverse_ip_tags,
+            report_folder, output_folder, write_text_specs):
         """
-        Model-specific construction of the data blocks necessary to build a
-        single Application Monitor on one core.
-        :param subvertex: the partitioned vertex to write the dataspec for
-        :param placement: the placement object
-        :param sub_graph: the partitioned graph object
-        :param graph: the partitionable graph object
-        :param routing_info: the routing infos object
-        :param hostname: the hostname of the machine
-        :param graph_sub_graph_mapper: the graph mapper
-        :param report_folder: the folder to write reports in
-        :param ip_tags: the iptags object
-        :param reverse_ip_tags: the reverse iptags object
-        :param write_text_specs: bool saying if we should write text
-        specifications
-        :param application_run_time_folder: where application data should
-         be written to
-        :return: nothing
         """
-        data_writer, report_writer = \
-            self.get_data_spec_file_writers(
-                placement.x, placement.y, placement.p, hostname, report_folder,
-                write_text_specs, application_run_time_folder)
-
+        data_path, data_writer = data_spec_utilities.get_data_spec_data_writer(
+            placement, output_folder)
+        report_writer = None
+        if write_text_specs:
+            report_writer = data_spec_utilities.get_data_spec_report_writer(
+                placement, report_folder)
         spec = DataSpecificationGenerator(data_writer, report_writer)
 
         spec.comment("\n*** Spec for AppMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
-        self.reserve_memory_regions(spec)
-        self._write_header_region(
-            spec, "live_packet_gather",
-            self._LIVE_DATA_GATHER_REGIONS.HEADER.value)
-        self.write_configuration_region(spec, ip_tags)
+        self._reserve_memory_regions(spec)
+        simulation_utilities.simulation_write_header(
+            spec, self._LIVE_DATA_GATHER_REGIONS.HEADER.value,
+            "live_packet_gather", self._machine_time_step,
+            self._timescale_factor, self.n_machine_timesteps)
+        self._write_configuration_region(spec, ip_tags)
 
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
+        if write_text_specs:
+            report_writer.close()
 
-    def reserve_memory_regions(self, spec):
-        """
-        Reserve SDRAM space for memory areas:
-        1) Area for information on what data to record
-        :param spec: the spec object for the dsg
-        :param components: the list of components to identify this model
+        return data_path
+
+    def _reserve_memory_regions(self, spec):
+        """ Reserve memory regions for writing data to
         """
 
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
-        self._reserve_header_region(
+        simulation_utilities.simulation_reserve_header(
             spec, self._LIVE_DATA_GATHER_REGIONS.HEADER.value)
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')
 
-    def write_configuration_region(self, spec, ip_tags):
+    def _write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
 
         :param spec: the spec object for the dsg
@@ -266,53 +250,28 @@ class LivePacketGather(
 
     def get_binary_file_name(self):
         """
-        returns the binary namae for this model
-        :return:
         """
         return 'live_packet_gather.aplx'
 
     # inherited from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
         """
-        overridden from partitionable vertex
-        :param vertex_slice: the slice of atoms to consider
-        :param graph: the partitionable graph
-        :return: the number of cpu cycles this model will use for
-        this number of atoms
         """
         return 0
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         """
-        overridden from partitionable vertex
-        :param vertex_slice: the slice of atoms to consider
-        :param graph: the partitionable graph
-        :return: the size of sdram (in bytes) used by this model will use for
-        this number of atoms
         """
-        return (AbstractDataSpecableVertex._HEADER_REGION_BYTES +
-                (len(self._get_components()) * 4) + self._CONFIG_SIZE)
+        return (simulation_utilities.HEADER_REGION_BYTES + self._CONFIG_SIZE)
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         """
-        overridden from partitionable vertex
-        :param vertex_slice: the slice of atoms to consider
-        :param graph: the partitionable graph
-        :return: the size of dtcm (in bytes) used by this model will use for
-        this number of atoms
         """
         return self._CONFIG_SIZE
 
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
         """
-        returns a partioned vertex from the partionable vertex. in this case,
-        they are the same object.
-        :param vertex_slice:  the slice of atoms to consider
-        :param resources_required: the resources used by the partitioned vertex
-        :param label: the label of the partitioned vertex
-        :param constraints: the constraints to add to the partitioned vertex
-        :return: the partitioned vertex
         """
         if vertex_slice.n_atoms != self.n_atoms:
             raise exceptions.ConfigurationException(
@@ -322,24 +281,8 @@ class LivePacketGather(
                 "for the live packet gather.")
         return self
 
-    def is_data_specable(self):
-        """
-        helper method for is instance
-        :return:
-        """
-        return True
-
     @property
     def model_name(self):
         """
-        human readable version of the model
-        :return:
         """
         return "live packet gather"
-
-    def is_ip_tagable_vertex(self):
-        """
-        helper emthod for isinstance
-        :return:
-        """
-        return True
