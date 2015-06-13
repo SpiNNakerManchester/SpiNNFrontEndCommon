@@ -19,25 +19,19 @@ class AbstractOutgoingEdgeSameContiguousKeysRestrictor(
 
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
 
-        # The first partitioned edge of this population for any subvertex,
-        # indexed by the subvertex lo atom
-        self._first_partitioned_edge = dict()
+        # The first partitioned edge of this vertex
+        self._first_partitioned_edge = None
 
         # Set of partitioned edges that have already had constraints added,
         # to avoid over processing
         self._seen_partitioned_edges = set()
 
-    def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
-
-        # Find the slice of the vertex
-        vertex_slice = graph_mapper.get_subvertex_slice(
-            partitioned_edge.pre_subvertex)
+    def get_outgoing_edge_constraints(self, partitioned_edge):
 
         # Keep track of the first partitioned edge
         constraints = list()
-        if vertex_slice.lo_atom not in self._first_partitioned_edge:
-            self._first_partitioned_edge[vertex_slice.lo_atom] = \
-                partitioned_edge
+        if self._first_partitioned_edge is None:
+            self._first_partitioned_edge = partitioned_edge
         elif partitioned_edge not in self._seen_partitioned_edges:
 
             # All populations that use this data spec need to make sure that
@@ -45,7 +39,7 @@ class AbstractOutgoingEdgeSameContiguousKeysRestrictor(
             # that those keys are contiguous
             constraints.append(KeyAllocatorContiguousRangeContraint())
             constraints.append(KeyAllocatorSameKeysConstraint(
-                self._first_partitioned_edge[vertex_slice.lo_atom]))
+                self._first_partitioned_edge))
 
         # Avoid processing this edge again
         self._seen_partitioned_edges.add(partitioned_edge)
