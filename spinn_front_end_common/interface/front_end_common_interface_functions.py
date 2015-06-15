@@ -95,7 +95,11 @@ class FrontEndCommonInterfaceFunctions(object):
             self._txrx = create_transceiver_from_hostname(
                 hostname=hostname, bmp_ip_addresses=bmp_host_names,
                 version=board_version, ignore_chips=ignored_chips,
-                ignore_cores=ignored_cores)
+                ignore_cores=ignored_cores, number_of_boards=number_of_boards)
+
+            # update number of boards from machine
+            if number_of_boards is None:
+                number_of_boards = self._txrx.number_of_boards_located
 
             # do autoboot if possible
             if board_version is None:
