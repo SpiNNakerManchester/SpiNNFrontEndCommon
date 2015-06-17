@@ -147,7 +147,8 @@ class Reload(object):
         sends the start messages to the external devices which need them
         :return:
         """
-        self._notification_protocol.send_start_notification()
+        if self._notification_protocol is not None:
+            self._notification_protocol.send_start_notification()
 
 
 
