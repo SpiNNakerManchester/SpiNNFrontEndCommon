@@ -42,8 +42,6 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
     SYSTEM_REGION = 0
     COMMANDS = 1
 
-    CORE_APP_IDENTIFER = constants.COMMAND_SENDER_CORE_APPLICATION_ID
-
     def __init__(self, machine_time_step, timescale_factor):
 
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
@@ -169,8 +167,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
         # Write system region
         spec.comment("\n*** Spec for multi cast source ***\n\n")
-        self._write_basic_setup_info(spec, CommandSender.CORE_APP_IDENTIFER,
-                                     self.SYSTEM_REGION)
+        self._write_basic_setup_info(spec, self.SYSTEM_REGION)
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
