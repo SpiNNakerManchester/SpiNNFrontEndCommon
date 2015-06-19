@@ -54,6 +54,7 @@ class FrontEndCommonConfigurationFunctions(object):
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
+        self._routing_paths = None
         self._pruner_infos = None
         self._has_ran = False
         self._reports_states = None
