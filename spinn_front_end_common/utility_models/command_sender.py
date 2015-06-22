@@ -3,7 +3,7 @@ command sender
 """
 
 # pacman imports
-from pacman.model.routing_info.key_and_mask import KeyAndMask
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_mask_constraint \
     import KeyAllocatorFixedMaskConstraint
@@ -132,7 +132,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
             # If the keys are all fixed keys, keep them
             self._edge_constraints[edge] = list(
                 KeyAllocatorFixedKeyAndMaskConstraint(
-                    [KeyAndMask(key, mask) for (key, mask) in command_keys]))
+                    [BaseKeyAndMask(key, mask) for (key, mask) in command_keys]))
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
