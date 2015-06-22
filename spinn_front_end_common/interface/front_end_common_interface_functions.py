@@ -146,18 +146,19 @@ class FrontEndCommonInterfaceFunctions(object):
             (cabinet, frame, hostname) = FrontEndCommonInterfaceFunctions.\
                 _sort_out_bmp_cabinet_and_frame_string(bmp_string_split[0])
 
-            # if there is no split, then assume its one board,
-            # located at position 0
             if len(bmp_string_split) == 1:
 
+                # if there is no split, then assume its one board,
+                # located at position 0
                 bmp_details.append(
                     BMPConnectionData(cabinet, frame, hostname, [0]))
             else:
-
                 boards = FrontEndCommonInterfaceFunctions.\
                     _sort_out_bmp_boards_string(bmp_string_split[1])
 
-                return BMPConnectionData(cabinet, frame, hostname, boards)
+                bmp_details.append(
+                    BMPConnectionData(cabinet, frame, hostname, boards))
+        return bmp_details
 
     @staticmethod
     def _sort_out_downed_chips_cores(downed_cores, downed_chips):
