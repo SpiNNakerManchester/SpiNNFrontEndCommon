@@ -161,7 +161,7 @@ class FrontEndCommonInterfaceFunctions(object):
         return bmp_details
 
     @staticmethod
-    def _sort_out_downed_chips_cores(downed_cores, downed_chips):
+    def _sort_out_downed_chips_cores(downed_chips, downed_cores):
         """
         translates the down cores and down chips string into stuff spinnman
         can understand
