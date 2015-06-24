@@ -287,7 +287,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                successful_cores, unsuccessful_cores = \
+                _, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         all_core_subsets, CPUState.RUNNING)
 
@@ -316,7 +316,7 @@ class FrontEndCommonInterfaceFunctions(object):
             processors_rte = self._txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
-                successful_cores, unsuccessful_cores = \
+                _, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         all_core_subsets, CPUState.RUNNING)
 
@@ -335,14 +335,13 @@ class FrontEndCommonInterfaceFunctions(object):
             app_id, CPUState.FINSHED)
 
         if processors_exited < total_processors:
-            successful_cores, unsuccessful_cores = \
-                self._break_down_of_failure_to_reach_state(
-                    all_core_subsets, CPUState.RUNNING)
+            _, unsuccessful_cores = self._break_down_of_failure_to_reach_state(
+                all_core_subsets, CPUState.FINISHED)
 
             # break_down the successful cores and unsuccessful cores into
             #  string reps
             break_down = self.turn_break_downs_into_string(
-                all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
+                all_core_subsets, unsuccessful_cores, CPUState.FINISHED)
             raise exceptions.ExecutableFailedToStopException(
                 "{} of the processors failed to exit successfully with"
                 " breakdown {}.".format(
