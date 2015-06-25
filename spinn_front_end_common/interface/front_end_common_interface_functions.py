@@ -187,7 +187,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 x, y, processor_id = downed_core.split(",")
                 ignored_cores.add_processor(int(x), int(y),
                                             int(processor_id))
-        return ignored_cores, ignored_chips
+        return ignored_chips, ignored_cores
 
     def _load_tags(self, tags):
         """ loads all the tags onto all the boards
