@@ -25,6 +25,9 @@ from spinnman.data.file_data_reader import FileDataReader \
     as SpinnmanFileDataReader
 from spinnman.model.core_subsets import CoreSubsets
 from spinnman.model.core_subset import CoreSubset
+from spinnman import constants as spinnman_constants
+from spinnman.model.bmp_connection_data import BMPConnectionData
+import re
 
 # front end common imports
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
@@ -60,40 +63,54 @@ class FrontEndCommonInterfaceFunctions(object):
         self._reload_script = None
         self._send_buffer_manager = None
 
-    def setup_interfaces(
-        self, hostname, requires_virtual_board, downed_chips, downed_cores,
-        virtual_x_dimension, virtual_y_dimension, requires_wrap_around,
-        machine_version):
-        """Set up the interfaces for communicating with the SpiNNaker board
+    def _setup_interfaces(
+            self, hostname, bmp_details, downed_chips, downed_cores,
+            board_version, number_of_boards, width, height,
+            is_virtual, virtual_has_wrap_arounds):
+        """
+        Set up the interfaces for communicating with the SpiNNaker board
+        :param hostname: the hostname or ip address of the spinnaker machine
+        :param bmp_details: the details of the BMP connections
+        :param downed_chips: the chips that are down which sark thinks are\
+                alive
+        :param downed_cores: the cores that are down which sark thinks are\
+                alive
+        :param board_version: the version of the boards being used within the\
+                machine (1, 2, 3, 4 or 5)
+        :param number_of_boards: the number of boards within the machine
+        :param width: The width of the machine in chips
+        :param height: The height of the machine in chips
+        :param is_virtual: True of the machine is virtual, False otherwise; if\
+                True, the width and height are used as the machine dimensions
+        :param virtual_has_wrap_arounds: True if the machine is virtual and\
+                should be created with wrap_arounds
+        :return: None
         """
 
-        if not requires_virtual_board:
-            ignored_chips = None
-            ignored_cores = None
-            if downed_chips is not None and downed_chips != "None":
-                ignored_chips = CoreSubsets()
-                for downed_chip in downed_chips.split(":"):
-                    x, y = downed_chip.split(",")
-                    ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
-                                                             []))
-            if downed_cores is not None and downed_cores != "None":
-                ignored_cores = CoreSubsets()
-                for downed_core in downed_cores.split(":"):
-                    x, y, processor_id = downed_core.split(",")
-                    ignored_cores.add_processor(int(x), int(y),
-                                                int(processor_id))
+        if not is_virtual:
+            # sort out down chips and down cores if needed
+            ignored_chips, ignored_cores = \
+                self._sort_out_downed_chips_cores(downed_chips, downed_cores)
+
+            # sort out bmp connections into list of strings
+            bmp_connection_data = self._sort_out_bmp_string(bmp_details)
 
             self._txrx = create_transceiver_from_hostname(
-                hostname=hostname,
-                ignore_chips=ignored_chips,
-                ignore_cores=ignored_cores)
+                hostname=hostname, bmp_connection_data=bmp_connection_data,
+                version=board_version, ignore_chips=ignored_chips,
+                ignore_cores=ignored_cores, number_of_boards=number_of_boards)
+
+            # update number of boards from machine
+            if number_of_boards is None:
+                number_of_boards = self._txrx.number_of_boards_located
 
             # do autoboot if possible
-            if machine_version is None:
+            if board_version is None:
                 raise exceptions.ConfigurationException(
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
-            self._txrx.ensure_board_is_ready(int(machine_version))
+            self._txrx.ensure_board_is_ready(
+                board_version, number_of_boards, width, height)
             self._txrx.discover_scamp_connections()
             self._txrx.enable_dropped_packet_reinjection()
             self._machine = self._txrx.get_machine_details()
@@ -102,9 +119,87 @@ class FrontEndCommonInterfaceFunctions(object):
                     self._app_data_folder, hostname, machine_version)
         else:
             self._machine = VirtualMachine(
-                x_dimension=virtual_x_dimension,
-                y_dimension=virtual_y_dimension,
-                with_wrap_arounds=requires_wrap_around)
+                width=width, height=height,
+                with_wrap_arounds=virtual_has_wrap_arounds)
+
+    @staticmethod
+    def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
+        split_string = bmp_cabinet_and_frame.split(";", 2)
+        if len(split_string) == 1:
+            return (0, 0, split_string[0])
+        if len(split_string) == 2:
+            return (0, split_string[0], split_string[1])
+        return (split_string[0], split_string[1], split_string[2])
+
+    @staticmethod
+    def _sort_out_bmp_boards_string(bmp_boards):
+
+        # If the string is a range of boards, get the range
+        range_match = re.match("(\d+)-(\d+)", bmp_boards)
+        if range_match is not None:
+            return range(int(range_match.group(1)),
+                         int(range_match.group(2)) + 1)
+
+        # Otherwise, assume a list of boards
+        return [int(board) for board in bmp_boards.split(",")]
+
+    @staticmethod
+    def _sort_out_bmp_string(bmp_string):
+        """ Take a BMP line and split it into the BMP connection data
+        :param bmp_string: the BMP string to be converted
+        :return: the BMP connection data
+        """
+        bmp_details = list()
+        if bmp_string == "None":
+            return bmp_details
+
+        for bmp_detail in bmp_string.split(":"):
+
+            bmp_string_split = bmp_detail.split("/")
+            (cabinet, frame, hostname) = FrontEndCommonInterfaceFunctions.\
+                _sort_out_bmp_cabinet_and_frame_string(bmp_string_split[0])
+
+            if len(bmp_string_split) == 1:
+
+                # if there is no split, then assume its one board,
+                # located at position 0
+                bmp_details.append(
+                    BMPConnectionData(cabinet, frame, hostname, [0]))
+            else:
+                boards = FrontEndCommonInterfaceFunctions.\
+                    _sort_out_bmp_boards_string(bmp_string_split[1])
+
+                bmp_details.append(
+                    BMPConnectionData(cabinet, frame, hostname, boards))
+        return bmp_details
+
+    @staticmethod
+    def _sort_out_downed_chips_cores(downed_chips, downed_cores):
+        """
+        translates the down cores and down chips string into stuff spinnman
+        can understand
+        :param downed_cores: string representing down cores
+        :type downed_cores: str
+        :param downed_chips: string representing down chips
+        :type: downed_chips: str
+        :return: a list of down cores and down chips in processor and coreset
+        format
+        """
+        ignored_chips = None
+        ignored_cores = None
+        if downed_chips is not None and downed_chips != "None":
+            ignored_chips = CoreSubsets()
+            for downed_chip in downed_chips.split(":"):
+                x, y = downed_chip.split(",")
+                ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
+                                                         []))
+        if downed_cores is not None and downed_cores != "None":
+            ignored_cores = CoreSubsets()
+            for downed_core in downed_cores.split(":"):
+                x, y, processor_id = downed_core.split(",")
+                ignored_cores.add_processor(int(x), int(y),
+                                            int(processor_id))
+        return ignored_chips, ignored_cores
 
     def set_up_send_buffering(self, partitioned_graph, placements, tags):
         """
@@ -139,6 +234,12 @@ class FrontEndCommonInterfaceFunctions(object):
         :param tags: the tags object which contains ip and reverse ip tags.
         :return none
         """
+        # clear all the tags from the ethernet connection, as nothing should
+        # be allowed to use it (no two sims should use the same etiehrnet
+        # connection at the same time
+        for tag_id in range(spinnman_constants.MAX_TAG_ID):
+            self._txrx.clear_ip_tag(tag_id)
+
         self.load_iptags(tags.ip_tags)
         self.load_reverse_iptags(tags.reverse_ip_tags)
 
@@ -309,8 +410,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 # break_down the successful cores and unsuccessful cores into
                 # string
                 break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, successful_cores, unsuccessful_cores,
-                    CPUState.SYNC0)
+                    all_core_subsets, unsuccessful_cores, CPUState.SYNC0)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
                     "sync0 with breakdown of: {}"
@@ -342,15 +442,14 @@ class FrontEndCommonInterfaceFunctions(object):
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                successful_cores, unsuccessful_cores = \
+                _, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         all_core_subsets, CPUState.RUNNING)
 
                 # break_down the successful cores and unsuccessful cores into
                 # string reps
                 break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, successful_cores, unsuccessful_cores,
-                    CPUState.RUNNING)
+                    all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started with breakdown {}"
                     .format(processors_running, total_processors, break_down))
@@ -380,15 +479,14 @@ class FrontEndCommonInterfaceFunctions(object):
             processors_rte = self._txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
-                successful_cores, unsuccessful_cores = \
+                _, unsuccessful_cores = \
                     self._break_down_of_failure_to_reach_state(
                         all_core_subsets, CPUState.RUNNING)
 
                 # break_down the successful cores and unsuccessful cores
                 # into string reps
                 break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, successful_cores, unsuccessful_cores,
-                    CPUState.RUNNING)
+                    all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state with "
                     "breakdown {}.".format(processors_rte, break_down))
@@ -400,15 +498,13 @@ class FrontEndCommonInterfaceFunctions(object):
             app_id, CPUState.FINSHED)
 
         if processors_exited < total_processors:
-            successful_cores, unsuccessful_cores = \
-                self._break_down_of_failure_to_reach_state(
-                    all_core_subsets, CPUState.RUNNING)
+            _, unsuccessful_cores = self._break_down_of_failure_to_reach_state(
+                all_core_subsets, CPUState.FINISHED)
 
             # break_down the successful cores and unsuccessful cores into
             #  string reps
             break_down = self.turn_break_downs_into_string(
-                all_core_subsets, successful_cores, unsuccessful_cores,
-                CPUState.RUNNING)
+                all_core_subsets, unsuccessful_cores, CPUState.FINISHED)
             raise exceptions.ExecutableFailedToStopException(
                 "{} of the processors failed to exit successfully with"
                 " breakdown {}.".format(
@@ -432,12 +528,10 @@ class FrontEndCommonInterfaceFunctions(object):
         return successful_cores, unsuccessful_cores
 
     @staticmethod
-    def turn_break_downs_into_string(total_cores, successful_cores,
-                                     unsuccessful_cores, state):
+    def turn_break_downs_into_string(total_cores, unsuccessful_cores, state):
         """
 
         :param total_cores:
-        :param successful_cores:
         :param unsuccessful_cores:
         :param state:
         :return:
@@ -446,11 +540,7 @@ class FrontEndCommonInterfaceFunctions(object):
         for core_info in total_cores:
             for processor_id in core_info.processor_ids:
                 core_coord = (core_info.x, core_info.y, processor_id)
-                if core_coord in successful_cores:
-                    break_down += "{}:{}:{} successfully in state {}{}"\
-                        .format(core_info.x, core_info.y, processor_id,
-                                state.name, os.linesep)
-                else:
+                if core_coord in unsuccessful_cores:
                     real_state = unsuccessful_cores[(core_info.x, core_info.y,
                                                      processor_id)]
                     if real_state.state == CPUState.RUN_TIME_EXCEPTION:
