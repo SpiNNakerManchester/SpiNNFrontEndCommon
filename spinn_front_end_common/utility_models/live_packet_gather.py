@@ -9,11 +9,12 @@ from pacman.model.constraints.placer_constraints\
 from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint \
     import TagAllocatorRequireIptagConstraint
-from pacman.model.partitionable_graph.abstract_partitionable_vertex \
-    import AbstractPartitionableVertex
+from pacman.model.partitionable_graph.ip_tagged_partitionable_vertex \
+    import IPTaggedPartitionableVertex
 
 # spinn front end imports
-from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
+from pacman.model.partitioned_graph.taggable_partitioned_vertex import \
+    TaggablePartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
     CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
@@ -23,6 +24,8 @@ from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+
+from spinn_machine.tags.user_iptag import UserIPTag
 
 # data spec imports
 from data_specification.data_specification_generator import \
@@ -37,8 +40,8 @@ from enum import Enum
 
 
 class LivePacketGather(
-        AbstractDataSpecableVertex, AbstractPartitionableVertex,
-        PartitionedVertex):
+        AbstractDataSpecableVertex, IPTaggedPartitionableVertex,
+        TaggablePartitionedVertex):
     """
     LivePacketGather: a model which stores all the events it recieves during an
     timer tick and then compresses them into ethernet pakcets and sends them
@@ -52,74 +55,56 @@ class LivePacketGather(
     _CONFIG_SIZE = 44
 
     """
-    A AbstractConstrainedVertex for the Monitoring application data and
+    An AbstractConstrainedVertex for the Monitoring application data and
     forwarding them to the host
 
     """
-    def __init__(self, machine_time_step, timescale_factor, ip_address,
-                 port, board_address=None, tag=None, strip_sdp=True,
-                 use_prefix=False, key_prefix=None, prefix_type=None,
-                 message_type=EIEIOType.KEY_32_BIT, right_shift=0,
-                 payload_as_time_stamps=True, use_payload_prefix=True,
-                 payload_prefix=None, payload_right_shift=0,
-                 number_of_packets_sent_per_time_step=0, constraints=None,
-                 label=None):
+    def __init__(self, machine_time_step, timescale_factor, EIEIO_params, 
+                 constraints=None, label=None):
         """
-        Creates a new AppMonitor Object.
+        Creates a new AppMonitor Object. EIEIO_params should be a 
+        LivePacketGatherParameters object and have the following:
+        (ip_address, port, board_address=None, tag=None, strip_sdp=True,
+         use_prefix=False, key_prefix=None, prefix_type=None,
+         message_type=EIEIOType.KEY_32_BIT, right_shift=0, 
+         payload_as_time_stamps=True, use_payload_prefix=True, 
+         payload_prefix=None, payload_right_shift=0,
+         number_of_packets_sent_per_time_step=0)
+
         """
-        if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
-             message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
-                use_payload_prefix and payload_as_time_stamps):
-            raise ConfigurationException(
-                "Timestamp can either be included as payload prefix or as "
-                "payload to each key, not both")
-        if ((message_type == EIEIOType.KEY_32_BIT or
-             message_type == EIEIOType.KEY_16_BIT) and
-                not use_payload_prefix and payload_as_time_stamps):
-            raise ConfigurationException(
-                "Timestamp can either be included as payload prefix or as"
-                " payload to each key, but current configuration does not "
-                "specify either of these")
-        if (not isinstance(prefix_type, EIEIOPrefix) and
-                prefix_type is not None):
-            raise ConfigurationException(
-                "the type of a prefix type should be of a EIEIOPrefix, "
-                "which can be located in :"
-                "spinnman..messages.eieio.eieio_prefix_type")
         if label is None:
-            label = "Live Packet Gatherer"
+            label = "LivePacketGatherer_%s:%d" %(EIEIO_params.ip_address,
+                                                 EIEIO_params.port)
 
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step=machine_time_step,
             timescale_factor=timescale_factor)
-        AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
+        # Create a special partitionable vertex to hold tags. 
+        # The IPTaggedPartitionableVertex:
+        # 1: overloads create_subvertex with a type that creates a taggable
+        #    subvertex
+        # 2: runs self.add_constraint(TagAllocatorRequireIptagConstraint(
+        #    host, port, strip_sdp, board, tag)) to auto-configure the
+        #    tag constraint
+        tag_list = [UserIPTag(ip_address=EIEIO_params.ip_address, 
+                              port=EIEIO_params.port,
+                              tag=EIEIO_params.tag,
+                              strip_sdp=EIEIO_params.strip_sdp)]
+        IPTaggedPartitionableVertex.__init__(self, n_atoms=1, label=label,
                                              max_atoms_per_core=1,
+                                             tags=tag_list,
                                              constraints=constraints)
-        PartitionedVertex.__init__(
+        TaggablePartitionedVertex.__init__(
             self, label=label, resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(
                     self.get_cpu_usage_for_atoms(1, None)),
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
-                sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))))
+                sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))), 
+                constraints=self._constraints)
 
         # Try to place this near the ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
-
-        # Add the IP Tag requirement
-        self.add_constraint(TagAllocatorRequireIptagConstraint(
-            ip_address, port, strip_sdp, board_address, tag))
-
-        self._prefix_type = prefix_type
-        self._use_prefix = use_prefix
-        self._key_prefix = key_prefix
-        self._message_type = message_type
-        self._right_shift = right_shift
-        self._payload_as_time_stamps = payload_as_time_stamps
-        self._use_payload_prefix = use_payload_prefix
-        self._payload_prefix = payload_prefix
-        self._payload_right_shift = payload_right_shift
-        self._number_of_packets_sent_per_time_step = \
-            number_of_packets_sent_per_time_step
+        self._EIEIO_params = EIEIO_params
 
     @property
     def model_name(self):
@@ -130,7 +115,7 @@ class LivePacketGather(
 
     @property
     def number_of_packets_sent_per_time_step(self):
-        return self._number_of_packets_sent_per_time_step
+        return self._EIEIO_params.number_of_packets_sent_per_time_step
 
     @number_of_packets_sent_per_time_step.setter
     def number_of_packets_sent_per_time_step(self, new_value):
@@ -139,12 +124,13 @@ class LivePacketGather(
         :param new_value:
         :return:
         """
-        self._number_of_packets_sent_per_time_step = new_value
+        self._EIEIO_params.set_param('number_of_packets_sent_per_time_step',
+                                     new_value)
 
     def generate_data_spec(self, subvertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_sub_graph_mapper,
-                           report_folder, ip_tags, reverse_ip_tags,
-                           write_text_specs, application_run_time_folder):
+                           report_folder, write_text_specs,
+                           application_run_time_folder):
         """
         Model-specific construction of the data blocks necessary to build a
         single Application Monitor on one core.
@@ -164,7 +150,7 @@ class LivePacketGather(
         # Construct the data images needed for the Neuron:
         self.reserve_memory_regions(spec, setup_sz)
         self.write_setup_info(spec)
-        self.write_configuration_region(spec, subvertex, ip_tags)
+        self.write_configuration_region(spec, subvertex)
 
         # End-of-Spec:
         spec.end_specification()
@@ -186,7 +172,7 @@ class LivePacketGather(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='setup')
 
-    def write_configuration_region(self, spec, partitioned_vertex, ip_tags):
+    def write_configuration_region(self, spec, partitioned_vertex):
         """ writes the configuration region to the spec
 
         :param spec: the spec object for the dsg
@@ -196,65 +182,57 @@ class LivePacketGather(
                     being generated
         :type partitioned_vertex:\
                     :py:class:`pacman.model.partitioned_graph.partitioned_vertex.PartitionedVertex`
-        :param ip_tags: The set of ip tags assigned to the object
-        :type ip_tags: iterable of :py:class:`spinn_machine.tags.iptag.IPTag`
         :raises DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """
         spec.switch_write_focus(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value)
 
-        # has prefix
-        if self._use_prefix:
+        # write prefix flag and prefix value
+        if self._EIEIO_params.use_prefix:
             spec.write_value(data=1)
+            spec.write_value(data=self._EIEIO_params.key_prefix)
         else:
             spec.write_value(data=0)
-
-        # prefix
-        if self._key_prefix is not None:
-            spec.write_value(data=self._key_prefix)
-        else:
             spec.write_value(data=0)
 
         # prefix type
-        if self._prefix_type is not None:
-            spec.write_value(data=self._prefix_type.value)
+        if self._EIEIO_params.prefix_type is not None:
+            spec.write_value(data=self._EIEIO_params.prefix_type.value)
         else:
             spec.write_value(data=0)
-
         # packet type
-        spec.write_value(data=self._message_type.value)
+        spec.write_value(data=self._EIEIO_params.message_type.value)
 
         # right shift
-        spec.write_value(data=self._right_shift)
+        spec.write_value(data=self._EIEIO_params.right_shift)
 
         # payload as time stamp
-        if self._payload_as_time_stamps:
+        if self._EIEIO_params.payload_as_time_stamps:
             spec.write_value(data=1)
         else:
             spec.write_value(data=0)
 
         # payload has prefix
-        if self._use_payload_prefix:
+        if self._EIEIO_params.use_payload_prefix:
             spec.write_value(data=1)
         else:
             spec.write_value(data=0)
-
         # payload prefix
-        if self._payload_prefix is not None:
-            spec.write_value(data=self._payload_prefix)
+        if self._EIEIO_params.payload_prefix is not None:
+            spec.write_value(data=self._EIEIO_params.payload_prefix)
         else:
             spec.write_value(data=0)
 
         # right shift
-        spec.write_value(data=self._payload_right_shift)
+        spec.write_value(data=self._EIEIO_params.payload_right_shift)
 
         # sdp tag
-        ip_tag = iter(ip_tags).next()
+        ip_tag = iter(partitioned_vertex.ip_tags).next()
         spec.write_value(data=ip_tag.tag)
 
         # number of packets to send per time stamp
-        spec.write_value(data=self._number_of_packets_sent_per_time_step)
+        spec.write_value(data=self._EIEIO_params.number_of_packets_sent_per_time_step)
 
     def write_setup_info(self, spec):
         """

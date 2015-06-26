@@ -134,8 +134,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
-            write_text_specs, application_run_time_folder):
+            hostname, graph_mapper, report_folder, write_text_specs,
+            application_run_time_folder):
         """
         Model-specific construction of the data blocks necessary to build a
         single external retina device.
@@ -147,8 +147,6 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         :param hostname:
         :param graph_mapper:
         :param report_folder:
-        :param ip_tags:
-        :param reverse_ip_tags:
         :param write_text_specs:
         :param application_run_time_folder:
         :return:
