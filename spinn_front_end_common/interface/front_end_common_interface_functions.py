@@ -113,7 +113,6 @@ class FrontEndCommonInterfaceFunctions(object):
             self._txrx.ensure_board_is_ready(
                 board_version, number_of_boards, width, height)
             self._txrx.discover_scamp_connections()
-            self._txrx.enable_dropped_packet_reinjection()
             self._machine = self._txrx.get_machine_details()
             if self._reports_states.transciever_report:
                 self._reload_script = ReloadScript(
