@@ -19,11 +19,14 @@ class Reload(object):
     """ Reload functions for reload scripts
     """
 
-    def __init__(self, machine_name, version, reports_states, app_id=30):
+    def __init__(self, machine_name, version, reports_states, bmp_details,
+                 down_chips, down_cores, number_of_boards, height, width,
+                 app_id=30):
         self._spinnaker_interface = \
             FrontEndCommonInterfaceFunctions(reports_states, None, None)
         self._spinnaker_interface.setup_interfaces(
-            machine_name, False, None, None, None, None, None, version)
+            machine_name, bmp_details, down_chips, down_cores,
+            version, number_of_boards, width, height, False, False)
         self._app_id = app_id
         self._reports_states = reports_states
         self._total_processors = 0
@@ -96,7 +99,8 @@ class Reload(object):
         self._spinnaker_interface.load_iptags(iptags)
         self._spinnaker_interface.load_reverse_iptags(reverse_iptags)
 
-    def restart(self, executable_targets, runtime, time_scaling, app_id=30):
+    def restart(self, executable_targets, runtime, time_scaling,
+                turn_off_machine=True, app_id=30):
         """
         :param executable_targets: the executable targets which needs to
         be loaded onto the machine
@@ -113,6 +117,8 @@ class Reload(object):
         self._spinnaker_interface.start_all_cores(executable_targets, app_id)
         self._spinnaker_interface.wait_for_execution_to_complete(
             executable_targets, app_id, runtime, time_scaling)
+        if turn_off_machine:
+            self._spinnaker_interface._txrx.power_off_machine()
 
     def enable_buffer_manager(self, buffered_placements, buffered_tags,
                               application_folder_path):

@@ -17,7 +17,9 @@ class ReloadScript(object):
     """ Generates a script for reloading a simulation
     """
 
-    def __init__(self, binary_directory, hostname, board_version):
+    def __init__(self, binary_directory, hostname, board_version,
+                 bmp_details, down_chips, down_cores, number_of_boards,
+                 height, width):
         self._binary_directory = binary_directory
         self._wait_on_confiramtion = None
         self._runtime = None
@@ -39,6 +41,12 @@ class ReloadScript(object):
 
         self._println("machine_name = \"{}\"".format(hostname))
         self._println("machine_version = {}".format(board_version))
+        self._println("bmp_details = \"{}\"".format(bmp_details))
+        self._println("down_chips = {}".format(down_chips))
+        self._println("down_cores = {}".format(down_cores))
+        self._println("number_of_boards = {}".format(number_of_boards))
+        self._println("height = {}".format(height))
+        self._println("width = {}".format(width))
 
     @property
     def wait_on_confirmation(self):
@@ -221,7 +229,8 @@ class ReloadScript(object):
         """
         self._println("")
         self._println("reloader = Reload(machine_name, machine_version, "
-                      "reports_states)")
+                      "reports_states, bmp_details, down_chips, down_cores, "
+                      "number_of_boards, height, width)")
         self._println("if len(socket_addresses) > 0:")
         # note that this needs to be added into the script, as it needs to
         # be able to find its database no matter where it is or where its
@@ -238,6 +247,7 @@ class ReloadScript(object):
         self._println("reloader.reload_binaries(binaries)")
         self._println("reloader.enable_buffer_manager(buffered_placements, "
                       "buffered_tags, \"{}\")".format(self._binary_directory))
-        self._println("reloader.restart(binaries, {}, {})"
+        self._println("reloader.restart(binaries, {}, {}, "
+                      "turn_off_machine=True)"
                       .format(self._runtime, self._time_scale_factor))
         self._file.close()

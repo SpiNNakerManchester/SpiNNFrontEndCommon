@@ -12,7 +12,8 @@ from pacman.utilities.progress_bar import ProgressBar
 # spinnmachine imports
 from spinn_front_end_common.interface.buffer_management.buffer_manager import \
     BufferManager
-from spinn_front_end_common.interface.buffer_management.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex import \
+from spinn_front_end_common.interface.buffer_management.buffer_models.\
+    abstract_sends_buffers_from_host_partitioned_vertex import \
     AbstractSendsBuffersFromHostPartitionedVertex
 from spinn_machine.sdram import SDRAM
 from spinn_machine.virutal_machine import VirtualMachine
@@ -63,7 +64,7 @@ class FrontEndCommonInterfaceFunctions(object):
         self._reload_script = None
         self._send_buffer_manager = None
 
-    def _setup_interfaces(
+    def setup_interfaces(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height,
             is_virtual, virtual_has_wrap_arounds):
@@ -116,7 +117,8 @@ class FrontEndCommonInterfaceFunctions(object):
             self._machine = self._txrx.get_machine_details()
             if self._reports_states.transciever_report:
                 self._reload_script = ReloadScript(
-                    self._app_data_folder, hostname, machine_version)
+                    self._app_data_folder, hostname, board_version, bmp_details,
+                    downed_chips, downed_cores, number_of_boards, height, width)
         else:
             self._machine = VirtualMachine(
                 width=width, height=height,
@@ -126,10 +128,10 @@ class FrontEndCommonInterfaceFunctions(object):
     def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
         split_string = bmp_cabinet_and_frame.split(";", 2)
         if len(split_string) == 1:
-            return (0, 0, split_string[0])
+            return [0, 0, split_string[0]]
         if len(split_string) == 2:
-            return (0, split_string[0], split_string[1])
-        return (split_string[0], split_string[1], split_string[2])
+            return [0, split_string[0], split_string[1]]
+        return [split_string[0], split_string[1], split_string[2]]
 
     @staticmethod
     def _sort_out_bmp_boards_string(bmp_boards):
