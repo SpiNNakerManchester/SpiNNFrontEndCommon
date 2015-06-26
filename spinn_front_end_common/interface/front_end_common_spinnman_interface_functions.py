@@ -38,9 +38,9 @@ import traceback
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonInterfaceFunctions(object):
+class FrontEndCommonSpinnmanInterfaceFunctions(object):
     """
-    the front end common interface which supports functions such as :
+    the front end common spinnman interface which supports functions such as :
     setting up the python spinnMachine
     writing data to spinnaker machine
     loading tags

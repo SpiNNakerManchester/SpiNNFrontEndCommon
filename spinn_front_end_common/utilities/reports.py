@@ -298,7 +298,7 @@ def start_transceiver_rerun_script(report_directory, hostname, board_version):
     output.write("from spinnman.data.file_data_reader import FileDataReader as"
                  " SpinnmanFileDataReader \n\n")
     output.write("from spynnaker.pyNN.spynnaker_comms_functions import "
-                 "FrontEndCommonInterfaceFunctions \n \n")
+                 "FrontEndCommonSpinnmanInterfaceFunctions \n \n")
     output.write("import pickle \n\n")
     output.write("txrx = create_transceiver_from_hostname(hostname=\"{}\""
                  ")\n\n".format(hostname))
@@ -435,7 +435,7 @@ def re_load_script_running_aspects(
     lines.append("executable_targets = pickle.load(open(\"{}\","" \"rb\"))"
                  .format(ntpath.basename(pickled_point)))
     lines.append(
-        "spinnaker_comms = FrontEndCommonInterfaceFunctions(None, None)")
+        "spinnaker_comms = FrontEndCommonSpinnmanInterfaceFunctions(None, None)")
     lines.append("spinnaker_comms._setup_interfaces(\"{}\")"
                  .format(hostname))
     lines.append("spinnaker_comms._start_execution_on_machine("

@@ -4,17 +4,6 @@ configuration class for common front ends
 
 # front end common imports
 from spinn_front_end_common.utilities.report_states import ReportState
-from spinn_front_end_common.utilities import helpful_functions
-
-# pacman inports
-from pacman.operations import partition_algorithms
-from pacman.operations import placer_algorithms
-from pacman.operations import router_algorithms
-from pacman.operations import routing_info_allocator_algorithms
-from pacman.operations import tag_allocator_algorithms
-from pacman.model.partitionable_graph.partitionable_graph import \
-    PartitionableGraph
-
 
 # general imports
 import os
@@ -47,29 +36,9 @@ class FrontEndCommonConfigurationFunctions(object):
         self._in_debug_mode = None
 
         # main objects
-        self._partitionable_graph = PartitionableGraph(label=graph_label)
-        self._partitioned_graph = None
-        self._graph_mapper = None
-        self._no_machine_time_steps = None
-        self._placements = None
-        self._router_tables = None
-        self._routing_infos = None
-        self._routing_paths = None
-        self._pruner_infos = None
         self._has_ran = False
         self._reports_states = None
         self._app_id = None
-        self._tags = None
-
-        # pacman mapping objects
-        self._partitioner_algorithm = None
-        self._placer_algorithm = None
-        self._tag_allocator_algorithm = None
-        self._key_allocator_algorithm = None
-        self._router_algorithm = None
-        self._report_default_directory = None
-        self._app_data_runtime_folder = None
-        self._this_run_time_string = None
 
         # executable params
         self._do_load = None
@@ -216,40 +185,41 @@ class FrontEndCommonConfigurationFunctions(object):
 
     def _set_up_main_objects(
             self, reports_are_enabled, app_id, execute_partitioner_report,
-            execute_placer_report, execute_router_report,
-            execute_router_dat_based_report, execute_routing_info_report,
+            execute_placer_report_with_partitionable_graph,
+            execute_placer_report_without_partitionable_graph,
+            execute_router_report, execute_routing_info_report,
             execute_data_spec_report, execute_write_reload_steps,
             generate_transciever_report, generate_tag_report,
-            generate_performance_measurements, in_debug_mode):
+            generate_performance_measurements):
         """
 
         :param reports_are_enabled:
         :param app_id:
         :param execute_partitioner_report:
-        :param execute_placer_report:
         :param execute_router_report:
-        :param execute_router_dat_based_report:
         :param execute_routing_info_report:
         :param execute_data_spec_report:
         :param execute_write_reload_steps:
         :param generate_transciever_report:
         :param generate_performance_measurements:
-        :param in_debug_mode:
         :return:
         """
-        self._in_debug_mode = in_debug_mode
 
         # report object
         if reports_are_enabled:
             self._reports_states = ReportState(
-                execute_partitioner_report, execute_placer_report,
-                execute_router_report, execute_router_dat_based_report,
-                execute_routing_info_report, execute_data_spec_report,
-                execute_write_reload_steps, generate_transciever_report,
-                generate_performance_measurements, generate_tag_report)
+                execute_partitioner_report,
+                execute_placer_report_with_partitionable_graph,
+                execute_placer_report_without_partitionable_graph,
+                execute_router_report, execute_routing_info_report,
+                execute_data_spec_report, execute_write_reload_steps,
+                generate_transciever_report, generate_performance_measurements,
+                generate_tag_report)
 
-        # communication objects
-        self._iptags = list()
+        self._no_machine_time_steps = None
+        self._report_default_directory = None
+        self._app_data_runtime_folder = None
+        self._this_run_time_string = None
         self._app_id = app_id
 
     def _set_up_executable_specifics(self, load_machine=True,
@@ -263,50 +233,6 @@ class FrontEndCommonConfigurationFunctions(object):
         # loading and running config params
         self._do_load = load_machine
         self._do_run = run_machine
-
-    def _set_up_pacman_algorthms_listings(
-            self, partitioner_algorithm=None, placer_algorithm=None,
-            key_allocator_algorithm=None, routing_algorithm=None,
-            tag_allocator_algorithm=None):
-        """
-
-        :param partitioner_algorithm:
-        :param placer_algorithm:
-        :param key_allocator_algorithm:
-        :param routing_algorithm:
-        :param tag_allocator_algorithm
-        :return:
-        """
-
-        # algorithm lists
-        if partitioner_algorithm is not None:
-            partitioner_algorithms = helpful_functions.get_valid_components(
-                partition_algorithms, "Partitioner")
-            self._partitioner_algorithm = partitioner_algorithms[
-                partitioner_algorithm]
-
-        if placer_algorithm is not None:
-            place_algorithms = helpful_functions.get_valid_components(
-                placer_algorithms, "Placer")
-            self._placer_algorithm = place_algorithms[placer_algorithm]
-
-        if tag_allocator_algorithm is not None:
-            tag_algorithms = helpful_functions.get_valid_components(
-                tag_allocator_algorithms, "TagAllocator")
-            self._tag_allocator_algorithm = tag_algorithms[
-                tag_allocator_algorithm]
-
-        # get common key allocator algorithms
-        if key_allocator_algorithm is not None:
-            key_allocator_algorithms = helpful_functions.get_valid_components(
-                routing_info_allocator_algorithms, "RoutingInfoAllocator")
-            self._key_allocator_algorithm = key_allocator_algorithms[
-                key_allocator_algorithm]
-
-        if routing_algorithm is not None:
-            routing_algorithms = helpful_functions.get_valid_components(
-                router_algorithms, "Routing")
-            self._router_algorithm = routing_algorithms[routing_algorithm]
 
     @staticmethod
     def _move_report_and_binary_files(max_to_keep, starting_directory):
