@@ -64,8 +64,6 @@ class ReverseIpTagMultiCastSource(
     _CONFIGURATION_REGION_SIZE = 36
     _max_atoms_per_core = sys.maxint
 
-    CORE_APP_IDENTIFIER = constants.SPIKE_INJECTOR_CORE_APPLICATION_ID
-
     def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
                  label, board_address=None, virtual_key=None, check_key=True,
                  prefix=None, prefix_type=None, tag=None, key_left_shift=0,
@@ -227,8 +225,7 @@ class ReverseIpTagMultiCastSource(
 
         # set up system region writes
         self._write_basic_setup_info(
-            spec, ReverseIpTagMultiCastSource.CORE_APP_IDENTIFIER,
-            self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
+            spec, self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
 
         # set up configuration region writes
         spec.switch_write_focus(
