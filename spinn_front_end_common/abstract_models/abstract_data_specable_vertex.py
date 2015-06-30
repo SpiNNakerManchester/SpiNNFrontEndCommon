@@ -1,3 +1,4 @@
+from data_specification.enums.data_type import DataType
 from data_specification.file_data_writer import FileDataWriter
 
 from spinn_front_end_common.utilities import exceptions
@@ -6,6 +7,7 @@ from abc import ABCMeta
 from six import add_metaclass
 from abc import abstractmethod
 
+import hashlib
 import tempfile
 import os
 import threading
@@ -26,11 +28,16 @@ class AbstractDataSpecableVertex(object):
         self._application_runtime = None
         self._no_machine_time_steps = None
 
-    def _write_basic_setup_info(self, spec, core_app_identifier, region_id):
-
+    def _write_basic_setup_info(self, spec, region_id):
+        # Hash application title
+        application_name = os.path.splitext(self.get_binary_file_name())[0]
+        
+        # Get first 32-bits of the md5 hash of the application name
+        application_name_hash = hashlib.md5(application_name).hexdigest()[:8]
+     
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=region_id)
-        spec.write_value(data=core_app_identifier)
+        spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
         spec.write_value(data=self._no_machine_time_steps)
 

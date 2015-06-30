@@ -45,8 +45,6 @@ class LivePacketGather(
     out of a spinnaker machine.
     """
 
-    CORE_APP_IDENTIFIER = constants.LIVE_GATHERER_CORE_APPLICATION_ID
-
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
         names=[('SYSTEM', 0),
@@ -281,8 +279,7 @@ class LivePacketGather(
         spec.switch_write_focus(
             region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
         self._write_basic_setup_info(
-            spec, constants.LIVE_GATHERER_CORE_APPLICATION_ID,
-            self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
+            spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
