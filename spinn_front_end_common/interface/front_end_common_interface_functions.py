@@ -10,7 +10,6 @@ from data_specification.file_data_reader import FileDataReader
 from pacman.utilities.progress_bar import ProgressBar
 
 # spinnmachine imports
-from spinn_machine.sdram import SDRAM
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
@@ -114,10 +113,10 @@ class FrontEndCommonInterfaceFunctions(object):
     def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
         split_string = bmp_cabinet_and_frame.split(";", 2)
         if len(split_string) == 1:
-            return (0, 0, split_string[0])
+            return [0, 0, split_string[0]]
         if len(split_string) == 2:
-            return (0, split_string[0], split_string[1])
-        return (split_string[0], split_string[1], split_string[2])
+            return [0, split_string[0], split_string[1]]
+        return [split_string[0], split_string[1], split_string[2]]
 
     @staticmethod
     def _sort_out_bmp_boards_string(bmp_boards):
@@ -206,7 +205,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
-            write_text_specs, runtime_application_data_folder):
+            write_text_specs, runtime_application_data_folder, machine):
         """
 
         :param host_based_execution:
@@ -220,7 +219,7 @@ class FrontEndCommonInterfaceFunctions(object):
         if host_based_execution:
             return self.host_based_data_specification_execution(
                 hostname, placements, graph_mapper, write_text_specs,
-                runtime_application_data_folder)
+                runtime_application_data_folder, machine)
         else:
             return self._chip_based_data_specification_execution(hostname)
 
@@ -229,7 +228,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
     def host_based_data_specification_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
-            application_data_runtime_folder):
+            application_data_runtime_folder, machine):
         """
 
         :param hostname:
@@ -239,7 +238,8 @@ class FrontEndCommonInterfaceFunctions(object):
         :param application_data_runtime_folder:
         :return:
         """
-        space_based_memory_tracker = dict()
+        next_position_tracker = dict()
+        space_available_tracker = dict()
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
@@ -266,11 +266,13 @@ class FrontEndCommonInterfaceFunctions(object):
                 data_writer = FileDataWriter(app_data_file_path)
 
                 # locate current memory requirement
-                current_memory_available = SDRAM.DEFAULT_SDRAM_BYTES
-                memory_tracker_key = (placement.x, placement.y)
-                if memory_tracker_key in space_based_memory_tracker:
-                    current_memory_available = space_based_memory_tracker[
-                        memory_tracker_key]
+                chip = machine.get_chip_at(placement.x, placement.y)
+                next_position = chip.sdram.user_base_address
+                space_available = chip.sdram.size
+                placement_key = (placement.x, placement.y)
+                if placement_key in next_position_tracker:
+                    next_position = next_position_tracker[placement_key]
+                    space_available = space_available_tracker[placement_key]
 
                 # generate a file writer for dse report (app pointer table)
                 report_writer = None
@@ -289,7 +291,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
                 # generate data spec executor
                 host_based_data_spec_executor = DataSpecificationExecutor(
-                    data_spec_reader, data_writer, current_memory_available,
+                    data_spec_reader, data_writer, space_available,
                     report_writer)
 
                 # update memory calc and run data spec executor
@@ -304,15 +306,14 @@ class FrontEndCommonInterfaceFunctions(object):
                 # update base address mapper
                 processor_mapping_key = (placement.x, placement.y, placement.p)
                 processor_to_app_data_base_address[processor_mapping_key] = {
-                    'start_address':
-                        ((SDRAM.DEFAULT_SDRAM_BYTES -
-                          current_memory_available) +
-                         constants.SDRAM_BASE_ADDR),
+                    'start_address': next_position,
                     'memory_used': bytes_used_by_spec,
                     'memory_written': bytes_written_by_spec}
 
-                space_based_memory_tracker[memory_tracker_key] = \
-                    current_memory_available - bytes_used_by_spec
+                next_position_tracker[placement_key] = (next_position +
+                                                        bytes_used_by_spec)
+                space_available_tracker[placement_key] = (space_available -
+                                                          bytes_used_by_spec)
 
             # update the progress bar
             progress_bar.update()
