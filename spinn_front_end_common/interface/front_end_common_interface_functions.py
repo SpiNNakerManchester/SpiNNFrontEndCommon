@@ -113,10 +113,10 @@ class FrontEndCommonInterfaceFunctions(object):
     def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
         split_string = bmp_cabinet_and_frame.split(";", 2)
         if len(split_string) == 1:
-            return (0, 0, split_string[0])
+            return [0, 0, split_string[0]]
         if len(split_string) == 2:
-            return (0, split_string[0], split_string[1])
-        return (split_string[0], split_string[1], split_string[2])
+            return [0, split_string[0], split_string[1]]
+        return [split_string[0], split_string[1], split_string[2]]
 
     @staticmethod
     def _sort_out_bmp_boards_string(bmp_boards):
