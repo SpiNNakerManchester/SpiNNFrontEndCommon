@@ -438,12 +438,12 @@ class FrontEndCommonInterfaceFunctions(object):
 
         if processors_exited < total_processors:
             _, unsuccessful_cores = self._break_down_of_failure_to_reach_state(
-                all_core_subsets, CPUState.FINISHED)
+                all_core_subsets, CPUState.FINSHED)
 
             # break_down the successful cores and unsuccessful cores into
             #  string reps
             break_down = self.turn_break_downs_into_string(
-                all_core_subsets, unsuccessful_cores, CPUState.FINISHED)
+                all_core_subsets, unsuccessful_cores, CPUState.FINSHED)
             raise exceptions.ExecutableFailedToStopException(
                 "{} of the processors failed to exit successfully with"
                 " breakdown {}.".format(
