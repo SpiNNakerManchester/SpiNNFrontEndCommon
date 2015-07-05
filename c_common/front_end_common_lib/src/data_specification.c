@@ -82,5 +82,5 @@ address_t data_specification_get_region(
     // As the address is a uint32_t array, we need to divide the byte address
     // in the region table by 4 (hence down-shift by 2) to get the position in
     // the "address array"
-    return (&data_address[data_address[REGION_START_INDEX + region] >> 2]);
+    return data_address[REGION_START_INDEX + region];
 }
