@@ -17,13 +17,18 @@ from spinn_machine.virutal_machine import VirtualMachine
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
 from spinnman.transceiver import create_transceiver_from_hostname
+from spinnman.transceiver import *
 from spinnman.data.file_data_reader import FileDataReader \
     as SpinnmanFileDataReader
 from spinnman.model.core_subsets import CoreSubsets
 from spinnman.model.core_subset import CoreSubset
 from spinnman import constants as spinnman_constants
 from spinnman.model.bmp_connection_data import BMPConnectionData
+from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.messages.sdp.sdp_flag import SDPFlag
 import re
+
+from spynnaker.pyNN.utilities.conf import config
 
 # front end common imports
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
@@ -37,6 +42,15 @@ import time
 import os
 import logging
 import traceback
+
+
+# data spec sender imports
+from data_specification import data_spec_sender
+from data_specification.file_data_reader import FileDataReader
+from data_specification.data_spec_sender.data_specification_sender \
+        import DataSpecificationSender
+from data_specification.data_spec_sender.spec_sender import SpecSender
+
 
 logger = logging.getLogger(__name__)
 
@@ -193,7 +207,7 @@ class FrontEndCommonInterfaceFunctions(object):
         """ loads all the tags onto all the boards
         """
         # clear all the tags from the ethernet connection, as nothing should
-        # be allowed to use it (no two sims should use the same etiehrnet
+        # be allowed to use it (no two sims should use the same ethernet
         # connection at the same time
         for tag_id in range(spinnman_constants.MAX_TAG_ID):
             self._txrx.clear_ip_tag(tag_id)
@@ -208,7 +222,6 @@ class FrontEndCommonInterfaceFunctions(object):
             self, host_based_execution, hostname, placements, graph_mapper,
             write_text_specs, runtime_application_data_folder):
         """
-
         :param host_based_execution:
         :param hostname:
         :param placements:
@@ -218,14 +231,72 @@ class FrontEndCommonInterfaceFunctions(object):
         :return:
         """
         if host_based_execution:
-            return self.host_based_data_specification_execution(
+            processor_to_app_data_base_address = \
+                    self.host_based_data_specification_execution(
+                          hostname, placements, graph_mapper, write_text_specs,
+                          runtime_application_data_folder)
+
+            if self._reports_states is not None:
+                reports.write_memory_map_report(self._report_default_directory,
+                                            processor_to_app_data_base_address)
+
+            if self._do_load is True:
+                logger.info("*** Loading data ***")
+                self._load_application_data(
+                    self._placements, self._graph_mapper,
+                    processor_to_app_data_base_address, self._hostname,
+                    self._app_id,
+                    machine_version=config.getint("Machine", "version"),
+                    app_data_folder=self._app_data_runtime_folder)
+
+        else:
+            self._chip_based_data_specification_execution(
                 hostname, placements, graph_mapper, write_text_specs,
                 runtime_application_data_folder)
-        else:
-            return self._chip_based_data_specification_execution(hostname)
 
-    def _chip_based_data_specification_execution(self, hostname):
-        raise NotImplementedError
+
+    def _chip_based_data_specification_execution(
+            self, hostname, placements, graph_mapper, write_text_specs,
+            application_data_runtime_folder):
+
+        core_subset = CoreSubsets()
+        for placement in placements.placements:
+            core_subset.add_processor(placement.x, placement.y, placement.p)
+
+        executable_targets = {os.path.dirname(data_spec_sender.__file__) 
+                            + '/data_specification_executor.aplx': core_subset}
+
+        self._load_executable_images(executable_targets, 31, 
+                              app_data_folder=self._app_data_runtime_folder)
+
+        transceiver = create_transceiver_from_hostname(hostname,         
+                                            config.getint("Machine", "version"))
+
+        # create a progress bar for end users
+        progress_bar = ProgressBar(len(list(placements.placements)),
+                                   "on executing data specifications on the "
+                                   "chip")
+
+        for placement in placements.placements:
+            associated_vertex = graph_mapper.get_vertex_from_subvertex(
+                                                            placement.subvertex)
+
+            # if the vertex can generate a DSG, call it
+            if isinstance(associated_vertex, AbstractDataSpecableVertex):
+
+                data_spec_file_path = \
+                            associated_vertex.get_data_spec_file_path(
+                                placement.x, placement.y, placement.p, hostname,
+                                application_data_runtime_folder)
+
+                fileReader = FileDataReader(data_spec_file_path)
+
+                sender     = SpecSender(transceiver, placement)
+
+                dataSpecSender = DataSpecificationSender(fileReader, sender)
+                dataSpecSender.sendSpec()
+                progress_bar.update()
+        progress_bar.end()
 
     def host_based_data_specification_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
@@ -288,9 +359,12 @@ class FrontEndCommonInterfaceFunctions(object):
                     report_writer = FileDataWriter(report_file_path)
 
                 # generate data spec executor
+                start_address = ((SDRAM.DEFAULT_SDRAM_BYTES -
+                                  current_memory_available) +
+                                  constants.SDRAM_BASE_ADDR)
                 host_based_data_spec_executor = DataSpecificationExecutor(
                     data_spec_reader, data_writer, current_memory_available,
-                    report_writer)
+                    start_address, report_writer)
 
                 # update memory calc and run data spec executor
                 try:
@@ -304,10 +378,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 # update base address mapper
                 processor_mapping_key = (placement.x, placement.y, placement.p)
                 processor_to_app_data_base_address[processor_mapping_key] = {
-                    'start_address':
-                        ((SDRAM.DEFAULT_SDRAM_BYTES -
-                          current_memory_available) +
-                         constants.SDRAM_BASE_ADDR),
+                    'start_address': start_address,
                     'memory_used': bytes_used_by_spec,
                     'memory_written': bytes_written_by_spec}
 
@@ -319,6 +390,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # close the progress bar
         progress_bar.end()
+
         return processor_to_app_data_base_address
 
     @staticmethod
@@ -495,7 +567,7 @@ class FrontEndCommonInterfaceFunctions(object):
         return break_down
 
     def _load_application_data(
-            self, placements, router_tables, vertex_to_subvertex_mapper,
+            self, placements, vertex_to_subvertex_mapper,
             processor_to_app_data_base_address, hostname, app_id,
             app_data_folder, machine_version):
 
@@ -552,9 +624,10 @@ class FrontEndCommonInterfaceFunctions(object):
             progress_bar.update()
         progress_bar.end()
 
+    def load_router_table(self, router_tables, app_id, app_data_folder):
+
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")
-
         # load each router table that is needed for the application to run into
         # the chips sdram
         for router_table in router_tables.routing_tables:
