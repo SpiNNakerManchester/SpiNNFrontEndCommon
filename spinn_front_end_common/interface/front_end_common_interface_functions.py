@@ -10,6 +10,10 @@ from data_specification.file_data_reader import FileDataReader
 from pacman.utilities.progress_bar import ProgressBar
 
 # spinnmachine imports
+from spinn_front_end_common.utility_models.live_packet_gather import \
+    LivePacketGather
+from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source import \
+    ReverseIpTagMultiCastSource
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
@@ -53,6 +57,20 @@ class FrontEndCommonInterfaceFunctions(object):
         self._reports_states = reports_states
         self._report_default_directory = report_default_directory
         self._machine = None
+
+    def _auto_detect_database(self, partitioned_graph):
+        """
+        autodetects if there is a need to activate the database system
+        :param partitioned_graph: the partitioned graph of the application
+        problem space.
+        :return: a bool which represents if the database is needed
+        """
+        for vertex in partitioned_graph.subvertices:
+            if (isinstance(vertex, LivePacketGather) or
+                    isinstance(vertex, ReverseIpTagMultiCastSource)):
+                return True
+        else:
+            return False
 
     def _setup_interfaces(
             self, hostname, bmp_details, downed_chips, downed_cores,
@@ -214,6 +232,7 @@ class FrontEndCommonInterfaceFunctions(object):
         :param graph_mapper:
         :param write_text_specs:
         :param runtime_application_data_folder:
+        :param machine:
         :return:
         """
         if host_based_execution:
@@ -236,6 +255,7 @@ class FrontEndCommonInterfaceFunctions(object):
         :param graph_mapper:
         :param write_text_specs:
         :param application_data_runtime_folder:
+        :param machine:
         :return:
         """
         next_position_tracker = dict()
