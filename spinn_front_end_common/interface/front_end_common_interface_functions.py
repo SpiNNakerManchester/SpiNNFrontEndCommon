@@ -15,7 +15,10 @@ from spinn_front_end_common.interface.buffer_management.buffer_manager import \
 from spinn_front_end_common.interface.buffer_management.buffer_models.\
     abstract_sends_buffers_from_host_partitioned_vertex import \
     AbstractSendsBuffersFromHostPartitionedVertex
-from spinn_machine.sdram import SDRAM
+from spinn_front_end_common.utility_models.live_packet_gather import \
+    LivePacketGather
+from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source import \
+    ReverseIpTagMultiCastSource
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
@@ -63,6 +66,20 @@ class FrontEndCommonInterfaceFunctions(object):
         self._app_data_folder = app_data_folder
         self._reload_script = None
         self._send_buffer_manager = None
+
+    def _auto_detect_database(self, partitioned_graph):
+        """
+        autodetects if there is a need to activate the database system
+        :param partitioned_graph: the partitioned graph of the application
+        problem space.
+        :return: a bool which represents if the database is needed
+        """
+        for vertex in partitioned_graph.subvertices:
+            if (isinstance(vertex, LivePacketGather) or
+                    isinstance(vertex, ReverseIpTagMultiCastSource)):
+                return True
+        else:
+            return False
 
     def setup_interfaces(
             self, hostname, bmp_details, downed_chips, downed_cores,
@@ -268,7 +285,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
-            write_text_specs, runtime_application_data_folder):
+            write_text_specs, runtime_application_data_folder, machine):
         """
 
         :param host_based_execution:
@@ -277,12 +294,13 @@ class FrontEndCommonInterfaceFunctions(object):
         :param graph_mapper:
         :param write_text_specs:
         :param runtime_application_data_folder:
+        :param machine:
         :return:
         """
         if host_based_execution:
             return self.host_based_data_specification_execution(
                 hostname, placements, graph_mapper, write_text_specs,
-                runtime_application_data_folder)
+                runtime_application_data_folder, machine)
         else:
             return self._chip_based_data_specification_execution(hostname)
 
@@ -291,7 +309,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
     def host_based_data_specification_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
-            application_data_runtime_folder):
+            application_data_runtime_folder, machine):
         """
 
         :param hostname:
@@ -299,9 +317,11 @@ class FrontEndCommonInterfaceFunctions(object):
         :param graph_mapper:
         :param write_text_specs:
         :param application_data_runtime_folder:
+        :param machine:
         :return:
         """
-        space_based_memory_tracker = dict()
+        next_position_tracker = dict()
+        space_available_tracker = dict()
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
@@ -328,11 +348,13 @@ class FrontEndCommonInterfaceFunctions(object):
                 data_writer = FileDataWriter(app_data_file_path)
 
                 # locate current memory requirement
-                current_memory_available = SDRAM.DEFAULT_SDRAM_BYTES
-                memory_tracker_key = (placement.x, placement.y)
-                if memory_tracker_key in space_based_memory_tracker:
-                    current_memory_available = space_based_memory_tracker[
-                        memory_tracker_key]
+                chip = machine.get_chip_at(placement.x, placement.y)
+                next_position = chip.sdram.user_base_address
+                space_available = chip.sdram.size
+                placement_key = (placement.x, placement.y)
+                if placement_key in next_position_tracker:
+                    next_position = next_position_tracker[placement_key]
+                    space_available = space_available_tracker[placement_key]
 
                 # generate a file writer for dse report (app pointer table)
                 report_writer = None
@@ -351,7 +373,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
                 # generate data spec executor
                 host_based_data_spec_executor = DataSpecificationExecutor(
-                    data_spec_reader, data_writer, current_memory_available,
+                    data_spec_reader, data_writer, space_available,
                     report_writer)
 
                 # update memory calc and run data spec executor
@@ -366,15 +388,14 @@ class FrontEndCommonInterfaceFunctions(object):
                 # update base address mapper
                 processor_mapping_key = (placement.x, placement.y, placement.p)
                 processor_to_app_data_base_address[processor_mapping_key] = {
-                    'start_address':
-                        ((SDRAM.DEFAULT_SDRAM_BYTES -
-                          current_memory_available) +
-                         constants.SDRAM_BASE_ADDR),
+                    'start_address': next_position,
                     'memory_used': bytes_used_by_spec,
                     'memory_written': bytes_written_by_spec}
 
-                space_based_memory_tracker[memory_tracker_key] = \
-                    current_memory_available - bytes_used_by_spec
+                next_position_tracker[placement_key] = (next_position +
+                                                        bytes_used_by_spec)
+                space_available_tracker[placement_key] = (space_available -
+                                                          bytes_used_by_spec)
 
             # update the progress bar
             progress_bar.update()
