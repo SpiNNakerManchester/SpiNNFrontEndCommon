@@ -103,7 +103,8 @@ class NotificationProtocol(object):
             # noinspection PyBroadException
             try:
                 for connection in self._data_base_message_connections:
-                    connection.send_eieio_command_message(eieio_command_message)
+                    connection.send_eieio_command_message(
+                        eieio_command_message)
 
                 # if the system needs to wait, try recieving a packet back
                 if self._wait_for_read_confirmation:
@@ -111,8 +112,8 @@ class NotificationProtocol(object):
                         connection.receive_eieio_command_message()
                 logger.info("*** Confirmation received, continuing ***")
             except Exception:
-                logger.warning("*** Failed to notify external application about"
-                               " the database - continuing ***")
+                logger.warning("*** Failed to notify external application"
+                               " about the database - continuing ***")
 
         except Exception:
             traceback.print_exc()
@@ -123,4 +124,3 @@ class NotificationProtocol(object):
         :return:
         """
         self._wait_pool.close()
-

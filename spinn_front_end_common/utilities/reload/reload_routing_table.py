@@ -5,7 +5,6 @@ class ReloadRoutingTable(object):
     """ A routing table to be reloaded
     """
 
-
     @staticmethod
     def reload(routing_table_file_name):
         """

@@ -13,8 +13,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects.\
 import os
 
 
-class ReloadBufferedVertex(SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
-                           ):
+class ReloadBufferedVertex(
+        SendsBuffersFromHostPartitionedVertexPreBufferedImpl):
     """
     A class to work for buffered stuff for relaod purposes
     """
@@ -50,7 +50,3 @@ class ReloadBufferedVertex(SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
                     send_buffers[region_id].add_key(int(bits[0]), int(bits[1]))
                     line = reader.readline()
         return send_buffers
-
-
-
-

@@ -17,8 +17,8 @@ from spinn_front_end_common.interface.buffer_management.buffer_models.\
     AbstractSendsBuffersFromHostPartitionedVertex
 from spinn_front_end_common.utility_models.live_packet_gather import \
     LivePacketGather
-from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source import \
-    ReverseIpTagMultiCastSource
+from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source \
+    import ReverseIpTagMultiCastSource
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
