@@ -133,8 +133,9 @@ class FrontEndCommonInterfaceFunctions(object):
             self._machine = self._txrx.get_machine_details()
             if self._reports_states.transciever_report:
                 self._reload_script = ReloadScript(
-                    self._app_data_folder, hostname, board_version, bmp_details,
-                    downed_chips, downed_cores, number_of_boards, height, width)
+                    self._app_data_folder, hostname, board_version,
+                    bmp_details, downed_chips, downed_cores, number_of_boards,
+                    height, width)
         else:
             self._machine = VirtualMachine(
                 width=width, height=height,
