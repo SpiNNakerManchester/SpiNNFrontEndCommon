@@ -11,8 +11,6 @@ from spinn_front_end_common.utilities.notification_protocol\
 from spinnman.data.file_data_reader import FileDataReader
 
 from pacman.utilities.progress_bar import ProgressBar
-from pacman.model.routing_tables.multicast_routing_tables import \
-    MulticastRoutingTables
 
 
 class Reload(object):
@@ -45,7 +43,8 @@ class Reload(object):
 
         progress = ProgressBar(len(reload_application_data_items),
                                "Reloading Application Data")
-        # fixme need to find a way to remove these private accesses (maybe when the dsg in partitioned it will clear up)
+        # fixme need to find a way to remove these private accesses (maybe
+        # when the dsg in partitioned it will clear up)
 
         for reload_application_data in reload_application_data_items:
             if load_data:
@@ -124,13 +123,15 @@ class Reload(object):
                               application_folder_path):
         """
         enables the buffer manager with the placements and buffered tags
-        :param buffered_placements: the placements which contain buffered vertices
+        :param buffered_placements: the placements which contain buffered\
+                    vertices
         :param buffered_tags: the tags which contain buffered vertices
         :param application_folder_path: the application folder
         :return:
         """
         self._buffer_manager = BufferManager(
-            buffered_placements, buffered_tags, self._spinnaker_interface._txrx,
+            buffered_placements, buffered_tags,
+            self._spinnaker_interface._txrx,
             self._reports_states, application_folder_path, None)
 
     def execute_notification_protocol_read_messages(
@@ -155,7 +156,3 @@ class Reload(object):
         """
         if self._notification_protocol is not None:
             self._notification_protocol.send_start_notification()
-
-
-
-

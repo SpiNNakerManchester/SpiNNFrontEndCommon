@@ -157,9 +157,10 @@ class ReloadScript(object):
     def add_binary(self, binary_path, core_subsets):
         """
         stores a binary for reload purposes
-        :param binary_path: the absoluete path to the binary needed to be loaded
-        :param core_subsets: the set of cores to which this binary needs to
-        be loaded on the machine.
+        :param binary_path: the absoluete path to the binary needed to be\
+                    loaded
+        :param core_subsets: the set of cores to which this binary needs to\
+                    be loaded on the machine.
         :return:
         """
         create_cs = "CoreSubsets(["

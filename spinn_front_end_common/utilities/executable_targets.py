@@ -40,7 +40,8 @@ class ExecutableTargets(object):
         """
         adds a subset to a binary
         :param binary: the path to the binary needed to be exeucted
-        :param subsets: the subset of cores that the binary needs to be loaded on
+        :param subsets: the subset of cores that the binary needs to be loaded\
+                    on
         :return:
         """
         if self.has_binary(binary):
@@ -67,8 +68,6 @@ class ExecutableTargets(object):
             self._targets[binary].add_processor(chip_x, chip_y, chip_p)
         self._total_processors += 1
         self._need_to_create_subset_list = True
-
-
 
     def retrieve_cores_for_a_executable_target(self, binary):
         """ from a binary name, retrieves the core subsets associated with it
@@ -112,7 +111,3 @@ class ExecutableTargets(object):
                     for _ in core_subset.processor_ids:
                         self._core_subsets.append(core_subset)
         return self._core_subsets
-
-
-
-

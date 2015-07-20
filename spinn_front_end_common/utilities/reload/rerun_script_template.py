@@ -1,5 +1,5 @@
 """
-general reload script
+general reload script - note that imports are required so don't remove them!
 """
 
 # pacman imports

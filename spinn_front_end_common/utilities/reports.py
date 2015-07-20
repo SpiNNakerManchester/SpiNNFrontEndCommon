@@ -2,8 +2,6 @@ import logging
 import os
 import time
 
-from spinnman import constants as spinnman_constants
-
 logger = logging.getLogger(__name__)
 
 
@@ -274,7 +272,7 @@ def network_specification_report_partitioned_graph(
 
 
 def _write_router_diag(parent_xml_element, chip_x, chip_y,
-                       router_diagnostic, re_injected_counter):
+                       router_diagnostic):
     from lxml import etree
     router = etree.SubElement(
         parent_xml_element, "router_at_chip_{}_{}".format(chip_x, chip_y))
@@ -302,8 +300,6 @@ def _write_router_diag(parent_xml_element, chip_x, chip_y,
         router_diagnostic.n_external_fixed_route_packets)
     etree.SubElement(router, "Dump_FR").text = str(
         router_diagnostic.n_dropped_fixed_route_packets)
-    etree.SubElement(router, "Re__Inj").text = str(
-        re_injected_counter)
 
 
 def generate_provance_routings(routing_tables, machine, txrx,
@@ -322,11 +318,9 @@ def generate_provance_routings(routing_tables, machine, txrx,
             if router_table.number_of_entries > 0:
                 router_diagnostic = txrx.get_router_diagnostics(
                     router_table.x, router_table.y)
-                re_inject_counter = _get_chips_re_injector_counter(
-                    router_table.x, router_table.y, txrx)
                 _write_router_diag(
                     expected_routers, router_table.x, router_table.y,
-                    router_diagnostic, re_inject_counter)
+                    router_diagnostic)
                 seen_chips.add((router_table.x, router_table.y))
 
     # Get diagnostics from unexpected chips
@@ -337,28 +331,10 @@ def generate_provance_routings(routing_tables, machine, txrx,
                 if (router_diagnostic.n_dropped_multicast_packets != 0 or
                         router_diagnostic.n_local_multicast_packets != 0 or
                         router_diagnostic.n_external_multicast_packets != 0):
-                    re_inject_counter = _get_chips_re_injector_counter(
-                        chip.x, chip.y, txrx)
                     _write_router_diag(
-                        unexpected_routers, chip.x, chip.y, router_diagnostic,
-                        re_inject_counter)
+                        unexpected_routers, chip.x, chip.y, router_diagnostic)
 
     # Write the details to a file
     file_path = os.path.join(report_default_directory, "provance_data.xml")
     writer = open(file_path, "w")
     writer.write(etree.tostring(root, pretty_print=True))
-
-
-def _get_chips_re_injector_counter(chip_x, chip_y, txrx):
-    """ helper method that checks for the re_injector core and reads its
-    usr3 register
-
-    :param chip_x: The x-coordinate of the chip to get the count from
-    :param chip_y: The y-coordinate of the chip to get the count from
-    :param txrx: the tranceiver object
-    :return: a count of the re-injected packets
-    """
-    for processor in range(1, 17):
-        data = txrx.get_cpu_information_from_core(chip_x, chip_y, processor)
-        if data.application_id == spinnman_constants.RE_INJECTION_APP_ID:
-            return data.user[0]
