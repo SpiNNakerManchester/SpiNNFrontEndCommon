@@ -471,7 +471,7 @@ class FrontEndCommonInterfaceFunctions(object):
     def _load_application_data(
             self, placements, router_tables, vertex_to_subvertex_mapper,
             processor_to_app_data_base_address, hostname, app_id,
-            app_data_folder, machine_version):
+            app_data_folder, machine_version, verify=False):
 
         # if doing reload, start script
         if self._reports_states.transciever_report:
@@ -506,7 +506,20 @@ class FrontEndCommonInterfaceFunctions(object):
                 self._txrx.write_memory(
                     placement.x, placement.y, start_address,
                     application_data_file_reader, memory_written)
-
+                application_data_file_reader.close()
+                
+                if verify:
+                    application_data_file_reader = SpinnmanFileDataReader(
+                        file_path_for_application_data)
+                    all_data = application_data_file_reader.readall()
+                    read_data = self._txrx.read_memory(
+                        placement.x, placement.y, start_address,
+                        memory_written)
+                    if read_data != all_data:
+                        raise Exception("Miswrite of {}, {}, {}, {}".format(
+                            placement.x, placement.y, placement.p, start_address))
+                    application_data_file_reader.close()
+                
                 # update user 0 so that it points to the start of the
                 # applications data region on sdram
                 logger.debug("writing user 0 address for vertex {}"
