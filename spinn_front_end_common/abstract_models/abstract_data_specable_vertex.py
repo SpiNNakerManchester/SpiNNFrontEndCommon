@@ -44,8 +44,8 @@ class AbstractDataSpecableVertex(object):
     @abstractmethod
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_subgraph_mapper, report_folder, ip_tags,
-            reverse_ip_tags, write_text_specs, application_run_time_folder):
+            hostname, graph_subgraph_mapper, report_folder, write_text_specs,
+            application_run_time_folder):
         """
         method to determine how to generate their data spec for a non neural
         application
@@ -60,9 +60,6 @@ class AbstractDataSpecableVertex(object):
         :param hostname: the hostname associated with this spinnaker machine
         :param graph_subgraph_mapper: the mapper between the two graphs
         :param report_folder: where reports are to be written
-        :param ip_tags: the lsit of iptags allcoated to the machine
-        :param reverse_ip_tags: the list of reverse iptags allocated to the
-        machine
         :param write_text_specs: boolean to write text specs
         :param application_run_time_folder: location where application data is
                stored.
