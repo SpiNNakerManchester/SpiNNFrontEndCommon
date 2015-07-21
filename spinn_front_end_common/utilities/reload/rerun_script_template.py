@@ -57,4 +57,3 @@ socket_addresses = list()
 
 reports_states = ReportState(False, False, False, False, False,
                              False, False, False, False, False)
-
