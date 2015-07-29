@@ -18,6 +18,7 @@ static uint16_t temp_header;
 static uint8_t event_size;
 static uint8_t header_len;
 static uint32_t simulation_ticks = 0;
+static uint32_t infinite_run = 0;
 static circular_buffer without_payload_buffer;
 static circular_buffer with_payload_buffer;
 static bool processing_events = false;
@@ -132,7 +133,7 @@ void timer_callback(uint unused0, uint unused1) {
     log_debug("Timer tick %u", time);
 
     // check if the simulation has run to completion
-    if ((simulation_ticks != UINT32_MAX) && (time >= simulation_ticks)) {
+    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         log_info("Simulation complete.\n");
         spin1_exit(0);
     }
@@ -345,12 +346,13 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run)) {
         return false;
     }
 
     // Fix simulation ticks to be one extra timer period to soak up last events
-    if (simulation_ticks != UINT32_MAX) {
+    if (infinite_run != TRUE) {
         simulation_ticks += 1;
     }
 

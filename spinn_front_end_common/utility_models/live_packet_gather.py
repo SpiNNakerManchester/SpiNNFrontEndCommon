@@ -11,14 +11,14 @@ from pacman.model.constraints.tag_allocator_constraints\
     import TagAllocatorRequireIptagConstraint
 from pacman.model.partitionable_graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
-
-# spinn front end imports
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
     CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
+
+# spinn front end imports
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
@@ -158,19 +158,16 @@ class LivePacketGather(
 
         spec.comment("\n*** Spec for AppMonitor Instance ***\n\n")
 
-        # Calculate the size of the tables to be reserved in SDRAM:
-        setup_sz = 16
-
         # Construct the data images needed for the Neuron:
-        self.reserve_memory_regions(spec, setup_sz)
+        self.reserve_memory_regions(spec)
         self.write_setup_info(spec)
-        self.write_configuration_region(spec, subvertex, ip_tags)
+        self.write_configuration_region(spec, ip_tags)
 
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
 
-    def reserve_memory_regions(self, spec, setup_sz):
+    def reserve_memory_regions(self, spec):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -181,21 +178,18 @@ class LivePacketGather(
         # Reserve memory:
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value,
-            size=setup_sz, label='setup')
+            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
+            label='setup')
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='setup')
 
-    def write_configuration_region(self, spec, partitioned_vertex, ip_tags):
+    def write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
 
         :param spec: the spec object for the dsg
         :type spec: \
                     :py:class:`data_specification.file_data_writer.FileDataWriter`
-        :param partitioned_vertex: the partitioned vertex to which this dsg is\
-                    being generated
-        :type partitioned_vertex:\
-                    :py:class:`pacman.model.partitioned_graph.partitioned_vertex.PartitionedVertex`
         :param ip_tags: The set of ip tags assigned to the object
         :type ip_tags: iterable of :py:class:`spinn_machine.tags.iptag.IPTag`
         :raises DataSpecificationException: when something goes wrong with the\
@@ -273,6 +267,7 @@ class LivePacketGather(
             Bit 4: Output spike history on-the-fly
             Bit 5: Output neuron potential
             Bit 6: Output spike rate
+        :param spec: the dsg spec object
         """
 
         # Write this to the system region (to be picked up by the simulation):
