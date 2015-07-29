@@ -8,13 +8,6 @@
 #include <debug.h>
 #include <spin1_api.h>
 
-// the position and human readable terms for each element from the region
-// containing the timing details.
-typedef enum region_elements{
-	APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD, INFINITE_RUN, 
-	N_SIMULATION_TICS
-}region_elements;
-
 //! \method that checks that the data in this region has the correct identifier
 //! for the model calling this method and also interprets the timer period and
 //! runtime for the model.

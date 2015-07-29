@@ -13,9 +13,12 @@
 
 #include "common-typedefs.h"
 
-//! \brief The number of words that will be read by
-//         simulation_read_timing_details
-#define SIMULATION_N_TIMING_DETAIL_WORDS 3
+// the position and human readable terms for each element from the region
+// containing the timing details.
+typedef enum region_elements{
+	APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD, INFINITE_RUN,
+	N_SIMULATION_TICS, SIMULATION_N_TIMING_DETAIL_WORDS
+}region_elements;
 
 //! \brief Reads the timing details for the simulation out of a region,
 //!        which is formatted as:

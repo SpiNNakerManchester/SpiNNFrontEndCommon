@@ -44,12 +44,10 @@ class AbstractDataSpecableVertex(object):
         spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
         if self._no_machine_time_steps is None:
-            spec.write_value(
-                data=front_end_common_constants.INFINITE_RUN.TRUE.value)
+            spec.write_value(data=1)
             spec.write_value(data=0)
         else:
-            spec.write_value(
-                data=front_end_common_constants.INFINITE_RUN.FALSE.value)
+            spec.write_value(data=0)
             spec.write_value(data=self._no_machine_time_steps)
 
     @abstractmethod

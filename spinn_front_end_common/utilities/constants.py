@@ -14,8 +14,3 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
 
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
-
-INFINITE_RUN = Enum(
-    value="INFINITE_RUN",
-    names=[("TRUE", 1),
-           ("FALSE", 0)])
