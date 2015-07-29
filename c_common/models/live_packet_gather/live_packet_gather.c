@@ -30,7 +30,7 @@ struct provenance_data_struct {
 };
 
 //! struct holding the proenance data
-struct provenance_data_struct provanence_data;
+struct provenance_data_struct provenance_data;
 
 // P bit
 static uint32_t apply_prefix;
@@ -152,20 +152,20 @@ void flush_events(void) {
     buffer_index = 0;
 }
 
-//! \brief function to store provanence data elements into sdram
-void record_provanence_data(void){
+//! \brief function to store provenance data elements into sdram
+void record_provenance_data(void){
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
-    // locate the provanence data region base address
-    address_t provanence_region_address =
+    // locate the provenance data region base address
+    address_t provenance_region_address =
         data_specification_get_region(PROVANENCE_REGION, address);
-    // Copy provanence data into sdram region
-    memcpy(provanence_region_address, &provanence_data,
-           sizeof(provanence_data));
-    log_info("The provanence data consisting of %d lost packets without "
+    // Copy provenance data into sdram region
+    memcpy(provenance_region_address, &provenance_data,
+           sizeof(provenance_data));
+    log_info("The provenance data consisting of %d lost packets without "
              "payload and %d lost packets with payload.",
-             provanence_data.number_of_over_flows_none_payload,
-             provanence_data.number_of_over_flows_payload);
+             provenance_data.number_of_over_flows_none_payload,
+             provenance_data.number_of_over_flows_payload);
 }
 
 // Callbacks
@@ -182,7 +182,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
-        record_provanence_data();
+        record_provenance_data();
         log_info("Simulation complete.\n");
         spin1_exit(0);
     }
@@ -325,7 +325,7 @@ void incoming_event_callback(uint key, uint unused) {
             spin1_trigger_user_event(0, 0);
         }
     } else {
-        provanence_data.number_of_over_flows_none_payload += 1;
+        provenance_data.number_of_over_flows_none_payload += 1;
     }
 }
 
@@ -339,7 +339,7 @@ void incoming_event_payload_callback(uint key, uint payload) {
         }
     }
     else {
-        provanence_data.number_of_over_flows_payload += 1;
+        provenance_data.number_of_over_flows_payload += 1;
     }
 }
 
