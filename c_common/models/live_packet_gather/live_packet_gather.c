@@ -1,4 +1,5 @@
 #include <common-typedefs.h>
+#include <circular_buffer.h>
 #include <data_specification.h>
 #include <debug.h>
 #include <simulation.h>
@@ -17,6 +18,9 @@ static uint16_t temp_header;
 static uint8_t event_size;
 static uint8_t header_len;
 static uint32_t simulation_ticks = 0;
+static circular_buffer without_payload_buffer;
+static circular_buffer with_payload_buffer;
+static bool processing_events = false;
 
 // P bit
 static uint32_t apply_prefix;
@@ -148,10 +152,9 @@ void flush_events_if_full(void) {
     }
 }
 
-// callback for mc packet without payload
-void incoming_event_callback(uint key, uint payload) {
-    use(payload);
-    log_debug("Received event with key %x", key);
+// process mc packet without payload
+void process_incoming_event(uint key) {
+    log_debug("Processing key %x", key);
 
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
@@ -196,9 +199,9 @@ void incoming_event_callback(uint key, uint payload) {
     flush_events_if_full();
 }
 
-// callback for mc packet with payload
-void incoming_event_payload_callback(uint key, uint payload) {
-    log_debug("Received spike %x", key);
+// processes mc packet with payload
+void process_incoming_event_payload(uint key, uint payload) {
+    log_debug("Processing key %x, payload %x", key, payload);
 
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
@@ -242,6 +245,47 @@ void incoming_event_payload_callback(uint key, uint payload) {
 
     // send packet if enough data is stored
     flush_events_if_full();
+}
+
+void incoming_event_process_callback(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+
+    uint32_t key;
+    do {
+       if (circular_buffer_get_next(without_payload_buffer, &key)) {
+           process_incoming_event(key);
+       } else if (circular_buffer_get_next(with_payload_buffer, &key)) {
+           uint32_t payload;
+           circular_buffer_get_next(with_payload_buffer, &payload);
+           process_incoming_event_payload(key, payload);
+       } else {
+           processing_events = false;
+       }
+    }
+    while (processing_events);
+}
+
+void incoming_event_callback(uint key, uint unused) {
+    use(unused);
+    log_debug("Received key %x", key);
+    if (circular_buffer_add(without_payload_buffer, key)) {
+        if (!processing_events) {
+            processing_events = true;
+            spin1_trigger_user_event(0, 0);
+        }
+    }
+}
+
+void incoming_event_payload_callback(uint key, uint payload) {
+    log_debug("Received key %x, payload %x", key, payload);
+    if (circular_buffer_add(with_payload_buffer, key)) {
+        circular_buffer_add(with_payload_buffer, payload);
+        if (!processing_events) {
+            processing_events = true;
+            spin1_trigger_user_event(0, 0);
+        }
+    }
 }
 
 void read_parameters(address_t region_address) {
@@ -307,7 +351,7 @@ bool initialize(uint32_t *timer_period) {
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (simulation_ticks != UINT32_MAX) {
-        simulation_ticks += *timer_period;
+        simulation_ticks += 1;
     }
 
     // Read the parameters
@@ -461,6 +505,10 @@ void c_main(void) {
          rt_error(RTE_SWERR);
     }
 
+    // Set up circular buffers for multicast message reception
+    without_payload_buffer = circular_buffer_initialize(256);
+    with_payload_buffer = circular_buffer_initialize(512);
+
     // Set timer_callback
     spin1_set_timer_tick(timer_period);
 
@@ -468,6 +516,7 @@ void c_main(void) {
     spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, -1);
     spin1_callback_on(MCPL_PACKET_RECEIVED,
                       incoming_event_payload_callback, -1);
+    spin1_callback_on(USER_EVENT, incoming_event_process_callback, 1);
     spin1_callback_on(TIMER_TICK, timer_callback, 2);
 
     log_info("Starting\n");

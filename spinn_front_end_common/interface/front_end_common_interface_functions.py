@@ -513,9 +513,11 @@ class FrontEndCommonInterfaceFunctions(object):
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state with "
                     "breakdown {}.".format(processors_rte, break_down))
-            logger.info("Simulation still not finished or failed - "
-                        "waiting a bit longer...")
-            time.sleep(0.5)
+
+            elif processors_not_finished != 0:
+                logger.info("Simulation still not finished or failed - "
+                            "waiting a bit longer...")
+                time.sleep(0.5)
 
         processors_exited = self._txrx.get_core_state_count(
             app_id, CPUState.FINSHED)
