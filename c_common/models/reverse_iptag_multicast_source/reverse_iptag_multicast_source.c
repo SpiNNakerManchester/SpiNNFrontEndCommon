@@ -63,7 +63,7 @@ typedef struct {
 // Globals
 static uint32_t time;
 static uint32_t simulation_ticks;
-
+static uint32_t infinite_run;
 static bool apply_prefix;
 static bool check;
 static uint32_t prefix;
@@ -789,7 +789,7 @@ void timer_callback(uint unused0, uint unused1) {
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
-    if ((simulation_ticks != UINT32_MAX) && (time >= simulation_ticks + 1)) {
+    if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
         log_info("Simulation complete.");
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
@@ -912,7 +912,8 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run)) {
         return false;
     }
 

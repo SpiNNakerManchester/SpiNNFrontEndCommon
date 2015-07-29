@@ -18,15 +18,19 @@ static uint16_t temp_header;
 static uint8_t event_size;
 static uint8_t header_len;
 static uint32_t simulation_ticks = 0;
+static uint32_t infinite_run = 0;
 static circular_buffer without_payload_buffer;
 static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
 //! Provanence data store
-static uint32_t number_of_over_flows_none_payload = 0;
-static uint32_t number_of_over_flows_payload = 0;
-static uint32_t NUMBER_OF_PROVANENCE_DATA_ELEMENTS = 2;
-static uint32_t SIZE_OF_PROVANENCE_ELEMENTS_IN_BYTES = 8;
+struct provenance_data_struct {
+    uint32_t number_of_over_flows_none_payload;
+    uint32_t number_of_over_flows_payload;
+};
+
+//! struct holding the proenance data
+struct provenance_data_struct provanence_data;
 
 // P bit
 static uint32_t apply_prefix;
@@ -79,14 +83,6 @@ typedef enum configuration_region_components_e {
     SDP_TAG,
     PACKETS_PER_TIMESTEP
 } configuration_region_components_e;
-
-//! Human readable definition of each element in the provanence region in SDRAM
-typedef enum provanence_region_components_e {
-    NUMBER_OF_LOSS_PACKETS_WITHOUT_PAYLOAD,
-    NUMBER_OF_LOSS_PACKETS_WITH_PAYLOAD
-} provanence_region_components_e;
-
-
 
 void flush_events(void) {
 
@@ -163,19 +159,13 @@ void record_provanence_data(){
     // locate the provanence data region base address
     address_t provanence_region_address =
         data_specification_get_region(CONFIGURATION_REGION, address);
-    uint32_t provanence_data[NUMBER_OF_PROVANENCE_DATA_ELEMENTS];
-    // write provanence data into a array for memcpy
-    provanence_data[NUMBER_OF_LOSS_PACKETS_WITHOUT_PAYLOAD] =
-        number_of_over_flows_none_payload;
-    provanence_data[NUMBER_OF_LOSS_PACKETS_WITH_PAYLOAD] =
-        number_of_over_flows_payload;
     // Copy provanence data into sdram region
-    memcpy(provanence_region_address, provanence_data,
-           SIZE_OF_PROVANENCE_ELEMENTS_IN_BYTES);
+    memcpy(provanence_region_address, &provanence_data,
+           sizeof(provanence_data));
     log_info("The provanence data consisting of %d lost packets without "
              "payload and %d lost packets with payload.",
-             number_of_over_flows_none_payload, number_of_over_flows_payload);
-}
+             provanence_data.number_of_over_flows_none_payload,
+             provanence_data.number_of_over_flows_payload);
 
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
@@ -190,7 +180,7 @@ void timer_callback(uint unused0, uint unused1) {
     log_debug("Timer tick %u", time);
 
     // check if the simulation has run to completion
-    if ((simulation_ticks != UINT32_MAX) && (time >= simulation_ticks)) {
+    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         record_provanence_data();
         log_info("Simulation complete.\n");
         spin1_exit(0);
@@ -334,7 +324,7 @@ void incoming_event_callback(uint key, uint unused) {
             spin1_trigger_user_event(0, 0);
         }
     } else {
-        number_of_over_flows_none_payload += 1;
+        provanence_data.number_of_over_flows_none_payload += 1;
     }
 }
 
@@ -348,7 +338,7 @@ void incoming_event_payload_callback(uint key, uint payload) {
         }
     }
     else {
-        number_of_over_flows_payload += 1;
+        provanence_data.number_of_over_flows_payload += 1;
     }
 }
 
@@ -409,12 +399,13 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run)) {
         return false;
     }
 
     // Fix simulation ticks to be one extra timer period to soak up last events
-    if (simulation_ticks != UINT32_MAX) {
+    if (infinite_run != TRUE) {
         simulation_ticks += 1;
     }
 
