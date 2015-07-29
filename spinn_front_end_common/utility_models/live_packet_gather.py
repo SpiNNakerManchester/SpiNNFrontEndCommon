@@ -20,7 +20,7 @@ from pacman.model.resources.sdram_resource import SDRAMResource
 
 # spinn front end imports
 from spinn_front_end_common.abstract_models.\
-    abstract_provides_provanence_data import AbstractProvidesProvanenceData
+    abstract_provides_provenance_data import AbstractProvidesProvenanceData
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
@@ -42,7 +42,7 @@ import struct
 
 class LivePacketGather(
         AbstractDataSpecableVertex, AbstractPartitionableVertex,
-        AbstractProvidesProvanenceData, PartitionedVertex):
+        AbstractProvidesProvenanceData, PartitionedVertex):
     """
     LivePacketGather: a model which stores all the events it recieves during an
     timer tick and then compresses them into ethernet pakcets and sends them
@@ -97,7 +97,7 @@ class LivePacketGather(
         AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
                                              max_atoms_per_core=1,
                                              constraints=constraints)
-        AbstractProvidesProvanenceData.__init__(self)
+        AbstractProvidesProvenanceData.__init__(self)
         PartitionedVertex.__init__(
             self, label=label, resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(
@@ -282,17 +282,23 @@ class LivePacketGather(
         self._write_basic_setup_info(
             spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
-    def write_provanence_data_in_xml(self, file_path, transciever, placement):
+    def write_provenance_data_in_xml(self, file_path, transceiver,
+                                     placement=None):
         """
         extracts provanence data from the sdram of the core and stores it in a
         xml file for end user digestion
         :param file_path: the file path to the xml document
-        :param transciever: the spinnman interface object
+        :param transceiver: the spinnman interface object
         :param placement: the placement object for this subvertex
         :return: None
         """
+        if placement is None:
+            raise ConfigurationException(
+                "To acquire provanence data from the live packet gatherer,"
+                "you must provide a placement object that points to where the "
+                "live packet gatherer resides on the spinnaker machine")
         # Get the App Data for the core
-        app_data_base_address = transciever.get_cpu_information_from_core(
+        app_data_base_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
         # Get the provanence region base address
         provanence_data_region_base_address_offset = \
@@ -300,7 +306,7 @@ class LivePacketGather(
                 app_data_base_address,
                 self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value)
         provanence_data_region_base_address_buf = str(list(
-            transciever.read_memory(
+            transceiver.read_memory(
                 placement.x, placement.y,
                 provanence_data_region_base_address_offset, 4))[0])
         provanence_data_region_base_address = \
@@ -309,7 +315,7 @@ class LivePacketGather(
 
         # read in the provanence data
         provanence_data_region_contents_buff = \
-            str(list(transciever.read_memory(
+            str(list(transceiver.read_memory(
                 placement.x, placement.y, provanence_data_region_base_address,
                 self._PROVANENCE_REGION_SIZE))[0])
         provanence_data_region_contents = \

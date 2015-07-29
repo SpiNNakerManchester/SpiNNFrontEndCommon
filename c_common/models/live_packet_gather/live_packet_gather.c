@@ -153,12 +153,12 @@ void flush_events(void) {
 }
 
 //! \brief function to store provanence data elements into sdram
-void record_provanence_data(){
+void record_provanence_data(void){
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
     // locate the provanence data region base address
     address_t provanence_region_address =
-        data_specification_get_region(CONFIGURATION_REGION, address);
+        data_specification_get_region(PROVANENCE_REGION, address);
     // Copy provanence data into sdram region
     memcpy(provanence_region_address, &provanence_data,
            sizeof(provanence_data));
@@ -166,6 +166,7 @@ void record_provanence_data(){
              "payload and %d lost packets with payload.",
              provanence_data.number_of_over_flows_none_payload,
              provanence_data.number_of_over_flows_payload);
+}
 
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {

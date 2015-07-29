@@ -4,41 +4,41 @@ FrontEndCommonProvanenceFunctions
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\
-    abstract_provides_provanence_data import AbstractProvidesProvanenceData
+    abstract_provides_provenance_data import AbstractProvidesProvenanceData
 
 
 # general imports
 import os
 from lxml import etree
 
-class FrontEndCommonProvanenceFunctions(AbstractProvidesProvanenceData):
+class FrontEndCommonProvenanceFunctions(AbstractProvidesProvenanceData):
     """
-    functions supproting front ends with generating provanence data
+    functions supproting front ends with generating provenance data
     """
 
     def __init__(self):
-        AbstractProvidesProvanenceData.__init__(self)
+        AbstractProvidesProvenanceData.__init__(self)
 
-    def write_provanence_data_in_xml(self, file_path, transciever,
+    def write_provenance_data_in_xml(self, file_path, transceiver,
                                      placement=None):
         """
-        inheirtted from abstract prodives provanence data. forces the front end
+        inheirtted from abstract prodives provenance data. forces the front end
         to gather machine like proenance which it desires.
-        :param file_path: the file apth to write the provanence data to
-        :param transciever: the spinnman interface object
+        :param file_path: the file apth to write the provenance data to
+        :param transceiver: the spinnman interface object
         :param placement: the placement object for this subvertex or None if
         the system does not require a placement object
         :return: none
         """
         root = etree.Element("root")
-        router_file_path = os.path.join(file_path, "router_provanence.xml")
-        self._write_router_provanence_data(root)
+        router_file_path = os.path.join(file_path, "router_provenance.xml")
+        self._write_router_provenance_data(root)
         writer = open(router_file_path, "w")
         writer.write(etree.tostring(root, pretty_print=True))
 
-    def _write_router_provanence_data(self, root):
+    def _write_router_provenance_data(self, root):
         """
-        helper method which writes the provanence data of the router diag
+        helper method which writes the provenance data of the router diag
         :param root: the root element to add diagnostics to
         :return: None
         """
