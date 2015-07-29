@@ -22,6 +22,12 @@ static circular_buffer without_payload_buffer;
 static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
+//! Provanence data store
+static uint32_t number_of_over_flows_none_payload = 0;
+static uint32_t number_of_over_flows_payload = 0;
+static uint32_t NUMBER_OF_PROVANENCE_DATA_ELEMENTS = 2;
+static uint32_t SIZE_OF_PROVANENCE_ELEMENTS_IN_BYTES = 8;
+
 // P bit
 static uint32_t apply_prefix;
 
@@ -50,6 +56,37 @@ static uint32_t payload_prefix;
 static uint32_t payload_right_shift;
 static uint32_t sdp_tag;
 static uint32_t packets_per_timestamp;
+
+//! human readable definitions of each region in SDRAM
+typedef enum regions_e {
+    SYSTEM_REGION,
+    CONFIGURATION_REGION,
+    PROVANENCE_REGION
+} regions_e;
+
+//! Human readable definitions of each element in the configuration region in
+// SDRAM
+typedef enum configuration_region_components_e {
+    APPLY_PREFIX,
+    PREFIX,
+    PREFIX_TYPE,
+    PACKET_TYPE,
+    KEY_RIGHT_SHIFT,
+    PAYLOAD_TIMESTAMP,
+    PAYLOAD_APPLY_PREFIX,
+    PAYLOAD_PREFIX,
+    PAYLOAD_RIGHT_SHIFT,
+    SDP_TAG,
+    PACKETS_PER_TIMESTEP
+} configuration_region_components_e;
+
+//! Human readable definition of each element in the provanence region in SDRAM
+typedef enum provanence_region_components_e {
+    NUMBER_OF_LOSS_PACKETS_WITHOUT_PAYLOAD,
+    NUMBER_OF_LOSS_PACKETS_WITH_PAYLOAD
+} provanence_region_components_e;
+
+
 
 void flush_events(void) {
 
@@ -119,6 +156,27 @@ void flush_events(void) {
     buffer_index = 0;
 }
 
+//! \brief function to store provanence data elements into sdram
+void record_provanence_data(){
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+    // locate the provanence data region base address
+    address_t provanence_region_address =
+        data_specification_get_region(CONFIGURATION_REGION, address);
+    uint32_t provanence_data[NUMBER_OF_PROVANENCE_DATA_ELEMENTS];
+    // write provanence data into a array for memcpy
+    provanence_data[NUMBER_OF_LOSS_PACKETS_WITHOUT_PAYLOAD] =
+        number_of_over_flows_none_payload;
+    provanence_data[NUMBER_OF_LOSS_PACKETS_WITH_PAYLOAD] =
+        number_of_over_flows_payload;
+    // Copy provanence data into sdram region
+    memcpy(provanence_region_address, provanence_data,
+           SIZE_OF_PROVANENCE_ELEMENTS_IN_BYTES);
+    log_info("The provanence data consisting of %d lost packets without "
+             "payload and %d lost packets with payload.",
+             number_of_over_flows_none_payload, number_of_over_flows_payload);
+}
+
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
@@ -133,6 +191,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     // check if the simulation has run to completion
     if ((simulation_ticks != UINT32_MAX) && (time >= simulation_ticks)) {
+        record_provanence_data();
         log_info("Simulation complete.\n");
         spin1_exit(0);
     }
@@ -274,6 +333,8 @@ void incoming_event_callback(uint key, uint unused) {
             processing_events = true;
             spin1_trigger_user_event(0, 0);
         }
+    } else {
+        number_of_over_flows_none_payload += 1;
     }
 }
 
@@ -286,38 +347,41 @@ void incoming_event_payload_callback(uint key, uint payload) {
             spin1_trigger_user_event(0, 0);
         }
     }
+    else {
+        number_of_over_flows_payload += 1;
+    }
 }
 
 void read_parameters(address_t region_address) {
 
     // P bit
-    apply_prefix = region_address[0];
+    apply_prefix = region_address[APPLY_PREFIX];
 
     // Prefix data
-    prefix = region_address[1];
+    prefix = region_address[PREFIX];
 
     // F bit (for the receiver)
-    prefix_type = region_address[2];
+    prefix_type = region_address[PREFIX_TYPE];
 
     // Type bits
-    packet_type = region_address[3];
+    packet_type = region_address[PACKET_TYPE];
 
     // Right packet shift (for the sender)
-    key_right_shift = region_address[4];
+    key_right_shift = region_address[KEY_RIGHT_SHIFT];
 
     // T bit
-    payload_timestamp = region_address[5];
+    payload_timestamp = region_address[PAYLOAD_TIMESTAMP];
 
     // D bit
-    payload_apply_prefix = region_address[6];
+    payload_apply_prefix = region_address[PAYLOAD_APPLY_PREFIX];
 
     // Payload prefix data (for the receiver)
-    payload_prefix = region_address[7];
+    payload_prefix = region_address[PAYLOAD_PREFIX];
 
     // Right payload shift (for the sender)
-    payload_right_shift = region_address[8];
-    sdp_tag = region_address[9];
-    packets_per_timestamp = region_address[10];
+    payload_right_shift = region_address[PAYLOAD_RIGHT_SHIFT];
+    sdp_tag = region_address[SDP_TAG];
+    packets_per_timestamp = region_address[PACKETS_PER_TIMESTEP];
 
     log_info("apply_prefix: %d\n", apply_prefix);
     log_info("prefix: %08x\n", prefix);
@@ -344,7 +408,7 @@ bool initialize(uint32_t *timer_period) {
 
     // Get the timing details
     if (!simulation_read_timing_details(
-            data_specification_get_region(0, address),
+            data_specification_get_region(SYSTEM_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
         return false;
     }
@@ -355,7 +419,8 @@ bool initialize(uint32_t *timer_period) {
     }
 
     // Read the parameters
-    read_parameters(data_specification_get_region(1, address));
+    read_parameters(
+        data_specification_get_region(CONFIGURATION_REGION, address));
 
     return true;
 }

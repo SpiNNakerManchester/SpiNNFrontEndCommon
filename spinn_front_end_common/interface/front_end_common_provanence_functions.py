@@ -19,11 +19,15 @@ class FrontEndCommonProvanenceFunctions(AbstractProvidesProvanenceData):
     def __init__(self):
         AbstractProvidesProvanenceData.__init__(self)
 
-    def _write_provanence_data_in_xml(self, file_path):
+    def write_provanence_data_in_xml(self, file_path, transciever,
+                                     placement=None):
         """
         inheirtted from abstract prodives provanence data. forces the front end
         to gather machine like proenance which it desires.
         :param file_path: the file apth to write the provanence data to
+        :param transciever: the spinnman interface object
+        :param placement: the placement object for this subvertex or None if
+        the system does not require a placement object
         :return: none
         """
         root = etree.Element("root")

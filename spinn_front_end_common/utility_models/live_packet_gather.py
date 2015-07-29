@@ -11,34 +11,38 @@ from pacman.model.constraints.tag_allocator_constraints\
     import TagAllocatorRequireIptagConstraint
 from pacman.model.partitionable_graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
-
-# spinn front end imports
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
     CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
+
+# spinn front end imports
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_provanence_data import AbstractProvidesProvanenceData
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
-# data spec imports
-from data_specification.data_specification_generator import \
-    DataSpecificationGenerator
-
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
+# dataspec imports
+from data_specification.data_specification_generator import \
+    DataSpecificationGenerator
+from data_specification import utility_calls as dsg_utility_calls
+
 # general imports
 from enum import Enum
+import struct
 
 
 class LivePacketGather(
         AbstractDataSpecableVertex, AbstractPartitionableVertex,
-        PartitionedVertex):
+        AbstractProvidesProvanenceData, PartitionedVertex):
     """
     LivePacketGather: a model which stores all the events it recieves during an
     timer tick and then compresses them into ethernet pakcets and sends them
@@ -48,14 +52,11 @@ class LivePacketGather(
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
         names=[('SYSTEM', 0),
-               ('CONFIG', 1)])
+               ('CONFIG', 1),
+               ('PROVANENCE', 2)])
     _CONFIG_SIZE = 44
+    _PROVANENCE_REGION_SIZE = 8
 
-    """
-    A AbstractConstrainedVertex for the Monitoring application data and
-    forwarding them to the host
-
-    """
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
                  use_prefix=False, key_prefix=None, prefix_type=None,
@@ -65,7 +66,8 @@ class LivePacketGather(
                  number_of_packets_sent_per_time_step=0, constraints=None,
                  label=None):
         """
-        Creates a new AppMonitor Object.
+        A AbstractConstrainedVertex for the Monitoring application data and
+        forwarding them to the host
         """
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
@@ -95,6 +97,7 @@ class LivePacketGather(
         AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
                                              max_atoms_per_core=1,
                                              constraints=constraints)
+        AbstractProvidesProvanenceData.__init__(self)
         PartitionedVertex.__init__(
             self, label=label, resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(
@@ -181,10 +184,13 @@ class LivePacketGather(
         # Reserve memory:
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value,
-            size=setup_sz, label='setup')
+            size=setup_sz, label='system')
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
-            size=self._CONFIG_SIZE, label='setup')
+            size=self._CONFIG_SIZE, label='config')
+        spec.reserve_memory_region(
+            region=self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value,
+            size=self._PROVANENCE_REGION_SIZE, label='provanence')
 
     def write_configuration_region(self, spec, partitioned_vertex, ip_tags):
         """ writes the configuration region to the spec
@@ -280,6 +286,58 @@ class LivePacketGather(
             region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
         self._write_basic_setup_info(
             spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
+
+    def write_provanence_data_in_xml(self, file_path, transciever, placement):
+        """
+        extracts provanence data from the sdram of the core and stores it in a
+        xml file for end user digestion
+        :param file_path: the file path to the xml document
+        :param transciever: the spinnman interface object
+        :param placement: the placement object for this subvertex
+        :return: None
+        """
+        # Get the App Data for the core
+        app_data_base_address = transciever.get_cpu_information_from_core(
+            placement.x, placement.y, placement.p).user[0]
+        # Get the provanence region base address
+        provanence_data_region_base_address_offset = \
+            dsg_utility_calls.get_region_base_address_offset(
+                app_data_base_address,
+                self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value)
+        provanence_data_region_base_address_buf = str(list(
+            transciever.read_memory(
+                placement.x, placement.y,
+                provanence_data_region_base_address_offset, 4))[0])
+        provanence_data_region_base_address = \
+            struct.unpack("<I", provanence_data_region_base_address_buf)[0]
+        provanence_data_region_base_address += app_data_base_address
+
+        # read in the provanence data
+        provanence_data_region_contents_buff = \
+            str(list(transciever.read_memory(
+                placement.x, placement.y, provanence_data_region_base_address,
+                self._PROVANENCE_REGION_SIZE))[0])
+        provanence_data_region_contents = \
+            struct.unpack("<II", provanence_data_region_contents_buff)
+
+        # create provanence data xml form
+        from lxml import etree
+        root = etree.Element("Live_packet_gatherer_located_at_{}_{}_{}"
+                             .format(placement.x, placement.y, placement.p))
+        none_payload_provanence_data = \
+            etree.SubElement(root, "lost_packets_without_payload")
+        payload_provanence_data = \
+            etree.SubElement(root, "lost_packets_with_payload")
+        none_payload_provanence_data.text = \
+            str(provanence_data_region_contents[0])
+        payload_provanence_data.text = \
+            str(provanence_data_region_contents[1])
+
+        # write xml form into file provided
+        writer = open(file_path, "w")
+        writer.write(etree.tostring(root, pretty_print=True))
+        writer.flush()
+        writer.close()
 
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
