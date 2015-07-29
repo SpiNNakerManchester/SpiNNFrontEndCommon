@@ -30,10 +30,13 @@
 //!                          in microseconds
 //! \param n_simulation_ticks[out] a pointer to an int to receive the number
 //!                                of simulation time steps to be performed
+//! \param infinite_run[out] a pointer to an int which represents if the model
+//!                          should run for infinite time
 //! \return True if the data was found, false otherwise
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_application_magic_number,
-        uint32_t* timer_period, uint32_t* n_simulation_ticks);
+        uint32_t* timer_period, uint32_t* n_simulation_ticks,
+        uint32_t* infinite_run);
 
 //! \brief Starts the simulation running, returning when it is complete
 void simulation_run();

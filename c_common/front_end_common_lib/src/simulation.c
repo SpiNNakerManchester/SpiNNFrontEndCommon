@@ -11,7 +11,8 @@
 // the position and human readable terms for each element from the region
 // containing the timing details.
 typedef enum region_elements{
-	application_magic_number, simulation_timer_period, n_simulation_tics,
+	APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD, INFINITE_RUN, 
+	N_SIMULATION_TICS
 }region_elements;
 
 //! \method that checks that the data in this region has the correct identifier
@@ -20,26 +21,31 @@ typedef enum region_elements{
 //! \param[in] address The memory address to start reading the parameters from
 //! \param[in] expected_app_magic_number The application's magic number thats
 //! requesting timing details from this memory address.
-//! \param[in] timer_period A pointer for storing the timer period once read
+//! \param[out] timer_period A pointer for storing the timer period once read
 //! from the memory region
-//! \param[in] n_simulation_ticks A pointer for storing the number of timer
+//! \param[out] n_simulation_ticks A pointer for storing the number of timer
 //! tics this executable should run for, which is read from this region
+//! \param INFINITE_RUN[out] a pointer to an int which represents if the model 
+//!                          should run for infinite time
 //! \return True if the method was able to read the parameters and the
 //! application magic number corresponded to the magic number in memory.
 //! Otherwise the method will return False.
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_app_magic_number,
-        uint32_t* timer_period, uint32_t* n_simulation_ticks) {
+        uint32_t* timer_period, uint32_t* n_simulation_ticks,
+        uint32_t* infinite_run) {
 
-    if (address[application_magic_number] != expected_app_magic_number) {
+    if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
         log_error("Unexpected magic number 0x%.8x instead of 0x%.8x",
-        		 address[application_magic_number],
+        		 address[APPLICATION_MAGIC_NUMBER],
 				 expected_app_magic_number);
         return false;
     }
 
-    *timer_period = address[simulation_timer_period];
-    *n_simulation_ticks = address[n_simulation_tics];
+    *timer_period = address[SIMULATION_TIMER_PERIOD];
+    *infinite_run = address[INFINITE_RUN];
+    *n_simulation_ticks = address[N_SIMULATION_TICS];
+    
 
     return true;
 }

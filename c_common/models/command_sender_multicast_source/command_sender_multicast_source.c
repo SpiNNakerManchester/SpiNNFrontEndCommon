@@ -7,6 +7,7 @@
 // Globals
 static uint32_t time;
 static uint32_t simulation_ticks;
+static uint32_t infinite_run;
 static uint32_t *schedule;
 static uint32_t schedule_size;
 static uint32_t next_pos;
@@ -17,7 +18,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    if ((next_pos >= schedule_size) && (simulation_ticks != UINT32_MAX)
+    if ((next_pos >= schedule_size) && (infinite_run != TRUE)
             && (time >= simulation_ticks)) {
         log_info("Simulation complete.\n");
         spin1_exit(0);
@@ -126,7 +127,8 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run)) {
         return false;
     }
 

@@ -304,9 +304,10 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
-        spec.reserve_memory_region(region=self.SYSTEM_REGION,
-                                   size=12,
-                                   label='setup')
+        spec.reserve_memory_region(
+            region=self.SYSTEM_REGION,
+            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
+            label='setup')
         if command_size > 0:
             spec.reserve_memory_region(region=self.COMMANDS,
                                        size=command_size,

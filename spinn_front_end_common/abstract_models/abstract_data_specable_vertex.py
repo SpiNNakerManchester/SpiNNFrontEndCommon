@@ -1,7 +1,11 @@
-from data_specification.enums.data_type import DataType
+"""
+AbstractDataSpecableVertex
+"""
 from data_specification.file_data_writer import FileDataWriter
 
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import constants as \
+    front_end_common_constants
 
 from abc import ABCMeta
 from six import add_metaclass
@@ -39,7 +43,14 @@ class AbstractDataSpecableVertex(object):
         spec.switch_write_focus(region=region_id)
         spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
-        spec.write_value(data=self._no_machine_time_steps)
+        if self._no_machine_time_steps is None:
+            spec.write_value(
+                data=front_end_common_constants.INFINITE_RUN.TRUE.value)
+            spec.write_value(data=0)
+        else:
+            spec.write_value(
+                data=front_end_common_constants.INFINITE_RUN.FALSE.value)
+            spec.write_value(data=self._no_machine_time_steps)
 
     @abstractmethod
     def generate_data_spec(
