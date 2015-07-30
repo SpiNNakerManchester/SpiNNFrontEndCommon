@@ -1,14 +1,7 @@
-"""
-BufferManager
-"""
-
-# pacman imports
 from pacman.utilities.progress_bar import ProgressBar
 
-# dsg imports
 from data_specification import utility_calls as dsg_utilities
 
-# spinnman imports
 from spinnman import constants
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
@@ -24,6 +17,8 @@ from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.data.little_endian_byte_array_byte_writer\
     import LittleEndianByteArrayByteWriter
 from spinnman.exceptions import SpinnmanInvalidPacketException
+from spynnaker.pyNN.exceptions import SpynnakerException
+
 from spinnman.messages.eieio.data_messages.eieio_data_message \
     import EIEIODataMessage
 from spinnman.messages.eieio.command_messages.spinnaker_request_buffers \
@@ -43,7 +38,6 @@ from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque\
     import BuffersSentDeque
 
-# general imports
 import struct
 import threading
 import logging
@@ -76,15 +70,15 @@ class BufferManager(object):
     """ Manager of send buffers
     """
 
-    def __init__(self, placements, tags, transceiver, report_states,
-                 application_folder_path, reload_interface):
+    def __init__(self, placements, routing_info, tags, transceiver):
         """
 
         :param placements: The placements of the vertices
         :type placements:\
                     :py:class:`pacman.model.placements.placements.Placements`
-        :param report_states: the bools saying what reports are needed
-        :type report_states: XXXXXXXXXXX
+        :param routing_infos: The routing keys of the vertices
+        :type routing_infos:\
+                    :py:class:`pacman.model.routing_info.routing_info.RoutingInfo`
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.tags.Tags`
         :param transceiver: The transceiver to use for sending and receiving\
@@ -93,13 +87,9 @@ class BufferManager(object):
         """
 
         self._placements = placements
+        self._routing_info = routing_info
         self._tags = tags
         self._transceiver = transceiver
-
-        # params used for reload purposes
-        self._report_states = report_states
-        self._application_folder_path = application_folder_path
-        self._reload_interface = reload_interface
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -130,17 +120,15 @@ class BufferManager(object):
                                  "space available: {0:d}".format(
                                      packet.space_available,
                                      packet.sequence_no))
-
-                    # noinspection PyBroadException
                     try:
                         self._send_messages(
                             packet.space_available, vertex, packet.region_id,
                             packet.sequence_no)
-                    except Exception:
+                    except:
                         traceback.print_exc()
             elif isinstance(packet, EIEIOCommandMessage):
                 raise SpinnmanInvalidPacketException(
-                    str(packet.__class__),
+                    packet.__class__,
                     "The command packet is invalid for buffer management: "
                     "command id {0:d}".format(packet.eieio_header.command))
             else:
@@ -165,13 +153,6 @@ class BufferManager(object):
                 constants.CONNECTION_TYPE.UDP_IPTAG,
                 constants.TRAFFIC_TYPE.EIEIO_COMMAND,
                 hostname=tag.ip_address)
-
-        # if reload script is set up, sotre the buffers for future usage
-        if self._report_states.transciever_report:
-            self._reload_interface.add_buffered_vertex(
-                vertex, tag,
-                self._placements.get_placement_of_subvertex(vertex),
-                self._application_folder_path)
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
@@ -213,24 +194,22 @@ class BufferManager(object):
 
         logger.debug("Adding keys for timestamp {}".format(next_timestamp))
 
+        # Get the base key
+        # TODO: This uses the first key only
+        keys_and_masks = (self._routing_info
+                          .get_key_and_masks_for_partitioned_vertex(vertex))
+        base_key = keys_and_masks[0].key
+
         # Add keys up to the limit
         bytes_to_go = size - message.size
         while (bytes_to_go >= _N_BYTES_PER_KEY and
                 vertex.is_next_key(region, next_timestamp)):
 
             key = vertex.get_next_key(region)
-            message.add_key(key)
-            logger.debug("    Adding key {} ({})".format(key, hex(key)))
+            message.add_key(base_key | key)
+            logger.debug("    Adding key {} ({})".format(
+                key, hex(base_key | key)))
             bytes_to_go -= _N_BYTES_PER_KEY
-
-            # if reload report set to true, sotre to buffered region
-            if self._report_states.transciever_report:
-                file_path = os.path.join(
-                    self._application_folder_path,
-                    "buffered_sending_region_{}_{}"
-                    .format(vertex.label, region))
-                out = open(file_path, "w")
-                out.write("{}:{}\n".format(next_timestamp, key))
 
         return message
 
@@ -275,7 +254,7 @@ class BufferManager(object):
         sent_message = False
         bytes_to_go = vertex.get_region_buffer_size(region)
         if bytes_to_go % 2 != 0:
-            raise exceptions.SpinnFrontEndException(
+            raise SpynnakerException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
         if vertex.is_empty(region):
@@ -305,7 +284,7 @@ class BufferManager(object):
                 bytes_to_go -= len(data)
 
         if not sent_message:
-            raise exceptions.BufferableRegionTooSmall(
+            raise BufferableRegionTooSmall(
                 "The buffer size {} is too small for any data to be added for"
                 " region {} of vertex {}".format(bytes_to_go, region, vertex))
 
@@ -352,7 +331,7 @@ class BufferManager(object):
         bytes_to_go = size
         for message in sent_messages.messages:
             if isinstance(message.eieio_data_message, EIEIODataMessage):
-                bytes_to_go -= message.eieio_data_message.size
+                bytes_to_go -= (message.eieio_data_message.size)
             else:
                 bytes_to_go -= (message.eieio_data_message
                                 .get_min_packet_length())

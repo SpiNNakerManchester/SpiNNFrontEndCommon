@@ -3,6 +3,7 @@ interface for communciating with spinnaker machine easily.
 """
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
+from data_specification.exceptions import DataSpecificationException
 from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 
@@ -277,7 +278,7 @@ class FrontEndCommonInterfaceFunctions(object):
     def load_reverse_iptags(self, reverse_ip_tags):
         """
         loads all the reverse iptags individually.
-        :param reverse_iptags: the reverse iptags to be loaded
+        :param reverse_ip_tags: the reverse iptags to be loaded
         :return: None
         """
         for reverse_ip_tag in reverse_ip_tags:
@@ -379,10 +380,12 @@ class FrontEndCommonInterfaceFunctions(object):
                     report_writer)
 
                 # update memory calc and run data spec executor
+                bytes_used_by_spec = None
+                bytes_written_by_spec = None
                 try:
                     bytes_used_by_spec, bytes_written_by_spec = \
                         host_based_data_spec_executor.execute()
-                except:
+                except DataSpecificationException:
                     logger.error("Error executing data specification for {}"
                                  .format(associated_vertex))
                     traceback.print_exc()
@@ -425,20 +428,16 @@ class FrontEndCommonInterfaceFunctions(object):
                                                            CPUState.SYNC0)
 
         if processors_ready != total_processors:
-            successful_cores, unsuccessful_cores = \
-                self._break_down_of_failure_to_reach_state(all_core_subsets,
-                                                           CPUState.SYNC0)
+            unsuccessful_cores = self._get_cores_not_in_state(
+                all_core_subsets, CPUState.SYNC0)
 
             # last chance to slip out of error check
-            if len(successful_cores) != total_processors:
-                # break_down the successful cores and unsuccessful cores into
-                # string
-                break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, unsuccessful_cores, CPUState.SYNC0)
+            if len(unsuccessful_cores) != 0:
+                break_down = self._get_core_status_string(unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
-                    "sync0 with breakdown of: {}"
-                    .format(processors_ready, total_processors, break_down))
+                    "SYNC0:{}".format(
+                        processors_ready, total_processors, break_down))
 
     def start_all_cores(self, executable_targets, app_id):
         """
@@ -562,7 +561,8 @@ class FrontEndCommonInterfaceFunctions(object):
 
     def _load_application_data(
             self, placements, vertex_to_subvertex_mapper,
-            processor_to_app_data_base_address, hostname, app_data_folder):
+            processor_to_app_data_base_address, hostname, app_data_folder,
+            verify=False):
 
         # go through the placements and see if there's any application data to
         # load
