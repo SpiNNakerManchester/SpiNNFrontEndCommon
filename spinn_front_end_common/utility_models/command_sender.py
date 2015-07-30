@@ -172,7 +172,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         # Go through the times and replace negative times with positive ones
         new_times = set()
         for time in self._times_with_commands:
-            if time < 0:
+            if time < 0 and self._no_machine_time_steps is not None:
                 real_time = self._no_machine_time_steps + (time + 1)
                 if time in self._commands_with_payloads:
                     if real_time in self._commands_with_payloads:
@@ -191,6 +191,13 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                             self._commands_without_payloads[time]
                     del self._commands_without_payloads[time]
                 new_times.add(real_time)
+            # if runtime is infinite, then theres no point storing end of
+            # simulation events, as they will never occur
+            elif time < 0 and self._no_machine_time_steps is None:
+                if time in self._commands_with_payloads:
+                    del self._commands_with_payloads[time]
+                if time in self._commands_without_payloads:
+                    del self._commands_without_payloads[time]
             else:
                 new_times.add(time)
 
