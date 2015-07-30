@@ -248,12 +248,6 @@ class BufferManager(object):
         # Add up the bytes
         return (_HEADER_SIZE * n_messages) + (n_keys * _N_BYTES_PER_KEY)
 
-    @staticmethod
-    def _get_message_as_bytes(message):
-        writer = LittleEndianByteArrayByteWriter()
-        message.write_eieio_message(writer)
-        return writer.data
-
     def _send_initial_messages(self, vertex, region):
         """ Send the initial set of messages
 
@@ -278,6 +272,7 @@ class BufferManager(object):
             raise exceptions.SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
+        all_data = b""
         if vertex.is_empty(region):
             sent_message = True
         else:
@@ -291,17 +286,15 @@ class BufferManager(object):
                     break
 
                 # Write the message to the memory
-                data = BufferManager._get_message_as_bytes(next_message)
+                data = next_message.bytestring
                 logger.debug("Writing initial buffer of {} bytes to {} on"
                              " {}, {}, {}".format(
                                  len(data), hex(region_base_address),
                                  placement.x, placement.y, placement.p))
-                self._transceiver.write_memory(
-                    placement.x, placement.y, region_base_address, data)
+                all_data += data
                 sent_message = True
 
                 # Update the positions
-                region_base_address += len(data)
                 bytes_to_go -= len(data)
 
         if not sent_message:
@@ -312,13 +305,12 @@ class BufferManager(object):
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
-            data = BufferManager._get_message_as_bytes(EventStopRequest())
+            data = EventStopRequest().bytestring
             logger.debug("Writing stop message of {} bytes to {} on"
                          " {}, {}, {}".format(
                              len(data), hex(region_base_address),
                              placement.x, placement.y, placement.p))
-            self._transceiver.write_memory(
-                placement.x, placement.y, region_base_address, data)
+            all_data += data
             bytes_to_go -= len(data)
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
@@ -327,13 +319,16 @@ class BufferManager(object):
         if bytes_to_go > 0:
             padding_packet = PaddingRequest()
             n_packets = bytes_to_go / padding_packet.get_min_packet_length()
-            data = BufferManager._get_message_as_bytes(padding_packet)
+            data = padding_packet.bytestring
             data *= n_packets
             logger.debug("Writing padding of length {} to {} on {}, {}, {}"
                          .format(len(data), hex(region_base_address),
                                  placement.x, placement.y, placement.p))
-            self._transceiver.write_memory(
-                placement.x, placement.y, region_base_address, data)
+            all_data += data
+
+        # Do the writing all at once for efficiency
+        self._transceiver.write_memory(
+            placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):
         """ Send a set of messages
@@ -352,7 +347,7 @@ class BufferManager(object):
         bytes_to_go = size
         for message in sent_messages.messages:
             if isinstance(message.eieio_data_message, EIEIODataMessage):
-                bytes_to_go -= message.eieio_data_message.size
+                bytes_to_go -= (message.eieio_data_message.size)
             else:
                 bytes_to_go -= (message.eieio_data_message
                                 .get_min_packet_length())
@@ -429,6 +424,5 @@ class BufferManager(object):
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
             destination_port=1)
-        data = BufferManager._get_message_as_bytes(message)
-        sdp_message = SDPMessage(sdp_header, data)
+        sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
