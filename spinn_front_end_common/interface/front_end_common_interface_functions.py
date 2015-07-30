@@ -10,10 +10,6 @@ from data_specification.file_data_reader import FileDataReader
 from pacman.utilities.progress_bar import ProgressBar
 
 # spinnmachine imports
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source import \
-    ReverseIpTagMultiCastSource
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
@@ -32,7 +28,16 @@ from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities import reports
+from spinn_front_end_common.utilities.reload.reload_script import ReloadScript
+from spinn_front_end_common.interface.buffer_management.buffer_manager import \
+    BufferManager
+from spinn_front_end_common.interface.buffer_management.buffer_models.\
+    abstract_sends_buffers_from_host_partitioned_vertex import \
+    AbstractSendsBuffersFromHostPartitionedVertex
+from spinn_front_end_common.utility_models.live_packet_gather import \
+    LivePacketGather
+from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source \
+    import ReverseIpTagMultiCastSource
 
 # general imports
 import time
@@ -54,10 +59,14 @@ class FrontEndCommonInterfaceFunctions(object):
     etc
     """
 
-    def __init__(self, reports_states, report_default_directory):
+    def __init__(self, reports_states, report_default_directory,
+                 app_data_folder):
         self._reports_states = reports_states
         self._report_default_directory = report_default_directory
         self._machine = None
+        self._app_data_folder = app_data_folder
+        self._reload_script = None
+        self._send_buffer_manager = None
 
     def _auto_detect_database(self, partitioned_graph):
         """
@@ -73,7 +82,7 @@ class FrontEndCommonInterfaceFunctions(object):
         else:
             return False
 
-    def _setup_interfaces(
+    def setup_interfaces(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height,
             is_virtual, virtual_has_wrap_arounds):
@@ -123,6 +132,11 @@ class FrontEndCommonInterfaceFunctions(object):
                 board_version, number_of_boards, width, height)
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
+            if self._reports_states.transciever_report:
+                self._reload_script = ReloadScript(
+                    self._app_data_folder, hostname, board_version,
+                    bmp_details, downed_chips, downed_cores, number_of_boards,
+                    height, width)
         else:
             self._machine = VirtualMachine(
                 width=width, height=height,
@@ -207,8 +221,38 @@ class FrontEndCommonInterfaceFunctions(object):
                                             int(processor_id))
         return ignored_chips, ignored_cores
 
-    def _load_tags(self, tags):
+    def set_up_send_buffering(self, partitioned_graph, placements, tags):
+        """
+        interface for buffered vertices
+        :param partitioned_graph: the partitioned graph object
+        :param placements: the placements object
+        :param tags: the tags object
+        :return: None
+        """
+        progress_bar = ProgressBar(
+            len(partitioned_graph.subvertices),
+            "on initialising the buffer managers for vertices which require"
+            " buffering")
+
+        # Create the buffer manager
+        self._send_buffer_manager = BufferManager(
+            placements, tags, self._txrx, self._reports_states,
+            self._app_data_folder, self._reload_script)
+
+        for partitioned_vertex in partitioned_graph.subvertices:
+            if isinstance(partitioned_vertex,
+                          AbstractSendsBuffersFromHostPartitionedVertex):
+
+                # Add the vertex to the managed vertices
+                self._send_buffer_manager.add_sender_vertex(
+                    partitioned_vertex)
+            progress_bar.update()
+        progress_bar.end()
+
+    def load_tags(self, tags):
         """ loads all the tags onto all the boards
+        :param tags: the tags object which contains ip and reverse ip tags.
+        :return none
         """
         # clear all the tags from the ethernet connection, as nothing should
         # be allowed to use it (no two sims should use the same etiehrnet
@@ -216,11 +260,30 @@ class FrontEndCommonInterfaceFunctions(object):
         for tag_id in range(spinnman_constants.MAX_TAG_ID):
             self._txrx.clear_ip_tag(tag_id)
 
-        # load the tags for this application
-        for ip_tag in tags.ip_tags:
+        self.load_iptags(tags.ip_tags)
+        self.load_reverse_iptags(tags.reverse_ip_tags)
+
+    def load_iptags(self, iptags):
+        """
+        loads all the iptags individually.
+        :param iptags: the iptags to be loaded.
+        :return: none
+        """
+        for ip_tag in iptags:
             self._txrx.set_ip_tag(ip_tag)
-        for reverse_ip_tag in tags.reverse_ip_tags:
+            if self._reports_states.transciever_report:
+                self._reload_script.add_ip_tag(ip_tag)
+
+    def load_reverse_iptags(self, reverse_ip_tags):
+        """
+        loads all the reverse iptags individually.
+        :param reverse_iptags: the reverse iptags to be loaded
+        :return: None
+        """
+        for reverse_ip_tag in reverse_ip_tags:
             self._txrx.set_reverse_ip_tag(reverse_ip_tag)
+            if self._reports_states.transciever_report:
+                self._reload_script.add_reverse_ip_tag(reverse_ip_tag)
 
     def execute_data_specification_execution(
             self, host_based_execution, hostname, placements, graph_mapper,
@@ -343,24 +406,10 @@ class FrontEndCommonInterfaceFunctions(object):
         progress_bar.end()
         return processor_to_app_data_base_address
 
-    @staticmethod
-    def _get_processors(executable_targets):
-        # deduce how many processors this application uses up
-        total_processors = 0
-        all_core_subsets = list()
-        for executable_target in executable_targets:
-            core_subsets = executable_targets[executable_target]
-            for core_subset in core_subsets:
-                for _ in core_subset.processor_ids:
-                    total_processors += 1
-                all_core_subsets.append(core_subset)
+    def wait_for_cores_to_be_ready(self, executable_targets, app_id):
 
-        return total_processors, all_core_subsets
-
-    def _wait_for_cores_to_be_ready(self, executable_targets, app_id):
-
-        total_processors, all_core_subsets = self._get_processors(
-            executable_targets)
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
 
         processor_c_main = self._txrx.get_core_state_count(app_id,
                                                            CPUState.C_MAIN)
@@ -376,18 +425,31 @@ class FrontEndCommonInterfaceFunctions(object):
                                                            CPUState.SYNC0)
 
         if processors_ready != total_processors:
-            unsuccessful_cores = self._get_cores_not_in_state(
-                all_core_subsets, CPUState.SYNC0)
-            break_down = self._get_core_status_string(unsuccessful_cores)
-            raise exceptions.ExecutableFailedToStartException(
-                "Only {} processors out of {} have successfully reached "
-                "SYNC0:{}".format(
-                    processors_ready, total_processors, break_down))
+            successful_cores, unsuccessful_cores = \
+                self._break_down_of_failure_to_reach_state(all_core_subsets,
+                                                           CPUState.SYNC0)
 
-    def _start_all_cores(self, executable_targets, app_id):
+            # last chance to slip out of error check
+            if len(successful_cores) != total_processors:
+                # break_down the successful cores and unsuccessful cores into
+                # string
+                break_down = self.turn_break_downs_into_string(
+                    all_core_subsets, unsuccessful_cores, CPUState.SYNC0)
+                raise exceptions.ExecutableFailedToStartException(
+                    "Only {} processors out of {} have successfully reached "
+                    "sync0 with breakdown of: {}"
+                    .format(processors_ready, total_processors, break_down))
 
-        total_processors, all_core_subsets = self._get_processors(
-            executable_targets)
+    def start_all_cores(self, executable_targets, app_id):
+        """
+
+        :param executable_targets:
+        :param app_id:
+        :return:
+        """
+
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
 
         # if correct, start applications
         logger.info("Starting application")
@@ -413,11 +475,19 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Only {} of {} processors started:{}"
                     .format(processors_running, total_processors, break_down))
 
-    def _wait_for_execution_to_complete(
+    def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling):
+        """
 
-        total_processors, all_core_subsets = self._get_processors(
-            executable_targets)
+        :param executable_targets:
+        :param app_id:
+        :param runtime:
+        :param time_scaling:
+        :return:
+        """
+
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
 
         time_to_wait = ((runtime * time_scaling) / 1000.0) + 1.0
         logger.info("Application started - waiting {} seconds for it to"
@@ -455,6 +525,8 @@ class FrontEndCommonInterfaceFunctions(object):
                 "{}".format(
                     total_processors - processors_exited, total_processors,
                     break_down))
+        if self._reports_states.transciever_report:
+            self._reload_script.close()
         logger.info("Application has run to completion")
 
     def _get_cores_in_state(self, all_core_subsets, state):
@@ -489,14 +561,8 @@ class FrontEndCommonInterfaceFunctions(object):
         return break_down
 
     def _load_application_data(
-            self, placements, router_tables, vertex_to_subvertex_mapper,
-            processor_to_app_data_base_address, hostname, app_id,
-            app_data_folder, machine_version, verify=False):
-
-        # if doing reload, start script
-        if self._reports_states.transciever_report:
-            reports.start_transceiver_rerun_script(
-                app_data_folder, hostname, machine_version)
+            self, placements, vertex_to_subvertex_mapper,
+            processor_to_app_data_base_address, hostname, app_data_folder):
 
         # go through the placements and see if there's any application data to
         # load
@@ -552,13 +618,13 @@ class FrontEndCommonInterfaceFunctions(object):
 
                 # add lines to rerun_script if requested
                 if self._reports_states.transciever_report:
-                    reports.re_load_script_application_data_load(
+                    self._reload_script.add_application_data(
                         file_path_for_application_data, placement,
-                        start_address, memory_written, user_o_register_address,
-                        app_data_folder)
+                        start_address)
             progress_bar.update()
         progress_bar.end()
 
+    def load_routing_tables(self, router_tables, app_id):
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")
 
@@ -577,26 +643,22 @@ class FrontEndCommonInterfaceFunctions(object):
                         router_table.x, router_table.y,
                         router_table.multicast_routing_entries, app_id=app_id)
                     if self._reports_states.transciever_report:
-                        reports.re_load_script_load_routing_tables(
-                            router_table, app_data_folder, app_id)
+                        self._reload_script.add_routing_table(router_table)
             progress_bar.update()
         progress_bar.end()
 
-    def _load_executable_images(self, executable_targets, app_id,
-                                app_data_folder):
+    def load_executable_images(self, executable_targets, app_id):
         """ Go through the executable targets and load each binary to \
             everywhere and then send a start request to the cores that \
             actually use it
         """
-        if self._reports_states.transciever_report:
-            reports.re_load_script_load_executables_init(
-                app_data_folder, executable_targets)
 
-        progress_bar = ProgressBar(len(executable_targets),
+        progress_bar = ProgressBar(executable_targets.total_processors,
                                    "Loading executables onto the machine")
-        for executable_target_key in executable_targets:
+        for executable_target_key in executable_targets.binary_paths():
             file_reader = SpinnmanFileDataReader(executable_target_key)
-            core_subset = executable_targets[executable_target_key]
+            core_subset = executable_targets.\
+                retrieve_cores_for_a_executable_target(executable_target_key)
 
             statinfo = os.stat(executable_target_key)
             size = statinfo.st_size
@@ -624,8 +686,11 @@ class FrontEndCommonInterfaceFunctions(object):
                                      size)
 
             if self._reports_states.transciever_report:
-                reports.re_load_script_load_executables_individual(
-                    app_data_folder, executable_target_key,
-                    app_id, size)
-            progress_bar.update()
+                self._reload_script.add_binary(executable_target_key,
+                                               core_subset)
+            acutal_cores_loaded = 0
+            for chip_based in core_subset.core_subsets:
+                for _ in chip_based.processor_ids:
+                    acutal_cores_loaded += 1
+            progress_bar.update(amount_to_add=acutal_cores_loaded)
         progress_bar.end()
