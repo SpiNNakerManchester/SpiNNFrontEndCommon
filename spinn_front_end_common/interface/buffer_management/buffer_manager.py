@@ -10,6 +10,8 @@ from data_specification import utility_calls as dsg_utilities
 
 # spinnman imports
 from spinnman import constants
+from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
+    UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
@@ -160,11 +162,9 @@ class BufferManager(object):
         tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
         if (tag.ip_address, tag.port) not in self._seen_tags:
             self._seen_tags.add((tag.ip_address, tag.port))
-            self._transceiver.register_listener(
-                self.receive_buffer_command_message, tag.port,
-                constants.CONNECTION_TYPE.UDP_IPTAG,
-                constants.TRAFFIC_TYPE.EIEIO_COMMAND,
-                hostname=tag.ip_address)
+            self._transceiver.register_udp_listener(
+                self.receive_buffer_command_message, UDPEIEIOConnection,
+                local_port=tag.port, local_host=tag.ip_address)
 
         # if reload script is set up, sotre the buffers for future usage
         if self._report_states.transciever_report:
@@ -412,9 +412,10 @@ class BufferManager(object):
         region_offset_in_pointer_table = \
             dsg_utilities.get_region_base_address_offset(
                 app_data_base_address, region)
-        region_offset = str(list(self._transceiver.read_memory(
-            placement.x, placement.y, region_offset_in_pointer_table, 4))[0])
-        return struct.unpack("<I", region_offset)[0] + app_data_base_address
+        region_offset = self._transceiver.read_memory(
+            placement.x, placement.y, region_offset_in_pointer_table, 4)
+        return (struct.unpack_from("<I", region_offset)[0] +
+                app_data_base_address)
 
     def _send_request(self, vertex, message):
         """ Sends a request
