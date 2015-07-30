@@ -24,13 +24,13 @@ static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
 //! Provanence data store
-struct provenance_data_struct {
+typedef struct provenance_data_struct {
     uint32_t number_of_over_flows_none_payload;
     uint32_t number_of_over_flows_payload;
-};
+} provenance_data_struct;
 
 //! struct holding the proenance data
-struct provenance_data_struct provenance_data;
+provenance_data_struct provenance_data;
 
 // P bit
 static uint32_t apply_prefix;
