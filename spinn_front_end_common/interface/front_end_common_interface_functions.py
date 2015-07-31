@@ -603,7 +603,8 @@ class FrontEndCommonInterfaceFunctions(object):
                         memory_written)
                     if read_data != all_data:
                         raise Exception("Miswrite of {}, {}, {}, {}".format(
-                            placement.x, placement.y, placement.p, start_address))
+                            placement.x, placement.y, placement.p,
+                            start_address))
                     application_data_file_reader.close()
                 
                 # update user 0 so that it points to the start of the

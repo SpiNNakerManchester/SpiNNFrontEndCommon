@@ -272,7 +272,7 @@ class BufferManager(object):
             raise exceptions.SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
-        all_data = b""
+        all_data = ""
         if vertex.is_empty(region):
             sent_message = True
         else:
@@ -347,7 +347,7 @@ class BufferManager(object):
         bytes_to_go = size
         for message in sent_messages.messages:
             if isinstance(message.eieio_data_message, EIEIODataMessage):
-                bytes_to_go -= (message.eieio_data_message.size)
+                bytes_to_go -= message.eieio_data_message.size
             else:
                 bytes_to_go -= (message.eieio_data_message
                                 .get_min_packet_length())

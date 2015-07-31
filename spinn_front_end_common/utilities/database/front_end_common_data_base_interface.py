@@ -169,10 +169,25 @@ class FrontEndCommonDataBaseInterface(object):
                 "INSERT INTO configuration_parameters (parameter_id, value)"
                 " VALUES ('time_scale_factor', {})".format(time_scale_factor)
             )
-            cur.execute(
-                "INSERT INTO configuration_parameters (parameter_id, value)"
-                " VALUES ('runtime', {})".format(runtime)
-            )
+            if runtime is not None:
+                cur.execute(
+                    "INSERT INTO configuration_parameters (parameter_id, value)"
+                    " VALUES ('infinite_run', 'False')"
+                )
+                cur.execute(
+                    "INSERT INTO configuration_parameters (parameter_id, value)"
+                    " VALUES ('runtime', {})".format(runtime)
+                )
+            else:
+                cur.execute(
+                    "INSERT INTO configuration_parameters (parameter_id, value)"
+                    " VALUES ('infinite_run', 'True')"
+                )
+                cur.execute(
+                    "INSERT INTO configuration_parameters (parameter_id, value)"
+                    " VALUES ('runtime', {})".format(-1)
+                )
+
             connection.commit()
             connection.close()
             self._lock_condition.release()
