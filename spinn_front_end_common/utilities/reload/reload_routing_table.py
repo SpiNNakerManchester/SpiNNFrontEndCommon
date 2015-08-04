@@ -32,4 +32,4 @@ class ReloadRoutingTable(object):
         pickle_file = open(pickle_file_path, "wb")
         pickle.dump(routing_table, pickle_file)
         pickle_file.close()
-        return pickle_file_path
+        return pickle_file_name

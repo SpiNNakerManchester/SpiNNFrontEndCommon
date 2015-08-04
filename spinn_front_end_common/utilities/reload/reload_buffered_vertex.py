@@ -19,10 +19,9 @@ class ReloadBufferedVertex(
     A class to work for buffered stuff for relaod purposes
     """
 
-    def __init__(self, buffered_region_file_paths, label):
+    def __init__(self, label):
         self._label = label
-        self._send_buffers = \
-            self._read_in_send_buffers_from_folder(buffered_region_file_paths)
+        self._send_buffers = self._read_in_send_buffers_from_folder(os.curdir)
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
             self, self._send_buffers)
 
@@ -33,7 +32,7 @@ class ReloadBufferedVertex(
         :param base_folder: the folder which contains its buffered regions
         :return: the send buffers as a dict of region id and bufferedSendRegion
         """
-        files_in_folder = os.listdir(base_folder)
+        files_in_folder = os.listdir(os.curdir)
         send_buffers = dict()
         for possible_buffer_file in files_in_folder:
             # search for files which are associated with this vertex

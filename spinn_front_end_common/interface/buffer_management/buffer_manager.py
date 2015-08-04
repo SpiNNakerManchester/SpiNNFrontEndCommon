@@ -227,8 +227,8 @@ class BufferManager(object):
             if self._report_states.transciever_report:
                 file_path = os.path.join(
                     self._application_folder_path,
-                    "buffered_sending_region_{}_{}"
-                    .format(vertex.label, region))
+                    self._reload_interface.get_buffered_vertex_filename(
+                        vertex))
                 out = open(file_path, "w")
                 out.write("{}:{}\n".format(next_timestamp, key))
 

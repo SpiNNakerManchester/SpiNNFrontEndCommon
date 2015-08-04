@@ -119,20 +119,18 @@ class Reload(object):
         if turn_off_machine:
             self._spinnaker_interface._txrx.power_off_machine()
 
-    def enable_buffer_manager(self, buffered_placements, buffered_tags,
-                              application_folder_path):
+    def enable_buffer_manager(self, buffered_placements, buffered_tags):
         """
         enables the buffer manager with the placements and buffered tags
         :param buffered_placements: the placements which contain buffered\
                     vertices
         :param buffered_tags: the tags which contain buffered vertices
-        :param application_folder_path: the application folder
         :return:
         """
         self._buffer_manager = BufferManager(
             buffered_placements, buffered_tags,
             self._spinnaker_interface._txrx,
-            self._reports_states, application_folder_path, None)
+            self._reports_states, None, None)
 
     def execute_notification_protocol_read_messages(
             self, socket_addresses, wait_for_confirmations, database_path):

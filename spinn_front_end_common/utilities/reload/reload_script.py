@@ -11,6 +11,7 @@ from spinn_front_end_common.utilities.reload.reload_routing_table import \
 # general imports
 import os
 import shutil
+import re
 
 
 class ReloadScript(object):
@@ -24,6 +25,7 @@ class ReloadScript(object):
         self._wait_on_confiramtion = None
         self._runtime = None
         self._time_scale_factor = None
+        self._buffer_vertex_file_names = dict()
         if not self._binary_directory.endswith(os.sep):
             self._binary_directory += os.sep
 
@@ -42,8 +44,8 @@ class ReloadScript(object):
         self._println("machine_name = \"{}\"".format(hostname))
         self._println("machine_version = {}".format(board_version))
         self._println("bmp_details = \"{}\"".format(bmp_details))
-        self._println("down_chips = {}".format(down_chips))
-        self._println("down_cores = {}".format(down_cores))
+        self._println("down_chips = \"{}\"".format(down_chips))
+        self._println("down_cores = \"{}\"".format(down_cores))
         self._println("number_of_boards = {}".format(number_of_boards))
         self._println("height = {}".format(height))
         self._println("width = {}".format(width))
@@ -199,6 +201,14 @@ class ReloadScript(object):
                     reverse_ip_tag.destination_y, reverse_ip_tag.destination_p,
                     reverse_ip_tag.sdp_port))
 
+    def get_buffered_vertex_filename(self, vertex):
+        """ Get the name of a file for the buffers of a vertex
+        """
+        if vertex not in self._buffer_vertex_file_names:
+            self._buffer_vertex_file_names[vertex] = re.sub(
+                "[\"':]", "_", vertex.label)
+        return self._buffer_vertex_file_names[vertex]
+
     def add_buffered_vertex(self, vertex, iptag, placement,
                             application_data_folder):
         """
@@ -211,8 +221,8 @@ class ReloadScript(object):
         :return:
         """
         self._println(
-            "vertex = ReloadBufferedVertex(\"{}\", \"{}\")"
-            .format(application_data_folder, vertex.label))
+            "vertex = ReloadBufferedVertex(\"{}\")".format(
+                self.get_buffered_vertex_filename(vertex)))
         self._println(
             "buffered_placements.add_placement(Placement({}, {}, {}, vertex))"
             .format(placement.x, placement.y, placement.p))
@@ -247,7 +257,7 @@ class ReloadScript(object):
         self._println("reloader.reload_tags(iptags, reverse_iptags)")
         self._println("reloader.reload_binaries(binaries)")
         self._println("reloader.enable_buffer_manager(buffered_placements, "
-                      "buffered_tags, \"{}\")".format(self._binary_directory))
+                      "buffered_tags)")
         self._println("reloader.restart(binaries, {}, {}, "
                       "turn_off_machine=True)"
                       .format(self._runtime, self._time_scale_factor))
