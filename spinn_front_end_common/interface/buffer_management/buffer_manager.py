@@ -23,8 +23,6 @@ from spinnman.messages.eieio.data_messages.eieio_32bit\
 from spinnman.messages.eieio.data_messages.eieio_data_header\
     import EIEIODataHeader
 from spinnman.messages.eieio.eieio_type import EIEIOType
-from spinnman.data.little_endian_byte_array_byte_writer\
-    import LittleEndianByteArrayByteWriter
 from spinnman.exceptions import SpinnmanInvalidPacketException
 from spinnman.messages.eieio.data_messages.eieio_data_message \
     import EIEIODataMessage
@@ -176,12 +174,15 @@ class BufferManager(object):
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
         """
-        progress_bar = ProgressBar(len(self._sender_vertices),
+        total_bytes = 0
+        for vertex in self._sender_vertices:
+            for region in vertex.get_regions():
+                total_bytes += vertex.get_region_buffer_size(region)
+        progress_bar = ProgressBar(total_bytes,
                                    "on loading buffer dependant vertices")
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                self._send_initial_messages(vertex, region)
-            progress_bar.update()
+                self._send_initial_messages(vertex, region, progress_bar)
         progress_bar.end()
 
     def _create_message_to_send(self, size, vertex, region):
@@ -248,7 +249,7 @@ class BufferManager(object):
         # Add up the bytes
         return (_HEADER_SIZE * n_messages) + (n_keys * _N_BYTES_PER_KEY)
 
-    def _send_initial_messages(self, vertex, region):
+    def _send_initial_messages(self, vertex, region, progress_bar):
         """ Send the initial set of messages
 
         :param vertex: The vertex to get the keys from
@@ -296,6 +297,7 @@ class BufferManager(object):
 
                 # Update the positions
                 bytes_to_go -= len(data)
+                progress_bar.update(len(data))
 
         if not sent_message:
             raise exceptions.BufferableRegionTooSmall(
@@ -312,6 +314,7 @@ class BufferManager(object):
                              placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
+            progress_bar.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
 
