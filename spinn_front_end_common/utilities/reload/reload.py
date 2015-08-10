@@ -131,6 +131,8 @@ class Reload(object):
             buffered_placements, buffered_tags,
             self._spinnaker_interface._txrx,
             self._reports_states, None, None)
+        for placement in buffered_placements.placements:
+            self._buffer_manager.add_sender_vertex(placement.subvertex)
 
     def execute_notification_protocol_read_messages(
             self, socket_addresses, wait_for_confirmations, database_path):

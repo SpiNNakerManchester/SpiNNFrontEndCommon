@@ -537,6 +537,8 @@ class FrontEndCommonInterfaceFunctions(object):
 
         if self._reports_states.transciever_report:
             self._reload_script.close()
+        if self._send_buffer_manager is not None:
+            self._send_buffer_manager.stop()
         logger.info("Application has run to completion")
 
     def _break_down_of_failure_to_reach_state(self, total_cores, state):

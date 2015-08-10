@@ -8,9 +8,13 @@ from spinn_front_end_common.interface.buffer_management.buffer_models.\
     SendsBuffersFromHostPartitionedVertexPreBufferedImpl
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
     buffered_sending_region import BufferedSendingRegion
+from spinn_front_end_common.interface.buffer_management.buffer_manager \
+    import BufferManager
+from spinnman.messages.eieio.command_messages.event_stop_request \
+    import EventStopRequest
 
-# general imports
-import os
+
+_MAX_MEMORY_USAGE = 8 * 1024 * 1024
 
 
 class ReloadBufferedVertex(
@@ -19,33 +23,30 @@ class ReloadBufferedVertex(
     A class to work for buffered stuff for relaod purposes
     """
 
-    def __init__(self, label):
+    def __init__(self, label, region_files_dict):
+        """
+        :param label: The label of the vertex
+        :param region_files_dict: A dictionary of region id -> file name
+        """
         self._label = label
-        self._send_buffers = self._read_in_send_buffers_from_folder(os.curdir)
+
+        self._send_buffers = dict()
+        for (region_id, filename) in region_files_dict.iteritems():
+            send_buffer = BufferedSendingRegion()
+            reader = open(filename, "r")
+            line = reader.readline()
+            while line != "":
+                bits = line.split(":")
+                send_buffer.add_key(int(bits[0]), int(bits[1]))
+                line = reader.readline()
+            total_size = 0
+            for timestamp in send_buffer.timestamps:
+                n_keys = send_buffer.get_n_keys(timestamp)
+                total_size += BufferManager.get_n_bytes(n_keys)
+            total_size += EventStopRequest.get_min_packet_length()
+            if total_size > _MAX_MEMORY_USAGE:
+                total_size = _MAX_MEMORY_USAGE
+            send_buffer.buffer_size = total_size
+            self._send_buffers[region_id] = send_buffer
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
             self, self._send_buffers)
-
-    def _read_in_send_buffers_from_folder(self, base_folder):
-        """ with a base folder, searches for its own buffered regions and
-        reads them in to buffered sneding regions
-
-        :param base_folder: the folder which contains its buffered regions
-        :return: the send buffers as a dict of region id and bufferedSendRegion
-        """
-        files_in_folder = os.listdir(os.curdir)
-        send_buffers = dict()
-        for possible_buffer_file in files_in_folder:
-            # search for files which are associated with this vertex
-            search_for_name = "buffered_sending_region_{}".format(self._label)
-            if search_for_name in os.path.basename(possible_buffer_file):
-                bits = os.path.basename(possible_buffer_file).split("_")
-                # last bit of the bits should be the region id so, locate
-                region_id = int(bits[len(bits) - 1])
-                send_buffers[region_id] = BufferedSendingRegion()
-                reader = open(possible_buffer_file, "r")
-                line = reader.readline()
-                while line != "":
-                    bits = line.split(":")
-                    send_buffers[region_id].add_key(int(bits[0]), int(bits[1]))
-                    line = reader.readline()
-        return send_buffers
