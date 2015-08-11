@@ -11,11 +11,17 @@ def get_valid_components(module, terminator):
                 inspect.getmembers(module, inspect.isclass)))
 
 
-def read_and_convert(x, y, address, length, data_format, transceiver):
+def read_data(x, y, address, length, data_format, transceiver):
     """ Reads and converts a single data item from memory
+    :param x: chip x
+    :param y: chip y
+    :param address: base address of the sdram chip to read
+    :param length: length to read
+    :param data_format: the format to read memory
+    :param transceiver: the spinnman interface
     """
 
     # turn byte array into str for unpack to work
-    data = str(list(transceiver.read_memory(x, y, address, length))[0])
-    result = struct.unpack(data_format, data)[0]
+    data = transceiver.read_memory(x, y, address, length)
+    result = struct.unpack_from(data_format, data)[0]
     return result
