@@ -35,8 +35,9 @@ class NotificationProtocol(object):
         self._data_base_message_connections = list()
         for socket_address in socket_addresses:
             self._data_base_message_connections.append(UDPEIEIOConnection(
-                socket_address.listen_port, socket_address.notify_host_name,
-                socket_address.notify_port_no))
+                local_port=socket_address.listen_port,
+                remote_host=socket_address.notify_host_name,
+                remote_port=socket_address.notify_port_no))
 
     def wait_for_confirmation(self):
         """ if asked to wait for confirmation, waits for all external systems to
@@ -60,7 +61,7 @@ class NotificationProtocol(object):
             self.wait_for_confirmation()
         eieio_command_message = DatabaseConfirmation()
         for connection in self._data_base_message_connections:
-            connection.send_eieio_command_message(eieio_command_message)
+            connection.send_eieio_message(eieio_command_message)
 
     # noinspection PyPep8
     def send_read_notification(self, database_path):
@@ -103,15 +104,14 @@ class NotificationProtocol(object):
             # noinspection PyBroadException
             try:
                 for connection in self._data_base_message_connections:
-                    connection.send_eieio_command_message(
-                        eieio_command_message)
+                    connection.send_eieio_message(eieio_command_message)
 
                 # if the system needs to wait, try recieving a packet back
                 if self._wait_for_read_confirmation:
                     for connection in self._data_base_message_connections:
-                        connection.receive_eieio_command_message()
+                        connection.receive_eieio_message()
                 logger.info("*** Confirmation received, continuing ***")
-            except Exception:
+            except Exception as e:
                 logger.warning("*** Failed to notify external application"
                                " about the database - continuing ***")
 
