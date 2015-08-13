@@ -29,10 +29,10 @@ bool simulation_read_timing_details(
         uint32_t* timer_period, uint32_t* n_simulation_ticks,
         uint32_t* infinite_run) {
 
-    if (address[APPLICATION_MD5_HASH] != APPLICATION_NAME_HASH) {
+    if (address[APPLICATION_MD5_HASH] != expected_app_magic_number) {
         log_error("The application hash 0x%.8x does not match the expected"
                   "hash 0x%.8x",
-                  address[APPLICATION_MD5_HASH], APPLICATION_NAME_HASH);
+                  address[APPLICATION_MD5_HASH], expected_app_magic_number);
         return false;
     }
 

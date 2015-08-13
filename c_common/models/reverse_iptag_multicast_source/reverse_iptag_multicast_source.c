@@ -920,7 +920,8 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(HEADER_REGION, address),
-            timer_period, &simulation_ticks, &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run)) {
         return false;
     }
 
