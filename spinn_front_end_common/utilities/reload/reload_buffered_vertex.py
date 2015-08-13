@@ -14,7 +14,7 @@ from spinnman.messages.eieio.command_messages.event_stop_request \
     import EventStopRequest
 
 
-_MAX_MEMORY_USAGE = 8 * 1024 * 1024
+_MAX_MEMORY_USAGE = 1 * 1024 * 1024
 
 
 class ReloadBufferedVertex(

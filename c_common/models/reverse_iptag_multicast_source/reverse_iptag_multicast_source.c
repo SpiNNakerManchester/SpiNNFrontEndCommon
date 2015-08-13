@@ -619,10 +619,7 @@ static inline void eieio_command_parse_sequenced_data(
 
     log_debug("Received packet sequence number: %d", sequence_value);
 
-    if (sequence_value != next_expected_sequence_no) {
-        //send_ack_last_state = true;
-    } else {
-
+    if (sequence_value == next_expected_sequence_no) {
         // parse_event_pkt returns false in case there is an error and the
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");

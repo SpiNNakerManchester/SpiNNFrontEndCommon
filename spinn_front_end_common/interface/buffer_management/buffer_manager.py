@@ -124,34 +124,33 @@ class BufferManager(object):
                     :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
         with self._thread_lock:
-            if self._finished:
-                return
-            if isinstance(packet, SpinnakerRequestBuffers):
-                vertex = self._placements.get_subvertex_on_processor(
-                    packet.x, packet.y, packet.p)
+            if not self._finished:
+                if isinstance(packet, SpinnakerRequestBuffers):
+                    vertex = self._placements.get_subvertex_on_processor(
+                        packet.x, packet.y, packet.p)
 
-                if vertex in self._sender_vertices:
-                    logger.debug("received packet sequence: {1:d}, "
-                                 "space available: {0:d}".format(
-                                     packet.space_available,
-                                     packet.sequence_no))
+                    if vertex in self._sender_vertices:
+                        logger.debug("received packet sequence: {1:d}, "
+                                     "space available: {0:d}".format(
+                                         packet.space_available,
+                                         packet.sequence_no))
 
-                    # noinspection PyBroadException
-                    try:
-                        self._send_messages(
-                            packet.space_available, vertex, packet.region_id,
-                            packet.sequence_no)
-                    except Exception:
-                        traceback.print_exc()
-            elif isinstance(packet, EIEIOCommandMessage):
-                raise SpinnmanInvalidPacketException(
-                    str(packet.__class__),
-                    "The command packet is invalid for buffer management: "
-                    "command id {0:d}".format(packet.eieio_header.command))
-            else:
-                raise SpinnmanInvalidPacketException(
-                    packet.__class__,
-                    "The command packet is invalid for buffer management")
+                        # noinspection PyBroadException
+                        try:
+                            self._send_messages(
+                                packet.space_available, vertex,
+                                packet.region_id, packet.sequence_no)
+                        except Exception:
+                            traceback.print_exc()
+                elif isinstance(packet, EIEIOCommandMessage):
+                    raise SpinnmanInvalidPacketException(
+                        str(packet.__class__),
+                        "The command packet is invalid for buffer management: "
+                        "command id {0:d}".format(packet.eieio_header.command))
+                else:
+                    raise SpinnmanInvalidPacketException(
+                        packet.__class__,
+                        "The command packet is invalid for buffer management")
 
     def add_sender_vertex(self, vertex):
         """ Add a partitioned vertex into the managed list for vertices
@@ -188,9 +187,8 @@ class BufferManager(object):
                 total_data += vertex.get_region_buffer_size(region)
 
         progress_bar = ProgressBar(
-            total_data,
-            "on loading buffer dependent vertices ({} bytes)".format(
-                total_data))
+            total_data, "on loading buffer dependent vertices ({} bytes)"
+                        .format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 self._send_initial_messages(vertex, region, progress_bar)
