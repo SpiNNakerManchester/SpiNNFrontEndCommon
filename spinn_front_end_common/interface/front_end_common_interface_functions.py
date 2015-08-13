@@ -526,6 +526,8 @@ class FrontEndCommonInterfaceFunctions(object):
                     break_down))
         if self._reports_states.transciever_report:
             self._reload_script.close()
+        if self._send_buffer_manager is not None:
+            self._send_buffer_manager.stop()
         logger.info("Application has run to completion")
 
     def _get_cores_in_state(self, all_core_subsets, state):
