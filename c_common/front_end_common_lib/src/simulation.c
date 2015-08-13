@@ -1,3 +1,4 @@
+
 /*!
  * \file
  * \brief implementation of simulation.h
@@ -18,7 +19,7 @@
 //! from the memory region
 //! \param[out] n_simulation_ticks A pointer for storing the number of timer
 //! tics this executable should run for, which is read from this region
-//! \param INFINITE_RUN[out] a pointer to an int which represents if the model 
+//! \param INFINITE_RUN[out] a pointer to an int which represents if the model
 //!                          should run for infinite time
 //! \return True if the method was able to read the parameters and the
 //! application magic number corresponded to the magic number in memory.
@@ -28,17 +29,16 @@ bool simulation_read_timing_details(
         uint32_t* timer_period, uint32_t* n_simulation_ticks,
         uint32_t* infinite_run) {
 
-    if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
-        log_error("Unexpected magic number 0x%.8x instead of 0x%.8x",
-        		 address[APPLICATION_MAGIC_NUMBER],
-				 expected_app_magic_number);
+    if (address[APPLICATION_MD5_HASH] != expected_app_magic_number) {
+        log_error("The application hash 0x%.8x does not match the expected"
+                  "hash 0x%.8x",
+                  address[APPLICATION_MD5_HASH], expected_app_magic_number);
         return false;
     }
 
     *timer_period = address[SIMULATION_TIMER_PERIOD];
     *infinite_run = address[INFINITE_RUN];
     *n_simulation_ticks = address[N_SIMULATION_TICS];
-    
 
     return true;
 }

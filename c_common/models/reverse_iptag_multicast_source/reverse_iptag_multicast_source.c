@@ -5,6 +5,13 @@
 #include <sark.h>
 #include <string.h>
 
+//! human readable definitions of each region in SDRAM
+typedef enum regions_e {
+    HEADER_REGION,
+    CONFIGURATION_REGION,
+    BUFFER_REGION
+} regions_e;
+
 // Database handshake with visualiser
 #define DATABASE_CONFIRMATION 1
 
@@ -35,7 +42,6 @@
 #define BUFFER_OPERATION_READ 0
 #define BUFFER_OPERATION_WRITE 1
 
-#define BUFFER_REGION 2
 #define MIN_BUFFER_SPACE 10
 
 // The maximum sequence number
@@ -913,14 +919,15 @@ bool initialize(uint32_t *timer_period) {
 
     // Get the timing details
     if (!simulation_read_timing_details(
-            data_specification_get_region(0, address),
+            data_specification_get_region(HEADER_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
             &infinite_run)) {
         return false;
     }
 
     // Read the parameters
-    if (!read_parameters(data_specification_get_region(1, address))) {
+    if (!read_parameters(data_specification_get_region(CONFIGURATION_REGION,
+                                                       address))) {
         return false;
     }
 

@@ -30,7 +30,7 @@ def generate_synaptic_matrix_reports(common_report_directory,
                          " {} for writing.".format(file_name))
 
         # extract matrix
-        synaptic_matrix = partitioned_edge.get_synapse_sublist(graph_mapper)
+        synaptic_matrix = partitioned_edge.get_synapse_sublist()
         counter = 0
         for synaptic_row in synaptic_matrix.get_rows():
             output_string = "entry {} [ \n target_index[".format(counter)
