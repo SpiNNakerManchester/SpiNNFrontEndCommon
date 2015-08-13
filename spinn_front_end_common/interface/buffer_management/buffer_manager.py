@@ -10,6 +10,8 @@ from data_specification import utility_calls as dsg_utilities
 
 # spinnman imports
 from spinnman import constants
+from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
+    UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
 from spinnman.messages.sdp.sdp_header import SDPHeader
@@ -21,8 +23,6 @@ from spinnman.messages.eieio.data_messages.eieio_32bit\
 from spinnman.messages.eieio.data_messages.eieio_data_header\
     import EIEIODataHeader
 from spinnman.messages.eieio.eieio_type import EIEIOType
-from spinnman.data.little_endian_byte_array_byte_writer\
-    import LittleEndianByteArrayByteWriter
 from spinnman.exceptions import SpinnmanInvalidPacketException
 from spinnman.messages.eieio.data_messages.eieio_data_message \
     import EIEIODataMessage
@@ -165,11 +165,9 @@ class BufferManager(object):
         tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
         if (tag.ip_address, tag.port) not in self._seen_tags:
             self._seen_tags.add((tag.ip_address, tag.port))
-            self._transceiver.register_listener(
-                self.receive_buffer_command_message, tag.port,
-                constants.CONNECTION_TYPE.UDP_IPTAG,
-                constants.TRAFFIC_TYPE.EIEIO_COMMAND,
-                hostname=tag.ip_address)
+            self._transceiver.register_udp_listener(
+                self.receive_buffer_command_message, UDPEIEIOConnection,
+                local_port=tag.port, local_host=tag.ip_address)
 
         # if reload script is set up, sotre the buffers for future usage
         if self._report_states.transciever_report:
@@ -225,8 +223,6 @@ class BufferManager(object):
         if message.size + _N_BYTES_PER_KEY > size:
             return None
 
-        # logger.debug("Adding keys for timestamp {}".format(next_timestamp))
-
         # Add keys up to the limit
         bytes_to_go = size - message.size
         while (bytes_to_go >= _N_BYTES_PER_KEY and
@@ -256,12 +252,6 @@ class BufferManager(object):
         # Add up the bytes
         return (_HEADER_SIZE * n_messages) + (n_keys * _N_BYTES_PER_KEY)
 
-    @staticmethod
-    def _get_message_as_bytes(message):
-        writer = LittleEndianByteArrayByteWriter()
-        message.write_eieio_message(writer)
-        return writer.data
-
     def _send_initial_messages(self, vertex, region, progress_bar):
         """ Send the initial set of messages
 
@@ -286,6 +276,7 @@ class BufferManager(object):
             raise exceptions.SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
+        all_data = ""
         if vertex.is_empty(region):
             sent_message = True
         else:
@@ -299,17 +290,11 @@ class BufferManager(object):
                     break
 
                 # Write the message to the memory
-                data = BufferManager._get_message_as_bytes(next_message)
-                # logger.debug("Writing initial buffer of {} bytes to {} on"
-                #              " {}, {}, {}".format(
-                #                  len(data), hex(region_base_address),
-                #                  placement.x, placement.y, placement.p))
-                self._transceiver.write_memory(
-                    placement.x, placement.y, region_base_address, data)
+                data = next_message.bytestring
+                all_data += data
                 sent_message = True
 
                 # Update the positions
-                region_base_address += len(data)
                 bytes_to_go -= len(data)
                 progress_bar.update(len(data))
 
@@ -321,13 +306,12 @@ class BufferManager(object):
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
-            data = BufferManager._get_message_as_bytes(EventStopRequest())
-            # logger.debug("Writing stop message of {} bytes to {} on"
-            #              " {}, {}, {}".format(
-            #                  len(data), hex(region_base_address),
-            #                  placement.x, placement.y, placement.p))
-            self._transceiver.write_memory(
-                placement.x, placement.y, region_base_address, data)
+            data = EventStopRequest().bytestring
+            logger.debug("Writing stop message of {} bytes to {} on"
+                         " {}, {}, {}".format(
+                             len(data), hex(region_base_address),
+                             placement.x, placement.y, placement.p))
+            all_data += data
             bytes_to_go -= len(data)
             progress_bar.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
@@ -337,13 +321,13 @@ class BufferManager(object):
         if bytes_to_go > 0:
             padding_packet = PaddingRequest()
             n_packets = bytes_to_go / padding_packet.get_min_packet_length()
-            data = BufferManager._get_message_as_bytes(padding_packet)
+            data = padding_packet.bytestring
             data *= n_packets
-            # logger.debug("Writing padding of length {} to {} on {}, {}, {}"
-            #              .format(len(data), hex(region_base_address),
-            #                      placement.x, placement.y, placement.p))
-            self._transceiver.write_memory(
-                placement.x, placement.y, region_base_address, data)
+            all_data += data
+
+        # Do the writing all at once for efficiency
+        self._transceiver.write_memory(
+            placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):
         """ Send a set of messages
@@ -426,9 +410,10 @@ class BufferManager(object):
         region_offset_in_pointer_table = \
             dsg_utilities.get_region_base_address_offset(
                 app_data_base_address, region)
-        region_offset = str(list(self._transceiver.read_memory(
-            placement.x, placement.y, region_offset_in_pointer_table, 4))[0])
-        return struct.unpack("<I", region_offset)[0] + app_data_base_address
+        region_offset = self._transceiver.read_memory(
+            placement.x, placement.y, region_offset_in_pointer_table, 4)
+        return (struct.unpack_from("<I", region_offset)[0] +
+                app_data_base_address)
 
     def _send_request(self, vertex, message):
         """ Sends a request
@@ -442,8 +427,7 @@ class BufferManager(object):
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
             destination_port=1)
-        data = BufferManager._get_message_as_bytes(message)
-        sdp_message = SDPMessage(sdp_header, data)
+        sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
 
     def stop(self):

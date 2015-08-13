@@ -305,19 +305,19 @@ class LivePacketGather(
             dsg_utility_calls.get_region_base_address_offset(
                 app_data_base_address,
                 self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value)
-        provanence_data_region_base_address_buf = str(list(
+        provanence_data_region_base_address_buf = \
             transceiver.read_memory(
                 placement.x, placement.y,
-                provanence_data_region_base_address_offset, 4))[0])
+                provanence_data_region_base_address_offset, 4)
         provanence_data_region_base_address = \
-            struct.unpack("<I", provanence_data_region_base_address_buf)[0]
+            struct.unpack("I", provanence_data_region_base_address_buf)[0]
         provanence_data_region_base_address += app_data_base_address
 
         # read in the provanence data
         provanence_data_region_contents_buff = \
-            str(list(transceiver.read_memory(
+            transceiver.read_memory(
                 placement.x, placement.y, provanence_data_region_base_address,
-                self._PROVANENCE_REGION_SIZE))[0])
+                self._PROVANENCE_REGION_SIZE)
         provanence_data_region_contents = \
             struct.unpack("<II", provanence_data_region_contents_buff)
 

@@ -3,6 +3,7 @@ interface for communciating with spinnaker machine easily.
 """
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
+from data_specification.exceptions import DataSpecificationException
 from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 
@@ -10,15 +11,6 @@ from data_specification.file_data_reader import FileDataReader
 from pacman.utilities.progress_bar import ProgressBar
 
 # spinnmachine imports
-from spinn_front_end_common.interface.buffer_management.buffer_manager import \
-    BufferManager
-from spinn_front_end_common.interface.buffer_management.buffer_models.\
-    abstract_sends_buffers_from_host_partitioned_vertex import \
-    AbstractSendsBuffersFromHostPartitionedVertex
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source \
-    import ReverseIpTagMultiCastSource
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
@@ -31,7 +23,6 @@ from spinnman.model.core_subsets import CoreSubsets
 from spinnman.model.core_subset import CoreSubset
 from spinnman import constants as spinnman_constants
 from spinnman.model.bmp_connection_data import BMPConnectionData
-import re
 
 # front end common imports
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
@@ -39,12 +30,23 @@ from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities.reload.reload_script import ReloadScript
+from spinn_front_end_common.interface.buffer_management.buffer_manager import \
+    BufferManager
+from spinn_front_end_common.interface.buffer_management.buffer_models.\
+    abstract_sends_buffers_from_host_partitioned_vertex import \
+    AbstractSendsBuffersFromHostPartitionedVertex
+from spinn_front_end_common.utility_models.live_packet_gather import \
+    LivePacketGather
+from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source \
+    import ReverseIpTagMultiCastSource
 
 # general imports
 import time
 import os
 import logging
 import traceback
+import re
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -276,7 +278,7 @@ class FrontEndCommonInterfaceFunctions(object):
     def load_reverse_iptags(self, reverse_ip_tags):
         """
         loads all the reverse iptags individually.
-        :param reverse_iptags: the reverse iptags to be loaded
+        :param reverse_ip_tags: the reverse iptags to be loaded
         :return: None
         """
         for reverse_ip_tag in reverse_ip_tags:
@@ -378,10 +380,12 @@ class FrontEndCommonInterfaceFunctions(object):
                     report_writer)
 
                 # update memory calc and run data spec executor
+                bytes_used_by_spec = None
+                bytes_written_by_spec = None
                 try:
                     bytes_used_by_spec, bytes_written_by_spec = \
                         host_based_data_spec_executor.execute()
-                except:
+                except DataSpecificationException:
                     logger.error("Error executing data specification for {}"
                                  .format(associated_vertex))
                     traceback.print_exc()
@@ -424,20 +428,16 @@ class FrontEndCommonInterfaceFunctions(object):
                                                            CPUState.SYNC0)
 
         if processors_ready != total_processors:
-            successful_cores, unsuccessful_cores = \
-                self._break_down_of_failure_to_reach_state(all_core_subsets,
-                                                           CPUState.SYNC0)
+            unsuccessful_cores = self._get_cores_not_in_state(
+                all_core_subsets, CPUState.SYNC0)
 
             # last chance to slip out of error check
-            if len(successful_cores) != total_processors:
-                # break_down the successful cores and unsuccessful cores into
-                # string
-                break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, unsuccessful_cores, CPUState.SYNC0)
+            if len(unsuccessful_cores) != 0:
+                break_down = self._get_core_status_string(unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
-                    "sync0 with breakdown of: {}"
-                    .format(processors_ready, total_processors, break_down))
+                    "SYNC0:{}".format(
+                        processors_ready, total_processors, break_down))
 
     def start_all_cores(self, executable_targets, app_id):
         """
@@ -456,25 +456,22 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # check all apps have gone into run state
         logger.info("Checking that the application has started")
-        processors_running = self._txrx.get_core_state_count(app_id,
-                                                             CPUState.RUNNING)
-        processors_finished = self._txrx.get_core_state_count(app_id,
-                                                              CPUState.FINSHED)
+        processors_running = self._txrx.get_core_state_count(
+            app_id, CPUState.RUNNING)
         if processors_running < total_processors:
+
+            processors_finished = self._txrx.get_core_state_count(
+                app_id, CPUState.FINISHED)
             if processors_running + processors_finished >= total_processors:
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                _, unsuccessful_cores = \
-                    self._break_down_of_failure_to_reach_state(
-                        all_core_subsets, CPUState.RUNNING)
-
-                # break_down the successful cores and unsuccessful cores into
-                # string reps
-                break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
+                unsuccessful_cores = self._get_cores_not_in_state(
+                    all_core_subsets, CPUState.RUNNING)
+                break_down = self._get_core_status_string(
+                    unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
-                    "Only {} of {} processors started with breakdown {}"
+                    "Only {} of {} processors started:{}"
                     .format(processors_running, total_processors, break_down))
 
     def wait_for_execution_to_complete(
@@ -497,97 +494,77 @@ class FrontEndCommonInterfaceFunctions(object):
         time.sleep(time_to_wait)
         processors_not_finished = total_processors
         while processors_not_finished != 0:
-            processors_not_finished = self._txrx.get_core_state_count(
-                app_id, CPUState.RUNNING)
             processors_rte = self._txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
-                _, unsuccessful_cores = \
-                    self._break_down_of_failure_to_reach_state(
-                        all_core_subsets, CPUState.RUNNING)
-
-                # break_down the successful cores and unsuccessful cores
-                # into string reps
-                break_down = self.turn_break_downs_into_string(
-                    all_core_subsets, unsuccessful_cores, CPUState.RUNNING)
+                rte_cores = self._get_cores_in_state(
+                    all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
+                break_down = self._get_core_status_string(rte_cores)
                 raise exceptions.ExecutableFailedToStopException(
-                    "{} cores have gone into a run time error state with "
-                    "breakdown {}.".format(processors_rte, break_down))
+                    "{} cores have gone into a run time error state:"
+                    "{}".format(processors_rte, break_down))
 
-            elif processors_not_finished != 0:
+            processors_not_finished = self._txrx.get_core_state_count(
+                app_id, CPUState.RUNNING)
+            if processors_not_finished > 0:
                 logger.info("Simulation still not finished or failed - "
                             "waiting a bit longer...")
                 time.sleep(0.5)
 
         processors_exited = self._txrx.get_core_state_count(
-            app_id, CPUState.FINSHED)
+            app_id, CPUState.FINISHED)
 
         if processors_exited < total_processors:
-            _, unsuccessful_cores = self._break_down_of_failure_to_reach_state(
+            unsuccessful_cores = self._get_cores_not_in_state(
                 all_core_subsets, CPUState.FINISHED)
-
-            # break_down the successful cores and unsuccessful cores into
-            #  string reps
-            break_down = self.turn_break_downs_into_string(
-                all_core_subsets, unsuccessful_cores, CPUState.FINISHED)
+            break_down = self._get_core_status_string(
+                unsuccessful_cores)
             raise exceptions.ExecutableFailedToStopException(
-                "{} of the processors failed to exit successfully with"
-                " breakdown {}.".format(
-                    total_processors - processors_exited, break_down))
-
+                "{} of {} processors failed to exit successfully:"
+                "{}".format(
+                    total_processors - processors_exited, total_processors,
+                    break_down))
         if self._reports_states.transciever_report:
             self._reload_script.close()
         if self._send_buffer_manager is not None:
             self._send_buffer_manager.stop()
         logger.info("Application has run to completion")
 
-    def _break_down_of_failure_to_reach_state(self, total_cores, state):
-        successful_cores = list()
-        unsuccessful_cores = dict()
-        core_infos = self._txrx.get_cpu_information(total_cores)
+    def _get_cores_in_state(self, all_core_subsets, state):
+        core_infos = self._txrx.get_cpu_information(all_core_subsets)
+        cores_in_state = OrderedDict()
         for core_info in core_infos:
             if core_info.state == state:
-                successful_cores.append((core_info.x, core_info.y,
-                                         core_info.p))
-            else:
-                unsuccessful_cores[(core_info.x, core_info.y, core_info.p)] = \
-                    core_info
-        return successful_cores, unsuccessful_cores
+                cores_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        return cores_in_state
+
+    def _get_cores_not_in_state(self, all_core_subsets, state):
+        core_infos = self._txrx.get_cpu_information(all_core_subsets)
+        cores_not_in_state = OrderedDict()
+        for core_info in core_infos:
+            if core_info.state != state:
+                cores_not_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        return cores_not_in_state
 
     @staticmethod
-    def turn_break_downs_into_string(total_cores, unsuccessful_cores, state):
-        """
-
-        :param total_cores:
-        :param unsuccessful_cores:
-        :param state:
-        :return:
-        """
-        break_down = os.linesep
-        for core_info in total_cores:
-            for processor_id in core_info.processor_ids:
-                core_coord = (core_info.x, core_info.y, processor_id)
-                if core_coord in unsuccessful_cores:
-                    real_state = unsuccessful_cores[(core_info.x, core_info.y,
-                                                     processor_id)]
-                    if real_state.state == CPUState.RUN_TIME_EXCEPTION:
-                        break_down += \
-                            ("{}:{}:{} failed to be in state {} and was"
-                             " in state {}:{} instead{}".format
-                             (core_info.x, core_info.y, processor_id,
-                              state, real_state.state.name,
-                              real_state.run_time_error.name, os.linesep))
-                    else:
-                        break_down += \
-                            ("{}:{}:{} failed to be in state {} and was"
-                             " in state {} instead{}".format
-                             (core_info.x, core_info.y, processor_id,
-                              state, real_state.state.name, os.linesep))
+    def _get_core_status_string(core_infos):
+        break_down = "\n"
+        for ((x, y, p), core_info) in core_infos.iteritems():
+            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
+                break_down += "    {}:{}:{} in state {}:{}\n".format(
+                    x, y, p, core_info.state.name,
+                    core_info.run_time_error.name)
+            else:
+                break_down += "    {}:{}:{} in state {}\n".format(
+                    x, y, p, core_info.state.name)
         return break_down
 
     def _load_application_data(
             self, placements, vertex_to_subvertex_mapper,
-            processor_to_app_data_base_address, hostname, app_data_folder):
+            processor_to_app_data_base_address, hostname, app_data_folder,
+            verify=False):
 
         # go through the placements and see if there's any application data to
         # load
@@ -617,7 +594,21 @@ class FrontEndCommonInterfaceFunctions(object):
                 self._txrx.write_memory(
                     placement.x, placement.y, start_address,
                     application_data_file_reader, memory_written)
-
+                application_data_file_reader.close()
+                
+                if verify:
+                    application_data_file_reader = SpinnmanFileDataReader(
+                        file_path_for_application_data)
+                    all_data = application_data_file_reader.readall()
+                    read_data = self._txrx.read_memory(
+                        placement.x, placement.y, start_address,
+                        memory_written)
+                    if read_data != all_data:
+                        raise Exception("Miswrite of {}, {}, {}, {}".format(
+                            placement.x, placement.y, placement.p,
+                            start_address))
+                    application_data_file_reader.close()
+                
                 # update user 0 so that it points to the start of the
                 # applications data region on sdram
                 logger.debug("writing user 0 address for vertex {}"
