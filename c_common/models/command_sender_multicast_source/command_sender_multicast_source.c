@@ -7,6 +7,7 @@
 // Globals
 static uint32_t time;
 static uint32_t simulation_ticks;
+static uint32_t infinite_run;
 static uint32_t *schedule;
 static uint32_t schedule_size;
 static uint32_t next_pos;
@@ -17,7 +18,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    if ((next_pos >= schedule_size) && (simulation_ticks != UINT32_MAX)
+    if ((next_pos >= schedule_size) && (infinite_run != TRUE)
             && (time >= simulation_ticks)) {
         log_info("Simulation complete.\n");
         spin1_exit(0);
@@ -35,11 +36,12 @@ void timer_callback(uint unused0, uint unused1) {
             //check for delays and repeats
             uint32_t delay_and_repeat_data = schedule[++next_pos];
             if (delay_and_repeat_data != 0) {
-                uint16_t repeat = delay_and_repeat_data >> 8;
-                uint16_t delay = delay_and_repeat_data & 0x0000ffff;
-                log_debug("Sending %u, %u at time %u with %u repeats and "
+                uint32_t repeat = delay_and_repeat_data >> 16;
+                uint32_t delay = delay_and_repeat_data & 0x0000ffff;
+                log_debug("Sending %08x, %08x at time %u with %u repeats and "
                           "%u delay ", key, payload, time, repeat, delay);
-                for (uint16_t repeat_count = 0; repeat_count < repeat;
+
+                for (uint32_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
 
@@ -49,6 +51,7 @@ void timer_callback(uint unused0, uint unused1) {
                     }
                 }
             } else {
+                log_debug("Sending %08x, %08x at time %u", key, payload, time);
 
                 //if no repeats, then just sned the message
                 spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
@@ -60,14 +63,14 @@ void timer_callback(uint unused0, uint unused1) {
                   without_payload_count, time);
         for (uint32_t i = 0; i < without_payload_count; i++) {
             uint32_t key = schedule[++next_pos];
-            log_debug("Sending %u", key);
+            log_debug("Sending %08x", key);
 
             //check for delays and repeats
             uint32_t delay_and_repeat_data = schedule[++next_pos];
             if (delay_and_repeat_data != 0) {
-                uint16_t repeat = delay_and_repeat_data >> 8;
-                uint16_t delay = delay_and_repeat_data & 0x0000ffff;
-                for (uint16_t repeat_count = 0; repeat_count < repeat;
+                uint32_t repeat = delay_and_repeat_data >> 16;
+                uint32_t delay = delay_and_repeat_data & 0x0000ffff;
+                for (uint32_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
                     spin1_send_mc_packet(key, 0, NO_PAYLOAD);
 
@@ -77,6 +80,7 @@ void timer_callback(uint unused0, uint unused1) {
                     }
                 }
             } else {
+                log_debug("Sending %08x at time %u", key, time);
 
                 //if no repeats, then just sned the message
                 spin1_send_mc_packet(key, 0, NO_PAYLOAD);
@@ -121,9 +125,9 @@ bool initialize(uint32_t *timer_period) {
     }
 
     // Get the timing details
-    if (!simulation_read_header(
+    if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            timer_period, &simulation_ticks)) {
+            timer_period, &simulation_ticks, &infinte_run)) {
         return false;
     }
 

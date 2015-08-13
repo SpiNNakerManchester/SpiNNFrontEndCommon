@@ -19,6 +19,8 @@ from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 
 # spinn front end imports
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_provenance_data import AbstractProvidesProvenanceData
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import data_spec_utilities
 from spinn_front_end_common.utilities import simulation_utilities
@@ -30,23 +32,26 @@ from spinn_front_end_common.abstract_models.abstract_executable \
 from spinn_front_end_common.interface.has_n_machine_timesteps \
     import HasNMachineTimesteps
 
-# data spec imports
-from data_specification.data_specification_generator import \
-    DataSpecificationGenerator
-
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
+# dataspec imports
+from data_specification.data_specification_generator import \
+    DataSpecificationGenerator
+from data_specification import utility_calls as dsg_utility_calls
+
 # general imports
 from enum import Enum
+import struct
 
 
 class LivePacketGather(AbstractPartitionableVertex,
                        AbstractDataSpecablePartitionedVertex,
                        AbstractExecutable,
                        PartitionedVertex,
-                       HasNMachineTimesteps):
+                       HasNMachineTimesteps,
+                       AbstractProvidesProvenanceData):
     """
     LivePacketGather: a model which stores all the events it recieves during an
     timer tick and then compresses them into ethernet pakcets and sends them
@@ -56,8 +61,10 @@ class LivePacketGather(AbstractPartitionableVertex,
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
         names=[('HEADER', 0),
-               ('CONFIG', 1)])
+               ('CONFIG', 1),
+               ('PROVANENCE', 2)])
     _CONFIG_SIZE = 44
+    _PROVANENCE_REGION_SIZE = 8
 
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
@@ -103,6 +110,7 @@ class LivePacketGather(AbstractPartitionableVertex,
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
                 sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))))
         HasNMachineTimesteps.__init__(self)
+        AbstractProvidesProvenanceData.__init__(self)
 
         # Try to place this near the ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
@@ -181,6 +189,9 @@ class LivePacketGather(AbstractPartitionableVertex,
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')
+        spec.reserve_memory_region(
+            region=self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value,
+            size=self._PROVANENCE_REGION_SIZE, label='provanence')
 
     def _write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
@@ -248,8 +259,67 @@ class LivePacketGather(AbstractPartitionableVertex,
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
 
+    def write_provenance_data_in_xml(self, file_path, transceiver,
+                                     placement=None):
+        """
+        extracts provanence data from the sdram of the core and stores it in a
+        xml file for end user digestion
+        :param file_path: the file path to the xml document
+        :param transceiver: the spinnman interface object
+        :param placement: the placement object for this subvertex
+        :return: None
+        """
+        if placement is None:
+            raise exceptions.ConfigurationException(
+                "To acquire provanence data from the live packet gatherer,"
+                "you must provide a placement object that points to where the "
+                "live packet gatherer resides on the spinnaker machine")
+        # Get the App Data for the core
+        app_data_base_address = transceiver.get_cpu_information_from_core(
+            placement.x, placement.y, placement.p).user[0]
+        # Get the provanence region base address
+        provanence_data_region_base_address_offset = \
+            dsg_utility_calls.get_region_base_address_offset(
+                app_data_base_address,
+                self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value)
+        provanence_data_region_base_address_buf = \
+            transceiver.read_memory(
+                placement.x, placement.y,
+                provanence_data_region_base_address_offset, 4)
+        provanence_data_region_base_address = \
+            struct.unpack("I", provanence_data_region_base_address_buf)[0]
+        provanence_data_region_base_address += app_data_base_address
+
+        # read in the provanence data
+        provanence_data_region_contents_buff = \
+            transceiver.read_memory(
+                placement.x, placement.y, provanence_data_region_base_address,
+                self._PROVANENCE_REGION_SIZE)
+        provanence_data_region_contents = \
+            struct.unpack("<II", provanence_data_region_contents_buff)
+
+        # create provanence data xml form
+        from lxml import etree
+        root = etree.Element("Live_packet_gatherer_located_at_{}_{}_{}"
+                             .format(placement.x, placement.y, placement.p))
+        none_payload_provanence_data = \
+            etree.SubElement(root, "lost_packets_without_payload")
+        payload_provanence_data = \
+            etree.SubElement(root, "lost_packets_with_payload")
+        none_payload_provanence_data.text = \
+            str(provanence_data_region_contents[0])
+        payload_provanence_data.text = \
+            str(provanence_data_region_contents[1])
+
+        # write xml form into file provided
+        writer = open(file_path, "w")
+        writer.write(etree.tostring(root, pretty_print=True))
+        writer.flush()
+        writer.close()
+
     def get_binary_file_name(self):
         """
+        :param spec: the dsg spec object
         """
         return 'live_packet_gather.aplx'
 

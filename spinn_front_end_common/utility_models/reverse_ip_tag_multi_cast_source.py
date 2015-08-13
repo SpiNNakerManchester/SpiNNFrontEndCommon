@@ -73,7 +73,7 @@ class ReverseIpTagMultiCastSource(
                  board_address=None, check_key=True, virtual_key=None,
                  prefix=None, prefix_type=None, key_left_shift=0,
                  buffer_space=0, notify_buffer_space=False,
-                 space_before_notification=0, notification_tag=None,
+                 space_before_notification=640, notification_tag=None,
                  notification_ip_address=None, notification_port=None,
                  notification_strip_sdp=True, constraints=None):
         """

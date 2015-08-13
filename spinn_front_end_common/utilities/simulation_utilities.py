@@ -34,7 +34,9 @@ def simulation_write_header(
     spec.switch_write_focus(region=region_id)
     spec.write_value(data=helpful_functions.get_hash(application_name))
     spec.write_value(data=machine_time_step * timescale_factor)
-    if no_machine_time_steps is not None:
-        spec.write_value(data=no_machine_time_steps)
+    if no_machine_time_steps is None:
+        spec.write_value(data=1)
+        spec.write_value(data=0)
     else:
-        spec.write_value(data=0xFFFFFFFF)
+        spec.write_value(data=0)
+        spec.write_value(data=no_machine_time_steps)
