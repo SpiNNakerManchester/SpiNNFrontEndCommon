@@ -41,6 +41,8 @@
 // The maximum sequence number
 #define MAX_SEQUENCE_NO 0xFF
 
+#define TICKS_BETWEEN_REQUESTS 100
+
 #pragma pack(1)
 
 typedef uint16_t* eieio_msg_t;
@@ -87,11 +89,11 @@ static bool msg_from_sdram_in_use;
 static int msg_from_sdram_length;
 static uint32_t next_buffer_time;
 static uint8_t pkt_last_sequence_seen;
-static bool send_ack_last_state;
 static bool send_packet_reqs;
 static bool last_buffer_operation;
 static uint8_t return_tag_id;
 static uint32_t last_space;
+static uint32_t last_request_tick;
 
 
 static inline uint16_t calculate_eieio_packet_command_size(
@@ -617,10 +619,7 @@ static inline void eieio_command_parse_sequenced_data(
 
     log_debug("Received packet sequence number: %d", sequence_value);
 
-    if (sequence_value != next_expected_sequence_no) {
-        send_ack_last_state = true;
-    } else {
-
+    if (sequence_value == next_expected_sequence_no) {
         // parse_event_pkt returns false in case there is an error and the
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");
@@ -629,7 +628,9 @@ static inline void eieio_command_parse_sequenced_data(
         log_debug("add_eieio_packet_to_sdram return value: %d", ret_value);
 
         if (ret_value) {
-            pkt_last_sequence_seen = next_expected_sequence_no;
+            pkt_last_sequence_seen = sequence_value;
+            log_debug("Updating last sequence seen to %d",
+                pkt_last_sequence_seen);
         } else {
             log_debug("unable to buffer sequenced data packet.");
             signal_software_error(eieio_msg_ptr, length);
@@ -765,10 +766,10 @@ void fetch_and_process_packet() {
 
 void send_buffer_request_pkt(void) {
     uint32_t space = get_sdram_buffer_space_available();
-    if (send_ack_last_state ||
-            (space >= space_before_data_request && space != last_space)) {
-        log_debug("sending request packet with space: %d and seq_no: %d",
-                  space, pkt_last_sequence_seen);
+    if ((space >= space_before_data_request) &&
+            ((space != last_space) || (space == buffer_region_size))) {
+        log_debug("sending request packet with space: %d and seq_no: %d at %u",
+                  space, pkt_last_sequence_seen, time);
 
         last_space = space;
         req_ptr->sequence |= pkt_last_sequence_seen;
@@ -776,7 +777,6 @@ void send_buffer_request_pkt(void) {
         spin1_send_sdp_msg(&req, 1);
         req_ptr->sequence &= 0;
         req_ptr->space_available = 0;
-        send_ack_last_state = false;
     }
 }
 
@@ -797,8 +797,10 @@ void timer_callback(uint unused0, uint unused1) {
         return;
     }
 
-    if (send_packet_reqs) {
+    if (send_packet_reqs &&
+            ((time - last_request_tick) >= TICKS_BETWEEN_REQUESTS)) {
         send_buffer_request_pkt();
+        last_request_tick = time;
     }
 
     if (!msg_from_sdram_in_use) {
@@ -861,8 +863,8 @@ bool read_parameters(address_t region_address) {
     msg_from_sdram_in_use = false;
     next_buffer_time = 0;
     pkt_last_sequence_seen = MAX_SEQUENCE_NO;
-    send_ack_last_state = false;
     send_packet_reqs = true;
+    last_request_tick = 0;
 
     if (buffer_region_size != 0) {
         last_buffer_operation = BUFFER_OPERATION_WRITE;
@@ -947,7 +949,7 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(SDP_PACKET_RX, sdp_packet_callback, -1);
+    spin1_callback_on(SDP_PACKET_RX, sdp_packet_callback, 1);
     spin1_callback_on(TIMER_TICK, timer_callback, 2);
 
     log_info("Starting");

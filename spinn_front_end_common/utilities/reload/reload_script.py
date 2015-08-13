@@ -25,7 +25,6 @@ class ReloadScript(object):
         self._wait_on_confiramtion = None
         self._runtime = None
         self._time_scale_factor = None
-        self._buffer_vertex_file_names = dict()
         self._auto_detect_bmp = auto_detect_bmp
         if not self._binary_directory.endswith(os.sep):
             self._binary_directory += os.sep
@@ -202,36 +201,35 @@ class ReloadScript(object):
                     reverse_ip_tag.destination_y, reverse_ip_tag.destination_p,
                     reverse_ip_tag.sdp_port))
 
-    def get_buffered_vertex_filename(self, vertex):
-        """ Get the name of a file for the buffers of a vertex
-        """
-        if vertex not in self._buffer_vertex_file_names:
-            self._buffer_vertex_file_names[vertex] = re.sub(
-                "[\"':]", "_", vertex.label)
-        return self._buffer_vertex_file_names[vertex]
-
-    def add_buffered_vertex(self, vertex, iptag, placement,
-                            application_data_folder):
+    def add_buffered_vertex(self, vertex, iptag, placement):
         """
         stores a buffered vertex for loading purposes.
         :param vertex: the buffered vertex to be used in reload purposes
-        :param application_data_folder: the file path to which the send buffers
-        are stored
         :param iptag: the iptag being used by this vertex
         :param placement: the placement object for this vertex
-        :return:
+        :return: A dictionary of region -> filename for the vertex
         """
+        vertex_files = dict()
+        buffer_dict = "{"
+        for region in vertex.get_regions():
+            buffer_filename = "{}_{}".format(
+                re.sub("[\"':]", "_", vertex.label), region)
+            vertex_files[region] = buffer_filename
+            buffer_dict += "{}:\"{}\", ".format(region, buffer_filename)
+        buffer_dict += "}"
         self._println(
-            "vertex = ReloadBufferedVertex(\"{}\")".format(
-                self.get_buffered_vertex_filename(vertex)))
+            "vertex = ReloadBufferedVertex(\"{}\", {})".format(
+                vertex.label, buffer_dict))
         self._println(
-            "buffered_placements.add_placement(Placement({}, {}, {}, vertex))"
-            .format(placement.x, placement.y, placement.p))
+            "buffered_placements.add_placement("
+            "Placement(vertex, {}, {}, {}))".format(
+                placement.x, placement.y, placement.p))
         self._println(
             "buffered_tags.add_ip_tag(IPTag(\"{}\", {}, \"{}\", {}, {}), "
             "vertex) ".format(
-                iptag.board_address, iptag.tag, iptag.ip_address, iptag.port,
-                iptag.strip_sdp))
+                iptag.board_address, iptag.tag, iptag.ip_address,
+                iptag.port, iptag.strip_sdp))
+        return vertex_files
 
     def close(self):
         """

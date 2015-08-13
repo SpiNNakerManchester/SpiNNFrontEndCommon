@@ -100,6 +100,7 @@ class BufferManager(object):
         self._report_states = report_states
         self._application_folder_path = application_folder_path
         self._reload_interface = reload_interface
+        self._reload_buffer_file = dict()
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -113,6 +114,8 @@ class BufferManager(object):
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock = threading.Lock()
 
+        self._finished = False
+
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
 
@@ -121,32 +124,33 @@ class BufferManager(object):
                     :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
         with self._thread_lock:
-            if isinstance(packet, SpinnakerRequestBuffers):
-                vertex = self._placements.get_subvertex_on_processor(
-                    packet.x, packet.y, packet.p)
+            if not self._finished:
+                if isinstance(packet, SpinnakerRequestBuffers):
+                    vertex = self._placements.get_subvertex_on_processor(
+                        packet.x, packet.y, packet.p)
 
-                if vertex in self._sender_vertices:
-                    logger.debug("received packet sequence: {1:d}, "
-                                 "space available: {0:d}".format(
-                                     packet.space_available,
-                                     packet.sequence_no))
+                    if vertex in self._sender_vertices:
+                        logger.debug("received packet sequence: {1:d}, "
+                                     "space available: {0:d}".format(
+                                         packet.space_available,
+                                         packet.sequence_no))
 
-                    # noinspection PyBroadException
-                    try:
-                        self._send_messages(
-                            packet.space_available, vertex, packet.region_id,
-                            packet.sequence_no)
-                    except Exception:
-                        traceback.print_exc()
-            elif isinstance(packet, EIEIOCommandMessage):
-                raise SpinnmanInvalidPacketException(
-                    str(packet.__class__),
-                    "The command packet is invalid for buffer management: "
-                    "command id {0:d}".format(packet.eieio_header.command))
-            else:
-                raise SpinnmanInvalidPacketException(
-                    packet.__class__,
-                    "The command packet is invalid for buffer management")
+                        # noinspection PyBroadException
+                        try:
+                            self._send_messages(
+                                packet.space_available, vertex,
+                                packet.region_id, packet.sequence_no)
+                        except Exception:
+                            traceback.print_exc()
+                elif isinstance(packet, EIEIOCommandMessage):
+                    raise SpinnmanInvalidPacketException(
+                        str(packet.__class__),
+                        "The command packet is invalid for buffer management: "
+                        "command id {0:d}".format(packet.eieio_header.command))
+                else:
+                    raise SpinnmanInvalidPacketException(
+                        packet.__class__,
+                        "The command packet is invalid for buffer management")
 
     def add_sender_vertex(self, vertex):
         """ Add a partitioned vertex into the managed list for vertices
@@ -166,20 +170,25 @@ class BufferManager(object):
 
         # if reload script is set up, sotre the buffers for future usage
         if self._report_states.transciever_report:
-            self._reload_interface.add_buffered_vertex(
+            vertex_files = self._reload_interface.add_buffered_vertex(
                 vertex, tag,
-                self._placements.get_placement_of_subvertex(vertex),
-                self._application_folder_path)
+                self._placements.get_placement_of_subvertex(vertex))
+            for (region, filename) in vertex_files.iteritems():
+                file_path = os.path.join(
+                    self._application_folder_path, filename)
+            self._reload_buffer_file[(vertex, region)] = open(file_path, "w")
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
         """
-        total_bytes = 0
+        total_data = 0
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                total_bytes += vertex.get_region_buffer_size(region)
-        progress_bar = ProgressBar(total_bytes,
-                                   "on loading buffer dependant vertices")
+                total_data += vertex.get_region_buffer_size(region)
+
+        progress_bar = ProgressBar(
+            total_data, "on loading buffer dependent vertices ({} bytes)"
+                        .format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 self._send_initial_messages(vertex, region, progress_bar)
@@ -212,8 +221,6 @@ class BufferManager(object):
         if message.size + _N_BYTES_PER_KEY > size:
             return None
 
-        logger.debug("Adding keys for timestamp {}".format(next_timestamp))
-
         # Add keys up to the limit
         bytes_to_go = size - message.size
         while (bytes_to_go >= _N_BYTES_PER_KEY and
@@ -221,17 +228,11 @@ class BufferManager(object):
 
             key = vertex.get_next_key(region)
             message.add_key(key)
-            logger.debug("    Adding key {} ({})".format(key, hex(key)))
             bytes_to_go -= _N_BYTES_PER_KEY
 
-            # if reload report set to true, sotre to buffered region
             if self._report_states.transciever_report:
-                file_path = os.path.join(
-                    self._application_folder_path,
-                    self._reload_interface.get_buffered_vertex_filename(
-                        vertex))
-                out = open(file_path, "w")
-                out.write("{}:{}\n".format(next_timestamp, key))
+                self._reload_buffer_file[(vertex, region)].write(
+                    "{}:{}\n".format(next_timestamp, key))
 
         return message
 
@@ -288,10 +289,6 @@ class BufferManager(object):
 
                 # Write the message to the memory
                 data = next_message.bytestring
-                logger.debug("Writing initial buffer of {} bytes to {} on"
-                             " {}, {}, {}".format(
-                                 len(data), hex(region_base_address),
-                                 placement.x, placement.y, placement.p))
                 all_data += data
                 sent_message = True
 
@@ -324,9 +321,6 @@ class BufferManager(object):
             n_packets = bytes_to_go / padding_packet.get_min_packet_length()
             data = padding_packet.bytestring
             data *= n_packets
-            logger.debug("Writing padding of length {} to {} on {}, {}, {}"
-                         .format(len(data), hex(region_base_address),
-                                 placement.x, placement.y, placement.p))
             all_data += data
 
         # Do the writing all at once for efficiency
@@ -363,8 +357,10 @@ class BufferManager(object):
                 bytes_to_go,
                 constants.UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
-            logger.debug("Bytes to go {}, space available {}".format(
-                bytes_to_go, space_available))
+            logger.debug(
+                "Bytes to go {}, space available {}, timestamp {}"
+                .format(bytes_to_go, space_available,
+                        vertex.get_next_timestamp(region)))
             next_message = self._create_message_to_send(
                 space_available, vertex, region)
             if next_message is None:
@@ -379,6 +375,8 @@ class BufferManager(object):
                 not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             sent_messages.send_stop_message()
+            if self._report_states.transciever_report:
+                self._reload_buffer_file[(vertex, region)].close()
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
@@ -429,3 +427,10 @@ class BufferManager(object):
             destination_port=1)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
+
+    def stop(self):
+        """ Indicates that the simulation has finished, so no further\
+            outstanding requests need to be processed
+        """
+        with self._thread_lock:
+            self._finished = True
