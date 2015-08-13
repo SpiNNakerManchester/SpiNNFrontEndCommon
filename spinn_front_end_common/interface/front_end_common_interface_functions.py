@@ -86,7 +86,7 @@ class FrontEndCommonInterfaceFunctions(object):
     def setup_interfaces(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height,
-            is_virtual, virtual_has_wrap_arounds):
+            is_virtual, virtual_has_wrap_arounds, auto_detect_bmp=True):
         """
         Set up the interfaces for communicating with the SpiNNaker board
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -104,6 +104,8 @@ class FrontEndCommonInterfaceFunctions(object):
                 True, the width and height are used as the machine dimensions
         :param virtual_has_wrap_arounds: True if the machine is virtual and\
                 should be created with wrap_arounds
+        :param auto_detect_bmp: boolean which determines if the bmp should
+               be automatically determined
         :return: None
         """
 
@@ -118,7 +120,8 @@ class FrontEndCommonInterfaceFunctions(object):
             self._txrx = create_transceiver_from_hostname(
                 hostname=hostname, bmp_connection_data=bmp_connection_data,
                 version=board_version, ignore_chips=ignored_chips,
-                ignore_cores=ignored_cores, number_of_boards=number_of_boards)
+                ignore_cores=ignored_cores, number_of_boards=number_of_boards,
+                auto_detect_bmp=auto_detect_bmp)
 
             # update number of boards from machine
             if number_of_boards is None:
@@ -137,7 +140,7 @@ class FrontEndCommonInterfaceFunctions(object):
                 self._reload_script = ReloadScript(
                     self._app_data_folder, hostname, board_version,
                     bmp_details, downed_chips, downed_cores, number_of_boards,
-                    height, width)
+                    height, width, auto_detect_bmp)
         else:
             self._machine = VirtualMachine(
                 width=width, height=height,
