@@ -383,15 +383,15 @@ class FrontEndCommonInterfaceFunctions(object):
                     report_writer)
 
                 # update memory calc and run data spec executor
-                bytes_used_by_spec = None
-                bytes_written_by_spec = None
+                bytes_used_by_spec = 0
+                bytes_written_by_spec = 0
                 try:
                     bytes_used_by_spec, bytes_written_by_spec = \
                         host_based_data_spec_executor.execute()
-                except DataSpecificationException:
+                except DataSpecificationException as e:
                     logger.error("Error executing data specification for {}"
                                  .format(associated_vertex))
-                    traceback.print_exc()
+                    raise e
 
                 # update base address mapper
                 processor_mapping_key = (placement.x, placement.y, placement.p)
@@ -598,7 +598,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     placement.x, placement.y, start_address,
                     application_data_file_reader, memory_written)
                 application_data_file_reader.close()
-                
+
                 if verify:
                     application_data_file_reader = SpinnmanFileDataReader(
                         file_path_for_application_data)
@@ -611,7 +611,7 @@ class FrontEndCommonInterfaceFunctions(object):
                             placement.x, placement.y, placement.p,
                             start_address))
                     application_data_file_reader.close()
-                
+
                 # update user 0 so that it points to the start of the
                 # applications data region on sdram
                 logger.debug("writing user 0 address for vertex {}"
