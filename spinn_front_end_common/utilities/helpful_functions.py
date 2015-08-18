@@ -22,6 +22,6 @@ def read_data(x, y, address, length, data_format, transceiver):
     """
 
     # turn byte array into str for unpack to work
-    data = transceiver.read_memory(x, y, address, length)
+    data = buffer(transceiver.read_memory(x, y, address, length))
     result = struct.unpack_from(data_format, data)[0]
     return result
