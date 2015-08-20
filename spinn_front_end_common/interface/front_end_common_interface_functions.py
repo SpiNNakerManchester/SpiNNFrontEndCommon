@@ -42,6 +42,7 @@ import time
 import os
 import logging
 import traceback
+import struct
 
 
 # data spec sender imports
@@ -253,7 +254,7 @@ class FrontEndCommonInterfaceFunctions(object):
             self._chip_based_data_specification_execution(
                 hostname, placements, graph_mapper, write_text_specs,
                 runtime_application_data_folder)
-
+        raw_input()
 
     def _chip_based_data_specification_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
@@ -263,19 +264,18 @@ class FrontEndCommonInterfaceFunctions(object):
         for placement in placements.placements:
             core_subset.add_processor(placement.x, placement.y, placement.p)
 
-        executable_targets = {os.path.dirname(data_spec_sender.__file__) 
+        executable_targets = {os.path.dirname(data_spec_sender.__file__)
                             + '/data_specification_executor.aplx': core_subset}
 
-        self._load_executable_images(executable_targets, 31, 
+        self._load_executable_images(executable_targets, 31,
                               app_data_folder=self._app_data_runtime_folder)
 
-        transceiver = create_transceiver_from_hostname(hostname,         
+        transceiver = create_transceiver_from_hostname(hostname,
                                             config.getint("Machine", "version"))
 
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
-                                   "on executing data specifications on the "
-                                   "chip")
+                                   "on executing data specifications on chip")
 
         for placement in placements.placements:
             associated_vertex = graph_mapper.get_vertex_from_subvertex(
@@ -289,12 +289,62 @@ class FrontEndCommonInterfaceFunctions(object):
                                 placement.x, placement.y, placement.p, hostname,
                                 application_data_runtime_folder)
 
-                fileReader = FileDataReader(data_spec_file_path)
+                data_spec_file_size = os.path.getsize(data_spec_file_path)
 
-                sender     = SpecSender(transceiver, placement)
+                header   = SDPHeader(flags = SDPFlag.REPLY_NOT_EXPECTED,
+                                     destination_cpu    = placement.p,
+                                     destination_chip_x = placement.x,
+                                     destination_chip_y = placement.y,
+                                     destination_port   = 1)
 
-                dataSpecSender = DataSpecificationSender(fileReader, sender)
-                dataSpecSender.sendSpec()
+                # Wait for the core to get into the READY_TO_RECEIVE state.
+                while self.transceiver. \
+                       get_cpu_information_from_core(placement.x,
+                                  placement.y, placement.p).user[1] \
+                                                 != 0x1:
+                    time.sleep(0.01)
+
+                # Send a packet containing the length of the data (the length of the
+                # internal buffer).
+                msg_data_len = struct.pack("<I", data_spec_file_size)
+
+                self.transceiver.send_sdp_message(SDPMessage(header,
+                                                             msg_data_len))
+
+                # Wait for the core to get into the WAITING_FOR_DATA state.
+                while self.transceiver. \
+                       get_cpu_information_from_core(placement.x, placement.y,
+                                                     placement.p).user[1] \
+                                                     != 0x2:
+                    time.sleep(0.01)
+
+
+                # Write data at the address pointed at by user2.
+                destination_address = self.transceiver. \
+                       get_cpu_information_from_core(placement.x, placement.y,
+                                                     placement.p).user[2]
+
+                application_data_file_reader = SpinnmanFileDataReader(
+                    data_spec_file_path)
+                logger.debug("writing application data for vertex {}"
+                             .format(associated_vertex.label))
+                self._txrx.write_memory(
+                    placement.x, placement.y, destination_address,
+                    application_data_file_reader, data_spec_file_size)
+
+
+                # Send a packet that triggers the execution of the data specification.
+                self.transceiver.send_sdp_message(SDPMessage(header,
+                                                          struct.pack("<I", 0)))
+
+
+
+                #fileReader = FileDataReader(data_spec_file_path)
+
+                #sender     = SpecSender(transceiver, placement)
+
+                #dataSpecSender = DataSpecificationSender(fileReader, sender)
+                #dataSpecSender.sendSpec()
                 progress_bar.update()
         progress_bar.end()
 
@@ -565,6 +615,7 @@ class FrontEndCommonInterfaceFunctions(object):
                              (core_info.x, core_info.y, processor_id,
                               state, real_state.state.name, os.linesep))
         return break_down
+
 
     def _load_application_data(
             self, placements, vertex_to_subvertex_mapper,
