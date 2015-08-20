@@ -17,9 +17,9 @@ import traceback
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonDataBaseInterface(object):
+class DatabaseWriter(object):
     """
-    FrontEndCommonDataBaseInterface: the interface for the database system for
+    DatabaseWriter: the interface for the database system for
     main front ends, any speical tables needed from a front end should be done
     by sub classes of this interface.
     """
