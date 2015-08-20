@@ -23,7 +23,7 @@ class DatabaseReader(object):
         """
         return self._cursor
 
-    def get_key_to_neuron_id_mapping(self, label):
+    def get_event_to_atom_id_mapping(self, label):
         """ Get a mapping of spike key to neuron id for a given population
 
         :param label: The label of the population
@@ -31,14 +31,14 @@ class DatabaseReader(object):
         :return: dictionary of neuron ids indexed by spike key
         :rtype: dict
         """
-        key_to_neruon_id = dict()
+        event_id_to_atom_id_mapping = dict()
         for row in self._cursor.execute(
-            "SELECT n.neuron_id as n_id, n.key as key"
-            " FROM key_to_neuron_mapping as n"
+            "SELECT n.atom_id as a_id, n.event_id as event"
+            " FROM event_to_atom_mapping as n"
             " JOIN Partitionable_vertices as p ON n.vertex_id = p.vertex_id"
                 " WHERE p.vertex_label=\"{}\"".format(label)):
-            key_to_neruon_id[row["key"]] = row["n_id"]
-        return key_to_neruon_id
+            event_id_to_atom_id_mapping[row["event"]] = row["a_id"]
+        return event_id_to_atom_id_mapping
 
     def get_neuron_id_to_key_mapping(self, label):
         """ Get a mapping of neuron id to spike key for a given population
@@ -47,14 +47,14 @@ class DatabaseReader(object):
         :type label: str
         :return: dictionary of spike keys indexed by neuron id
         """
-        neuron_id_to_key = dict()
+        atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
-            "SELECT n.neuron_id as n_id, n.key as key"
-            " FROM key_to_neuron_mapping as n"
+            "SELECT n.atom_id as a_id, n.event_id as event"
+            " FROM event_to_atom_mapping as n"
             " JOIN Partitionable_vertices as p ON n.vertex_id = p.vertex_id"
                 " WHERE p.vertex_label=\"{}\"".format(label)):
-            neuron_id_to_key[row["n_id"]] = row["key"]
-        return neuron_id_to_key
+            atom_to_event_id_mapping[row["a_id"]] = row["event"]
+        return atom_to_event_id_mapping
 
     def get_live_output_details(self, label):
         """ Get the ip address, port and whether the sdp headers are to be\
@@ -101,12 +101,12 @@ class DatabaseReader(object):
         row = self._cursor.fetchone()
         return row["board_address"], row["port"]
 
-    def get_n_neurons(self, label):
-        """ Get the number of neurons in a given population
+    def get_n_atoms(self, label):
+        """ Get the number of atoms in a given vertex
 
-        :param label: The label of the population
+        :param label: The label of the vertex
         :type label: str
-        :return: The number of neurons
+        :return: The number of atoms
         :rtype: int
         """
         self._cursor.execute(

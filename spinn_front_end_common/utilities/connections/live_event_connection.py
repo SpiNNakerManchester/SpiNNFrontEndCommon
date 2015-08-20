@@ -122,7 +122,7 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
                                     " SDP headers are supported")
 
                 key_to_neuron_id = \
-                    database_reader.get_key_to_neuron_id_mapping(receive_label)
+                    database_reader.get_event_to_atom_id_mapping(receive_label)
                 for (key, neuron_id) in key_to_neuron_id.iteritems():
                     self._key_to_neuron_id_and_label[key] = (neuron_id,
                                                              receive_label)

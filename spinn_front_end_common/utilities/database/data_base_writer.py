@@ -519,6 +519,70 @@ class DatabaseWriter(object):
         except Exception:
             traceback.print_exc()
 
+    def create_atom_to_event_id_mapping(
+            self, partitionable_graph, partitioned_graph, routing_infos,
+            graph_mapper):
+        """
+
+        :param partitionable_graph:
+        :param partitioned_graph:
+        :param routing_infos:
+        :param graph_mapper:
+        :return:
+        """
+        self._thread_pool.apply_async(
+            self._create_atom_to_event_id_mapping,
+            args=[partitionable_graph, partitioned_graph, routing_infos,
+                  graph_mapper])
+
+    def _create_atom_to_event_id_mapping(
+            self, partitionable_graph, partitioned_graph, routing_infos,
+            graph_mapper):
+        # noinspection PyBroadException
+        try:
+            import sqlite3 as sqlite
+            self._lock_condition.acquire()
+            connection = sqlite.connect(self._database_path)
+            cur = connection.cursor()
+            # create table
+            self._done_mapping = True
+            cur.execute(
+                "CREATE TABLE event_to_atom_mapping("
+                "vertex_id INTEGER, atom_id INTEGER, "
+                "event_id INTEGER PRIMARY KEY, "
+                "FOREIGN KEY (vertex_id)"
+                " REFERENCES Partitioned_vertices(vertex_id))")
+
+            # insert into table
+            vertices = list(partitionable_graph.vertices)
+            for partitioned_vertex in partitioned_graph.subvertices:
+                out_going_edges = (partitioned_graph
+                                   .outgoing_subedges_from_subvertex(
+                                       partitioned_vertex))
+                if len(out_going_edges) > 0:
+                    routing_info = (routing_infos
+                                    .get_subedge_information_from_subedge(
+                                        out_going_edges[0]))
+                    vertex = graph_mapper.get_vertex_from_subvertex(
+                        partitioned_vertex)
+                    vertex_id = vertices.index(vertex) + 1
+                    vertex_slice = graph_mapper.get_subvertex_slice(
+                        partitioned_vertex)
+                    event_ids = routing_info.get_keys(vertex_slice.n_atoms)
+                    low_atom_id = vertex_slice.lo_atom
+                    for key in event_ids:
+                        cur.execute(
+                            "INSERT INTO event_to_atom_mapping("
+                            "vertex_id, event_id, atom_id) "
+                            "VALUES ({}, {}, {})"
+                            .format(vertex_id, key, low_atom_id))
+                        low_atom_id += 1
+            connection.commit()
+            connection.close()
+            self._lock_condition.release()
+        except Exception:
+            traceback.print_exc()
+
     def stop(self):
         """
         ends the nofitication protocol
