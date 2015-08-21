@@ -26,7 +26,7 @@ class ReloadBufferedVertex(
     A class to work for buffered stuff for relaod purposes
     """
 
-    def __init__(self, label, region_files_dict):
+    def __init__(self, label, region_files_tuples):
         """
         :param label: The label of the vertex
         :param region_files_dict: A dictionary of region id -> file name
@@ -34,22 +34,14 @@ class ReloadBufferedVertex(
         self._label = label
 
         self._send_buffers = dict()
-        for (region_id, filename) in region_files_dict.iteritems():
-            send_buffer = BufferedSendingRegion()
+        for (region_id, filename, max_size_of_buffer) in region_files_tuples:
+            send_buffer = BufferedSendingRegion(max_size_of_buffer)
             reader = open(filename, "r")
             line = reader.readline()
             while line != "":
                 bits = line.split(":")
                 send_buffer.add_key(int(bits[0]), int(bits[1]))
                 line = reader.readline()
-            total_size = 0
-            for timestamp in send_buffer.timestamps:
-                n_keys = send_buffer.get_n_keys(timestamp)
-                total_size += BufferManager.get_n_bytes(n_keys)
-            total_size += EventStopRequest.get_min_packet_length()
-            if total_size > _MAX_MEMORY_USAGE:
-                total_size = _MAX_MEMORY_USAGE
-            send_buffer.buffer_size = total_size
             self._send_buffers[region_id] = send_buffer
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
             self, self._send_buffers)
