@@ -20,19 +20,21 @@ _MAX_FULL_KEYS_PER_PACKET = 63
 _MAX_HALF_KEYS_PER_PACKET = 127
 
 
-class SpynnakerLiveSpikesConnection(DatabaseConnection):
-    """ A connection for receiving and sending live spikes from and to\
+class LiveEventConnection(DatabaseConnection):
+    """ A connection for receiving and sending live events from and to\
         SpiNNaker
     """
 
-    def __init__(self, receive_labels=None, send_labels=None, local_host=None,
-                 local_port=19999):
+    def __init__(self, live_packet_gather_label, receive_labels=None,
+                 send_labels=None, local_host=None, local_port=19999):
         """
 
-        :param receive_labels: Labels of population from which live spikes\
+        :param event_receiver_label: The label of the LivePacketGather\
+                    vertex to which received events are being sent
+        :param receive_labels: Labels of vertices from which live events\
                     will be received.
         :type receive_labels: iterable of str
-        :param send_labels: Labels of population to which live spikes will be\
+        :param send_labels: Labels of vertices to which live events will be\
                     sent
         :type send_labels: iterable of str
         :param local_host: Optional specification of the local hostname or\
@@ -49,45 +51,46 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
             self, self._read_database_callback, self._start_callback,
             local_host=local_host, local_port=local_port)
 
+        self._live_packet_gather_label = live_packet_gather_label
         self._receive_labels = receive_labels
         self._send_labels = send_labels
         self._sender_connection = None
         self._send_address_details = dict()
-        self._neuron_id_to_key = dict()
-        self._key_to_neuron_id_and_label = dict()
-        self._live_spike_callbacks = dict()
+        self._atom_id_to_key = dict()
+        self._key_to_atom_id_and_label = dict()
+        self._live_event_callbacks = dict()
         self._start_callbacks = dict()
         if receive_labels is not None:
             for label in receive_labels:
-                self._live_spike_callbacks[label] = list()
+                self._live_event_callbacks[label] = list()
                 self._start_callbacks[label] = list()
         if send_labels is not None:
             for label in send_labels:
                 self._start_callbacks[label] = list()
 
-    def add_receive_callback(self, label, live_spike_callback):
-        """ Add a callback for the reception of live spikes from a population
+    def add_receive_callback(self, label, live_event_callback):
+        """ Add a callback for the reception of live events from a vertex
 
-        :param label: The label of the population to be notified about. Must\
-                    be one of the populations listed in the constructor
+        :param label: The label of the vertex to be notified about. Must\
+                    be one of the vertices listed in the constructor
         :type label: str
-        :param live_spike_callback: A function to be called when spikes\
+        :param live_event_callback: A function to be called when events\
                     are received.  This should take as parameters the label\
-                    of the population, the simulation timestep when the spike\
-                    occured, and an array-like of neuron ids.
-        :type live_spike_callback: function(str, int, [int]) -> None
+                    of the vertex, the simulation timestep when the event\
+                    occurred, and an array-like of neuron ids.
+        :type live_event_callback: function(str, int, [int]) -> None
         """
-        self._live_spike_callbacks[label].append(live_spike_callback)
+        self._live_event_callbacks[label].append(live_event_callback)
 
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
 
         :param start_callback: A function to be called when the start\
                     message has been received.  This function should take the\
-                    label of the referenced population, and an instance of\
-                    this class, which can be used to send spikes
+                    label of the referenced vertex, and an instance of\
+                    this class, which can be used to send events
         :type start_callback: function(str, \
-                    :py:class:`SpynnakerLiveInputSpikesConnection`) -> None
+                    :py:class:`SpynnakerLiveEventConnection`) -> None
         :param label: the label of the function to be sent
         :type label: str
         """
@@ -100,7 +103,7 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
                 ip_address, port = database_reader.get_live_input_details(
                     send_label)
                 self._send_address_details[send_label] = (ip_address, port)
-                self._neuron_id_to_key[send_label] = \
+                self._atom_id_to_key[send_label] = \
                     database_reader.get_neuron_id_to_key_mapping(send_label)
         if self._receive_labels is not None:
             receivers = dict()
@@ -108,7 +111,7 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
 
             for receive_label in self._receive_labels:
                 _, port, strip_sdp = database_reader.get_live_output_details(
-                    receive_label)
+                    receive_label, self._live_packet_gather_label)
                 if strip_sdp:
                     if port not in receivers:
                         receiver = UDPEIEIOConnection(local_port=port)
@@ -124,8 +127,8 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
                 key_to_neuron_id = \
                     database_reader.get_event_to_atom_id_mapping(receive_label)
                 for (key, neuron_id) in key_to_neuron_id.iteritems():
-                    self._key_to_neuron_id_and_label[key] = (neuron_id,
-                                                             receive_label)
+                    self._key_to_atom_id_and_label[key] = (
+                        neuron_id, receive_label)
 
     def _start_callback(self):
         for (label, callbacks) in self._start_callbacks.iteritems():
@@ -133,9 +136,9 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
                 callback_thread = Thread(
                     target=callback, args=(label, self),
                     verbose=True,
-                    name="start callbac thread for spynnaker_live_spikes_"
-                         "connection {}:{}".format(
-                        self._local_port, self._local_ip_address))
+                    name="start callback thread for live_event_connection"
+                         "{}:{}".format(
+                             self._local_port, self._local_ip_address))
                 callback_thread.start()
 
     def _receive_packet_callback(self, packet):
@@ -150,44 +153,44 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
                 element = packet.next_element
                 time = element.payload
                 key = element.key
-                if key in self._key_to_neuron_id_and_label:
-                    (neuron_id, label) = self._key_to_neuron_id_and_label[key]
+                if key in self._key_to_atom_id_and_label:
+                    (neuron_id, label) = self._key_to_atom_id_and_label[key]
                     if (time, label) not in key_times_labels:
                         key_times_labels[(time, label)] = list()
                     key_times_labels[(time, label)].append(neuron_id)
 
             for (time, label) in sorted(key_times_labels.keys()):
-                for callback in self._live_spike_callbacks[label]:
+                for callback in self._live_event_callbacks[label]:
                     callback(label, time, key_times_labels[(time, label)])
         except:
             traceback.print_exc()
 
-    def send_spike(self, label, neuron_id, send_full_keys=False):
-        """ Send a spike from a single neuron
+    def send_event(self, label, atom_id, send_full_keys=False):
+        """ Send an event from a single atom
 
-        :param label: The label of the population from which the spike will\
+        :param label: The label of the vertex from which the event will\
                     originate
         :type label: str
-        :param neuron_id: The id of the neuron sending a spike
+        :param neuron_id: The id of the atom sending the event
         :type neuron_id: int
         :param send_full_keys: Determines whether to send full 32-bit keys,\
-                    getting the key for each neuron from the database, or\
-                    whether to send 16-bit neuron ids directly
+                    getting the key for each atom from the database, or\
+                    whether to send 16-bit atom ids directly
         :type send_full_keys: bool
         """
-        self.send_spikes(label, [neuron_id], send_full_keys)
+        self.send_events(label, [atom_id], send_full_keys)
 
-    def send_spikes(self, label, neuron_ids, send_full_keys=False):
-        """ Send a number of spikes
+    def send_events(self, label, atom_ids, send_full_keys=False):
+        """ Send a number of events
 
-        :param label: The label of the population from which the spikes will\
+        :param label: The label of the vertex from which the events will\
                     originate
         :type label: str
-        :param neuron_ids: array-like of neuron ids sending spikes
+        :param neuron_ids: array-like of atom ids sending events
         :type: [int]
         :param send_full_keys: Determines whether to send full 32-bit keys,\
-                    getting the key for each neuron from the database, or\
-                    whether to send 16-bit neuron ids directly
+                    getting the key for each atom from the database, or\
+                    whether to send 16-bit atom ids directly
         :type send_full_keys: bool
         """
         max_keys = _MAX_HALF_KEYS_PER_PACKET
@@ -195,21 +198,21 @@ class SpynnakerLiveSpikesConnection(DatabaseConnection):
             max_keys = _MAX_FULL_KEYS_PER_PACKET
 
         pos = 0
-        while pos < len(neuron_ids):
+        while pos < len(atom_ids):
 
             if send_full_keys:
                 message = EIEIO32BitDataMessage()
             else:
                 message = EIEIO16BitDataMessage()
 
-            spikes_in_packet = 0
-            while pos < len(neuron_ids) and spikes_in_packet < max_keys:
-                key = neuron_ids[pos]
+            events_in_packet = 0
+            while pos < len(atom_ids) and events_in_packet < max_keys:
+                key = atom_ids[pos]
                 if send_full_keys:
-                    key = self._neuron_id_to_key[label][key]
+                    key = self._atom_id_to_key[label][key]
                 message.add_key(key)
                 pos += 1
-                spikes_in_packet += 1
+                events_in_packet += 1
             ip_address, port = self._send_address_details[label]
             self._sender_connection.send_eieio_message_to(
                 message, ip_address, port)
