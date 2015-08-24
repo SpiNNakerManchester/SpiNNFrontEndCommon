@@ -171,21 +171,22 @@ class DatabaseWriter(object):
             )
             if runtime is not None:
                 cur.execute(
-                    "INSERT INTO configuration_parameters (parameter_id, value)"
-                    " VALUES ('infinite_run', 'False')"
+                    "INSERT INTO configuration_parameters"
+                    " (parameter_id, value) VALUES ('infinite_run', 'False')"
                 )
                 cur.execute(
-                    "INSERT INTO configuration_parameters (parameter_id, value)"
-                    " VALUES ('runtime', {})".format(runtime)
+                    "INSERT INTO configuration_parameters"
+                    " (parameter_id, value) VALUES ('runtime', {})".format(
+                        runtime)
                 )
             else:
                 cur.execute(
-                    "INSERT INTO configuration_parameters (parameter_id, value)"
-                    " VALUES ('infinite_run', 'True')"
+                    "INSERT INTO configuration_parameters"
+                    " (parameter_id, value) VALUES ('infinite_run', 'True')"
                 )
                 cur.execute(
-                    "INSERT INTO configuration_parameters (parameter_id, value)"
-                    " VALUES ('runtime', {})".format(-1)
+                    "INSERT INTO configuration_parameters"
+                    " (parameter_id, value) VALUES ('runtime', {})".format(-1)
                 )
 
             connection.commit()
