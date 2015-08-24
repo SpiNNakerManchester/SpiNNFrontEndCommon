@@ -408,8 +408,8 @@ class BufferManager(object):
         region_offset_in_pointer_table = \
             dsg_utilities.get_region_base_address_offset(
                 app_data_base_address, region)
-        region_offset = self._transceiver.read_memory(
-            placement.x, placement.y, region_offset_in_pointer_table, 4)
+        region_offset = buffer(self._transceiver.read_memory(
+            placement.x, placement.y, region_offset_in_pointer_table, 4))
         return (struct.unpack_from("<I", region_offset)[0] +
                 app_data_base_address)
 
