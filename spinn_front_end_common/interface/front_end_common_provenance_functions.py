@@ -66,10 +66,16 @@ class FrontEndCommonProvenanceFunctions(AbstractProvidesProvenanceData):
                 if (chip.x, chip.y) not in router_diagnostics:
                     router_diagnostic = \
                         self._txrx.get_router_diagnostics(chip.x, chip.y)
-                    if (router_diagnostic.n_dropped_multicast_packets != 0 or
-                            router_diagnostic.n_local_multicast_packets != 0 or
-                            router_diagnostic.n_external_multicast_packets !=
-                            0):
+                    has_dropped_mc_packets = \
+                        router_diagnostic.n_dropped_multicast_packets != 0
+                    has_local_multicast_packets = \
+                        router_diagnostic.n_local_multicast_packets != 0
+                    has_external_multicast_packets = \
+                        router_diagnostic.n_external_multicast_packets != 0
+
+                    if (has_dropped_mc_packets or
+                            has_local_multicast_packets or
+                            has_external_multicast_packets):
                         self._write_router_diag(
                             unexpected_routers, chip.x, chip.y,
                             router_diagnostics[chip.x, chip.y],
