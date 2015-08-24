@@ -104,7 +104,7 @@ class LiveEventConnection(DatabaseConnection):
                     send_label)
                 self._send_address_details[send_label] = (ip_address, port)
                 self._atom_id_to_key[send_label] = \
-                    database_reader.get_neuron_id_to_key_mapping(send_label)
+                    database_reader.get_atom_id_to_key_mapping(send_label)
         if self._receive_labels is not None:
             receivers = dict()
             listeners = dict()
