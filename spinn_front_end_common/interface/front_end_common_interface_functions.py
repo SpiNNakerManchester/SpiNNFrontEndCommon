@@ -44,7 +44,6 @@ from spinn_front_end_common.utility_models.reverse_ip_tag_multi_cast_source \
 import time
 import os
 import logging
-import traceback
 import re
 from collections import OrderedDict
 
@@ -86,7 +85,8 @@ class FrontEndCommonInterfaceFunctions(object):
     def setup_interfaces(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height,
-            is_virtual, virtual_has_wrap_arounds, auto_detect_bmp=True):
+            is_virtual, virtual_has_wrap_arounds, auto_detect_bmp=True,
+            enable_reinjection=True):
         """
         Set up the interfaces for communicating with the SpiNNaker board
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -106,6 +106,8 @@ class FrontEndCommonInterfaceFunctions(object):
                 should be created with wrap_arounds
         :param auto_detect_bmp: boolean which determines if the bmp should
                be automatically determined
+        :param enable_reinjection: True if dropped packet reinjection is to be\
+               enabled
         :return: None
         """
 
@@ -133,14 +135,15 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
             self._txrx.ensure_board_is_ready(
-                board_version, number_of_boards, width, height)
+                board_version, number_of_boards, width, height,
+                enable_reinjector=enable_reinjection)
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
             if self._reports_states.transciever_report:
                 self._reload_script = ReloadScript(
                     self._app_data_folder, hostname, board_version,
                     bmp_details, downed_chips, downed_cores, number_of_boards,
-                    height, width, auto_detect_bmp)
+                    height, width, auto_detect_bmp, enable_reinjection)
         else:
             self._machine = VirtualMachine(
                 width=width, height=height,
