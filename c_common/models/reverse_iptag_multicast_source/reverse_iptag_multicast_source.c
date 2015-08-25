@@ -4,7 +4,7 @@
 #include <simulation.h>
 #include <sark.h>
 #include <string.h>
-#include "../../front_end_common_lib/include/recording.h"
+#include "recording.h"
 
 //! human readable forms of the different command message ids.
 typedef enum eieio_command_messages {
@@ -587,11 +587,21 @@ static inline bool eieio_data_parse_packet(
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
+        if (do_recording){
+            log_info("recording a eieio message");
+            recording_record(
+                e_recording_channel_spike_history, eieio_msg_ptr, length);
+        }
         return true;
     } else {
         process_32_bit_packets(
             event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
+        if (do_recording){
+            log_info("recording a eieio message");
+            recording_record(
+                e_recording_channel_spike_history, eieio_msg_ptr, length);
+        }
         return false;
     }
 }
@@ -801,6 +811,11 @@ void timer_callback(uint unused0, uint unused1) {
               next_buffer_time);
 
     if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
+        // close recording channels
+        if (do_recording == 1){
+            log_info("Closing the recording channels at timer tic %d", time);
+            recording_finalise();
+        }
         log_info("Simulation complete.");
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
@@ -931,6 +946,8 @@ bool initialize(uint32_t *timer_period) {
             &simulation_ticks, &infinite_run)) {
         return false;
     }
+
+    log_info("have been told to run for %d timer tics", simulation_ticks);
 
     // Read the parameters
     if (!read_parameters(

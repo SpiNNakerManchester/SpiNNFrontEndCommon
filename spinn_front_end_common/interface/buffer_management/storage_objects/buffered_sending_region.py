@@ -66,7 +66,7 @@ class BufferedSendingRegion(object):
         property methof for getting the max size of this region
         :return:
         """
-        if self.total_region_size is None:
+        if self._total_region_size is None:
             self._calculate_sizes()
         return self._total_region_size
 
