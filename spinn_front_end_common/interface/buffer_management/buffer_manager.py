@@ -377,6 +377,7 @@ class BufferManager(object):
             sent_messages.send_stop_message()
             if self._report_states.transciever_report:
                 self._reload_buffer_file[(vertex, region)].close()
+                del self._reload_buffer_file[(vertex, region)]
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
@@ -434,3 +435,6 @@ class BufferManager(object):
         """
         with self._thread_lock:
             self._finished = True
+        if self._report_states.transciever_report:
+            for buffer_file in self._reload_buffer_file.itervalues():
+                buffer_file.close()
