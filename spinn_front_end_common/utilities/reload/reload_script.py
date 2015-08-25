@@ -20,7 +20,7 @@ class ReloadScript(object):
 
     def __init__(self, binary_directory, hostname, board_version,
                  bmp_details, down_chips, down_cores, number_of_boards,
-                 height, width, auto_detect_bmp):
+                 height, width, auto_detect_bmp, enable_reinjection):
         self._binary_directory = binary_directory
         self._wait_on_confiramtion = None
         self._runtime = None
@@ -49,6 +49,7 @@ class ReloadScript(object):
         self._println("height = {}".format(height))
         self._println("width = {}".format(width))
         self._println("auto_detect_bmp = {}".format(auto_detect_bmp))
+        self._println("enabled_reinjection = {}".format(enable_reinjection))
 
     @property
     def wait_on_confirmation(self):
