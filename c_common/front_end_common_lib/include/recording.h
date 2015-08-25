@@ -33,7 +33,7 @@
  */
 
 
-#include "neuron-typedefs.h"
+#include "common-typedefs.h"
 
 //! human readable forms of the different channels supported for neural models.
 typedef enum recording_channel_e {

@@ -4,12 +4,13 @@
 #include <simulation.h>
 #include <sark.h>
 #include <string.h>
+#include "../../front_end_common_lib/include/recording.h"
 
 //! human readable forms of the different command message ids.
 typedef enum eieio_command_messages {
     DATABASE_CONFIRMATION, // Database handshake with visualiser
     EVENT_PADDING, // Fill in buffer area with padding
-    EVENT_STOP,  // End of all buffers, stop execution
+    EVENT_STOP_COMMANDS,  // End of all buffers, stop execution
     STOP_SENDING_REQUESTS, // Stop complaining that there is sdram free space for buffers
     START_SENDING_REQUESTS, // Start complaining that there is sdram free space for buffers
     SPINNAKER_REQUEST_BUFFERS, // Spinnaker requesting new buffers for spike source population
@@ -25,7 +26,7 @@ typedef enum eieio_data_message_types {
 
 //! human readable forms of the different buffer operations
 typedef enum buffered_operations{
-    BUFFER_OPERATION_READ
+    BUFFER_OPERATION_READ,
     BUFFER_OPERATION_WRITE
 }buffered_operations;
 
@@ -84,7 +85,7 @@ static uint32_t incorrect_packets;
 static uint32_t key_left_shift;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
-static bool do_recording;
+static uint32_t do_recording;
 static uint32_t recording_region_size;
 
 static uint8_t *buffer_region;
@@ -114,7 +115,7 @@ static inline uint16_t calculate_eieio_packet_command_size(
     switch (command_number) {
     case DATABASE_CONFIRMATION:
     case EVENT_PADDING:
-    case EVENT_STOP:
+    case EVENT_STOP_COMMANDS:
     case STOP_SENDING_REQUESTS:
     case START_SENDING_REQUESTS:
         return 2;
@@ -670,7 +671,7 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
         eieio_command_parse_start_requests(eieio_msg_ptr, length);
         break;
 
-    case EVENT_STOP:
+    case EVENT_STOP_COMMANDS:
         log_debug("command: EVENT_STOP");
         time = simulation_ticks + 1;
         break;
@@ -861,7 +862,6 @@ bool read_parameters(address_t region_address) {
     space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
     return_tag_id = region_address[RETURN_TAG_ID];
     do_recording = region_address[DO_RECORDING];
-    recording_region_size = region_address[RECORDING_REGION_SIZE];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -925,10 +925,10 @@ bool initialize(uint32_t *timer_period) {
     }
 
     // Get the timing details
+    address_t system_region = data_specification_get_region(SYSTEM, address);
     if (!simulation_read_timing_details(
-            data_specification_get_region(SYSTEM, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            system_region, APPLICATION_NAME_HASH, timer_period,
+            &simulation_ticks, &infinite_run)) {
         return false;
     }
 
@@ -941,18 +941,19 @@ bool initialize(uint32_t *timer_period) {
     // if set to record, set up recording channel
     if (do_recording){
         // Get the recording information
-    uint32_t spike_history_region_size;
-    recording_read_region_sizes(
-        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS],
-        &recording_flags, &spike_history_region_size, NULL, NULL);
-    if (recording_is_channel_enabled(
-            recording_flags, e_recording_channel_spike_history)) {
-        if (!recording_initialse_channel(
-                data_specification_get_region(spike_history, address),
-                e_recording_channel_spike_history, spike_history_region_size)) {
-            return false;
+        uint32_t spike_history_region_size;
+        recording_read_region_sizes(
+            &system_region[DO_RECORDING],
+            &do_recording, &recording_region_size, NULL, NULL);
+        if (recording_is_channel_enabled(
+                &do_recording, e_recording_channel_spike_history)) {
+            if (!recording_initialse_channel(
+                    data_specification_get_region(RECORDING, address),
+                    e_recording_channel_spike_history,
+                    spike_history_region_size)) {
+                return false;
+            }
         }
-    }
     }
 
     // Read the buffer region
