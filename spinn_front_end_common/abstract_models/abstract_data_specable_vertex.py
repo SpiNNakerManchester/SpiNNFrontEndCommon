@@ -43,6 +43,7 @@ class AbstractDataSpecableVertex(object):
         spec.switch_write_focus(region=region_id)
         spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
+        # check for infinite runs and add data as required
         if self._no_machine_time_steps is None:
             spec.write_value(data=1)
             spec.write_value(data=0)

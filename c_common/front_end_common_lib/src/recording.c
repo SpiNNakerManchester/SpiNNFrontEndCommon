@@ -100,6 +100,7 @@ void recording_read_region_sizes(
                 e_recording_channel_spike_history)
             && (spike_history_region_size != NULL)) {
         *spike_history_region_size = region_start[spikes_position];
+        log_info("WOOP!");
     }
     if (recording_is_channel_enabled(*recording_flags,
                 e_recording_channel_neuron_potential)

@@ -33,8 +33,7 @@ typedef enum buffered_operations{
 //! human readable form of the read in parameter space
  typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, KEY_LEFT_SHIFT, CHECK_KEYS, KEY_SPACE, MASK,
-    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
-    DO_RECORDING, RECORDING_REGION_SIZE
+    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
  }read_in_parameters;
 
  //! human readable form of the different memory regions
@@ -85,7 +84,8 @@ static uint32_t incorrect_packets;
 static uint32_t key_left_shift;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
-static uint32_t do_recording;
+//! keeps track of which types of recording should be done to this model.
+static uint32_t recording_flags = 0;
 static uint32_t recording_region_size;
 
 static uint8_t *buffer_region;
@@ -587,7 +587,8 @@ static inline bool eieio_data_parse_packet(
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (do_recording){
+        if (recording_is_channel_enabled(
+                recording_flags, e_recording_channel_spike_history)) {
             log_info("recording a eieio message");
             recording_record(
                 e_recording_channel_spike_history, eieio_msg_ptr, length);
@@ -597,7 +598,8 @@ static inline bool eieio_data_parse_packet(
         process_32_bit_packets(
             event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (do_recording){
+        if (recording_is_channel_enabled(
+                recording_flags, e_recording_channel_spike_history)) {
             log_info("recording a eieio message");
             recording_record(
                 e_recording_channel_spike_history, eieio_msg_ptr, length);
@@ -812,7 +814,8 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
         // close recording channels
-        if (do_recording == 1){
+         if (recording_is_channel_enabled(
+                recording_flags, e_recording_channel_spike_history)) {
             log_info("Closing the recording channels at timer tic %d", time);
             recording_finalise();
         }
@@ -876,7 +879,6 @@ bool read_parameters(address_t region_address) {
     buffer_region_size = region_address[BUFFER_REGION_SIZE];
     space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
     return_tag_id = region_address[RETURN_TAG_ID];
-    do_recording = region_address[DO_RECORDING];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -924,7 +926,6 @@ bool read_parameters(address_t region_address) {
     log_info("mask: 0x%08x", mask);
     log_info("space_before_read_request: %d", space_before_data_request);
     log_info("return_tag_id: %d", return_tag_id);
-    log_info("doing_recording: %d", do_recording);
 
     return true;
 }
@@ -955,22 +956,27 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
 
-    // if set to record, set up recording channel
-    if (do_recording){
-        // Get the recording information
-        uint32_t spike_history_region_size;
-        recording_read_region_sizes(
-            &system_region[DO_RECORDING],
-            &do_recording, &recording_region_size, NULL, NULL);
-        if (recording_is_channel_enabled(
-                &do_recording, e_recording_channel_spike_history)) {
-            if (!recording_initialse_channel(
-                    data_specification_get_region(RECORDING, address),
-                    e_recording_channel_spike_history,
-                    spike_history_region_size)) {
-                return false;
-            }
+    // Get the recording information
+    system_region = data_specification_get_region(SYSTEM, address);
+    uint32_t spike_history_region_size;
+    recording_read_region_sizes(
+        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS],
+        &recording_flags, &recording_region_size, NULL, NULL);
+       log_info("recording flags = %u", recording_flags);
+       log_info("recording region size %u", recording_region_size);
+    if (recording_is_channel_enabled(
+            &recording_flags, e_recording_channel_spike_history)) {
+        log_info("try initiisiing reocrding channel");
+        if (!recording_initialse_channel(
+                data_specification_get_region(RECORDING, address),
+                e_recording_channel_spike_history,
+                spike_history_region_size)) {
+            return false;
         }
+    }
+    else{
+        log_info("the recording region was not enabled for some unknown reason");
+        return false;
     }
 
     // Read the buffer region
