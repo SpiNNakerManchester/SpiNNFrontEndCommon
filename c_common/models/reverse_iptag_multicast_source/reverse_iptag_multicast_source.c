@@ -86,7 +86,6 @@ static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
 //! keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
-static uint32_t recording_region_size;
 
 static uint8_t *buffer_region;
 static uint8_t *end_of_buffer_region;
@@ -589,7 +588,7 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         if (recording_is_channel_enabled(
                 recording_flags, e_recording_channel_spike_history)) {
-            log_info("recording a eieio message");
+            log_info("recording a eieio message with length %u", length);
             recording_record(
                 e_recording_channel_spike_history, eieio_msg_ptr, length);
         }
@@ -600,7 +599,7 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         if (recording_is_channel_enabled(
                 recording_flags, e_recording_channel_spike_history)) {
-            log_info("recording a eieio message");
+            log_info("recording a eieio message with length %u", length);
             recording_record(
                 e_recording_channel_spike_history, eieio_msg_ptr, length);
         }
@@ -961,12 +960,11 @@ bool initialize(uint32_t *timer_period) {
     uint32_t spike_history_region_size;
     recording_read_region_sizes(
         &system_region[SIMULATION_N_TIMING_DETAIL_WORDS],
-        &recording_flags, &recording_region_size, NULL, NULL);
-       log_info("recording flags = %u", recording_flags);
-       log_info("recording region size %u", recording_region_size);
+        &recording_flags, &spike_history_region_size, NULL, NULL);
     if (recording_is_channel_enabled(
-            &recording_flags, e_recording_channel_spike_history)) {
-        log_info("try initiisiing reocrding channel");
+            recording_flags, e_recording_channel_spike_history)) {
+        log_info("size is %u", spike_history_region_size);
+        log_info("reocrdingflags and size is %u, %u", system_region[4], system_region[5]);
         if (!recording_initialse_channel(
                 data_specification_get_region(RECORDING, address),
                 e_recording_channel_spike_history,

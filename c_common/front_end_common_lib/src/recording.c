@@ -100,7 +100,6 @@ void recording_read_region_sizes(
                 e_recording_channel_spike_history)
             && (spike_history_region_size != NULL)) {
         *spike_history_region_size = region_start[spikes_position];
-        log_info("WOOP!");
     }
     if (recording_is_channel_enabled(*recording_flags,
                 e_recording_channel_neuron_potential)
@@ -127,6 +126,8 @@ bool recording_initialse_channel(
         address_t output_region, recording_channel_e channel,
         uint32_t size_bytes) {
 
+    log_info("size inside record is %u", size_bytes);
+
     if (has_been_initialsed(channel)) {
         log_error("Recording channel %u already configured", channel);
 
@@ -146,8 +147,8 @@ bool recording_initialse_channel(
         recording_channel->end = recording_channel->start + size_bytes;
 
         log_info("Recording channel %u configured to use %u byte memory block"
-                 " starting at %08x", channel, size_bytes,
-                 recording_channel->start);
+                 " starting at %08x",
+                 channel, size_bytes, recording_channel->start);
         return true;
     }
 }
