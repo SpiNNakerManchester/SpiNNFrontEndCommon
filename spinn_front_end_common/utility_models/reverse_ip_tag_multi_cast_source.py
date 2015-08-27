@@ -213,7 +213,7 @@ class ReverseIpTagMultiCastSource(
         # Reserve memory regions:
         spec.reserve_memory_region(
             region=self._REVERSE_IPTAG_MULTICAST_REGIONS.SYSTEM.value,
-            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
+            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4 + 8,
             label='SYSTEM')
         spec.reserve_memory_region(
             region=self._REVERSE_IPTAG_MULTICAST_REGIONS.CONFIGURATION.value,
@@ -226,6 +226,11 @@ class ReverseIpTagMultiCastSource(
         # set up system region writes
         self._write_basic_setup_info(
             spec, self._REVERSE_IPTAG_MULTICAST_REGIONS.SYSTEM.value)
+
+        # TODO this can be removed once buffered out functionality is in place.
+        # As then live injection can be recorded
+        spec.write_value(data=0)
+        spec.write_value(data=0)
 
         # set up configuration region writes
         spec.switch_write_focus(
@@ -283,11 +288,6 @@ class ReverseIpTagMultiCastSource(
             spec.write_value(data=ip_tag.tag)
         else:
             spec.write_value(data=0)
-
-        # TODO this can be removed once buffered out functionality is in place.
-        # As then live injection can be recorded
-        spec.write_value(data=0)
-        spec.write_value(data=0)
 
         # close spec
         spec.end_specification()
