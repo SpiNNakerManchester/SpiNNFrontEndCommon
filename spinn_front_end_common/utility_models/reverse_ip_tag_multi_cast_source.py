@@ -284,8 +284,8 @@ class ReverseIpTagMultiCastSource(
         else:
             spec.write_value(data=0)
 
-        # TODO this can be removed once buffered out functionality is in place. As then live injection can be recorded
-        # recording
+        # TODO this can be removed once buffered out functionality is in place.
+        # As then live injection can be recorded
         spec.write_value(data=0)
         spec.write_value(data=0)
 

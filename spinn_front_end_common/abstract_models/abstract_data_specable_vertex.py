@@ -4,8 +4,6 @@ AbstractDataSpecableVertex
 from data_specification.file_data_writer import FileDataWriter
 
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities import constants as \
-    front_end_common_constants
 
 from abc import ABCMeta
 from six import add_metaclass
@@ -35,10 +33,10 @@ class AbstractDataSpecableVertex(object):
     def _write_basic_setup_info(self, spec, region_id):
         # Hash application title
         application_name = os.path.splitext(self.get_binary_file_name())[0]
-        
+
         # Get first 32-bits of the md5 hash of the application name
         application_name_hash = hashlib.md5(application_name).hexdigest()[:8]
-     
+
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(region=region_id)
         spec.write_value(data=int(application_name_hash, 16))
