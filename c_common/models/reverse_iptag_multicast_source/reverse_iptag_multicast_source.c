@@ -8,7 +8,7 @@
 
 //! human readable forms of the different command message ids.
 typedef enum eieio_command_messages {
-    DATABASE_CONFIRMATION, // Database handshake with visualiser
+    DATABASE_CONFIRMATION = 1, // Database handshake with visualiser
     EVENT_PADDING, // Fill in buffer area with padding
     EVENT_STOP_COMMANDS,  // End of all buffers, stop execution
     STOP_SENDING_REQUESTS, // Stop complaining that there is sdram free space for buffers

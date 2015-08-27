@@ -20,8 +20,6 @@ from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.eieio.data_messages.eieio_32bit\
     .eieio_32bit_timed_payload_prefix_data_message\
     import EIEIO32BitTimedPayloadPrefixDataMessage
-from spinnman.messages.eieio.data_messages.eieio_data_header\
-    import EIEIODataHeader
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.exceptions import SpinnmanInvalidPacketException
 from spinnman.messages.eieio.data_messages.eieio_data_message \
@@ -48,7 +46,6 @@ import struct
 import threading
 import logging
 import traceback
-import math
 import os
 
 
