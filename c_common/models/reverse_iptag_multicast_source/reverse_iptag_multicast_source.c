@@ -963,18 +963,12 @@ bool initialize(uint32_t *timer_period) {
         &recording_flags, &spike_history_region_size, NULL, NULL);
     if (recording_is_channel_enabled(
             recording_flags, e_recording_channel_spike_history)) {
-        log_info("size is %u", spike_history_region_size);
-        log_info("reocrdingflags and size is %u, %u", system_region[4], system_region[5]);
         if (!recording_initialse_channel(
                 data_specification_get_region(RECORDING, address),
                 e_recording_channel_spike_history,
                 spike_history_region_size)) {
             return false;
         }
-    }
-    else{
-        log_info("the recording region was not enabled for some unknown reason");
-        return false;
     }
 
     // Read the buffer region
