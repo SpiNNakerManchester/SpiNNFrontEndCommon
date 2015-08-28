@@ -375,8 +375,9 @@ class BufferManager(object):
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             sent_messages.send_stop_message()
             if self._report_states.transciever_report:
-                self._reload_buffer_file[(vertex, region)].close()
-                del self._reload_buffer_file[(vertex, region)]
+                if (vertex, region) in self._reload_buffer_file:
+                    self._reload_buffer_file[(vertex, region)].close()
+                    del self._reload_buffer_file[(vertex, region)]
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
