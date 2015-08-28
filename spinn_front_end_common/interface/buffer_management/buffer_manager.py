@@ -187,8 +187,7 @@ class BufferManager(object):
                 total_data += vertex.get_region_buffer_size(region)
 
         progress_bar = ProgressBar(
-            total_data, "on loading buffer dependent vertices ({} bytes)"
-                        .format(total_data))
+            total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 self._send_initial_messages(vertex, region, progress_bar)
