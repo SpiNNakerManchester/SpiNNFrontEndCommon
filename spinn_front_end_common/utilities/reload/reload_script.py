@@ -49,7 +49,7 @@ class ReloadScript(object):
         self._println("height = {}".format(height))
         self._println("width = {}".format(width))
         self._println("auto_detect_bmp = {}".format(auto_detect_bmp))
-        self._println("enabled_reinjection = {}".format(enable_reinjection))
+        self._println("enable_reinjection = {}".format(enable_reinjection))
 
     @property
     def wait_on_confirmation(self):
@@ -241,7 +241,8 @@ class ReloadScript(object):
         self._println("")
         self._println("reloader = Reload(machine_name, machine_version, "
                       "reports_states, bmp_details, down_chips, down_cores, "
-                      "number_of_boards, height, width, auto_detect_bmp)")
+                      "number_of_boards, height, width, auto_detect_bmp,"
+                      "enable_reinjection)")
         self._println("if len(socket_addresses) > 0:")
         # note that this needs to be added into the script, as it needs to
         # be able to find its database no matter where it is or where its

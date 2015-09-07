@@ -187,8 +187,7 @@ class BufferManager(object):
                 total_data += vertex.get_region_buffer_size(region)
 
         progress_bar = ProgressBar(
-            total_data, "on loading buffer dependent vertices ({} bytes)"
-                        .format(total_data))
+            total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 self._send_initial_messages(vertex, region, progress_bar)
@@ -376,7 +375,9 @@ class BufferManager(object):
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             sent_messages.send_stop_message()
             if self._report_states.transciever_report:
-                self._reload_buffer_file[(vertex, region)].close()
+                if (vertex, region) in self._reload_buffer_file:
+                    self._reload_buffer_file[(vertex, region)].close()
+                    del self._reload_buffer_file[(vertex, region)]
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
@@ -434,3 +435,6 @@ class BufferManager(object):
         """
         with self._thread_lock:
             self._finished = True
+        if self._report_states.transciever_report:
+            for buffer_file in self._reload_buffer_file.itervalues():
+                buffer_file.close()
