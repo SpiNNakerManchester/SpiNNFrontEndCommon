@@ -111,6 +111,7 @@ class LiveEventConnection(DatabaseConnection):
             receivers = dict()
             listeners = dict()
 
+            label_id = 0
             for receive_label in self._receive_labels:
                 _, port, strip_sdp = database_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
@@ -127,10 +128,11 @@ class LiveEventConnection(DatabaseConnection):
                                     " SDP headers are supported")
 
                 key_to_atom_id = \
-                    database_reader.get_event_to_atom_id_mapping(receive_label)
+                    database_reader.get_key_to_atom_id_mapping(receive_label)
                 for (key, atom_id) in key_to_atom_id.iteritems():
                     self._key_to_atom_id_and_label[key] = (
-                        atom_id, receive_label)
+                        atom_id, label_id)
+                label_id += 1
 
     def _start_callback(self):
         for (label, callbacks) in self._start_callbacks.iteritems():
