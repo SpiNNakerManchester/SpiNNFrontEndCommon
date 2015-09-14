@@ -59,11 +59,11 @@ class LiveEventConnection(DatabaseConnection):
         self._send_address_details = dict()
         self._atom_id_to_key = dict()
         self._key_to_atom_id_and_label = dict()
-        self._live_event_callbacks = dict()
+        self._live_event_callbacks = list()
         self._start_callbacks = dict()
         if receive_labels is not None:
             for label in receive_labels:
-                self._live_event_callbacks[label] = list()
+                self._live_event_callbacks.append(list())
                 self._start_callbacks[label] = list()
         if send_labels is not None:
             for label in send_labels:
@@ -78,10 +78,11 @@ class LiveEventConnection(DatabaseConnection):
         :param live_event_callback: A function to be called when events\
                     are received.  This should take as parameters the label\
                     of the vertex, the simulation timestep when the event\
-                    occurred, and an array-like of neuron ids.
+                    occurred, and an array-like of atom ids.
         :type live_event_callback: function(str, int, [int]) -> None
         """
-        self._live_event_callbacks[label].append(live_event_callback)
+        label_id = self._receive_labels.index(label)
+        self._live_event_callbacks[label_id].append(live_event_callback)
 
     def add_start_callback(self, label, start_callback):
         """ Add a callback for the start of the simulation
@@ -125,11 +126,11 @@ class LiveEventConnection(DatabaseConnection):
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
 
-                key_to_neuron_id = \
+                key_to_atom_id = \
                     database_reader.get_event_to_atom_id_mapping(receive_label)
-                for (key, neuron_id) in key_to_neuron_id.iteritems():
+                for (key, atom_id) in key_to_atom_id.iteritems():
                     self._key_to_atom_id_and_label[key] = (
-                        neuron_id, receive_label)
+                        atom_id, receive_label)
 
     def _start_callback(self):
         for (label, callbacks) in self._start_callbacks.iteritems():
@@ -155,18 +156,18 @@ class LiveEventConnection(DatabaseConnection):
                 time = element.payload
                 key = element.key
                 if key in self._key_to_atom_id_and_label:
-                    (neuron_id, label_id) = \
+                    (atom_id, label_id) = \
                         self._key_to_atom_id_and_label[key]
                     if time not in key_times_labels:
                         key_times_labels[time] = dict()
                     if label_id not in key_times_labels[time]:
                         key_times_labels[time][label_id] = list()
-                    key_times_labels[time][label_id].append(neuron_id)
+                    key_times_labels[time][label_id].append(atom_id)
 
             for time in key_times_labels.iterkeys():
                 for label_id in key_times_labels[time].iterkeys():
                     label = self._receive_labels[label_id]
-                    for callback in self._live_event_callbacks[label]:
+                    for callback in self._live_event_callbacks[label_id]:
                         callback(label, time, key_times_labels[time][label_id])
         except:
             traceback.print_exc()
@@ -177,8 +178,8 @@ class LiveEventConnection(DatabaseConnection):
         :param label: The label of the vertex from which the event will\
                     originate
         :type label: str
-        :param neuron_id: The id of the atom sending the event
-        :type neuron_id: int
+        :param atom_id: The id of the atom sending the event
+        :type atom_id: int
         :param send_full_keys: Determines whether to send full 32-bit keys,\
                     getting the key for each atom from the database, or\
                     whether to send 16-bit atom ids directly
@@ -192,8 +193,8 @@ class LiveEventConnection(DatabaseConnection):
         :param label: The label of the vertex from which the events will\
                     originate
         :type label: str
-        :param neuron_ids: array-like of atom ids sending events
-        :type: [int]
+        :param atom_ids: array-like of atom ids sending events
+        :type atom_ids: [int]
         :param send_full_keys: Determines whether to send full 32-bit keys,\
                     getting the key for each atom from the database, or\
                     whether to send 16-bit atom ids directly
