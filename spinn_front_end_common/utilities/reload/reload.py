@@ -19,13 +19,13 @@ class Reload(object):
 
     def __init__(self, machine_name, version, reports_states, bmp_details,
                  down_chips, down_cores, number_of_boards, height, width,
-                 auto_detect_bmp, app_id=30):
+                 auto_detect_bmp, enable_reinjection, app_id=30):
         self._spinnaker_interface = \
             FrontEndCommonInterfaceFunctions(reports_states, None, None)
         self._spinnaker_interface.setup_interfaces(
             machine_name, bmp_details, down_chips, down_cores,
             version, number_of_boards, width, height, False, False,
-            auto_detect_bmp)
+            auto_detect_bmp, enable_reinjection)
         self._app_id = app_id
         self._reports_states = reports_states
         self._total_processors = 0
