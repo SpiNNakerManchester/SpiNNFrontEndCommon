@@ -1,5 +1,6 @@
 from threading import Thread
 import traceback
+from collections import OrderedDict
 
 from spinn_front_end_common.utilities.database.database_connection \
     import DatabaseConnection
@@ -148,20 +149,25 @@ class LiveEventConnection(DatabaseConnection):
                 raise Exception(
                     "Only packets with a timestamp are currently considered")
 
-            key_times_labels = dict()
+            key_times_labels = OrderedDict()
             while packet.is_next_element:
                 element = packet.next_element
                 time = element.payload
                 key = element.key
                 if key in self._key_to_atom_id_and_label:
-                    (neuron_id, label) = self._key_to_atom_id_and_label[key]
-                    if (time, label) not in key_times_labels:
-                        key_times_labels[(time, label)] = list()
-                    key_times_labels[(time, label)].append(neuron_id)
+                    (neuron_id, label_id) = \
+                        self._key_to_atom_id_and_label[key]
+                    if time not in key_times_labels:
+                        key_times_labels[time] = dict()
+                    if label_id not in key_times_labels[time]:
+                        key_times_labels[time][label_id] = list()
+                    key_times_labels[time][label_id].append(neuron_id)
 
-            for (time, label) in sorted(key_times_labels.keys()):
-                for callback in self._live_event_callbacks[label]:
-                    callback(label, time, key_times_labels[(time, label)])
+            for time in key_times_labels.iterkeys():
+                for label_id in key_times_labels[time].iterkeys():
+                    label = self._receive_labels[label_id]
+                    for callback in self._live_event_callbacks[label]:
+                        callback(label, time, key_times_labels[time][label_id])
         except:
             traceback.print_exc()
 
