@@ -135,7 +135,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
             self._txrx.ensure_board_is_ready(
-                board_version, number_of_boards, width, height,
+                number_of_boards, width, height,
                 enable_reinjector=enable_reinjection)
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
