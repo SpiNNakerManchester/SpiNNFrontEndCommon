@@ -49,8 +49,10 @@ class LiveEventConnection(DatabaseConnection):
         """
 
         DatabaseConnection.__init__(
-            self, self._read_database_callback, self._start_callback,
+            self, self._start_callback,
             local_host=local_host, local_port=local_port)
+
+        self.add_database_callback(self._read_database_callback)
 
         self._live_packet_gather_label = live_packet_gather_label
         self._receive_labels = receive_labels
@@ -61,13 +63,31 @@ class LiveEventConnection(DatabaseConnection):
         self._key_to_atom_id_and_label = dict()
         self._live_event_callbacks = list()
         self._start_callbacks = dict()
+        self._init_callbacks = dict()
         if receive_labels is not None:
             for label in receive_labels:
                 self._live_event_callbacks.append(list())
                 self._start_callbacks[label] = list()
+                self._init_callbacks[label] = list()
         if send_labels is not None:
             for label in send_labels:
                 self._start_callbacks[label] = list()
+                self._init_callbacks[label] = list()
+
+    def add_init_callback(self, label, init_callback):
+        """ Add a callback to be called to initialise a vertex
+
+        :param label: The label of the vertex to be notified about. Must\
+                    be one of the vertices listed in the constructor
+        :type label: str
+        :param init_callback: A function to be called to initialise the\
+                    vertex.  This should take as parameters the label of the\
+                    vertex, the number of neurons in the population,\
+                    the run time of the simulation in milliseconds, and the\
+                    simulation timestep in milliseconds
+        :type init_callback: function(str, int, float, float) -> None
+        """
+        self._init_callbacks[label].append(init_callback)
 
     def add_receive_callback(self, label, live_event_callback):
         """ Add a callback for the reception of live events from a vertex
@@ -99,6 +119,13 @@ class LiveEventConnection(DatabaseConnection):
         self._start_callbacks[label].append(start_callback)
 
     def _read_database_callback(self, database_reader):
+        vertex_sizes = OrderedDict()
+        run_time_ms = database_reader.get_configuration_parameter_value(
+            "runtime")
+        machine_timestep_ms = \
+            database_reader.get_configuration_parameter_value(
+                "machine_time_step") / 1000.0
+
         if self._send_labels is not None:
             self._sender_connection = UDPEIEIOConnection()
             for send_label in self._send_labels:
@@ -107,6 +134,9 @@ class LiveEventConnection(DatabaseConnection):
                 self._send_address_details[send_label] = (ip_address, port)
                 self._atom_id_to_key[send_label] = \
                     database_reader.get_atom_id_to_key_mapping(send_label)
+                vertex_sizes[send_label] = len(
+                    self._atom_id_to_key[send_label])
+
         if self._receive_labels is not None:
             receivers = dict()
             listeners = dict()
@@ -133,6 +163,12 @@ class LiveEventConnection(DatabaseConnection):
                     self._key_to_atom_id_and_label[key] = (
                         atom_id, label_id)
                 label_id += 1
+                vertex_sizes[receive_label] = len(key_to_atom_id)
+
+        for (label, vertex_size) in vertex_sizes.iteritems():
+            for init_callback in self._init_callbacks[label]:
+                init_callback(
+                    label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def _start_callback(self):
         for (label, callbacks) in self._start_callbacks.iteritems():

@@ -113,3 +113,16 @@ class DatabaseReader(object):
             "SELECT no_atoms FROM Partitionable_vertices "
             "WHERE vertex_label = \"{}\"".format(label))
         return self._cursor.fetchone()["no_atoms"]
+
+    def get_configuration_parameter_value(self, parameter_name):
+        """ Get the value of a configuration parameter
+
+        :param parameter_name: The name of the parameter
+        :type parameter_name: str
+        :return: The value of the parameter
+        :rtype: float
+        """
+        self._cursor.execute(
+            "SELECT value FROM configuration_parameters"
+            " WHERE parameter_id = \"{}\"".format(parameter_name))
+        return float(self._cursor.fetchone()["value"])

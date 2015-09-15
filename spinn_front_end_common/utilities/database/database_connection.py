@@ -22,20 +22,10 @@ class DatabaseConnection(UDPConnection, Thread):
         simulation has started.
     """
 
-    def __init__(self, database_callback_function,
-                 start_callback_function=None, local_host=None,
+    def __init__(self, start_callback_function=None, local_host=None,
                  local_port=19999):
         """
 
-        :param database_callback_function: A function to be called when the\
-                    database message has been received.  This function should\
-                    take a single parameter, which will be a DatabaseReader\
-                    object.  Once the function returns, it will be assumed\
-                    that the database has been read, and the return response\
-                    will be sent.
-        :type database_callback_function: function(\
-                    :py:class:`spynnaker_external_devices.pyNN.connections.database_reader.DatabaseReader`)\
-                    -> None
         :param start_callback_function: A function to be called when the start\
                     message has been received.  This function should not take\
                     any parameters or return anything.
@@ -54,9 +44,24 @@ class DatabaseConnection(UDPConnection, Thread):
         Thread.__init__(self,
                         name="spynnaker database connection for {}:{}"
                         .format(local_host, local_port))
-        self._database_callback_function = database_callback_function
+        self._database_callback_functions = list()
         self._start_callback_function = start_callback_function
         self.start()
+
+    def add_database_callback(self, database_callback_function):
+        """ Add a database callback to be called when the database is ready
+
+        :param database_callback_function: A function to be called when the\
+                    database message has been received.  This function should\
+                    take a single parameter, which will be a DatabaseReader\
+                    object.  Once the function returns, it will be assumed\
+                    that the database has been read, and the return response\
+                    will be sent.
+        :type database_callback_function: function(\
+                    :py:class:`spynnaker_external_devices.pyNN.connections.database_reader.DatabaseReader`)\
+                    -> None
+        """
+        self._database_callback_functions.append(database_callback_function)
 
     def run(self):
         try:
@@ -69,7 +74,9 @@ class DatabaseConnection(UDPConnection, Thread):
             database_path = str(data[2:])
 
             # Call the callback
-            self._database_callback_function(DatabaseReader(database_path))
+            database_reader = DatabaseReader(database_path)
+            for database_callback in self._database_callback_functions:
+                database_callback(database_reader)
 
             # Send the response
             logger.info(
