@@ -135,7 +135,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Please set a machine version number in the configuration "
                     "file (spynnaker.cfg or pacman.cfg)")
             self._txrx.ensure_board_is_ready(
-                board_version, number_of_boards, width, height,
+                number_of_boards, width, height,
                 enable_reinjector=enable_reinjection)
             self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
@@ -237,9 +237,7 @@ class FrontEndCommonInterfaceFunctions(object):
         :return: None
         """
         progress_bar = ProgressBar(
-            len(partitioned_graph.subvertices),
-            "on initialising the buffer managers for vertices which require"
-            " buffering")
+            len(partitioned_graph.subvertices), "Initialising buffers")
 
         # Create the buffer manager
         self._send_buffer_manager = BufferManager(
@@ -335,8 +333,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
-                                   "on executing data specifications on the "
-                                   "host machine")
+                                   "Executing data specifications")
 
         for placement in placements.placements:
             associated_vertex = graph_mapper.get_vertex_from_subvertex(

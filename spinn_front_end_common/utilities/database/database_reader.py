@@ -23,12 +23,12 @@ class DatabaseReader(object):
         """
         return self._cursor
 
-    def get_event_to_atom_id_mapping(self, label):
-        """ Get a mapping of spike key to neuron id for a given population
+    def get_key_to_atom_id_mapping(self, label):
+        """ Get a mapping of event key to atom id for a given vertex
 
-        :param label: The label of the population
+        :param label: The label of the vertex
         :type label: str
-        :return: dictionary of neuron ids indexed by spike key
+        :return: dictionary of atom ids indexed by event key
         :rtype: dict
         """
         event_id_to_atom_id_mapping = dict()
@@ -40,12 +40,12 @@ class DatabaseReader(object):
             event_id_to_atom_id_mapping[row["event"]] = row["a_id"]
         return event_id_to_atom_id_mapping
 
-    def get_neuron_id_to_key_mapping(self, label):
-        """ Get a mapping of neuron id to spike key for a given population
+    def get_atom_id_to_key_mapping(self, label):
+        """ Get a mapping of atom id to event key for a given vertex
 
-        :param label: The label of the population
+        :param label: The label of the vertex
         :type label: str
-        :return: dictionary of spike keys indexed by neuron id
+        :return: dictionary of event keys indexed by atom id
         """
         atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
@@ -56,11 +56,11 @@ class DatabaseReader(object):
             atom_to_event_id_mapping[row["a_id"]] = row["event"]
         return atom_to_event_id_mapping
 
-    def get_live_output_details(self, label):
+    def get_live_output_details(self, label, receiver_label):
         """ Get the ip address, port and whether the sdp headers are to be\
-            stripped from the output from a population
+            stripped from the output from a vertex
 
-        :param label: The label of the population
+        :param label: The label of the vertex
         :type label: str
         :return: tuple of (ip address, port, strip sdp)
         :rtype: (str, int, bool)
@@ -76,16 +76,16 @@ class DatabaseReader(object):
             " JOIN Partitionable_vertices as pre_vertices"
             " ON edges.pre_vertex == pre_vertices.vertex_id"
             " WHERE pre_vertices.vertex_label == \"{}\""
-            " AND post_vertices.vertex_label == \"LiveSpikeReceiver\""
-            .format(label))
+            " AND post_vertices.vertex_label == \"{}\""
+            .format(label, receiver_label))
         row = self._cursor.fetchone()
         return (row["ip_address"], row["port"], row["strip_sdp"])
 
     def get_live_input_details(self, label):
         """ Get the ip address and port where live input should be sent\
-            for a given population
+            for a given vertex
 
-        :param label: The label of the population
+        :param label: The label of the vertex
         :type label: str
         :return: tuple of (ip address, port)
         :rtype: (str, int)
@@ -113,3 +113,16 @@ class DatabaseReader(object):
             "SELECT no_atoms FROM Partitionable_vertices "
             "WHERE vertex_label = \"{}\"".format(label))
         return self._cursor.fetchone()["no_atoms"]
+
+    def get_configuration_parameter_value(self, parameter_name):
+        """ Get the value of a configuration parameter
+
+        :param parameter_name: The name of the parameter
+        :type parameter_name: str
+        :return: The value of the parameter
+        :rtype: float
+        """
+        self._cursor.execute(
+            "SELECT value FROM configuration_parameters"
+            " WHERE parameter_id = \"{}\"".format(parameter_name))
+        return float(self._cursor.fetchone()["value"])
