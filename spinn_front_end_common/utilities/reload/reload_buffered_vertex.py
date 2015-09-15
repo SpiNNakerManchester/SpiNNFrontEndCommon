@@ -9,12 +9,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models.\
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
     buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.interface.buffer_management.buffer_manager \
-    import BufferManager
-
-# spinnman imports
-from spinnman.messages.eieio.command_messages.event_stop_request \
-    import EventStopRequest
 
 
 _MAX_MEMORY_USAGE = constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP
