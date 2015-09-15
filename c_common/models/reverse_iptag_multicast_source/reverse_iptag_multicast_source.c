@@ -588,7 +588,7 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         if (recording_is_channel_enabled(
                 recording_flags, e_recording_channel_spike_history)) {
-            log_info("recording a eieio message with length %u", length);
+            log_debug("recording a eieio message with length %u", length);
             recording_record(
                 e_recording_channel_spike_history, eieio_msg_ptr, length);
         }
@@ -599,7 +599,7 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         if (recording_is_channel_enabled(
                 recording_flags, e_recording_channel_spike_history)) {
-            log_info("recording a eieio message with length %u", length);
+            log_debug("recording a eieio message with length %u", length);
             recording_record(
                 e_recording_channel_spike_history, eieio_msg_ptr, length);
         }
@@ -815,7 +815,6 @@ void timer_callback(uint unused0, uint unused1) {
         // close recording channels
          if (recording_is_channel_enabled(
                 recording_flags, e_recording_channel_spike_history)) {
-            log_info("Closing the recording channels at timer tic %d", time);
             recording_finalise();
         }
         log_info("Simulation complete.");

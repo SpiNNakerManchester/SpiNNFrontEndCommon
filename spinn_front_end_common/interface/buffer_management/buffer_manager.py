@@ -330,9 +330,8 @@ class BufferManager(object):
                 constants.UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
             logger.debug(
-                "Bytes to go {}, space available {}, timestamp {}"
-                .format(bytes_to_go, space_available,
-                        vertex.get_next_timestamp(region)))
+                "Bytes to go {}, space available {}"
+                .format(bytes_to_go, space_available))
             next_message = self._create_message_to_send(
                 space_available, vertex, region)
             if next_message is None:
