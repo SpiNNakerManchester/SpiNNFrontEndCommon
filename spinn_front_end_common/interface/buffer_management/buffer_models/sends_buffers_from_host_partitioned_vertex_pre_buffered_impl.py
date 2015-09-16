@@ -36,6 +36,14 @@ class SendsBuffersFromHostPartitionedVertexPreBufferedImpl(
         """
         return self._send_buffers.keys()
 
+    def get_max_buffer_size_possible(self, region):
+        """
+        returns the max_possible size of a buffered region
+        :param region: the region to find the max possible size of
+        :return: the max possible size of the buffered region
+        """
+        return self._send_buffers[region].max_buffer_size_possible
+
     def get_region_buffer_size(self, region):
         """
         returns the size of a given regions buffer

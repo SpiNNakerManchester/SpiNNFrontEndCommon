@@ -37,6 +37,16 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
         """
 
     @abstractmethod
+    def get_max_buffer_size_possible(self, region):
+        """
+        gets the max_possible size of a buffered region
+        :param region: the region to find the max possible size of
+        :type region: int
+        :return: the max possible size of the buffered region
+        :rtype: int
+        """
+
+    @abstractmethod
     def is_next_timestamp(self, region):
         """ Determine if there is another timestamp with data to be sent
 

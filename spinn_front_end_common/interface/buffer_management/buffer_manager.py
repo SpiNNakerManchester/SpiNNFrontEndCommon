@@ -20,8 +20,6 @@ from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.eieio.data_messages.eieio_32bit\
     .eieio_32bit_timed_payload_prefix_data_message\
     import EIEIO32BitTimedPayloadPrefixDataMessage
-from spinnman.messages.eieio.data_messages.eieio_data_header\
-    import EIEIODataHeader
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.exceptions import SpinnmanInvalidPacketException
 from spinnman.messages.eieio.data_messages.eieio_data_message \
@@ -48,7 +46,6 @@ import struct
 import threading
 import logging
 import traceback
-import math
 import os
 
 
@@ -58,18 +55,8 @@ logger = logging.getLogger(__name__)
 _MIN_MESSAGE_SIZE = (EIEIO32BitTimedPayloadPrefixDataMessage
                      .get_min_packet_length())
 
-# The size of the header of a message
-_HEADER_SIZE = EIEIODataHeader.get_header_size(EIEIOType.KEY_32_BIT,
-                                               is_payload_base=True)
-
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
-
-# The number of keys allowed (different from the actual number as there is an
-# additional header)
-_N_KEYS_PER_MESSAGE = (constants.UDP_MESSAGE_MAX_SIZE -
-                       (HostSendSequencedData.get_min_packet_length() +
-                        _HEADER_SIZE) / _N_BYTES_PER_KEY)
 
 
 class BufferManager(object):
@@ -235,20 +222,6 @@ class BufferManager(object):
 
         return message
 
-    @staticmethod
-    def get_n_bytes(n_keys):
-        """ Get the number of bytes used by a given number of keys
-
-        :param n_keys: The number of keys
-        :type n_keys: int
-        """
-
-        # Get the total number of messages
-        n_messages = int(math.ceil(float(n_keys) / _N_KEYS_PER_MESSAGE))
-
-        # Add up the bytes
-        return (_HEADER_SIZE * n_messages) + (n_keys * _N_BYTES_PER_KEY)
-
     def _send_initial_messages(self, vertex, region, progress_bar):
         """ Send the initial set of messages
 
@@ -357,9 +330,8 @@ class BufferManager(object):
                 constants.UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
             logger.debug(
-                "Bytes to go {}, space available {}, timestamp {}"
-                .format(bytes_to_go, space_available,
-                        vertex.get_next_timestamp(region)))
+                "Bytes to go {}, space available {}"
+                .format(bytes_to_go, space_available))
             next_message = self._create_message_to_send(
                 space_available, vertex, region)
             if next_message is None:

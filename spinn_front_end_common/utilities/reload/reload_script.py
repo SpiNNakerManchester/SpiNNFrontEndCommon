@@ -211,16 +211,22 @@ class ReloadScript(object):
         :return: A dictionary of region -> filename for the vertex
         """
         vertex_files = dict()
-        buffer_dict = "{"
+        buffer_tuple = "["
+        first = True
         for region in vertex.get_regions():
+            if not first:
+                buffer_tuple += ", "
             buffer_filename = "{}_{}".format(
                 re.sub("[\"':]", "_", vertex.label), region)
             vertex_files[region] = buffer_filename
-            buffer_dict += "{}:\"{}\", ".format(region, buffer_filename)
-        buffer_dict += "}"
+            buffer_tuple += "({}, \"{}\", {}) "\
+                .format(region, buffer_filename,
+                        vertex.get_max_buffer_size_possible(region))
+            first = False
+        buffer_tuple += "]"
         self._println(
             "vertex = ReloadBufferedVertex(\"{}\", {})".format(
-                vertex.label, buffer_dict))
+                vertex.label, buffer_tuple))
         self._println(
             "buffered_placements.add_placement("
             "Placement(vertex, {}, {}, {}))".format(

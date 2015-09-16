@@ -41,12 +41,12 @@ include $(SPINN_DIRS)/Makefile.common
 
 $(BUILD_DIR)%.o: $(SOURCE_DIRS)/%.c
 	-mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -D__FILE__=\"$*.c\" -o $@ $<
 	
 ifdef EXTRA_SRC_DIR
     $(BUILD_DIR)%.o: $(EXTRA_SRC_DIR)/%.c
 		-mkdir -p $(dir $@)
-		$(CC) $(CFLAGS) -o $@ $<
+		$(CC) $(CFLAGS) -D__FILE__=\"$*.c\" -o $@ $<
 endif
 
 all: $(APP_OUTPUT_DIR)$(APP).aplx
