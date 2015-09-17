@@ -11,3 +11,4 @@ install: $(INSTALL_DIRS)
 
 clean: $(BUILD_DIRS)
 	for d in $(BUILD_DIRS) $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" clean) || exit $$?; done
+	for d in $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" install-clean) || exit $$?; done
