@@ -73,7 +73,7 @@ class FrontEndCommonConfigurationFunctions(object):
         # executable params
         self._do_load = None
         self._do_run = None
-        self._writeTextSpecs = None
+        self._write_text_specs = None
         self._retrieve_provance_data = True
 
         # helper data stores
@@ -158,9 +158,9 @@ class FrontEndCommonConfigurationFunctions(object):
         :param write_provance_data:
         :return:
         """
-        self._writeTextSpecs = False
+        self._write_text_specs = False
         if reports_are_enabled:
-            self._writeTextSpecs = write_text_specs
+            self._write_text_specs = write_text_specs
 
         # determine common report folder
         config_param = default_report_file_path
