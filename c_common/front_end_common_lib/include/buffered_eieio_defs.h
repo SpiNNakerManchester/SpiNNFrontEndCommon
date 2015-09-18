@@ -1,22 +1,25 @@
 #ifndef BUFFERED_EIEIO_DEFS_H
 #define BUFFERED_EIEIO_DEFS_H
 
-// Definitions
-// EIEIO commands
-#define DATABASE_CONFIRMATION       1   // Database handshake with visualiser
-#define EVENT_PADDING               2   // Fill in buffer area with padding
-#define EVENT_STOP                  3   // End of all buffers, stop execution
-#define STOP_SENDING_REQUESTS       4   // Stop complaining that there is sdram free space for buffers
-#define START_SENDING_REQUESTS      5   // Start complaining that there is sdram free space for buffers
-#define SPINNAKER_REQUEST_BUFFERS   6   // Spinnaker requesting new buffers for spike source population
-#define HOST_SEND_SEQUENCED_DATA    7   // Buffers being sent from host to SpiNNaker
-#define SPINNAKER_REQUEST_READ_DATA 8   // Buffers available to be read from a buffered out vertex
-#define HOST_DATA_READ              9   // Host confirming data being read form SpiNNaker memory
-#define HOST_REQUEST_FLUSH_DATA     10  // At the end of simulation the host requests to send all the remaining data
-#define FLUSH_DATA_COMPLETED        11  // All the remaining data has been flushed to the host, no more data to be sent
+//! human readable forms of the different command message ids.
+typedef enum eieio_command_messages {
+    DATABASE_CONFIRMATION = 1, // Database handshake with visualiser
+    EVENT_PADDING, // Fill in buffer area with padding
+    EVENT_STOP_COMMANDS,  // End of all buffers, stop execution
+    STOP_SENDING_REQUESTS, // Stop complaining that there is sdram free space for buffers
+    START_SENDING_REQUESTS, // Start complaining that there is sdram free space for buffers
+    SPINNAKER_REQUEST_BUFFERS, // Spinnaker requesting new buffers for spike source population
+    HOST_SEND_SEQUENCED_DATA, // Buffers being sent from host to SpiNNaker
+    SPINNAKER_REQUEST_READ_DATA, // Buffers available to be read from a buffered out vertex
+    HOST_DATA_READ, // Host confirming data being read form SpiNNaker memory
+    HOST_REQUEST_FLUSH_DATA, // At the end of simulation the host requests to send all the remaining data
+    FLUSH_DATA_COMPLETED // All the remaining data has been flushed to the host, no more data to be sent
+}eieio_command_messages;
 
-// Buffering operations
-#define BUFFER_OPERATION_READ 0
-#define BUFFER_OPERATION_WRITE 1
+//! human readable forms of the different buffer operations
+typedef enum buffered_operations{
+    BUFFER_OPERATION_READ,
+    BUFFER_OPERATION_WRITE
+}buffered_operations;
 
 #endif

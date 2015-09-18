@@ -7,29 +7,10 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
-//! human readable forms of the different command message ids.
-typedef enum eieio_command_messages {
-    DATABASE_CONFIRMATION = 1, // Database handshake with visualiser
-    EVENT_PADDING, // Fill in buffer area with padding
-    EVENT_STOP_COMMANDS,  // End of all buffers, stop execution
-    STOP_SENDING_REQUESTS, // Stop complaining that there is sdram free space for buffers
-    START_SENDING_REQUESTS, // Start complaining that there is sdram free space for buffers
-    SPINNAKER_REQUEST_BUFFERS, // Spinnaker requesting new buffers for spike source population
-    HOST_SEND_SEQUENCED_DATA, // Buffers being sent from host to SpiNNaker
-    SPINNAKER_REQUEST_READ_DATA, // Buffers available to be read from a buffered out vertex
-    HOST_DATA_READ // Host confirming data being read form SpiNNaker memory
-}eieio_command_messages;
-
 //! human readable form of the different eieio mesage types
 typedef enum eieio_data_message_types {
     KEY_16_BIT, KEY_PAYLOAD_16_BIT, KEY_32_BIT, KEY_PAYLOAD_32_bIT
 }eieio_data_message_types;
-
-//! human readable forms of the different buffer operations
-typedef enum buffered_operations{
-    BUFFER_OPERATION_READ,
-    BUFFER_OPERATION_WRITE
-}buffered_operations;
 
 //! human readable form of the read in parameter space
  typedef enum read_in_parameters{
