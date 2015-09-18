@@ -4,36 +4,7 @@
 #include <simulation.h>
 #include <sark.h>
 #include <string.h>
-
-// Database handshake with visualiser
-#define DATABASE_CONFIRMATION 1
-
-// Fill in buffer area with padding
-#define EVENT_PADDING 2
-
-// End of all buffers, stop execution
-#define EVENT_STOP 3
-
-// Stop complaining that there is sdram free space for buffers
-#define STOP_SENDING_REQUESTS 4
-
-// Start complaining that there is sdram free space for buffers
-#define START_SENDING_REQUESTS 5
-
-// Spinnaker requesting new buffers for spike source population
-#define SPINNAKER_REQUEST_BUFFERS 6
-
-// Buffers being sent from host to SpiNNaker
-#define HOST_SEND_SEQUENCED_DATA 7
-
-// Buffers available to be read from a buffered out vertex
-#define SPINNAKER_REQUEST_READ_DATA 8
-
-// Host confirming data being read form SpiNNaker memory
-#define HOST_DATA_READ 9
-
-#define BUFFER_OPERATION_READ 0
-#define BUFFER_OPERATION_WRITE 1
+#include <buffered_eieio_defs.h>
 
 #define BUFFER_REGION 2
 #define MIN_BUFFER_SPACE 10
