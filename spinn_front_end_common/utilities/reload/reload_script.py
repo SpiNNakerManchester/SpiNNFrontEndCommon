@@ -23,7 +23,7 @@ class ReloadScript(object):
                  height, width, auto_detect_bmp, enable_reinjection):
         self._binary_directory = binary_directory
         self._wait_on_confiramtion = None
-        self._runtime = None
+        self._runtime = 0
         self._time_scale_factor = None
         if not self._binary_directory.endswith(os.sep):
             self._binary_directory += os.sep

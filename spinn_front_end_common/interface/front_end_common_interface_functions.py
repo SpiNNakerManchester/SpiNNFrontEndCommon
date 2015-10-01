@@ -412,50 +412,71 @@ class FrontEndCommonInterfaceFunctions(object):
         progress_bar.end()
         return processor_to_app_data_base_address
 
-    def wait_for_cores_to_be_ready(self, executable_targets, app_id):
-
-        total_processors = executable_targets.total_processors
-        all_core_subsets = executable_targets.all_core_subsets
-
-        processor_c_main = self._txrx.get_core_state_count(app_id,
-                                                           CPUState.C_MAIN)
-        # check that everything has gone though c main to reach sync0 or
-        # failing for some unknown reason
-        while processor_c_main != 0:
-            time.sleep(0.1)
-            processor_c_main = self._txrx.get_core_state_count(app_id,
-                                                               CPUState.C_MAIN)
-
-        # check that the right number of processors are in sync0
-        processors_ready = self._txrx.get_core_state_count(app_id,
-                                                           CPUState.SYNC0)
-
-        if processors_ready != total_processors:
-            unsuccessful_cores = self._get_cores_not_in_state(
-                all_core_subsets, CPUState.SYNC0)
-
-            # last chance to slip out of error check
-            if len(unsuccessful_cores) != 0:
-                break_down = self._get_core_status_string(unsuccessful_cores)
-                raise exceptions.ExecutableFailedToStartException(
-                    "Only {} processors out of {} have successfully reached "
-                    "SYNC0:{}".format(
-                        processors_ready, total_processors, break_down))
-
-    def start_all_cores(self, executable_targets, app_id):
+    def wait_for_cores_to_be_ready(
+            self, executable_targets, app_id, no_full_runs):
         """
 
-        :param executable_targets:
-        :param app_id:
+        :param executable_targets: the mapping between cores and binaries
+        :param app_id: the appid that being used by the simulation
+        :param no_full_runs:  the number of runs been done between setup and end
         :return:
         """
 
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
+        processor_c_main = self._txrx.get_core_state_count(app_id,
+                                                           CPUState.C_MAIN)
+        # check that everything has gone though c main to reach correct sync or
+        # failing for some unknown reason
+        while processor_c_main != 0:
+            time.sleep(0.1)
+            processor_c_main = self._txrx.get_core_state_count(app_id,
+                                                               CPUState.C_MAIN)
+
+        # check that the right number of processors are in correct sync
+        sync_state = None
+        if no_full_runs % 2 == 0:
+            sync_state = CPUState.SYNC0
+        else:
+            sync_state = CPUState.SYNC1
+
+        processors_ready = self._txrx.get_core_state_count(app_id, sync_state)
+
+        if processors_ready != total_processors:
+            unsuccessful_cores = self._get_cores_not_in_state(
+                all_core_subsets, sync_state)
+
+            # last chance to slip out of error check
+            if len(unsuccessful_cores) != 0:
+                break_down = self._get_core_status_string(unsuccessful_cores)
+                raise exceptions.ExecutableFailedToStartException(
+                    "Only {} processors out of {} have successfully reached "
+                    "{}:{}".format(
+                        processors_ready, total_processors, sync_state.name,
+                        break_down))
+
+    def start_all_cores(self, executable_targets, app_id, no_full_runs):
+        """
+        :param executable_targets: the mapping between cores and binaries
+        :param app_id: the appid that being used by the simulation
+        :param no_full_runs:  the number of runs been done between setup and end
+        :return: None
+        """
+
+        total_processors = executable_targets.total_processors
+        all_core_subsets = executable_targets.all_core_subsets
+
+        # check that the right number of processors are in correct sync
+        sync_state = None
+        if no_full_runs % 2 == 0:
+            sync_state = CPUState.SYNC0
+        else:
+            sync_state = CPUState.SYNC1
+
         # if correct, start applications
         logger.info("Starting application")
-        self._txrx.send_signal(app_id, SCPSignal.SYNC0)
+        self._txrx.send_signal(app_id, sync_state)
 
         # check all apps have gone into run state
         logger.info("Checking that the application has started")
