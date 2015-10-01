@@ -72,14 +72,14 @@ class FrontEndCommonProvenanceFunctions(AbstractProvidesProvenanceData):
                         router_diagnostic.n_local_multicast_packets != 0
                     has_external_multicast_packets = \
                         router_diagnostic.n_external_multicast_packets != 0
-
+                    reinjector_status = \
+                        self._txrx.get_reinjection_status(chip.x, chip.y)
                     if (has_dropped_mc_packets or
                             has_local_multicast_packets or
                             has_external_multicast_packets):
                         self._write_router_diag(
                             unexpected_routers, chip.x, chip.y,
-                            router_diagnostics[chip.x, chip.y],
-                            reinjector_statuses[chip.x, chip.y])
+                            router_diagnostic, reinjector_status)
 
     @staticmethod
     def _write_router_diag(parent_xml_element, x, y, router_diagnostic,
