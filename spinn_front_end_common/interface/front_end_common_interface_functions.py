@@ -436,7 +436,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # check that the right number of processors are in correct sync
         sync_state = None
-        if no_full_runs % 2 == 0:
+        if no_full_runs % 2 == 1:
             sync_state = CPUState.SYNC0
         else:
             sync_state = CPUState.SYNC1
@@ -469,7 +469,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # check that the right number of processors are in correct sync
         sync_state = None
-        if no_full_runs % 2 == 0:
+        if no_full_runs % 2 == 1:
             sync_state = CPUState.SYNC0
         else:
             sync_state = CPUState.SYNC1
