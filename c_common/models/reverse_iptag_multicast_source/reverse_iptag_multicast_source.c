@@ -26,16 +26,10 @@ typedef enum eieio_data_message_types {
 //! the minimum space required for a buffer to work
 #define MIN_BUFFER_SPACE 10
 
-// The maximum sequence number
-#define MAX_SEQUENCE_NO 0xFF
-
-//! the amount of tics to wait between requests
+//! the amount of ticks to wait between requests
 #define TICKS_BETWEEN_REQUESTS 100
 
 #pragma pack(1)
-
-//! pointer to a eieio message
-typedef uint16_t* eieio_msg_t;
 
 typedef struct {
     uint16_t event;
@@ -403,7 +397,7 @@ static inline void process_16_bit_packets(
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: check=%d, key=%d, mask=%d,"
+        log_debug("check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
                   " key_space=%d: %d", check, key, mask, key_space,
                   (!check) || (check && ((key & mask) == key_space)));
 
@@ -440,7 +434,7 @@ static inline void process_32_bit_packets(
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
         uint32_t key = next_event[1] << 16 | next_event[0];
-        log_debug("Packet key = %d", key);
+        log_debug("Packet key = 0x%08x", key);
         next_event += 2;
         uint32_t payload = 0;
         if (pkt_has_payload) {
@@ -456,12 +450,12 @@ static inline void process_32_bit_packets(
 
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                log_debug("mc packet 32-bit key=%d", key);
+                log_debug("mc packet 32-bit key=0x%08x", key);
                 while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
             } else {
-                log_debug("mc packet 32-bit key=%d, payload=%d", key, payload);
+                log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x", key, payload);
                 while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
@@ -977,7 +971,7 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(SDP_PACKET_RX, sdp_packet_callback, 1);
+    spin1_sdp_callback_on(BUFFERING_IN_SDP_PORT, sdp_packet_callback, 1);
     spin1_callback_on(TIMER_TICK, timer_callback, 2);
 
     log_info("Starting");

@@ -34,6 +34,8 @@
 
 
 #include "common-typedefs.h"
+#include "spin1_api.h"
+#include <buffered_eieio_defs.h>
 
 //! human readable forms of the different channels supported for neural models.
 typedef enum recording_channel_e {
@@ -43,8 +45,49 @@ typedef enum recording_channel_e {
     e_recording_channel_max,
 } recording_channel_e;
 
+typedef struct
+{
+    uint16_t eieio_header_command;
+    uint16_t chip_id;
+} read_request_packet_header;
+
+typedef struct
+{
+    uint8_t processor_and_request;
+    uint8_t sequence;
+    uint8_t channel;
+    uint8_t region;
+    uint32_t start_address;
+    uint32_t space_to_be_read;
+} read_request_packet_data;
+
+typedef struct
+{
+    uint16_t eieio_header_command;
+    uint8_t request;
+    uint8_t sequence;
+} host_data_read_packet_header;
+
+typedef struct
+{
+    uint16_t zero;
+    uint8_t channel;
+    uint8_t region;
+    uint32_t space_read;
+} host_data_read_packet_data;
+
+typedef struct
+{
+    uint16_t eieio_header_command;
+    uint8_t zero;
+    uint8_t sequence;
+} host_request_flush_data_packet;
+
+
+
 //! max number of recordable channels supported by the neural models
 #define RECORDING_POSITION_IN_REGION 3
+#define MIN_BUFFERING_OUT_LIMIT 10
 
 //! \brief Reads the size of the recording regions - pass 0s for the region
 //!        size pointer when the value is not needed
@@ -108,5 +151,18 @@ bool recording_record(
 //! channel so that future records fail.
 //! \return nothing
 void recording_finalise();
+
+
+bool recording_write_memory(
+        recording_channel_e channel, void *data, uint32_t size_bytes);
+uint32_t compute_available_space_in_channel(recording_channel_e channel);
+void recording_send_buffering_out_trigger_message(bool flush_all);
+void buffering_in_handler(uint mailbox, uint port);
+void recording_eieio_packet_handler(eieio_msg_t msg, uint length);
+void recording_host_data_read(eieio_msg_t msg, uint length);
+void recording_host_request_flush_data(eieio_msg_t msg, uint length);
+
+
+uint8_t buffering_out_fsm = 0;
 
 #endif // _RECORDING_H_

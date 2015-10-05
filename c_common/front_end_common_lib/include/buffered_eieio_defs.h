@@ -12,8 +12,7 @@ typedef enum eieio_command_messages {
     HOST_SEND_SEQUENCED_DATA, // Buffers being sent from host to SpiNNaker
     SPINNAKER_REQUEST_READ_DATA, // Buffers available to be read from a buffered out vertex
     HOST_DATA_READ, // Host confirming data being read form SpiNNaker memory
-    HOST_REQUEST_FLUSH_DATA, // At the end of simulation the host requests to send all the remaining data
-    FLUSH_DATA_COMPLETED // All the remaining data has been flushed to the host, no more data to be sent
+    HOST_REQUEST_FLUSH_DATA // At the end of simulation the host requests to send all the remaining data
 }eieio_command_messages;
 
 //! human readable forms of the different buffer operations
@@ -21,5 +20,17 @@ typedef enum buffered_operations{
     BUFFER_OPERATION_READ,
     BUFFER_OPERATION_WRITE
 }buffered_operations;
+
+//! human readable forms of the different SDP ports used for buffer streaming
+typedef enum buffering_sdp_port{
+    BUFFERING_IN_SDP_PORT = 1,
+    BUFFERING_OUT_SDP_PORT
+}buffering_sdp_port;
+
+//! pointer to a eieio message
+typedef uint16_t* eieio_msg_t;
+
+// The maximum sequence number
+#define MAX_SEQUENCE_NO 0xFF
 
 #endif
