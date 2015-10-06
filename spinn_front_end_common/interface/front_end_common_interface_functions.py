@@ -436,7 +436,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # check that the right number of processors are in correct sync
         sync_state = None
-        if no_full_runs % 2 == 1:
+        if no_full_runs % 2 == 0:
             sync_state = CPUState.SYNC0
         else:
             sync_state = CPUState.SYNC1
@@ -469,10 +469,10 @@ class FrontEndCommonInterfaceFunctions(object):
 
         # check that the right number of processors are in correct sync
         sync_state = None
-        if no_full_runs % 2 == 1:
-            sync_state = CPUState.SYNC0
+        if no_full_runs % 2 == 0:
+            sync_state = SCPSignal.SYNC0
         else:
-            sync_state = CPUState.SYNC1
+            sync_state = SCPSignal.SYNC1
 
         # if correct, start applications
         logger.info("Starting application")
@@ -499,13 +499,14 @@ class FrontEndCommonInterfaceFunctions(object):
                     .format(processors_running, total_processors, break_down))
 
     def wait_for_execution_to_complete(
-            self, executable_targets, app_id, runtime, time_scaling):
+            self, executable_targets, app_id, runtime, time_scaling, no_full_runs):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
+        :param no_full_runs: the number of runs been done between setup and end
         :return:
         """
 
@@ -535,8 +536,14 @@ class FrontEndCommonInterfaceFunctions(object):
                             "waiting a bit longer...")
                 time.sleep(0.5)
 
+        sync_state = None
+        if no_full_runs % 2 == 1:
+            sync_state = CPUState.SYNC0
+        else:
+            sync_state = CPUState.SYNC1
+
         processors_exited = self._txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
+            app_id, sync_state)
 
         if processors_exited < total_processors:
             unsuccessful_cores = self._get_cores_not_in_state(
@@ -548,10 +555,11 @@ class FrontEndCommonInterfaceFunctions(object):
                 "{}".format(
                     total_processors - processors_exited, total_processors,
                     break_down))
-        if self._reports_states.transciever_report:
-            self._reload_script.close()
-        if self._send_buffer_manager is not None:
-            self._send_buffer_manager.stop()
+        # FIXME: How are these finally closed?
+        #if self._reports_states.transciever_report:
+        #    self._reload_script.close()
+        #if self._send_buffer_manager is not None:
+        #    self._send_buffer_manager.stop()
         logger.info("Application has run to completion")
 
     def _get_cores_in_state(self, all_core_subsets, state):
