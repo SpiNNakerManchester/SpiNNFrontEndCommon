@@ -3,7 +3,7 @@ ReportState
 """
 
 # pacman imports
-from pacman.utilities.report_states import ReportState as PacmanReportState
+from pacman.utilities.utility_objs.report_states import ReportState as PacmanReportState
 
 
 class ReportState(object):

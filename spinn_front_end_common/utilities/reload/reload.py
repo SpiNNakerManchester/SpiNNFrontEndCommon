@@ -10,7 +10,7 @@ from spinn_front_end_common.utilities.notification_protocol\
 
 from spinnman.data.file_data_reader import FileDataReader
 
-from pacman.utilities.progress_bar import ProgressBar
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 
 class Reload(object):

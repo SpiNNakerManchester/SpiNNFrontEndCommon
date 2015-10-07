@@ -8,7 +8,7 @@ from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 
 # pacman imports
-from pacman.utilities.progress_bar import ProgressBar
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # spinnmachine imports
 from spinn_machine.virutal_machine import VirtualMachine

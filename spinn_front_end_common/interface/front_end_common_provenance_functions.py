@@ -3,8 +3,7 @@ FrontEndCommonProvanenceFunctions
 """
 
 # front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_provenance_data import AbstractProvidesProvenanceData
+from pacman.interfaces.abstract_provides_provenance_data import AbstractProvidesProvenanceData
 
 
 # general imports

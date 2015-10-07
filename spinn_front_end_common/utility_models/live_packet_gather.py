@@ -19,8 +19,7 @@ from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 
 # spinn front end imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_provenance_data import AbstractProvidesProvenanceData
+from pacman.interfaces.abstract_provides_provenance_data import AbstractProvidesProvenanceData
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
