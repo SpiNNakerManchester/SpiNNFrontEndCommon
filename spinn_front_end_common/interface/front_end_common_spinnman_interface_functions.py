@@ -14,6 +14,7 @@ from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_machine.virutal_machine import VirtualMachine
 
 # spinnman imports
+from spinnman.connections.socket_address_with_chip import SocketAddressWithChip
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
 from spinnman.transceiver import create_transceiver_from_hostname
@@ -86,7 +87,7 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height,
             is_virtual, virtual_has_wrap_arounds, auto_detect_bmp=True,
-            enable_reinjection=True):
+            enable_reinjection=True, scamp_connection_data=None):
         """
         Set up the interfaces for communicating with the SpiNNaker board
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -108,8 +109,14 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
                be automatically determined
         :param enable_reinjection: True if dropped packet reinjection is to be\
                enabled
+        :param scamp_connection_data: the list of scamp connection datas or None
         :return: None
         """
+
+        # if the end user gives you scamp data, use it and dont discover them
+        if scamp_connection_data is not None:
+            scamp_connection_data = \
+                self._sort_out_scamp_connections(scamp_connection_data)
 
         if not is_virtual:
             # sort out down chips and down cores if needed
@@ -123,7 +130,8 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
                 hostname=hostname, bmp_connection_data=bmp_connection_data,
                 version=board_version, ignore_chips=ignored_chips,
                 ignore_cores=ignored_cores, number_of_boards=number_of_boards,
-                auto_detect_bmp=auto_detect_bmp)
+                auto_detect_bmp=auto_detect_bmp,
+                scamp_connections=scamp_connection_data)
 
             # update number of boards from machine
             if number_of_boards is None:
@@ -137,7 +145,8 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
             self._txrx.ensure_board_is_ready(
                 number_of_boards, width, height,
                 enable_reinjector=enable_reinjection)
-            self._txrx.discover_scamp_connections()
+            if scamp_connection_data is None:
+                self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
         else:
             self._machine = VirtualMachine(
@@ -149,6 +158,25 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
                     self._app_data_folder, hostname, board_version,
                     bmp_details, downed_chips, downed_cores, number_of_boards,
                     height, width, auto_detect_bmp, enable_reinjection)
+
+    @staticmethod
+    def _sort_out_scamp_connections(scamp_connections_data):
+        scamp_addresses = list()
+        for scamp_connection in scamp_connections_data.split(":"):
+            scamp_connection_split = scamp_connection.split(",")
+            if len(scamp_connection_split) == 3:
+                scamp_addresses.append(SocketAddressWithChip(
+                    hostname=scamp_connection_split[0],
+                    port_num=None,
+                    chip_x=int(scamp_connection_split[1]),
+                    chip_y=int(scamp_connection_split[2])))
+            else:
+                scamp_addresses.append(SocketAddressWithChip(
+                    hostname=scamp_connection_split[0],
+                    port_num=int(scamp_connection_split[1]),
+                    chip_x=int(scamp_connection_split[2]),
+                    chip_y=int(scamp_connection_split[3])))
+        return scamp_addresses
 
     @staticmethod
     def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
