@@ -147,8 +147,7 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
             self._txrx.ensure_board_is_ready(
                 number_of_boards, width, height,
                 enable_reinjector=enable_reinjection)
-            if scamp_connection_data is None:
-                self._txrx.discover_scamp_connections()
+            self._txrx.discover_scamp_connections()
             self._machine = self._txrx.get_machine_details()
         else:
             self._machine = VirtualMachine(
