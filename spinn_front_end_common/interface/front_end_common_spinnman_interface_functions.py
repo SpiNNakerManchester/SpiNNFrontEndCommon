@@ -87,7 +87,8 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height,
             is_virtual, virtual_has_wrap_arounds, auto_detect_bmp=True,
-            enable_reinjection=True, scamp_connection_data=None):
+            enable_reinjection=True, scamp_connection_data=None,
+            boot_port_num=None):
         """
         Set up the interfaces for communicating with the SpiNNaker board
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -109,6 +110,7 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
                be automatically determined
         :param enable_reinjection: True if dropped packet reinjection is to be\
                enabled
+        :param boot_port_num: the port num used for the boot connection
         :param scamp_connection_data: the list of scamp connection datas or None
         :return: None
         """
@@ -130,7 +132,7 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
                 hostname=hostname, bmp_connection_data=bmp_connection_data,
                 version=board_version, ignore_chips=ignored_chips,
                 ignore_cores=ignored_cores, number_of_boards=number_of_boards,
-                auto_detect_bmp=auto_detect_bmp,
+                auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
                 scamp_connections=scamp_connection_data)
 
             # update number of boards from machine
@@ -182,10 +184,24 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
     def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
         split_string = bmp_cabinet_and_frame.split(";", 2)
         if len(split_string) == 1:
-            return [0, 0, split_string[0]]
+            hostname_split = split_string[0].split(",")
+            if len(hostname_split) == 1:
+                return [0, 0, split_string[0], None]
+            else:
+                return [0, 0, hostname_split[0], hostname_split[1]]
         if len(split_string) == 2:
-            return [0, split_string[0], split_string[1]]
-        return [split_string[0], split_string[1], split_string[2]]
+            hostname_split = split_string[1].split(",")
+            if len(hostname_split) == 1:
+                return [0, split_string[0], split_string[1], None]
+            else:
+                return [0, split_string[0], hostname_split[0],
+                        hostname_split[1]]
+        hostname_split = split_string[2].split(",")
+        if len(hostname_split) == 1:
+            return [split_string[0], split_string[1], hostname_split[0], None]
+        else:
+            return [split_string[0], split_string[1], hostname_split[0],
+                    hostname_split[1]]
 
     @staticmethod
     def _sort_out_bmp_boards_string(bmp_boards):
@@ -212,7 +228,7 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
         for bmp_detail in bmp_string.split(":"):
 
             bmp_string_split = bmp_detail.split("/")
-            (cabinet, frame, hostname) = \
+            (cabinet, frame, hostname, port_num) = \
                 FrontEndCommonSpinnmanInterfaceFunctions.\
                 _sort_out_bmp_cabinet_and_frame_string(bmp_string_split[0])
 
@@ -220,15 +236,26 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
 
                 # if there is no split, then assume its one board,
                 # located at position 0
-                bmp_details.append(
-                    BMPConnectionData(cabinet, frame, hostname, [0]))
+                if port_num is not None:
+                    bmp_details.append(
+                        BMPConnectionData(cabinet, frame, hostname, [0],
+                                          int(port_num)))
+                else:
+                    bmp_details.append(
+                        BMPConnectionData(cabinet, frame, hostname, [0],
+                                          port_num=None))
             else:
                 boards = \
                     FrontEndCommonSpinnmanInterfaceFunctions.\
                     _sort_out_bmp_boards_string(bmp_string_split[1])
-
-                bmp_details.append(
-                    BMPConnectionData(cabinet, frame, hostname, boards))
+                if port_num is not None:
+                    bmp_details.append(
+                        BMPConnectionData(cabinet, frame, hostname, boards,
+                                          int(port_num)))
+                else:
+                    bmp_details.append(
+                        BMPConnectionData(cabinet, frame, hostname, boards,
+                                          None))
         return bmp_details
 
     @staticmethod
