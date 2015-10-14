@@ -93,3 +93,13 @@ class SendsBuffersFromHostPartitionedVertexPreBufferedImpl(
         :return: bool
         """
         return len(self._send_buffers[region].timestamps) == 0
+
+    def rewind(self, region):
+        """ Rewinds the internal buffer in preparation of resending
+            the spikes
+
+        :param region: The region to rewind
+        :type region: int
+        :return:
+        """
+        self._send_buffers[region].rewind()

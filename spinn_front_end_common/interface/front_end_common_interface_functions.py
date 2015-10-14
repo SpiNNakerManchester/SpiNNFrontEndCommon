@@ -429,10 +429,11 @@ class FrontEndCommonInterfaceFunctions(object):
                                                            CPUState.C_MAIN)
         # check that everything has gone though c main to reach correct sync or
         # failing for some unknown reason
-        while processor_c_main != 0:
-            time.sleep(0.1)
-            processor_c_main = self._txrx.get_core_state_count(app_id,
-                                                               CPUState.C_MAIN)
+        while True:
+            if self._txrx.get_core_state_count(app_id, CPUState.C_MAIN) == 0:
+                break
+            # It used to wait here for 0.1 seconds, but if one intends to run
+            # for only 0.1 seconds repeatedly, that is not an option.
 
         # check that the right number of processors are in correct sync
         sync_state = None
@@ -483,9 +484,13 @@ class FrontEndCommonInterfaceFunctions(object):
         processors_running = self._txrx.get_core_state_count(
             app_id, CPUState.RUNNING)
         if processors_running < total_processors:
-
+            sync_state = None
+            if no_full_runs % 2 == 0:
+                sync_state = CPUState.SYNC1
+            else:
+                sync_state = CPUState.SYNC0
             processors_finished = self._txrx.get_core_state_count(
-                app_id, CPUState.FINISHED)
+                app_id, sync_state)
             if processors_running + processors_finished >= total_processors:
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
@@ -498,8 +503,8 @@ class FrontEndCommonInterfaceFunctions(object):
                     "Only {} of {} processors started:{}"
                     .format(processors_running, total_processors, break_down))
 
-    def wait_for_execution_to_complete(
-            self, executable_targets, app_id, runtime, time_scaling, no_full_runs):
+    def wait_for_execution_to_complete(self, executable_targets, app_id,
+        runtime, time_scaling, no_full_runs):
         """
 
         :param executable_targets:
@@ -513,7 +518,7 @@ class FrontEndCommonInterfaceFunctions(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        time_to_wait = ((runtime * time_scaling) / 1000.0) + 1.0
+        time_to_wait = ((runtime * time_scaling) / 1000.0) * 0.9
         logger.info("Application started - waiting {} seconds for it to"
                     " stop".format(time_to_wait))
         time.sleep(time_to_wait)
@@ -531,10 +536,9 @@ class FrontEndCommonInterfaceFunctions(object):
 
             processors_not_finished = self._txrx.get_core_state_count(
                 app_id, CPUState.RUNNING)
-            if processors_not_finished > 0:
-                logger.info("Simulation still not finished or failed - "
-                            "waiting a bit longer...")
-                time.sleep(0.5)
+            #if processors_not_finished > 0:
+                #logger.info("Simulation still not finished or failed - "
+                #            "waiting a bit longer...")
 
         sync_state = None
         if no_full_runs % 2 == 1:
@@ -547,7 +551,7 @@ class FrontEndCommonInterfaceFunctions(object):
 
         if processors_exited < total_processors:
             unsuccessful_cores = self._get_cores_not_in_state(
-                all_core_subsets, CPUState.FINISHED)
+                all_core_subsets, sync_state)
             break_down = self._get_core_status_string(
                 unsuccessful_cores)
             raise exceptions.ExecutableFailedToStopException(
