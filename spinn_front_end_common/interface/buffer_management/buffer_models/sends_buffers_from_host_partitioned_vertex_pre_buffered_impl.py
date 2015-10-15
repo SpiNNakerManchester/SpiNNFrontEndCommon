@@ -29,6 +29,14 @@ class SendsBuffersFromHostPartitionedVertexPreBufferedImpl(
         """
         self._send_buffers = send_buffers
 
+    @property
+    def send_buffers(self):
+        return self._send_buffers
+    
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
+
     def get_regions(self):
         """
         returns the regions which has buffers to send
