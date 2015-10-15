@@ -153,6 +153,12 @@ class FrontEndCommonSpinnmanInterfaceFunctions(object):
             self._machine = VirtualMachine(
                 width=width, height=height,
                 with_wrap_arounds=virtual_has_wrap_arounds)
+        
+        if self._reports_states.transciever_report:
+            self._reload_script = ReloadScript(
+                self._app_data_folder, hostname, board_version,
+                bmp_details, downed_chips, downed_cores, number_of_boards,
+                height, width, auto_detect_bmp, enable_reinjection)
 
         if self._reports_states.transciever_report:
                 self._reload_script = ReloadScript(
