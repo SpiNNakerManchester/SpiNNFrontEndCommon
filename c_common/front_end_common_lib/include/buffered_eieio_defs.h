@@ -11,8 +11,7 @@ typedef enum eieio_command_messages {
     SPINNAKER_REQUEST_BUFFERS, // Spinnaker requesting new buffers for spike source population
     HOST_SEND_SEQUENCED_DATA, // Buffers being sent from host to SpiNNaker
     SPINNAKER_REQUEST_READ_DATA, // Buffers available to be read from a buffered out vertex
-    HOST_DATA_READ, // Host confirming data being read form SpiNNaker memory
-    HOST_REQUEST_FLUSH_DATA // At the end of simulation the host requests to send all the remaining data
+    HOST_DATA_READ // Host confirming data being read form SpiNNaker memory
 }eieio_command_messages;
 
 //! human readable forms of the different buffer operations

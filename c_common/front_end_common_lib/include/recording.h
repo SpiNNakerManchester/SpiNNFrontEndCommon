@@ -76,13 +76,6 @@ typedef struct
     uint32_t space_read;
 } host_data_read_packet_data;
 
-typedef struct
-{
-    uint16_t eieio_header_command;
-    uint8_t zero;
-    uint8_t sequence;
-} host_request_flush_data_packet;
-
 
 
 //! max number of recordable channels supported by the neural models
@@ -133,7 +126,7 @@ bool recording_is_channel_enabled(uint32_t recording_flags,
 // \param[out] size_bytes the size of memory that the channel can put data into
 //! \return boolean which is True if the channel was successfully initialised
 //! or False otherwise.
-bool recording_initialse_channel(
+bool recording_initialise_channel(
         address_t output_region, recording_channel_e channel,
         uint32_t size_bytes);
 
@@ -161,8 +154,5 @@ void buffering_in_handler(uint mailbox, uint port);
 void recording_eieio_packet_handler(eieio_msg_t msg, uint length);
 void recording_host_data_read(eieio_msg_t msg, uint length);
 void recording_host_request_flush_data(eieio_msg_t msg, uint length);
-
-
-uint8_t buffering_out_fsm = 0;
 
 #endif // _RECORDING_H_

@@ -8,6 +8,9 @@ from data_specification.file_data_writer import FileDataWriter
 from data_specification.file_data_reader import FileDataReader
 
 # pacman imports
+from pacman.model.partitionable_graph.\
+    receive_buffers_to_host_partitionable_vertex import \
+    ReceiveBuffersToHostPartitionableVertex
 from pacman.utilities.progress_bar import ProgressBar
 
 # spinnmachine imports
@@ -66,7 +69,7 @@ class FrontEndCommonInterfaceFunctions(object):
         self._machine = None
         self._app_data_folder = app_data_folder
         self._reload_script = None
-        self._send_buffer_manager = None
+        self._buffer_manager = None
 
     def _auto_detect_database(self, partitioned_graph):
         """
@@ -228,7 +231,8 @@ class FrontEndCommonInterfaceFunctions(object):
                                             int(processor_id))
         return ignored_chips, ignored_cores
 
-    def set_up_send_buffering(self, partitioned_graph, placements, tags):
+    def set_up_buffering(
+            self, partitioned_graph, graph_mapper, placements, tags):
         """
         interface for buffered vertices
         :param partitioned_graph: the partitioned graph object
@@ -237,20 +241,40 @@ class FrontEndCommonInterfaceFunctions(object):
         :return: None
         """
         progress_bar = ProgressBar(
-            len(partitioned_graph.subvertices), "Initialising buffers")
+            len(partitioned_graph.subvertices),
+            "Initialising sending and receiving buffers")
 
         # Create the buffer manager
-        self._send_buffer_manager = BufferManager(
+        self._buffer_manager = BufferManager(
             placements, tags, self._txrx, self._reports_states,
             self._app_data_folder, self._reload_script)
 
         for partitioned_vertex in partitioned_graph.subvertices:
+            vertex = graph_mapper.get_vertex_from_subvertex(partitioned_vertex)
             if isinstance(partitioned_vertex,
                           AbstractSendsBuffersFromHostPartitionedVertex):
 
                 # Add the vertex to the managed vertices
-                self._send_buffer_manager.add_sender_vertex(
+                self._buffer_manager.add_sender_vertex(
                     partitioned_vertex)
+            if isinstance(vertex, ReceiveBuffersToHostPartitionableVertex):
+                if vertex.is_vertex_recording():
+                    list_of_regions = list()
+                    if vertex.is_vertex_recording_spikes():
+                        list_of_regions.append(
+                            constants.CORE_REGIONS.
+                            BUFFERING_OUT_SPIKE_RECORDING_REGION.value)
+                    if vertex.is_vertex_recording_v():
+                        list_of_regions.append(
+                            constants.CORE_REGIONS.
+                            BUFFERING_OUT_POTENTIAL_RECORDING_REGION.value)
+                    if vertex.is_vertex_recording_gsyn():
+                        list_of_regions.append(
+                            constants.CORE_REGIONS.
+                            BUFFERING_OUT_GSYN_RECORDING_REGION.value)
+                    self._buffer_manager.add_receiving_vertex(
+                        partitioned_vertex, list_of_regions)
+
             progress_bar.update()
         progress_bar.end()
 
@@ -529,8 +553,8 @@ class FrontEndCommonInterfaceFunctions(object):
                     break_down))
         if self._reports_states.transciever_report:
             self._reload_script.close()
-        if self._send_buffer_manager is not None:
-            self._send_buffer_manager.stop()
+        if self._buffer_manager is not None:
+            self._buffer_manager.stop()
         logger.info("Application has run to completion")
 
     def _get_cores_in_state(self, all_core_subsets, state):
@@ -700,3 +724,7 @@ class FrontEndCommonInterfaceFunctions(object):
                     acutal_cores_loaded += 1
             progress_bar.update(amount_to_add=acutal_cores_loaded)
         progress_bar.end()
+
+    @property
+    def buffer_manager(self):
+        return self._buffer_manager

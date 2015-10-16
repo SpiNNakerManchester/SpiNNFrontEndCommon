@@ -6,6 +6,7 @@
 
 #include <recording.h>
 #include <buffered_eieio_defs.h>
+#include <region_defs.h>
 
 // Standard includes
 #include <string.h>
@@ -16,7 +17,6 @@
 //---------------------------------------
 //! structure that defines a channel in memory.
 typedef struct recording_channel_t {
-    address_t counter;
     uint8_t *start;
     uint8_t *current_write;
     uint8_t *current_read;
@@ -38,6 +38,7 @@ typedef enum recording_positions {
 //---------------------------------------
 //! array containing all possible channels.
 static recording_channel_t g_recording_channels[e_recording_channel_max];
+static uint8_t buffering_out_fsm = 0;
 
 //---------------------------------------
 // Private method
@@ -66,6 +67,10 @@ static inline bool close_channel(recording_channel_e channel) {
     g_recording_channels[channel].start = NULL;
     g_recording_channels[channel].end = NULL;
     return true;
+}
+
+static uint8_t channel_to_region_id(recording_channel_e channel) {
+    return BUFFERING_OUT_SPIKE_RECORDING_REGION + channel;
 }
 
 //---------------------------------------
@@ -132,7 +137,7 @@ void recording_read_region_sizes(
 // \param[out] size_bytes the size of memory that the channel can put data into
 //! \return boolean which is True if the channel was successfully initialised
 //! or False otherwise.
-bool recording_initialse_channel(
+bool recording_initialise_channel(
         address_t output_region, recording_channel_e channel,
         uint32_t size_bytes) {
 
@@ -146,18 +151,14 @@ bool recording_initialse_channel(
     } else {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
 
-        // Cache pointer to output counter in recording channel and set it to 0
-        recording_channel->counter = &output_region[0];
-        *recording_channel->counter = 0;
-
         // Calculate pointers to the start, current position and end of this
         // memory block
-        recording_channel->start = (uint8_t*) &output_region[1];
-        recording_channel->current_write = (uint8_t*) &output_region[1];
-        recording_channel->current_read = (uint8_t*) &output_region[1];
+        recording_channel->start = (uint8_t*) output_region;
+        recording_channel->current_write = (uint8_t*) output_region;
+        recording_channel->current_read = (uint8_t*) output_region;
         recording_channel->end = recording_channel->start + size_bytes;
         recording_channel->last_buffer_operation = BUFFER_OPERATION_READ;
-        recording_channel->region_id = channel; //TODO: this needs to be region id
+        recording_channel->region_id = channel_to_region_id(channel);
 
         log_info("Recording channel %u configured to use %u byte memory block"
                  " starting at %08x",
@@ -210,6 +211,21 @@ bool recording_record(
 void recording_finalise() {
     log_info("Finalising recording channels");
 
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+
+    // Get the region address store channel details
+    address_t buffering_out_control_reg = data_specification_get_region(
+        BUFFERING_OUT_CONTROL_REGION, address);
+
+    // store info related to the state of the transmission to avoid possible
+    // duplication of info on the host side
+    spin1_memcpy(buffering_out_control_reg, &buffering_out_fsm, sizeof(buffering_out_fsm));
+
+    // store info on the channel status so that the host can flush the info
+    // buffered in SDRAM
+    spin1_memcpy(&buffering_out_control_reg[1], &g_recording_channels, sizeof(recording_channel_t) * e_recording_channel_max);
+
     // Loop through channels
     for (uint32_t channel = 0; channel < e_recording_channel_max; channel++) {
         // If this channel's in use
@@ -219,13 +235,8 @@ void recording_finalise() {
 
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
-            uint32_t num_bytes_written = recording_channel->current_write
-                                         - recording_channel->start;
             log_info(
-                "\tFinalising channel %u - %x bytes of data starting at %08x",
-                channel, num_bytes_written + sizeof(uint32_t),
-                recording_channel->counter);
-            *recording_channel->counter = num_bytes_written;
+                "\tFinalising channel %u - storing info in SDRAM", channel);
             if(!close_channel(channel)){
                 log_error("could not close channel %u.", channel);
             }
@@ -367,7 +378,7 @@ void recording_send_buffering_out_trigger_message(bool flush_all)
             (g_recording_channels[channel].end - g_recording_channels[channel].start);
         uint32_t channel_space_available = compute_available_space_in_channel(channel);
 
-        if (recording_is_channel_enabled(channel) &&
+        if (has_been_initialsed(channel) &&
            (flush_all || channel_space_total - channel_space_available >= MIN_BUFFERING_OUT_LIMIT))
         {
             uint8_t *buffer_region = g_recording_channels[channel].start;
@@ -409,7 +420,7 @@ void recording_send_buffering_out_trigger_message(bool flush_all)
             else
             {
                 // there has been an error somewhere,
-                // this should have never happened
+                // this should never happen
                 log_debug("Unknown channel state - channel: %d, start pointer: %d, end pointer: %d, read_pointer: %d, write_pointer: %d, last operation==READ: %d\n", channel, buffer_region, end_of_buffer_region, read_pointer, write_pointer, last_buffer_operation==BUFFER_OPERATION_READ);
             }
         }
@@ -453,11 +464,6 @@ void recording_eieio_packet_handler(eieio_msg_t msg, uint length)
             recording_host_data_read(msg, length);
             break;
 
-        case HOST_REQUEST_FLUSH_DATA:
-            log_debug("command: HOST_REQUEST_FLUSH_DATA");
-            recording_host_request_flush_data(msg, length);
-            break;
-
         default:
             log_debug("unhandled command id %d", pkt_command);
             break;
@@ -493,31 +499,5 @@ void recording_host_data_read(eieio_msg_t msg, uint length)
         }
 
         g_recording_channels[channel].current_read = (uint8_t *) temp_value;
-    }
-}
-
-void recording_host_request_flush_data(eieio_msg_t msg, uint length)
-{
-    host_request_flush_data_packet *ptr_hdr = (host_request_flush_data_packet *) msg;
-    uint8_t sequence = ptr_hdr -> sequence;
-    uint channel;
-    bool flush = 0;
-
-    uint8_t temp = (buffering_out_fsm + 1) & MAX_SEQUENCE_NO;
-
-    if (sequence != temp)
-        return;
-
-    for (channel = 0; channel < e_recording_channel_max; channel++)
-        if (recording_is_channel_enabled(channel) && channel_space_total - channel_space_available >= MIN_BUFFERING_OUT_LIMIT)
-            flush = 1;
-
-    if (flush == 1)
-        recording_send_buffering_out_trigger_message(1);
-    else
-    {
-        // check that simulation is complete and terminate execution
-
-
     }
 }
