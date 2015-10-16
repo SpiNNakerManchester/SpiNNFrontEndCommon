@@ -879,7 +879,7 @@ bool setup_buffer_region(address_t region_address) {
 }
 
 
-bool initialize_recording() {
+bool initialise_recording() {
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
     address_t system_region = data_specification_get_region(SYSTEM, address);
@@ -901,7 +901,7 @@ bool initialize_recording() {
     return true;
 }
 
-bool initialize(uint32_t *timer_period) {
+bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -927,7 +927,7 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
 
-    if (!initialize_recording()) {
+    if (!initialise_recording()) {
         return false;
     }
     
@@ -941,7 +941,6 @@ bool initialize(uint32_t *timer_period) {
 
     return true;
 }
-
 
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
@@ -961,22 +960,21 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Simulation complete.");
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
-        
+
+        // Reset buffering
+        address_t address = data_specification_get_data_address();
+        read_parameters(data_specification_get_region(CONFIGURATION, address));
+        if (buffer_region_size > 0) {
+            setup_buffer_region(data_specification_get_region(
+                BUFFER_REGION, address));
+        }
+
         // Wait for the next run of the simulation
         spin1_callback_off(TIMER_TICK);
         event_wait();
 
-        // clear buffers
-        address_t address = data_specification_get_data_address();
-        if (buffer_region_size > 0) {
-            setup_buffer_region(data_specification_get_region(
-                    BUFFER_REGION, address));
-        }
+        initialise_recording();
 
-        // Prepare for the next run
-        time = UINT32_MAX;
-        
-        initialize_recording();
         spin1_callback_on(TIMER_TICK, timer_callback, 2);
 
         return;
@@ -1004,6 +1002,7 @@ void sdp_packet_callback(uint mailbox, uint port) {
     uint16_t length = msg->length;
 
     if (msg->cmd_rc == CMD_STOP) {
+        log_info("Received exit signal. Program complete.");
         spin1_exit(0);
     } else if (msg->cmd_rc == CMD_RUNTIME) {
         simulation_ticks = msg->arg1;
@@ -1022,7 +1021,7 @@ void c_main(void) {
 
     // Configure system
     uint32_t timer_period = 0;
-    if (!initialize(&timer_period)) {
+    if (!initialise(&timer_period)) {
         return;
     }
 
