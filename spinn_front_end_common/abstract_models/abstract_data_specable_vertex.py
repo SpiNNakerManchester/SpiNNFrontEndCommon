@@ -74,7 +74,7 @@ class AbstractDataSpecableVertex(object):
         :param write_text_specs: boolean to write text specs
         :param application_run_time_folder: location where application data is
                stored.
-        :return: Nothing
+        :return: iterable of file_paths
         """
 
     @abstractmethod

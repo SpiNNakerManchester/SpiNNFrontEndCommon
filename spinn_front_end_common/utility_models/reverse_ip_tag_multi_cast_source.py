@@ -293,6 +293,8 @@ class ReverseIpTagMultiCastSource(
         spec.end_specification()
         data_writer.close()
 
+        return [data_writer.filename]
+
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
         return self

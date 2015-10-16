@@ -19,7 +19,7 @@ class FrontEndCommonConfigurationFunctions(object):
     FrontEndCommonConfigurationFunctions : api inrt
     """
 
-    def __init__(self, host_name, graph_label):
+    def __init__(self, host_name):
 
         # machine specific bits
         self._hostname = host_name

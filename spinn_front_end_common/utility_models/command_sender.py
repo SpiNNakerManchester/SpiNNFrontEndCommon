@@ -237,6 +237,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         spec.end_specification()
         data_writer.close()
 
+        return [data_writer.filename]
+
     def _get_key(self, command, graph_mapper, routing_info):
         """ returns a key for a command
 

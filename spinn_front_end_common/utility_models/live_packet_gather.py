@@ -168,6 +168,7 @@ class LivePacketGather(
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
+        return [data_writer.filename]
 
     def reserve_memory_regions(self, spec):
         """

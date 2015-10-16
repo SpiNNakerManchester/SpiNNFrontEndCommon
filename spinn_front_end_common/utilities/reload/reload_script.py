@@ -202,23 +202,21 @@ class ReloadScript(object):
                     reverse_ip_tag.destination_y, reverse_ip_tag.destination_p,
                     reverse_ip_tag.sdp_port))
 
-    def add_buffered_vertex(self, vertex, iptag, placement):
+    def add_buffered_vertex(self, vertex, iptag, placement, buffered_files):
         """
         stores a buffered vertex for loading purposes.
         :param vertex: the buffered vertex to be used in reload purposes
         :param iptag: the iptag being used by this vertex
         :param placement: the placement object for this vertex
+        :param buffered_files: a list of filepaths by region for this vertex
         :return: A dictionary of region -> filename for the vertex
         """
-        vertex_files = dict()
         buffer_tuple = "["
         first = True
         for region in vertex.get_regions():
             if not first:
                 buffer_tuple += ", "
-            buffer_filename = "{}_{}".format(
-                re.sub("[\"':]", "_", vertex.label), region)
-            vertex_files[region] = buffer_filename
+            buffer_filename = buffered_files[region]
             buffer_tuple += "({}, \"{}\", {}) "\
                 .format(region, buffer_filename,
                         vertex.get_max_buffer_size_possible(region))
@@ -236,7 +234,6 @@ class ReloadScript(object):
             "vertex) ".format(
                 iptag.board_address, iptag.tag, iptag.ip_address,
                 iptag.port, iptag.strip_sdp))
-        return vertex_files
 
     def close(self):
         """
