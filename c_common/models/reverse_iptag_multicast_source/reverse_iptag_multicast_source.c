@@ -968,6 +968,7 @@ void timer_callback(uint unused0, uint unused1) {
             setup_buffer_region(data_specification_get_region(
                 BUFFER_REGION, address));
         }
+        time = UINT32_MAX;
 
         // Wait for the next run of the simulation
         spin1_callback_off(TIMER_TICK);
