@@ -3,6 +3,8 @@ FrontEndCommonProvenanceGatherer
 """
 
 # pacman imports
+from pacman.interfaces.abstract_provides_provenance_data import \
+    AbstractProvidesProvenanceData
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # front end common imports
@@ -18,7 +20,8 @@ class FrontEndCommonProvenanceGatherer(object):
     FrontEndCommonProvenanceGatherer
     """
 
-    def __call__(self, file_path, transceiver, machine, router_tables, has_ran):
+    def __call__(self, file_path, transceiver, machine, router_tables, has_ran,
+                 placements):
         """
         inheirtted from abstract prodives provenance data. forces the front end
         to gather machine like proenance which it desires.
@@ -37,6 +40,24 @@ class FrontEndCommonProvenanceGatherer(object):
                 root, router_tables, machine, transceiver)
             writer = open(router_file_path, "w")
             writer.write(etree.tostring(root, pretty_print=True))
+
+            progress = ProgressBar(placements.n_placements,
+                                   "Getting provenance data")
+
+            # retrieve provenance data from any cores that provide data
+            for placement in placements.placements:
+                if isinstance(placement.subvertex,
+                              AbstractProvidesProvenanceData):
+                    core_file_path = os.path.join(
+                        file_path,
+                        "Provanence_data_for_{}_{}_{}_{}.xml".format(
+                            placement.subvertex.label,
+                            placement.x, placement.y, placement.p))
+                    placement.subvertex.write_provenance_data_in_xml(
+                        core_file_path, transceiver, placement)
+                progress.update()
+            progress.end()
+
         else:
             raise exceptions.ConfigurationException(
                 "This function has been called before the simulation has ran."

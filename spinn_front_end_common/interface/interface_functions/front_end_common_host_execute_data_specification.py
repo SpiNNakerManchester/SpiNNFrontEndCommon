@@ -85,10 +85,12 @@ class FrontEndCommonHostExecuteDataSpecification(object):
                         associated_vertex.get_application_data_file_path(
                             placement.x, placement.y, placement.p, hostname,
                             application_data_runtime_folder)
+
                     # update application data file path tracker
                     vertex_to_application_data_files[placement.subvertex]\
                         .append(app_data_file_path)
-                    #build writers
+
+                    # build writers
                     data_spec_reader = FileDataReader(data_spec_file_path)
                     data_writer = FileDataWriter(app_data_file_path)
 

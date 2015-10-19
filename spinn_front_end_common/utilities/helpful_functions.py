@@ -234,8 +234,7 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
 
 
 def do_mapping(
-        inputs, algorithms, required_outputs, xml_paths, do_timings,
-        in_debug_mode, pacman_report_state):
+        inputs, algorithms, required_outputs, xml_paths, do_timings):
     """
     sets up
     :param do_timings: bool which sattes if each algorithm should time
@@ -261,7 +260,6 @@ def do_mapping(
 
     # create executor
     pacman_executor = PACMANAlgorithmExecutor(
-        reports_states=pacman_report_state, in_debug_mode=in_debug_mode,
         do_timings=do_timings, inputs=inputs, xml_paths=xml_paths,
         algorithms=algorithms, required_outputs=required_outputs)
 

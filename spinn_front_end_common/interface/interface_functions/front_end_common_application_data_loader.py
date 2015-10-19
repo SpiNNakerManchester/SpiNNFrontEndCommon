@@ -22,8 +22,8 @@ class FrontEndCmmonApplicationLoader(object):
 
     def __call__(
             self, placements, vertex_to_subvertex_mapper,
-            processor_to_app_data_base_address, hostname, app_data_folder,
-            transciever, vertex_to_app_data_files, verify=False):
+            processor_to_app_data_base_address, transciever,
+            vertex_to_app_data_files, verify=False):
 
         # go through the placements and see if there's any application data to
         # load
@@ -66,8 +66,8 @@ class FrontEndCmmonApplicationLoader(object):
                         if read_data != all_data:
                             raise Exception(
                                 "Miswrite of {}, {}, {}, {}".format(
-                                placement.x, placement.y, placement.p,
-                                start_address))
+                                    placement.x, placement.y, placement.p,
+                                    start_address))
                         application_data_file_reader.close()
 
                     # update user 0 so that it points to the start of the
