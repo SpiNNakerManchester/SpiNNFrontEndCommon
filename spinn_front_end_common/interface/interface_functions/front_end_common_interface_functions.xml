@@ -531,5 +531,30 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-
+    <algorithm name="FrontEndCommonProvenanceGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_gatherer</python_module>
+        <python_class>FrontEndCommonProvenanceGatherer</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>file_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransciever</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>router_tables</param_name>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_ran</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+        </required_inputs>
+    </algorithm>
 </algorithms>
