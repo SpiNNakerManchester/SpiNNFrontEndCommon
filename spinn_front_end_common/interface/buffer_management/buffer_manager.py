@@ -170,6 +170,9 @@ class BufferManager(object):
                         "The command packet is invalid for buffer management")
 
     def add_receiving_vertex(self, vertex, list_of_regions):
+        if len(list_of_regions) == 0:
+            return
+
         if vertex not in self._receiver_vertices:
             self._receiver_vertices.add(vertex)
             place = self._placements.get_placement_of_subvertex(vertex)
@@ -463,14 +466,14 @@ class BufferManager(object):
             self._transceiver.get_cpu_information_from_core(x, y, p).user[0]
 
         # Get the position of the spike buffer
-        state_region_base_address_offset = \
+        state_region_base_offset_address = \
             dsg_utilities.get_region_base_address_offset(
                 app_data_base_address, state_region)
-        spike_region_base_address_buf = buffer(self._transceiver.read_memory(
-            x, y, state_region_base_address_offset, 4))
-        spike_region_base_address = struct.unpack_from(
-            "<I", spike_region_base_address_buf)[0]
-        spike_region_base_address += app_data_base_address
+        state_region_base_address_buf = buffer(self._transceiver.read_memory(
+            x, y, state_region_base_offset_address, 4))
+        state_region_base_address = struct.unpack_from(
+            "<I", state_region_base_address_buf)[0]
+        state_region_base_address += app_data_base_address
 
         EndBufferingState.create_from_bytearray(state)
 

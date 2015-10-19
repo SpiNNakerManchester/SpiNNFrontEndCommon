@@ -259,22 +259,9 @@ class FrontEndCommonInterfaceFunctions(object):
                 self._buffer_manager.add_sender_vertex(
                     partitioned_vertex)
             if isinstance(vertex, ReceiveBuffersToHostPartitionableVertex):
-                if vertex.is_vertex_recording():
-                    list_of_regions = list()
-                    if vertex.is_vertex_recording_spikes():
-                        list_of_regions.append(
-                            constants.CORE_REGIONS.
-                            BUFFERING_OUT_SPIKE_RECORDING_REGION.value)
-                    if vertex.is_vertex_recording_v():
-                        list_of_regions.append(
-                            constants.CORE_REGIONS.
-                            BUFFERING_OUT_POTENTIAL_RECORDING_REGION.value)
-                    if vertex.is_vertex_recording_gsyn():
-                        list_of_regions.append(
-                            constants.CORE_REGIONS.
-                            BUFFERING_OUT_GSYN_RECORDING_REGION.value)
-                    self._buffer_manager.add_receiving_vertex(
-                        partitioned_vertex, list_of_regions)
+                list_of_regions = vertex.get_buffered_regions_list()
+                self._buffer_manager.add_receiving_vertex(
+                    partitioned_vertex, list_of_regions)
 
             progress_bar.update()
         progress_bar.end()
