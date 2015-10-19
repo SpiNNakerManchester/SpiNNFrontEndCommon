@@ -26,8 +26,8 @@ typedef enum eieio_data_message_types {
 //! the minimum space required for a buffer to work
 #define MIN_BUFFER_SPACE 10
 
-//! the amount of ticks to wait between requests
-#define TICKS_BETWEEN_REQUESTS 100
+//! the amount of tics to wait between requests
+#define TICKS_BETWEEN_REQUESTS 25
 
 #pragma pack(1)
 
@@ -57,6 +57,8 @@ static uint32_t key_space;
 static uint32_t mask;
 static uint32_t incorrect_keys;
 static uint32_t incorrect_packets;
+static uint32_t late_packets;
+static uint32_t last_stop_notification_request;
 static uint32_t key_left_shift;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
@@ -555,6 +557,7 @@ static inline bool eieio_data_parse_packet(
             add_eieio_packet_to_sdram(eieio_msg_ptr, length);
             return true;
         }
+        late_packets += 1;
         return false;
     }
 
@@ -589,6 +592,7 @@ static inline void eieio_command_parse_stop_requests(
     use(length);
     log_debug("Stopping packet requests - parse_stop_packet_reqs");
     send_packet_reqs = false;
+    last_stop_notification_request = time;
 }
 
 static inline void eieio_command_parse_start_requests(
@@ -752,7 +756,7 @@ void fetch_and_process_packet() {
             log_debug("packet time: %d, current time: %d",
                       next_buffer_time, time);
 
-            if (next_buffer_time == time) {
+            if (next_buffer_time <= time) {
                 packet_handler_selector(msg_from_sdram, len);
             } else {
                 msg_from_sdram_in_use = true;
@@ -796,6 +800,9 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Simulation complete.");
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
+        log_info("Late packets: %d", late_packets);
+        log_info("Last time of stop notification request: %d",
+                 last_stop_notification_request);
         spin1_exit(0);
         return;
     }
@@ -809,6 +816,7 @@ void timer_callback(uint unused0, uint unused1) {
     if (!msg_from_sdram_in_use) {
         fetch_and_process_packet();
     } else if (next_buffer_time < time) {
+        late_packets += 1;
         fetch_and_process_packet();
     } else if (next_buffer_time == time) {
         eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
