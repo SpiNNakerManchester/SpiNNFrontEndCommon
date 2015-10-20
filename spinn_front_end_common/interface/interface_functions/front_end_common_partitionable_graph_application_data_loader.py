@@ -15,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCmmonApplicationLoader(object):
+class FrontEndCmmonPartitionableGraphApplicationLoader(object):
     """
 
     """

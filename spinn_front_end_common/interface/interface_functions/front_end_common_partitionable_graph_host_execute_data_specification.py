@@ -20,7 +20,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonHostExecuteDataSpecification(object):
+class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
     """
     exeuctes the host based data specification
     """

@@ -1,7 +1,7 @@
 <algorithms>
-    <algorithm name="FrontEndApplicationApplicationDataLoader">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_data_loader</python_module>
-        <python_class>FrontEndCmmonApplicationLoader</python_class>
+    <algorithm name="FrontEndCommonPartitionableGraphApplicationDataLoader">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_application_data_loader</python_module>
+        <python_class>FrontEndCmmonPartitionableGraphApplicationLoader</python_class>
         <required_inputs>
             <parameter>
                 <param_name>placements</param_name>
@@ -43,9 +43,9 @@
         <produces_outputs>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonHostExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_host_execute_data_specification</python_module>
-        <python_class>FrontEndCommonHostExecuteDataSpecification</python_class>
+    <algorithm name="FrontEndCommonPartitionableGraphHostExecuteDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_host_execute_data_specification</python_module>
+        <python_class>FrontEndCommonPartitionableGraphHostExecuteDataSpecification</python_class>
         <required_inputs>
             <parameter>
                 <param_name>hostname</param_name>
