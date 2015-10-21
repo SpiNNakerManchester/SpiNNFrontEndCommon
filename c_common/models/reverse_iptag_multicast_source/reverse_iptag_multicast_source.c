@@ -20,8 +20,14 @@ typedef enum eieio_data_message_types {
 
  //! human readable form of the different memory regions
  typedef enum memory_regions{
-    SYSTEM, CONFIGURATION, BUFFER_REGION, RECORDING
+    SYSTEM,
+    CONFIGURATION,
+    BUFFER_REGION,
+    BUFFERING_OUT_SPIKE_RECORDING_REGION,
+    BUFFERING_OUT_CONTROL_REGION
  }memory_regions;
+
+#define NUMBER_OF_REGIONS_TO_RECORD 1
 
 //! the minimum space required for a buffer to work
 #define MIN_BUFFER_SPACE 10
@@ -938,6 +944,20 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
 
+    uint8_t regions_to_record[] = {
+        BUFFERING_OUT_SPIKE_RECORDING_REGION,
+    };
+    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
+    uint32_t *recording_flags_from_system_conf = &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
+    uint8_t tag_id = recording_flags_from_system_conf[1];
+    uint32_t *region_sizes = &recording_flags_from_system_conf[2];
+    uint32_t recording_flags;
+    uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
+
+    recording_initialize(n_regions_to_record, regions_to_record,
+                         region_sizes, state_region, tag_id, &recording_flags);
+
+    /*
     // Get the recording information
     system_region = data_specification_get_region(SYSTEM, address);
     uint32_t spike_history_region_size;
@@ -953,6 +973,7 @@ bool initialize(uint32_t *timer_period) {
             return false;
         }
     }
+    */
 
     // Read the buffer region
     if (buffer_region_size > 0) {

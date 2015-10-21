@@ -19,9 +19,6 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
 
-# number of buffering output channels
-OUTPUT_BUFFERING_CHANNELS = 3
-
 # sdp port handling output buffering data streaming
 OUTPUT_BUFFERING_SDP_PORT = 2
 
@@ -36,17 +33,3 @@ BUFFERING_OPERATIONS = Enum(
         ("BUFFER_WRITE", 1)]
     )
 
-CORE_REGIONS = Enum(
-    value="CORE_REGIONS",
-    names=[
-        ("SYSTEM_REGION", 0),
-        ("NEURON_PARAMS_REGION", 1),
-        ("SYNAPSE_PARAMS_REGION", 2),
-        ("POPULATION_TABLE_REGION", 3),
-        ("SYNAPTIC_MATRIX_REGION", 4),
-        ("SYNAPSE_DYNAMICS_REGION", 5),
-        ("BUFFERING_OUT_SPIKE_RECORDING_REGION", 6),
-        ("BUFFERING_OUT_POTENTIAL_RECORDING_REGION", 7),
-        ("BUFFERING_OUT_GSYN_RECORDING_REGION", 8),
-        ("BUFFERING_OUT_CONTROL_REGION", 9)]
-    )

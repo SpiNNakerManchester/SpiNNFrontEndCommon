@@ -11,3 +11,5 @@ typedef enum regions_e {
     BUFFERING_OUT_GSYN_RECORDING_REGION,
     BUFFERING_OUT_CONTROL_REGION
 } regions_e;
+
+#define NUMBER_OF_REGIONS_TO_RECORD 3

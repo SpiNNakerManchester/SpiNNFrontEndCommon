@@ -52,4 +52,8 @@ class ChannelBufferState(object):
         buffer_state = ChannelBufferState(
             start_address, current_write, current_read, end_address,
             region_id, last_buffer_operation)
-        return buffer_state, offset + 20
+        return buffer_state
+
+    @staticmethod
+    def size_of_channel_state():
+        return 20

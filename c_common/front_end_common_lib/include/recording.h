@@ -104,18 +104,22 @@ typedef struct
 //!                                          potential region.
 //! \param[out] neuron_gsyn_region_size A pointer to an in integer to receive
 //!                                     the size of the neuron gsyn region.
+/*
 void recording_read_region_sizes(
         address_t region_start, uint32_t* recording_flags,
         uint32_t* spike_history_region_size,
         uint32_t* neuron_potential_region_size,
         uint32_t* neuron_gysn_region_size);
+*/
 
 //! \brief Determines if the given channel has been initialised yet.
 //! \param[in] recording_flags The flags as read by recording_read_region_sizes.
 //! \param[in] channel The channel to check for already been initialised.
 //! \return True if the channel has already been initialised, False otherwise.
-bool recording_is_channel_enabled(uint32_t recording_flags,
-        recording_channel_e channel);
+inline bool recording_is_channel_enabled(uint32_t recording_flags,
+        uint8_t channel) {
+    return (recording_flags & (1 << channel)) != 0;
+}
 
 //! \brief initialises a channel with the start, end, size and current position
 //! in SDRAM for the channel handed in.
@@ -126,9 +130,11 @@ bool recording_is_channel_enabled(uint32_t recording_flags,
 // \param[out] size_bytes the size of memory that the channel can put data into
 //! \return boolean which is True if the channel was successfully initialised
 //! or False otherwise.
+/*
 bool recording_initialise_channel(
         address_t output_region, recording_channel_e channel,
         uint32_t size_bytes);
+*/
 
 //! \brief records some data into a specific recording channel.
 //! \param[in] channel the channel to store the data into.
@@ -145,12 +151,12 @@ bool recording_record(
 //! \return nothing
 void recording_finalise();
 
+bool recording_initialize(uint8_t n_regions, uint8_t *region_ids,
+                          uint32_t* region_sizes, uint8_t state_region,
+                          uint8_t tag_id, uint32_t *recording_flags);
 
-bool recording_write_memory(
-        recording_channel_e channel, void *data, uint32_t size_bytes);
-uint32_t compute_available_space_in_channel(recording_channel_e channel);
+bool recording_write_memory(recording_channel_e channel, void *data, uint32_t size_bytes);
 void recording_send_buffering_out_trigger_message(bool flush_all);
-void buffering_in_handler(uint mailbox, uint port);
 void recording_eieio_packet_handler(eieio_msg_t msg, uint length);
 void recording_host_data_read(eieio_msg_t msg, uint length);
 void recording_host_request_flush_data(eieio_msg_t msg, uint length);

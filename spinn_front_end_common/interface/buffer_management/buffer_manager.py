@@ -46,6 +46,8 @@ from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffered_receiving_data import BufferedReceivingData
 from spinn_front_end_common.utilities import constants as \
     spinn_front_end_constants
+from spinn_front_end_common.interface.buffer_management.storage_objects.\
+    end_buffering_state import EndBufferingState
 
 # general imports
 import struct
@@ -461,22 +463,104 @@ class BufferManager(object):
     def get_data_for_vertex(self, x, y, p, region_to_read, state_region):
         # flush data here
 
-         # Get the App Data for the core
-        app_data_base_address = \
-            self._transceiver.get_cpu_information_from_core(x, y, p).user[0]
+        if not is_data_from_region_flushed(x, y, p, region_to_read):
+            if not is_end_buffering_state_recovered(x, y, p):
+                # Get the App Data for the core
+                app_data_base_address = \
+                    self._transceiver.get_cpu_information_from_core(
+                        x, y, p).user[0]
 
-        # Get the position of the spike buffer
-        state_region_base_offset_address = \
-            dsg_utilities.get_region_base_address_offset(
-                app_data_base_address, state_region)
-        state_region_base_address_buf = buffer(self._transceiver.read_memory(
-            x, y, state_region_base_offset_address, 4))
-        state_region_base_address = struct.unpack_from(
-            "<I", state_region_base_address_buf)[0]
-        state_region_base_address += app_data_base_address
+                # Get the position of the spike buffer
+                state_region_base_offset_address = \
+                    dsg_utilities.get_region_base_address_offset(
+                        app_data_base_address, state_region)
+                state_region_base_address_buf = buffer(
+                    self._transceiver.read_memory(
+                        x, y, state_region_base_offset_address, 4))
+                state_region_base_address = struct.unpack_from(
+                    "<I", state_region_base_address_buf)[0]
+                state_region_base_address += app_data_base_address
 
-        EndBufferingState.create_from_bytearray(state)
+                # retrieve channel state memory area
+                raw_number_of_channels = self._transceiver.read_memory(
+                    x, y, state_region_base_address, 4)
+                number_of_channels = struct.unpack("<I", raw_number_of_channels)[0]
+                channel_state_data = self._transceiver.read_memory(
+                    x, y, state_region_base_address,
+                    EndBufferingState.size_of_region(number_of_channels))
+                end_buffering_state = EndBufferingState.create_from_bytearray(
+                    channel_state_data)
+                self._received_data.store_end_buffering_state(
+                    x, y, p, end_buffering_state)
+            else:
+                end_buffering_state = self._received_data.\
+                    get_end_buffering_state(x, y, p)
 
+            end_state = end_buffering_state.get_state_for_region(region_to_read)
+            start_ptr = end_state.start_address
+            write_ptr = end_state.current_write
+            end_ptr = end_state.end_address
+            read_ptr = end_state.current_read
+            last_operation = end_state.last_buffer_operation
+
+            # current read needs to be adjusted in case tha last portion of the
+            # memory has already been read, but the HostDataRead packet has not
+            # been processed by the chip before simulation finished
+            # This situation is identified by the sequence number of the last
+            # packet sent to this core and the core internal state of the
+            # output buffering finite state machine
+
+            seq_no_last_ack_packet = \
+                self._received_data.last_sequence_no_for_core(x,y,p)
+            seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
+            if seq_no_internal_fsm == seq_no_last_ack_packet:
+                # if the last ack packet has not been processed, process it now
+                last_sent_ack_packet = \
+                    self._received_data.last_sent_packet_to_core(x, y, p)
+                # host_data_read_
+                for i in xrange(last_sent_ack_packet.n_requests):
+                    if region_to_read == last_sent_ack_packet.region_id(i):
+                        read_ptr += last_sent_ack_packet.space_read(i)
+                        if read_ptr == end_ptr:
+                            read_ptr = start_ptr
+                        elif read_ptr > end_ptr:
+                            # something somewhere went terribly wrong!
+                            raise
+
+            # now read_ptr is updated, check memory to read
+            if read_ptr < write_ptr:
+                length = write_ptr - read_ptr
+                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                self._received_data.flushing_data_from_region(
+                    x, y, p, region_to_read, data)
+            elif read_ptr > write_ptr:
+                length = end_ptr - read_ptr
+                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                self._received_data.store_data_in_region_buffer(
+                    x, y, p, region_to_read, data)
+                read_ptr = start_ptr
+                length = write_ptr - read_ptr
+                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                self._received_data.flushing_data_from_region(
+                    x, y, p, region_to_read, data)
+            elif (read_ptr == write_ptr and
+                    last_operation == constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value):
+                length = end_ptr - read_ptr
+                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                self._received_data.store_data_in_region_buffer(
+                    x, y, p, region_to_read, data)
+                read_ptr = start_ptr
+                length = write_ptr - read_ptr
+                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                self._received_data.flushing_data_from_region(
+                    x, y, p, region_to_read, data)
+            elif (read_ptr == write_ptr and
+                    last_operation == constants.BUFFERING_OPERATIONS.BUFFER_READ.value):
+                data = bytearray()
+                self._received_data.flushing_data_from_region(
+                    x, y, p, region_to_read, data)
+
+        # data flush has been completed - return appropriate data
         return self._received_data.get_region_data(x, y, p, region)
 
     def _retrieve_and_store_data(self, packet, vertex):
@@ -531,5 +615,5 @@ class BufferManager(object):
 
         # store last sent message and send to the appropriate core
         self._received_data.store_last_sent_packet_to_core(
-            x, y, p, return_message)
+            x, y, p, ack_packet)
         self._transceiver.send_sdp_message(return_message)

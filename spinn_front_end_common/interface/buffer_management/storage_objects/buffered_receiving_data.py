@@ -73,3 +73,11 @@ class BufferedReceivingData(object):
     def store_end_buffering_state(self, x, y, p, state):
         self._end_buffering_state[x, y, p] = state
 
+    def is_end_buffering_state_recovered(self, x, y, p):
+        if (x, y, p) in self._end_buffering_state:
+            return True
+        else:
+            return False
+
+    def get_end_buffering_state(self, x, y, p):
+        return self._end_buffering_state[x, y, p]

@@ -6,7 +6,7 @@
 
 #include <recording.h>
 #include <buffered_eieio_defs.h>
-#include <region_defs.h>
+#include <data_specification.h>
 
 // Standard includes
 #include <string.h>
@@ -27,18 +27,22 @@ typedef struct recording_channel_t {
 
 //! positions within the recording region definition for each type of event
 //! Available to be recorded
+/*
 typedef enum recording_positions {
     flags_for_recording, spikes_position, protential_position, gsyn_position,
 } recording_positions;
-
+*/
 
 
 //---------------------------------------
 // Globals
 //---------------------------------------
 //! array containing all possible channels.
-static recording_channel_t g_recording_channels[e_recording_channel_max];
-static uint8_t buffering_out_fsm = 0;
+static recording_channel_t *g_recording_channels;
+static uint32_t n_recording_regions = 0;
+static uint8_t buffering_output_tag;
+static uint32_t buffering_out_fsm = 0;
+static uint8_t buffering_out_state_region = 0;
 
 //---------------------------------------
 // Private method
@@ -49,7 +53,7 @@ static uint8_t buffering_out_fsm = 0;
 //! given recording region
 //! \return boolean which is True if the channel has been initialised or false
 //! otherwise
-static inline bool has_been_initialsed(recording_channel_e channel) {
+static inline bool has_been_initialsed(uint8_t channel) {
     return (g_recording_channels[channel].start != NULL
             && g_recording_channels[channel].end != NULL);
 }
@@ -63,31 +67,56 @@ static inline bool has_been_initialsed(recording_channel_e channel) {
 //! given recording region, which is to be closed.
 //! \return boolean which is True is the channel was successfully closed and
 //! False otherwise.
-static inline bool close_channel(recording_channel_e channel) {
+static inline bool close_channel(uint8_t channel) {
     g_recording_channels[channel].start = NULL;
     g_recording_channels[channel].end = NULL;
     return true;
 }
 
-static uint8_t channel_to_region_id(recording_channel_e channel) {
-    return BUFFERING_OUT_SPIKE_RECORDING_REGION + channel;
+static void buffering_in_handler(uint mailbox, uint port)
+{
+    use(port);
+    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
+    uint16_t length = msg -> length;
+    eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg -> cmd_rc);
+
+    recording_eieio_packet_handler(eieio_msg_ptr, length - 8);
+
+    spin1_msg_free(msg);
+}
+
+//this is equivalent to the one in reverse_iptag_multicast_source
+static uint32_t compute_available_space_in_channel(uint8_t channel)
+{
+    uint8_t *buffer_region = g_recording_channels[channel].start;
+    uint8_t *end_of_buffer_region = g_recording_channels[channel].end ;
+    uint8_t *write_pointer = g_recording_channels[channel].current_write;
+    uint8_t *read_pointer = g_recording_channels[channel].current_read;
+    buffered_operations last_buffer_operation =
+                    g_recording_channels[channel].last_buffer_operation;
+
+    if (read_pointer < write_pointer) {
+        uint32_t final_space = (uint32_t) end_of_buffer_region -
+                               (uint32_t) write_pointer;
+        uint32_t initial_space = (uint32_t) read_pointer -
+                                 (uint32_t) buffer_region;
+        return final_space + initial_space;
+    } else if (write_pointer < read_pointer) {
+        return (uint32_t) read_pointer - (uint32_t) write_pointer;
+    } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
+
+        // If pointers are equal, buffer is full if last op is write
+        return 0;
+    } else {
+
+        // If pointers are equal, buffer is empty if last op is read
+        return (end_of_buffer_region - buffer_region);
+    }
 }
 
 //---------------------------------------
 // Public API
 //---------------------------------------
-//! \checks if a channel is expected to be producing recordings.
-//! \param[in] recording_flags the integer which contains the flags for the
-//! if an channel is enabled.
-//! \param[in] channel the channel strut which contains the memory data for a
-//! given channel
-//! \return boolean which is True if the channel is expected to produce
-//! recordings or false otherwise
-bool recording_is_channel_enabled(uint32_t recording_flags,
-        recording_channel_e channel) {
-    return (recording_flags & (1 << channel)) != 0;
-}
-
 //! \extracts the sizes of the recorded regions from SDRAM
 //! \param[in] region_start the absolute address in SDRAM
 //! \param[in] recording_flags the flag ids read from SDRAM
@@ -99,34 +128,31 @@ bool recording_is_channel_enabled(uint32_t recording_flags,
 //! recorder region
 //! \param[out] neuron_gysn_region_size
 //! \return This method does not return anything
+/*
+recording_read_region_sizes(address_t start_address, uint32_t n_regions, uint32_t **array_to_read_into)
 void recording_read_region_sizes(
         address_t region_start, uint32_t* recording_flags,
         uint32_t* spike_history_region_size,
         uint32_t* neuron_potential_region_size,
         uint32_t* neuron_gysn_region_size) {
-    bool streaming_buffering_out = 0;
     *recording_flags = region_start[flags_for_recording];
     if (recording_is_channel_enabled(*recording_flags,
                 e_recording_channel_spike_history)
             && (spike_history_region_size != NULL)) {
         *spike_history_region_size = region_start[spikes_position];
-        streaming_buffering_out = 1;
     }
     if (recording_is_channel_enabled(*recording_flags,
                 e_recording_channel_neuron_potential)
             && (neuron_potential_region_size != NULL)) {
         *neuron_potential_region_size = region_start[protential_position];
-        streaming_buffering_out = 1;
     }
     if (recording_is_channel_enabled(*recording_flags,
                 e_recording_channel_neuron_gsyn)
             && (neuron_gysn_region_size != NULL)) {
         *neuron_gysn_region_size = region_start[gsyn_position];
-        streaming_buffering_out = 1;
     }
-    if (streaming_buffering_out)
-        spin1_sdp_callback_on(BUFFERING_OUT_SDP_PORT, buffering_in_handler, 0);
 }
+*/
 
 //! \brief initialises a channel with the start, end, size and current position
 //! in SDRAM for the channel handed in.
@@ -137,8 +163,10 @@ void recording_read_region_sizes(
 // \param[out] size_bytes the size of memory that the channel can put data into
 //! \return boolean which is True if the channel was successfully initialised
 //! or False otherwise.
+
+/*
 bool recording_initialise_channel(
-        address_t output_region, recording_channel_e channel,
+        address_t output_region, uint8_t channel,
         uint32_t size_bytes) {
 
     log_info("size inside record is %u", size_bytes);
@@ -158,7 +186,7 @@ bool recording_initialise_channel(
         recording_channel->current_read = (uint8_t*) output_region;
         recording_channel->end = recording_channel->start + size_bytes;
         recording_channel->last_buffer_operation = BUFFER_OPERATION_READ;
-        recording_channel->region_id = channel_to_region_id(channel);
+        recording_channel->region_id = // this needs to be passed from caller
 
         log_info("Recording channel %u configured to use %u byte memory block"
                  " starting at %08x",
@@ -166,6 +194,7 @@ bool recording_initialise_channel(
         return true;
     }
 }
+*/
 
 //! \brief records some data into a specific recording channel.
 //! \param[in] channel the channel to store the data into.
@@ -174,7 +203,7 @@ bool recording_initialise_channel(
 //! \return boolean which is True if the data has been stored in the channel,
 //! False otherwise.
 bool recording_record(
-        recording_channel_e channel, void *data, uint32_t size_bytes) {
+        uint8_t channel, void *data, uint32_t size_bytes) {
     if (has_been_initialsed(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
 
@@ -187,9 +216,8 @@ bool recording_record(
             // Copy data into recording channel
             recording_write_memory(channel, data, size_bytes);
 
-            //trigger buffering_out_mechanism
-            if (recording_space - (space_available - size_bytes) >= MIN_BUFFERING_OUT_LIMIT)
-                recording_send_buffering_out_trigger_message(0);
+            //trigger buffering_out_mechanism - if needed
+            recording_send_buffering_out_trigger_message(0);
 
             return true;
         } else {
@@ -197,8 +225,6 @@ bool recording_record(
             return false;
         }
     } else {
-        log_info("ERROR: recording channel %u not in use", channel);
-
         return false;
     }
 
@@ -209,6 +235,8 @@ bool recording_record(
 //! channel so that future records fail.
 //! \return nothing
 void recording_finalise() {
+    uint8_t i;
+
     log_info("Finalising recording channels");
 
     // Get the address this core's DTCM data starts at from SRAM
@@ -216,18 +244,24 @@ void recording_finalise() {
 
     // Get the region address store channel details
     address_t buffering_out_control_reg = data_specification_get_region(
-        BUFFERING_OUT_CONTROL_REGION, address);
+        buffering_out_state_region, address);
+    address_t out_ptr = buffering_out_control_reg;
+
+    // store number of recording regions
+    spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
+    out_ptr++;
 
     // store info related to the state of the transmission to avoid possible
     // duplication of info on the host side
-    spin1_memcpy(buffering_out_control_reg, &buffering_out_fsm, sizeof(buffering_out_fsm));
+    spin1_memcpy(out_ptr, &buffering_out_fsm, sizeof(buffering_out_fsm));
+    out_ptr++;
 
     // store info on the channel status so that the host can flush the info
     // buffered in SDRAM
-    spin1_memcpy(&buffering_out_control_reg[1], &g_recording_channels, sizeof(recording_channel_t) * e_recording_channel_max);
+    spin1_memcpy(out_ptr, &g_recording_channels, sizeof(recording_channel_t) * n_recording_regions);
 
     // Loop through channels
-    for (uint32_t channel = 0; channel < e_recording_channel_max; channel++) {
+    for (uint32_t channel = 0; channel < n_recording_regions; channel++) {
         // If this channel's in use
         if (has_been_initialsed(channel)) {
             recording_channel_t *recording_channel =
@@ -236,7 +270,7 @@ void recording_finalise() {
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
             log_info(
-                "\tFinalising channel %u - storing info in SDRAM", channel);
+                "\tFinalising channel %u - state info stored in SDRAM", channel);
             if(!close_channel(channel)){
                 log_error("could not close channel %u.", channel);
             }
@@ -250,9 +284,69 @@ void recording_finalise() {
     }
 }
 
+bool recording_initialize(uint8_t n_regions, uint8_t *region_ids,
+                          uint32_t* region_sizes, uint8_t state_region,
+                          uint8_t tag_id, uint32_t *recording_flags)
+{
+    uint32_t i;
+
+    // if already initialised, don't re-initialise
+    if (!n_recording_regions && n_regions <= 0)
+        return false;
+
+    if (recording_flags)
+        *recording_flags = 0;
+
+    n_recording_regions = n_regions;
+    buffering_out_state_region = state_region;
+    buffering_output_tag = tag_id;
+
+    g_recording_channels = (recording_channel_t*) spin1_malloc(n_recording_regions * sizeof(recording_channel_t));
+    if (!g_recording_channels)
+        return false;
+
+    address_t address = data_specification_get_data_address();
+
+    for (i = 0; i < n_regions; i++)
+    {
+        if (region_sizes[i] > 0)
+        {
+            address_t region_address = data_specification_get_region(region_ids[i], address);
+
+            // store pointers to the start, current position and end of this
+            g_recording_channels[i].start = (uint8_t*) region_address;
+            g_recording_channels[i].current_write = (uint8_t*) region_address;
+            g_recording_channels[i].current_read = (uint8_t*) region_address;
+            g_recording_channels[i].end = g_recording_channels[i].start + region_sizes[i];
+            g_recording_channels[i].last_buffer_operation = BUFFER_OPERATION_READ;
+            g_recording_channels[i].region_id = region_ids[i];
+
+            *recording_flags = *recording_flags | (1 << i);
+
+            log_info("Recording channel %u configured to use %u byte memory block"
+                     " starting at 0x%08x",
+                     i, region_sizes[i], g_recording_channels[i].start);
+
+            spin1_sdp_callback_on(BUFFERING_OUT_SDP_PORT, buffering_in_handler, 0);
+         }
+         else
+         {
+            g_recording_channels[i].start = NULL;
+            g_recording_channels[i].current_write = NULL;
+            g_recording_channels[i].current_read = NULL;
+            g_recording_channels[i].end = NULL;
+            g_recording_channels[i].last_buffer_operation = BUFFER_OPERATION_READ;
+            g_recording_channels[i].region_id = region_ids[i];
+
+            log_info("Recording channel %u left uninitialised", i);
+         }
+    }
+    return true;
+}
+
 //this is equivalent to add_eieio_packet_to_sdram
 bool recording_write_memory(
-        recording_channel_e channel, void *data, uint32_t length)
+        uint8_t channel, void *data, uint32_t length)
 {
     uint8_t *buffer_region = g_recording_channels[channel].start;
     uint8_t *end_of_buffer_region = g_recording_channels[channel].end ;
@@ -334,35 +428,6 @@ bool recording_write_memory(
 
 }
 
-//this is equivalent to the one in reverse_iptag_multicast_source
-uint32_t compute_available_space_in_channel(recording_channel_e channel)
-{
-    uint8_t *buffer_region = g_recording_channels[channel].start;
-    uint8_t *end_of_buffer_region = g_recording_channels[channel].end ;
-    uint8_t *write_pointer = g_recording_channels[channel].current_write;
-    uint8_t *read_pointer = g_recording_channels[channel].current_read;
-    buffered_operations last_buffer_operation =
-                    g_recording_channels[channel].last_buffer_operation;
-
-    if (read_pointer < write_pointer) {
-        uint32_t final_space = (uint32_t) end_of_buffer_region -
-                               (uint32_t) write_pointer;
-        uint32_t initial_space = (uint32_t) read_pointer -
-                                 (uint32_t) buffer_region;
-        return final_space + initial_space;
-    } else if (write_pointer < read_pointer) {
-        return (uint32_t) read_pointer - (uint32_t) write_pointer;
-    } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
-
-        // If pointers are equal, buffer is full if last op is write
-        return 0;
-    } else {
-
-        // If pointers are equal, buffer is empty if last op is read
-        return (end_of_buffer_region - buffer_region);
-    }
-}
-
 void recording_send_buffering_out_trigger_message(bool flush_all)
 {
     uint channel;
@@ -372,7 +437,7 @@ void recording_send_buffering_out_trigger_message(bool flush_all)
     uint msg_size = 8 + sizeof(read_request_packet_header);
     uint n_requests = 0;
 
-    for (channel = 0; channel < e_recording_channel_max; channel++)
+    for (channel = 0; channel < n_recording_regions; channel++)
     {
         uint32_t channel_space_total = (uint32_t)
             (g_recording_channels[channel].end - g_recording_channels[channel].start);
@@ -419,6 +484,7 @@ void recording_send_buffering_out_trigger_message(bool flush_all)
             }
             else
             {
+                // something somewhere went terribly wrong
                 // there has been an error somewhere,
                 // this should never happen
                 log_debug("Unknown channel state - channel: %d, start pointer: %d, end pointer: %d, read_pointer: %d, write_pointer: %d, last operation==READ: %d\n", channel, buffer_region, end_of_buffer_region, read_pointer, write_pointer, last_buffer_operation==BUFFER_OPERATION_READ);
@@ -433,20 +499,14 @@ void recording_send_buffering_out_trigger_message(bool flush_all)
     data_ptr[0].sequence = buffering_out_fsm;
     msg_size += (n_requests * sizeof(read_request_packet_data));
     msg.length = msg_size;
+    msg.flags = 0x7;
+    msg.tag = buffering_output_tag;
+    msg.dest_port = 0xFF;
+    msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
+    msg.dest_addr = 0;
+    msg.srce_addr = spin1_get_chip_id();
 
     spin1_send_sdp_msg (&msg, 1);
-}
-
-void buffering_in_handler(uint mailbox, uint port)
-{
-    use(port);
-    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
-    uint16_t length = msg -> length;
-    eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg -> cmd_rc);
-
-    recording_eieio_packet_handler(eieio_msg_ptr, length - 8);
-
-    spin1_msg_free(msg);
 }
 
 void recording_eieio_packet_handler(eieio_msg_t msg, uint length)
