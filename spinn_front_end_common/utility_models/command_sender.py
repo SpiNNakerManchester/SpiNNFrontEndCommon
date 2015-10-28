@@ -130,7 +130,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
             # If the keys are all fixed keys, keep them
             self._edge_constraints[edge] = list(
                 KeyAllocatorFixedKeyAndMaskConstraint(
-                    [BaseKeyAndMask(key, mask) for (key, mask) in command_keys]))
+                    [BaseKeyAndMask(key, mask)
+                     for (key, mask) in command_keys]))
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
