@@ -105,12 +105,12 @@ class AbstractDataSpecableVertex(object):
         :param new_no_machine_time_steps:
         :return:
         """
-        if self._no_machine_time_steps is None:
-            self._no_machine_time_steps = new_no_machine_time_steps
-        else:
-            raise exceptions.ConfigurationException(
-                "cannot set the number of machine time steps of a given"
-                " model once it has already been set")
+        #if self._no_machine_time_steps is None:
+        self._no_machine_time_steps = new_no_machine_time_steps
+        #else:
+        #   raise exceptions.ConfigurationException(
+        #        "cannot set the number of machine time steps of a given"
+        #        " model once it has already been set")
 
     @staticmethod
     def get_data_spec_file_writers(
