@@ -80,7 +80,7 @@ typedef struct
 
 //! max number of recordable channels supported by the neural models
 #define RECORDING_POSITION_IN_REGION 3
-#define MIN_BUFFERING_OUT_LIMIT 10
+#define MIN_BUFFERING_OUT_LIMIT 75
 
 //! \brief Reads the size of the recording regions - pass 0s for the region
 //!        size pointer when the value is not needed

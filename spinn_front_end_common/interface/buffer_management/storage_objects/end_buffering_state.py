@@ -8,11 +8,9 @@ class EndBufferingState(object):
     def __init__(
             self, n_recording_regions,
             buffering_out_fsm_state,
-            buffering_out_region_sizes,
             list_channel_buffer_state):
         self._n_recording_regions = n_recording_regions
         self._buffering_out_fsm_state = buffering_out_fsm_state
-        self._buffering_out_region_sizes = buffering_out_region_sizes
         self._list_channel_buffer_state = list_channel_buffer_state
 
     @property
@@ -55,7 +53,6 @@ class EndBufferingState(object):
             list_channel_buffer_state.append(entry)
         final_state = EndBufferingState(
             n_recording_regions, buffering_out_fsm_state,
-            buffering_out_region_sizes,
             list_channel_buffer_state)
         return final_state
 

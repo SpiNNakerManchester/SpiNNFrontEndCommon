@@ -37,6 +37,7 @@ from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
     import HostSendSequencedData
 from spinnman.messages.eieio.command_messages.stop_requests \
     import StopRequests
+from spinnman.messages.eieio import create_eieio_command
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
@@ -111,9 +112,11 @@ class BufferManager(object):
         self._received_data = BufferedReceivingData()
 
         # Lock to avoid multiple messages being processed at the same time
-        self._thread_lock = threading.Lock()
+        self._thread_lock_buffer_out = threading.Lock()
+        self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
+        # self._file_debug = open("/tmp/buffer_manager_debug", "w", 0)
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -122,9 +125,9 @@ class BufferManager(object):
         :type packet:\
                     :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
-        with self._thread_lock:
-            if not self._finished:
-                if isinstance(packet, SpinnakerRequestBuffers):
+        if not self._finished:
+            if isinstance(packet, SpinnakerRequestBuffers):
+                with self._thread_lock_buffer_in:
                     vertex = self._placements.get_subvertex_on_processor(
                         packet.x, packet.y, packet.p)
 
@@ -141,14 +144,17 @@ class BufferManager(object):
                                 packet.region_id, packet.sequence_no)
                         except Exception:
                             traceback.print_exc()
-                elif isinstance(packet, SpinnakerRequestReadData):
+            elif isinstance(packet, SpinnakerRequestReadData):
+                with self._thread_lock_buffer_out:
                     # perform magic with the request to read
-                    logger.debug("received {0:d} read request(s) with "
-                                 "sequence: {1:d}, from chip ({2:d},{3:d}, "
-                                 "core {4,d}".format(
-                                      packet.space_available,
-                                      packet.sequence_no,
-                                      packet.x, packet.y, packet.p))
+                    #logger.debug("received {0:d} read request(s) with "
+                    #             "sequence: {1:d}, from chip ({2:d},{3:d}, "
+                    #             "core {4,d}".format(
+                    #                  packet.n_requests,
+                    #                  packet.sequence_no,
+                    #                  packet.x,
+                    #                  packet.y,
+                    #                  packet.p))
                     vertex = self._placements.get_subvertex_on_processor(
                         packet.x, packet.y, packet.p)
                     if vertex not in self._receiver_vertices:
@@ -161,15 +167,15 @@ class BufferManager(object):
                         self._retrieve_and_store_data(packet, vertex)
                     except Exception:
                         traceback.print_exc()
-                elif isinstance(packet, EIEIOCommandMessage):
-                    raise SpinnmanInvalidPacketException(
-                        str(packet.__class__),
-                        "The command packet is invalid for buffer management: "
-                        "command id {0:d}".format(packet.eieio_header.command))
-                else:
-                    raise SpinnmanInvalidPacketException(
-                        packet.__class__,
-                        "The command packet is invalid for buffer management")
+            elif isinstance(packet, EIEIOCommandMessage):
+                raise SpinnmanInvalidPacketException(
+                    str(packet.__class__),
+                    "The command packet is invalid for buffer management: "
+                    "command id {0:d}".format(packet.eieio_header.command))
+            else:
+                raise SpinnmanInvalidPacketException(
+                    packet.__class__,
+                    "The command packet is invalid for buffer management")
 
     def add_receiving_vertex(self, vertex, list_of_regions):
         if len(list_of_regions) == 0:
@@ -454,8 +460,9 @@ class BufferManager(object):
         """ Indicates that the simulation has finished, so no further\
             outstanding requests need to be processed
         """
-        with self._thread_lock:
-            self._finished = True
+        with self._thread_lock_buffer_in:
+            with self._thread_lock_buffer_out:
+                self._finished = True
         if self._report_states.transciever_report:
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
@@ -463,8 +470,10 @@ class BufferManager(object):
     def get_data_for_vertex(self, x, y, p, region_to_read, state_region):
         # flush data here
 
-        if not is_data_from_region_flushed(x, y, p, region_to_read):
-            if not is_end_buffering_state_recovered(x, y, p):
+        if not self._received_data.is_data_from_region_flushed(
+                x, y, p, region_to_read):
+            if not self._received_data.is_end_buffering_state_recovered(
+                    x, y, p):
                 # Get the App Data for the core
                 app_data_base_address = \
                     self._transceiver.get_cpu_information_from_core(
@@ -503,6 +512,8 @@ class BufferManager(object):
             read_ptr = end_state.current_read
             last_operation = end_state.last_buffer_operation
 
+            # self._file_debug.write("region %d start pointer 0x%08x read pointer 0x%08x write pointer 0x%08x end pointer 0x%08x last operation: %d\n" % (region_to_read, start_ptr, read_ptr, write_ptr, end_ptr, last_operation))
+
             # current read needs to be adjusted in case tha last portion of the
             # memory has already been read, but the HostDataRead packet has not
             # been processed by the chip before simulation finished
@@ -511,13 +522,17 @@ class BufferManager(object):
             # output buffering finite state machine
 
             seq_no_last_ack_packet = \
-                self._received_data.last_sequence_no_for_core(x,y,p)
+                self._received_data.last_sequence_no_for_core(x, y, p)
             seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
             if seq_no_internal_fsm == seq_no_last_ack_packet:
                 # if the last ack packet has not been processed, process it now
-                last_sent_ack_packet = \
+                last_sent_ack_sdp_packet = \
                     self._received_data.last_sent_packet_to_core(x, y, p)
-                # host_data_read_
+                last_sent_ack_packet = create_eieio_command.\
+                    read_eieio_command_message(last_sent_ack_sdp_packet.data, 0)
+                if not isinstance(last_sent_ack_packet, HostDataRead):
+                    # something somewhere went terribly wrong
+                    raise
                 for i in xrange(last_sent_ack_packet.n_requests):
                     if region_to_read == last_sent_ack_packet.region_id(i):
                         read_ptr += last_sent_ack_packet.space_read(i)
@@ -544,7 +559,7 @@ class BufferManager(object):
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
             elif (read_ptr == write_ptr and
-                    last_operation == constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value):
+                    last_operation == spinn_front_end_constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
                 data = self._transceiver.read_memory(x, y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
@@ -555,13 +570,13 @@ class BufferManager(object):
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
             elif (read_ptr == write_ptr and
-                    last_operation == constants.BUFFERING_OPERATIONS.BUFFER_READ.value):
+                    last_operation == spinn_front_end_constants.BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
 
         # data flush has been completed - return appropriate data
-        return self._received_data.get_region_data(x, y, p, region)
+        return self._received_data.get_region_data(x, y, p, region_to_read)
 
     def _retrieve_and_store_data(self, packet, vertex):
         x = packet.x
@@ -573,6 +588,7 @@ class BufferManager(object):
         last_pkt_seq = self._received_data.last_sequence_no_for_core(x, y, p)
         next_pkt_seq = (last_pkt_seq + 1) % 256
         if pkt_seq != next_pkt_seq:
+            # self._file_debug.write("dropping packet with sequence no: %d\n" % (pkt_seq))
             # this sequence number is incorrect
             # re-sent last HostDataRead packet sent
             last_packet_sent = self._received_data.last_sent_packet_to_core(
@@ -596,6 +612,7 @@ class BufferManager(object):
             region_id = packet.region_id(i)
             channel = packet.channel(i)
             data = self._transceiver.read_memory(x, y, start_address, length)
+            # self._file_debug.write("sequence 0x%02x reading from region %d channel %d from address 0x%08x to address 0x%08x lenght %d\n" % (pkt_seq, region_id, channel, start_address, start_address+length-1, length))
             self._received_data.store_data_in_region_buffer(
                 x, y, p, region_id, data)
             new_channel.append(channel)
@@ -605,15 +622,18 @@ class BufferManager(object):
         # create return ack packet with data stored
         ack_packet = HostDataRead(
             n_requests, pkt_seq, new_channel, new_region_id, new_space_read)
-        ack_packet_data = ack_packet.bytestring()
+        ack_packet_data = ack_packet.bytestring
 
         # create SDP header and message
         return_message_header = SDPHeader(
             destination_port=spinn_front_end_constants.OUTPUT_BUFFERING_SDP_PORT,
-            destination_cpu=p, destination_chip_x=x, destination_chip_y=y)
+            destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
+            flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
 
         # store last sent message and send to the appropriate core
         self._received_data.store_last_sent_packet_to_core(
-            x, y, p, ack_packet)
+            x, y, p, return_message)
         self._transceiver.send_sdp_message(return_message)
+        # for i in xrange(n_requests):
+            # self._file_debug.write("Sending response %d - sequence 0x%02x region %d channel %d length read %d\n" % (i, pkt_seq, new_region_id[i], new_channel[i], new_space_read[i]))

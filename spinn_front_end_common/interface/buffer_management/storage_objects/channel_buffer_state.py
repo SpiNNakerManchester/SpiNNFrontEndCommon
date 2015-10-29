@@ -42,7 +42,7 @@ class ChannelBufferState(object):
     def create_from_bytearray(data, offset):
         start_address, current_write, current_read, end_address,\
             region_id, last_buffer_operation = struct.unpack_from(
-                "<IIIIBB", data, offset)[0]
+                "<IIIIBB", data, offset)
         if last_buffer_operation == 0:
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_READ.value

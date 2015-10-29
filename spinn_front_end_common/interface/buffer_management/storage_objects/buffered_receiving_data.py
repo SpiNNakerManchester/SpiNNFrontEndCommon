@@ -13,8 +13,8 @@ class BufferedReceivingData(object):
         self._data = dict()
         self._is_flushed = dict()
         self._sequence_no = dict()
-        self._last_packet = dict()
-        self._last_packet_sent_to_core = dict()
+        self._last_packet_received = dict()
+        self._last_packet_sent = dict()
         self._end_buffering_state = dict()
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
@@ -33,11 +33,11 @@ class BufferedReceivingData(object):
             if (x, y, p) not in self._sequence_no:
                 self._sequence_no[x, y, p] = 0xFF
 
-            if (x, y, p) not in self._last_packet:
-                self._last_packet[x, y, p] = None
+            if (x, y, p) not in self._last_packet_received:
+                self._last_packet_received[x, y, p] = None
 
-            if (x, y, p) not in self._last_packet_sent_to_core:
-                self._last_packet_sent_to_core[x, y, p] = None
+            if (x, y, p) not in self._last_packet_sent:
+                self._last_packet_sent[x, y, p] = None
 
     def is_data_from_region_flushed(self, x, y, p, region):
         if (x, y, p, region) in self._is_flushed:
@@ -50,16 +50,16 @@ class BufferedReceivingData(object):
         self._is_flushed[x, y, p, region] = True
 
     def store_last_received_packet_from_core(self, x, y, p, packet):
-        self._last_packet[x, y, p] = packet
+        self._last_packet_received[x, y, p] = packet
 
     def last_received_packet_from_core(self, x, y, p):
-        return self._last_packet[x, y, p]
+        return self._last_packet_received[x, y, p]
 
     def store_last_sent_packet_to_core(self, x, y, p, packet):
-        self._last_packet[x, y, p] = packet
+        self._last_packet_sent[x, y, p] = packet
 
     def last_sent_packet_to_core(self, x, y, p):
-        return self._last_packet[x, y, p]
+        return self._last_packet_sent[x, y, p]
 
     def last_sequence_no_for_core(self, x, y, p):
         return self._sequence_no[x, y, p]
