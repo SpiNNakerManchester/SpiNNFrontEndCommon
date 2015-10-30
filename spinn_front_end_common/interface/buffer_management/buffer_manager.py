@@ -181,6 +181,7 @@ class BufferManager(object):
             total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
+                vertex.rewind(region)
                 self._send_initial_messages(vertex, region, progress_bar)
         progress_bar.end()
 
