@@ -49,3 +49,46 @@ bool simulation_read_timing_details(
 void simulation_run() {
     spin1_start(SYNC_WAIT);
 }
+
+//! \brief cleans up the house keeping, falls into a sync state and handles
+//!        the resetting up of states as required to resume.
+//! \return does not return anything
+void simulation_handle_pause_resume(){
+    // Wait for the next run of the simulation
+    spin1_callback_off(TIMER_TICK);
+
+    // Fall into a sync state to await further calls (sark level call)
+    event_wait();
+
+    // have fallen into a resume mode, set up the functions to start
+    // resuming again
+    initialise_recording();
+
+    spin1_callback_on(TIMER_TICK, timer_callback, 2);
+}
+
+//! \brief handles the new commands needed to resume the binary with a new
+//! runtime counter, as well as switching off the binary when it truely needs
+//! to be stopped.
+//! \param[in] mailbox ????????????
+//! \param[in] port ??????????????
+//! \param[in] free_message bool to check if the message should be freed
+//! \return does not return anything
+void simulation_sdp_packet_callback(
+        uint mailbox, uint port, bool free_message) {
+    use(port);
+    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
+    uint16_t length = msg->length;
+
+    if (msg->cmd_rc == CMD_STOP) {
+        log_info("Received exit signal. Program complete.");
+        spin1_exit(0);
+    } else if (msg->cmd_rc == CMD_RUNTIME) {
+        simulation_ticks = msg->arg1;
+    }
+
+    // free the message to stop overload
+    if (free_message){
+        spin1_msg_free(msg);
+    }
+}

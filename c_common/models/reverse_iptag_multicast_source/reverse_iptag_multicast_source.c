@@ -974,13 +974,7 @@ void timer_callback(uint unused0, uint unused1) {
         }
         time = UINT32_MAX;
 
-        // Wait for the next run of the simulation
-        spin1_callback_off(TIMER_TICK);
-        event_wait();
-
-        initialise_recording();
-
-        spin1_callback_on(TIMER_TICK, timer_callback, 2);
+        simulation_handle_pause_resume();
 
         return;
     }
@@ -1003,15 +997,7 @@ void timer_callback(uint unused0, uint unused1) {
 
 void sdp_packet_callback(uint mailbox, uint port) {
     use(port);
-    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
-    uint16_t length = msg->length;
-
-    if (msg->cmd_rc == CMD_STOP) {
-        log_info("Received exit signal. Program complete.");
-        spin1_exit(0);
-    } else if (msg->cmd_rc == CMD_RUNTIME) {
-        simulation_ticks = msg->arg1;
-    }
+    simulation_sdp_packet_callback(mailbox, port, false);
 
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
 
@@ -1019,7 +1005,6 @@ void sdp_packet_callback(uint mailbox, uint port) {
 
     // free the message to stop overload
     spin1_msg_free(msg);
-}
 
 // Entry point
 void c_main(void) {

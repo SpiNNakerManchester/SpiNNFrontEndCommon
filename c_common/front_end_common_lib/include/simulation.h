@@ -44,4 +44,16 @@ bool simulation_read_timing_details(
 //! \brief Starts the simulation running, returning when it is complete
 void simulation_run();
 
+//! \brief cleans up the house keeping, falls into a sync state and handles
+//!        the resetting up of states as required to resume.
+void simulation_handle_pause_resume();
+
+//! \brief handles the new commands needed to resume the binary with a new
+//! runtime counter, as well as switching off the binary when it truely needs
+//! to be stopped.
+//! \param[in] mailbox ????????????
+//! \param[in] port ??????????????
+//! \return does not return anything
+void simulation_sdp_packet_callback(uint mailbox, uint port, bool free_message);
+
 #endif // _SIMULATION_H_

@@ -181,9 +181,18 @@ class BufferManager(object):
             total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                vertex.rewind(region)
                 self._send_initial_messages(vertex, region, progress_bar)
         progress_bar.end()
+
+    def rewind(self):
+        """
+        resets the buffered regions to start trnasmitting from the beginning
+        of its expected regions
+        :return:
+        """
+        for vertex in self._sender_vertices:
+            for region in vertex.get_regions():
+                vertex.rewind(region)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.

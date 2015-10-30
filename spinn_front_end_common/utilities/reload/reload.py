@@ -112,9 +112,11 @@ class Reload(object):
         """
         self._buffer_manager.load_initial_buffers()
         self._spinnaker_interface.\
-            wait_for_cores_to_be_ready(executable_targets, app_id, 0)
+            wait_for_cores_to_be_ready(executable_targets, app_id,
+                                       self._spinnaker_interface._txrx, 0)
         self._execute_start_messages()
-        self._spinnaker_interface.start_all_cores(executable_targets, app_id, 0)
+        self._spinnaker_interface.start_all_cores(
+            executable_targets, app_id, self._spinnaker_interface._txrx, 0)
         self._spinnaker_interface.wait_for_execution_to_complete(
             executable_targets, app_id, runtime, time_scaling)
         if turn_off_machine:
