@@ -68,7 +68,12 @@ class BufferedReceivingData(object):
         self._sequence_no[x, y, p] = sequence_no
 
     def get_region_data(self, x, y, p, region):
-        return self._data[x, y, p, region].read_all()
+        if self._end_buffering_state[x, y, p].get_missing_info_for_region(
+                region):
+            print "Missing information in chip ({0:d},{1:d}), core {2:d} " \
+                  "for region {3:d}".format(x, y, p, region)
+        data = self._data[x, y, p, region].read_all()
+        return data
 
     def store_end_buffering_state(self, x, y, p, state):
         self._end_buffering_state[x, y, p] = state

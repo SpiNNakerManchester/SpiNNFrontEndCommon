@@ -78,9 +78,8 @@ typedef struct
 
 
 
-//! max number of recordable channels supported by the neural models
-#define RECORDING_POSITION_IN_REGION 3
-#define MIN_BUFFERING_OUT_LIMIT 75
+//! Minimum amount of data before triggering a read request to the host
+#define MIN_BUFFERING_OUT_LIMIT 16384  // 16 * 1024
 
 //! \brief Reads the size of the recording regions - pass 0s for the region
 //!        size pointer when the value is not needed
@@ -118,6 +117,7 @@ void recording_read_region_sizes(
 //! \return True if the channel has already been initialised, False otherwise.
 inline bool recording_is_channel_enabled(uint32_t recording_flags,
         uint8_t channel) {
+//    io_printf (IO_BUF, "checking recording flags = 0x%08x for channel %d\n", recording_flags, channel);
     return (recording_flags & (1 << channel)) != 0;
 }
 

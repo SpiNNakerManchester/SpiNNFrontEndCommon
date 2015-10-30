@@ -33,6 +33,37 @@ class EndBufferingState(object):
         else:
             return 0
 
+    def get_missing_info_for_region(self, region_id):
+        state = self.get_state_for_region(region_id)
+        if state is not None:
+            return state.missing_info
+        else:
+            return None
+
+    def update_last_operation_for_region(self, region_id, operation):
+        state = self.get_state_for_region(region_id)
+        if state is not None:
+            state.update_last_operation(operation)
+
+    def is_state_updated_for_region(self, region_id):
+        state = self.get_state_for_region(region_id)
+        if state is not None:
+            return state.update_completed
+        else:
+            return None
+
+    def update_read_pointer_for_region(self, region_id, read_ptr):
+        state = self.get_state_for_region(region_id)
+        if state is not None:
+            state.update_read_pointer(read_ptr)
+
+    def set_update_completed(self):
+        state = self.get_state_for_region(region_id)
+        if state is not None:
+            return state.set_update_completed()
+        else:
+            return None
+
     @property
     def number_of_recording_regions(self):
         return self._n_recording_regions

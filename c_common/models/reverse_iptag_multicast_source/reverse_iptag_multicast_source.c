@@ -951,11 +951,12 @@ bool initialize(uint32_t *timer_period) {
     uint32_t *recording_flags_from_system_conf = &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
     uint8_t tag_id = recording_flags_from_system_conf[1];
     uint32_t *region_sizes = &recording_flags_from_system_conf[2];
-    uint32_t recording_flags;
     uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
 
     recording_initialize(n_regions_to_record, regions_to_record,
                          region_sizes, state_region, tag_id, &recording_flags);
+
+    log_debug ("recording flags = 0x%08x", recording_flags);
 
     /*
     // Get the recording information

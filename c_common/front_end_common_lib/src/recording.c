@@ -22,6 +22,7 @@ typedef struct recording_channel_t {
     uint8_t *current_read;
     uint8_t *end;
     uint8_t region_id;
+    uint8_t missing_info;
     buffered_operations last_buffer_operation;
 } recording_channel_t;
 
@@ -224,7 +225,11 @@ bool recording_record(
 
             return true;
         } else {
-            log_info("ERROR: recording channel %u out of space", channel);
+            if (!g_recording_channels[channel].missing_info)
+            {
+                log_info("ERROR: recording channel %u out of space", channel);
+                g_recording_channels[channel].missing_info = 1;
+            }
             return false;
         }
     } else {
@@ -250,6 +255,7 @@ void recording_finalise() {
         buffering_out_state_region, address);
     address_t out_ptr = buffering_out_control_reg;
 
+    log_info("Storing channel state info in region %d starting at 0x%08x", buffering_out_state_region, out_ptr);
 //    log_info("data spec address: 0x%08x, state region id: %d, state_region_address: 0x%08x", (uint32_t)
 //address, buffering_out_state_region, (uint32_t) out_ptr);
 
@@ -275,7 +281,11 @@ void recording_finalise() {
 
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
-            log_info("\tFinalising channel %u - state info stored in SDRAM", channel);
+            if (g_recording_channels[channel].missing_info)
+                log_info("\tFinalising channel %u - dropped information while buffering - state info stored in SDRAM", channel);
+            else
+                log_info("\tFinalising channel %u - state info stored in SDRAM", channel);
+
             if(!close_channel(channel)){
                 log_error("could not close channel %u.", channel);
             }
@@ -325,8 +335,9 @@ bool recording_initialize(uint8_t n_regions, uint8_t *region_ids,
             g_recording_channels[i].end = g_recording_channels[i].start + region_sizes[i];
             g_recording_channels[i].last_buffer_operation = BUFFER_OPERATION_READ;
             g_recording_channels[i].region_id = region_ids[i];
+            g_recording_channels[i].missing_info = 0;
 
-            *recording_flags = *recording_flags | (1 << i);
+            *recording_flags = (*recording_flags | (1 << i));
 
             log_info("Recording channel %u configured to use %u byte memory block"
                      " starting at 0x%08x",
@@ -346,6 +357,7 @@ bool recording_initialize(uint8_t n_regions, uint8_t *region_ids,
             g_recording_channels[i].end = NULL;
             g_recording_channels[i].last_buffer_operation = BUFFER_OPERATION_READ;
             g_recording_channels[i].region_id = region_ids[i];
+            g_recording_channels[i].missing_info = 0;
 
             log_info("Recording channel %u left uninitialised", i);
          }
@@ -364,10 +376,12 @@ bool recording_write_memory(
     buffered_operations last_buffer_operation =
                     g_recording_channels[channel].last_buffer_operation;
 
-//    io_printf (IO_BUF, "ch = %d, start = 0x%08x, read = 0x%08x, write = 0x%08x, "
-//          "end = 0x%08x, last_buffer_operation == read = %d, data len = %d\n",
-//          channel, buffer_region, read_pointer,  write_pointer, end_of_buffer_region,
-//          last_buffer_operation == BUFFER_OPERATION_READ, length);
+/*
+    io_printf (IO_BUF, "ch = %d, start = 0x%08x, read = 0x%08x, write = 0x%08x, "
+          "end = 0x%08x, last_buffer_operation == read = %d, data len = %d\n",
+          channel, buffer_region, read_pointer,  write_pointer, end_of_buffer_region,
+          last_buffer_operation == BUFFER_OPERATION_READ, length);
+*/
 
     if ((read_pointer < write_pointer) ||
             (read_pointer == write_pointer &&
@@ -382,6 +396,7 @@ bool recording_write_memory(
             write_pointer += length;
             if (write_pointer >= end_of_buffer_region) {
                 write_pointer = buffer_region;
+//                io_printf(IO_BUF, "channel %d, write wrap around\n", channel);
             }
             g_recording_channels[channel].current_write = write_pointer;
             g_recording_channels[channel].last_buffer_operation = BUFFER_OPERATION_WRITE;
@@ -391,7 +406,8 @@ bool recording_write_memory(
             uint32_t total_space = final_space + ((uint32_t) read_pointer -
                                                   (uint32_t) buffer_region);
             if (total_space < length) {
-                log_debug("Not enough space in final area (%d bytes)", total_space);
+//                log_debug("Not enough space in final area (%d bytes)", total_space);
+//                io_printf(IO_BUF, "Not enough space in final area (%d bytes)", total_space);
                 return false;
             }
 
@@ -406,6 +422,7 @@ bool recording_write_memory(
             write_pointer += final_len;
             if (write_pointer == end_of_buffer_region) {
                 write_pointer = buffer_region;
+//                io_printf(IO_BUF, "channel %d, write wrap around\n", channel);
             }
             g_recording_channels[channel].current_write = write_pointer;
             g_recording_channels[channel].last_buffer_operation = BUFFER_OPERATION_WRITE;
@@ -416,7 +433,8 @@ bool recording_write_memory(
                                 (uint32_t) write_pointer;
 
         if (middle_space < length) {
-            log_debug("Not enough space in middle (%d bytes)", middle_space);
+//            log_debug("Not enough space in middle (%d bytes)", middle_space);
+//            io_printf(IO_BUF, "Not enough space in middle (%d bytes)\n", middle_space);
             return false;
         } else {
 //            log_debug("Packet fits in middle space of %d", middle_space);
@@ -424,6 +442,7 @@ bool recording_write_memory(
             write_pointer += length;
             if (write_pointer == end_of_buffer_region) {
                 write_pointer = buffer_region;
+//                io_printf(IO_BUF, "channel %d, write wrap around\n", channel);
             }
             g_recording_channels[channel].current_write = write_pointer;
             g_recording_channels[channel].last_buffer_operation = BUFFER_OPERATION_WRITE;
@@ -431,7 +450,8 @@ bool recording_write_memory(
         }
     }
 
-    log_debug("Buffer already full");
+//    log_debug("Buffer already full");
+//    io_printf(IO_BUF, "Buffer already full");
     return false;
 
 }
@@ -566,7 +586,7 @@ void recording_host_data_read(eieio_msg_t msg, uint length)
 
     if (sequence != buffering_out_fsm)
     {
-//        io_printf (IO_BUF, "dropping packer with sequence no: %d\n", sequence);
+//        log_debug("dropping packet with sequence no: %d", sequence);
         return;
     }
     buffering_out_fsm = (buffering_out_fsm + 1) & MAX_SEQUENCE_NO;
@@ -584,6 +604,7 @@ void recording_host_data_read(eieio_msg_t msg, uint length)
             uint32_t channel_space_total = (uint32_t)
                 (g_recording_channels[channel].end - g_recording_channels[channel].start);
             temp_value = temp_value - channel_space_total;
+//            io_printf(IO_BUF, "channel %d, read wrap around\n", channel);
         }
 
         g_recording_channels[channel].current_read = (uint8_t *) temp_value;

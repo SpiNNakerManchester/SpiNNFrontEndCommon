@@ -6,13 +6,15 @@ import struct
 class ChannelBufferState(object):
     def __init__(
             self, start_address, current_write, current_read, end_address,
-            region_id, last_buffer_operation):
+            region_id, missing_info, last_buffer_operation):
         self._start_address = start_address
         self._current_write = current_write
         self._current_read = current_read
         self._end_address = end_address
         self._region_id = region_id
+        self._missing_info = missing_info
         self._last_buffer_operation = last_buffer_operation
+        self._update_completed = False
 
     @property
     def start_address(self):
@@ -35,14 +37,31 @@ class ChannelBufferState(object):
         return self._region_id
 
     @property
+    def missing_info(self):
+        return self._missing_info
+
+    @property
     def last_buffer_operation(self):
         return self._last_buffer_operation
+
+    @property
+    def is_state_updated(self):
+        return self._update_completed
+
+    def update_last_operation(self, operation):
+        self._last_buffer_operation = operation
+
+    def update_read_pointer(self, read_ptr):
+        self._current_read = read_ptr
+
+    def set_update_completed(self):
+        self._update_completed = True
 
     @staticmethod
     def create_from_bytearray(data, offset):
         start_address, current_write, current_read, end_address,\
-            region_id, last_buffer_operation = struct.unpack_from(
-                "<IIIIBB", data, offset)
+            region_id, missing_info, last_buffer_operation = struct.unpack_from(
+                "<IIIIBBBx", data, offset)
         if last_buffer_operation == 0:
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_READ.value
@@ -51,7 +70,7 @@ class ChannelBufferState(object):
                 constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value
         buffer_state = ChannelBufferState(
             start_address, current_write, current_read, end_address,
-            region_id, last_buffer_operation)
+            region_id, missing_info, last_buffer_operation)
         return buffer_state
 
     @staticmethod
