@@ -965,15 +965,6 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
 
-        // Reset buffering
-        address_t address = data_specification_get_data_address();
-        read_parameters(data_specification_get_region(CONFIGURATION, address));
-        if (buffer_region_size > 0) {
-            setup_buffer_region(data_specification_get_region(
-                BUFFER_REGION, address));
-        }
-        time = UINT32_MAX;
-
         simulation_handle_pause_resume();
 
         return;
