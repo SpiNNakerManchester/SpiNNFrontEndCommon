@@ -600,7 +600,11 @@ class BufferManager(object):
                     x, y, p, region_to_read, data)
 
         # data flush has been completed - return appropriate data
-        return self._received_data.get_region_data(x, y, p, region_to_read)
+        # the two returns can be exchanged - one returns data and the other
+        # returns a pointer to the structure holding the data
+        # return self._received_data.get_region_data(x, y, p, region_to_read)
+        return self._received_data.get_region_data_pointer(
+            x, y, p, region_to_read)
 
     def _retrieve_and_store_data(self, packet, vertex):
         x = packet.x

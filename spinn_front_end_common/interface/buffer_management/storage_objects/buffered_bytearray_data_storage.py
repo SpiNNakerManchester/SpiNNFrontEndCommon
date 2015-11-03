@@ -52,3 +52,6 @@ class BufferedBytearrayDataStorage(AbstractBufferedDataStorage):
 
     def tell_write(self):
         return self._write_pointer
+
+    def eof(self):
+        return len(self._data_storage) - self._read_pointer

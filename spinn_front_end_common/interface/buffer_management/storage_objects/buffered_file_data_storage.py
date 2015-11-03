@@ -52,3 +52,9 @@ class BufferedFileDataStorage(AbstractBufferedDataStorage):
 
     def tell_write(self):
         return self._write_pointer
+
+    def eof(self):
+        self._file.seek(0, 2)
+        file_len = self._file.tell()
+        self._file.seek(self._read_pointer)
+        return file_len - self._read_pointer

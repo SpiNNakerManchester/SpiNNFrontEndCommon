@@ -75,6 +75,14 @@ class BufferedReceivingData(object):
         data = self._data[x, y, p, region].read_all()
         return data
 
+    def get_region_data_pointer(self, x, y, p, region):
+        if self._end_buffering_state[x, y, p].get_missing_info_for_region(
+                region):
+            print "Missing information in chip ({0:d},{1:d}), core {2:d} " \
+                  "for region {3:d}".format(x, y, p, region)
+        data_pointer = self._data[x, y, p, region]
+        return data_pointer
+
     def store_end_buffering_state(self, x, y, p, state):
         self._end_buffering_state[x, y, p] = state
 

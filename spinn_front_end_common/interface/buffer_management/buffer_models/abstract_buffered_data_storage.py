@@ -41,3 +41,7 @@ class AbstractBufferedDataStorage(object):
     @abstractmethod
     def tell_write(self):
         pass
+
+    @abstractmethod
+    def eof(self):
+        pass
