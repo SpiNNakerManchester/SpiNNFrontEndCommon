@@ -40,6 +40,7 @@ from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque\
     import BuffersSentDeque
+from spinn_front_end_common.utilities import constants as front_end_constants
 
 # general imports
 import struct
@@ -411,7 +412,8 @@ class BufferManager(object):
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=1)
+            destination_port=
+            front_end_constants.SDP_BUFFER_MANAGEMENT_DESTINATION_PORT)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
 

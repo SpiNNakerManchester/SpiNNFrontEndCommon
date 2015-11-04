@@ -12,9 +12,18 @@ MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
 # mas size expected to be used by the reverse iptag multicast source
 # during buffered opperations
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
+SDP_BUFFER_MANAGEMENT_DESTINATION_PORT = 1
+SDP_EXIT_COMMAND_DESTINATION_PORT = 2
 
 # The number of words in the AbstractDataSpecable basic setup information
 DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
 
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
+
+
+# sdp packet id for stopping models
+SDP_STOP_ID_CODE = 6
+
+# sdp packet id for new runtime
+SDP_RUNTIME_ID_CODE = 7

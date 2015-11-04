@@ -19,6 +19,11 @@ typedef enum eieio_command_messages {
     HOST_DATA_READ // Host confirming data being read form SpiNNaker memory
 }eieio_command_messages;
 
+//! \brief human readable versions of the different priorities and usages.
+typedef enum callback_priorities {
+    SDP_CALLBACK = 1, TIMER = 2
+}callback_priorities;
+
 //! human readable form of the different eieio mesage types
 typedef enum eieio_data_message_types {
     KEY_16_BIT, KEY_PAYLOAD_16_BIT, KEY_32_BIT, KEY_PAYLOAD_32_bIT
@@ -31,15 +36,15 @@ typedef enum buffered_operations{
 }buffered_operations;
 
 //! human readable form of the read in parameter space
- typedef enum read_in_parameters{
+typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, KEY_LEFT_SHIFT, CHECK_KEYS, KEY_SPACE, MASK,
     BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
- }read_in_parameters;
+}read_in_parameters;
 
- //! human readable form of the different memory regions
- typedef enum memory_regions{
+//! human readable form of the different memory regions
+typedef enum memory_regions{
     SYSTEM, CONFIGURATION, BUFFER_REGION, RECORDING
- }memory_regions;
+}memory_regions;
 
 //! the minimum space required for a buffer to work
 #define MIN_BUFFER_SPACE 10
@@ -965,9 +970,10 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
 
-        simulation_handle_pause_resume();
-
-        return;
+        simulation_handle_pause_resume(timer_callback, TIMER);
+        // have fallen out of a resume mode, set up the functions to start
+        // resuming again
+        initialise_recording();
     }
 
     if (send_packet_reqs &&
@@ -988,14 +994,15 @@ void timer_callback(uint unused0, uint unused1) {
 
 void sdp_packet_callback(uint mailbox, uint port) {
     use(port);
-    simulation_sdp_packet_callback(mailbox, port, false);
-
+    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
+    uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
 
     packet_handler_selector(eieio_msg_ptr, length - 8);
 
     // free the message to stop overload
     spin1_msg_free(msg);
+}
 
 // Entry point
 void c_main(void) {
@@ -1010,8 +1017,11 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(SDP_PACKET_RX, sdp_packet_callback, 1);
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
+    simulation_register_simulation_sdp_callback(
+        &simulation_ticks, SDP_CALLBACK);
+    spin1_sdp_callback_on(
+        BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     log_info("Starting");
 

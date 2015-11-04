@@ -516,8 +516,8 @@
                 <param_type>LoadedApplicationDataToken</param_type>
             </parameter>
             <parameter>
-                <param_name>no_full_runs</param_name>
-                <param_type>NoFullRunCount</param_type>
+                <param_name>no_sync_changes</param_name>
+                <param_type>NoSyncChanges</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>
@@ -626,8 +626,6 @@
                 <param_type>ExecuteMapping</param_type>
             </parameter>
         </required_inputs>
-        <parameters>
-        </parameters>
         <produces_outputs>
             <parameter>
                 <param_name>database_interface</param_name>
@@ -635,4 +633,59 @@
             </parameter>
         </produces_outputs>
     </algorithm>
+    <algorithm name="FrontEndCommonApplicationExiter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_exiter</python_module>
+        <python_class>FrontEndCommonApplicationExiter</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>txrx</param_name>
+                <param_type>MemoryTransciever</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+        </required_inputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonRuntimeUpdater">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_runtime_updater</python_module>
+        <python_class>FrontEndCommonRuntimeUpdater</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>txrx</param_name>
+                <param_type>MemoryTransciever</param_type>
+            </parameter>
+            <parameter>
+                <param_name>no_sync_changes</param_name>
+                <param_type>NoSyncChanges</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>no_sync_changes</param_name>
+                <param_type>NoSyncChanges</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+
 </algorithms>

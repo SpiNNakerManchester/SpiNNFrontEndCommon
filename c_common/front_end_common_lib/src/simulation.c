@@ -8,6 +8,9 @@
 #include <debug.h>
 #include <spin1_api.h>
 
+//! the pointer to the simulation time used by application models
+static uint32_t *pointer_to_simulation_time;
+
 //! \method that checks that the data in this region has the correct identifier
 //! for the model calling this method and also interprets the timer period and
 //! runtime for the model.
@@ -53,18 +56,15 @@ void simulation_run() {
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
 //! \return does not return anything
-void simulation_handle_pause_resume(){
+void simulation_handle_pause_resume(
+        callback_t timer_function, int timer_function_priority){
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
 
     // Fall into a sync state to await further calls (sark level call)
     event_wait();
 
-    // have fallen into a resume mode, set up the functions to start
-    // resuming again
-    initialise_recording();
-
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
+    spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
@@ -74,21 +74,31 @@ void simulation_handle_pause_resume(){
 //! \param[in] port ??????????????
 //! \param[in] free_message bool to check if the message should be freed
 //! \return does not return anything
-void simulation_sdp_packet_callback(
-        uint mailbox, uint port, bool free_message) {
+void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
+    log_info("received packet with command code %d", msg->cmd_rc);
 
     if (msg->cmd_rc == CMD_STOP) {
         log_info("Received exit signal. Program complete.");
+        // free the message to stop overload
+        spin1_msg_free(msg);
         spin1_exit(0);
     } else if (msg->cmd_rc == CMD_RUNTIME) {
-        simulation_ticks = msg->arg1;
-    }
-
-    // free the message to stop overload
-    if (free_message){
+        *pointer_to_simulation_time = msg->arg1;
+        // free the message to stop overload
         spin1_msg_free(msg);
+        // Fall into the next Sync state, so that host can deduce that the
+        // application has recieved this data
+        event_wait();
     }
+}
+
+//! \brief handles the
+void simulation_register_simulation_sdp_callback(
+        uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
+    pointer_to_simulation_time = simulation_ticks;
+    spin1_sdp_callback_on(PAUSE_RESUME, simulation_sdp_packet_callback,
+                          sdp_packet_callback_priority);
 }

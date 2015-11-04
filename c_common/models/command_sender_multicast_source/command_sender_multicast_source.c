@@ -12,6 +12,11 @@ static uint32_t *schedule;
 static uint32_t schedule_size;
 static uint32_t next_pos;
 
+//! values for the priority for each callback
+typedef enum callback_priorities{
+    SDP = 1, TIMER = 2
+}callback_priorities;
+
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
@@ -21,8 +26,7 @@ void timer_callback(uint unused0, uint unused1) {
     if ((next_pos >= schedule_size) && (infinite_run != TRUE)
             && (time >= simulation_ticks)) {
         log_info("Simulation complete.\n");
-        spin1_exit(0);
-        return;
+        simulation_handle_pause_resume(timer_callback, TIMER);
     }
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
@@ -151,7 +155,8 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
+    simulation_register_simulation_sdp_callback(&simulation_ticks, SDP);
 
     log_info("Starting");
 

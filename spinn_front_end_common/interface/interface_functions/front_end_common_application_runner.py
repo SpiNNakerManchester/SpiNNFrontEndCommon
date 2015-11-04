@@ -1,10 +1,10 @@
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import helpful_functions
 
 import logging
 import time
-from collections import OrderedDict
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +18,7 @@ class FrontEndCommonApplicationRunner(object):
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token, no_full_runs):
+                 loaded_application_data_token, no_sync_changes):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token
@@ -33,13 +33,13 @@ class FrontEndCommonApplicationRunner(object):
         send_buffer_manager.load_initial_buffers()
 
         self.wait_for_cores_to_be_ready(
-            executable_targets, app_id, txrx, no_full_runs)
+            executable_targets, app_id, txrx, no_sync_changes)
 
         # wait till external app is ready for us to start if required
         if database_interface is not None and wait_on_confirmation:
             database_interface.wait_for_confirmation()
 
-        self.start_all_cores(executable_targets, app_id, txrx, no_full_runs)
+        self.start_all_cores(executable_targets, app_id, txrx, no_sync_changes)
 
         if database_interface is not None and send_start_notification:
             database_interface.send_start_notification()
@@ -49,7 +49,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                send_buffer_manager, no_full_runs)
+                send_buffer_manager, no_sync_changes)
 
         return {'RanToken': True}
 
@@ -87,8 +87,8 @@ class FrontEndCommonApplicationRunner(object):
         processors_ready = txrx.get_core_state_count(app_id, sync_state)
 
         if processors_ready != total_processors:
-            unsuccessful_cores = self._get_cores_not_in_state(
-                all_core_subsets, CPUState.SYNC0, txrx, sync_state)
+            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
+                all_core_subsets, sync_state, txrx)
 
             # last chance to slip out of error check
             if len(unsuccessful_cores) != 0:
@@ -111,7 +111,7 @@ class FrontEndCommonApplicationRunner(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-				# check that the right number of processors are in correct sync
+        # check that the right number of processors are in correct sync
         if no_full_runs % 2 == 0:
             sync_state = SCPSignal.SYNC0
         else:
@@ -139,7 +139,7 @@ class FrontEndCommonApplicationRunner(object):
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                unsuccessful_cores = self._get_cores_not_in_state(
+                unsuccessful_cores = helpful_functions.get_cores_not_in_state(
                     all_core_subsets, CPUState.RUNNING, txrx)
                 break_down = self._get_core_status_string(
                     unsuccessful_cores)
@@ -173,7 +173,7 @@ class FrontEndCommonApplicationRunner(object):
             processors_rte = txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
-                rte_cores = self._get_cores_in_state(
+                rte_cores = helpful_functions.get_cores_in_state(
                     all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
                 break_down = self._get_core_status_string(rte_cores)
                 raise exceptions.ExecutableFailedToStopException(
@@ -196,7 +196,7 @@ class FrontEndCommonApplicationRunner(object):
             app_id, sync_state)
 
         if processors_exited < total_processors:
-            unsuccessful_cores = self._get_cores_not_in_state(
+            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
                 all_core_subsets, sync_state, txrx)
             break_down = self._get_core_status_string(
                 unsuccessful_cores)
@@ -208,26 +208,6 @@ class FrontEndCommonApplicationRunner(object):
         if send_buffer_manager is not None:
             send_buffer_manager.stop()
         logger.info("Application has run to completion")
-
-    @staticmethod
-    def _get_cores_in_state(all_core_subsets, state, txrx):
-        core_infos = txrx.get_cpu_information(all_core_subsets)
-        cores_in_state = OrderedDict()
-        for core_info in core_infos:
-            if core_info.state == state:
-                cores_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        return cores_in_state
-
-    @staticmethod
-    def _get_cores_not_in_state(all_core_subsets, state, txrx):
-        core_infos = txrx.get_cpu_information(all_core_subsets)
-        cores_not_in_state = OrderedDict()
-        for core_info in core_infos:
-            if core_info.state != state:
-                cores_not_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        return cores_not_in_state
 
     @staticmethod
     def _get_core_status_string(core_infos):
