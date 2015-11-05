@@ -18,7 +18,8 @@ class FrontEndCommonApplicationRunner(object):
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token, no_sync_changes):
+                 loaded_application_data_token, no_sync_changes,
+                 requires_loading_initial_buffers):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token
@@ -29,8 +30,10 @@ class FrontEndCommonApplicationRunner(object):
                 "please rerun and try again")
 
         logger.info("*** Running simulation... *** ")
+
         # every thing is in sync0. load the initial buffers
-        send_buffer_manager.load_initial_buffers()
+        if requires_loading_initial_buffers:
+            send_buffer_manager.load_initial_buffers()
 
         self.wait_for_cores_to_be_ready(
             executable_targets, app_id, txrx, no_sync_changes)
@@ -49,7 +52,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                send_buffer_manager, no_sync_changes)
+                no_sync_changes)
 
         return {'RanToken': True}
 
@@ -149,14 +152,13 @@ class FrontEndCommonApplicationRunner(object):
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling,
-            txrx, send_buffer_manager, no_full_runs):
+            txrx, no_full_runs):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param send_buffer_manager:
         :param no_full_runs: the number of runs been done between setup and end
         :return:
         """
@@ -205,8 +207,6 @@ class FrontEndCommonApplicationRunner(object):
                 "{}".format(
                     total_processors - processors_exited, total_processors,
                     break_down))
-        if send_buffer_manager is not None:
-            send_buffer_manager.stop()
         logger.info("Application has run to completion")
 
     @staticmethod

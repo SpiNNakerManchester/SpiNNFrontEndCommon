@@ -11,6 +11,9 @@
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
+extern event_data_t event;
+
+
 //! \method that checks that the data in this region has the correct identifier
 //! for the model calling this method and also interprets the timer period and
 //! runtime for the model.
@@ -82,16 +85,35 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
     if (msg->cmd_rc == CMD_STOP) {
         log_info("Received exit signal. Program complete.");
+
         // free the message to stop overload
         spin1_msg_free(msg);
+
+        // get the virutal cpu for this core
+        uint bit = 1 << sark.virt_cpu;
+
+        // knocks the event waits out for the callbacks that have been syncd
+        if (event.wait){
+            sc[SC_FLAG] = sc[SC_FLAG] | bit;
+        }
+        else{
+            sc[SC_FLAG] = sc[SC_FLAG] & ~bit;
+        }
+
+        // sets some stuff for getting to exit
         spin1_exit(0);
+
     } else if (msg->cmd_rc == CMD_RUNTIME) {
+        log_info("setting pointer");
         *pointer_to_simulation_time = msg->arg1;
         // free the message to stop overload
+        log_info("freeing mesage");
         spin1_msg_free(msg);
         // Fall into the next Sync state, so that host can deduce that the
         // application has recieved this data
+        log_info("going into event wait");
         event_wait();
+        log_info("exiting event wait");
     }
 }
 

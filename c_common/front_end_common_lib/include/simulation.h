@@ -23,7 +23,7 @@ typedef enum region_elements{
 
 // the different types of sdp packet callbacks and their functionality.
 typedef enum simulation_sdp_packet_callback_ports{
-    PAUSE_RESUME = 2, BUFFERING_IN_SDP_PORT = 1
+    PAUSE_RESUME = 1, BUFFERING_IN_SDP_PORT = 2
 }simulation_sdp_packet_callback_ports;
 
 typedef enum simulation_commands{

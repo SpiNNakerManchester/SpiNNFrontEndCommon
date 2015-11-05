@@ -31,7 +31,7 @@ typedef struct provenance_data_struct {
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
-    MC_PACKET = -1, USER_AND_SDP = 1, TIMER = 2
+    MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 2
 }callback_priorities;
 
 //! struct holding the proenance data
@@ -579,10 +579,10 @@ void c_main(void) {
     spin1_callback_on(
         MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
     spin1_callback_on(
-        USER_EVENT, incoming_event_process_callback, USER_AND_SDP);
+        USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
-        &simulation_ticks, USER_AND_SDP);
+        &simulation_ticks, SDP);
     log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0

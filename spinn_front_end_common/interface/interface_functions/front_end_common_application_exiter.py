@@ -7,6 +7,7 @@ from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.model.cpu_state import CPUState
 
 import copy
+import struct
 
 
 class FrontEndCommonApplicationExiter(object):
@@ -58,18 +59,15 @@ class FrontEndCommonApplicationExiter(object):
                 successful_cores_rte, successful_cores_idle,
                 successful_cores_watchdogged, successful_cores_powered_down)
 
-            print "unsuccessful cores are {}".format(unsuccessful_cores)
-
             for core_subset in unsuccessful_cores:
                 for processor in core_subset.processor_ids:
-                    byte_data = bytearray()
-                    byte_data.append(constants.SDP_STOP_ID_CODE)
+                    byte_data = struct.pack("<I", constants.SDP_STOP_ID_CODE)
 
                     txrx.send_sdp_message(SDPMessage(
                         sdp_header=SDPHeader(
                             flags=SDPFlag.REPLY_NOT_EXPECTED,
                             destination_port=
-                            constants.SDP_EXIT_COMMAND_DESTINATION_PORT,
+                            constants.SDP_RUNNING_COMMAND_DESTINATION_PORT,
                             destination_cpu=processor,
                             destination_chip_x=core_subset.x,
                             destination_chip_y=core_subset.y), data=byte_data))

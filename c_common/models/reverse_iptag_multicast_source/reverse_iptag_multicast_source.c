@@ -21,7 +21,7 @@ typedef enum eieio_command_messages {
 
 //! \brief human readable versions of the different priorities and usages.
 typedef enum callback_priorities {
-    SDP_CALLBACK = 1, TIMER = 2
+    SDP_CALLBACK = 0, TIMER = 2
 }callback_priorities;
 
 //! human readable form of the different eieio mesage types
