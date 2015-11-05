@@ -27,7 +27,7 @@ typedef enum simulation_sdp_packet_callback_ports{
 }simulation_sdp_packet_callback_ports;
 
 typedef enum simulation_commands{
-    CMD_STOP = 6, CMD_RUNTIME = 7
+    CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8
 }simulation_commands;
 
 //! \brief Reads the timing details for the simulation out of a region,

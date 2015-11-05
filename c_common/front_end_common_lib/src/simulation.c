@@ -104,17 +104,21 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
         spin1_exit(0);
 
     } else if (msg->cmd_rc == CMD_RUNTIME) {
-        log_info("setting pointer");
+        // resetting the simualtion time pointer
         *pointer_to_simulation_time = msg->arg1;
+
         // free the message to stop overload
-        log_info("freeing mesage");
         spin1_msg_free(msg);
-        // Fall into the next Sync state, so that host can deduce that the
-        // application has recieved this data
-        log_info("going into event wait");
-        event_wait();
-        log_info("exiting event wait");
+
+        // change state to CPU_STATE_12
+        sark_cpu_state(CPU_STATE_12);
+    } else if (msg->cmd_rc == SDP_SWITCH_STATE){
+        // change the state of the cpu into whats requested from the host
+        sark_cpu_state(msg->arg1);
+        // free the message to stop overload
+        spin1_msg_free(msg);
     }
+
 }
 
 //! \brief handles the

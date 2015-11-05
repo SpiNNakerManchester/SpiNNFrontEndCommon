@@ -61,7 +61,10 @@ class FrontEndCommonApplicationExiter(object):
 
             for core_subset in unsuccessful_cores:
                 for processor in core_subset.processor_ids:
-                    byte_data = struct.pack("<I", constants.SDP_STOP_ID_CODE)
+                    byte_data = struct.pack(
+                        "<I",
+                        constants.SDP_RUNNING_MESSAGE_CODES.SDP_STOP_ID_CODE
+                        .value)
 
                     txrx.send_sdp_message(SDPMessage(
                         sdp_header=SDPHeader(

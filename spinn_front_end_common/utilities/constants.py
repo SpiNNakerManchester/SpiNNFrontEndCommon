@@ -23,9 +23,10 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
 
-
-# sdp packet id for stopping models
-SDP_STOP_ID_CODE = 6
-
-# sdp packet id for new runtime
-SDP_RUNTIME_ID_CODE = 7
+SDP_RUNNING_MESSAGE_CODES = Enum(
+    value="SDP_RUNNING_MESSAGE_ID_CODES",
+    names=[
+        ("SDP_STOP_ID_CODE", 6),
+        ("SDP_NEW_RUNTIME_ID_CODE", 7),
+        ("SDP_SWITCH_STATE", 8)]
+)
