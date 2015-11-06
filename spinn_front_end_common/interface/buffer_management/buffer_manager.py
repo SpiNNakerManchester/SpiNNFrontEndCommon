@@ -468,8 +468,29 @@ class BufferManager(object):
                 buffer_file.close()
 
     def get_data_for_vertex(self, x, y, p, region_to_read, state_region):
-        # flush data here
+        """
+        Returns a pointer to the data container for all the data retrieved
+        during the simulation from a specific region area of a core. The
+        returned data storage belongs to a class which inherits
+        from AbstractBufferedDataStorage. The buffering out technique stores
+        final state in a different region. Fetching this area is required to
+        flush remaining data
 
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: processor on the specified chip
+        :type p: int
+        :param region_to_read: desired data region
+        :type region_to_read: int
+        :param state_region: final state storage region
+        :type state_region: int
+        :return: pointer to a class which inherits from
+        AbstractBufferedDataStorage
+        :rtype AbstractBufferedDataStorage :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
+        """
+        # flush data here
         if not self._received_data.is_data_from_region_flushed(
                 x, y, p, region_to_read):
             if not self._received_data.is_end_buffering_state_recovered(
@@ -493,7 +514,8 @@ class BufferManager(object):
                 # retrieve channel state memory area
                 raw_number_of_channels = self._transceiver.read_memory(
                     x, y, state_region_base_address, 4)
-                number_of_channels = struct.unpack("<I", raw_number_of_channels)[0]
+                number_of_channels = struct.unpack(
+                    "<I", raw_number_of_channels)[0]
                 channel_state_data = self._transceiver.read_memory(
                     x, y, state_region_base_address,
                     EndBufferingState.size_of_region(number_of_channels))
@@ -510,9 +532,8 @@ class BufferManager(object):
             write_ptr = end_state.current_write
             end_ptr = end_state.end_address
             read_ptr = end_state.current_read
-#            self._file_debug.write("region %d start pointer 0x%08x read pointer 0x%08x write pointer 0x%08x end pointer 0x%08x last operation: %d missing: %d\n" % (region_to_read, start_ptr, read_ptr, write_ptr, end_ptr, last_operation, missing_info))
 
-            # current read needs to be adjusted in case tha last portion of the
+            # current read needs to be adjusted in case the last portion of the
             # memory has already been read, but the HostDataRead packet has not
             # been processed by the chip before simulation finished
             # This situation is identified by the sequence number of the last
@@ -523,14 +544,17 @@ class BufferManager(object):
                 self._received_data.last_sequence_no_for_core(x, y, p)
             seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
             if seq_no_internal_fsm == seq_no_last_ack_packet:
-                # if the last ack packet has not been processed, process it now
+                # if the last ack packet has not been processed on the chip,
+                # process it now
                 last_sent_ack_sdp_packet = \
                     self._received_data.last_sent_packet_to_core(x, y, p)
                 last_sent_ack_packet = create_eieio_command.\
                     read_eieio_command_message(last_sent_ack_sdp_packet.data, 0)
                 if not isinstance(last_sent_ack_packet, HostDataRead):
-                    # something somewhere went terribly wrong
-                    raise
+                    raise Exception("Something somewhere went terribly wrong - "
+                                    "I was looking for a HostDataRead packet, "
+                                    "while I got {0:s}".format(
+                                        last_sent_ack_packet))
                 for i in xrange(last_sent_ack_packet.n_requests):
                     if (region_to_read == last_sent_ack_packet.region_id(i) and
                             not end_state.is_state_updated):
@@ -538,75 +562,82 @@ class BufferManager(object):
                         if (read_ptr == write_ptr or
                                 (read_ptr == end_ptr and
                                  write_ptr == start_ptr)):
-#                            print "updating state for region %d\n"%(region_to_read)
                             end_state.update_last_operation(
                                 spinn_front_end_constants.BUFFERING_OPERATIONS.
                                 BUFFER_READ.value)
                         if read_ptr == end_ptr:
                             read_ptr = start_ptr
                         elif read_ptr > end_ptr:
-                            # something somewhere went terribly wrong!
-                            raise
-                        end_state.update_read_pointer(read_ptr)
-                        end_state.set_update_completed()
+                            raise Exception(
+                                "Something somewhere went terribly wrong - "
+                                "I was reading beyond the region area some "
+                                "unknown data".format(
+                                    last_sent_ack_packet))
+                end_state.update_read_pointer(read_ptr)
+                end_state.set_update_completed()
 
             # now state is updated, read back values for read pointer and
             # last operation performed
             last_operation = end_state.last_buffer_operation
             read_ptr = end_state.current_read
 
-#            self._file_debug.write("region %d start pointer 0x%08x read pointer 0x%08x write pointer 0x%08x end pointer 0x%08x last operation: %d - POST UPDATE\n" % (region_to_read, start_ptr, read_ptr, write_ptr, end_ptr, last_operation))
-
             # now read_ptr is updated, check memory to read
             if read_ptr < write_ptr:
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(x, y, read_ptr, length)
-#                self._file_debug.write("flush region %d from address 0x%08x to address 0x%08x length: %d - case 1\n" % (region_to_read, read_ptr, read_ptr + length - 1, length))
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
 
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
                 data = self._transceiver.read_memory(x, y, read_ptr, length)
-#                self._file_debug.write("flush region %d from address 0x%08x to address 0x%08x length: %d - case 2a\n" % (region_to_read, read_ptr, read_ptr + length - 1, length))
                 self._received_data.store_data_in_region_buffer(
                     x, y, p, region_to_read, data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(x, y, read_ptr, length)
-#                self._file_debug.write("flush region %d from address 0x%08x to address 0x%08x length: %d - case 2b\n" % (region_to_read, read_ptr, read_ptr + length - 1, length))
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
 
             elif (read_ptr == write_ptr and
-                    last_operation == spinn_front_end_constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value):
+                    last_operation == spinn_front_end_constants.
+                    BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
                 data = self._transceiver.read_memory(x, y, read_ptr, length)
-#                self._file_debug.write("flush region %d from address 0x%08x to address 0x%08x length: %d - case 3a\n" % (region_to_read, read_ptr, read_ptr + length - 1, length))
                 self._received_data.store_data_in_region_buffer(
                     x, y, p, region_to_read, data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(x, y, read_ptr, length)
-#                self._file_debug.write("flush region %d from address 0x%08x to address 0x%08x length: %d - case 3b\n" % (region_to_read, read_ptr, read_ptr + length - 1, length))
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
 
             elif (read_ptr == write_ptr and
-                    last_operation == spinn_front_end_constants.BUFFERING_OPERATIONS.BUFFER_READ.value):
+                    last_operation == spinn_front_end_constants.
+                    BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
-#                self._file_debug.write("flush region done - case 4\n")
                 self._received_data.flushing_data_from_region(
                     x, y, p, region_to_read, data)
 
         # data flush has been completed - return appropriate data
         # the two returns can be exchanged - one returns data and the other
         # returns a pointer to the structure holding the data
-        # return self._received_data.get_region_data(x, y, p, region_to_read)
         return self._received_data.get_region_data_pointer(
             x, y, p, region_to_read)
 
     def _retrieve_and_store_data(self, packet, vertex):
+        """
+        Following a SpinnakerRequestReadData packet, the data stored during
+        the simulation needs to be read by the host and stored in a data
+        structure, following the specifications of buffering out technique
+
+        :param packet: SpinnakerRequestReadData packet received from the
+        SpiNNaker system
+        :type packet: :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+        :param vertex: Vertex associated with the read request
+        :type vertex: :py:class:`pacman.model.subgraph.subvertex.PartitionedVertex`
+        :return: None
+        """
         x = packet.x
         y = packet.y
         p = packet.p
@@ -616,7 +647,6 @@ class BufferManager(object):
         last_pkt_seq = self._received_data.last_sequence_no_for_core(x, y, p)
         next_pkt_seq = (last_pkt_seq + 1) % 256
         if pkt_seq != next_pkt_seq:
-#            self._file_debug.write("dropping packet with sequence no: %d\n" % (pkt_seq))
             # this sequence number is incorrect
             # re-sent last HostDataRead packet sent
             last_packet_sent = self._received_data.last_sent_packet_to_core(
@@ -624,10 +654,12 @@ class BufferManager(object):
             if last_packet_sent is not None:
                 self._transceiver.send_sdp_message(last_packet_sent)
             else:
-                # The sequence numbers have gone wrong somewhere:
-                # the packet sent from the board has incorrect sequence number,
-                # but the host never sent one acknowledge - is this possible?
-                raise
+                raise Exception("Something somewhere went terribly wrong - "
+                                "The packet sequence numbers have gone wrong "
+                                "somewhere: the packet sent from the board "
+                                "has incorrect sequence number, but the host "
+                                "never sent one acknowledge - how is this "
+                                "possible?")
             return
 
         # storage of last packet sent
@@ -648,8 +680,8 @@ class BufferManager(object):
                 start_address = packet.start_address(i)
                 region_id = packet.region_id(i)
                 channel = packet.channel(i)
-                data = self._transceiver.read_memory(x, y, start_address, length)
-#                self._file_debug.write("sequence 0x%02x reading from region %d channel %d from address 0x%08x to address 0x%08x lenght %d\n" % (pkt_seq, region_id, channel, start_address, start_address+length-1, length))
+                data = self._transceiver.read_memory(
+                    x, y, start_address, length)
                 self._received_data.store_data_in_region_buffer(
                     x, y, p, region_id, data)
                 new_channel.append(channel)
@@ -672,5 +704,3 @@ class BufferManager(object):
         self._received_data.store_last_sent_packet_to_core(
             x, y, p, return_message)
         self._transceiver.send_sdp_message(return_message)
-#        for i in xrange(new_n_requests):
-#            self._file_debug.write("Sending response %d - sequence 0x%02x region %d channel %d length read %d\n" % (i, pkt_seq, new_region_id[i], new_channel[i], new_space_read[i]))

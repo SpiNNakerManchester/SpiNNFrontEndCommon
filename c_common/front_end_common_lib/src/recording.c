@@ -377,8 +377,8 @@ bool recording_write_memory(
                     g_recording_channels[channel].last_buffer_operation;
 
 /*
-    io_printf (IO_BUF, "ch = %d, start = 0x%08x, read = 0x%08x, write = 0x%08x, "
-          "end = 0x%08x, last_buffer_operation == read = %d, data len = %d\n",
+    io_printf (IO_BUF, "t = %d, ch = %d, start = 0x%08x, read = 0x%08x, write = 0x%08x, "
+          "end = 0x%08x, op == read = %d, len = %d\n", spin1_get_simulation_time(),
           channel, buffer_region, read_pointer,  write_pointer, end_of_buffer_region,
           last_buffer_operation == BUFFER_OPERATION_READ, length);
 */
@@ -537,9 +537,9 @@ void recording_send_buffering_out_trigger_message(bool flush_all)
 
         spin1_send_sdp_msg (&msg, 1);
 
-/*
-        io_printf(IO_BUF, "number of requests: %d, packet length: %d\n", n_requests, msg.length);
 
+//        io_printf(IO_BUF, "seq: %d, n requests: %d, len: %d\n", buffering_out_fsm, n_requests, msg.length);
+/*
         unsigned char *print_ptr = &msg;
         for (uint i = 0; i < msg.length; i++)
         {
