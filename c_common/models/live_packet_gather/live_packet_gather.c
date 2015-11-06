@@ -188,7 +188,6 @@ void timer_callback(uint unused0, uint unused1) {
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         record_provenance_data();
-        log_info("Simulation complete.\n");
         simulation_handle_pause_resume(timer_callback, TIMER);
     }
 }

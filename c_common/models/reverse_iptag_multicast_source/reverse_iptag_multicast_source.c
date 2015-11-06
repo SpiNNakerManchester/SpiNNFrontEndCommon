@@ -966,7 +966,6 @@ void timer_callback(uint unused0, uint unused1) {
                 recording_flags, e_recording_channel_spike_history)) {
             recording_finalise();
         }
-        log_info("Simulation complete.");
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
 

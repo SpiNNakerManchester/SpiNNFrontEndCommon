@@ -54,7 +54,11 @@ class FrontEndCommonApplicationRunner(object):
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
                 no_sync_changes)
 
-        return {'RanToken': True}
+            # when it falls out of the running, itll be in a next sync state,
+            # thus update needed
+            no_sync_changes += 1
+
+        return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
     def wait_for_cores_to_be_ready(
             self, executable_targets, app_id, txrx, no_full_runs):

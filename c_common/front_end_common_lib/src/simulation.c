@@ -13,6 +13,9 @@ static uint32_t *pointer_to_simulation_time;
 
 extern event_data_t event;
 
+//! flag for checking if we're in exit state
+static bool exited = false;
+
 
 //! \method that checks that the data in this region has the correct identifier
 //! for the model calling this method and also interprets the timer period and
@@ -67,7 +70,14 @@ void simulation_handle_pause_resume(
     // Fall into a sync state to await further calls (sark level call)
     event_wait();
 
-    spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
+    if (exited){
+        spin1_exit(0);
+        log_info("exited");
+    }
+    else{
+        log_info("resuming");
+        spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
+    }
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
@@ -88,22 +98,11 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         // free the message to stop overload
         spin1_msg_free(msg);
-
-        // get the virutal cpu for this core
-        uint bit = 1 << sark.virt_cpu;
-
-        // knocks the event waits out for the callbacks that have been syncd
-        if (event.wait){
-            sc[SC_FLAG] = sc[SC_FLAG] | bit;
-        }
-        else{
-            sc[SC_FLAG] = sc[SC_FLAG] & ~bit;
-        }
-
-        // sets some stuff for getting to exit
-        spin1_exit(0);
+        exited = true;
+        sark_cpu_state(CPU_STATE_13);
 
     } else if (msg->cmd_rc == CMD_RUNTIME) {
+        log_info("Setting the runtime of this model to %d", msg->arg1);
         // resetting the simualtion time pointer
         *pointer_to_simulation_time = msg->arg1;
 
@@ -112,13 +111,13 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         // change state to CPU_STATE_12
         sark_cpu_state(CPU_STATE_12);
+
     } else if (msg->cmd_rc == SDP_SWITCH_STATE){
         // change the state of the cpu into whats requested from the host
         sark_cpu_state(msg->arg1);
         // free the message to stop overload
         spin1_msg_free(msg);
     }
-
 }
 
 //! \brief handles the
