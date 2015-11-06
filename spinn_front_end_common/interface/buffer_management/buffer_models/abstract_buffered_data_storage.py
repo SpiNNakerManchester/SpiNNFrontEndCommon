@@ -1,7 +1,3 @@
-"""
-AbstractBufferedDataStorage
-"""
-
 # general imports
 from abc import ABCMeta
 from abc import abstractmethod
@@ -13,6 +9,9 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(ABCMeta)
 class AbstractBufferedDataStorage(object):
+    """
+    Abstract class which contains the basic methods used to store and read data
+    """
 
     @abstractmethod
     def write(self, data):

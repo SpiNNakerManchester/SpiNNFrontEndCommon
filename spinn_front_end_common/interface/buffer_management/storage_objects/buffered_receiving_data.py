@@ -130,7 +130,7 @@ class BufferedReceivingData(object):
 
     def store_last_received_packet_from_core(self, x, y, p, packet):
         """
-        Stores the last packet received from the SpiNNaker system related
+        Stores the last packet received from the SpiNNaker system related to
         the buffering output mechanism
 
         :param x: x coordinate of the chip
@@ -148,21 +148,108 @@ class BufferedReceivingData(object):
         self._last_packet_received[x, y, p] = packet
 
     def last_received_packet_from_core(self, x, y, p):
+        """
+        Retrieves the last packet received from the SpiNNaker system related
+        to the buffering output mechanism
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :return: SpinnakerRequestReadData packet received from the
+        SpiNNaker system
+        :rtype: :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+        """
         return self._last_packet_received[x, y, p]
 
     def store_last_sent_packet_to_core(self, x, y, p, packet):
+        """
+        Stores the last packet sent to the SpiNNaker system related to the
+        buffering output mechanism
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :param packet: last HostDataRead packet sent to the SpiNNaker system
+        :type packet: :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+        :return: None
+        :rtype: None
+        """
         self._last_packet_sent[x, y, p] = packet
 
     def last_sent_packet_to_core(self, x, y, p):
+        """
+        Retrieves the last packet sent to the SpiNNaker system related to the
+        buffering output mechanism
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :return: last HostDataRead packet sent to the SpiNNaker system
+        :rtype: :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+        """
         return self._last_packet_sent[x, y, p]
 
     def last_sequence_no_for_core(self, x, y, p):
+        """
+        Returns the sequence number of the last set of packets (sent and
+        received) used in the communication with the SpiNNaker system for
+        the buffering output technique
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :return: last sequence number used
+        :rtype: int
+        """
         return self._sequence_no[x, y, p]
 
     def update_sequence_no_for_core(self, x, y, p, sequence_no):
+        """
+        Updates the sequence number used in the last set of packets (sent and
+        received) used in the communication with the SpiNNaker system for
+        the buffering output technique
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :param sequence_no: last sequence number used
+        :type sequence_no: int
+        :return: None
+        :rtype: None
+        """
         self._sequence_no[x, y, p] = sequence_no
 
     def get_region_data(self, x, y, p, region):
+        """
+        Returns the data related to a specific chip, core and region in a
+        bytearray
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :param region: Region containing the data
+        :type region: int
+        :return: an array contained all the data received during the simulation
+        :rtype: bytearray
+        """
         missing = None
         if self._end_buffering_state[x, y, p].get_missing_info_for_region(
                 region):
@@ -171,6 +258,22 @@ class BufferedReceivingData(object):
         return data, missing
 
     def get_region_data_pointer(self, x, y, p, region):
+        """
+        Returns the structure which contains the data related to a specific
+        chip, core
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :param region: Region containing the data
+        :type region: int
+        :return: a data structure which contains all the data received
+        during the simulation. This data structure inherits from :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
+        :rtype: :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
+        """
         missing = None
         if self._end_buffering_state[x, y, p].get_missing_info_for_region(
                 region):
