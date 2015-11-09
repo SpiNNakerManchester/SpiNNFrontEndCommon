@@ -4,6 +4,21 @@ import struct
 
 
 class ChannelBufferState(object):
+    """
+    This class stores information related to a single channel output
+    buffering state, as it is retrieved at the end of a simulation on the
+    SpiNNaker system. The state contains, in order:
+    1 - start buffering area memory address (32 bits)
+    2 - current write pointer address, first space where to write data (32 bits)
+    3 - current read pointer address, first space chere to read data (32 bits)
+    4 - end buffering area memory address, first byte after the
+    assigned memory area (32 bits)
+    5 - application region identifier (8 bits)
+    6 - bit to identify if the region overflowed during the simulation
+    and therefore some information has not been transferred to the
+    host - missing_info (8 bits)
+    7 - Last operation performed on the buffer - read or write (8 bits)
+    """
     def __init__(
             self, start_address, current_write, current_read, end_address,
             region_id, missing_info, last_buffer_operation):

@@ -5,6 +5,16 @@ import struct
 
 
 class EndBufferingState(object):
+    """
+    This class stores information related to the status of the buffering
+    output mechanism at the end of a simulation when the state is
+    retrieved from the SpiNNaker machine. Information stored are:
+    1 - Number of buffering regions used
+    2 - Final state of the state machine (given by the sequence number) which
+    controls the buffering output technique
+    3 - a list of channel state, where each channel is stored in a
+    ChannelBufferState class
+    """
     def __init__(
             self, n_recording_regions,
             buffering_out_fsm_state,
