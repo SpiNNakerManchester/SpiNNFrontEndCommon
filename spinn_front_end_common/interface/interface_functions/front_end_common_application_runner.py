@@ -61,12 +61,12 @@ class FrontEndCommonApplicationRunner(object):
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
     def wait_for_cores_to_be_ready(
-            self, executable_targets, app_id, txrx, no_full_runs):
+            self, executable_targets, app_id, txrx, no_sync_state_changes):
         """
 
         :param executable_targets: the mapping between cores and binaries
         :param app_id: the appid that being used by the simulation
-        :param no_full_runs:  the number of runs been done between setup and end
+        :param no_sync_state_changes:  the number of runs been done between setup and end
         :param txrx: the python interface to the spinnaker machine
         :return:
         """
@@ -85,7 +85,7 @@ class FrontEndCommonApplicationRunner(object):
                                                          CPUState.C_MAIN)
 
         # check that the right number of processors are in correct sync
-        if no_full_runs % 2 == 0:
+        if no_sync_state_changes % 2 == 0:
             sync_state = CPUState.SYNC0
         else:
             sync_state = CPUState.SYNC1
@@ -106,11 +106,12 @@ class FrontEndCommonApplicationRunner(object):
                         processors_ready, total_processors,  sync_state.name, 
                         break_down))
 
-    def start_all_cores(self, executable_targets, app_id, txrx, no_full_runs):
+    def start_all_cores(self, executable_targets, app_id, txrx,
+                        sync_state_changes):
         """
         :param executable_targets: the mapping between cores and binaries
         :param app_id: the appid that being used by the simulation
-        :param no_full_runs:  the number of runs been done between setup and end
+        :param sync_state_changes:  the number of runs been done between setup and end
         :param txrx: the python interface to the spinnaker machine
         :return: None
         """
@@ -119,7 +120,7 @@ class FrontEndCommonApplicationRunner(object):
         all_core_subsets = executable_targets.all_core_subsets
 
         # check that the right number of processors are in correct sync
-        if no_full_runs % 2 == 0:
+        if sync_state_changes % 2 == 0:
             sync_state = SCPSignal.SYNC0
         else:
             sync_state = SCPSignal.SYNC1
@@ -135,7 +136,7 @@ class FrontEndCommonApplicationRunner(object):
         if processors_running < total_processors:
 
             # deduce the correct state value
-            if no_full_runs % 2 == 0:
+            if sync_state_changes % 2 == 0:
                 sync_state = CPUState.SYNC1
             else:
                 sync_state = CPUState.SYNC0
@@ -156,14 +157,15 @@ class FrontEndCommonApplicationRunner(object):
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling,
-            txrx, no_full_runs):
+            txrx, no_sync_state_changes):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param no_full_runs: the number of runs been done between setup and end
+        :param no_sync_state_changes: the number of runs been done between
+        setup and end
         :return:
         """
 
@@ -193,7 +195,7 @@ class FrontEndCommonApplicationRunner(object):
                             "waiting a bit longer...")
                 time.sleep(0.5)
 
-        if no_full_runs % 2 == 1:
+        if no_sync_state_changes % 2 == 1:
             sync_state = CPUState.SYNC0
         else:
             sync_state = CPUState.SYNC1

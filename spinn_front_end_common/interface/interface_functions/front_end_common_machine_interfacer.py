@@ -21,7 +21,8 @@ class FrontEndCommonMachineInterfacer(object):
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num):
+            enable_reinjection, scamp_connection_data, boot_port_num,
+            reset_machine_on_start_up):
 
         """
         Set up the interfaces for communicating with the SpiNNaker board
@@ -63,6 +64,10 @@ class FrontEndCommonMachineInterfacer(object):
             ignore_cores=ignored_cores, number_of_boards=number_of_boards,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data)
+
+        if reset_machine_on_start_up:
+            txrx.power_off_machine()
+            txrx.power_on_machine()
 
         # update number of boards from machine
         if number_of_boards is None:

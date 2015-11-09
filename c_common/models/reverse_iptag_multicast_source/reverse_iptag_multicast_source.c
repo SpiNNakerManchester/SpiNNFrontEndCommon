@@ -969,6 +969,10 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
 
+        address_t address = data_specification_get_data_address();
+        setup_buffer_region(data_specification_get_region(
+            BUFFER_REGION, address));
+
         simulation_handle_pause_resume(timer_callback, TIMER);
         // have fallen out of a resume mode, set up the functions to start
         // resuming again
