@@ -20,7 +20,12 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 5
 MAX_DATABASE_PATH_LENGTH = 50000
 
 # sdp port handling output buffering data streaming
-OUTPUT_BUFFERING_SDP_PORT = 2
+SDP_PORTS = Enum(
+    value="SDP_PORTS",
+    names=[
+        ("INPUT_BUFFERING_SDP_PORT", 1),
+        ("OUTPUT_BUFFERING_SDP_PORT", 2)]
+    )
 
 # output buffering operations
 # a listing of what spinnaker specific EIEIO commands there are.

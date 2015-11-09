@@ -452,7 +452,8 @@ class BufferManager(object):
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=1)
+            destination_port=spinn_front_end_constants.SDP_PORTS.
+            INPUT_BUFFERING_SDP_PORT.value)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
 
@@ -695,7 +696,8 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=spinn_front_end_constants.OUTPUT_BUFFERING_SDP_PORT,
+            destination_port=spinn_front_end_constants.SDP_PORTS.
+            OUTPUT_BUFFERING_SDP_PORT.value,
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
