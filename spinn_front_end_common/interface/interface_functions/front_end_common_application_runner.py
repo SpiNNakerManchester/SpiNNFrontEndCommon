@@ -18,8 +18,7 @@ class FrontEndCommonApplicationRunner(object):
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token, no_sync_changes,
-                 requires_loading_initial_buffers):
+                 loaded_application_data_token, no_sync_changes):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token
@@ -31,9 +30,8 @@ class FrontEndCommonApplicationRunner(object):
 
         logger.info("*** Running simulation... *** ")
 
-        # every thing is in sync0. load the initial buffers
-        if requires_loading_initial_buffers:
-            send_buffer_manager.load_initial_buffers()
+        # every thing is in sync. load the initial buffers
+        send_buffer_manager.load_initial_buffers()
 
         self.wait_for_cores_to_be_ready(
             executable_targets, app_id, txrx, no_sync_changes)
