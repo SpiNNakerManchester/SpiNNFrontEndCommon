@@ -10,6 +10,9 @@
 
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
+//! the port used by the host machien for setting up the sdp port for
+//! receiving the exit, new runtime etc
+static int sdp_exit_run_command_port;
 
 extern event_data_t event;
 
@@ -47,8 +50,7 @@ bool simulation_read_timing_details(
     *timer_period = address[SIMULATION_TIMER_PERIOD];
     *infinite_run = address[INFINITE_RUN];
     *n_simulation_ticks = address[N_SIMULATION_TICS];
-    
-
+    sdp_exit_run_command_port = address[SDP_EXIT_RUNTIME_COMMAND_PORT];
     return true;
 }
 
@@ -124,6 +126,8 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
     pointer_to_simulation_time = simulation_ticks;
-    spin1_sdp_callback_on(PAUSE_RESUME, simulation_sdp_packet_callback,
-                          sdp_packet_callback_priority);
+    log_info("port no is %d", sdp_exit_run_command_port);
+    spin1_sdp_callback_on(
+        sdp_exit_run_command_port, simulation_sdp_packet_callback,
+        sdp_packet_callback_priority);
 }

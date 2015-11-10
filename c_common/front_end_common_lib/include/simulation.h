@@ -18,12 +18,13 @@
 // containing the timing details.
 typedef enum region_elements{
 	APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD, INFINITE_RUN,
-	N_SIMULATION_TICS, SIMULATION_N_TIMING_DETAIL_WORDS
+	N_SIMULATION_TICS, SDP_EXIT_RUNTIME_COMMAND_PORT,
+	SIMULATION_N_TIMING_DETAIL_WORDS
 }region_elements;
 
 // the different types of sdp packet callbacks and their functionality.
 typedef enum simulation_sdp_packet_callback_ports{
-    PAUSE_RESUME = 1, BUFFERING_IN_SDP_PORT = 2
+    BUFFERING_IN_SDP_PORT = 2
 }simulation_sdp_packet_callback_ports;
 
 typedef enum simulation_commands{
