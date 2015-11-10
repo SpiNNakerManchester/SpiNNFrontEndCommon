@@ -28,8 +28,6 @@ from spinnman.messages.eieio.command_messages.spinnaker_request_buffers \
     import SpinnakerRequestBuffers
 from spinnman.messages.eieio.command_messages.padding_request\
     import PaddingRequest
-from spinnman.messages.eieio.command_messages.event_stop_request \
-    import EventStopRequest
 from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
     import HostSendSequencedData
 from spinnman.messages.eieio.command_messages.stop_requests \
@@ -290,8 +288,8 @@ class BufferManager(object):
 
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
-                bytes_to_go >= EventStopRequest.get_min_packet_length()):
-            data = EventStopRequest().bytestring
+                bytes_to_go >= StopRequests.get_min_packet_length()):
+            data = StopRequests().bytestring
             logger.debug("Writing stop message of {} bytes to {} on"
                          " {}, {}, {}".format(
                              len(data), hex(region_base_address),
@@ -359,7 +357,7 @@ class BufferManager(object):
         # If the vertex is empty, send the stop messages if there is space
         if (not sent_messages.is_full and
                 not vertex.is_next_timestamp(region) and
-                bytes_to_go >= EventStopRequest.get_min_packet_length()):
+                bytes_to_go >= StopRequests.get_min_packet_length()):
             sent_messages.send_stop_message()
             if self._report_states.transciever_report:
                 if (vertex, region) in self._reload_buffer_file:

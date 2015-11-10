@@ -724,10 +724,13 @@ void fetch_and_process_packet() {
     msg_from_sdram_in_use = false;
 
     // If we are not buffering, there is nothing to do
+    log_debug("buffer size is %d", buffer_region_size);
     if (buffer_region_size == 0) {
         return;
     }
 
+    log_debug("dealing with sdram is set to %d", msg_from_sdram_in_use);
+    log_debug("has_eieio_packet_in_buffer set to %d", is_eieio_packet_in_buffer());
     while ((!msg_from_sdram_in_use) && is_eieio_packet_in_buffer()) {
 
         // If there is padding, move on 2 bytes
@@ -970,13 +973,17 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Incorrect packets discarded: %d", incorrect_packets);
 
         address_t address = data_specification_get_data_address();
-        setup_buffer_region(data_specification_get_region(
-            BUFFER_REGION, address));
+        setup_buffer_region(data_specification_get_region(BUFFER_REGION,
+                                                          address));
 
         simulation_handle_pause_resume(timer_callback, TIMER);
         // have fallen out of a resume mode, set up the functions to start
         // resuming again
         initialise_recording();
+        // set the code to start sending packet requests again
+        send_packet_reqs = true;
+        // magic state to allow the model to check for stuff in the sdram
+        last_buffer_operation = BUFFER_OPERATION_WRITE;
     }
 
     if (send_packet_reqs &&
