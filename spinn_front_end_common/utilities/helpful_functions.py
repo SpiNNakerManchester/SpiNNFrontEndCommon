@@ -1,5 +1,6 @@
 
 # front end common imports
+from collections import OrderedDict
 from spinn_front_end_common.utility_models.live_packet_gather import \
     LivePacketGather
 from spinn_front_end_common.utility_models.\
@@ -267,3 +268,37 @@ def do_mapping(
     pacman_executor.execute_mapping()
 
     return pacman_executor
+
+
+def get_cores_in_state(all_core_subsets, state, txrx):
+    """
+
+    :param all_core_subsets:
+    :param state:
+    :param txrx:
+    :return:
+    """
+    core_infos = txrx.get_cpu_information(all_core_subsets)
+    cores_in_state = OrderedDict()
+    for core_info in core_infos:
+        if core_info.state == state:
+            cores_in_state[
+                (core_info.x, core_info.y, core_info.p)] = core_info
+    return cores_in_state
+
+
+def get_cores_not_in_state(all_core_subsets, state, txrx):
+    """
+
+    :param all_core_subsets:
+    :param state:
+    :param txrx:
+    :return:
+    """
+    core_infos = txrx.get_cpu_information(all_core_subsets)
+    cores_not_in_state = OrderedDict()
+    for core_info in core_infos:
+        if core_info.state != state:
+            cores_not_in_state[
+                (core_info.x, core_info.y, core_info.p)] = core_info
+    return cores_not_in_state

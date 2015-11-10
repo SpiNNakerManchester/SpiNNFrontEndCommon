@@ -13,8 +13,20 @@ MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
 # during buffered opperations
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
 
+# destination ports for sdp messages for different types of application control
+SDP_BUFFER_MANAGEMENT_DESTINATION_PORT = 2
+SDP_RUNNING_COMMAND_DESTINATION_PORT = 1
+
 # The number of words in the AbstractDataSpecable basic setup information
-DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
+DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 5
 
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
+
+SDP_RUNNING_MESSAGE_CODES = Enum(
+    value="SDP_RUNNING_MESSAGE_ID_CODES",
+    names=[
+        ("SDP_STOP_ID_CODE", 6),
+        ("SDP_NEW_RUNTIME_ID_CODE", 7),
+        ("SDP_SWITCH_STATE", 8)]
+)

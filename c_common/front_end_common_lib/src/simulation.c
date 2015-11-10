@@ -8,6 +8,18 @@
 #include <debug.h>
 #include <spin1_api.h>
 
+//! the pointer to the simulation time used by application models
+static uint32_t *pointer_to_simulation_time;
+//! the port used by the host machien for setting up the sdp port for
+//! receiving the exit, new runtime etc
+static int sdp_exit_run_command_port;
+
+extern event_data_t event;
+
+//! flag for checking if we're in exit state
+static bool exited = false;
+
+
 //! \method that checks that the data in this region has the correct identifier
 //! for the model calling this method and also interprets the timer period and
 //! runtime for the model.
@@ -38,8 +50,7 @@ bool simulation_read_timing_details(
     *timer_period = address[SIMULATION_TIMER_PERIOD];
     *infinite_run = address[INFINITE_RUN];
     *n_simulation_ticks = address[N_SIMULATION_TICS];
-    
-
+    sdp_exit_run_command_port = address[SDP_EXIT_RUNTIME_COMMAND_PORT];
     return true;
 }
 
@@ -48,4 +59,75 @@ bool simulation_read_timing_details(
 //! \return does not return anything
 void simulation_run() {
     spin1_start(SYNC_WAIT);
+}
+
+//! \brief cleans up the house keeping, falls into a sync state and handles
+//!        the resetting up of states as required to resume.
+//! \return does not return anything
+void simulation_handle_pause_resume(
+        callback_t timer_function, int timer_function_priority){
+    // Wait for the next run of the simulation
+    spin1_callback_off(TIMER_TICK);
+
+    // Fall into a sync state to await further calls (sark level call)
+    event_wait();
+
+    if (exited){
+        spin1_exit(0);
+        log_info("exited");
+    }
+    else{
+        log_info("resuming");
+        spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
+    }
+}
+
+//! \brief handles the new commands needed to resume the binary with a new
+//! runtime counter, as well as switching off the binary when it truely needs
+//! to be stopped.
+//! \param[in] mailbox ????????????
+//! \param[in] port ??????????????
+//! \param[in] free_message bool to check if the message should be freed
+//! \return does not return anything
+void simulation_sdp_packet_callback(uint mailbox, uint port) {
+    use(port);
+    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
+    uint16_t length = msg->length;
+    log_info("received packet with command code %d", msg->cmd_rc);
+
+    if (msg->cmd_rc == CMD_STOP) {
+        log_info("Received exit signal. Program complete.");
+
+        // free the message to stop overload
+        spin1_msg_free(msg);
+        exited = true;
+        sark_cpu_state(CPU_STATE_13);
+
+    } else if (msg->cmd_rc == CMD_RUNTIME) {
+        log_info("Setting the runtime of this model to %d", msg->arg1);
+        // resetting the simualtion time pointer
+        *pointer_to_simulation_time = msg->arg1;
+
+        // free the message to stop overload
+        spin1_msg_free(msg);
+
+        // change state to CPU_STATE_12
+        sark_cpu_state(CPU_STATE_12);
+
+    } else if (msg->cmd_rc == SDP_SWITCH_STATE){
+        // change the state of the cpu into whats requested from the host
+        sark_cpu_state(msg->arg1);
+        // free the message to stop overload
+        spin1_msg_free(msg);
+    }
+}
+
+//! \brief handles the
+void simulation_register_simulation_sdp_callback(
+        uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
+    pointer_to_simulation_time = simulation_ticks;
+    log_info("port no is %d", sdp_exit_run_command_port);
+    spin1_sdp_callback_on(
+        sdp_exit_run_command_port, simulation_sdp_packet_callback,
+        sdp_packet_callback_priority);
 }

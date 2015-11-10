@@ -29,6 +29,11 @@ typedef struct provenance_data_struct {
     uint32_t number_of_over_flows_payload;
 } provenance_data_struct;
 
+//! values for the priority for each callback
+typedef enum callback_priorities{
+    MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 2
+}callback_priorities;
+
 //! struct holding the proenance data
 provenance_data_struct provenance_data;
 
@@ -183,8 +188,7 @@ void timer_callback(uint unused0, uint unused1) {
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         record_provenance_data();
-        log_info("Simulation complete.\n");
-        spin1_exit(0);
+        simulation_handle_pause_resume(timer_callback, TIMER);
     }
 }
 
@@ -570,12 +574,14 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, -1);
-    spin1_callback_on(MCPL_PACKET_RECEIVED,
-                      incoming_event_payload_callback, -1);
-    spin1_callback_on(USER_EVENT, incoming_event_process_callback, 1);
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
-
+    spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, MC_PACKET);
+    spin1_callback_on(
+        MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
+    spin1_callback_on(
+        USER_EVENT, incoming_event_process_callback, USER);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
+    simulation_register_simulation_sdp_callback(
+        &simulation_ticks, SDP);
     log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0
