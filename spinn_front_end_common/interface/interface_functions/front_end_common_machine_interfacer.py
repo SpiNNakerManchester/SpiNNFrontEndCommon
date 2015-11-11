@@ -13,9 +13,7 @@ import re
 
 
 class FrontEndCommonMachineInterfacer(object):
-    """
-    FrontEndCommonMachineInterfacer: interface to make a transciever and a
-    spinnmachine object
+    """ Interface to make a transceiver and a spinnmachine object
     """
 
     def __call__(
@@ -24,7 +22,6 @@ class FrontEndCommonMachineInterfacer(object):
             enable_reinjection, scamp_connection_data, boot_port_num):
 
         """
-        Set up the interfaces for communicating with the SpiNNaker board
         :param hostname: the hostname or ip address of the spinnaker machine
         :param bmp_details: the details of the BMP connections
         :param downed_chips: the chips that are down which sark thinks are\
@@ -41,7 +38,8 @@ class FrontEndCommonMachineInterfacer(object):
         :param enable_reinjection: True if dropped packet reinjection is to be\
                enabled
         :param boot_port_num: the port num used for the boot connection
-        :param scamp_connection_data: the list of scamp connection datas or None
+        :param scamp_connection_data: the list of scamp connection datas or\
+               None
         :return: None
         """
 
@@ -148,7 +146,8 @@ class FrontEndCommonMachineInterfacer(object):
 
             bmp_string_split = bmp_detail.split("/")
             (cabinet, frame, hostname, port_num) = \
-                self._sort_out_bmp_cabinet_and_frame_string(bmp_string_split[0])
+                self._sort_out_bmp_cabinet_and_frame_string(
+                    bmp_string_split[0])
 
             if len(bmp_string_split) == 1:
 
@@ -176,15 +175,14 @@ class FrontEndCommonMachineInterfacer(object):
 
     @staticmethod
     def _sort_out_downed_chips_cores(downed_chips, downed_cores):
-        """
-        translates the down cores and down chips string into stuff spinnman
-        can understand
+        """ Translate the down cores and down chips string into a form that \
+            spinnman can understand
         :param downed_cores: string representing down cores
         :type downed_cores: str
         :param downed_chips: string representing down chips
         :type: downed_chips: str
-        :return: a list of down cores and down chips in processor and coreset
-        format
+        :return: a list of down cores and down chips in processor and \
+                core subset format
         """
         ignored_chips = None
         ignored_cores = None

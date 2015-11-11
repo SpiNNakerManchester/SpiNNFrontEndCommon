@@ -1,7 +1,3 @@
-"""
-
-"""
-
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 from spinn_front_end_common.abstract_models.\
@@ -15,14 +11,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCmmonPartitionableGraphApplicationLoader(object):
+class FrontEndCommonPartitionableGraphApplicationLoader(object):
     """
-
     """
 
     def __call__(
             self, placements, vertex_to_subvertex_mapper,
-            processor_to_app_data_base_address, transciever,
+            processor_to_app_data_base_address, transceiver,
             vertex_to_app_data_files, verify=False):
 
         # go through the placements and see if there's any application data to
@@ -51,7 +46,7 @@ class FrontEndCmmonPartitionableGraphApplicationLoader(object):
                         file_path_for_application_data)
                     logger.debug("writing application data for vertex {}"
                                  .format(associated_vertex.label))
-                    transciever.write_memory(
+                    transceiver.write_memory(
                         placement.x, placement.y, start_address,
                         application_data_file_reader, memory_written)
                     application_data_file_reader.close()
@@ -60,7 +55,7 @@ class FrontEndCmmonPartitionableGraphApplicationLoader(object):
                         application_data_file_reader = SpinnmanFileDataReader(
                             file_path_for_application_data)
                         all_data = application_data_file_reader.readall()
-                        read_data = transciever.read_memory(
+                        read_data = transceiver.read_memory(
                             placement.x, placement.y, start_address,
                             memory_written)
                         if read_data != all_data:
@@ -75,9 +70,9 @@ class FrontEndCmmonPartitionableGraphApplicationLoader(object):
                     logger.debug("writing user 0 address for vertex {}"
                                  .format(associated_vertex.label))
                     user_o_register_address = \
-                        transciever.get_user_0_register_address_from_core(
+                        transceiver.get_user_0_register_address_from_core(
                             placement.x, placement.y, placement.p)
-                    transciever.write_memory(
+                    transceiver.write_memory(
                         placement.x, placement.y, user_o_register_address,
                         start_address)
             progress_bar.update()

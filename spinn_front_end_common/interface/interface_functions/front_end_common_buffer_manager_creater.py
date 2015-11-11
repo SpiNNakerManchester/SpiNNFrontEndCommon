@@ -1,7 +1,3 @@
-"""
-FrontEndCommonBufferManagerCreater
-"""
-
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_front_end_common.interface.buffer_management.buffer_manager import \
     BufferManager
@@ -12,14 +8,12 @@ from spinn_front_end_common.interface.buffer_management.\
 
 class FrontEndCommonBufferManagerCreater(object):
     """
-    FrontEndCommonBufferManagerCreater
     """
 
     def __call__(
             self, partitioned_graph, placements, tags, txrx, reports_states,
             app_data_folder):
         """
-        interface for buffered vertices
         :param partitioned_graph: the partitioned graph object
         :param placements: the placements object
         :param tags: the tags object
@@ -42,4 +36,3 @@ class FrontEndCommonBufferManagerCreater(object):
         progress_bar.end()
 
         return {"buffer_manager": send_buffer_manager}
-

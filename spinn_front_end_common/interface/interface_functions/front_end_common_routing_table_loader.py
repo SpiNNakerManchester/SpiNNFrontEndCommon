@@ -3,7 +3,7 @@ from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 class FrontEndCommonRoutingTableLoader(object):
 
-    def __call__(self,  router_tables, app_id, transciever, machine):
+    def __call__(self, router_tables, app_id, transciever, machine):
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")
 

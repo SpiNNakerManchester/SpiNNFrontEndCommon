@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 
 class FrontEndCommomLoadExecutableImages(object):
     """
-    FrontEndCommomLoadExecutableImages
     """
 
     def __call__(self, executable_targets, app_id, transciever,
@@ -50,7 +49,7 @@ class FrontEndCommomLoadExecutableImages(object):
 
             # TODO there is a need to parse the binary and see if its
             # ITCM and DTCM requirements are within acceptable params for
-            # operating on spinnaker. Currnently there jsut a few safety
+            # operating on spinnaker. Currently there just a few safety
             # checks which may not be accurate enough.
             if size > constants.MAX_SAFE_BINARY_SIZE:
                 logger.warn(
@@ -77,4 +76,3 @@ class FrontEndCommomLoadExecutableImages(object):
         progress_bar.end()
 
         return {"LoadBinariesToken": True}
-

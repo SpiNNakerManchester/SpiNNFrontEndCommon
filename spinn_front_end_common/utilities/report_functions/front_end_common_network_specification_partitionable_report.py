@@ -1,6 +1,3 @@
-"""
-    FrontEndCommonNetworkSpecificationPartitionableReport
-"""
 import logging
 import os
 import time
@@ -9,18 +6,16 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonNetworkSpecificationPartitionableReport(object):
-    """
-    FrontEndCommonNetworkSpecificationPartitionableReport
+    """ Generate report on the user's network specification.
     """
 
     def __call__(self, report_folder, graph, hostname):
         """
-        Generate report on the user's network specification.
-        :param report_folder: the directroy to which reports are stored
+        :param report_folder: the directory to which reports are stored
         :type report_folder: str
         :param graph: the partitionable graph generated from the tools
-        :type graph:
-        pacman.model.partitionable_graph.partitionable_graph.PartitionableGraph
+        :type graph:\
+                    pacman.model.partitionable_graph.partitionable_graph.PartitionableGraph
         :param hostname: the machine name
         :type hostname:
         :return: None
@@ -77,5 +72,6 @@ class FrontEndCommonNetworkSpecificationPartitionableReport(object):
             f_network_specification.write(edge_str)
             f_network_specification.write("  Model: {}\n".format(model))
             f_network_specification.write("\n")
+
         # Close file:
         f_network_specification.close()

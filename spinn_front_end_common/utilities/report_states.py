@@ -3,12 +3,12 @@ ReportState
 """
 
 # pacman imports
-from pacman.utilities.utility_objs.report_states import ReportState as PacmanReportState
+from pacman.utilities.utility_objs.report_states import ReportState as \
+    PacmanReportState
 
 
 class ReportState(object):
-    """
-    ReportState object to hold all the report states
+    """ Holds all the report states
     """
 
     def __init__(self, execute_parittioner_report,

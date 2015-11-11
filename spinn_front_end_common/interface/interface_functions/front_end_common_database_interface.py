@@ -1,7 +1,3 @@
-"""
-FrontEndCommonDatabaseInterface
-"""
-
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
@@ -13,8 +9,8 @@ from spinn_front_end_common.utilities.database.database_writer import \
 
 class FrontEndCommonDatabaseInterface(object):
     """
-    FrontEndCommonDatabaseInterface
     """
+
 
     def __init__(self):
         self._writer = None

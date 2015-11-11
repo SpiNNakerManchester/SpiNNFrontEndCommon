@@ -11,7 +11,6 @@ from spinn_front_end_common.utilities.reload.reload_routing_table import \
 # general imports
 import os
 import shutil
-import re
 
 
 class ReloadScript(object):
@@ -56,16 +55,14 @@ class ReloadScript(object):
 
     @property
     def wait_on_confirmation(self):
-        """
-        property method for wait on confirmation
+        """ True if should wait on confirmation
         :return:
         """
         return self._wait_on_confiramtion
 
     @wait_on_confirmation.setter
     def wait_on_confirmation(self, wait_on_confirmation):
-        """
-        sets the write on confirmation value for ackhnoeldge protocol
+        """ Sets the wait on confirmation flag
         :param wait_on_confirmation:
         :return:
         """
@@ -73,24 +70,21 @@ class ReloadScript(object):
 
     @property
     def runtime(self):
-        """
-        property for runtime
+        """ The reload run time
         :return:
         """
         return self._runtime
 
     @property
     def time_scale_factor(self):
-        """
-        property for time scale factor
+        """ The time scale factor
         :return:
         """
         return self._time_scale_factor
 
     @runtime.setter
     def runtime(self, new_value):
-        """
-        sets the runtime for the reload script
+        """ Set the run time
         :param new_value: new value for runtime
         :return:
         """
@@ -98,8 +92,7 @@ class ReloadScript(object):
 
     @time_scale_factor.setter
     def time_scale_factor(self, new_value):
-        """
-        sets the timescale factor for the relaod script
+        """ Set the time scale factor
         :param new_value: the new value for timescalefactor
         :return:
         """
@@ -115,8 +108,7 @@ class ReloadScript(object):
         self._file.write("\n")
 
     def add_socket_address(self, socket_address):
-        """
-        stores a socket address for database usages
+        """ Store a socket address for database usage
         :param socket_address: the socket addresses to be stored by the reload
         :return:
         """
@@ -128,14 +120,13 @@ class ReloadScript(object):
 
     def add_application_data(self, application_data_file_name, placement,
                              base_address):
-        """
-        stores a placer for an applciation data block
-        :param application_data_file_name: the file name where the
-        application data is stored.
-        :param placement: the core location of the machine where this data
-        needs to be stored
-        :param base_address: the address in SDRAM where this data should be
-         stored.
+        """ Store application data to be reloaded
+        :param application_data_file_name: the file name where the \
+                application data is stored.
+        :param placement: the core location of the machine where this data\
+                needs to be stored
+        :param base_address: the address in SDRAM where this data should be\
+                 loaded to.
         :return:
         """
         relative_file_name = application_data_file_name.replace(
@@ -146,8 +137,7 @@ class ReloadScript(object):
                                                     placement.p, base_address))
 
     def add_routing_table(self, routing_table):
-        """
-        stores a routertable object for reloading pruposes
+        """ Add a routing table to be reloaded
         :param routing_table: the routing table to reload
         :return:
         """
@@ -161,8 +151,7 @@ class ReloadScript(object):
             "reload(\"{}\"))".format(location))
 
     def add_binary(self, binary_path, core_subsets):
-        """
-        stores a binary for reload purposes
+        """ Add a binary to be reloaded
         :param binary_path: the absoluete path to the binary needed to be\
                     loaded
         :param core_subsets: the set of cores to which this binary needs to\
@@ -182,8 +171,7 @@ class ReloadScript(object):
             binary_path.replace("\\", "\\\\"), create_cs))
 
     def add_ip_tag(self, iptag):
-        """
-        stores a iptag for loading purposes
+        """ Add an iptag to be reloaded
         :param iptag: the iptag object to be loaded.
         :return:
         """
@@ -193,8 +181,7 @@ class ReloadScript(object):
             iptag.strip_sdp))
 
     def add_reverse_ip_tag(self, reverse_ip_tag):
-        """
-        stores a reverse iptag for loading purposes
+        """ Add a reverse ip tag to be reloaded
         :param reverse_ip_tag: the reverse iptag to be loaded.
         :return:
         """
@@ -206,12 +193,11 @@ class ReloadScript(object):
                     reverse_ip_tag.sdp_port))
 
     def add_buffered_vertex(self, vertex, iptag, placement, buffered_files):
-        """
-        stores a buffered vertex for loading purposes.
+        """ Add a buffered vertex to be reloaded
         :param vertex: the buffered vertex to be used in reload purposes
         :param iptag: the iptag being used by this vertex
         :param placement: the placement object for this vertex
-        :param buffered_files: a list of filepaths by region for this vertex
+        :param buffered_files: a list of file paths by region for this vertex
         :return: A dictionary of region -> filename for the vertex
         """
         buffer_tuple = "["
@@ -239,9 +225,7 @@ class ReloadScript(object):
                 iptag.port, iptag.strip_sdp))
 
     def close(self):
-        """
-        cleans up the loading process with whatever is needed to stop
-        the applciation
+        """ Finish writing the reload script
         :return:
         """
         self._println("")
@@ -250,6 +234,7 @@ class ReloadScript(object):
                       "number_of_boards, height, width, auto_detect_bmp,"
                       "enable_reinjection)")
         self._println("if len(socket_addresses) > 0:")
+
         # note that this needs to be added into the script, as it needs to
         # be able to find its database no matter where it is or where its
         # ran from.
