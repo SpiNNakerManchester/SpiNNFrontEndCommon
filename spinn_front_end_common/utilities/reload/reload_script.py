@@ -50,6 +50,9 @@ class ReloadScript(object):
         self._println("width = {}".format(width))
         self._println("auto_detect_bmp = {}".format(auto_detect_bmp))
         self._println("enable_reinjection = {}".format(enable_reinjection))
+        self._println("placements = dict()")
+        self._println("routing_tables = dict()")
+
 
     @property
     def wait_on_confirmation(self):

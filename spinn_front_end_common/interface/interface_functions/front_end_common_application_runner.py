@@ -14,7 +14,7 @@ class FrontEndCommonApplicationRunner(object):
     """
 
     def __call__(self, send_buffer_manager, wait_on_confirmation,
-                 send_start_notification, database_interface,
+                 send_start_notification, notification_interface,
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
@@ -35,13 +35,13 @@ class FrontEndCommonApplicationRunner(object):
         self.wait_for_cores_to_be_ready(executable_targets, app_id, txrx)
 
         # wait till external app is ready for us to start if required
-        if database_interface is not None and wait_on_confirmation:
-            database_interface.wait_for_confirmation()
+        if notification_interface is not None and wait_on_confirmation:
+            notification_interface.wait_for_confirmation()
 
         self.start_all_cores(executable_targets, app_id, txrx)
 
-        if database_interface is not None and send_start_notification:
-            database_interface.send_start_notification()
+        if notification_interface is not None and send_start_notification:
+            notification_interface.send_start_notification()
 
         if runtime is None:
             logger.info("Application is set to run forever - exiting")

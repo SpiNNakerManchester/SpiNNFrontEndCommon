@@ -2,10 +2,6 @@
 FrontEndCommonDataBaseInterface
 """
 
-# front end common imports imports
-from spinn_front_end_common.utilities.notification_protocol.\
-    notification_protocol import NotificationProtocol
-
 # general imports
 from multiprocessing.pool import ThreadPool
 import threading
@@ -24,12 +20,7 @@ class DatabaseWriter(object):
     by sub classes of this interface.
     """
 
-    def __init__(self, database_directory, wait_for_read_confirmation,
-                 socket_addresses):
-
-        # notification protocol
-        self._notification_protocol = \
-            NotificationProtocol(socket_addresses, wait_for_read_confirmation)
+    def __init__(self, database_directory):
 
         self._done = False
         self._database_directory = database_directory
@@ -42,6 +33,14 @@ class DatabaseWriter(object):
         # set up checks
         self._machine_id = 0
         self._lock_condition = threading.Condition()
+
+    @property
+    def database_path(self):
+        """
+
+        :return:
+        """
+        return self._database_path
 
     def add_machine_objects(self, machine):
         """
@@ -105,33 +104,6 @@ class DatabaseWriter(object):
             self._lock_condition.release()
         except Exception:
             traceback.print_exc()
-
-    def wait_for_confirmation(self):
-        """
-        helper method which waits for devices to confirm they have read the
-        databse via the notifiication protocol
-        :return:
-        """
-        self._notification_protocol.wait_for_confirmation()
-
-    def send_read_notification(self):
-        """
-        helper method for sending the read notifcations from the notification
-        protocol
-        :return:
-        """
-        # syncorise when the database is written
-        self._thread_pool.close()
-        self._thread_pool.join()
-        self._notification_protocol.send_read_notification(self._database_path)
-
-    def send_start_notification(self):
-        """
-        helper method for sending the start notifcations from the notification
-        protocol
-        :return:
-        """
-        self._notification_protocol.send_start_notification()
 
     def add_system_params(self, time_scale_factor, machine_time_step, runtime):
         """
@@ -583,11 +555,3 @@ class DatabaseWriter(object):
             self._lock_condition.release()
         except Exception:
             traceback.print_exc()
-
-    def stop(self):
-        """
-        ends the nofitication protocol
-        :return:
-        """
-        logger.debug("[data_base_thread] Stopping")
-        self._notification_protocol.close()

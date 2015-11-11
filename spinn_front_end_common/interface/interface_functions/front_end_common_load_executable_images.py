@@ -25,11 +25,18 @@ class FrontEndCommomLoadExecutableImages(object):
     FrontEndCommomLoadExecutableImages
     """
 
-    def __call__(self, executable_targets, app_id, transciever):
+    def __call__(self, executable_targets, app_id, transciever,
+                 loaded_application_data_token):
         """ Go through the executable targets and load each binary to \
             everywhere and then send a start request to the cores that \
             actually use it
         """
+
+        if not loaded_application_data_token:
+            raise exceptions.ConfigurationException(
+                "The token for having loaded the application data token is set"
+                " to false and therefore I cannot run. Please fix and try "
+                "again")
 
         progress_bar = ProgressBar(executable_targets.total_processors,
                                    "Loading executables onto the machine")
