@@ -1,7 +1,3 @@
-"""
-PartitionableGraphDataSpecificationWriter
-"""
-
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
@@ -11,8 +7,7 @@ from spinn_front_end_common.utilities import exceptions
 
 
 class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
-    """
-    executes a partitionable graph data specifciation
+    """ Executes a partitionable graph data specifciation generation
     """
 
     def __call__(
@@ -25,7 +20,7 @@ class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
         :return:
         """
 
-        # iterate though subvertexes and call generate_data_spec for each
+        # iterate though subvertices and call generate_data_spec for each
         # vertex
         executable_targets = ExecutableTargets()
         dsg_targets = dict()

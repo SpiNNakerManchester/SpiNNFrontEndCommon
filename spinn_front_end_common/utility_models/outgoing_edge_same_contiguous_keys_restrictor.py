@@ -1,7 +1,3 @@
-"""
-OutgoingEdgeSameContiguousKeysRestrictor
-"""
-
 # pacman imports
 from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_contiguous_range_constraint \
@@ -24,8 +20,7 @@ class OutgoingEdgeSameContiguousKeysRestrictor(object):
         self._seen_partitioned_edges = set()
 
     def get_outgoing_edge_constraints(self):
-        """
-        returns constraints for contigious key restrictor
+        """ Returns constraints for contiguous keys
         :return:
         """
         # Keep track of the first partitioned edge

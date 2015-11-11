@@ -2,24 +2,23 @@ from spinnman import constants as spinnman_constants
 
 
 class FrontEndCommonTagsLoader(object):
-    """
-    FrontEndCommonTagsLoader: loads tags onto the machine
+    """ Loads tags onto the machine
     """
 
-    def __call__(self, tags, transciever):
-        """ loads all the tags onto all the boards
+    def __call__(self, tags, transceiver):
+        """
         :param tags: the tags object which contains ip and reverse ip tags.
-        :param transciever: the transciever object
+        :param transceiver: the transceiver object
         :return none
         """
         # clear all the tags from the ethernet connection, as nothing should
         # be allowed to use it (no two sims should use the same etiehrnet
         # connection at the same time
         for tag_id in range(spinnman_constants.MAX_TAG_ID):
-            transciever.clear_ip_tag(tag_id)
+            transceiver.clear_ip_tag(tag_id)
 
-        self.load_iptags(tags.ip_tags, transciever)
-        self.load_reverse_iptags(tags.reverse_ip_tags, transciever)
+        self.load_iptags(tags.ip_tags, transceiver)
+        self.load_reverse_iptags(tags.reverse_ip_tags, transceiver)
 
         return {"LoadedIPTagsToken": True, "LoadedReverseIPTagsToken": True}
 

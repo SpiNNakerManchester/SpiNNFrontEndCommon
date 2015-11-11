@@ -3,8 +3,6 @@ reload script for loading onto a amchien wtihout going through the mapper
 """
 from spinn_front_end_common.interface.buffer_management.buffer_manager import \
     BufferManager
-from spinn_front_end_common.interface.front_end_common_interface_functions \
-    import FrontEndCommonInterfaceFunctions
 from spinn_front_end_common.utilities.notification_protocol\
     .notification_protocol import NotificationProtocol
 

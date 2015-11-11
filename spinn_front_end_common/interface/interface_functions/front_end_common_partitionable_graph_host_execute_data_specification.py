@@ -21,8 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
-    """
-    exeuctes the host based data specification
+    """ Exeuctes the host based data specification
     """
 
     def __call__(
@@ -39,11 +38,10 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         :param machine:
         :return:
         """
-        data = \
-            self.host_based_data_specification_execution(
-                hostname, placements, graph_mapper, write_text_specs,
-                runtime_application_data_folder, machine,
-                report_default_directory, dsg_targets)
+        data = self.host_based_data_specification_execution(
+            hostname, placements, graph_mapper, write_text_specs,
+            runtime_application_data_folder, machine,
+            report_default_directory, dsg_targets)
 
         return data
 

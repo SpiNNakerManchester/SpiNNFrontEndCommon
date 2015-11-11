@@ -2,9 +2,7 @@ from spinn_front_end_common.utilities.reload.reload_script import ReloadScript
 
 
 class FrontEndCommonReloadScriptCreator(object):
-    """
-    FrontEndCommonReloadScriptCreator: create a reload script to be ran at a
-    future date
+    """ Create a reload script
     """
 
     def __call__(
