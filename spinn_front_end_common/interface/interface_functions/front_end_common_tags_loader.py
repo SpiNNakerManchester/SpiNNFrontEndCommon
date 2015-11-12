@@ -5,10 +5,15 @@ class FrontEndCommonTagsLoader(object):
     """ Loads tags onto the machine
     """
 
-    def __call__(self, tags, transceiver):
+    def __call__(
+            self, transceiver, tags=None, iptags=None, reverse_iptags=None):
         """
         :param tags: the tags object which contains ip and reverse ip tags.
+                    could be none if these are being given in seperate lists
+        :param iptags: a lsit of iptags, gvien when tags is none
+        :param reverse_iptags: a list of reverse iptags when tags is none.
         :param transceiver: the transceiver object
+
         :return none
         """
         # clear all the tags from the ethernet connection, as nothing should
@@ -17,8 +22,12 @@ class FrontEndCommonTagsLoader(object):
         for tag_id in range(spinnman_constants.MAX_TAG_ID):
             transceiver.clear_ip_tag(tag_id)
 
-        self.load_iptags(tags.ip_tags, transceiver)
-        self.load_reverse_iptags(tags.reverse_ip_tags, transceiver)
+        if tags is not None:
+            self.load_iptags(tags.ip_tags, transceiver)
+            self.load_reverse_iptags(tags.reverse_ip_tags, transceiver)
+        else:
+            self.load_iptags(iptags, transceiver)
+            self.load_reverse_iptags(reverse_iptags, transceiver)
 
         return {"LoadedIPTagsToken": True, "LoadedReverseIPTagsToken": True}
 

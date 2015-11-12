@@ -1,6 +1,6 @@
-# front end common imports imports
-from spinn_front_end_common.utilities.notification_protocol.\
-    notification_protocol import NotificationProtocol
+"""
+FrontEndCommonDataBaseInterface
+"""
 
 # general imports
 from multiprocessing.pool import ThreadPool
@@ -19,12 +19,7 @@ class DatabaseWriter(object):
         by sub classes of this interface.
     """
 
-    def __init__(self, database_directory, wait_for_read_confirmation,
-                 socket_addresses):
-
-        # notification protocol
-        self._notification_protocol = \
-            NotificationProtocol(socket_addresses, wait_for_read_confirmation)
+    def __init__(self, database_directory):
 
         self._done = False
         self._database_directory = database_directory
@@ -37,6 +32,14 @@ class DatabaseWriter(object):
         # set up checks
         self._machine_id = 0
         self._lock_condition = threading.Condition()
+
+    @property
+    def database_path(self):
+        """
+
+        :return:
+        """
+        return self._database_path
 
     def add_machine_objects(self, machine):
         """ Store the machine object into the database
@@ -100,25 +103,6 @@ class DatabaseWriter(object):
             self._lock_condition.release()
         except Exception:
             traceback.print_exc()
-
-    def wait_for_confirmation(self):
-        """ Waits for devices to confirm they have read the database via the \
-            notification protocol
-        """
-        self._notification_protocol.wait_for_confirmation()
-
-    def send_read_notification(self):
-        """ Sending the read notification using the notification protocol
-        """
-        # synchronise when the database is written
-        self._thread_pool.close()
-        self._thread_pool.join()
-        self._notification_protocol.send_read_notification(self._database_path)
-
-    def send_start_notification(self):
-        """ Sends the start notification using the notification protocol
-        """
-        self._notification_protocol.send_start_notification()
 
     def add_system_params(self, time_scale_factor, machine_time_step, runtime):
         """ Write system params into the database
@@ -568,10 +552,3 @@ class DatabaseWriter(object):
             self._lock_condition.release()
         except Exception:
             traceback.print_exc()
-
-    def stop(self):
-        """ Ends the notification protocol
-        :return:
-        """
-        logger.debug("[data_base_thread] Stopping")
-        self._notification_protocol.close()
