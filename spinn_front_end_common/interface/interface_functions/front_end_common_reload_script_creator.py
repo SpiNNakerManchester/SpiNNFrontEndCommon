@@ -31,12 +31,15 @@ class FrontEndCommonReloadScriptCreator(object):
 
         for placement in placements:
             key = (placement.x, placement.y, placement.p)
-            start_address = \
-                processor_to_app_data_base_address[key]['start_address']
-            file_paths = vertex_to_app_data_files[placement.subvertex]
-            for file_path in file_paths:
-                reload_script.add_application_data(
-                    file_path, placement, start_address)
+
+            # Account for virtual vertices, or those without data
+            if key in processor_to_app_data_base_address:
+                start_address = \
+                    processor_to_app_data_base_address[key]['start_address']
+                file_paths = vertex_to_app_data_files[placement.subvertex]
+                for file_path in file_paths:
+                    reload_script.add_application_data(
+                        file_path, placement, start_address)
 
         for router_table in router_tables.routing_tables:
             if not machine.get_chip_at(router_table.x, router_table.y).virtual:
