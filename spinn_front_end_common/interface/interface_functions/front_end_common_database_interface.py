@@ -60,7 +60,8 @@ class FrontEndCommonDatabaseInterface(object):
             database_progress.update()
             database_progress.end()
 
-        return {"database_interface": self}
+        return {"database_interface": self,
+                "database_file_path": self.database_file_path}
 
     @property
     def database_file_path(self):

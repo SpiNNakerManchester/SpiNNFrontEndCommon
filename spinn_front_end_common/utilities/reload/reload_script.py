@@ -17,9 +17,14 @@ class ReloadScript(object):
     """ Generates a script for reloading a simulation
     """
 
-    def __init__(self, binary_directory, hostname, board_version,
-                 bmp_details, down_chips, down_cores, number_of_boards,
-                 height, width, auto_detect_bmp, enable_reinjection):
+    def __init__(
+            self, binary_directory, hostname, board_version, bmp_details,
+            down_chips, down_cores, number_of_boards, height, width,
+            auto_detect_bmp, enable_reinjection, scamp_connection_data,
+            boot_port_num, placement_to_app_data_files, verify,
+            processor_to_app_data_base_address, executable_targets,
+            wait_for_read_confirmation, database_file_path,
+            runtime, time_scale_factor, send_start_notification):
         self._binary_directory = binary_directory
         self._wait_on_confiramtion = None
         self._runtime = None
@@ -39,6 +44,10 @@ class ReloadScript(object):
             raise exceptions.SpinnFrontEndException(
                 "Cannot open {} to write the rerun script".format(file_name))
 
+        self._println("runtime = {}".format(runtime))
+        self._println(
+            "send_start_notification = {}".format(send_start_notification))
+        self._println("time_scale_factor = {}".format(time_scale_factor))
         self._println("machine_name = \"{}\"".format(hostname))
         self._println("machine_version = {}".format(board_version))
         self._println("bmp_details = \"{}\"".format(bmp_details))
@@ -50,53 +59,31 @@ class ReloadScript(object):
         self._println("auto_detect_bmp = {}".format(auto_detect_bmp))
         self._println("enable_reinjection = {}".format(enable_reinjection))
         self._println("placements = dict()")
-        self._println("routing_tables = dict()")
-
-
-    @property
-    def wait_on_confirmation(self):
-        """ True if should wait on confirmation
-        :return:
-        """
-        return self._wait_on_confiramtion
-
-    @wait_on_confirmation.setter
-    def wait_on_confirmation(self, wait_on_confirmation):
-        """ Sets the wait on confirmation flag
-        :param wait_on_confirmation:
-        :return:
-        """
-        self._wait_on_confiramtion = wait_on_confirmation
-
-    @property
-    def runtime(self):
-        """ The reload run time
-        :return:
-        """
-        return self._runtime
-
-    @property
-    def time_scale_factor(self):
-        """ The time scale factor
-        :return:
-        """
-        return self._time_scale_factor
-
-    @runtime.setter
-    def runtime(self, new_value):
-        """ Set the run time
-        :param new_value: new value for runtime
-        :return:
-        """
-        self._runtime = new_value
-
-    @time_scale_factor.setter
-    def time_scale_factor(self, new_value):
-        """ Set the time scale factor
-        :param new_value: the new value for timescalefactor
-        :return:
-        """
-        self._time_scale_factor = new_value
+        self._println("boot_port_num = {}".format(boot_port_num))
+        self._println("placement_to_app_data_files = {}"
+                      .format(placement_to_app_data_files))
+        self._println("verify = {}".format(verify))
+        self._println("database_file_path = {}".format(database_file_path))
+        self._println("wait_for_read_confirmation = {}"
+                      .format(wait_for_read_confirmation))
+        self._println("app_folder = \"{}\"".format(binary_directory))
+        self._println("processor_to_app_data_base_address = {}"
+                      .format(processor_to_app_data_base_address))
+        self._println("scamp_connection_data = \"{}\""
+                      .format(scamp_connection_data))
+        self._println("executable_targets = ExecutableTargets()")
+        for executable_target_key in executable_targets.binary_paths():
+            core_subsets = executable_targets.\
+                retrieve_cores_for_a_executable_target(executable_target_key)
+            self._println("executable_targets.add_binary(\"{}\")"
+                          .format(executable_target_key))
+            for core_subset in core_subsets:
+                for processor_id in core_subset.processor_ids:
+                    self._println(
+                        "executable_targets.add_processor(\"{}\", {}, {}, {})"
+                        .format(executable_target_key, core_subset.x,
+                                core_subset.y, processor_id))
+        self._println("xml_paths = list()")
 
     def _println(self, line):
         """ Write a line to the script
@@ -118,24 +105,6 @@ class ReloadScript(object):
                     socket_address.notify_port_no,
                     socket_address.listen_port))
 
-    def add_application_data(self, application_data_file_name, placement,
-                             base_address):
-        """ Store application data to be reloaded
-        :param application_data_file_name: the file name where the \
-                application data is stored.
-        :param placement: the core location of the machine where this data\
-                needs to be stored
-        :param base_address: the address in SDRAM where this data should be\
-                 loaded to.
-        :return:
-        """
-        relative_file_name = application_data_file_name.replace(
-            self._binary_directory, "").replace("\\", "\\\\")
-        self._println("application_data.append(ReloadApplicationData(")
-        self._println("    \"{}\",".format(relative_file_name))
-        self._println("    {}, {}, {}, {}))".format(placement.x, placement.y,
-                                                    placement.p, base_address))
-
     def add_routing_table(self, routing_table):
         """ Add a routing table to be reloaded
         :param routing_table: the routing table to reload
@@ -149,26 +118,6 @@ class ReloadScript(object):
         self._println(
             "routing_tables.add_routing_table(reload_routing_table."
             "reload(\"{}\"))".format(location))
-
-    def add_binary(self, binary_path, core_subsets):
-        """ Add a binary to be reloaded
-        :param binary_path: the absoluete path to the binary needed to be\
-                    loaded
-        :param core_subsets: the set of cores to which this binary needs to\
-                    be loaded on the machine.
-        :return:
-        """
-        create_cs = "CoreSubsets(["
-        for core_subset in core_subsets:
-            create_cs += "CoreSubset({}, {}, ".format(core_subset.x,
-                                                      core_subset.y)
-            create_cs += "["
-            for processor_id in core_subset.processor_ids:
-                create_cs += "{}, ".format(processor_id)
-            create_cs += "]),"
-        create_cs += "])"
-        self._println("binaries.add_subsets(\"{}\", {})".format(
-            binary_path.replace("\\", "\\\\"), create_cs))
 
     def add_ip_tag(self, iptag):
         """ Add an iptag to be reloaded
@@ -229,28 +178,14 @@ class ReloadScript(object):
         :return:
         """
         self._println("")
-        self._println("reloader = Reload(machine_name, machine_version, "
-                      "reports_states, bmp_details, down_chips, down_cores, "
-                      "number_of_boards, height, width, auto_detect_bmp,"
-                      "enable_reinjection)")
-        self._println("if len(socket_addresses) > 0:")
-
-        # note that this needs to be added into the script, as it needs to
-        # be able to find its database no matter where it is or where its
-        # ran from.
         self._println(
-            "    reloader.execute_notification_protocol_read_messages("
-            "socket_addresses, {}, os.path.join("
-            "os.path.dirname(os.path.abspath(__file__)), "
-            "\"input_output_database.db\"))"
-            .format(self._wait_on_confiramtion))
-        self._println("reloader.reload_application_data(application_data)")
-        self._println("reloader.reload_routes(routing_tables)")
-        self._println("reloader.reload_tags(iptags, reverse_iptags)")
-        self._println("reloader.reload_binaries(binaries)")
-        self._println("reloader.enable_buffer_manager(buffered_placements, "
-                      "buffered_tags)")
-        self._println("reloader.restart(binaries, {}, {}, "
-                      "turn_off_machine=True)"
-                      .format(self._runtime, self._time_scale_factor))
+            "reloader = Reload(machine_name, machine_version, reports_states, "
+            "bmp_details, down_chips, down_cores, number_of_boards, height, "
+            "width, auto_detect_bmp, enable_reinjection, xml_paths, "
+            "scamp_connection_data,boot_port_num, placement_to_app_data_files,"
+            " verify, routing_tables, processor_to_app_data_base_address,"
+            " executable_targets, buffered_tags, iptags, reverse_iptags, "
+            "buffered_placements, app_folder, wait_for_read_confirmation, "
+            "socket_addresses, database_file_path, runtime, time_scale_factor,"
+            "send_start_notification)")
         self._file.close()

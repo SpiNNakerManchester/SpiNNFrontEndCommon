@@ -11,27 +11,25 @@ class FrontEndCommonBufferManagerCreater(object):
     """
 
     def __call__(
-            self, partitioned_graph, placements, tags, txrx, reports_states,
-            app_data_folder):
+            self, placements, tags, txrx, reports_states, app_data_folder):
         """
-        :param partitioned_graph: the partitioned graph object
         :param placements: the placements object
         :param tags: the tags object
         :return: None
         """
         progress_bar = ProgressBar(
-            len(partitioned_graph.subvertices), "Initialising buffers")
+            len(list(placements.placements)), "Initialising buffers")
 
         # Create the buffer manager
         send_buffer_manager = BufferManager(
             placements, tags, txrx, reports_states, app_data_folder)
 
-        for partitioned_vertex in partitioned_graph.subvertices:
-            if isinstance(partitioned_vertex,
+        for placement in placements.placements:
+            if isinstance(placement.subvertex,
                           AbstractSendsBuffersFromHostPartitionedVertex):
 
                 # Add the vertex to the managed vertices
-                send_buffer_manager.add_sender_vertex(partitioned_vertex)
+                send_buffer_manager.add_sender_vertex(placement.subvertex)
             progress_bar.update()
         progress_bar.end()
 

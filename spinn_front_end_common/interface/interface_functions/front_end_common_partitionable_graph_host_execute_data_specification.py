@@ -63,7 +63,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         next_position_tracker = dict()
         space_available_tracker = dict()
         processor_to_app_data_base_address = dict()
-        vertex_to_application_data_files = dict()
+        placement_to_application_data_files = dict()
 
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
@@ -76,7 +76,9 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
             # if the vertex can generate a DSG, call it
             if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
-                vertex_to_application_data_files[placement.subvertex] = list()
+                placement_to_application_data_files[
+                    (placement.x, placement.y, placement.p,
+                     associated_vertex.label)] = list()
                 data_spec_file_paths = dsg_targets[placement.subvertex]
                 for data_spec_file_path in data_spec_file_paths:
                     app_data_file_path = \
@@ -85,8 +87,10 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
                             application_data_runtime_folder)
 
                     # update application data file path tracker
-                    vertex_to_application_data_files[placement.subvertex]\
-                        .append(app_data_file_path)
+                    placement_to_application_data_files[
+                        (placement.x, placement.y, placement.p,
+                         associated_vertex.label)].append(
+                        app_data_file_path)
 
                     # build writers
                     data_spec_reader = FileDataReader(data_spec_file_path)
@@ -136,7 +140,9 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
                     # update base address mapper
                     processor_mapping_key = \
-                        (placement.x, placement.y, placement.p)
+                        (placement.x, placement.y, placement.p,
+                         associated_vertex.label)
+
                     processor_to_app_data_base_address[
                         processor_mapping_key] = {
                             'start_address': next_position,
@@ -155,4 +161,5 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         progress_bar.end()
         return {'processor_to_app_data_base_address':
                 processor_to_app_data_base_address,
-                'vertex_to_app_data_files': vertex_to_application_data_files}
+                'placement_to_app_data_files':
+                placement_to_application_data_files}
