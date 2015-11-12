@@ -21,9 +21,9 @@ class FrontEndCommonApplicationRunner(object):
                  loaded_application_data_token, no_sync_changes):
 
         # check all tokens are valid
-        if (not loaded_reverse_iptags_token or not loaded_iptags_token
-                or not loaded_routing_tables_token or not loaded_binaries_token
-                or not loaded_application_data_token):
+        if (not loaded_reverse_iptags_token or not loaded_iptags_token or
+                not loaded_routing_tables_token or not loaded_binaries_token or
+                not loaded_application_data_token):
             raise exceptions.ExecutableFailedToStartException(
                 "Not all valid tokens have been given in the positive state. "
                 "please rerun and try again")

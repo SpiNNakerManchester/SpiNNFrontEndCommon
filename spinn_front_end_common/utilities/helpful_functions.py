@@ -54,10 +54,9 @@ def read_data(x, y, address, length, data_format, transceiver):
 
 
 def auto_detect_database(partitioned_graph):
-    """
-    autodetects if there is a need to activate the database system
-    :param partitioned_graph: the partitioned graph of the application
-    problem space.
+    """ Auto detects if there is a need to activate the database system
+    :param partitioned_graph: the partitioned graph of the application\
+            problem space.
     :return: a bool which represents if the database is needed
     """
     for vertex in partitioned_graph.subvertices:
@@ -111,8 +110,8 @@ def set_up_output_application_data_specifics(
 
     elif where_to_write_application_data_files == "TEMP":
 
-        # just dont set the config param, code downstairs
-        #  from here will create temp folders if needed
+        # just don't set the config param, code downstairs
+        # from here will create temp folders if needed
         pass
     else:
 
@@ -237,9 +236,7 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
 def do_mapping(
         inputs, algorithms, required_outputs, xml_paths, do_timings):
     """
-    sets up
-    :param do_timings: bool which sattes if each algorithm should time
-     itself
+    :param do_timings: bool which sattes if each algorithm should time itself
     :param inputs:
     :param algorithms:
     :param required_outputs:

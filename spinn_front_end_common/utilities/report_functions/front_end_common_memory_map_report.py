@@ -1,6 +1,3 @@
-"""
-FrontEndCommonMemoryMapReport
-"""
 import logging
 import os
 
@@ -8,8 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonMemoryMapReport(object):
-    """
-    FrontEndCommonMemoryMapReport: report on memory usage
+    """ Report on memory usage
     """
 
     def __call__(self, report_default_directory,

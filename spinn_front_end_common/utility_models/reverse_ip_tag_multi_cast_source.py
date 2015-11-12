@@ -1,6 +1,3 @@
-"""
-ReverseIpTagMultiCastSource
-"""
 
 # data spec imports
 from data_specification.data_specification_generator import \
@@ -49,9 +46,8 @@ import math
 class ReverseIpTagMultiCastSource(
         AbstractPartitionableVertex, AbstractDataSpecableVertex,
         AbstractProvidesOutgoingEdgeConstraints, PartitionedVertex):
-    """
-    ReverseIpTagMultiCastSource: a model which will allow events to be injected
-    into a spinnaker machine and converted into multi-cast packets.
+    """ A model which will allow events to be injected into a spinnaker\
+        machine and converted into multicast packets.
     """
 
     # internal params

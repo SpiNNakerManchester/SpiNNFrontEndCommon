@@ -1,7 +1,3 @@
-"""
-FrontEndCommonDatabaseInterface
-"""
-
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
@@ -13,19 +9,18 @@ from spinn_front_end_common.utilities.database.database_writer import \
 
 class FrontEndCommonDatabaseInterface(object):
     """
-    FrontEndCommonDatabaseInterface
     """
-    
+
     def __call__(
             self, partitioned_graph, user_create_database, tags,
             runtime, machine, time_scale_factor, machine_time_step,
             partitionable_graph, graph_mapper, placements, routing_infos,
             router_tables, execute_mapping, database_directory,
             wait_for_read_confirmation, socket_addresses):
-        
+
         writer = DatabaseWriter(
             database_directory, wait_for_read_confirmation, socket_addresses)
-        
+
         # add database generation if requested
         needs_database = \
             helpful_functions.auto_detect_database(partitioned_graph)
