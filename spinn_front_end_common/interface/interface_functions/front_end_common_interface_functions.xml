@@ -188,6 +188,10 @@
                 <param_type>MemoryTags</param_type>
             </parameter>
             <parameter>
+                <param_name>reset_machine_on_start_up</param_name>
+                <param_type>ResetMachineOnStartupFlag</param_type>
+            </parameter>
+            <parameter>
                 <param_name>app_data_folder</param_name>
                 <param_type>ApplicationDataFolder</param_type>
             </parameter>

@@ -24,7 +24,8 @@ class ReloadScript(object):
             boot_port_num, placement_to_app_data_files, verify,
             processor_to_app_data_base_address, executable_targets,
             wait_for_read_confirmation, database_file_path,
-            runtime, time_scale_factor, send_start_notification):
+            runtime, time_scale_factor, send_start_notification,
+            reset_machine_on_start_up):
         self._binary_directory = binary_directory
         self._wait_on_confiramtion = None
         self._runtime = 0
@@ -47,6 +48,8 @@ class ReloadScript(object):
         self._println("runtime = {}".format(runtime))
         self._println(
             "send_start_notification = {}".format(send_start_notification))
+        self._println("reset_machine_on_start_up = {}"
+                      .format(reset_machine_on_start_up))
         self._println("time_scale_factor = {}".format(time_scale_factor))
         self._println("machine_name = \"{}\"".format(hostname))
         self._println("machine_version = {}".format(board_version))
@@ -187,5 +190,5 @@ class ReloadScript(object):
             " executable_targets, buffered_tags, iptags, reverse_iptags, "
             "buffered_placements, app_folder, wait_for_read_confirmation, "
             "socket_addresses, database_file_path, runtime, time_scale_factor,"
-            "send_start_notification)")
+            "send_start_notification, reset_machine_on_start_up)")
         self._file.close()
