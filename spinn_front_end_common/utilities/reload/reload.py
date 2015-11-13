@@ -94,11 +94,13 @@ class Reload(object):
             inputs.append({'type': "BMPDetails", 'value': bmp_details})
             inputs.append({'type': "DownedChipsDetails", 'value': down_chips})
             inputs.append({'type': "DownedCoresDetails", 'value': down_cores})
-            inputs.append({'type': "NumberOfBoards", 'value': number_of_boards})
+            inputs.append({'type': "NumberOfBoards",
+                           'value': number_of_boards})
             inputs.append({'type': "MachineWidth", 'value': width})
             inputs.append({'type': "MachineHeight", 'value': height})
             inputs.append({'type': "APPID", 'value': app_id})
-            inputs.append({'type': "AutoDetectBMPFlag", 'value': auto_detect_bmp})
+            inputs.append({'type': "AutoDetectBMPFlag",
+                           'value': auto_detect_bmp})
             inputs.append({'type': "EnableReinjectionFlag",
                            'value': enable_reinjection})
             inputs.append({'type': "ScampConnectionData",
@@ -111,12 +113,15 @@ class Reload(object):
             inputs.append({'type': "WriteCheckerFlag", 'value': verify})
             inputs.append({'type': "ExecutableTargets",
                            "value": executable_targets})
-            inputs.append({"type": "MemoryRoutingTables", 'value': router_tables})
+            inputs.append({"type": "MemoryRoutingTables",
+                           'value': router_tables})
             inputs.append({'type': "MemoryTags", 'value': buffered_tags})
             inputs.append({'type': "MemoryIpTags", 'value': iptags})
-            inputs.append({"type": "MemoryReverseTags", 'value': reverse_iptags})
+            inputs.append({"type": "MemoryReverseTags",
+                           'value': reverse_iptags})
             inputs.append({'type': "MemoryPlacements", 'value': placements})
-            inputs.append({'type': "ApplicationDataFolder", "value": app_folder})
+            inputs.append({'type': "ApplicationDataFolder",
+                           "value": app_folder})
             inputs.append({'type': "DatabaseWaitOnConfirmationFlag",
                            'value': wait_for_read_confirmation})
             inputs.append({'type': "DatabaseSocketAddresses",
@@ -124,7 +129,8 @@ class Reload(object):
             inputs.append({'type': "DatabaseFilePath",
                            'value': database_file_path})
             inputs.append({"type": "RunTime", 'value': runtime})
-            inputs.append({'type': "TimeScaleFactor", 'value': time_scale_factor})
+            inputs.append({'type': "TimeScaleFactor",
+                           'value': time_scale_factor})
             inputs.append({'type': "SendStartNotifications",
                            'value': send_start_notification})
             inputs.append({'type': "ResetMachineOnStartupFlag",
@@ -134,7 +140,8 @@ class Reload(object):
             inputs.append({'type': "LoadedReverseIPTagsToken", "value": True})
             inputs.append({'type': "LoadedRoutingTablesToken", "value": True})
             inputs.append({'type': "LoadBinariesToken", "value": True})
-            inputs.append({'type': "LoadedApplicationDataToken", "value": True})
+            inputs.append({'type': "LoadedApplicationDataToken",
+                           "value": True})
         return inputs
 
     @staticmethod
