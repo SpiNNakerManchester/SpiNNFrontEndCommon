@@ -17,7 +17,7 @@ class Reload(object):
             executable_targets, tags, iptags, reverse_iptags, placements,
             app_folder, wait_for_read_confirmation, socket_addresses,
             database_file_path, runtime, time_scale_factor,
-            send_start_notification, app_id=30):
+            send_start_notification, reset_machine_on_start_up, app_id=30):
 
         pacman_inputs = self._create_pacman_inputs(
             machine_name, version, reports_states, bmp_details,
@@ -27,7 +27,8 @@ class Reload(object):
             processor_to_app_data_base_address, executable_targets, tags,
             iptags, reverse_iptags, placements, app_folder,
             wait_for_read_confirmation, socket_addresses, database_file_path,
-            runtime, time_scale_factor, send_start_notification)
+            runtime, time_scale_factor, send_start_notification,
+            reset_machine_on_start_up)
         pacman_outputs = self._create_pacman_outputs()
 
         # get the list of algorithms expected to be used
@@ -47,7 +48,8 @@ class Reload(object):
             processor_to_app_data_base_address, executable_targets,
             buffered_tags, iptags, reverse_iptags, placements, app_folder,
             wait_for_read_confirmation, socket_addresses, database_file_path,
-            runtime, time_scale_factor, send_start_notification):
+            runtime, time_scale_factor, send_start_notification,
+            reset_machine_on_start_up):
         """
 
         :param machine_name:
@@ -79,6 +81,7 @@ class Reload(object):
         :param database_file_path:
         :param runtime:
         :param time_scale_factor:
+        :param reset_machine_on_start_up:
         :return:
         """
         inputs = list()
@@ -121,8 +124,8 @@ class Reload(object):
         inputs.append({'type': "TimeScaleFactor", 'value': time_scale_factor})
         inputs.append({'type': "SendStartNotifications",
                        'value': send_start_notification})
-
-
+        inputs.append({'type': "ResetMachineOnStartupFlag",
+                       'value': reset_machine_on_start_up})
         return inputs
 
     @staticmethod
@@ -131,16 +134,17 @@ class Reload(object):
 
         :return:
         """
-        algorithms = \
-            "FrontEndCommonMachineInterfacer," \
-            "FrontEndCommonApplicationRunner," \
-            "FrontEndCommonPartitionableGraphApplicationDataLoader," \
-            "FrontEndCommomLoadExecutableImages," \
-            "FrontEndCommonRoutingTableLoader," \
-            "FrontEndCommonTagsLoaderSeperateLists," \
-            "FrontEndCommonBufferManagerCreater," \
-            "FrontEndCommonNotificationProtocol," \
-            "MallocBasedNoGraphChipIDAllocator"
+        algorithms = list()
+        algorithms.append("FrontEndCommonMachineInterfacer")
+        algorithms.append("FrontEndCommonApplicationRunner")
+        algorithms.append(
+            "FrontEndCommonPartitionableGraphApplicationDataLoader")
+        algorithms.append("FrontEndCommomLoadExecutableImages")
+        algorithms.append("FrontEndCommonRoutingTableLoader")
+        algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
+        algorithms.append("FrontEndCommonBufferManagerCreater")
+        algorithms.append("FrontEndCommonNotificationProtocol")
+        algorithms.append("MallocBasedNoGraphChipIDAllocator")
         return algorithms
 
     @staticmethod

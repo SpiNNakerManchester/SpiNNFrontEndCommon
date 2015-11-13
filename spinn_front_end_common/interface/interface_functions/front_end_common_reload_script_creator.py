@@ -22,7 +22,7 @@ class FrontEndCommonReloadScriptCreator(object):
             boot_port_num, placement_to_app_data_files, verify,
             processor_to_app_data_base_address, executable_targets,
             wait_on_confirmation, database_file_path, run_time,
-            time_scale_factor, send_start_notification)
+            time_scale_factor, send_start_notification, )
 
         for ip_tag in tags.ip_tags:
             reload_script.add_ip_tag(ip_tag)
