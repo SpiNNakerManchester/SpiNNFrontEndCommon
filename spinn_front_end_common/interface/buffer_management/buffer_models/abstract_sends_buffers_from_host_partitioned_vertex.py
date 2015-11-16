@@ -102,3 +102,13 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
                     otherwise
         :rtype: bool
         """
+
+    @abstractmethod
+    def rewind(self, region):
+        """ Rewinds the internal buffer in preparation of resending
+            the spikes
+
+        :param region: The region to rewind
+        :type region: int
+        :return:
+        """

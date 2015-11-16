@@ -1,58 +1,81 @@
-"""
-FrontEndCommonProvanenceFunctions
-"""
+# pacman imports
+from pacman.interfaces.abstract_provides_provenance_data import \
+    AbstractProvidesProvenanceData
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_provenance_data import AbstractProvidesProvenanceData
-
+from spinn_front_end_common.utilities import exceptions
 
 # general imports
 import os
 from lxml import etree
 
 
-class FrontEndCommonProvenanceFunctions(AbstractProvidesProvenanceData):
+class FrontEndCommonProvenanceGatherer(object):
     """
-    functions supproting front ends with generating provenance data
     """
 
-    def __init__(self):
-        AbstractProvidesProvenanceData.__init__(self)
-
-    def write_provenance_data_in_xml(self, file_path, transceiver,
-                                     placement=None):
+    def __call__(self, file_path, transceiver, machine, router_tables, has_ran,
+                 placements):
         """
-        inheirtted from abstract prodives provenance data. forces the front end
-        to gather machine like proenance which it desires.
         :param file_path: the file apth to write the provenance data to
         :param transceiver: the spinnman interface object
-        :param placement: the placement object for this subvertex or None if
-        the system does not require a placement object
+        :param machine: the python representation of the spiunnaker machine
+        :param router_tables: the router tables that have been generated
+        :param has_ran: token that states that the simulation has ran
         :return: none
         """
-        root = etree.Element("root")
-        router_file_path = os.path.join(file_path, "router_provenance.xml")
-        self._write_router_provenance_data(root)
-        writer = open(router_file_path, "w")
-        writer.write(etree.tostring(root, pretty_print=True))
 
-    def _write_router_provenance_data(self, root):
-        """
-        helper method which writes the provenance data of the router diag
+        if has_ran:
+            root = etree.Element("root")
+            router_file_path = os.path.join(file_path, "router_provenance.xml")
+            self._write_router_provenance_data(
+                root, router_tables, machine, transceiver)
+            writer = open(router_file_path, "w")
+            writer.write(etree.tostring(root, pretty_print=True))
+
+            progress = ProgressBar(placements.n_placements,
+                                   "Getting provenance data")
+
+            # retrieve provenance data from any cores that provide data
+            for placement in placements.placements:
+                if isinstance(placement.subvertex,
+                              AbstractProvidesProvenanceData):
+                    core_file_path = os.path.join(
+                        file_path,
+                        "Provanence_data_for_{}_{}_{}_{}.xml".format(
+                            placement.subvertex.label,
+                            placement.x, placement.y, placement.p))
+                    placement.subvertex.write_provenance_data_in_xml(
+                        core_file_path, transceiver, placement)
+                progress.update()
+            progress.end()
+
+        else:
+            raise exceptions.ConfigurationException(
+                "This function has been called before the simulation has ran."
+                " This is deemed an error, please rectify and try again")
+
+    def _write_router_provenance_data(
+            self, root, router_tables, machine, txrx):
+        """ Helper method which writes the provenance data of the router diag
         :param root: the root element to add diagnostics to
         :return: None
         """
+        progress = ProgressBar(
+            machine.n_chips,
+            "Getting provenance data from machine's routing tables")
+
         # acquire diagnostic data
         router_diagnostics = dict()
         reinjector_statuses = dict()
-        for router_table in self._router_tables.routing_tables:
+        for router_table in router_tables.routing_tables:
             x = router_table.x
             y = router_table.y
-            if not self._machine.get_chip_at(x, y).virtual:
-                router_diagnostic = self._txrx.get_router_diagnostics(x, y)
+            if not machine.get_chip_at(x, y).virtual:
+                router_diagnostic = txrx.get_router_diagnostics(x, y)
                 router_diagnostics[x, y] = router_diagnostic
-                reinjector_status = self._txrx.get_reinjection_status(x, y)
+                reinjector_status = txrx.get_reinjection_status(x, y)
                 reinjector_statuses[x, y] = reinjector_status
         doc = etree.SubElement(root, "router_counters")
         expected_routers = etree.SubElement(doc, "Used_Routers")
@@ -60,26 +83,29 @@ class FrontEndCommonProvenanceFunctions(AbstractProvidesProvenanceData):
             self._write_router_diag(
                 expected_routers, x, y, router_diagnostics[x, y],
                 reinjector_statuses[x, y])
+            progress.update()
         unexpected_routers = etree.SubElement(doc, "Unexpected_Routers")
-        for chip in self._machine.chips:
+        for chip in machine.chips:
             if not chip.virtual:
                 if (chip.x, chip.y) not in router_diagnostics:
                     router_diagnostic = \
-                        self._txrx.get_router_diagnostics(chip.x, chip.y)
+                        txrx.get_router_diagnostics(chip.x, chip.y)
                     has_dropped_mc_packets = \
                         router_diagnostic.n_dropped_multicast_packets != 0
                     has_local_multicast_packets = \
                         router_diagnostic.n_local_multicast_packets != 0
                     has_external_multicast_packets = \
                         router_diagnostic.n_external_multicast_packets != 0
-
+                    reinjector_status = \
+                        txrx.get_reinjection_status(chip.x, chip.y)
                     if (has_dropped_mc_packets or
                             has_local_multicast_packets or
                             has_external_multicast_packets):
                         self._write_router_diag(
                             unexpected_routers, chip.x, chip.y,
-                            router_diagnostics[chip.x, chip.y],
-                            reinjector_statuses[chip.x, chip.y])
+                            router_diagnostic, reinjector_status)
+                        progress.update()
+        progress.end()
 
     @staticmethod
     def _write_router_diag(parent_xml_element, x, y, router_diagnostic,

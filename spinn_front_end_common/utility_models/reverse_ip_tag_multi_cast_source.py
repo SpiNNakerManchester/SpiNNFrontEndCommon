@@ -1,6 +1,3 @@
-"""
-ReverseIpTagMultiCastSource
-"""
 
 # data spec imports
 from data_specification.data_specification_generator import \
@@ -14,7 +11,7 @@ from pacman.model.resources.cpu_cycles_per_tick_resource import \
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.routing_info.key_and_mask import KeyAndMask
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
@@ -49,9 +46,8 @@ import math
 class ReverseIpTagMultiCastSource(
         AbstractPartitionableVertex, AbstractDataSpecableVertex,
         AbstractProvidesOutgoingEdgeConstraints, PartitionedVertex):
-    """
-    ReverseIpTagMultiCastSource: a model which will allow events to be injected
-    into a spinnaker machine and converted into multi-cast packets.
+    """ A model which will allow events to be injected into a spinnaker\
+        machine and converted into multicast packets.
     """
 
     # internal params
@@ -67,7 +63,8 @@ class ReverseIpTagMultiCastSource(
     def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
                  label, board_address=None, virtual_key=None, check_key=True,
                  prefix=None, prefix_type=None, tag=None, key_left_shift=0,
-                 sdp_port=1, buffer_space=0, notify_buffer_space=False,
+                 sdp_port=constants.SDP_BUFFER_MANAGEMENT_DESTINATION_PORT,
+                 buffer_space=0, notify_buffer_space=False,
                  space_before_notification=640, notification_tag=None,
                  notification_ip_address=None, notification_port=None,
                  notification_strip_sdp=True, constraints=None):
@@ -163,7 +160,7 @@ class ReverseIpTagMultiCastSource(
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
         if self._virtual_key is not None:
             return list([KeyAllocatorFixedKeyAndMaskConstraint(
-                [KeyAndMask(self._virtual_key, self._mask)])])
+                [BaseKeyAndMask(self._virtual_key, self._mask)])])
         return list()
 
     @staticmethod
@@ -292,6 +289,8 @@ class ReverseIpTagMultiCastSource(
         # close spec
         spec.end_specification()
         data_writer.close()
+
+        return [data_writer.filename]
 
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):

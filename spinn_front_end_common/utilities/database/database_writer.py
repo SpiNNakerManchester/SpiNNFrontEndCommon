@@ -2,13 +2,7 @@
 FrontEndCommonDataBaseInterface
 """
 
-# front end common imports imports
-from spinn_front_end_common.utilities.notification_protocol.\
-    notification_protocol import NotificationProtocol
-
 # general imports
-from multiprocessing.pool import ThreadPool
-import threading
 import os
 import logging
 import traceback
@@ -18,44 +12,39 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseWriter(object):
-    """
-    DatabaseWriter: the interface for the database system for
-    main front ends, any speical tables needed from a front end should be done
-    by sub classes of this interface.
+    """ The interface for the database system for main front ends.
+        Any special tables needed from a front end should be done\
+        by sub classes of this interface.
     """
 
-    def __init__(self, database_directory, wait_for_read_confirmation,
-                 socket_addresses):
-
-        # notification protocol
-        self._notification_protocol = \
-            NotificationProtocol(socket_addresses, wait_for_read_confirmation)
+    def __init__(self, database_directory):
 
         self._done = False
         self._database_directory = database_directory
         self._database_path = os.path.join(self._database_directory,
                                            "input_output_database.db")
 
-        # Thread pools
-        self._thread_pool = ThreadPool(processes=1)
-
         # set up checks
         self._machine_id = 0
-        self._lock_condition = threading.Condition()
+
+    @property
+    def database_path(self):
+        """
+
+        :return:
+        """
+        return self._database_path
 
     def add_machine_objects(self, machine):
-        """
-        stores the machine object into the database
+        """ Store the machine object into the database
+
         :param machine: the machine object.
         :return: None
         """
-        self._thread_pool.apply_async(self._add_machine, args=[machine])
 
-    def _add_machine(self, machine):
         # noinspection PyBroadException
         try:
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             cur.execute(
@@ -102,55 +91,20 @@ class DatabaseWriter(object):
                                 processor.processor_id))
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
-    def wait_for_confirmation(self):
-        """
-        helper method which waits for devices to confirm they have read the
-        databse via the notifiication protocol
-        :return:
-        """
-        self._notification_protocol.wait_for_confirmation()
-
-    def send_read_notification(self):
-        """
-        helper method for sending the read notifcations from the notification
-        protocol
-        :return:
-        """
-        # syncorise when the database is written
-        self._thread_pool.close()
-        self._thread_pool.join()
-        self._notification_protocol.send_read_notification(self._database_path)
-
-    def send_start_notification(self):
-        """
-        helper method for sending the start notifcations from the notification
-        protocol
-        :return:
-        """
-        self._notification_protocol.send_start_notification()
-
     def add_system_params(self, time_scale_factor, machine_time_step, runtime):
-        """
-        writes system params into the database
-        :param time_scale_factor: the time scale factor used in timing
-        :param machine_time_step: the machien time step used in timing
-        :param runtime: the amount of time the application is to run for
-        :return: Nonw
-        """
-        self._thread_pool.apply_async(
-            self._add_system_params,
-            args=[time_scale_factor, machine_time_step, runtime])
+        """ Write system params into the database
 
-    def _add_system_params(self, time_scale_factor, machine_time_step,
-                           runtime):
+        :param time_scale_factor: the time scale factor used in timing
+        :param machine_time_step: the machine time step used in timing
+        :param runtime: the amount of time the application is to run for
+        """
+
         # noinspection PyBroadException
         try:
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             # create table
@@ -191,31 +145,23 @@ class DatabaseWriter(object):
 
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
     def add_partitioned_vertices(self, partitioned_graph, graph_mapper,
                                  partitionable_graph):
-        """
-        writes the partitioned graph, graphmapper into the database. linsk
-        to the partitionable graph
+        """ Add the partitioned graph, graph mapper and partitionable graph \
+            into the database.
+
         :param partitioned_graph: the partitioned graph object
         :param graph_mapper: the graph mapper object
         :param partitionable_graph: the partitionable graph object
         :return: None
         """
-        self._thread_pool.apply_async(self._add_partitioned_vertices,
-                                      args=[partitioned_graph, graph_mapper,
-                                            partitionable_graph])
 
-    def _add_partitioned_vertices(self, partitioned_graph, graph_mapper,
-                                  partitionable_graph):
         # noinspection PyBroadException
         try:
-            self._lock_condition.acquire()
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             cur.execute(
@@ -323,26 +269,20 @@ class DatabaseWriter(object):
                 edge_id_offset += len(edges)
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
     def add_placements(self, placements, partitioned_graph):
-        """
-        writes the placements objects itno the database
+        """ Adds the placements objects into the database
+
         :param placements: the placements object
         :param partitioned_graph: the partitioned graph object
         :return: None
         """
-        self._thread_pool.apply_async(self._add_placements,
-                                      args=[placements, partitioned_graph])
 
-    def _add_placements(self, placements, partitioned_graph):
         # noinspection PyBroadException
         try:
-            self._lock_condition.acquire()
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
 
@@ -369,26 +309,19 @@ class DatabaseWriter(object):
                             self._machine_id))
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
     def add_routing_infos(self, routing_infos, partitioned_graph):
-        """
-        writes the routing infos (key masks etc) into the database
+        """ Adds the routing infos (key masks etc) into the database
         :param routing_infos: the routing infos object
         :param partitioned_graph: the partitioned graph object
         :return:
         """
-        self._thread_pool.apply_async(self._add_routing_infos,
-                                      args=[routing_infos, partitioned_graph])
 
-    def _add_routing_infos(self, routing_infos, partitioned_graph):
         # noinspection PyBroadException
         try:
-            self._lock_condition.acquire()
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             cur.execute(
@@ -408,26 +341,19 @@ class DatabaseWriter(object):
                                 key_mask.key, key_mask.mask))
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
     def add_routing_tables(self, routing_tables):
-        """ loads the routing tbales into the database
+        """ Adds the routing tables into the database
 
-        :param routing_tables: the routing tables object to be wrirten
-        to the database
+        :param routing_tables: the routing tables object
         :return: None
         """
-        self._thread_pool.apply_async(self._add_routing_tables,
-                                      args=[routing_tables])
 
-    def _add_routing_tables(self, routing_tables):
         # noinspection PyBroadException
         try:
-            self._lock_condition.acquire()
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
 
@@ -450,30 +376,25 @@ class DatabaseWriter(object):
                         "chip_x, chip_y, position, key_combo, mask, route) "
                         "VALUES({}, {}, {}, {}, {}, {})"
                         .format(routing_table.x, routing_table.y, counter,
-                                entry.key_combo, entry.mask, route_entry))
+                                entry.routing_entry_key, entry.mask,
+                                route_entry))
                     counter += 1
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
     def add_tags(self, partitioned_graph, tags):
-        """ loads the tags into the database
+        """ Adds the tags into the database
 
-        :param partitioned_graph: the partitioned grapg object
+        :param partitioned_graph: the partitioned graph object
         :param tags: the tags object
         :return:
         """
-        self._thread_pool.apply_async(self._add_tags,
-                                      args=[partitioned_graph, tags])
 
-    def _add_tags(self, partitioned_graph, tags):
         # noinspection PyBroadException
         try:
-            self._lock_condition.acquire()
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             cur.execute(
@@ -516,7 +437,6 @@ class DatabaseWriter(object):
                                     reverse_ip_tag.port))
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
 
@@ -531,18 +451,10 @@ class DatabaseWriter(object):
         :param graph_mapper:
         :return:
         """
-        self._thread_pool.apply_async(
-            self._create_atom_to_event_id_mapping,
-            args=[partitionable_graph, partitioned_graph, routing_infos,
-                  graph_mapper])
 
-    def _create_atom_to_event_id_mapping(
-            self, partitionable_graph, partitioned_graph, routing_infos,
-            graph_mapper):
         # noinspection PyBroadException
         try:
             import sqlite3 as sqlite
-            self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             # create table
@@ -580,14 +492,5 @@ class DatabaseWriter(object):
                         low_atom_id += 1
             connection.commit()
             connection.close()
-            self._lock_condition.release()
         except Exception:
             traceback.print_exc()
-
-    def stop(self):
-        """
-        ends the nofitication protocol
-        :return:
-        """
-        logger.debug("[data_base_thread] Stopping")
-        self._notification_protocol.close()

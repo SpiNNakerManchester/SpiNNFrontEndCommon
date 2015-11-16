@@ -3,7 +3,7 @@ BufferManager
 """
 
 # pacman imports
-from pacman.utilities.progress_bar import ProgressBar
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # dsg imports
 from data_specification import utility_calls as dsg_utilities
@@ -28,8 +28,6 @@ from spinnman.messages.eieio.command_messages.spinnaker_request_buffers \
     import SpinnakerRequestBuffers
 from spinnman.messages.eieio.command_messages.padding_request\
     import PaddingRequest
-from spinnman.messages.eieio.command_messages.event_stop_request \
-    import EventStopRequest
 from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
     import HostSendSequencedData
 from spinnman.messages.eieio.command_messages.stop_requests \
@@ -40,6 +38,7 @@ from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque\
     import BuffersSentDeque
+from spinn_front_end_common.utilities import constants as front_end_constants
 
 # general imports
 import struct
@@ -47,6 +46,7 @@ import threading
 import logging
 import traceback
 import os
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +64,7 @@ class BufferManager(object):
     """
 
     def __init__(self, placements, tags, transceiver, report_states,
-                 application_folder_path, reload_interface):
+                 application_folder_path):
         """
 
         :param placements: The placements of the vertices
@@ -86,8 +86,8 @@ class BufferManager(object):
         # params used for reload purposes
         self._report_states = report_states
         self._application_folder_path = application_folder_path
-        self._reload_interface = reload_interface
         self._reload_buffer_file = dict()
+        self._reload_buffer_file_paths = dict()
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -157,13 +157,16 @@ class BufferManager(object):
 
         # if reload script is set up, sotre the buffers for future usage
         if self._report_states.transciever_report:
-            vertex_files = self._reload_interface.add_buffered_vertex(
-                vertex, tag,
-                self._placements.get_placement_of_subvertex(vertex))
-            for (region, filename) in vertex_files.iteritems():
+            for region in vertex.get_regions():
+                filename = "{}_{}".format(
+                    re.sub("[\"':]", "_", vertex.label), region)
                 file_path = os.path.join(
                     self._application_folder_path, filename)
-            self._reload_buffer_file[(vertex, region)] = open(file_path, "w")
+                self._reload_buffer_file[(vertex, region)] = \
+                    open(file_path, "w")
+                if vertex not in self._reload_buffer_file_paths:
+                    self._reload_buffer_file_paths[vertex] = dict()
+                self._reload_buffer_file_paths[vertex][region] = file_path
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
@@ -179,6 +182,16 @@ class BufferManager(object):
             for region in vertex.get_regions():
                 self._send_initial_messages(vertex, region, progress_bar)
         progress_bar.end()
+
+    def rewind(self):
+        """
+        resets the buffered regions to start trnasmitting from the beginning
+        of its expected regions
+        :return:
+        """
+        for vertex in self._sender_vertices:
+            for region in vertex.get_regions():
+                vertex.rewind(region)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -275,8 +288,8 @@ class BufferManager(object):
 
         # If there are no more messages and there is space, add a stop request
         if (not vertex.is_next_timestamp(region) and
-                bytes_to_go >= EventStopRequest.get_min_packet_length()):
-            data = EventStopRequest().bytestring
+                bytes_to_go >= StopRequests.get_min_packet_length()):
+            data = StopRequests().bytestring
             logger.debug("Writing stop message of {} bytes to {} on"
                          " {}, {}, {}".format(
                              len(data), hex(region_base_address),
@@ -344,7 +357,7 @@ class BufferManager(object):
         # If the vertex is empty, send the stop messages if there is space
         if (not sent_messages.is_full and
                 not vertex.is_next_timestamp(region) and
-                bytes_to_go >= EventStopRequest.get_min_packet_length()):
+                bytes_to_go >= StopRequests.get_min_packet_length()):
             sent_messages.send_stop_message()
             if self._report_states.transciever_report:
                 if (vertex, region) in self._reload_buffer_file:
@@ -397,7 +410,8 @@ class BufferManager(object):
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=1)
+            destination_port=
+            front_end_constants.SDP_BUFFER_MANAGEMENT_DESTINATION_PORT)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
 
@@ -410,3 +424,20 @@ class BufferManager(object):
         if self._report_states.transciever_report:
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
+
+    @property
+    def sender_vertices(self):
+        """
+        property method for getting the vertices which are buffered
+        :return:
+        """
+        return self._sender_vertices
+
+    @property
+    def reload_buffer_files(self):
+        """
+        property method for getting the file paths for each buffered region
+        for each sender vertex
+        :return:
+        """
+        return self._reload_buffer_file_paths

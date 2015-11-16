@@ -211,3 +211,10 @@ class BufferedSendingRegion(object):
         :return:
         """
         return self._current_timestamp_pos
+
+    def rewind(self):
+        """
+        Rewinds the buffer to initial position.
+        :return:
+        """
+        self._current_timestamp_pos = 0

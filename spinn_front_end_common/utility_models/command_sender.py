@@ -3,7 +3,7 @@ command sender
 """
 
 # pacman imports
-from pacman.model.routing_info.key_and_mask import KeyAndMask
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_mask_constraint \
     import KeyAllocatorFixedMaskConstraint
@@ -128,17 +128,16 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                         " the mask 0xFFFFFFFF and providing exact keys")
 
             # If the keys are all fixed keys, keep them
-            self._edge_constraints[edge] = list(
+            self._edge_constraints[edge] = list([
                 KeyAllocatorFixedKeyAndMaskConstraint(
-                    [KeyAndMask(key, mask) for (key, mask) in command_keys]))
+                    [BaseKeyAndMask(key, mask)
+                     for (key, mask) in command_keys])])
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder):
         """
-        Model-specific construction of the data blocks necessary to build a
-        single external retina device.
         :param subvertex:
         :param placement:
         :param sub_graph:
@@ -191,7 +190,8 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                             self._commands_without_payloads[time]
                     del self._commands_without_payloads[time]
                 new_times.add(real_time)
-            # if runtime is infinite, then theres no point storing end of
+
+            # if runtime is infinite, then there's no point storing end of
             # simulation events, as they will never occur
             elif time < 0 and self._no_machine_time_steps is None:
                 if time in self._commands_with_payloads:
@@ -237,8 +237,10 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         spec.end_specification()
         data_writer.close()
 
+        return [data_writer.filename]
+
     def _get_key(self, command, graph_mapper, routing_info):
-        """ returns a key for a command
+        """ Return a key for a command
 
         :param command:
         :param graph_mapper:
@@ -322,33 +324,32 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
 
     @property
     def model_name(self):
-        """
-        return the name of the model as a string
+        """ Return the name of the model as a string
         """
         return "command_sender_multi_cast_source"
 
     # inherited from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
-        """ returns how much cpu is used by the model for a given number of
-         atoms
+        """ Return how much cpu is used by the model for a given number of\
+            atoms
 
-        :param vertex_slice: the slice from the partitionable vertex that this
-         model needs to deduce how many reosruces itll use
+        :param vertex_slice: the slice from the partitionable vertex that this\
+                    model needs to deduce how many resources it will use
         :param graph: the partitionable graph
-        :return: the size of cpu this model si expecting to use for the
-        number of atoms.
+        :return: the size of cpu this model is expecting to use for the\
+                    number of atoms.
         """
         return 0
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        """ returns how much sdram is used by the model for a given number of
-         atoms
+        """ Return how much sdram is used by the model for a given number of\
+            atoms
 
-        :param vertex_slice: the slice from the partitionable vertex that this
-         model needs to deduce how many reosruces itll use
+        :param vertex_slice: the slice from the partitionable vertex that this\
+                    model needs to deduce how many resources it will use
         :param graph: the partitionable graph
-        :return: the size of sdram this model si expecting to use for the
-        number of atoms.
+        :return: the size of sdram this model is expecting to use for the\
+                    number of atoms.
         """
 
         # Add a word for the size of the command region,
@@ -356,27 +357,26 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         return self._get_n_command_bytes() + 4 + 12
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        """ returns how much dtcm is used by the model for a given number of
-         atoms
+        """ Return how much dtcm is used by the model for a given number of\
+            atoms
 
-        :param vertex_slice: the slice from the partitionable vertex that this
-         model needs to deduce how many reosruces itll use
+        :param vertex_slice: the slice from the partitionable vertex that this\
+                    model needs to deduce how many resources it will use
         :param graph: the partitionable graph
-        :return: the size of dtcm this model si expecting to use for the
-        number of atoms.
+        :return: the size of dtcm this model is expecting to use for the\
+                    number of atoms.
         """
         return 0
 
     def get_binary_file_name(self):
-        """ returns a string representation of the models binary
+        """ Return a string representation of the models binary
 
         :return:
         """
         return 'command_sender_multicast_source.aplx'
 
     def is_data_specable(self):
-        """
-        helper method for is instance
+        """ Helper method for is instance
         :return:
         """
         return True
