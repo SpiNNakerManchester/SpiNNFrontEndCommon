@@ -31,7 +31,8 @@ class FrontEndCommonApplicationExiter(object):
             sync_state = SCPSignal.SYNC1
 
         progress_bar = ProgressBar(
-            total_processors, "turning off all the cores within the simualtion")
+            total_processors,
+            "Turning off all the cores within the simulation")
 
         # check that the right number of processors are in sync0
         processors_finished = \
@@ -45,7 +46,7 @@ class FrontEndCommonApplicationExiter(object):
         processors_powered_down = \
             txrx.get_core_state_count(app_id, CPUState.POWERED_DOWN)
         processors_cpu_state13 = \
-                txrx.get_core_state_count(app_id, CPUState.CPU_STATE_13)
+            txrx.get_core_state_count(app_id, CPUState.CPU_STATE_13)
 
         total_end_stated = \
             processors_finished + processors_idle + processors_rte + \
@@ -93,8 +94,9 @@ class FrontEndCommonApplicationExiter(object):
                     txrx.send_sdp_message(SDPMessage(
                         sdp_header=SDPHeader(
                             flags=SDPFlag.REPLY_NOT_EXPECTED,
-                            destination_port=
-                            constants.SDP_RUNNING_COMMAND_DESTINATION_PORT,
+                            destination_port=(
+                                constants
+                                .SDP_RUNNING_COMMAND_DESTINATION_PORT),
                             destination_cpu=processor,
                             destination_chip_x=core_subset.x,
                             destination_chip_y=core_subset.y), data=byte_data))
@@ -121,5 +123,3 @@ class FrontEndCommonApplicationExiter(object):
         txrx.send_signal(app_id, sync_state)
 
         progress_bar.end()
-
-
