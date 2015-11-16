@@ -63,7 +63,8 @@ class ReverseIpTagMultiCastSource(
     def __init__(self, n_neurons, machine_time_step, timescale_factor, port,
                  label, board_address=None, virtual_key=None, check_key=True,
                  prefix=None, prefix_type=None, tag=None, key_left_shift=0,
-                 sdp_port=1, buffer_space=0, notify_buffer_space=False,
+                 sdp_port=constants.SDP_BUFFER_MANAGEMENT_DESTINATION_PORT,
+                 buffer_space=0, notify_buffer_space=False,
                  space_before_notification=640, notification_tag=None,
                  notification_ip_address=None, notification_port=None,
                  notification_strip_sdp=True, constraints=None):

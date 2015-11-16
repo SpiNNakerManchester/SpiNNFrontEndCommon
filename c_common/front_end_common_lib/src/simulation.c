@@ -10,11 +10,10 @@
 
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
-//! the port used by the host machien for setting up the sdp port for
+
+//! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
-
-extern event_data_t event;
 
 //! flag for checking if we're in exit state
 static bool exited = false;
@@ -92,7 +91,6 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
-    log_info("received packet with command code %d", msg->cmd_rc);
 
     if (msg->cmd_rc == CMD_STOP) {
         log_info("Received exit signal. Program complete.");
@@ -120,6 +118,10 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
         sark_cpu_state(msg->arg1);
 
         // free the message to stop overload
+        spin1_msg_free(msg);
+    } else {
+
+        log_error("received packet with unknown command code %d", msg->cmd_rc);
         spin1_msg_free(msg);
     }
 }
