@@ -64,7 +64,8 @@ class FrontEndCommonApplicationRunner(object):
 
         :param executable_targets: the mapping between cores and binaries
         :param app_id: the appid that being used by the simulation
-        :param no_sync_state_changes:  the number of runs been done between setup and end
+        :param no_sync_state_changes:  the number of runs been done between\
+                setup and end
         :param txrx: the python interface to the spinnaker machine
         :return:
         """
@@ -97,11 +98,12 @@ class FrontEndCommonApplicationRunner(object):
 
             # last chance to slip out of error check
             if len(unsuccessful_cores) != 0:
-                break_down = self._get_core_status_string(unsuccessful_cores)
+                break_down = helpful_functions.get_core_status_string(
+                    unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
                     "{}:{}".format(
-                        processors_ready, total_processors,  sync_state.name, 
+                        processors_ready, total_processors, sync_state.name,
                         break_down))
 
     def start_all_cores(self, executable_targets, app_id, txrx,
@@ -109,7 +111,8 @@ class FrontEndCommonApplicationRunner(object):
         """
         :param executable_targets: the mapping between cores and binaries
         :param app_id: the appid that being used by the simulation
-        :param sync_state_changes:  the number of runs been done between setup and end
+        :param sync_state_changes: the number of runs been done between setup\
+                and end
         :param txrx: the python interface to the spinnaker machine
         :return: None
         """
@@ -147,7 +150,7 @@ class FrontEndCommonApplicationRunner(object):
             else:
                 unsuccessful_cores = helpful_functions.get_cores_not_in_state(
                     all_core_subsets, CPUState.RUNNING, txrx)
-                break_down = self._get_core_status_string(
+                break_down = helpful_functions.get_core_status_string(
                     unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started:{}"
@@ -181,7 +184,8 @@ class FrontEndCommonApplicationRunner(object):
             if processors_rte > 0:
                 rte_cores = helpful_functions.get_cores_in_state(
                     all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-                break_down = self._get_core_status_string(rte_cores)
+                break_down = helpful_functions.get_core_status_string(
+                    rte_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state:"
                     "{}".format(processors_rte, break_down))
@@ -204,7 +208,7 @@ class FrontEndCommonApplicationRunner(object):
         if processors_exited < total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
                 all_core_subsets, sync_state, txrx)
-            break_down = self._get_core_status_string(
+            break_down = helpful_functions.get_core_status_string(
                 unsuccessful_cores)
             raise exceptions.ExecutableFailedToStopException(
                 "{} of {} processors failed to exit successfully:"
@@ -212,16 +216,3 @@ class FrontEndCommonApplicationRunner(object):
                     total_processors - processors_exited, total_processors,
                     break_down))
         logger.info("Application has run to completion")
-
-    @staticmethod
-    def _get_core_status_string(core_infos):
-        break_down = "\n"
-        for ((x, y, p), core_info) in core_infos.iteritems():
-            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
-                break_down += "    {}:{}:{} in state {}:{}\n".format(
-                    x, y, p, core_info.state.name,
-                    core_info.run_time_error.name)
-            else:
-                break_down += "    {}:{}:{} in state {}\n".format(
-                    x, y, p, core_info.state.name)
-        return break_down

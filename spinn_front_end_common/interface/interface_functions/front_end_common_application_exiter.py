@@ -1,7 +1,8 @@
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
-from spinnman.messages.scp.scp_signal import SCPSignal
+from spinn_front_end_common.utilities import exceptions
 
+from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
@@ -9,7 +10,6 @@ from spinnman.model.cpu_state import CPUState
 
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
-import copy
 import struct
 
 
@@ -35,54 +35,46 @@ class FrontEndCommonApplicationExiter(object):
             "Turning off all the cores within the simulation")
 
         # check that the right number of processors are in sync0
-        processors_finished = \
-            txrx.get_core_state_count(app_id, CPUState.FINISHED)
-        processors_rte = \
-            txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-        processors_idle = \
-            txrx.get_core_state_count(app_id, CPUState.IDLE)
-        processors_watchdogged = \
-            txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-        processors_powered_down = \
-            txrx.get_core_state_count(app_id, CPUState.POWERED_DOWN)
-        processors_cpu_state13 = \
-            txrx.get_core_state_count(app_id, CPUState.CPU_STATE_13)
+        processors_cpu_state13 = txrx.get_core_state_count(
+            app_id, CPUState.CPU_STATE_13)
+        finished_cores = processors_cpu_state13
 
-        total_end_stated = \
-            processors_finished + processors_idle + processors_rte + \
-            processors_watchdogged + processors_powered_down + \
-            processors_cpu_state13
+        while processors_cpu_state13 != total_processors:
 
-        while total_end_stated != total_processors:
+            if processors_cpu_state13 > finished_cores:
+                progress_bar.update(
+                    finished_cores - processors_cpu_state13)
+                finished_cores = processors_cpu_state13
 
-            successful_cores_finished = set(
-                helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.FINISHED, txrx))
-            successful_cores_rte = set(
-                helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx))
-            successful_cores_idle = set(
-                helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.IDLE, txrx))
-            successful_cores_watchdogged = set(
-                helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.WATCHDOG, txrx))
-            successful_cores_powered_down = set(
-                helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.POWERED_DOWN, txrx))
+            processors_rte = txrx.get_core_state_count(
+                app_id, CPUState.RUN_TIME_EXCEPTION)
+            processors_watchdogged = txrx.get_core_state_count(
+                app_id, CPUState.WATCHDOG)
+
+            if processors_rte > 0 or processors_watchdogged > 0:
+                fail_message = ""
+                if processors_rte > 0:
+                    rte_cores = helpful_functions.get_cores_in_state(
+                        all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
+                    fail_message += helpful_functions.get_core_status_string(
+                        rte_cores)
+                if processors_watchdogged > 0:
+                    watchdog_cores = helpful_functions.get_cores_in_state(
+                        all_core_subsets, CPUState.WATCHDOG, txrx)
+                    fail_message += helpful_functions.get_core_status_string(
+                        watchdog_cores)
+                raise exceptions.ExecutableFailedToStopException(
+                    "{} of {} processors went into an error state when"
+                    " shutting down: {}".format(
+                        processors_rte + processors_watchdogged,
+                        total_processors, fail_message))
+
             successful_cores_cpu_state13 = set(
                 helpful_functions.get_cores_in_state(
                     all_core_subsets, CPUState.CPU_STATE_13, txrx))
 
-            all_cores = set(copy.deepcopy(all_core_subsets))
-            unsuccessful_cores = all_cores - successful_cores_finished.union(
-                successful_cores_rte, successful_cores_idle,
-                successful_cores_watchdogged, successful_cores_powered_down,
-                successful_cores_cpu_state13)
-
-            if total_end_stated > progress_bar._currently_completed:
-                progress_bar.update(
-                    progress_bar._currently_completed - total_end_stated)
+            all_cores = set(all_core_subsets)
+            unsuccessful_cores = all_cores - successful_cores_cpu_state13
 
             for core_subset in unsuccessful_cores:
                 for processor in core_subset.processor_ids:
@@ -101,24 +93,8 @@ class FrontEndCommonApplicationExiter(object):
                             destination_chip_x=core_subset.x,
                             destination_chip_y=core_subset.y), data=byte_data))
 
-            # check that the right number of processors are in sync0
-            processors_finished = \
-                txrx.get_core_state_count(app_id, CPUState.FINISHED)
-            processors_rte = \
-                txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-            processors_idle = \
-                txrx.get_core_state_count(app_id, CPUState.IDLE)
-            processors_watchdogged = \
-                txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
-            processors_powered_down = \
-                txrx.get_core_state_count(app_id, CPUState.POWERED_DOWN)
-            processors_cpu_state13 = \
-                txrx.get_core_state_count(app_id, CPUState.CPU_STATE_13)
-
-            total_end_stated = \
-                processors_finished + processors_idle + processors_rte + \
-                processors_watchdogged + processors_powered_down + \
-                processors_cpu_state13
+            processors_cpu_state13 = txrx.get_core_state_count(
+                app_id, CPUState.CPU_STATE_13)
 
         txrx.send_signal(app_id, sync_state)
 

@@ -20,6 +20,7 @@ import logging
 import re
 import inspect
 import struct
+from spinnman.model.cpu_state import CPUState
 
 logger = logging.getLogger(__name__)
 
@@ -299,3 +300,18 @@ def get_cores_not_in_state(all_core_subsets, state, txrx):
             cores_not_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_not_in_state
+
+
+def get_core_status_string(core_infos):
+    """ Get a string indicating the status of the given cores
+    """
+    break_down = "\n"
+    for ((x, y, p), core_info) in core_infos.iteritems():
+        if core_info.state == CPUState.RUN_TIME_EXCEPTION:
+            break_down += "    {}:{}:{} in state {}:{}\n".format(
+                x, y, p, core_info.state.name,
+                core_info.run_time_error.name)
+        else:
+            break_down += "    {}:{}:{} in state {}\n".format(
+                x, y, p, core_info.state.name)
+    return break_down
