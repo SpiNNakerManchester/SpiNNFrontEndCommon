@@ -514,6 +514,7 @@ class DatabaseWriter(object):
             self._lock_condition.acquire()
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
+
             # create table
             self._done_mapping = True
             cur.execute(

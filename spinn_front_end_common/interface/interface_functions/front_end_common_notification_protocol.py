@@ -8,9 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonNotificationProtocol(object):
-    """
-    FrontEndCommonNotificationProtocol: the notification protocol for
-    exeternal device readings
+    """ The notification protocol for external device interaction
     """
 
     def __call__(
@@ -32,33 +30,31 @@ class FrontEndCommonNotificationProtocol(object):
         return {"notification_interface": self}
 
     def wait_for_confirmation(self):
-        """
-        helper method which waits for devices to confirm they have read the
-        databse via the notifiication protocol
+        """ Waits for devices to confirm they have read the database via the\
+            notification protocol
+
         :return:
         """
         self._notification_protocol.wait_for_confirmation()
 
     def send_read_notification(self, database_directory):
-        """
-        helper method for sending the read notifcations from the notification
-        protocol
+        """ Send the read notifications via the notification protocol
+
         :param database_directory: the path to the database
         :return:
         """
         self._notification_protocol.send_read_notification(database_directory)
 
     def send_start_notification(self):
-        """
-        helper method for sending the start notifcations from the notification
-        protocol
+        """ Send the start notifications via the notification protocol
+
         :return:
         """
         self._notification_protocol.send_start_notification()
 
     def stop(self):
-        """
-        ends the nofitication protocol
+        """ Ends the notification protocol
+
         :return:
         """
         logger.debug("[data_base_thread] Stopping")

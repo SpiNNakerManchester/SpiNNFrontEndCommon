@@ -39,6 +39,7 @@ class AbstractDataSpecableVertex(object):
         spec.switch_write_focus(region=region_id)
         spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
+
         # check for infinite runs and add data as required
         if self._no_machine_time_steps is None:
             spec.write_value(data=1)
@@ -63,7 +64,7 @@ class AbstractDataSpecableVertex(object):
         :param graph_subgraph_mapper: the mapper between the two graphs
         :param report_folder: where reports are to be written
         :param ip_tags: the list of iptags allocated to the machine
-        :param reverse_ip_tags: the list of reverse iptags allocated to the\
+        :param reverse_ip_tags: the list of reverse ip tags allocated to the\
                     subvertex
         :param write_text_specs: boolean to write text specs
         :param application_run_time_folder: location where application data is\
@@ -127,7 +128,7 @@ class AbstractDataSpecableVertex(object):
                 application_run_time_report_folder)
         data_writer = FileDataWriter(binary_file_path)
 
-        # check if text reports are needed and if so initilise the report
+        # check if text reports are needed and if so initialise the report
         # writer to send down to dsg
         report_writer = None
         if write_text_specs:

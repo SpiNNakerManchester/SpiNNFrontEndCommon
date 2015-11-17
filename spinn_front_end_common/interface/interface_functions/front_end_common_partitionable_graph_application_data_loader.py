@@ -1,7 +1,3 @@
-"""
-FrontEndCommonPartitionableGraphApplicationLoader
-"""
-
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 from spinnman.data.file_data_reader import FileDataReader \
@@ -52,12 +48,12 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
                     read_data = transceiver.read_memory(
                         x, y, start_address, memory_written)
                     if read_data != all_data:
-                        raise Exception("Miswrite of {}, {}, {}, {}"
+                        raise Exception("Miss Write of {}, {}, {}, {}"
                                         .format(x, y, p, start_address))
                     application_data_file_reader.close()
 
                 # update user 0 so that it points to the start of the
-                # applications data region on sdram
+                # applications data region on SDRAM
                 logger.debug(
                     "writing user 0 address for vertex {}".format(label))
                 user_o_register_address = \

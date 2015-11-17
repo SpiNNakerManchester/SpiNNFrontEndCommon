@@ -8,7 +8,7 @@ class FrontEndCommonRoutingTableLoader(object):
                                    "Loading routing data onto the machine")
 
         # load each router table that is needed for the application to run into
-        # the chips sdram
+        # the chips SDRAM
         for router_table in router_tables.routing_tables:
             if not machine.get_chip_at(router_table.x, router_table.y).virtual:
                 transciever.clear_multicast_routes(router_table.x,

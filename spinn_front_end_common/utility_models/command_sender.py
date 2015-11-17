@@ -1,7 +1,3 @@
-"""
-command sender
-"""
-
 # pacman imports
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.constraints.key_allocator_constraints.\
@@ -17,7 +13,7 @@ from pacman.model.partitionable_graph.abstract_partitionable_vertex\
 from data_specification.data_specification_generator \
     import DataSpecificationGenerator
 
-# spinn front end common inports
+# spinn front end common imports
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
@@ -35,7 +31,7 @@ _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
                     AbstractPartitionableVertex,
                     AbstractDataSpecableVertex):
-    """ A utility for sending commands to a vertex (possibily an external\
+    """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
 
@@ -165,7 +161,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         self._reserve_memory_regions(spec, n_command_bytes + 4)
 
         # Write system region
-        spec.comment("\n*** Spec for multi cast source ***\n\n")
+        spec.comment("\n*** Spec for multicast source ***\n\n")
         self._write_basic_setup_info(spec, self.SYSTEM_REGION)
 
         # Go through the times and replace negative times with positive ones
@@ -342,13 +338,13 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         return 0
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        """ Return how much sdram is used by the model for a given number of\
+        """ Return how much SDRAM is used by the model for a given number of\
             atoms
 
         :param vertex_slice: the slice from the partitionable vertex that this\
                     model needs to deduce how many resources it will use
         :param graph: the partitionable graph
-        :return: the size of sdram this model is expecting to use for the\
+        :return: the size of SDRAM this model is expecting to use for the\
                     number of atoms.
         """
 
@@ -357,13 +353,13 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         return self._get_n_command_bytes() + 4 + 12
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        """ Return how much dtcm is used by the model for a given number of\
+        """ Return how much DTCM is used by the model for a given number of\
             atoms
 
         :param vertex_slice: the slice from the partitionable vertex that this\
                     model needs to deduce how many resources it will use
         :param graph: the partitionable graph
-        :return: the size of dtcm this model is expecting to use for the\
+        :return: the size of DTCM this model is expecting to use for the\
                     number of atoms.
         """
         return 0

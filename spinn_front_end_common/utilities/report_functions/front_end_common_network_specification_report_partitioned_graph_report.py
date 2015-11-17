@@ -67,5 +67,6 @@ class FrontEndCommonNetworkSpecificationReportPartitionedGraphReport(object):
             f_network_specification.write(edge_str)
             f_network_specification.write("  Model: {}\n".format(model))
             f_network_specification.write("\n")
+
         # Close file:
         f_network_specification.close()

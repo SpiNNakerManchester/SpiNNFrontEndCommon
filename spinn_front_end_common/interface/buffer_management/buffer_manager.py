@@ -57,7 +57,7 @@ _MIN_MESSAGE_SIZE = (EIEIO32BitTimedPayloadPrefixDataMessage
                      .get_min_packet_length())
 
 # The number of bytes in each key to be sent
-_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
+_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 
 class BufferManager(object):
@@ -71,7 +71,7 @@ class BufferManager(object):
         :param placements: The placements of the vertices
         :type placements:\
                     :py:class:`pacman.model.placements.placements.Placements`
-        :param report_states: the bools saying what reports are needed
+        :param report_states: the booleans saying what reports are needed
         :type report_states: XXXXXXXXXXX
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.tags.Tags`
@@ -156,7 +156,7 @@ class BufferManager(object):
                 self.receive_buffer_command_message, UDPEIEIOConnection,
                 local_port=tag.port, local_host=tag.ip_address)
 
-        # if reload script is set up, sotre the buffers for future usage
+        # if reload script is set up, store the buffers for future usage
         if self._report_states.transciever_report:
             for region in vertex.get_regions():
                 filename = "{}_{}".format(
@@ -417,17 +417,14 @@ class BufferManager(object):
 
     @property
     def sender_vertices(self):
-        """
-        property method for getting the vertices which are buffered
+        """ The vertices which are buffered
         :return:
         """
         return self._sender_vertices
 
     @property
     def reload_buffer_files(self):
-        """
-        property method for getting the file paths for each buffered region
-        for each sender vertex
+        """ The file paths for each buffered region for each sender vertex
         :return:
         """
         return self._reload_buffer_file_paths

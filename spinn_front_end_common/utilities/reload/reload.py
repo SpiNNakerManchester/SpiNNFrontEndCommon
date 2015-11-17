@@ -1,6 +1,3 @@
-"""
-reload script for loading onto a amchien wtihout going through the mapper
-"""
 from spinn_front_end_common.utilities import helpful_functions
 
 
@@ -121,8 +118,6 @@ class Reload(object):
         inputs.append({'type': "TimeScaleFactor", 'value': time_scale_factor})
         inputs.append({'type': "SendStartNotifications",
                        'value': send_start_notification})
-
-
         return inputs
 
     @staticmethod

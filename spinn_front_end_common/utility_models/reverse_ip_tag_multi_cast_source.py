@@ -103,13 +103,13 @@ class ReverseIpTagMultiCastSource(
         # validate params
         if self._prefix is not None and self._prefix_type is None:
             raise ConfigurationException(
-                "To use a prefix, you must declaire which position to use the "
+                "To use a prefix, you must declare which position to use the "
                 "prefix in on the prefix_type parameter.")
 
         if virtual_key is not None:
             self._mask, max_key = self._calculate_mask(n_neurons)
 
-            # key =( key  ored prefix )and mask
+            # key = (key or'ed prefix) and mask
             temp_vertual_key = virtual_key
             if self._prefix is not None:
                 if self._prefix_type == EIEIOPrefix.LOWER_HALF_WORD:

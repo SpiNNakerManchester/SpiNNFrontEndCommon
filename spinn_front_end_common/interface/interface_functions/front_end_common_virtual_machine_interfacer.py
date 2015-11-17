@@ -1,4 +1,4 @@
-# spinnmachine imports
+# spinn_machine imports
 from spinn_machine.virutal_machine import VirtualMachine
 
 

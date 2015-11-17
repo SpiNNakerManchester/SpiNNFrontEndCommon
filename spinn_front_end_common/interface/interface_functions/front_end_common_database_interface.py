@@ -16,17 +16,17 @@ class FrontEndCommonDatabaseInterface(object):
         self._writer = None
         self._user_create_database = None
         self._needs_database = None
-    
+
     def __call__(
             self, partitioned_graph, user_create_database, tags,
             runtime, machine, time_scale_factor, machine_time_step,
             partitionable_graph, graph_mapper, placements, routing_infos,
             router_tables, execute_mapping, database_directory):
-        
+
         self._writer = DatabaseWriter(database_directory)
-        
+
         # add database generation if requested
-        needs_database = \
+        self._needs_database = \
             helpful_functions.auto_detect_database(partitioned_graph)
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
