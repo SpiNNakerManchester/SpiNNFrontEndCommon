@@ -16,6 +16,9 @@ class Reload(object):
             database_file_path, runtime, time_scale_factor,
             send_start_notification, app_id=30):
 
+        if scamp_connection_data == "None":
+            scamp_connection_data = None
+
         pacman_inputs = self._create_pacman_inputs(
             machine_name, version, reports_states, bmp_details,
             down_chips, down_cores, number_of_boards, height, width,

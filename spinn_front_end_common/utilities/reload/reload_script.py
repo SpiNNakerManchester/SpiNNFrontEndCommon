@@ -44,6 +44,15 @@ class ReloadScript(object):
             raise exceptions.SpinnFrontEndException(
                 "Cannot open {} to write the rerun script".format(file_name))
 
+        # Convert file paths to local file names
+        local_placement_to_app_data_files = dict()
+        for (placement, file_paths) in placement_to_app_data_files.iteritems():
+            local_file_paths = list()
+            for file_path in file_paths:
+                local_file_path = os.path.basename(file_path)
+                local_file_paths.append(local_file_path)
+            local_placement_to_app_data_files[placement] = local_file_paths
+
         self._println("runtime = {}".format(runtime))
         self._println(
             "send_start_notification = {}".format(send_start_notification))
@@ -61,7 +70,7 @@ class ReloadScript(object):
         self._println("placements = dict()")
         self._println("boot_port_num = {}".format(boot_port_num))
         self._println("placement_to_app_data_files = {}"
-                      .format(placement_to_app_data_files))
+                      .format(local_placement_to_app_data_files))
         self._println("verify = {}".format(verify))
         self._println("database_file_path = {}".format(database_file_path))
         self._println("wait_for_read_confirmation = {}"
