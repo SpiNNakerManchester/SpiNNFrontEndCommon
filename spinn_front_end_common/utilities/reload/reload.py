@@ -12,7 +12,7 @@ class Reload(object):
             scamp_connection_data, boot_port_num, placement_to_app_data_files,
             verify, router_tables, processor_to_app_data_base_address,
             executable_targets, tags, iptags, reverse_iptags, placements,
-            app_folder, wait_for_read_confirmation, socket_addresses,
+            wait_for_read_confirmation, socket_addresses,
             database_file_path, runtime, time_scale_factor,
             send_start_notification, app_id=30):
 
@@ -25,7 +25,7 @@ class Reload(object):
             auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
             boot_port_num, placement_to_app_data_files, verify, router_tables,
             processor_to_app_data_base_address, executable_targets, tags,
-            iptags, reverse_iptags, placements, app_folder,
+            iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification)
         pacman_outputs = self._create_pacman_outputs()
@@ -45,7 +45,7 @@ class Reload(object):
             auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
             boot_port_num, placement_to_app_data_files, verify, router_tables,
             processor_to_app_data_base_address, executable_targets,
-            buffered_tags, iptags, reverse_iptags, placements, app_folder,
+            buffered_tags, iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification):
         """
@@ -72,8 +72,7 @@ class Reload(object):
         :param buffered_tags:
         :param iptags:
         :param reverse_iptags:
-        :param placements:
-        :param app_folder:
+        :param placements
         :param wait_for_read_confirmation:
         :param socket_addresses:
         :param database_file_path:
@@ -110,7 +109,7 @@ class Reload(object):
         inputs.append({'type': "MemoryIpTags", 'value': iptags})
         inputs.append({"type": "MemoryReverseTags", 'value': reverse_iptags})
         inputs.append({'type': "MemoryPlacements", 'value': placements})
-        inputs.append({'type': "ApplicationDataFolder", "value": app_folder})
+        inputs.append({'type': "ApplicationDataFolder", "value": None})
         inputs.append({'type': "DatabaseWaitOnConfirmationFlag",
                        'value': wait_for_read_confirmation})
         inputs.append({'type': "DatabaseSocketAddresses",
