@@ -270,8 +270,8 @@ class FrontEndCommonInterfaceFunctions(object):
         self._load_executable_images(executable_targets, 31,
                               app_data_folder=self._app_data_runtime_folder)
 
-        transceiver = create_transceiver_from_hostname(hostname,
-                                            config.getint("Machine", "version"))
+        # transceiver = create_transceiver_from_hostname(hostname,
+        #                                    config.getint("Machine", "version"))
 
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
@@ -291,21 +291,20 @@ class FrontEndCommonInterfaceFunctions(object):
 
                 data_spec_file_size = os.path.getsize(data_spec_file_path)
 
-                header   = SDPHeader(flags = SDPFlag.REPLY_NOT_EXPECTED,
-                                     destination_cpu    = placement.p,
-                                     destination_chip_x = placement.x,
-                                     destination_chip_y = placement.y,
-                                     destination_port   = 1)
+                header = SDPHeader(flags=SDPFlag.REPLY_NOT_EXPECTED,
+                                   destination_cpu=placement.p,
+                                   destination_chip_x=placement.x,
+                                   destination_chip_y=placement.y,
+                                   destination_port=1)
 
                 # Wait for the core to get into the READY_TO_RECEIVE state.
                 while self.transceiver. \
-                       get_cpu_information_from_core(placement.x,
-                                  placement.y, placement.p).user[1] \
-                                                 != 0x1:
+                    get_cpu_information_from_core(
+                        placement.x, placement.y, placement.p).user[1] != 0x1:
                     time.sleep(0.01)
 
-                # Send a packet containing the length of the data (the length of the
-                # internal buffer).
+                # Send a packet containing the length of the data (the
+                # length of the internal buffer).
                 msg_data_len = struct.pack("<I", data_spec_file_size)
 
                 self.transceiver.send_sdp_message(SDPMessage(header,
