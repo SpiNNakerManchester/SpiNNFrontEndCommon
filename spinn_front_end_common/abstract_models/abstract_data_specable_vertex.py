@@ -1,6 +1,3 @@
-"""
-AbstractDataSpecableVertex
-"""
 from data_specification.file_data_writer import FileDataWriter
 
 from spinn_front_end_common.utilities import exceptions
@@ -20,8 +17,8 @@ _lock_condition = threading.Condition()
 
 @add_metaclass(ABCMeta)
 class AbstractDataSpecableVertex(object):
-    """ A Vertex that enforces the methods for generating
-       a dsg and gives some very basic impliemntation of a setup info method.
+    """ A Vertex that enforces the methods for generating a data specification\
+        and gives some very basic implementation of a setup info method.
     """
 
     def __init__(self, machine_time_step, timescale_factor):
@@ -31,6 +28,7 @@ class AbstractDataSpecableVertex(object):
         self._no_machine_time_steps = None
 
     def _write_basic_setup_info(self, spec, region_id):
+
         # Hash application title
         application_name = os.path.splitext(self.get_binary_file_name())[0]
 
@@ -41,6 +39,7 @@ class AbstractDataSpecableVertex(object):
         spec.switch_write_focus(region=region_id)
         spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
+
         # check for infinite runs and add data as required
         if self._no_machine_time_steps is None:
             spec.write_value(data=1)
@@ -54,33 +53,28 @@ class AbstractDataSpecableVertex(object):
             self, subvertex, placement, sub_graph, graph, routing_info,
             hostname, graph_subgraph_mapper, report_folder, ip_tags,
             reverse_ip_tags, write_text_specs, application_run_time_folder):
-        """
-        method to determine how to generate their data spec for a non neural
-        application
+        """ Generates the data specification of an application
 
-        :param subvertex: the partitioned_vertex whcih this live packet gather
-        is associated
-        :param placement: the placement object associated with this
-        partitioned vertex
-        :param sub_graph: the partitioned_graph
+        :param subvertex: the subvertex to generate data for
+        :param placement: the placement of the subvertex
+        :param sub_graph: the partitioned graph
         :param graph: the partitionable graph
         :param routing_info: the keys for this partitioned vertex
         :param hostname: the hostname associated with this spinnaker machine
         :param graph_subgraph_mapper: the mapper between the two graphs
         :param report_folder: where reports are to be written
-        :param ip_tags: the lsit of iptags allcoated to the machine
-        :param reverse_ip_tags: the list of reverse iptags allocated to the
-        machine
+        :param ip_tags: the list of iptags allocated to the machine
+        :param reverse_ip_tags: the list of reverse ip tags allocated to the\
+                    subvertex
         :param write_text_specs: boolean to write text specs
-        :param application_run_time_folder: location where application data is
-               stored.
-        :return: Nothing
+        :param application_run_time_folder: location where application data is\
+                    stored.
+        :return: iterable of file paths written
         """
 
     @abstractmethod
     def get_binary_file_name(self):
-        """
-        method to return the binary name for a given dataspecable vertex
+        """ Get the binary name to be run for subvertices of this vertex
         """
 
     @property
@@ -134,7 +128,7 @@ class AbstractDataSpecableVertex(object):
                 application_run_time_report_folder)
         data_writer = FileDataWriter(binary_file_path)
 
-        # check if text reports are needed and if so initilise the report
+        # check if text reports are needed and if so initialise the report
         # writer to send down to dsg
         report_writer = None
         if write_text_specs:
@@ -143,7 +137,7 @@ class AbstractDataSpecableVertex(object):
 
             # uses locks to stop multiple instances of this writing the same
             # folder at the same time (os breaks down and throws exception
-            # therwise)
+            # otherwise)
             _lock_condition.acquire()
             if not os.path.exists(new_report_directory):
                 os.mkdir(new_report_directory)
@@ -203,7 +197,6 @@ class AbstractDataSpecableVertex(object):
 
     @abstractmethod
     def is_data_specable(self):
-        """
-        helper method for isinstance
+        """ Helper method for isinstance
         :return:
         """
