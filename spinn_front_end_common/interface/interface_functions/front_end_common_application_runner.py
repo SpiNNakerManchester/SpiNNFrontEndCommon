@@ -129,6 +129,7 @@ class FrontEndCommonApplicationRunner(object):
         # if correct, start applications
         logger.info("Starting application")
         txrx.send_signal(app_id, sync_state)
+        sync_state_changes += 1
 
         # check all apps have gone into run state
         logger.info("Checking that the application has started")

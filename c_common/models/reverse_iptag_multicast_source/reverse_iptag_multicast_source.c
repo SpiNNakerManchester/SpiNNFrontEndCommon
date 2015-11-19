@@ -692,7 +692,7 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
         break;
 
     case EVENT_STOP_COMMANDS:
-        log_debug("command: EVENT_STOP");
+        log_info("command: EVENT_STOP");
         time = simulation_ticks + 1;
         break;
 
@@ -959,7 +959,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    log_debug("timer_callback, final time: %d, current time: %d,"
+    log_info("timer_callback, final time: %d, current time: %d,"
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
