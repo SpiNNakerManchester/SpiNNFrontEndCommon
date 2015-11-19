@@ -1,6 +1,7 @@
-from spinn_front_end_common.abstract_models\
-    .abstract_provides_outgoing_edge_constraints \
-    import AbstractProvidesOutgoingEdgeConstraints
+"""
+OutgoingEdgeSameContiguousKeysRestrictor
+"""
+
 from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_contiguous_range_constraint \
     import KeyAllocatorContiguousRangeContraint
@@ -9,15 +10,12 @@ from pacman.model.constraints.key_allocator_constraints\
     import KeyAllocatorSameKeysConstraint
 
 
-class AbstractOutgoingEdgeSameContiguousKeysRestrictor(
-        AbstractProvidesOutgoingEdgeConstraints):
+class OutgoingEdgeSameContiguousKeysRestrictor(object):
     """ Ensures that the edges going out of this vertex are all given the same
         keys, and that those keys are contiguous
     """
 
     def __init__(self):
-
-        AbstractProvidesOutgoingEdgeConstraints.__init__(self)
 
         # The first partitioned edge of this population for any subvertex,
         # indexed by the subvertex lo atom
@@ -28,7 +26,12 @@ class AbstractOutgoingEdgeSameContiguousKeysRestrictor(
         self._seen_partitioned_edges = set()
 
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
-
+        """
+        provides the constraints for outgoing edges for neural applications
+        :param partitioned_edge: the partitoned edge to put constraints on
+        :param graph_mapper: the graph mapper object
+        :return:list of constraints
+        """
         # Find the slice of the vertex
         vertex_slice = graph_mapper.get_subvertex_slice(
             partitioned_edge.pre_subvertex)

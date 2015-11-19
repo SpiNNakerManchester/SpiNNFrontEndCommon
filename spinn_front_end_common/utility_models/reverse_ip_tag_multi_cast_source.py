@@ -55,8 +55,8 @@ class ReverseIpTagMultiCastSource(
     """
 
     # internal params
-    _SPIKE_INJECTOR_REGIONS = Enum(
-        value="SPIKE_INJECTOR_REGIONS",
+    _REVERSE_IPTAG_MULTICAST_REGIONS = Enum(
+        value="REVERSE_IPTAG_MULTICAST_SOURCE_REGIONS",
         names=[('SYSTEM', 0),
                ('CONFIGURATION', 1),
                ('BUFFER', 2)])
@@ -68,7 +68,7 @@ class ReverseIpTagMultiCastSource(
                  label, board_address=None, virtual_key=None, check_key=True,
                  prefix=None, prefix_type=None, tag=None, key_left_shift=0,
                  sdp_port=1, buffer_space=0, notify_buffer_space=False,
-                 space_before_notification=0, notification_tag=None,
+                 space_before_notification=640, notification_tag=None,
                  notification_ip_address=None, notification_port=None,
                  notification_strip_sdp=True, constraints=None):
 
@@ -212,24 +212,29 @@ class ReverseIpTagMultiCastSource(
 
         # Reserve memory regions:
         spec.reserve_memory_region(
-            region=self._SPIKE_INJECTOR_REGIONS.SYSTEM.value,
-            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
+            region=self._REVERSE_IPTAG_MULTICAST_REGIONS.SYSTEM.value,
+            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4 + 8,
             label='SYSTEM')
         spec.reserve_memory_region(
-            region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value,
+            region=self._REVERSE_IPTAG_MULTICAST_REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
         if self._buffer_space is not None and self._buffer_space > 0:
             spec.reserve_memory_region(
-                region=self._SPIKE_INJECTOR_REGIONS.BUFFER.value,
+                region=self._REVERSE_IPTAG_MULTICAST_REGIONS.BUFFER.value,
                 size=self._buffer_space, label="BUFFER", empty=True)
 
         # set up system region writes
         self._write_basic_setup_info(
-            spec, self._SPIKE_INJECTOR_REGIONS.SYSTEM.value)
+            spec, self._REVERSE_IPTAG_MULTICAST_REGIONS.SYSTEM.value)
+
+        # TODO this can be removed once buffered out functionality is in place.
+        # As then live injection can be recorded
+        spec.write_value(data=0)
+        spec.write_value(data=0)
 
         # set up configuration region writes
         spec.switch_write_focus(
-            region=self._SPIKE_INJECTOR_REGIONS.CONFIGURATION.value)
+            region=self._REVERSE_IPTAG_MULTICAST_REGIONS.CONFIGURATION.value)
 
         if self._virtual_key is None:
             subedge_routing_info = \

@@ -1,4 +1,5 @@
 #include <common-typedefs.h>
+#include <circular_buffer.h>
 #include <data_specification.h>
 #include <debug.h>
 #include <simulation.h>
@@ -17,6 +18,19 @@ static uint16_t temp_header;
 static uint8_t event_size;
 static uint8_t header_len;
 static uint32_t simulation_ticks = 0;
+static uint32_t infinite_run = 0;
+static circular_buffer without_payload_buffer;
+static circular_buffer with_payload_buffer;
+static bool processing_events = false;
+
+//! Provanence data store
+typedef struct provenance_data_struct {
+    uint32_t number_of_over_flows_none_payload;
+    uint32_t number_of_over_flows_payload;
+} provenance_data_struct;
+
+//! struct holding the proenance data
+provenance_data_struct provenance_data;
 
 // P bit
 static uint32_t apply_prefix;
@@ -46,6 +60,29 @@ static uint32_t payload_prefix;
 static uint32_t payload_right_shift;
 static uint32_t sdp_tag;
 static uint32_t packets_per_timestamp;
+
+//! human readable definitions of each region in SDRAM
+typedef enum regions_e {
+    SYSTEM_REGION,
+    CONFIGURATION_REGION,
+    PROVANENCE_REGION
+} regions_e;
+
+//! Human readable definitions of each element in the configuration region in
+// SDRAM
+typedef enum configuration_region_components_e {
+    APPLY_PREFIX,
+    PREFIX,
+    PREFIX_TYPE,
+    PACKET_TYPE,
+    KEY_RIGHT_SHIFT,
+    PAYLOAD_TIMESTAMP,
+    PAYLOAD_APPLY_PREFIX,
+    PAYLOAD_PREFIX,
+    PAYLOAD_RIGHT_SHIFT,
+    SDP_TAG,
+    PACKETS_PER_TIMESTEP
+} configuration_region_components_e;
 
 void flush_events(void) {
 
@@ -115,6 +152,22 @@ void flush_events(void) {
     buffer_index = 0;
 }
 
+//! \brief function to store provenance data elements into sdram
+void record_provenance_data(void){
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+    // locate the provenance data region base address
+    address_t provenance_region_address =
+        data_specification_get_region(PROVANENCE_REGION, address);
+    // Copy provenance data into sdram region
+    memcpy(provenance_region_address, &provenance_data,
+           sizeof(provenance_data));
+    log_info("The provenance data consisting of %d lost packets without "
+             "payload and %d lost packets with payload.",
+             provenance_data.number_of_over_flows_none_payload,
+             provenance_data.number_of_over_flows_payload);
+}
+
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
@@ -128,7 +181,8 @@ void timer_callback(uint unused0, uint unused1) {
     log_debug("Timer tick %u", time);
 
     // check if the simulation has run to completion
-    if ((simulation_ticks != UINT32_MAX) && (time >= simulation_ticks)) {
+    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+        record_provenance_data();
         log_info("Simulation complete.\n");
         spin1_exit(0);
     }
@@ -148,10 +202,9 @@ void flush_events_if_full(void) {
     }
 }
 
-// callback for mc packet without payload
-void incoming_event_callback(uint key, uint payload) {
-    use(payload);
-    log_debug("Received event with key %x", key);
+// process mc packet without payload
+void process_incoming_event(uint key) {
+    log_debug("Processing key %x", key);
 
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
@@ -196,9 +249,9 @@ void incoming_event_callback(uint key, uint payload) {
     flush_events_if_full();
 }
 
-// callback for mc packet with payload
-void incoming_event_payload_callback(uint key, uint payload) {
-    log_debug("Received spike %x", key);
+// processes mc packet with payload
+void process_incoming_event_payload(uint key, uint payload) {
+    log_debug("Processing key %x, payload %x", key, payload);
 
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
@@ -244,36 +297,82 @@ void incoming_event_payload_callback(uint key, uint payload) {
     flush_events_if_full();
 }
 
+void incoming_event_process_callback(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+
+    uint32_t key;
+    do {
+       if (circular_buffer_get_next(without_payload_buffer, &key)) {
+           process_incoming_event(key);
+       } else if (circular_buffer_get_next(with_payload_buffer, &key)) {
+           uint32_t payload;
+           circular_buffer_get_next(with_payload_buffer, &payload);
+           process_incoming_event_payload(key, payload);
+       } else {
+           processing_events = false;
+       }
+    }
+    while (processing_events);
+}
+
+void incoming_event_callback(uint key, uint unused) {
+    use(unused);
+    log_debug("Received key %x", key);
+    if (circular_buffer_add(without_payload_buffer, key)) {
+        if (!processing_events) {
+            processing_events = true;
+            spin1_trigger_user_event(0, 0);
+        }
+    } else {
+        provenance_data.number_of_over_flows_none_payload += 1;
+    }
+}
+
+void incoming_event_payload_callback(uint key, uint payload) {
+    log_debug("Received key %x, payload %x", key, payload);
+    if (circular_buffer_add(with_payload_buffer, key)) {
+        circular_buffer_add(with_payload_buffer, payload);
+        if (!processing_events) {
+            processing_events = true;
+            spin1_trigger_user_event(0, 0);
+        }
+    }
+    else {
+        provenance_data.number_of_over_flows_payload += 1;
+    }
+}
+
 void read_parameters(address_t region_address) {
 
     // P bit
-    apply_prefix = region_address[0];
+    apply_prefix = region_address[APPLY_PREFIX];
 
     // Prefix data
-    prefix = region_address[1];
+    prefix = region_address[PREFIX];
 
     // F bit (for the receiver)
-    prefix_type = region_address[2];
+    prefix_type = region_address[PREFIX_TYPE];
 
     // Type bits
-    packet_type = region_address[3];
+    packet_type = region_address[PACKET_TYPE];
 
     // Right packet shift (for the sender)
-    key_right_shift = region_address[4];
+    key_right_shift = region_address[KEY_RIGHT_SHIFT];
 
     // T bit
-    payload_timestamp = region_address[5];
+    payload_timestamp = region_address[PAYLOAD_TIMESTAMP];
 
     // D bit
-    payload_apply_prefix = region_address[6];
+    payload_apply_prefix = region_address[PAYLOAD_APPLY_PREFIX];
 
     // Payload prefix data (for the receiver)
-    payload_prefix = region_address[7];
+    payload_prefix = region_address[PAYLOAD_PREFIX];
 
     // Right payload shift (for the sender)
-    payload_right_shift = region_address[8];
-    sdp_tag = region_address[9];
-    packets_per_timestamp = region_address[10];
+    payload_right_shift = region_address[PAYLOAD_RIGHT_SHIFT];
+    sdp_tag = region_address[SDP_TAG];
+    packets_per_timestamp = region_address[PACKETS_PER_TIMESTEP];
 
     log_info("apply_prefix: %d\n", apply_prefix);
     log_info("prefix: %08x\n", prefix);
@@ -300,18 +399,20 @@ bool initialize(uint32_t *timer_period) {
 
     // Get the timing details
     if (!simulation_read_timing_details(
-            data_specification_get_region(0, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks)) {
+            data_specification_get_region(SYSTEM_REGION, address),
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run)) {
         return false;
     }
 
     // Fix simulation ticks to be one extra timer period to soak up last events
-    if (simulation_ticks != UINT32_MAX) {
-        simulation_ticks += *timer_period;
+    if (infinite_run != TRUE) {
+        simulation_ticks += 1;
     }
 
     // Read the parameters
-    read_parameters(data_specification_get_region(1, address));
+    read_parameters(
+        data_specification_get_region(CONFIGURATION_REGION, address));
 
     return true;
 }
@@ -461,6 +562,10 @@ void c_main(void) {
          rt_error(RTE_SWERR);
     }
 
+    // Set up circular buffers for multicast message reception
+    without_payload_buffer = circular_buffer_initialize(256);
+    with_payload_buffer = circular_buffer_initialize(512);
+
     // Set timer_callback
     spin1_set_timer_tick(timer_period);
 
@@ -468,6 +573,7 @@ void c_main(void) {
     spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, -1);
     spin1_callback_on(MCPL_PACKET_RECEIVED,
                       incoming_event_payload_callback, -1);
+    spin1_callback_on(USER_EVENT, incoming_event_process_callback, 1);
     spin1_callback_on(TIMER_TICK, timer_callback, 2);
 
     log_info("Starting\n");
