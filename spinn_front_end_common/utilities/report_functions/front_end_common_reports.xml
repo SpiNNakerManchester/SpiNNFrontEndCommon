@@ -1,0 +1,58 @@
+<algorithms>
+    <algorithm name="FrontEndCommonMemoryMapReport">
+        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_memory_map_report</python_module>
+        <python_class>FrontEndCommonMemoryMapReport</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonNetworkSpecificationPartitionableReport">
+        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_network_specification_partitionable_report</python_module>
+        <python_class>FrontEndCommonNetworkSpecificationPartitionableReport</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonNetworkSpecificationReportPartitionedGraphReport">
+        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_network_specification_report_partitioned_graph_report</python_module>
+        <python_class>FrontEndCommonNetworkSpecificationReportPartitionedGraphReport</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+        </produces_outputs>
+    </algorithm>
+</algorithms>

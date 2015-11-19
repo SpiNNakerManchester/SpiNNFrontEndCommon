@@ -3,7 +3,7 @@ BufferManager
 """
 
 # pacman imports
-from pacman.utilities.progress_bar import ProgressBar
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # dsg imports
 from data_specification import utility_calls as dsg_utilities
@@ -56,6 +56,7 @@ import threading
 import logging
 import traceback
 import os
+import re
 
 
 logger = logging.getLogger(__name__)
@@ -65,21 +66,21 @@ _MIN_MESSAGE_SIZE = (EIEIO32BitTimedPayloadPrefixDataMessage
                      .get_min_packet_length())
 
 # The number of bytes in each key to be sent
-_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
+_N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 
 class BufferManager(object):
     """ Manager of send buffers
     """
 
-    def __init__(self, placements, tags, transceiver,
-                 report_states, application_folder_path, reload_interface):
+    def __init__(self, placements, tags, transceiver, report_states,
+                 application_folder_path):
         """
 
         :param placements: The placements of the vertices
         :type placements:\
                     :py:class:`pacman.model.placements.placements.Placements`
-        :param report_states: the bools saying what reports are needed
+        :param report_states: the booleans saying what reports are needed
         :type report_states: XXXXXXXXXXX
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.tags.Tags`
@@ -95,8 +96,8 @@ class BufferManager(object):
         # params used for reload purposes
         self._report_states = report_states
         self._application_folder_path = application_folder_path
-        self._reload_interface = reload_interface
         self._reload_buffer_file = dict()
+        self._reload_buffer_file_paths = dict()
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -212,13 +213,16 @@ class BufferManager(object):
 
         # if reload script is set up, store the buffers for future usage
         if self._report_states.transciever_report:
-            vertex_files = self._reload_interface.add_buffered_vertex(
-                vertex, tag,
-                self._placements.get_placement_of_subvertex(vertex))
-            for (region, filename) in vertex_files.iteritems():
+            for region in vertex.get_regions():
+                filename = "{}_{}".format(
+                    re.sub("[\"':]", "_", vertex.label), region)
                 file_path = os.path.join(
                     self._application_folder_path, filename)
-            self._reload_buffer_file[(vertex, region)] = open(file_path, "w")
+                self._reload_buffer_file[(vertex, region)] = \
+                    open(file_path, "w")
+                if vertex not in self._reload_buffer_file_paths:
+                    self._reload_buffer_file_paths[vertex] = dict()
+                self._reload_buffer_file_paths[vertex][region] = file_path
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
@@ -706,3 +710,17 @@ class BufferManager(object):
         self._received_data.store_last_sent_packet_to_core(
             x, y, p, return_message)
         self._transceiver.send_sdp_message(return_message)
+
+    @property
+    def sender_vertices(self):
+        """ The vertices which are buffered
+        :return:
+        """
+        return self._sender_vertices
+
+    @property
+    def reload_buffer_files(self):
+        """ The file paths for each buffered region for each sender vertex
+        :return:
+        """
+        return self._reload_buffer_file_paths
