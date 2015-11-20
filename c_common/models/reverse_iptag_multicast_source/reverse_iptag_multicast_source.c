@@ -434,12 +434,12 @@ static inline void process_16_bit_packets(
 
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                log_debug("mc packet 16-bit key=%d", key);
+                log_info("mc packet 16-bit key=%d", key);
                 while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
             } else {
-                log_debug("mc packet 16-bit key=%d, payload=%d", key, payload);
+                log_info("mc packet 16-bit key=%d, payload=%d", key, payload);
                 while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
@@ -481,12 +481,12 @@ static inline void process_32_bit_packets(
 
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                log_debug("mc packet 32-bit key=%d", key);
+                log_info("mc packet 32-bit key=%d", key);
                 while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
             } else {
-                log_debug("mc packet 32-bit key=%d, payload=%d", key, payload);
+                log_info("mc packet 32-bit key=%d, payload=%d", key, payload);
                 while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
@@ -694,6 +694,7 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
     case EVENT_STOP_COMMANDS:
         log_info("command: EVENT_STOP");
         time = simulation_ticks + 1;
+        write_pointer = read_pointer;
         break;
 
     default:
@@ -959,7 +960,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    log_info("timer_callback, final time: %d, current time: %d,"
+    log_debug("timer_callback, final time: %d, current time: %d,"
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
