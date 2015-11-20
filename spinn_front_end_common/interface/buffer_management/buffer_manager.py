@@ -14,9 +14,13 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
     UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
+from spinn_front_end_common.interface.buffer_management.buffer_models\
+    .receive_buffers_to_host_partitionable_vertex \
+    import ReceiveBuffersToHostPartitionableVertex
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
-from spinnman.messages.eieio.command_messages.host_data_read import HostDataRead
+from spinnman.messages.eieio.command_messages.host_data_read \
+    import HostDataRead
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_flag import SDPFlag
@@ -117,7 +121,7 @@ class BufferManager(object):
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
-#        self._file_debug = open("/tmp/buffer_manager_debug", "w", 0)
+        # self._file_debug = open("/tmp/buffer_manager_debug", "w", 0)
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -148,7 +152,7 @@ class BufferManager(object):
             elif isinstance(packet, SpinnakerRequestReadData):
                 with self._thread_lock_buffer_out:
                     # perform magic with the request to read
-                    #logger.debug("received {0:d} read request(s) with "
+                    # logger.debug("received {0:d} read request(s) with "
                     #             "sequence: {1:d}, from chip ({2:d},{3:d}, "
                     #             "core {4,d}".format(
                     #                  packet.n_requests,
@@ -491,9 +495,10 @@ class BufferManager(object):
         :type region_to_read: int
         :param state_region: final state storage region
         :type state_region: int
-        :return: pointer to a class which inherits from
-        AbstractBufferedDataStorage
-        :rtype AbstractBufferedDataStorage :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
+        :return: pointer to a class which inherits from\
+                AbstractBufferedDataStorage
+        :rtype:\
+                py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
         """
         # flush data here
         if not self._received_data.is_data_from_region_flushed(
@@ -532,7 +537,8 @@ class BufferManager(object):
                 end_buffering_state = self._received_data.\
                     get_end_buffering_state(x, y, p)
 
-            end_state = end_buffering_state.get_state_for_region(region_to_read)
+            end_state = end_buffering_state.get_state_for_region(
+                region_to_read)
             start_ptr = end_state.start_address
             write_ptr = end_state.current_write
             end_ptr = end_state.end_address
@@ -554,12 +560,13 @@ class BufferManager(object):
                 last_sent_ack_sdp_packet = \
                     self._received_data.last_sent_packet_to_core(x, y, p)
                 last_sent_ack_packet = create_eieio_command.\
-                    read_eieio_command_message(last_sent_ack_sdp_packet.data, 0)
+                    read_eieio_command_message(
+                        last_sent_ack_sdp_packet.data, 0)
                 if not isinstance(last_sent_ack_packet, HostDataRead):
-                    raise Exception("Something somewhere went terribly wrong - "
-                                    "I was looking for a HostDataRead packet, "
-                                    "while I got {0:s}".format(
-                                        last_sent_ack_packet))
+                    raise Exception(
+                        "Something somewhere went terribly wrong - "
+                        "I was looking for a HostDataRead packet, "
+                        "while I got {0:s}".format(last_sent_ack_packet))
                 for i in xrange(last_sent_ack_packet.n_requests):
                     if (region_to_read == last_sent_ack_packet.region_id(i) and
                             not end_state.is_state_updated):
@@ -638,9 +645,11 @@ class BufferManager(object):
 
         :param packet: SpinnakerRequestReadData packet received from the
         SpiNNaker system
-        :type packet: :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+        :type packet:\
+                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         :param vertex: Vertex associated with the read request
-        :type vertex: :py:class:`pacman.model.subgraph.subvertex.PartitionedVertex`
+        :type vertex:\
+                :py:class:`pacman.model.subgraph.subvertex.PartitionedVertex`
         :return: None
         """
         x = packet.x
@@ -695,7 +704,8 @@ class BufferManager(object):
 
         # create return ack packet with data stored
         ack_packet = HostDataRead(
-            new_n_requests, pkt_seq, new_channel, new_region_id, new_space_read)
+            new_n_requests, pkt_seq, new_channel, new_region_id,
+            new_space_read)
         ack_packet_data = ack_packet.bytestring
 
         # create SDP header and message

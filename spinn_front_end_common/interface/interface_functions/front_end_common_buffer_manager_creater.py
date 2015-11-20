@@ -4,7 +4,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_manager import \
 from spinn_front_end_common.interface.buffer_management.\
     buffer_models.abstract_sends_buffers_from_host_partitioned_vertex import \
     AbstractSendsBuffersFromHostPartitionedVertex
-from pacman.model.partitionable_graph\
+from spinn_front_end_common.interface.buffer_management.buffer_models\
     .receive_buffers_to_host_partitionable_vertex \
     import ReceiveBuffersToHostPartitionableVertex
 
@@ -42,8 +42,9 @@ class FrontEndCommonBufferManagerCreater(object):
                     placement.subvertex)
                 if isinstance(vertex, ReceiveBuffersToHostPartitionableVertex):
                     list_of_regions = vertex.get_buffered_regions_list()
-                    self._buffer_manager.add_receiving_vertex(
+                    buffer_manager.add_receiving_vertex(
                         placement.subvertex, list_of_regions)
+                    vertex.buffer_manager = buffer_manager
             progress_bar.update()
         progress_bar.end()
 
