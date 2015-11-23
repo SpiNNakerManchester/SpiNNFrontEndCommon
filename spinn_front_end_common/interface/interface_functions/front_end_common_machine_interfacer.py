@@ -65,7 +65,6 @@ class FrontEndCommonMachineInterfacer(object):
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()
-            txrx.power_on_machine()
 
         # update number of boards from machine
         if number_of_boards is None:

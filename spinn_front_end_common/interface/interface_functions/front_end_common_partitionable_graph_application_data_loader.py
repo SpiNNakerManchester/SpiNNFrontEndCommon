@@ -18,7 +18,7 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
-            placement_to_app_data_files, verify=False):
+            placement_to_app_data_files, app_id, verify=False):
 
         # go through the placements and see if there's any application data to
         # load
@@ -28,10 +28,21 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
             logger.debug(
                 "loading application data for vertex {}".format(label))
             key = (x, y, p, label)
+            data = processor_to_app_data_base_address[key]
             start_address = \
                 processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
+
+            # malloc the sdram requirement and replace the start address
+            # assigned via the dse
+            start_address_malloced = \
+                transceiver.malloc_sdram(x, y, memory_written, app_id)
+            #start_address_malloced += constants.
+
+            logger.info("The start address allocated via DSE and Malloc are "
+                        "{},{}".format(start_address, start_address_malloced))
+            start_address = start_address_malloced
 
             application_file_paths = placement_to_app_data_files[key]
 
