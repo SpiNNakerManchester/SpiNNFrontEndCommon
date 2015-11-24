@@ -5,8 +5,8 @@ from spinn_front_end_common.interface.buffer_management.\
     buffer_models.abstract_sends_buffers_from_host_partitioned_vertex import \
     AbstractSendsBuffersFromHostPartitionedVertex
 from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .receive_buffers_to_host_partitionable_vertex \
-    import ReceiveBuffersToHostPartitionableVertex
+    .abstract_receive_buffers_to_host \
+    import AbstractReceiveBuffersToHost
 
 
 class FrontEndCommonBufferManagerCreater(object):
@@ -35,16 +35,21 @@ class FrontEndCommonBufferManagerCreater(object):
                 # Add the vertex to the managed vertices
                 buffer_manager.add_sender_vertex(placement.subvertex)
 
-            # On reload, graph_mapper is None, and buffered out is no longer
-            # useful
+            # graph_mapper could be None if there is no partitionable_graph
             if graph_mapper is not None:
                 vertex = graph_mapper.get_vertex_from_subvertex(
                     placement.subvertex)
-                if isinstance(vertex, ReceiveBuffersToHostPartitionableVertex):
-                    list_of_regions = vertex.get_buffered_regions_list()
-                    buffer_manager.add_receiving_vertex(
-                        placement.subvertex, list_of_regions)
-                    vertex.buffer_manager = buffer_manager
+                if isinstance(vertex, AbstractReceiveBuffersToHost):
+                    if vertex.buffering_output:
+                        buffer_manager.add_receiving_vertex(
+                            placement.subvertex)
+                        vertex.buffer_manager = buffer_manager
+
+            # Partitioned vertices can also be output buffered
+            if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
+                if placement.subvertex.buffering_output:
+                    buffer_manager.add_receiving_vertex(placement.subvertex)
+                    placement.subvertex.buffer_manager = buffer_manager
             progress_bar.update()
         progress_bar.end()
 

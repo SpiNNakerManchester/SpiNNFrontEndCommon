@@ -14,9 +14,6 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
     UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .receive_buffers_to_host_partitionable_vertex \
-    import ReceiveBuffersToHostPartitionableVertex
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -108,7 +105,6 @@ class BufferManager(object):
 
         # Set of vertices with buffers to be sent
         self._sender_vertices = set()
-        self._receiver_vertices = set()
 
         # Dictionary of sender vertex -> buffers sent
         self._sent_messages = dict()
@@ -130,70 +126,63 @@ class BufferManager(object):
         :type packet:\
                     :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
-        if not self._finished:
-            if isinstance(packet, SpinnakerRequestBuffers):
-                with self._thread_lock_buffer_in:
-                    vertex = self._placements.get_subvertex_on_processor(
-                        packet.x, packet.y, packet.p)
+        try:
+            if not self._finished:
+                if isinstance(packet, SpinnakerRequestBuffers):
+                    with self._thread_lock_buffer_in:
+                        vertex = self._placements.get_subvertex_on_processor(
+                            packet.x, packet.y, packet.p)
 
-                    if vertex in self._sender_vertices:
-                        logger.debug("received packet sequence: {1:d}, "
-                                     "space available: {0:d}".format(
-                                         packet.space_available,
-                                         packet.sequence_no))
+                        if vertex in self._sender_vertices:
+                            logger.debug("received send request with "
+                                         "sequence: {1:d}, "
+                                         "space available: {0:d}".format(
+                                             packet.space_available,
+                                             packet.sequence_no))
 
-                        # noinspection PyBroadException
+                            # noinspection PyBroadException
+                            try:
+                                self._send_messages(
+                                    packet.space_available, vertex,
+                                    packet.region_id, packet.sequence_no)
+                            except Exception:
+                                traceback.print_exc()
+                elif isinstance(packet, SpinnakerRequestReadData):
+                    with self._thread_lock_buffer_out:
+                        logger.info("received {} read request(s) with "
+                                     "sequence: {}, from chip ({},{}, "
+                                     "core {}".format(
+                                         packet.n_requests,
+                                         packet.sequence_no,
+                                         packet.x,
+                                         packet.y,
+                                         packet.p))
+                        vertex = self._placements.get_subvertex_on_processor(
+                            packet.x, packet.y, packet.p)
                         try:
-                            self._send_messages(
-                                packet.space_available, vertex,
-                                packet.region_id, packet.sequence_no)
+                            self._retrieve_and_store_data(packet, vertex)
                         except Exception:
                             traceback.print_exc()
-            elif isinstance(packet, SpinnakerRequestReadData):
-                with self._thread_lock_buffer_out:
-                    # perform magic with the request to read
-                    # logger.debug("received {0:d} read request(s) with "
-                    #             "sequence: {1:d}, from chip ({2:d},{3:d}, "
-                    #             "core {4,d}".format(
-                    #                  packet.n_requests,
-                    #                  packet.sequence_no,
-                    #                  packet.x,
-                    #                  packet.y,
-                    #                  packet.p))
-                    vertex = self._placements.get_subvertex_on_processor(
-                        packet.x, packet.y, packet.p)
-                    if vertex not in self._receiver_vertices:
-                        logger.debug("Vertex not in receiver pool - "
-                                     "instantiating memory as required")
-                        self._receiver_vertices.add(vertex)
-                        self._received_data.create_data_storage_for_region(
-                            packet.x, packet.y, packet.p, packet.region_id)
-                    try:
-                        self._retrieve_and_store_data(packet, vertex)
-                    except Exception:
-                        traceback.print_exc()
-            elif isinstance(packet, EIEIOCommandMessage):
-                raise SpinnmanInvalidPacketException(
-                    str(packet.__class__),
-                    "The command packet is invalid for buffer management: "
-                    "command id {0:d}".format(packet.eieio_header.command))
-            else:
-                raise SpinnmanInvalidPacketException(
-                    packet.__class__,
-                    "The command packet is invalid for buffer management")
+                elif isinstance(packet, EIEIOCommandMessage):
+                    raise SpinnmanInvalidPacketException(
+                        str(packet.__class__),
+                        "The command packet is invalid for buffer management: "
+                        "command id {0:d}".format(packet.eieio_header.command))
+                else:
+                    raise SpinnmanInvalidPacketException(
+                        packet.__class__,
+                        "The command packet is invalid for buffer management")
+        except Exception:
+            traceback.print_exc()
 
-    def add_receiving_vertex(self, vertex, list_of_regions):
-        if len(list_of_regions) == 0:
-            return
-
-        if vertex not in self._receiver_vertices:
-            self._receiver_vertices.add(vertex)
-            place = self._placements.get_placement_of_subvertex(vertex)
-            for i in list_of_regions:
-                self._received_data.create_data_storage_for_region(
-                    place.x, place.y, place.p, i)
+    def add_receiving_vertex(self, vertex):
+        """ Add a partitioned vertex into the managed list for vertices\
+            which require buffers to be received from them during runtime
+        """
         tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
         if (tag.ip_address, tag.port) not in self._seen_tags:
+            logger.debug("Listening for receive packets using tag {} on"
+                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
             self._transceiver.register_udp_listener(
                 self.receive_buffer_command_message, UDPEIEIOConnection,
@@ -210,6 +199,8 @@ class BufferManager(object):
         self._sender_vertices.add(vertex)
         tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
         if (tag.ip_address, tag.port) not in self._seen_tags:
+            logger.debug("Listening for send packets using tag {} on"
+                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
             self._transceiver.register_udp_listener(
                 self.receive_buffer_command_message, UDPEIEIOConnection,

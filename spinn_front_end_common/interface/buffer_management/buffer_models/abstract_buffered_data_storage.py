@@ -9,8 +9,7 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(ABCMeta)
 class AbstractBufferedDataStorage(object):
-    """
-    Abstract class which contains the basic methods used to store and read data
+    """ An object that can store and read back buffered data
     """
 
     @abstractmethod

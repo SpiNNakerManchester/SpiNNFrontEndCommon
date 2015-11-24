@@ -10,24 +10,29 @@
 //! human readable form of the different eieio mesage types
 typedef enum eieio_data_message_types {
     KEY_16_BIT, KEY_PAYLOAD_16_BIT, KEY_32_BIT, KEY_PAYLOAD_32_bIT
-}eieio_data_message_types;
+} eieio_data_message_types;
+
+typedef enum eieio_prefix_types {
+    PREFIX_TYPE_LOWER_HALF_WORD, PREFIX_TYPE_UPPER_HALF_WORD
+} eieio_prefix_types;
 
 //! human readable form of the read in parameter space
- typedef enum read_in_parameters{
-    APPLY_PREFIX, PREFIX, KEY_LEFT_SHIFT, CHECK_KEYS, KEY_SPACE, MASK,
-    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
- }read_in_parameters;
+typedef enum read_in_parameters{
+APPLY_PREFIX, PREFIX, KEY_LEFT_SHIFT, CHECK_KEYS, KEY_SPACE, MASK,
+BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
+} read_in_parameters;
 
- //! human readable form of the different memory regions
- typedef enum memory_regions{
+//! human readable form of the different memory regions
+typedef enum memory_regions{
     SYSTEM,
     CONFIGURATION,
     BUFFER_REGION,
     BUFFERING_OUT_SPIKE_RECORDING_REGION,
     BUFFERING_OUT_CONTROL_REGION
- }memory_regions;
+} memory_regions;
 
 #define NUMBER_OF_REGIONS_TO_RECORD 1
+#define SPIKE_HISTORY_CHANNEL 0
 
 //! the minimum space required for a buffer to work
 #define MIN_BUFFER_SPACE 10
@@ -65,7 +70,7 @@ static uint32_t incorrect_keys;
 static uint32_t incorrect_packets;
 static uint32_t late_packets;
 static uint32_t last_stop_notification_request;
-static uint32_t key_left_shift;
+static eieio_prefix_types prefix_type;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
 //! keeps track of which types of recording should be done to this model.
@@ -529,7 +534,7 @@ static inline bool eieio_data_parse_packet(
 
         // If there isn't a key prefix, but the config applies a prefix,
         // apply the prefix depending on the key_left_shift
-        if (key_left_shift == 0) {
+        if (prefix_type == PREFIX_TYPE_UPPER_HALF_WORD) {
             pkt_prefix_upper = true;
         } else {
             pkt_prefix_upper = false;
@@ -571,22 +576,18 @@ static inline bool eieio_data_parse_packet(
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_is_channel_enabled(
-                recording_flags, e_recording_channel_spike_history)) {
+        if (recording_flags > 0) {
             log_debug("recording a eieio message with length %u", length);
-            recording_record(
-                e_recording_channel_spike_history, eieio_msg_ptr, length);
+            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
         }
         return true;
     } else {
         process_32_bit_packets(
             event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_is_channel_enabled(
-                recording_flags, e_recording_channel_spike_history)) {
+        if (recording_flags > 0) {
             log_debug("recording a eieio message with length %u", length);
-            recording_record(
-                e_recording_channel_spike_history, eieio_msg_ptr, length);
+            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
         }
         return false;
     }
@@ -799,8 +800,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
         // close recording channels
-         if (recording_is_channel_enabled(
-                recording_flags, e_recording_channel_spike_history)) {
+        if (recording_flags > 0) {
             recording_finalise();
         }
         log_info("Simulation complete.");
@@ -828,6 +828,8 @@ void timer_callback(uint unused0, uint unused1) {
         eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
         fetch_and_process_packet();
     }
+
+    recording_do_timestep_update(time);
 }
 
 void sdp_packet_callback(uint mailbox, uint port) {
@@ -860,7 +862,7 @@ bool read_parameters(address_t region_address) {
     // Get the configuration data
     apply_prefix = region_address[APPLY_PREFIX];
     prefix = region_address[PREFIX];
-    key_left_shift = region_address[KEY_LEFT_SHIFT];
+    prefix_type = (eieio_prefix_types) region_address[KEY_LEFT_SHIFT];
     check = region_address[CHECK_KEYS];
     key_space = region_address[KEY_SPACE];
     mask = region_address[MASK];
@@ -908,7 +910,7 @@ bool read_parameters(address_t region_address) {
 
     log_info("apply_prefix: %d", apply_prefix);
     log_info("prefix: %d", prefix);
-    log_info("key_left_shift: %d", key_left_shift);
+    log_info("prefix_type: %d", prefix_type);
     log_info("check: %d", check);
     log_info("key_space: 0x%08x", key_space);
     log_info("mask: 0x%08x", mask);
@@ -948,33 +950,15 @@ bool initialize(uint32_t *timer_period) {
         BUFFERING_OUT_SPIKE_RECORDING_REGION,
     };
     uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
-    uint32_t *recording_flags_from_system_conf = &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
-    uint8_t tag_id = recording_flags_from_system_conf[1];
-    uint32_t *region_sizes = &recording_flags_from_system_conf[2];
+    uint32_t *recording_flags_from_system_conf =
+        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
     uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
 
-    recording_initialize(n_regions_to_record, regions_to_record,
-                         region_sizes, state_region, tag_id, &recording_flags);
+    recording_initialize(
+        n_regions_to_record, regions_to_record,
+        recording_flags_from_system_conf, state_region, &recording_flags);
 
-    log_debug ("recording flags = 0x%08x", recording_flags);
-
-    /*
-    // Get the recording information
-    system_region = data_specification_get_region(SYSTEM, address);
-    uint32_t spike_history_region_size;
-    recording_read_region_sizes(
-        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS],
-        &recording_flags, &spike_history_region_size, NULL, NULL);
-    if (recording_is_channel_enabled(
-            recording_flags, e_recording_channel_spike_history)) {
-        if (!recording_initialise_channel(
-                data_specification_get_region(RECORDING, address),
-                e_recording_channel_spike_history,
-                spike_history_region_size)) {
-            return false;
-        }
-    }
-    */
+    log_info("recording flags = 0x%08x", recording_flags);
 
     // Read the buffer region
     if (buffer_region_size > 0) {

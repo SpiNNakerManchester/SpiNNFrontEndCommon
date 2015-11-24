@@ -2,8 +2,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects.\
     buffered_bytearray_data_storage import BufferedBytearrayDataStorage
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
     buffered_file_data_storage import BufferedFileDataStorage
-from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    end_buffering_state import EndBufferingState
+from collections import defaultdict
 
 
 class BufferedReceivingData(object):
@@ -25,11 +24,15 @@ class BufferedReceivingData(object):
         """
         self._store_to_file = store_to_file
 
-        self._data = dict()
-        self._is_flushed = dict()
-        self._sequence_no = dict()
-        self._last_packet_received = dict()
-        self._last_packet_sent = dict()
+        self._data = None
+        if store_to_file:
+            self._data = defaultdict(BufferedFileDataStorage)
+        else:
+            self._data = defaultdict(BufferedBytearrayDataStorage)
+        self._is_flushed = defaultdict(lambda: False)
+        self._sequence_no = defaultdict(lambda: 0xFF)
+        self._last_packet_received = defaultdict(lambda: None)
+        self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_state = dict()
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
@@ -50,41 +53,7 @@ class BufferedReceivingData(object):
         :return: None
         :rtype: None
         """
-        if (x, y, p, region) not in self._data:
-            self.create_data_storage_for_region(x, y, p, region)
         self._data[x, y, p, region].write(data)
-
-    def create_data_storage_for_region(self, x, y, p, region):
-        """
-        Create all the storage elements for a new region which is going to use
-        the buffering output technique
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
-        :return: None
-        :rtype: None
-        """
-        if (x, y, p, region) not in self._data:
-            if self._store_to_file:
-                self._data[x, y, p, region] = BufferedFileDataStorage()
-            else:
-                self._data[x, y, p, region] = BufferedBytearrayDataStorage()
-            self._is_flushed[x, y, p, region] = False
-
-            if (x, y, p) not in self._sequence_no:
-                self._sequence_no[x, y, p] = 0xFF
-
-            if (x, y, p) not in self._last_packet_received:
-                self._last_packet_received[x, y, p] = None
-
-            if (x, y, p) not in self._last_packet_sent:
-                self._last_packet_sent[x, y, p] = None
 
     def is_data_from_region_flushed(self, x, y, p, region):
         """
@@ -101,10 +70,7 @@ class BufferedReceivingData(object):
         :return: True if the region has been flushed. False otherwise
         :rtype: bool
         """
-        if (x, y, p, region) in self._is_flushed:
-            return self._is_flushed[x, y, p, region]
-        else:
-            return False
+        return self._is_flushed[x, y, p, region]
 
     def flushing_data_from_region(self, x, y, p, region, data):
         """
@@ -274,10 +240,10 @@ class BufferedReceivingData(object):
         during the simulation. This data structure inherits from :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
         :rtype: :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
         """
-        missing = None
+        missing = False
         if self._end_buffering_state[x, y, p].get_missing_info_for_region(
                 region):
-            missing = (x, y, p, region)
+            missing = True
         data_pointer = self._data[x, y, p, region]
         return data_pointer, missing
 
@@ -285,10 +251,7 @@ class BufferedReceivingData(object):
         self._end_buffering_state[x, y, p] = state
 
     def is_end_buffering_state_recovered(self, x, y, p):
-        if (x, y, p) in self._end_buffering_state:
-            return True
-        else:
-            return False
+        return (x, y, p) in self._end_buffering_state
 
     def get_end_buffering_state(self, x, y, p):
         return self._end_buffering_state[x, y, p]
