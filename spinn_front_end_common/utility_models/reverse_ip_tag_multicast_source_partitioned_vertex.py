@@ -215,7 +215,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 for key in range(self._n_keys):
                     for timeStamp in sorted(self._send_buffer_times[key]):
                         time_stamp_in_ticks = int(math.ceil(
-                            (timeStamp * 1000.0) / self._machine_time_step))
+                            float(int(timeStamp * 1000.0)) /
+                            self._machine_time_step))
                         self._send_buffer.add_key(
                             time_stamp_in_ticks, base_key + key)
             else:
@@ -224,7 +225,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 key_list = [key + base_key for key in range(self._n_keys)]
                 for timeStamp in sorted(self._send_buffer_times):
                     time_stamp_in_ticks = int(math.ceil(
-                        (timeStamp * 1000.0) / self._machine_time_step))
+                        float(int(timeStamp * 1000.0)) /
+                        self._machine_time_step))
 
                     # add to send_buffer collection
                     self._send_buffer.add_keys(time_stamp_in_ticks, key_list)

@@ -180,8 +180,11 @@ class ReverseIpTagMultiCastSource(
                          constraints=None):
         send_buffer_times = None
         if self._send_buffer_times is not None:
-            send_buffer_times = self._send_buffer_times[
-                vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            if hasattr(self._send_buffer_times[0], "__len__"):
+                send_buffer_times = self._send_buffer_times[
+                    vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            else:
+                send_buffer_times = self._send_buffer_times
         subvertex = ReverseIPTagMulticastSourcePartitionedVertex(
             n_keys=self.n_atoms, resources_required=resources_required,
             machine_time_step=self._machine_time_step,
