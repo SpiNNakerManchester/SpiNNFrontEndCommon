@@ -32,8 +32,10 @@ class FrontEndCommonBufferManagerCreater(object):
             if isinstance(placement.subvertex,
                           AbstractSendsBuffersFromHostPartitionedVertex):
 
-                # Add the vertex to the managed vertices
-                buffer_manager.add_sender_vertex(placement.subvertex)
+                if placement.subvertex.buffering_input():
+
+                    # Add the vertex to the managed vertices
+                    buffer_manager.add_sender_vertex(placement.subvertex)
 
             # graph_mapper could be None if there is no partitionable_graph
             if graph_mapper is not None:

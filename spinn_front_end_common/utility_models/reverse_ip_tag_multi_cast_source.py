@@ -10,9 +10,6 @@ from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
 
-# spinnman imports
-from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
-
 # general imports
 import sys
 from spinn_front_end_common.utility_models\
@@ -36,16 +33,18 @@ class ReverseIpTagMultiCastSource(
 
             # Live input parameters
             receive_port=None,
-            receive_sdp_port=constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT,
+            receive_sdp_port=(
+                constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
             receive_tag=None,
 
             # Key parameters
             virtual_key=None, prefix=None,
-            prefix_type=EIEIOPrefix.LOWER_HALF_WORD, check_keys=False,
+            prefix_type=None, check_keys=False,
 
             # Send buffer parameters
             send_buffer_times=None,
-            send_buffer_max_space=1024 * 1024,
+            send_buffer_max_space=(
+                constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
@@ -72,7 +71,7 @@ class ReverseIpTagMultiCastSource(
         :param prefix: The prefix to "or" with generated multicast keys\
                 (default is no prefix)
         :param prefix_type: Whether the prefix should apply to the upper or\
-                lower half of the multicast keys (default is lower half)
+                lower half of the multicast keys (default is upper half)
         :param check_keys: True if the keys of received events should be\
                 verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\

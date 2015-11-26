@@ -62,17 +62,18 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
             # Live input parameters
             receive_port=None,
-            receive_sdp_port=constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT,
+            receive_sdp_port=(
+                constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
             receive_tag=None,
 
             # Key parameters
             virtual_key=None, prefix=None,
-            prefix_type=EIEIOPrefix.LOWER_HALF_WORD, check_keys=False,
+            prefix_type=None, check_keys=False,
 
             # Send buffer parameters
             send_buffer_times=None,
-            send_buffer_max_space=(constants.
-                                   MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
+            send_buffer_max_space=(
+                constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
@@ -100,7 +101,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         :param prefix: The prefix to "or" with generated multicast keys\
                 (default is no prefix)
         :param prefix_type: Whether the prefix should apply to the upper or\
-                lower half of the multicast keys (default is lower half)
+                lower half of the multicast keys (default is upper half)
         :param check_keys: True if the keys of received events should be\
                 verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\
@@ -136,8 +137,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         # Work out if buffers are being sent
         self._send_buffer = None
         if send_buffer_times is None:
-            self._send_buffer = BufferedSendingRegion(0)
-            self._send_buffer_times = []
+            self._send_buffer_times = None
+            SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
+                self, None)
         else:
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
@@ -146,8 +148,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send_buffer_notification_ip_address,
                 send_buffer_notification_port, True, board_address,
                 send_buffer_notification_tag))
-        SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
-            self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
+            SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
+                self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
         self._send_buffer_notification_ip_address = \
             send_buffer_notification_ip_address
@@ -167,6 +169,13 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self._prefix = prefix
         self._prefix_type = prefix_type
         self._check_keys = check_keys
+
+        # Work out the prefix details
+        if self._prefix is not None:
+            if self._prefix_type is None:
+                self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
+            if self._prefix_type == EIEIOPrefix.UPPER_HALF_WORD:
+                self._prefix = prefix << 16
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
@@ -188,16 +197,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
             if self._prefix is not None:
 
-                # Check that the virtual key works with the prefix
-                temp_vertual_key = self._virtual_key
-                if self._prefix_type == EIEIOPrefix.LOWER_HALF_WORD:
-                    temp_vertual_key |= self._prefix
-                if self._prefix_type == EIEIOPrefix.UPPER_HALF_WORD:
-                    temp_vertual_key |= (self._prefix << 16)
-
-                # Check that the prefix hasn't changed the virtual key in the
+                # Check that the prefix doesn't change the virtual key in the
                 # masked area
-                masked_key = temp_vertual_key & self._mask
+                masked_key = (self._virtual_key | self._prefix) & self._mask
                 if self._virtual_key != masked_key:
                     raise ConfigurationException(
                         "The number of keys, virtual key and key prefix"
@@ -205,7 +207,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             else:
 
                 # If no prefix was generated, generate one
-                self._prefix = self._generate_prefix(virtual_key, prefix_type)
+                self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
+                self._prefix = self._virtual_key
 
     def _fill_send_buffer(self, base_key):
         """ Fill the send buffer with keys to send
@@ -271,12 +274,13 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
 
         # Reserve send buffer region if required
-        buffer_space = self.get_region_buffer_size(
-            self._REGIONS.SEND_BUFFER.value)
-        if buffer_space > 0:
-            spec.reserve_memory_region(
-                region=self._REGIONS.SEND_BUFFER.value,
-                size=buffer_space, label="SEND_BUFFER", empty=True)
+        if self._send_buffer is not None:
+            buffer_space = self.get_region_buffer_size(
+                self._REGIONS.SEND_BUFFER.value)
+            if buffer_space > 0:
+                spec.reserve_memory_region(
+                    region=self._REGIONS.SEND_BUFFER.value,
+                    size=buffer_space, label="SEND_BUFFER", empty=True)
 
         # Reserve recording buffer regions if required
         self.reserve_buffer_regions(
@@ -293,10 +297,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             self._virtual_key = key_and_mask.key
 
             if self._prefix is None:
-                if self._prefix_type is None:
-                    self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
-                self._prefix = self._generate_prefix(self._virtual_key,
-                                                     self._prefix_type)
+                self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
+                self._prefix = self._virtual_key
 
     def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
@@ -322,13 +324,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         spec.write_value(data=self._mask)
 
         # Write send buffer data
-        buffer_space = self.get_region_buffer_size(
-            self._REGIONS.SEND_BUFFER.value)
-        spec.write_value(data=buffer_space)
-        spec.write_value(data=self._send_buffer_space_before_notify)
+        if self._send_buffer is not None:
 
-        # Write the buffer send tag
-        if buffer_space > 0:
             this_tag = None
             for tag in ip_tags:
                 if (tag.ip_address ==
@@ -337,9 +334,16 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                     this_tag = tag
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
-            else:
-                spec.write_value(data=this_tag.tag)
+
+            buffer_space = self.get_region_buffer_size(
+                self._REGIONS.SEND_BUFFER.value)
+
+            spec.write_value(data=buffer_space)
+            spec.write_value(data=self._send_buffer_space_before_notify)
+            spec.write_value(data=this_tag.tag)
         else:
+            spec.write_value(data=0)
+            spec.write_value(data=0)
             spec.write_value(data=0)
 
     def generate_data_spec(

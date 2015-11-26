@@ -18,7 +18,7 @@ typedef enum eieio_prefix_types {
 
 //! human readable form of the read in parameter space
 typedef enum read_in_parameters{
-APPLY_PREFIX, PREFIX, KEY_LEFT_SHIFT, CHECK_KEYS, KEY_SPACE, MASK,
+APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, KEY_SPACE, MASK,
 BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
 } read_in_parameters;
 
@@ -508,7 +508,7 @@ static inline bool eieio_data_parse_packet(
     uint8_t pkt_count = (uint8_t) (data_hdr_value & 0xFF);
     bool pkt_has_payload = (bool) (pkt_type & 0x1);
 
-    uint32_t pkt_key_prefix = prefix;
+    uint32_t pkt_key_prefix = 0;
     uint32_t pkt_payload_prefix = 0;
     bool pkt_payload_is_timestamp = (bool)((data_hdr_value >> 12) & 0x1);
 
@@ -537,6 +537,7 @@ static inline bool eieio_data_parse_packet(
 
         // If there isn't a key prefix, but the config applies a prefix,
         // apply the prefix depending on the key_left_shift
+        pkt_key_prefix = prefix;
         if (prefix_type == PREFIX_TYPE_UPPER_HALF_WORD) {
             pkt_prefix_upper = true;
         } else {
@@ -869,7 +870,7 @@ bool read_parameters(address_t region_address) {
     // Get the configuration data
     apply_prefix = region_address[APPLY_PREFIX];
     prefix = region_address[PREFIX];
-    prefix_type = (eieio_prefix_types) region_address[KEY_LEFT_SHIFT];
+    prefix_type = (eieio_prefix_types) region_address[PREFIX_TYPE];
     check = region_address[CHECK_KEYS];
     key_space = region_address[KEY_SPACE];
     mask = region_address[MASK];

@@ -18,6 +18,11 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
     """
 
     @abstractmethod
+    def buffering_input(self):
+        """ Return True if the input of this vertex is to be buffered
+        """
+
+    @abstractmethod
     def get_regions(self):
         """ Get the set of regions for which there are keys to be sent
 
