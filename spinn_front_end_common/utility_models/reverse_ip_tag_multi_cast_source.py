@@ -120,16 +120,20 @@ class ReverseIpTagMultiCastSource(
         self._record_buffering_board_address = None
         self._record_buffering_tag = None
         self._record_buffer_size = 0
+        self._record_buffer_size_before_receive = 0
 
     def enable_recording(
             self, buffering_ip_address, buffering_port,
             board_address=None, notification_tag=None,
-            record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP):
+            record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
+            buffer_size_before_receive=(constants.
+                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
         self._record_buffering_ip_address = buffering_ip_address
         self._record_buffering_port = buffering_port
         self._record_buffering_board_address = board_address
         self._record_buffering_tag = notification_tag
         self._record_buffer_size = record_buffer_size
+        self._record_buffer_size_before_receive = buffer_size_before_receive
 
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
         return partitioned_edge.pre_subvertex.get_outgoing_edge_constraints(
@@ -143,6 +147,7 @@ class ReverseIpTagMultiCastSource(
         recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
                           .get_recording_data_size(1))
         if self._record_buffer_size > 0:
+            recording_size += self._record_buffer_size
             recording_size += (ReverseIPTagMulticastSourcePartitionedVertex.
                                get_buffer_state_region_size(1))
         return ((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
@@ -209,7 +214,8 @@ class ReverseIpTagMultiCastSource(
             subvertex.enable_recording(
                 self._record_buffering_ip_address, self._record_buffering_port,
                 self._record_buffering_board_address,
-                self._record_buffering_tag, self._record_buffer_size)
+                self._record_buffering_tag, self._record_buffer_size,
+                self._record_buffer_size_before_receive)
         return subvertex
 
     def is_data_specable(self):

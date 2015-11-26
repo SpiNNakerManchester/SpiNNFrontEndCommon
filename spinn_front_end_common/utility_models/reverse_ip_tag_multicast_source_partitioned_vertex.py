@@ -71,7 +71,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
             # Send buffer parameters
             send_buffer_times=None,
-            send_buffer_max_space=1024 * 1024,
+            send_buffer_max_space=(constants.
+                                   MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
@@ -157,6 +158,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Set up for recording (if requested)
         self._record_buffer_size = 0
+        self._buffer_size_before_receive = 0
 
         # Sort out the keys to be used
         self._n_keys = n_keys
@@ -247,12 +249,15 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     def enable_recording(
             self, buffering_ip_address, buffering_port,
             board_address=None, notification_tag=None,
-            record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP):
+            record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
+            buffer_size_before_receive=(constants.
+                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
 
         self.set_buffering_output(
             buffering_ip_address, buffering_port, board_address,
             notification_tag)
         self._record_buffer_size = record_buffer_size
+        self._buffer_size_before_receive = buffer_size_before_receive
 
     def _reserve_regions(self, spec):
 
@@ -360,7 +365,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Write the additional recording information
         self.write_recording_data(
-            spec, ip_tags, [self._record_buffer_size])
+            spec, ip_tags, [self._record_buffer_size],
+            self._buffer_size_before_receive)
 
         # Write the configuration information
         self._write_configuration(spec, routing_info, sub_graph, ip_tags)

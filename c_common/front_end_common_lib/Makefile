@@ -6,7 +6,11 @@ endif
 SPINN_COMMON_BUILD = build
 include $(SPINN_DIRS)/Makefile.common
 
-CFLAGS += -I include
+ifndef DEBUG
+    DEBUG = PRODUCTION_CODE
+endif
+
+CFLAGS += -I include -D$(DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects

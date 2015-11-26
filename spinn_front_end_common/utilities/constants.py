@@ -13,6 +13,9 @@ MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
 # during buffered operations
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
 
+# The default size of a recording buffer before receive request is sent
+DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * 1024
+
 # The number of words in the AbstractDataSpecable basic setup information
 DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
 

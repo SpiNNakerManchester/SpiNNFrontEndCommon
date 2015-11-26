@@ -40,6 +40,9 @@ typedef enum memory_regions{
 //! the amount of tics to wait between requests
 #define TICKS_BETWEEN_REQUESTS 25
 
+//! the maximum size of a packet
+#define MAX_PACKET_SIZE 280
+
 #pragma pack(1)
 
 typedef struct {
@@ -720,6 +723,10 @@ void fetch_and_process_packet() {
             uint8_t *dst_ptr = (uint8_t *) msg_from_sdram;
             uint32_t len = calculate_eieio_packet_size(
                 (eieio_msg_t) read_pointer);
+            if (len > MAX_PACKET_SIZE) {
+                log_error("Packet from SDRAM of %u bytes is too big!", len);
+                rt_error(RTE_SWERR);
+            }
             uint32_t final_space = (end_of_buffer_region - read_pointer);
 
             log_debug("packet with length %d, from address: %08x", len,
@@ -892,7 +899,7 @@ bool read_parameters(address_t region_address) {
     }
 
     // allocate a buffer size of the maximum SDP payload size
-    msg_from_sdram = (eieio_msg_t) spin1_malloc(256);
+    msg_from_sdram = (eieio_msg_t) spin1_malloc(MAX_PACKET_SIZE);
 
     req.length = 8 + sizeof(req_packet_sdp_t);
     req.flags = 0x7;
