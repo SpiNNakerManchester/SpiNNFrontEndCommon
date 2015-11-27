@@ -1,24 +1,22 @@
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.channel_buffer_state import ChannelBufferState
-from spinn_front_end_common.utilities import constants
 import struct
 
 
 class EndBufferingState(object):
-    """
-    This class stores information related to the status of the buffering
-    output mechanism at the end of a simulation when the state is
-    retrieved from the SpiNNaker machine. Information stored are:
-    1 - Number of buffering regions used
-    2 - Final state of the state machine (given by the sequence number) which
-    controls the buffering output technique
-    3 - a list of channel state, where each channel is stored in a
-    ChannelBufferState class
+    """ Stores the buffering state at the end of a simulation
     """
     def __init__(
             self, n_recording_regions,
             buffering_out_fsm_state,
             list_channel_buffer_state):
+        """
+
+        :param n_recording_regions: Number of buffering regions used
+        :param buffering_out_fsm_state: Final sequence number received
+        :param list_channel_buffer_state: a list of channel state, where each\
+                channel is stored in a ChannelBufferState object
+        """
         self._n_recording_regions = n_recording_regions
         self._buffering_out_fsm_state = buffering_out_fsm_state
         self._list_channel_buffer_state = list_channel_buffer_state
@@ -36,41 +34,10 @@ class EndBufferingState(object):
                 return state
         return None
 
-    def get_size_for_region(self, region_id):
-        state = self.get_state_for_region(region_id)
-        if state is not None:
-            return state.end_address - state.start_address
-        else:
-            return 0
-
     def get_missing_info_for_region(self, region_id):
         state = self.get_state_for_region(region_id)
         if state is not None:
             return state.missing_info
-        else:
-            return None
-
-    def update_last_operation_for_region(self, region_id, operation):
-        state = self.get_state_for_region(region_id)
-        if state is not None:
-            state.update_last_operation(operation)
-
-    def is_state_updated_for_region(self, region_id):
-        state = self.get_state_for_region(region_id)
-        if state is not None:
-            return state.update_completed
-        else:
-            return None
-
-    def update_read_pointer_for_region(self, region_id, read_ptr):
-        state = self.get_state_for_region(region_id)
-        if state is not None:
-            state.update_read_pointer(read_ptr)
-
-    def set_update_completed(self):
-        state = self.get_state_for_region(region_id)
-        if state is not None:
-            return state.set_update_completed()
         else:
             return None
 

@@ -10,17 +10,10 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 
 
 class FrontEndCommonBufferManagerCreater(object):
-    """
-    """
 
     def __call__(
             self, placements, tags, txrx, reports_states, graph_mapper,
             app_data_folder):
-        """
-        :param placements: the placements object
-        :param tags: the tags object
-        :return: None
-        """
         progress_bar = ProgressBar(
             len(list(placements.placements)), "Initialising buffers")
 

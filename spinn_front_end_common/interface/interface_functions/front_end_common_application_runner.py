@@ -9,9 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationRunner(object):
-    """
-    FrontEndCommonApplicationRunner
-    """
 
     def __call__(self, buffer_manager, wait_on_confirmation,
                  send_start_notification, notification_interface,
@@ -29,6 +26,7 @@ class FrontEndCommonApplicationRunner(object):
                 "please rerun and try again")
 
         logger.info("*** Running simulation... *** ")
+
         # every thing is in sync0. load the initial buffers
         buffer_manager.load_initial_buffers()
 
@@ -64,18 +62,19 @@ class FrontEndCommonApplicationRunner(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        processor_c_main = txrx.get_core_state_count(app_id,
-                                                     CPUState.C_MAIN)
+        processor_c_main = txrx.get_core_state_count(
+            app_id, CPUState.C_MAIN)
+
         # check that everything has gone though c main to reach sync0 or
         # failing for some unknown reason
         while processor_c_main != 0:
             time.sleep(0.1)
-            processor_c_main = txrx.get_core_state_count(app_id,
-                                                         CPUState.C_MAIN)
+            processor_c_main = txrx.get_core_state_count(
+                app_id, CPUState.C_MAIN)
 
         # check that the right number of processors are in sync0
-        processors_ready = txrx.get_core_state_count(app_id,
-                                                     CPUState.SYNC0)
+        processors_ready = txrx.get_core_state_count(
+            app_id, CPUState.SYNC0)
 
         if processors_ready != total_processors:
             unsuccessful_cores = self._get_cores_not_in_state(

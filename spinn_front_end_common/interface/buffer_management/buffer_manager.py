@@ -464,13 +464,8 @@ class BufferManager(object):
                 buffer_file.close()
 
     def get_data_for_vertex(self, x, y, p, region_to_read, state_region):
-        """
-        Returns a pointer to the data container for all the data retrieved
-        during the simulation from a specific region area of a core. The
-        returned data storage belongs to a class which inherits
-        from AbstractBufferedDataStorage. The buffering out technique stores
-        final state in a different region. Fetching this area is required to
-        flush remaining data
+        """ Get a pointer to the data container for all the data retrieved\
+            during the simulation from a specific region area of a core
 
         :param x: x coordinate of the chip
         :type x: int
@@ -492,12 +487,13 @@ class BufferManager(object):
                 x, y, p, region_to_read):
             if not self._received_data.is_end_buffering_state_recovered(
                     x, y, p):
+
                 # Get the App Data for the core
                 app_data_base_address = \
                     self._transceiver.get_cpu_information_from_core(
                         x, y, p).user[0]
 
-                # Get the position of the spike buffer
+                # Get the position of the buffer
                 state_region_base_offset_address = \
                     dsg_utilities.get_region_base_address_offset(
                         app_data_base_address, state_region)
@@ -537,11 +533,11 @@ class BufferManager(object):
             # This situation is identified by the sequence number of the last
             # packet sent to this core and the core internal state of the
             # output buffering finite state machine
-
             seq_no_last_ack_packet = \
                 self._received_data.last_sequence_no_for_core(x, y, p)
             seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
             if seq_no_internal_fsm == seq_no_last_ack_packet:
+
                 # if the last ack packet has not been processed on the chip,
                 # process it now
                 last_sent_ack_sdp_packet = \
@@ -625,13 +621,13 @@ class BufferManager(object):
             x, y, p, region_to_read)
 
     def _retrieve_and_store_data(self, packet, vertex):
-        """
-        Following a SpinnakerRequestReadData packet, the data stored during
-        the simulation needs to be read by the host and stored in a data
-        structure, following the specifications of buffering out technique
+        """ Following a SpinnakerRequestReadData packet, the data stored\
+           during the simulation needs to be read by the host and stored in a\
+           data structure, following the specifications of buffering out\
+           technique
 
-        :param packet: SpinnakerRequestReadData packet received from the
-        SpiNNaker system
+        :param packet: SpinnakerRequestReadData packet received from the\
+                SpiNNaker system
         :type packet:\
                 :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         :param vertex: Vertex associated with the read request
@@ -648,6 +644,7 @@ class BufferManager(object):
         last_pkt_seq = self._received_data.last_sequence_no_for_core(x, y, p)
         next_pkt_seq = (last_pkt_seq + 1) % 256
         if pkt_seq != next_pkt_seq:
+
             # this sequence number is incorrect
             # re-sent last HostDataRead packet sent
             last_packet_sent = self._received_data.last_sent_packet_to_core(

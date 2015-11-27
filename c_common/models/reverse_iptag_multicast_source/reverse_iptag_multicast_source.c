@@ -7,22 +7,23 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
-//! human readable form of the different eieio mesage types
+//! The EIEIO message types
 typedef enum eieio_data_message_types {
     KEY_16_BIT, KEY_PAYLOAD_16_BIT, KEY_32_BIT, KEY_PAYLOAD_32_bIT
 } eieio_data_message_types;
 
+//! The EIEIO prefix types
 typedef enum eieio_prefix_types {
     PREFIX_TYPE_LOWER_HALF_WORD, PREFIX_TYPE_UPPER_HALF_WORD
 } eieio_prefix_types;
 
-//! human readable form of the read in parameter space
+//! The parameter positions
 typedef enum read_in_parameters{
-APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, KEY_SPACE, MASK,
-BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
+    APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, KEY_SPACE, MASK,
+    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
 } read_in_parameters;
 
-//! human readable form of the different memory regions
+//! The memory regions
 typedef enum memory_regions{
     SYSTEM,
     CONFIGURATION,
@@ -31,13 +32,14 @@ typedef enum memory_regions{
     BUFFERING_OUT_CONTROL_REGION
 } memory_regions;
 
+//! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
 #define SPIKE_HISTORY_CHANNEL 0
 
 //! the minimum space required for a buffer to work
 #define MIN_BUFFER_SPACE 10
 
-//! the amount of tics to wait between requests
+//! the amount of ticks to wait between requests
 #define TICKS_BETWEEN_REQUESTS 25
 
 //! the maximum size of a packet
@@ -76,6 +78,7 @@ static uint32_t last_stop_notification_request;
 static eieio_prefix_types prefix_type;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
+
 //! keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
 
@@ -114,7 +117,7 @@ static inline uint16_t calculate_eieio_packet_command_size(
         return 12;
     case HOST_SEND_SEQUENCED_DATA:
 
-        // does not include the eieio packet payload
+        // does not include the EIEIO packet payload
         return 4;
     case SPINNAKER_REQUEST_READ_DATA:
         return 16;
@@ -175,8 +178,8 @@ static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     }
 }
 
-static inline void print_packet_bytes(eieio_msg_t eieio_msg_ptr,
-                                      uint16_t length) {
+static inline void print_packet_bytes(
+        eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
 #if LOG_LEVEL >= LOG_DEBUG
@@ -202,8 +205,8 @@ static inline void print_packet(eieio_msg_t eieio_msg_ptr) {
 #endif
 }
 
-static inline void signal_software_error(eieio_msg_t eieio_msg_ptr,
-                                         uint16_t length) {
+static inline void signal_software_error(
+        eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
 #if LOG_LEVEL >= LOG_DEBUG
@@ -214,10 +217,10 @@ static inline void signal_software_error(eieio_msg_t eieio_msg_ptr,
 
 static inline uint32_t get_sdram_buffer_space_available() {
     if (read_pointer < write_pointer) {
-        uint32_t final_space = (uint32_t) end_of_buffer_region -
-                               (uint32_t) write_pointer;
-        uint32_t initial_space = (uint32_t) read_pointer -
-                                 (uint32_t) buffer_region;
+        uint32_t final_space =
+            (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
+        uint32_t initial_space =
+            (uint32_t) read_pointer - (uint32_t) buffer_region;
         return final_space + initial_space;
     } else if (write_pointer < read_pointer) {
         return (uint32_t) read_pointer - (uint32_t) write_pointer;
@@ -322,8 +325,8 @@ static inline bool add_eieio_packet_to_sdram(
     if ((read_pointer < write_pointer) ||
             (read_pointer == write_pointer &&
                 last_buffer_operation == BUFFER_OPERATION_READ)) {
-        uint32_t final_space = (uint32_t) end_of_buffer_region -
-                               (uint32_t) write_pointer;
+        uint32_t final_space =
+            (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
 
         if (final_space >= length) {
             log_debug("Packet fits in final space of %d", final_space);
@@ -337,15 +340,16 @@ static inline bool add_eieio_packet_to_sdram(
             return true;
         } else {
 
-            uint32_t total_space = final_space + ((uint32_t) read_pointer -
-                                                  (uint32_t) buffer_region);
+            uint32_t total_space =
+                final_space +
+                ((uint32_t) read_pointer - (uint32_t) buffer_region);
             if (total_space < length) {
                 log_debug("Not enough space (%d bytes)", total_space);
                 return false;
             }
 
-            log_debug("Copying first %d bytes to final space of %d",
-                      final_space);
+            log_debug(
+                "Copying first %d bytes to final space of %d", final_space);
             spin1_memcpy(write_pointer, msg_ptr, final_space);
             write_pointer = buffer_region;
             msg_ptr += final_space;
@@ -361,8 +365,8 @@ static inline bool add_eieio_packet_to_sdram(
             return true;
         }
     } else if (write_pointer < read_pointer) {
-        uint32_t middle_space = (uint32_t) read_pointer -
-                                (uint32_t) write_pointer;
+        uint32_t middle_space =
+            (uint32_t) read_pointer - (uint32_t) write_pointer;
 
         if (middle_space < length) {
             log_debug("Not enough space in middle (%d bytes)", middle_space);
@@ -471,7 +475,8 @@ static inline void process_32_bit_packets(
                     spin1_delay_us(1);
                 }
             } else {
-                log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x", key, payload);
+                log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
+                          key, payload);
                 while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                     spin1_delay_us(1);
                 }
@@ -837,7 +842,9 @@ void timer_callback(uint unused0, uint unused1) {
         fetch_and_process_packet();
     }
 
-    recording_do_timestep_update(time);
+    if (recording_flags > 0) {
+        recording_do_timestep_update(time);
+    }
 }
 
 void sdp_packet_callback(uint mailbox, uint port) {
@@ -964,7 +971,7 @@ bool initialize(uint32_t *timer_period) {
 
     recording_initialize(
         n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, state_region, &recording_flags);
+        recording_flags_from_system_conf, state_region, 2, &recording_flags);
 
     log_info("recording flags = 0x%08x", recording_flags);
 

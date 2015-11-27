@@ -1,6 +1,6 @@
 /*! \file
  *  \brief interface for recording data into "channels" on the SDRAM in a
- *  standard way for neural models.
+ *         standard way, and storing buffers to be extracted during execution
  *
  *
  */
@@ -8,8 +8,8 @@
 #ifndef _RECORDING_H_
 #define _RECORDING_H_
 
-#include "common-typedefs.h"
-#include "spin1_api.h"
+#include <common-typedefs.h>
+#include <spin1_api.h>
 #include <buffered_eieio_defs.h>
 
 typedef struct {
@@ -39,20 +39,10 @@ typedef struct {
     uint32_t space_read;
 } host_data_read_packet_data;
 
-//! Minimum amount of data before triggering a read request to the host
-#define MIN_BUFFERING_OUT_LIMIT 16384  // 16 * 1024
-
-bool recording_write_memory(
-    uint8_t channel, void *data, uint32_t size_bytes);
-void recording_send_buffering_out_trigger_message(bool flush_all);
-void recording_eieio_packet_handler(eieio_msg_t msg, uint length);
-void recording_host_data_read(eieio_msg_t msg, uint length);
-void recording_host_request_flush_data(eieio_msg_t msg, uint length);
-
-//! \brief Determines if the given channel has been initialised yet.
-//! \param[in] recording_flags The flags as read by recording_read_region_sizes.
-//! \param[in] channel The channel to check for already been initialised.
-//! \return True if the channel has already been initialised, False otherwise.
+//! \brief Determines if the given channel has space assigned for recording.
+//! \param[in] recording_flags The flags as returned by recording_initialize
+//! \param[in] channel The channel to check
+//! \return True if the channel is enabled, false otherwise
 inline bool recording_is_channel_enabled(
         uint32_t recording_flags, uint8_t channel) {
     return (recording_flags & (1 << channel)) != 0;
@@ -67,10 +57,8 @@ inline bool recording_is_channel_enabled(
 bool recording_record(
     uint8_t channel, void *data, uint32_t size_bytes);
 
-//! \brief updates the first word in the recording channel's memory region with
-//! the number of bytes that was actually written to SDRAM and then closes the
-//! channel so that future records fail.
-//! \return nothing
+//! \brief Finishes recording - should only be called if recording_flags is\
+//!        not 0
 void recording_finalise();
 
 //! \brief initialises the recording of data
@@ -78,17 +66,22 @@ void recording_finalise();
 //!            data
 //! \param[in] region_ids the ids of the regions to be recorded to
 //! \param[in] recording_data The start of the data about the recording.
-//!            Data is {uint32_t tag; uint32_t size_of_region[n_regions]}
+//!            Data is {uint32_t tag; uint32_t buffer_size_before_request;
+//!                     uint32_t size_of_region[n_regions]}
 //! \param[in] state_region The region in which to store the end of recording
 //!            state information
-//! \param[in] recording_flags Output of flags which can be used to check if
+//! \param[in] buffering_priority The priority of the callback related to the
+//!            buffering of the recording
+//! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
-bool recording_initialize(uint8_t n_regions, uint8_t *region_ids,
-        uint32_t *recording_data, uint8_t state_region,
+bool recording_initialize(
+        uint8_t n_regions, uint8_t *region_ids, uint32_t *recording_data,
+        uint8_t state_region, uint32_t buffering_priority,
         uint32_t *recording_flags);
 
-//! \brief Call once per timestep to ensure buffering is done
+//! \brief Call once per timestep to ensure buffering is done - should only
+//!        be called if recording flags is not 0
 void recording_do_timestep_update(uint32_t time);
 
 #endif // _RECORDING_H_

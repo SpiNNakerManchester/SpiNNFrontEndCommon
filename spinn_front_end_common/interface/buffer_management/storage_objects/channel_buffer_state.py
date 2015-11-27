@@ -4,24 +4,27 @@ import struct
 
 
 class ChannelBufferState(object):
+    """ Stores information related to a single channel output\
+        buffering state, as it is retrieved at the end of a simulation on the\
+        SpiNNaker system.
     """
-    This class stores information related to a single channel output
-    buffering state, as it is retrieved at the end of a simulation on the
-    SpiNNaker system. The state contains, in order:
-    1 - start buffering area memory address (32 bits)
-    2 - current write pointer address, first space where to write data (32 bits)
-    3 - current read pointer address, first space chere to read data (32 bits)
-    4 - end buffering area memory address, first byte after the
-    assigned memory area (32 bits)
-    5 - application region identifier (8 bits)
-    6 - bit to identify if the region overflowed during the simulation
-    and therefore some information has not been transferred to the
-    host - missing_info (8 bits)
-    7 - Last operation performed on the buffer - read or write (8 bits)
-    """
+
     def __init__(
             self, start_address, current_write, current_read, end_address,
             region_id, missing_info, last_buffer_operation):
+        """
+
+        :param start_address: start buffering area memory address (32 bits)
+        :param current_write: address where data was last written (32 bits)
+        :param current_read: address where data was last read (32 bits)
+        :param end_address: The address of first byte after the buffer\
+                (32 bits)
+        :param region_id: The id of the region (8 bits)
+        :param missing_info: True if the region overflowed during the\
+                simulation (8 bits)
+        :param last_buffer_operation: Last operation performed on the buffer\
+                - read or write (8 bits)
+        """
         self._start_address = start_address
         self._current_write = current_write
         self._current_read = current_read
@@ -74,9 +77,9 @@ class ChannelBufferState(object):
 
     @staticmethod
     def create_from_bytearray(data, offset):
-        start_address, current_write, current_read, end_address,\
-            region_id, missing_info, last_buffer_operation = struct.unpack_from(
-                "<IIIIBBBx", data, offset)
+        (start_address, current_write, current_read, end_address,
+         region_id, missing_info, last_buffer_operation) = struct.unpack_from(
+            "<IIIIBBBx", data, offset)
         if last_buffer_operation == 0:
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_READ.value
