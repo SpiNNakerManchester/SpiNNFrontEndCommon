@@ -660,11 +660,6 @@ class BufferManager(object):
                                 "possible?")
             return
 
-        # storage of last packet sent
-        self._received_data.store_last_received_packet_from_core(
-            x, y, p, packet)
-        self._received_data.update_sequence_no_for_core(x, y, p, pkt_seq)
-
         # read data from memory, store it and create data for return ack packet
         n_requests = packet.n_requests
         new_channel = list()
@@ -699,6 +694,11 @@ class BufferManager(object):
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
+
+        # storage of last packet received
+        self._received_data.store_last_received_packet_from_core(
+            x, y, p, packet)
+        self._received_data.update_sequence_no_for_core(x, y, p, pkt_seq)
 
         # store last sent message and send to the appropriate core
         self._received_data.store_last_sent_packet_to_core(
