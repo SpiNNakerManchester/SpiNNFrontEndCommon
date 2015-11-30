@@ -37,6 +37,7 @@ static uint32_t buffering_out_fsm = 0;
 static uint8_t buffering_out_state_region = 0;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
+static uint32_t time_between_triggers = 0;
 
 //! The time between buffer read messages
 #define MIN_TIME_BETWEEN_TRIGGERS 50
@@ -317,7 +318,7 @@ static inline void _recording_send_buffering_out_trigger_message(
                 log_error(
                     "Unknown channel state - channel: %d, start pointer: %d,"
                     " end pointer: %d, read_pointer: %d, write_pointer: %d,"
-                    " last operation==READ: %d\n", channel, buffer_region,
+                    " last operation==READ: %d", channel, buffer_region,
                     end_of_buffer_region, read_pointer, write_pointer,
                     last_buffer_operation == BUFFER_OPERATION_READ);
             }
@@ -463,9 +464,15 @@ bool recording_initialize(
     buffering_out_state_region = state_region;
     buffering_output_tag = recording_data[0];
     buffer_size_before_trigger = recording_data[1];
+    time_between_triggers = recording_data[2];
+    if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
+        time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
+    }
     log_info(
-        "Recording %d regions, using output tag %d\n",
-        n_recording_regions, buffering_output_tag);
+        "Recording %d regions, using output tag %d, size before trigger %d, "
+        "time between triggers %d",
+        n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
+        time_between_triggers);
 
     g_recording_channels = (recording_channel_t*) spin1_malloc(
         n_recording_regions * sizeof(recording_channel_t));
@@ -478,7 +485,7 @@ bool recording_initialize(
     address_t address = data_specification_get_data_address();
 
     for (i = 0; i < n_regions; i++) {
-        uint32_t region_size = recording_data[i + 2];
+        uint32_t region_size = recording_data[i + 3];
         if (region_size > 0) {
             address_t region_address = data_specification_get_region(
                 region_ids[i], address);
@@ -524,7 +531,7 @@ bool recording_initialize(
 }
 
 void recording_do_timestep_update(uint32_t time) {
-    if (time - last_time_buffering_trigger > MIN_TIME_BETWEEN_TRIGGERS) {
+    if (time - last_time_buffering_trigger > time_between_triggers) {
         _recording_send_buffering_out_trigger_message(0);
         last_time_buffering_trigger = time;
     }

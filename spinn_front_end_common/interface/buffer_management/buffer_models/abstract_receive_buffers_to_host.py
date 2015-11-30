@@ -79,7 +79,7 @@ class AbstractReceiveBuffersToHost(object):
         """ Get the size of the recording data for the given number of\
             buffered regions
         """
-        return 8 + (n_buffered_regions * 4)
+        return 12 + (n_buffered_regions * 4)
 
     def reserve_buffer_regions(
             self, spec, state_region, buffer_regions, region_sizes):
@@ -121,7 +121,8 @@ class AbstractReceiveBuffersToHost(object):
         return None
 
     def write_recording_data(
-            self, spec, ip_tags, region_sizes, buffer_size_before_receive):
+            self, spec, ip_tags, region_sizes, buffer_size_before_receive,
+            time_between_requests=0):
         """ Writes the recording data to the data specification
 
         :param spec: The data specification to write to
@@ -131,6 +132,8 @@ class AbstractReceiveBuffersToHost(object):
         :param buffer_size_before_receive: The amount of data that can be\
                 stored in the buffer before a message is sent requesting the\
                 data be read
+        :param time_between_requests: The amount of time between requests for\
+                more data
         """
         if self._buffering_output:
 
@@ -143,6 +146,7 @@ class AbstractReceiveBuffersToHost(object):
         else:
             spec.write_value(data=0)
         spec.write_value(data=buffer_size_before_receive)
+        spec.write_value(data=time_between_requests)
         for region_size in region_sizes:
             spec.write_value(data=region_size)
 
