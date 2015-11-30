@@ -11,6 +11,9 @@ from spinn_front_end_common.utilities import report_functions as \
 # pacman imports
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 
+# dsg imports
+from data_specification import utility_calls as dsg_utilities
+
 # general imports
 import os
 import datetime
@@ -51,6 +54,40 @@ def read_data(x, y, address, length, data_format, transceiver):
     data = buffer(transceiver.read_memory(x, y, address, length))
     result = struct.unpack_from(data_format, data)[0]
     return result
+
+
+def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
+        """ Get the address of a region for a vertex
+
+        :param region: the region to locate the base address of
+        :type region: int
+        :param vertex: the vertex to load a buffer for
+        :type vertex:\
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
+        :return: None
+        """
+        placement = placements.get_placement_of_subvertex(vertex)
+        memory_address = locate_memory_region_on_core(
+            placement.x, placement.y, placement.p, region, transceiver)
+        return memory_address
+
+
+def locate_memory_region_on_core(x, y, p, region, transceiver):
+        app_data_base_address = \
+            transceiver.get_cpu_information_from_core(x, y, p).user[0]
+
+        # Get the position of the region in the pointer table
+        region_offset_in_pointer_table = \
+            dsg_utilities.get_region_base_address_offset(
+                app_data_base_address, region)
+        region_address = buffer(transceiver.read_memory(
+            x, y, region_offset_in_pointer_table, 4))
+        region_address_decoded = struct.unpack_from("<I", region_address)[0]
+        return region_address_decoded
+
+
+def get_app_data_base_address(x, y, p, transceiver):
+    return transceiver.get_cpu_information_from_core(x, y, p).user[0]
 
 
 def auto_detect_database(partitioned_graph):

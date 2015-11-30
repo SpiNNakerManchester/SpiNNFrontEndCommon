@@ -49,6 +49,8 @@ address_t data_specification_get_data_address() {
 //! is a conflict with the DSE magic number
 bool data_specification_read_header(uint32_t* address) {
 
+    // io_printf (IO_BUF, "reading at address 0x%08x, offset: %d\n", address, dse_magic_number);
+  
     // Check for the magic number
     if (address[dse_magic_number] != DATA_SPECIFICATION_MAGIC_NUMBER) {
         log_error("Magic number is incorrect: %08x", address[dse_magic_number]);
@@ -82,5 +84,6 @@ address_t data_specification_get_region(
     // As the address is a uint32_t array, we need to divide the byte address
     // in the region table by 4 (hence down-shift by 2) to get the position in
     // the "address array"
+    //return (&data_address[data_address[REGION_START_INDEX + region] >> 2]);
     return data_address[REGION_START_INDEX + region];
 }

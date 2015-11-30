@@ -129,9 +129,10 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
                     # update memory calc and run data spec executor
                     bytes_used_by_spec = 0
                     bytes_written_by_spec = 0
+                    start_address = next_position
                     try:
                         bytes_used_by_spec, bytes_written_by_spec = \
-                            host_based_data_spec_executor.execute()
+                            host_based_data_spec_executor.execute(start_address)
                     except exceptions.DataSpecificationException as e:
                         logger.error(
                             "Error executing data specification for {}"

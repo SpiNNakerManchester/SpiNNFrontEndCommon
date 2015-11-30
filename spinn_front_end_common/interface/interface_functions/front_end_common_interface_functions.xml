@@ -27,14 +27,6 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonChipExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_execute_data_specification</python_module>
-        <python_class>FrontEndCommonChipExecuteDataSpecification</python_class>
-        <required_inputs>
-        </required_inputs>
-        <produces_outputs>
-        </produces_outputs>
-    </algorithm>
     <algorithm name="FrontEndCommonPartitionableGraphHostExecuteDataSpecification">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_host_execute_data_specification</python_module>
         <python_class>FrontEndCommonPartitionableGraphHostExecuteDataSpecification</python_class>
@@ -80,6 +72,58 @@
             <parameter>
                 <param_name>placement_to_app_data_files</param_name>
                 <param_type>PlacementToAppDataFilePaths</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonPartitionableGraphMachineExecuteDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_machine_execute_data_specification</python_module>
+        <python_class>FrontEndCommonPartitionableGraphMachineExecuteDataSpecification</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_text_specs</param_name>
+                <param_type>WriteTextSpecsFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>runtime_application_data_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>board_version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransciever</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>LoadedApplicationDataToken</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>

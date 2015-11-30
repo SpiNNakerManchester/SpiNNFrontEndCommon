@@ -28,8 +28,10 @@ bool simulation_read_timing_details(
         uint32_t* timer_period, uint32_t* n_simulation_ticks,
         uint32_t* infinite_run) {
 
+    // io_printf (IO_BUF, "reading at address 0x%08x, offset: %d\n", address, APPLICATION_MAGIC_NUMBER);
+  
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
-        log_error("Unexpected magic number 0x%.8x instead of 0x%.8x",
+        log_error("Unexpected magic number 0x%08x instead of 0x%08x",
         		 address[APPLICATION_MAGIC_NUMBER],
 				 expected_app_magic_number);
         return false;
