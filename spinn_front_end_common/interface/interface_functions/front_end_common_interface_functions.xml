@@ -528,6 +528,10 @@
                 <param_type>ReportStates</param_type>
             </parameter>
             <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
                 <param_name>app_data_folder</param_name>
                 <param_type>ApplicationDataFolder</param_type>
             </parameter>
@@ -544,7 +548,7 @@
         <python_class>FrontEndCommonApplicationRunner</python_class>
         <required_inputs>
             <parameter>
-                <param_name>send_buffer_manager</param_name>
+                <param_name>buffer_manager</param_name>
                 <param_type>BufferManager</param_type>
             </parameter>
             <parameter>

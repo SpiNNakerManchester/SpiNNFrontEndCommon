@@ -9,11 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationRunner(object):
-    """
-    FrontEndCommonApplicationRunner
-    """
 
-    def __call__(self, send_buffer_manager, wait_on_confirmation,
+    def __call__(self, buffer_manager, wait_on_confirmation,
                  send_start_notification, notification_interface,
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
@@ -29,8 +26,9 @@ class FrontEndCommonApplicationRunner(object):
                 "please rerun and try again")
 
         logger.info("*** Running simulation... *** ")
+
         # every thing is in sync0. load the initial buffers
-        send_buffer_manager.load_initial_buffers()
+        buffer_manager.load_initial_buffers()
 
         self.wait_for_cores_to_be_ready(executable_targets, app_id, txrx)
 
@@ -48,7 +46,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                send_buffer_manager)
+                buffer_manager)
 
         return {'RanToken': True}
 
@@ -64,18 +62,19 @@ class FrontEndCommonApplicationRunner(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        processor_c_main = txrx.get_core_state_count(app_id,
-                                                     CPUState.C_MAIN)
+        processor_c_main = txrx.get_core_state_count(
+            app_id, CPUState.C_MAIN)
+
         # check that everything has gone though c main to reach sync0 or
         # failing for some unknown reason
         while processor_c_main != 0:
             time.sleep(0.1)
-            processor_c_main = txrx.get_core_state_count(app_id,
-                                                         CPUState.C_MAIN)
+            processor_c_main = txrx.get_core_state_count(
+                app_id, CPUState.C_MAIN)
 
         # check that the right number of processors are in sync0
-        processors_ready = txrx.get_core_state_count(app_id,
-                                                     CPUState.SYNC0)
+        processors_ready = txrx.get_core_state_count(
+            app_id, CPUState.SYNC0)
 
         if processors_ready != total_processors:
             unsuccessful_cores = self._get_cores_not_in_state(
@@ -127,14 +126,14 @@ class FrontEndCommonApplicationRunner(object):
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling,
-            txrx, send_buffer_manager):
+            txrx, buffer_manager):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param send_buffer_manager:
+        :param buffer_manager:
         :return:
         """
 
@@ -177,8 +176,8 @@ class FrontEndCommonApplicationRunner(object):
                 "{}".format(
                     total_processors - processors_exited, total_processors,
                     break_down))
-        if send_buffer_manager is not None:
-            send_buffer_manager.stop()
+        if buffer_manager is not None:
+            buffer_manager.stop()
         logger.info("Application has run to completion")
 
     @staticmethod

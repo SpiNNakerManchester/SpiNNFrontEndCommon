@@ -120,6 +120,7 @@ class Reload(object):
         inputs.append({'type': "TimeScaleFactor", 'value': time_scale_factor})
         inputs.append({'type': "SendStartNotifications",
                        'value': send_start_notification})
+        inputs.append({'type': "MemoryGraphMapper", 'value': None})
         return inputs
 
     @staticmethod
