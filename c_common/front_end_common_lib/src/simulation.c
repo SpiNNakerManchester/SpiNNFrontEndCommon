@@ -126,7 +126,8 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
     pointer_to_simulation_time = simulation_ticks;
-    log_info("port no is %d", sdp_exit_run_command_port);
+    log_info("simulation sdp callback port no is %d",
+             sdp_exit_run_command_port);
     spin1_sdp_callback_on(
         sdp_exit_run_command_port, simulation_sdp_packet_callback,
         sdp_packet_callback_priority);
