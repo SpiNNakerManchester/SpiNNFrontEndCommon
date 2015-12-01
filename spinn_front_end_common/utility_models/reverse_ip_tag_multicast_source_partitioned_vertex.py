@@ -375,6 +375,10 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         # Write the configuration information
         self._write_configuration(spec, routing_info, sub_graph, ip_tags)
 
+        # End spec
+        spec.end_specification()
+        data_writer.close()
+
         return [data_writer.filename]
 
     def get_binary_file_name(self):
