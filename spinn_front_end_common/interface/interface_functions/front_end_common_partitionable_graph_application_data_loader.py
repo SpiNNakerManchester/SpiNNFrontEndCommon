@@ -33,15 +33,18 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
                 processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
+            memory_used = \
+                processor_to_app_data_base_address[key]['memory_used']
 
             # malloc the sdram requirement and replace the start address
             # assigned via the dse
             start_address_malloced = \
-                transceiver.malloc_sdram(x, y, memory_written, app_id)
-            #start_address_malloced += constants.
+                transceiver.malloc_sdram(x, y, memory_used, app_id)
 
-            logger.info("The start address allocated via DSE and Malloc are "
-                        "{},{}".format(start_address, start_address_malloced))
+            processor_to_app_data_base_address[key]['start_address'] = \
+                start_address_malloced
+
+            # set start address to be that of the malloced version
             start_address = start_address_malloced
 
             application_file_paths = placement_to_app_data_files[key]
