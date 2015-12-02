@@ -139,9 +139,9 @@ class FrontEndCommonApplicationRunner(object):
 
             # deduce the correct state value
             if sync_state_changes % 2 == 0:
-                sync_state = CPUState.SYNC1
-            else:
                 sync_state = CPUState.SYNC0
+            else:
+                sync_state = CPUState.SYNC1
 
             processors_finished = txrx.get_core_state_count(
                 app_id, sync_state)
