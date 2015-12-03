@@ -16,6 +16,7 @@ from spinn_front_end_common.abstract_models.\
 
 import os
 import logging
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -132,11 +133,12 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
                     try:
                         bytes_used_by_spec, bytes_written_by_spec = \
                             host_based_data_spec_executor.execute()
-                    except exceptions.DataSpecificationException as e:
+                    except exceptions.DataSpecificationException:
                         logger.error(
                             "Error executing data specification for {}"
                             .format(associated_vertex))
-                        raise e
+                        exc_info = sys.exc_info()
+                        raise exc_info[0], exc_info[1], exc_info[2]
 
                     # update base address mapper
                     processor_mapping_key = \
