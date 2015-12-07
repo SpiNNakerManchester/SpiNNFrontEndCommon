@@ -52,8 +52,6 @@ from spinn_front_end_common.utilities import constants as \
     spinn_front_end_constants
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
     end_buffering_state import EndBufferingState
-from spinn_front_end_common.utilities.helpful_functions import \
-    locate_memory_region_on_core
 
 # general imports
 import struct
@@ -485,8 +483,9 @@ class BufferManager(object):
                     x, y, p):
 
                 # Get the App Data for the core
-                state_region_base_address = locate_memory_region_on_core(
-                    x, y, p, state_region, self._transceiver)
+                state_region_base_address = \
+                    self._transceiver.locate_memory_region_on_core(
+                        x, y, p, state_region)
 
                 # retrieve channel state memory area
                 raw_number_of_channels = self._transceiver.read_memory(
