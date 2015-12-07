@@ -52,6 +52,8 @@ from spinn_front_end_common.utilities import constants as \
     spinn_front_end_constants
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
     end_buffering_state import EndBufferingState
+from spinn_front_end_common.utilities.helpful_functions import \
+    locate_memory_region_on_core
 
 # general imports
 import struct
@@ -483,20 +485,23 @@ class BufferManager(object):
                     x, y, p):
 
                 # Get the App Data for the core
-                app_data_base_address = \
-                    self._transceiver.get_cpu_information_from_core(
-                        x, y, p).user[0]
+#                app_data_base_address = self._transceiver.\
+#                    get_user_0_register_address_from_core(x, y, p)
+#                #    self._transceiver.get_cpu_information_from_core(
+#                #        x, y, p).user[0]
 
                 # Get the position of the buffer
-                state_region_base_offset_address = \
-                    dsg_utilities.get_region_base_address_offset(
-                        app_data_base_address, state_region)
-                state_region_base_address_buf = buffer(
-                    self._transceiver.read_memory(
-                        x, y, state_region_base_offset_address, 4))
-                state_region_base_address = struct.unpack_from(
-                    "<I", state_region_base_address_buf)[0]
-                state_region_base_address += app_data_base_address
+#                state_region_base_offset_address = \
+#                    dsg_utilities.get_region_base_address_offset(
+#                        app_data_base_address, state_region)
+#                state_region_base_address_buf = buffer(
+#                    self._transceiver.read_memory(
+#                        x, y, state_region_base_offset_address, 4))
+#                state_region_base_address = struct.unpack_from(
+#                    "<I", state_region_base_address_buf)[0]
+                state_region_base_address = locate_memory_region_on_core(
+                    x, y, p, state_region, self._transceiver)
+                # state_region_base_address += app_data_base_address
 
                 # retrieve channel state memory area
                 raw_number_of_channels = self._transceiver.read_memory(

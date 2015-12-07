@@ -17,6 +17,7 @@ from spinnman.data.file_data_reader import FileDataReader as \
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_message import SDPMessage
+from spinnman.model.cpu_state import CPUState
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\
@@ -72,9 +73,11 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :return:
         """
         # check which cores are in use
+        number_of_cores_used = 0
         core_subset = CoreSubsets()
         for placement in placements.placements:
             core_subset.add_processor(placement.x, placement.y, placement.p)
+            number_of_cores_used += 1
 
         # read DSE exec name
         executable_targets = {
@@ -103,11 +106,11 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
 
                 data_spec_file_size = os.path.getsize(data_spec_file_path)
 
-                header = SDPHeader(flags = SDPFlag.REPLY_NOT_EXPECTED,
-                                   destination_cpu    = placement.p,
-                                   destination_chip_x = placement.x,
-                                   destination_chip_y = placement.y,
-                                   destination_port   = 1)
+                header = SDPHeader(flags=SDPFlag.REPLY_NOT_EXPECTED,
+                                   destination_cpu=placement.p,
+                                   destination_chip_x=placement.x,
+                                   destination_chip_y=placement.y,
+                                   destination_port=1)
 
                 # Wait for the core to get into the READY_TO_RECEIVE state.
                 while transceiver.get_cpu_information_from_core(
@@ -118,20 +121,19 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                 # length of the internal buffer).
                 msg_data_len = struct.pack("<I", data_spec_file_size)
 
-                transceiver.send_sdp_message(SDPMessage(header,
-                                                             msg_data_len))
+                transceiver.send_sdp_message(SDPMessage(header, msg_data_len))
 
                 # Wait for the core to get into the WAITING_FOR_DATA state.
                 return_wait_state = transceiver.get_cpu_information_from_core(
                     placement.x, placement.y, placement.p).user[1]
                 while return_wait_state != 0x2:
                     transceiver.send_sdp_message(SDPMessage(header,
-                                                             msg_data_len))
-                    return_wait_state = transceiver.get_cpu_information_from_core(
-                        placement.x, placement.y, placement.p).user[1]
+                                                            msg_data_len))
+                    return_wait_state = transceiver.\
+                        get_cpu_information_from_core(
+                            placement.x, placement.y, placement.p).user[1]
                     print "waiting", return_wait_state
                     time.sleep(1)
-
 
                 # Write data at the address pointed at by user2.
                 destination_address = \
@@ -146,28 +148,23 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                     placement.x, placement.y, destination_address,
                     application_data_file_reader, data_spec_file_size)
 
-
                 # Send a packet that triggers the execution of the data specification.
                 transceiver.send_sdp_message(SDPMessage(
-                    header,struct.pack("<I", 0)))
+                    header, struct.pack("<I", 0)))
 
-
-
-                #fileReader = FileDataReader(data_spec_file_path)
-
-                #sender     = SpecSender(transceiver, placement)
-
-                #dataSpecSender = DataSpecificationSender(fileReader, sender)
-                #dataSpecSender.sendSpec()
                 progress_bar.update()
         progress_bar.end()
 
-        # What needs to be returned???
+        processors_exited = transceiver.get_core_state_count(
+            31, CPUState.FINISHED)
+        while processors_exited < number_of_cores_used:
+            logger.info("Data spec executor on chip not completed, waiting "
+                        "1 sec. for it to complete")
+            time.sleep(1)
+            processors_exited = transceiver.get_core_state_count(
+                31, CPUState.FINISHED)
+
         return {"LoadedApplicationDataToken": True}
-        #return {'processor_to_app_data_base_address':
-        #        processor_to_app_data_base_address,
-        #        'placement_to_app_data_files':
-        #        placement_to_application_data_files}
 
     def _load_executable_images(self, transceiver, executable_targets, app_id,
                                 app_data_folder):
