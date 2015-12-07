@@ -132,7 +132,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                     return_wait_state = transceiver.\
                         get_cpu_information_from_core(
                             placement.x, placement.y, placement.p).user[1]
-                    print "waiting", return_wait_state
+                    logger.info("Data spec executor on chip not ready, "
+                                "waiting 1 sec for it to be ready")
                     time.sleep(1)
 
                 # Write data at the address pointed at by user2.
@@ -148,7 +149,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                     placement.x, placement.y, destination_address,
                     application_data_file_reader, data_spec_file_size)
 
-                # Send a packet that triggers the execution of the data specification.
+                # Send a packet that triggers the execution of the
+                # data specification.
                 transceiver.send_sdp_message(SDPMessage(
                     header, struct.pack("<I", 0)))
 
