@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
-    """ Exeuctes the host based data specification
+    """ Executes the host based data specification
     """
 
     def __call__(
@@ -106,7 +106,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
                         space_available = \
                             space_available_tracker[placement_key]
 
-                    # generate a file writer for dse report (app pointer table)
+                    # generate a file writer for DSE report (app pointer table)
                     report_writer = None
                     if write_text_specs:
                         new_report_directory = os.path.join(

@@ -7,7 +7,7 @@ from spinn_front_end_common.utilities import exceptions
 
 
 class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
-    """ Executes a partitionable graph data specifciation generation
+    """ Executes a partitionable graph data specification generation
     """
 
     def __call__(

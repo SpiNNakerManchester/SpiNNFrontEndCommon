@@ -1,6 +1,3 @@
-"""
-reload script for loading onto a amchien wtihout going through the mapper
-"""
 from spinn_front_end_common.utilities import helpful_functions
 
 
@@ -15,10 +12,13 @@ class Reload(object):
             scamp_connection_data, boot_port_num, placement_to_app_data_files,
             verify, router_tables, processor_to_app_data_base_address,
             executable_targets, tags, iptags, reverse_iptags, placements,
-            app_folder, wait_for_read_confirmation, socket_addresses,
+            wait_for_read_confirmation, socket_addresses,
             database_file_path, runtime, time_scale_factor,
             send_start_notification, reset_machine_on_start_up,
             loading=True, running=True, app_id=30):
+
+        if scamp_connection_data == "None":
+            scamp_connection_data = None
 
         pacman_inputs = self._create_pacman_inputs(
             machine_name, version, reports_states, bmp_details,
@@ -26,7 +26,7 @@ class Reload(object):
             auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
             boot_port_num, placement_to_app_data_files, verify, router_tables,
             processor_to_app_data_base_address, executable_targets, tags,
-            iptags, reverse_iptags, placements, app_folder,
+            iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification,
             reset_machine_on_start_up, loading, running)
@@ -47,7 +47,7 @@ class Reload(object):
             auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
             boot_port_num, placement_to_app_data_files, verify, router_tables,
             processor_to_app_data_base_address, executable_targets,
-            buffered_tags, iptags, reverse_iptags, placements, app_folder,
+            buffered_tags, iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification,
             reset_machine_on_start_up, loading, running):
@@ -75,8 +75,7 @@ class Reload(object):
         :param buffered_tags:
         :param iptags:
         :param reverse_iptags:
-        :param placements:
-        :param app_folder:
+        :param placements
         :param wait_for_read_confirmation:
         :param socket_addresses:
         :param database_file_path:

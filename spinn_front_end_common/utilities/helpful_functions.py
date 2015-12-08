@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_valid_components(module, terminator):
-    """
-    ???????????????
+    """ Get possible components
+
     :param module:
     :param terminator:
     :return:
@@ -40,6 +40,7 @@ def get_valid_components(module, terminator):
 
 def read_data(x, y, address, length, data_format, transceiver):
     """ Reads and converts a single data item from memory
+
     :param x: chip x
     :param y: chip y
     :param address: base address of the sdram chip to read
@@ -222,7 +223,7 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
             shutil.move(file_path, new_app_folder)
         files_in_report_folder = os.listdir(starting_directory)
 
-        # while theres more than the valid max, remove the oldest one
+        # while there's more than the valid max, remove the oldest one
         while len(files_in_report_folder) > max_to_keep:
             files_in_report_folder.sort(
                 cmp, key=lambda temp_file:
@@ -237,7 +238,7 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
 def do_mapping(
         inputs, algorithms, required_outputs, xml_paths, do_timings):
     """
-    :param do_timings: bool which sattes if each algorithm should time itself
+    :param do_timings: bool which states if each algorithm should time itself
     :param inputs:
     :param algorithms:
     :param required_outputs:
@@ -246,7 +247,7 @@ def do_mapping(
     :return:
     """
 
-    # add xml path to front end common interfact functions
+    # add xml path to front end common interface functions
     xml_paths.append(
         os.path.join(os.path.dirname(interface_functions.__file__),
                      "front_end_common_interface_functions.xml"))

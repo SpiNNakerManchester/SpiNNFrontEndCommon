@@ -13,7 +13,7 @@ import re
 
 
 class FrontEndCommonMachineInterfacer(object):
-    """ Interface to make a transceiver and a spinnmachine object
+    """ Interface to make a transceiver and a spinn_machine object
     """
 
     def __call__(
@@ -70,7 +70,7 @@ class FrontEndCommonMachineInterfacer(object):
         if number_of_boards is None:
             number_of_boards = txrx.number_of_boards_located
 
-        # do autoboot if possible
+        # do auto boot if possible
         if board_version is None:
             raise exceptions.ConfigurationException(
                 "Please set a machine version number in the configuration "

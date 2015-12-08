@@ -45,6 +45,15 @@ class ReloadScript(object):
             raise exceptions.SpinnFrontEndException(
                 "Cannot open {} to write the rerun script".format(file_name))
 
+        # Convert file paths to local file names
+        local_placement_to_app_data_files = dict()
+        for (placement, file_paths) in placement_to_app_data_files.iteritems():
+            local_file_paths = list()
+            for file_path in file_paths:
+                local_file_path = os.path.basename(file_path)
+                local_file_paths.append(local_file_path)
+            local_placement_to_app_data_files[placement] = local_file_paths
+
         self._println("runtime = {}".format(runtime))
         self._println(
             "send_start_notification = {}".format(send_start_notification))
@@ -64,12 +73,11 @@ class ReloadScript(object):
         self._println("placements = dict()")
         self._println("boot_port_num = {}".format(boot_port_num))
         self._println("placement_to_app_data_files = {}"
-                      .format(placement_to_app_data_files))
+                      .format(local_placement_to_app_data_files))
         self._println("verify = {}".format(verify))
         self._println("database_file_path = {}".format(database_file_path))
         self._println("wait_for_read_confirmation = {}"
                       .format(wait_for_read_confirmation))
-        self._println("app_folder = \"{}\"".format(binary_directory))
         self._println("processor_to_app_data_base_address = {}"
                       .format(processor_to_app_data_base_address))
         self._println("scamp_connection_data = \"{}\""
@@ -78,12 +86,12 @@ class ReloadScript(object):
         for executable_target_key in executable_targets.binary_paths():
             core_subsets = executable_targets.\
                 retrieve_cores_for_a_executable_target(executable_target_key)
-            self._println("executable_targets.add_binary(\"{}\")"
+            self._println("executable_targets.add_binary(r\"{}\")"
                           .format(executable_target_key))
             for core_subset in core_subsets:
                 for processor_id in core_subset.processor_ids:
                     self._println(
-                        "executable_targets.add_processor(\"{}\", {}, {}, {})"
+                        "executable_targets.add_processor(r\"{}\", {}, {}, {})"
                         .format(executable_target_key, core_subset.x,
                                 core_subset.y, processor_id))
         self._println("xml_paths = list()")
@@ -157,7 +165,7 @@ class ReloadScript(object):
         for region in vertex.get_regions():
             if not first:
                 buffer_tuple += ", "
-            buffer_filename = buffered_files[region]
+            buffer_filename = os.path.basename(buffered_files[region])
             buffer_tuple += "({}, \"{}\", {}) "\
                 .format(region, buffer_filename,
                         vertex.get_max_buffer_size_possible(region))
@@ -188,7 +196,7 @@ class ReloadScript(object):
             "scamp_connection_data,boot_port_num, placement_to_app_data_files,"
             " verify, routing_tables, processor_to_app_data_base_address,"
             " executable_targets, buffered_tags, iptags, reverse_iptags, "
-            "buffered_placements, app_folder, wait_for_read_confirmation, "
+            "buffered_placements, wait_for_read_confirmation, "
             "socket_addresses, database_file_path, runtime, time_scale_factor,"
             "send_start_notification, reset_machine_on_start_up)")
         self._file.close()

@@ -40,7 +40,7 @@ class LivePacketGather(
         AbstractDataSpecableVertex, AbstractPartitionableVertex,
         AbstractProvidesProvenanceData, PartitionedVertex):
     """ A model which stores all the events it receives during a timer tick\
-        and then compresses them into ethernet packets and sends them out of\
+        and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
     """
 
@@ -98,7 +98,7 @@ class LivePacketGather(
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
                 sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))))
 
-        # Try to place this near the ethernet
+        # Try to place this near the Ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
 
         # Add the IP Tag requirement
@@ -180,7 +180,7 @@ class LivePacketGather(
             size=self._CONFIG_SIZE, label='config')
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value,
-            size=self._PROVANENCE_REGION_SIZE, label='provanence')
+            size=self._PROVANENCE_REGION_SIZE, label='provenance')
 
     def write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
@@ -241,7 +241,7 @@ class LivePacketGather(
         # right shift
         spec.write_value(data=self._payload_right_shift)
 
-        # sdp tag
+        # SDP tag
         ip_tag = iter(ip_tags).next()
         spec.write_value(data=ip_tag.tag)
 
@@ -258,7 +258,7 @@ class LivePacketGather(
 
     def write_provenance_data_in_xml(self, file_path, transceiver,
                                      placement=None):
-        """ Extracts provanence data from the sdram of the core and stores it\
+        """ Extracts provenance data from the SDRAM of the core and stores it\
             in an xml file for end user digestion
 
         :param file_path: the file path to the xml document
@@ -268,7 +268,7 @@ class LivePacketGather(
         """
         if placement is None:
             raise ConfigurationException(
-                "To acquire provanence data from the live packet gatherer,"
+                "To acquire provenance data from the live packet gatherer,"
                 "you must provide a placement object that points to where the "
                 "live packet gatherer resides on the spinnaker machine")
 
@@ -276,7 +276,7 @@ class LivePacketGather(
         app_data_base_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
 
-        # Get the provanence region base address
+        # Get the provenance region base address
         provanence_data_region_base_address_offset = \
             dsg_utility_calls.get_region_base_address_offset(
                 app_data_base_address,
@@ -289,7 +289,7 @@ class LivePacketGather(
             struct.unpack("I", provanence_data_region_base_address_buf)[0]
         provanence_data_region_base_address += app_data_base_address
 
-        # read in the provanence data
+        # read in the provenance data
         provanence_data_region_contents_buff = \
             buffer(transceiver.read_memory(
                 placement.x, placement.y, provanence_data_region_base_address,
@@ -297,7 +297,7 @@ class LivePacketGather(
         provanence_data_region_contents = \
             struct.unpack("<II", provanence_data_region_contents_buff)
 
-        # create provanence data xml form
+        # create provenance data xml form
         from lxml import etree
         root = etree.Element("Live_packet_gatherer_located_at_{}_{}_{}"
                              .format(placement.x, placement.y, placement.p))
