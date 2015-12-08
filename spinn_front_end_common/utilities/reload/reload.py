@@ -12,7 +12,7 @@ class Reload(object):
             scamp_connection_data, boot_port_num, placement_to_app_data_files,
             verify, router_tables, processor_to_app_data_base_address,
             executable_targets, tags, iptags, reverse_iptags, placements,
-            wait_for_read_confirmation, socket_addresses,
+            app_folder, wait_for_read_confirmation, socket_addresses,
             database_file_path, runtime, time_scale_factor,
             send_start_notification, reset_machine_on_start_up,
             loading=True, running=True, app_id=30):
@@ -26,7 +26,7 @@ class Reload(object):
             auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
             boot_port_num, placement_to_app_data_files, verify, router_tables,
             processor_to_app_data_base_address, executable_targets, tags,
-            iptags, reverse_iptags, placements,
+            iptags, reverse_iptags, placements, app_folder,
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification,
             reset_machine_on_start_up, loading, running)
@@ -47,7 +47,7 @@ class Reload(object):
             auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
             boot_port_num, placement_to_app_data_files, verify, router_tables,
             processor_to_app_data_base_address, executable_targets,
-            buffered_tags, iptags, reverse_iptags, placements,
+            buffered_tags, iptags, reverse_iptags, placements, app_folder,
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification,
             reset_machine_on_start_up, loading, running):
@@ -75,7 +75,8 @@ class Reload(object):
         :param buffered_tags:
         :param iptags:
         :param reverse_iptags:
-        :param placements
+        :param placements:
+        :param app_folder:
         :param wait_for_read_confirmation:
         :param socket_addresses:
         :param database_file_path:

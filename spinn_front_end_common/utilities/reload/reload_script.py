@@ -78,6 +78,7 @@ class ReloadScript(object):
         self._println("database_file_path = {}".format(database_file_path))
         self._println("wait_for_read_confirmation = {}"
                       .format(wait_for_read_confirmation))
+        self._println("app_folder = \"{}\"".format(binary_directory))
         self._println("processor_to_app_data_base_address = {}"
                       .format(processor_to_app_data_base_address))
         self._println("scamp_connection_data = \"{}\""
@@ -196,7 +197,7 @@ class ReloadScript(object):
             "scamp_connection_data,boot_port_num, placement_to_app_data_files,"
             " verify, routing_tables, processor_to_app_data_base_address,"
             " executable_targets, buffered_tags, iptags, reverse_iptags, "
-            "buffered_placements, wait_for_read_confirmation, "
+            "buffered_placements, app_folder, wait_for_read_confirmation, "
             "socket_addresses, database_file_path, runtime, time_scale_factor,"
             "send_start_notification, reset_machine_on_start_up)")
         self._file.close()
