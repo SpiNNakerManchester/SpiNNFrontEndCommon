@@ -1,4 +1,4 @@
-from data_specification.file_data_writer import FileDataWriter
+from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 from spinn_front_end_common.utilities import exceptions
 

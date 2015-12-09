@@ -23,5 +23,6 @@ setup(
                       'SpiNNMan == 2015.004.01',
                       'SpiNNaker_PACMAN == 2015.004.01',
                       'SpiNNaker_DataSpecification == 2015.004',
+                      'SpiNNStorageHandlers >= 2016.001.01',
                       'numpy', 'six']
 )

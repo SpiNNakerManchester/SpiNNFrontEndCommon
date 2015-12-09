@@ -1,8 +1,7 @@
-from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    buffered_bytearray_data_storage import BufferedBytearrayDataStorage
-from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    buffered_file_data_storage import BufferedFileDataStorage
 from collections import defaultdict
+from spinn_storage_handlers.buffered_bytearray_data_storage \
+    import BufferedBytearrayDataStorage
+from spinn_storage_handlers.buffered_tempfile_data_storage import BufferedTempfileDataStorage
 
 
 class BufferedReceivingData(object):
@@ -24,7 +23,7 @@ class BufferedReceivingData(object):
 
         self._data = None
         if store_to_file:
-            self._data = defaultdict(BufferedFileDataStorage)
+            self._data = defaultdict(BufferedTempfileDataStorage)
         else:
             self._data = defaultdict(BufferedBytearrayDataStorage)
         self._is_flushed = defaultdict(lambda: False)

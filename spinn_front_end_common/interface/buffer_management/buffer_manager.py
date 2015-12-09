@@ -42,7 +42,7 @@ from spinnman.messages.eieio import create_eieio_command
 
 # front end common imports
 from spinn_front_end_common.utilities.helpful_functions import \
-    locate_memory_region_for_vertex
+    locate_memory_region_for_vertex, locate_memory_region_on_core
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque import BuffersSentDeque
@@ -484,8 +484,8 @@ class BufferManager(object):
 
                 # Get the App Data for the core
                 state_region_base_address = \
-                    self._transceiver.locate_memory_region_on_core(
-                        x, y, p, state_region)
+                    locate_memory_region_on_core(
+                        x, y, p, state_region, self._transceiver)
 
                 # retrieve channel state memory area
                 raw_number_of_channels = self._transceiver.read_memory(

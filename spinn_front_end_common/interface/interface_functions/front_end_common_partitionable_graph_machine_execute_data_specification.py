@@ -1,9 +1,10 @@
+# spinn_io_handler imports
+from spinn_storage_handlers.file_data_writer import FileDataWriter
+from spinn_storage_handlers.file_data_reader import FileDataReader
 
 # data spec imports
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
-from data_specification.file_data_reader import FileDataReader
-from data_specification.file_data_writer import FileDataWriter
 from data_specification import exceptions
 import data_specification.data_spec_sender.spec_sender as spec_sender
 
