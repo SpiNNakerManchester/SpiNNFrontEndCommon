@@ -1,29 +1,28 @@
 from abc import abstractmethod, ABCMeta
 from six import add_metaclass
 
+from pacman.model.abstract_classes.abstract_constrained_object import \
+    AbstractConstrainedObject
 from pacman.model.constraints.tag_allocator_constraints.\
     tag_allocator_require_iptag_constraint import \
     TagAllocatorRequireIptagConstraint
+
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .end_buffering_state import EndBufferingState
 from spinn_front_end_common.utilities import exceptions
 
 
 @add_metaclass(ABCMeta)
-class AbstractReceiveBuffersToHost(object):
+class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
     def __init__(self):
         """
-
-
-        :param buffering_output: boolean indicating if the buffering output\
-                functionality is activated
-        :param buffering_output: bool
         :return: None
         :rtype: None
         """
+        AbstractConstrainedObject.__init__(self)
         self._buffering_output = False
         self._buffer_manager = None
         self._buffering_ip_address = None
@@ -50,6 +49,8 @@ class AbstractReceiveBuffersToHost(object):
         :param buffering_port: UDP port of the host which supports\
                 the buffering output functionality
         :type buffering_port: int
+        :param notification_tag: ?????????
+        :type notification_tag: ????????????
 
         :return: None
         :rtype: None
@@ -109,6 +110,29 @@ class AbstractReceiveBuffersToHost(object):
                 size=EndBufferingState.size_of_region(len(buffer_regions)),
                 label='BUFFERED_OUT_STATE', empty=True)
 
+    @staticmethod
+    def get_number_of_mallocs_used_by_receive_buffer_dsg(
+            buffer_regions, region_sizes, buffering_output):
+        """
+        helper method for deudcing how much sdram needed for the data regions
+        :param buffer_regions: The regions ids to reserve for buffering
+        :param region_sizes: The sizes of the regions to reserve
+        :param buffering_output: bool stating if we're buffering output
+        :return: number of amllocs expected from this component
+        """
+        mallocs = 0
+        if len(buffer_regions) != len(region_sizes):
+            raise exceptions.ConfigurationException(
+                "The number of buffer regions must match the number of"
+                " regions sizes")
+        if buffering_output:
+            for (buffer_region, region_size) in zip(
+                    buffer_regions, region_sizes):
+                if region_size > 0:
+                    mallocs += 1
+            mallocs += 1
+        return mallocs
+
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented
 
@@ -149,10 +173,6 @@ class AbstractReceiveBuffersToHost(object):
         spec.write_value(data=time_between_requests)
         for region_size in region_sizes:
             spec.write_value(data=region_size)
-
-    @abstractmethod
-    def add_constraint(self, constraint):
-        pass
 
     @property
     def buffer_manager(self):

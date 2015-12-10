@@ -22,11 +22,6 @@ typedef enum region_elements{
 	SIMULATION_N_TIMING_DETAIL_WORDS
 }region_elements;
 
-// the different types of sdp packet callbacks and their functionality.
-typedef enum simulation_sdp_packet_callback_ports{
-    BUFFERING_IN_SDP_PORT = 2
-}simulation_sdp_packet_callback_ports;
-
 typedef enum simulation_commands{
     CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8
 }simulation_commands;

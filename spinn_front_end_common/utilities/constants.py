@@ -43,7 +43,7 @@ SDP_PORTS = Enum(
         ("INPUT_BUFFERING_SDP_PORT", 1),
 
         # command port for the buffered out functionality
-        ("OUTPUT_BUFFERING_SDP_PORT", 2)
+        ("OUTPUT_BUFFERING_SDP_PORT", 2),
 
         # command port for resetting runtime etc
         ("RUNNING_COMMAND_SDP_PORT", 3)]

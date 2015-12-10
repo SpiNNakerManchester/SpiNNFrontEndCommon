@@ -42,7 +42,7 @@ class FrontEndCommonRuntimeUpdater(object):
                     destination_cpu=p,
                     destination_chip_x=x,
                     destination_port=
-                    constants.SDP_RUNNING_COMMAND_DESTINATION_PORT,
+                    constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
                     destination_chip_y=y), data=data))
 
             processors_ready = txrx.get_core_state_count(
@@ -72,7 +72,7 @@ class FrontEndCommonRuntimeUpdater(object):
                     destination_cpu=p,
                     destination_chip_x=x,
                     destination_port=
-                    constants.SDP_RUNNING_COMMAND_DESTINATION_PORT,
+                    constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
                     destination_chip_y=y), data=data))
 
             processors_ready = txrx.get_core_state_count(app_id, sync_state)

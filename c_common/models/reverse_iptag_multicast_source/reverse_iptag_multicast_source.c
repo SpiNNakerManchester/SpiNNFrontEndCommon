@@ -875,7 +875,42 @@ bool read_parameters(address_t region_address) {
     return true;
 }
 
-bool initialize(uint32_t *timer_period) {
+bool setup_buffer_region(address_t region_address) {
+    buffer_region = (uint8_t *) region_address;
+    read_pointer = buffer_region;
+    write_pointer = buffer_region;
+    end_of_buffer_region = buffer_region + buffer_region_size;
+
+    log_info("buffer_region: 0x%.8x", buffer_region);
+    log_info("buffer_region_size: %d", buffer_region_size);
+    log_info("end_of_buffer_region: 0x%.8x", end_of_buffer_region);
+
+    return true;
+}
+
+//! \brief Initialises the recording parts of the model
+//! \return True if recording initisation is successful, false otherwise
+static bool initialise_recording(){
+    address_t address = data_specification_get_data_address();
+    address_t system_region =
+        data_specification_get_region(SYSTEM, address);
+    uint8_t regions_to_record[] = {
+        BUFFERING_OUT_SPIKE_RECORDING_REGION,
+    };
+    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
+    uint32_t *recording_flags_from_system_conf =
+        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
+    uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
+
+    bool success = recording_initialize(
+        n_regions_to_record, regions_to_record,
+        recording_flags_from_system_conf, state_region, 2,
+        &recording_flags);
+    log_info("Recording flags = 0x%08x", recording_flags);
+    return success;
+}
+
+bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -901,19 +936,10 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
 
-    uint8_t regions_to_record[] = {
-        BUFFERING_OUT_SPIKE_RECORDING_REGION,
-    };
-    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
-    uint32_t *recording_flags_from_system_conf =
-        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
-    uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
-
-    recording_initialize(
-        n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, state_region, 2, &recording_flags);
-
-    log_info("recording flags = 0x%08x", recording_flags);
+    // set up recording data strucutres
+    if(!initialise_recording()){
+         return false;
+    }
 
     // Read the buffer region
     if (buffer_region_size > 0) {
@@ -952,13 +978,16 @@ void timer_callback(uint unused0, uint unused1) {
                                                           address));
 
         simulation_handle_pause_resume(timer_callback, TIMER);
-        // have fallen out of a resume mode, set up the functions to start
-        // resuming again
-        initialise_recording();
+
         // set the code to start sending packet requests again
         send_packet_reqs = true;
         // magic state to allow the model to check for stuff in the sdram
         last_buffer_operation = BUFFER_OPERATION_WRITE;
+        // have fallen out of a resume mode, set up the functions to start
+        // resuming again
+        if(!initialise_recording()){
+            log_error("Could not reset recording regions");
+        }
     }
 
     if (send_packet_reqs &&

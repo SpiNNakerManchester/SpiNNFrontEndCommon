@@ -8,6 +8,9 @@ from spinn_front_end_common.abstract_models.\
     import AbstractProvidesOutgoingEdgeConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models.\
+    abstract_uses_memory_mallocs import \
+    AbstractPartitionableUsesMemoryMallocs
 from spinn_front_end_common.utilities import constants
 
 # general imports
@@ -19,7 +22,8 @@ from spinn_front_end_common.utility_models\
 
 class ReverseIpTagMultiCastSource(
         AbstractPartitionableVertex, AbstractDataSpecableVertex,
-        AbstractProvidesOutgoingEdgeConstraints):
+        AbstractProvidesOutgoingEdgeConstraints,
+        AbstractPartitionableUsesMemoryMallocs):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -27,22 +31,11 @@ class ReverseIpTagMultiCastSource(
     def __init__(
             self, n_keys, machine_time_step, timescale_factor, label=None,
             constraints=None, max_atoms_per_core=sys.maxint,
-
-            # General parameters
-            board_address=None,
-
-            # Live input parameters
-            receive_port=None,
+            board_address=None, receive_port=None,
             receive_sdp_port=(
                 constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
-            receive_tag=None,
-
-            # Key parameters
-            virtual_key=None, prefix=None,
-            prefix_type=None, check_keys=False,
-
-            # Send buffer parameters
-            send_buffer_times=None,
+            receive_tag=None, virtual_key=None, prefix=None, prefix_type=None,
+            check_keys=False, send_buffer_times=None,
             send_buffer_max_space=(
                 constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
@@ -95,6 +88,7 @@ class ReverseIpTagMultiCastSource(
             self, machine_time_step, timescale_factor)
         AbstractPartitionableVertex.__init__(
             self, n_keys, label, max_atoms_per_core, constraints)
+        AbstractPartitionableUsesMemoryMallocs.__init__(self)
 
         # Store the parameters
         self._board_address = board_address
@@ -125,8 +119,8 @@ class ReverseIpTagMultiCastSource(
             self, buffering_ip_address, buffering_port,
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
-            buffer_size_before_receive=(constants.
-                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+            buffer_size_before_receive=(
+                constants. DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
         self._record_buffering_ip_address = buffering_ip_address
         self._record_buffering_port = buffering_port
         self._record_buffering_board_address = board_address
@@ -149,10 +143,21 @@ class ReverseIpTagMultiCastSource(
             recording_size += self._record_buffer_size
             recording_size += (ReverseIPTagMulticastSourcePartitionedVertex.
                                get_buffer_state_region_size(1))
+        mallocs = self.get_number_of_mallocs_used_by_dsg(
+            vertex_slice, graph.incoming_edges_to_vertex(self))
+        mallocs_sdram_usage = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
+
         return ((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
                 (ReverseIPTagMulticastSourcePartitionedVertex.
-                 _CONFIGURATION_REGION_SIZE) + send_buffer_size +
-                recording_size)
+                 CONFIGURATION_REGION_SIZE) + send_buffer_size +
+                recording_size + mallocs_sdram_usage)
+
+    def get_number_of_mallocs_used_by_dsg(self, vertex_slice, in_edges):
+        mallocs = ReverseIPTagMulticastSourcePartitionedVertex.\
+            get_number_of_mallocs_used_by_dsg(
+                self._send_buffer_times, self._record_buffer_size,
+                self._record_buffer_size > 0)
+        return mallocs
 
     @property
     def model_name(self):

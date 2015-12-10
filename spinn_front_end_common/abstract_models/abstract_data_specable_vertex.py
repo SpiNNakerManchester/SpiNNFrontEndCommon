@@ -48,7 +48,7 @@ class AbstractDataSpecableVertex(object):
             spec.write_value(data=self._no_machine_time_steps)
         # add sdp port number for recieving syncs and new runtimes
         spec.write_value(
-            data=constants.SDP_RUNNING_COMMAND_DESTINATION_PORT)
+            data=constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
 
     @abstractmethod
     def generate_data_spec(
@@ -153,7 +153,6 @@ class AbstractDataSpecableVertex(object):
                                 processor_id, hostname,
                                 application_run_time_folder):
         """
-
         :param processor_chip_x:
         :param processor_chip_y:
         :param processor_id:

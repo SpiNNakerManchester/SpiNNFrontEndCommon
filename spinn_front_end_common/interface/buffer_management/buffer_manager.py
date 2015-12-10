@@ -229,15 +229,26 @@ class BufferManager(object):
                 self._send_initial_messages(vertex, region, progress_bar)
         progress_bar.end()
 
-    def rewind(self):
+    def reset(self):
         """
         resets the buffered regions to start trnasmitting from the beginning
-        of its expected regions
+        of its expected regions and clears the buffered out data files
         :return:
         """
+        # reset buffered out
+        self._received_data = BufferedReceivingData()
+        # rewind buffered in
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 vertex.rewind(region)
+
+    def resume(self):
+        """
+        sets the buffer manager to reset any data strucurres needed to resume
+        from a extraction mode
+        :return:
+        """
+        self._received_data.resume()
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -308,9 +319,10 @@ class BufferManager(object):
         if vertex.is_empty(region):
             sent_message = True
         else:
-            while (vertex.is_next_timestamp(region) and
-                    bytes_to_go > (EIEIO32BitTimedPayloadPrefixDataMessage
-                                   .get_min_packet_length())):
+            min_size_of_packet = \
+                EIEIO32BitTimedPayloadPrefixDataMessage.get_min_packet_length()
+            is_next_time_stamp = vertex.is_next_timestamp(region)
+            while is_next_time_stamp and bytes_to_go > min_size_of_packet:
                 space_available = min(bytes_to_go, 280)
                 next_message = self._create_message_to_send(
                     space_available, vertex, region)
@@ -387,7 +399,7 @@ class BufferManager(object):
                 bytes_to_go,
                 constants.UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
-             logger.debug(
+            logger.debug(
                  "Bytes to go {}, space available {}"
                  .format(bytes_to_go, space_available))
             next_message = self._create_message_to_send(
@@ -396,7 +408,7 @@ class BufferManager(object):
                 break
             sent_messages.add_message_to_send(next_message)
             bytes_to_go -= next_message.size
-             logger.debug("Adding additional buffer of {} bytes"
+            logger.debug("Adding additional buffer of {} bytes"
                           .format(next_message.size))
 
         # If the vertex is empty, send the stop messages if there is space
@@ -404,10 +416,6 @@ class BufferManager(object):
                 not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             sent_messages.send_stop_message()
-            if self._report_states.transciever_report:
-                if (vertex, region) in self._reload_buffer_file:
-                    self._reload_buffer_file[(vertex, region)].close()
-                    del self._reload_buffer_file[(vertex, region)]
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
@@ -416,8 +424,8 @@ class BufferManager(object):
 
         # Send the messages
         for message in sent_messages.messages:
-             logger.debug("Sending message with sequence {}"
-                          .format(message.sequence_no))
+            logger.debug("Sending message with sequence {}"
+                         .format(message.sequence_no))
             self._send_request(vertex, message)
 
     def _locate_region_address(self, region, vertex):
@@ -516,10 +524,10 @@ class BufferManager(object):
                 raw_number_of_channels = self._transceiver.read_memory(
                     x, y, state_region_base_address, 4)
                 number_of_channels = struct.unpack(
-                    "<I", raw_number_of_channels)[0]
-                channel_state_data = self._transceiver.read_memory(
+                    "<I", str(raw_number_of_channels))[0]
+                channel_state_data = str(self._transceiver.read_memory(
                     x, y, state_region_base_address,
-                    EndBufferingState.size_of_region(number_of_channels))
+                    EndBufferingState.size_of_region(number_of_channels)))
                 end_buffering_state = EndBufferingState.create_from_bytearray(
                     channel_state_data)
                 self._received_data.store_end_buffering_state(

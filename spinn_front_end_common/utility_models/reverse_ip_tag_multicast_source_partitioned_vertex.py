@@ -33,6 +33,8 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 from enum import Enum
 import math
 
+_DEFAULT_MALLOC_REGIONS = 2
+
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
         AbstractDataSpecableVertex, PartitionedVertex,
@@ -43,7 +45,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         converted in to multicast packets
     """
 
-    _REGIONS = Enum(
+    CONFIGURATION_REGION_SIZE = 36
+
+    REGIONS = Enum(
         value="_REGIONS",
         names=[('SYSTEM', 0),
                ('CONFIGURATION', 1),
@@ -51,27 +55,13 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                ('RECORDING_BUFFER', 3),
                ('RECORDING_BUFFER_STATE', 4)])
 
-    _CONFIGURATION_REGION_SIZE = 36
-
     def __init__(
             self, n_keys, resources_required, machine_time_step,
             timescale_factor, label, constraints=None,
-
-            # General input and output parameters
-            board_address=None,
-
-            # Live input parameters
-            receive_port=None,
-            receive_sdp_port=(
+            board_address=None, receive_port=None, receive_sdp_port=(
                 constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
-            receive_tag=None,
-
-            # Key parameters
-            virtual_key=None, prefix=None,
-            prefix_type=None, check_keys=False,
-
-            # Send buffer parameters
-            send_buffer_times=None,
+            receive_tag=None, virtual_key=None, prefix=None, prefix_type=None,
+            check_keys=False, send_buffer_times=None,
             send_buffer_max_space=(
                 constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
@@ -149,7 +139,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send_buffer_notification_port, True, board_address,
                 send_buffer_notification_tag))
             SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
-                self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
+                self, {self.REGIONS.SEND_BUFFER.value: self._send_buffer})
+
+        # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
         self._send_buffer_notification_ip_address = \
             send_buffer_notification_ip_address
@@ -213,7 +205,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     def _fill_send_buffer(self, base_key):
         """ Fill the send buffer with keys to send
         """
-        if self._send_buffer_times is not None:
+        if (self._send_buffer_times is not None and
+                len(self._send_buffer_times) != 0):
             if hasattr(self._send_buffer_times[0], "__len__"):
 
                 # Works with a list-of-lists
@@ -266,26 +259,42 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
-            region=self._REGIONS.SYSTEM.value,
+            region=self.REGIONS.SYSTEM.value,
             size=((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
                   self.get_recording_data_size(1)), label='SYSTEM')
         spec.reserve_memory_region(
-            region=self._REGIONS.CONFIGURATION.value,
-            size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
+            region=self.REGIONS.CONFIGURATION.value,
+            size=self.CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
 
         # Reserve send buffer region if required
         if self._send_buffer is not None:
             buffer_space = self.get_region_buffer_size(
-                self._REGIONS.SEND_BUFFER.value)
+                self.REGIONS.SEND_BUFFER.value)
             if buffer_space > 0:
+                max_buffer_size = self.get_max_buffer_size_possible(
+                    self.REGIONS.SEND_BUFFER.value)
                 spec.reserve_memory_region(
-                    region=self._REGIONS.SEND_BUFFER.value,
-                    size=buffer_space, label="SEND_BUFFER", empty=True)
+                    region=self.REGIONS.SEND_BUFFER.value,
+                    size=max_buffer_size, label="SEND_BUFFER", empty=True)
 
         # Reserve recording buffer regions if required
         self.reserve_buffer_regions(
-            spec, self._REGIONS.RECORDING_BUFFER_STATE.value,
-            [self._REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
+            spec, self.REGIONS.RECORDING_BUFFER_STATE.value,
+            [self.REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
+
+    @staticmethod
+    def get_number_of_mallocs_used_by_dsg(
+            send_buffer_times, record_buffer_size, buffering_output):
+        default_mallocs = _DEFAULT_MALLOC_REGIONS
+        if send_buffer_times is not None:
+                default_mallocs += 1
+        default_mallocs += \
+            AbstractReceiveBuffersToHost.\
+            get_number_of_mallocs_used_by_receive_buffer_dsg(
+                [ReverseIPTagMulticastSourcePartitionedVertex.REGIONS.
+                 RECORDING_BUFFER.value], [record_buffer_size],
+                buffering_output)
+        return default_mallocs
 
     def _update_virtual_key(self, routing_info, sub_graph):
         if self._virtual_key is None:
@@ -301,7 +310,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._prefix = self._virtual_key
 
     def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
-        spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
+        spec.switch_write_focus(region=self.REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
@@ -335,8 +344,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
 
-            buffer_space = self.get_region_buffer_size(
-                self._REGIONS.SEND_BUFFER.value)
+            buffer_space = self.get_max_buffer_size_possible(
+                self.REGIONS.SEND_BUFFER.value)
 
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
@@ -365,7 +374,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self._reserve_regions(spec)
 
         # Write the system region
-        self._write_basic_setup_info(spec, self._REGIONS.SYSTEM.value)
+        self._write_basic_setup_info(spec, self.REGIONS.SYSTEM.value)
 
         # Write the additional recording information
         self.write_recording_data(

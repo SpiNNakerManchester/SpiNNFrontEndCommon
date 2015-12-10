@@ -92,8 +92,8 @@ class FrontEndCommonApplicationExiter(object):
                         sdp_header=SDPHeader(
                             flags=SDPFlag.REPLY_NOT_EXPECTED,
                             destination_port=(
-                                constants
-                                .SDP_RUNNING_COMMAND_DESTINATION_PORT),
+                                constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.
+                                value),
                             destination_cpu=processor,
                             destination_chip_x=core_subset.x,
                             destination_chip_y=core_subset.y), data=byte_data))
