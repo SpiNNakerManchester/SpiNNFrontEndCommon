@@ -87,13 +87,9 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             os.path.dirname(spec_sender.__file__) +
             '/data_specification_executor.aplx': core_subset}
 
-        self._load_executable_images(
-            transceiver, executable_targets, dse_app_id,
-            app_data_folder=application_data_runtime_folder)
-
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
-                                   "Executing data specifications on chip")
+                                   "Loading data specifications on chip")
 
         for placement in placements.placements:
             associated_vertex = graph_mapper.get_vertex_from_subvertex(
@@ -102,63 +98,51 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             # if the vertex can generate a DSG, call it
             if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
+                x, y, p = placement.x, placement.y, placement.p
+
                 data_spec_file_path = \
-                            associated_vertex.get_data_spec_file_path(
-                                placement.x, placement.y, placement.p, hostname,
-                                application_data_runtime_folder)
+                    associated_vertex.get_data_spec_file_path(
+                        x, y, p, hostname, application_data_runtime_folder)
 
                 data_spec_file_size = os.path.getsize(data_spec_file_path)
 
-                header = SDPHeader(flags=SDPFlag.REPLY_NOT_EXPECTED,
-                                   destination_cpu=placement.p,
-                                   destination_chip_x=placement.x,
-                                   destination_chip_y=placement.y,
-                                   destination_port=1)
-
-                # Wait for the core to get into the READY_TO_RECEIVE state.
-                while transceiver.get_cpu_information_from_core(
-                        placement.x, placement.y, placement.p).user[1] != 0x1:
-                    time.sleep(0.01)
-
-                # Send a packet containing the length of the data (the
-                # length of the internal buffer).
-                msg_data_len = struct.pack("<II", data_spec_file_size, app_id)
-
-                transceiver.send_sdp_message(SDPMessage(header, msg_data_len))
-
-                # Wait for the core to get into the WAITING_FOR_DATA state.
-                return_wait_state = transceiver.get_cpu_information_from_core(
-                    placement.x, placement.y, placement.p).user[1]
-                while return_wait_state != 0x2:
-                    transceiver.send_sdp_message(SDPMessage(header,
-                                                            msg_data_len))
-                    return_wait_state = transceiver.\
-                        get_cpu_information_from_core(
-                            placement.x, placement.y, placement.p).user[1]
-                    logger.info("Data spec executor on chip not ready, "
-                                "waiting 1 sec for it to be ready")
-                    time.sleep(1)
-
-                # Write data at the address pointed at by user2.
-                destination_address = \
-                    transceiver. get_cpu_information_from_core(
-                        placement.x, placement.y, placement.p).user[2]
-
                 application_data_file_reader = SpinnmanFileDataReader(
                     data_spec_file_path)
-                logger.debug("writing application data for vertex {}"
-                             .format(associated_vertex.label))
+
+                base_address = transceiver.malloc_sdram(
+                    placement.x, placement.y, data_spec_file_size, dse_app_id)
+
                 transceiver.write_memory(
-                    placement.x, placement.y, destination_address,
+                    x, y, base_address,
                     application_data_file_reader, data_spec_file_size)
 
-                # Send a packet that triggers the execution of the
-                # data specification.
-                transceiver.send_sdp_message(SDPMessage(
-                    header, struct.pack("<I", 0)))
+                # data spec file is written at specific address
+                # write start address in user 0
+                # write length in user 1
+                user_0_address = transceiver.\
+                    get_user_0_register_address_from_core(x, y, p)
+                user_1_address = transceiver.\
+                    get_user_1_register_address_from_core(x, y, p)
+                user_2_address = transceiver.\
+                    get_user_2_register_address_from_core(x, y, p)
+
+                encoded_address = struct.pack("<I", base_address)
+                encoded_length = struct.pack("<I", data_spec_file_size)
+                encoded_future_app_id = struct.pack("<I", app_id)
+
+                transceiver.write_memory(
+                    x, y, user_0_address, encoded_address, 4)
+                transceiver.write_memory(
+                    x, y, user_1_address, encoded_length, 4)
+                transceiver.write_memory(
+                    x, y, user_2_address, encoded_future_app_id, 4)
 
                 progress_bar.update()
         progress_bar.end()
+
+        self._load_executable_images(
+            transceiver, executable_targets, dse_app_id,
+            app_data_folder=application_data_runtime_folder)
 
         processors_exited = transceiver.get_core_state_count(
             dse_app_id, CPUState.FINISHED)
