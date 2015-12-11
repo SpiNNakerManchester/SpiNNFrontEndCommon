@@ -41,7 +41,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
     def __call__(
             self, hostname, placements, graph_mapper, report_default_directory,
             write_text_specs, runtime_application_data_folder, machine,
-            board_version, dsg_targets, transceiver):
+            board_version, dsg_targets, transceiver, dse_app_id, app_id):
         """
 
         :param hostname:
@@ -55,14 +55,16 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         data = self.spinnaker_based_data_specification_execution(
             hostname, placements, graph_mapper, write_text_specs,
             runtime_application_data_folder, machine, board_version,
-            report_default_directory, dsg_targets, transceiver)
+            report_default_directory, dsg_targets, transceiver,
+            dse_app_id, app_id)
 
         return data
 
     def spinnaker_based_data_specification_execution(
             self, hostname, placements, graph_mapper, write_text_specs,
             application_data_runtime_folder, machine, board_version,
-            report_default_directory, dsg_targets, transceiver):
+            report_default_directory, dsg_targets, transceiver,
+            dse_app_id, app_id):
         """
 
         :param hostname:
@@ -86,12 +88,12 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             '/data_specification_executor.aplx': core_subset}
 
         self._load_executable_images(
-            transceiver, executable_targets, 31,
+            transceiver, executable_targets, dse_app_id,
             app_data_folder=application_data_runtime_folder)
 
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
-                                   "on executing data specifications on chip")
+                                   "Executing data specifications on chip")
 
         for placement in placements.placements:
             associated_vertex = graph_mapper.get_vertex_from_subvertex(
@@ -120,7 +122,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
 
                 # Send a packet containing the length of the data (the
                 # length of the internal buffer).
-                msg_data_len = struct.pack("<I", data_spec_file_size)
+                msg_data_len = struct.pack("<II", data_spec_file_size, app_id)
 
                 transceiver.send_sdp_message(SDPMessage(header, msg_data_len))
 
@@ -159,13 +161,16 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         progress_bar.end()
 
         processors_exited = transceiver.get_core_state_count(
-            31, CPUState.FINISHED)
+            dse_app_id, CPUState.FINISHED)
         while processors_exited < number_of_cores_used:
             logger.info("Data spec executor on chip not completed, waiting "
                         "1 sec. for it to complete")
             time.sleep(1)
             processors_exited = transceiver.get_core_state_count(
-                31, CPUState.FINISHED)
+                dse_app_id, CPUState.FINISHED)
+
+        transceiver.stop_application(dse_app_id)
+        logger.info("On-chip data spec executor completed")
 
         return {"LoadedApplicationDataToken": True}
 
@@ -208,7 +213,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                         " size of your binary or circumvent this error check.")
 
             transceiver.execute_flood(core_subset, file_reader, app_id,
-                                     size)
+                                      size)
 
 #            if self._reports_states.transciever_report:
 #                reports.re_load_script_load_executables_individual(
