@@ -1,4 +1,4 @@
-from spinnman.exceptions import SpinnmanIOException
+from spinnman.exceptions import SpinnmanIOException, SpinnmanTimeoutException
 from spinnman.messages.eieio.command_messages.eieio_command_header \
     import EIEIOCommandHeader
 from spinnman.connections.udp_packet_connections.udp_connection \
@@ -46,6 +46,8 @@ class DatabaseConnection(UDPConnection, Thread):
                         .format(local_host, local_port))
         self._database_callback_functions = list()
         self._start_callback_function = start_callback_function
+        self._running = False
+        self.daemon = True
         self.start()
 
     def add_database_callback(self, database_callback_function):
@@ -65,34 +67,52 @@ class DatabaseConnection(UDPConnection, Thread):
 
     def run(self):
         try:
+            self._running = True
             logger.info(
                 "Waiting for message to indicate that the database is ready")
-            data, address = self.receive_with_address()
+            while self._running:
 
-            # Read the read packet confirmation
-            logger.info("Reading database")
-            database_path = str(data[2:])
+                data, address = self._retrieve_database_address()
 
-            # Call the callback
-            database_reader = DatabaseReader(database_path)
-            for database_callback in self._database_callback_functions:
-                database_callback(database_reader)
+                if data is not None:
+                    # Read the read packet confirmation
+                    logger.info("Reading database")
+                    database_path = str(data[2:])
 
-            # Send the response
-            logger.info(
-                "Notifying the toolchain that the database has been read")
-            self.send_to(EIEIOCommandHeader(1).bytestring, address)
+                    # Call the callback
+                    database_reader = DatabaseReader(database_path)
+                    for database_callback in self._database_callback_functions:
+                        database_callback(database_reader)
 
-            # Wait for the start of the simulation
-            if self._start_callback_function is not None:
-                logger.info(
-                    "Waiting for message to indicate that the simulation has"
-                    " started")
-                self.receive()
+                    # Send the response
+                    logger.info(
+                        "Notifying the toolchain that the database has been"
+                        " read")
+                    self.send_to(EIEIOCommandHeader(1).bytestring, address)
 
-                # Call the callback
-                self._start_callback_function()
+                    # Wait for the start of the simulation
+                    if self._start_callback_function is not None:
+                        logger.info(
+                            "Waiting for message to indicate that the "
+                            "simulation has started")
+                        self.receive()
+
+                        # Call the callback
+                        self._start_callback_function()
 
         except Exception as e:
             traceback.print_exc()
             raise SpinnmanIOException(str(e))
+
+    def _retrieve_database_address(self):
+        try:
+            data, address = self.receive_with_address(timeout=3)
+            return data, address
+        except SpinnmanTimeoutException:
+            return None, None
+        except SpinnmanIOException as e:
+            raise e
+
+    def close(self):
+        self._running = False
+        UDPConnection.close(self)

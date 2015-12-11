@@ -18,6 +18,11 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
     """
 
     @abstractmethod
+    def buffering_input(self):
+        """ Return True if the input of this vertex is to be buffered
+        """
+
+    @abstractmethod
     def get_regions(self):
         """ Get the set of regions for which there are keys to be sent
 
@@ -38,8 +43,8 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
 
     @abstractmethod
     def get_max_buffer_size_possible(self, region):
-        """
-        gets the max_possible size of a buffered region
+        """ Gets the max possible size of a buffered region
+
         :param region: the region to find the max possible size of
         :type region: int
         :return: the max possible size of the buffered region
@@ -93,7 +98,7 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
 
     @abstractmethod
     def is_empty(self, region):
-        """ Returns true if there are no spikes to be buffered for the
+        """ Return true if there are no spikes to be buffered for the
             specified region
 
         :param region: The region to get the next key from

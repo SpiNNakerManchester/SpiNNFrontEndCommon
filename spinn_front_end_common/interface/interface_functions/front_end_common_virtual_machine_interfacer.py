@@ -1,16 +1,13 @@
-# spinnmachine imports
+# spinn_machine imports
 from spinn_machine.virutal_machine import VirtualMachine
 
 
 class FrontEndCommonVirtualMachineInterfacer(object):
     """
-    FrontEndCommonMachineInterfacer: interface to make a transciever and a
-    spinnmachine object
     """
 
     def __call__(self, width, height, virtual_has_wrap_arounds):
         """
-        Set up the interfaces for communicating with the SpiNNaker board
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
         :param virtual_has_wrap_arounds: True if the machine is virtual and\

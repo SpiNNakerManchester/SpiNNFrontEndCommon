@@ -10,11 +10,10 @@
 
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
-//! the port used by the host machien for setting up the sdp port for
+
+//! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
-
-extern event_data_t event;
 
 //! flag for checking if we're in exit state
 static bool exited = false;
@@ -30,7 +29,7 @@ static bool exited = false;
 //! from the memory region
 //! \param[out] n_simulation_ticks A pointer for storing the number of timer
 //! tics this executable should run for, which is read from this region
-//! \param INFINITE_RUN[out] a pointer to an int which represents if the model 
+//! \param INFINITE_RUN[out] a pointer to an int which represents if the model
 //!                          should run for infinite time
 //! \return True if the method was able to read the parameters and the
 //! application magic number corresponded to the magic number in memory.
@@ -42,8 +41,8 @@ bool simulation_read_timing_details(
 
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
         log_error("Unexpected magic number 0x%.8x instead of 0x%.8x",
-        		 address[APPLICATION_MAGIC_NUMBER],
-				 expected_app_magic_number);
+                address[APPLICATION_MAGIC_NUMBER],
+                expected_app_magic_number);
         return false;
     }
 
@@ -66,6 +65,7 @@ void simulation_run() {
 //! \return does not return anything
 void simulation_handle_pause_resume(
         callback_t timer_function, int timer_function_priority){
+
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
 
@@ -83,17 +83,14 @@ void simulation_handle_pause_resume(
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
-//! runtime counter, as well as switching off the binary when it truely needs
+//! runtime counter, as well as switching off the binary when it truly needs
 //! to be stopped.
 //! \param[in] mailbox ????????????
 //! \param[in] port ??????????????
-//! \param[in] free_message bool to check if the message should be freed
-//! \return does not return anything
 void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
-    log_info("received packet with command code %d", msg->cmd_rc);
 
     if (msg->cmd_rc == CMD_STOP) {
         log_info("Received exit signal. Program complete.");
@@ -105,7 +102,8 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
     } else if (msg->cmd_rc == CMD_RUNTIME) {
         log_info("Setting the runtime of this model to %d", msg->arg1);
-        // resetting the simualtion time pointer
+
+        // resetting the simulation time pointer
         *pointer_to_simulation_time = msg->arg1;
 
         // free the message to stop overload
@@ -115,9 +113,15 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
         sark_cpu_state(CPU_STATE_12);
 
     } else if (msg->cmd_rc == SDP_SWITCH_STATE){
+
         // change the state of the cpu into whats requested from the host
         sark_cpu_state(msg->arg1);
+
         // free the message to stop overload
+        spin1_msg_free(msg);
+    } else {
+
+        log_error("received packet with unknown command code %d", msg->cmd_rc);
         spin1_msg_free(msg);
     }
 }

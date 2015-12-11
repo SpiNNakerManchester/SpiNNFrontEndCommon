@@ -1,45 +1,45 @@
-"""
-FrontEndCommonBufferManagerCreater
-"""
-
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_front_end_common.interface.buffer_management.buffer_manager import \
     BufferManager
 from spinn_front_end_common.interface.buffer_management.\
     buffer_models.abstract_sends_buffers_from_host_partitioned_vertex import \
     AbstractSendsBuffersFromHostPartitionedVertex
+from spinn_front_end_common.interface.buffer_management.buffer_models\
+    .abstract_receive_buffers_to_host \
+    import AbstractReceiveBuffersToHost
 
 
 class FrontEndCommonBufferManagerCreater(object):
-    """
-    FrontEndCommonBufferManagerCreater
-    """
 
     def __call__(
-            self, partitioned_graph, placements, tags, txrx, reports_states,
-            app_data_folder):
-        """
-        interface for buffered vertices
-        :param partitioned_graph: the partitioned graph object
-        :param placements: the placements object
-        :param tags: the tags object
-        :return: None
-        """
+            self, placements, tags, txrx, reports_states, app_data_folder):
         progress_bar = ProgressBar(
-            len(partitioned_graph.subvertices), "Initialising buffers")
+            len(list(placements.placements)), "Initialising buffers")
 
         # Create the buffer manager
-        send_buffer_manager = BufferManager(
+        buffer_manager = BufferManager(
             placements, tags, txrx, reports_states, app_data_folder)
 
-        for partitioned_vertex in partitioned_graph.subvertices:
-            if isinstance(partitioned_vertex,
+        for placement in placements.placements:
+            if isinstance(placement.subvertex,
                           AbstractSendsBuffersFromHostPartitionedVertex):
 
-                # Add the vertex to the managed vertices
-                send_buffer_manager.add_sender_vertex(partitioned_vertex)
+                if placement.subvertex.buffering_input():
+
+                    # Add the vertex to the managed vertices
+                    buffer_manager.add_sender_vertex(placement.subvertex)
+
+            if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
+                    if placement.subvertex.buffering_output:
+                        buffer_manager.add_receiving_vertex(
+                            placement.subvertex)
+
+            # Partitioned vertices can also be output buffered
+            if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
+                if placement.subvertex.buffering_output:
+                    buffer_manager.add_receiving_vertex(placement.subvertex)
+                    placement.subvertex.buffer_manager = buffer_manager
             progress_bar.update()
         progress_bar.end()
 
-        return {"buffer_manager": send_buffer_manager}
-
+        return {"buffer_manager": buffer_manager}

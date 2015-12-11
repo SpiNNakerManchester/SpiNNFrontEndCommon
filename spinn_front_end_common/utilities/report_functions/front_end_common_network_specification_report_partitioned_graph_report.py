@@ -1,6 +1,3 @@
-"""
-    FrontEndCommonNetworkSpecificationReportPartitionedGraphReport
-"""
 import logging
 import os
 import time
@@ -10,16 +7,16 @@ logger = logging.getLogger(__name__)
 
 class FrontEndCommonNetworkSpecificationReportPartitionedGraphReport(object):
     """
-    FrontEndCommonNetworkSpecificationReportPartitionedGraphReport
     """
 
     def __call__(self, report_folder, partitioned_graph, hostname):
         """
-        :param report_folder: the directroy to which reports are stored
+        :param report_folder: the directory to which reports are stored
         :type report_folder: str
-        :param partitioned_graph: the partitioned graph generated from the tools
-        :type partitioned_graph:
-        pacman.model.partitioned_graph.partitioned_graph.PartitionedGraph
+        :param partitioned_graph: the partitioned graph generated from the \
+                    tools
+        :type partitioned_graph:\
+                    pacman.model.partitioned_graph.partitioned_graph.PartitionedGraph
         :param hostname: the machine name
         :type hostname:
         :return: None
@@ -70,5 +67,6 @@ class FrontEndCommonNetworkSpecificationReportPartitionedGraphReport(object):
             f_network_specification.write(edge_str)
             f_network_specification.write("  Model: {}\n".format(model))
             f_network_specification.write("\n")
+
         # Close file:
         f_network_specification.close()

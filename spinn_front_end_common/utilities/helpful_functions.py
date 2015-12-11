@@ -20,13 +20,14 @@ import logging
 import re
 import inspect
 import struct
+from spinnman.model.cpu_state import CPUState
 
 logger = logging.getLogger(__name__)
 
 
 def get_valid_components(module, terminator):
-    """
-    ???????????????
+    """ Get possible components
+
     :param module:
     :param terminator:
     :return:
@@ -39,6 +40,7 @@ def get_valid_components(module, terminator):
 
 def read_data(x, y, address, length, data_format, transceiver):
     """ Reads and converts a single data item from memory
+
     :param x: chip x
     :param y: chip y
     :param address: base address of the sdram chip to read
@@ -54,10 +56,9 @@ def read_data(x, y, address, length, data_format, transceiver):
 
 
 def auto_detect_database(partitioned_graph):
-    """
-    autodetects if there is a need to activate the database system
-    :param partitioned_graph: the partitioned graph of the application
-    problem space.
+    """ Auto detects if there is a need to activate the database system
+    :param partitioned_graph: the partitioned graph of the application\
+            problem space.
     :return: a bool which represents if the database is needed
     """
     for vertex in partitioned_graph.subvertices:
@@ -111,8 +112,8 @@ def set_up_output_application_data_specifics(
 
     elif where_to_write_application_data_files == "TEMP":
 
-        # just dont set the config param, code downstairs
-        #  from here will create temp folders if needed
+        # just don't set the config param, code downstairs
+        # from here will create temp folders if needed
         pass
     else:
 
@@ -222,7 +223,7 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
             shutil.move(file_path, new_app_folder)
         files_in_report_folder = os.listdir(starting_directory)
 
-        # while theres more than the valid max, remove the oldest one
+        # while there's more than the valid max, remove the oldest one
         while len(files_in_report_folder) > max_to_keep:
             files_in_report_folder.sort(
                 cmp, key=lambda temp_file:
@@ -237,9 +238,7 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
 def do_mapping(
         inputs, algorithms, required_outputs, xml_paths, do_timings):
     """
-    sets up
-    :param do_timings: bool which sattes if each algorithm should time
-     itself
+    :param do_timings: bool which states if each algorithm should time itself
     :param inputs:
     :param algorithms:
     :param required_outputs:
@@ -248,7 +247,7 @@ def do_mapping(
     :return:
     """
 
-    # add xml path to front end common interfact functions
+    # add xml path to front end common interface functions
     xml_paths.append(
         os.path.join(os.path.dirname(interface_functions.__file__),
                      "front_end_common_interface_functions.xml"))
@@ -302,3 +301,18 @@ def get_cores_not_in_state(all_core_subsets, state, txrx):
             cores_not_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_not_in_state
+
+
+def get_core_status_string(core_infos):
+    """ Get a string indicating the status of the given cores
+    """
+    break_down = "\n"
+    for ((x, y, p), core_info) in core_infos.iteritems():
+        if core_info.state == CPUState.RUN_TIME_EXCEPTION:
+            break_down += "    {}:{}:{} in state {}:{}\n".format(
+                x, y, p, core_info.state.name,
+                core_info.run_time_error.name)
+        else:
+            break_down += "    {}:{}:{} in state {}\n".format(
+                x, y, p, core_info.state.name)
+    return break_down

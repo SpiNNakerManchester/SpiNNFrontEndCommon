@@ -1,7 +1,3 @@
-"""
-NotificationProtocol
-"""
-
 # spinnman imports
 from multiprocessing.pool import ThreadPool
 from spinnman.connections.udp_packet_connections.\
@@ -21,13 +17,13 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationProtocol(object):
-    """
-    NotificationProtocol: the protocol which hand shakes with external devices
-    about the database and starting execution
+    """ The protocol which hand shakes with external devices about the\
+        database and starting execution
     """
 
     def __init__(self, socket_addresses, wait_for_read_confirmation):
         self._socket_addresses = socket_addresses
+
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
         self._wait_for_read_confirmation = wait_for_read_confirmation
@@ -40,8 +36,8 @@ class NotificationProtocol(object):
                 remote_port=socket_address.notify_port_no))
 
     def wait_for_confirmation(self):
-        """ if asked to wait for confirmation, waits for all external systems to
-        confirm that they are configured and have read the dataabse
+        """ if asked to wait for confirmation, waits for all external systems\
+            to confirm that they are configured and have read the database
 
         :return:
         """
@@ -51,9 +47,9 @@ class NotificationProtocol(object):
         self._wait_pool.join()
 
     def send_start_notification(self):
-        """ either waits till all soruces have confirmed read the database and
-        are configured, and/or just sends the start notification
-         (when the system is executeing)
+        """ either waits till all sources have confirmed read the database and\
+            are configured, and/or just sends the start notification\
+            (when the system is executing)
 
         :return:
         """
@@ -71,8 +67,9 @@ class NotificationProtocol(object):
         :param database_path: the path to the database file
         :return:
         """
-        self._wait_pool.apply_async(self._send_read_notification,
-                                    args=[database_path])
+        if database_path is not None:
+            self._wait_pool.apply_async(self._send_read_notification,
+                                        args=[database_path])
 
     def _send_read_notification(self, database_path):
         """
@@ -84,43 +81,45 @@ class NotificationProtocol(object):
 
         """
         # noinspection PyBroadException
-        try:
-            self._sent_visualisation_confirmation = True
-            # add file path to database into command message.
-            number_of_chars = len(database_path)
-            if number_of_chars > constants.MAX_DATABASE_PATH_LENGTH:
-                raise exceptions.ConfigurationException(
-                    "The file path to the database is too large to be "
-                    "transmitted via the command packet, "
-                    "please set the file path manually and "
-                    "set the .cfg parameter [Database] send_file_path "
-                    "to False")
-            eieio_command_message = DatabaseConfirmation(database_path)
-
-            # Send command and wait for response
-            logger.info(
-                "*** Notifying external sources that the database is ready "
-                "for reading ***")
-            # noinspection PyBroadException
+        if database_path is not None:
             try:
-                for connection in self._data_base_message_connections:
-                    connection.send_eieio_message(eieio_command_message)
+                self._sent_visualisation_confirmation = True
 
-                # if the system needs to wait, try recieving a packet back
-                if self._wait_for_read_confirmation:
+                # add file path to database into command message.
+                number_of_chars = len(database_path)
+                if number_of_chars > constants.MAX_DATABASE_PATH_LENGTH:
+                    raise exceptions.ConfigurationException(
+                        "The file path to the database is too large to be "
+                        "transmitted via the command packet, "
+                        "please set the file path manually and "
+                        "set the .cfg parameter [Database] send_file_path "
+                        "to False")
+                eieio_command_message = DatabaseConfirmation(database_path)
+
+                # Send command and wait for response
+                logger.info(
+                    "*** Notifying external sources that the database is "
+                    "ready for reading ***")
+
+                # noinspection PyBroadException
+                try:
                     for connection in self._data_base_message_connections:
-                        connection.receive_eieio_message()
-                logger.info("*** Confirmation received, continuing ***")
-            except Exception as e:
-                logger.warning("*** Failed to notify external application"
-                               " about the database - continuing ***")
+                        connection.send_eieio_message(eieio_command_message)
 
-        except Exception:
-            traceback.print_exc()
+                    # if the system needs to wait, try receiving a packet back
+                    if self._wait_for_read_confirmation:
+                        for connection in self._data_base_message_connections:
+                            connection.receive_eieio_message()
+                    logger.info("*** Confirmation received, continuing ***")
+                except Exception:
+                    logger.warning("*** Failed to notify external application"
+                                   " about the database - continuing ***")
+
+            except Exception:
+                traceback.print_exc()
 
     def close(self):
-        """
-        closes the thread pool
+        """ Closes the thread pool
         :return:
         """
         self._wait_pool.close()

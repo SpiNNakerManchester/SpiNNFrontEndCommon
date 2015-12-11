@@ -1,7 +1,3 @@
-"""
-FrontEndCommonProvenanceGatherer
-"""
-
 # pacman imports
 from pacman.interfaces.abstract_provides_provenance_data import \
     AbstractProvidesProvenanceData
@@ -17,17 +13,14 @@ from lxml import etree
 
 class FrontEndCommonProvenanceGatherer(object):
     """
-    FrontEndCommonProvenanceGatherer
     """
 
     def __call__(self, file_path, transceiver, machine, router_tables, has_ran,
                  placements):
         """
-        inheirtted from abstract prodives provenance data. forces the front end
-        to gather machine like proenance which it desires.
-        :param file_path: the file apth to write the provenance data to
+        :param file_path: the file path to write the provenance data to
         :param transceiver: the spinnman interface object
-        :param machine: the python representation of the spiunnaker machine
+        :param machine: the python representation of the spinnaker machine
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran
         :return: none
@@ -65,8 +58,8 @@ class FrontEndCommonProvenanceGatherer(object):
 
     def _write_router_provenance_data(
             self, root, router_tables, machine, txrx):
-        """
-        helper method which writes the provenance data of the router diag
+        """ Writes the provenance data of the router diagnostics
+
         :param root: the root element to add diagnostics to
         :return: None
         """
