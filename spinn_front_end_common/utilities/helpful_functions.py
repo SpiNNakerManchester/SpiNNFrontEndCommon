@@ -11,6 +11,9 @@ from spinn_front_end_common.utilities import report_functions as \
 # pacman imports
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 
+# dsg imports
+from data_specification import utility_calls
+
 # general imports
 import os
 import datetime
@@ -51,6 +54,37 @@ def read_data(x, y, address, length, data_format, transceiver):
     data = buffer(transceiver.read_memory(x, y, address, length))
     result = struct.unpack_from(data_format, data)[0]
     return result
+
+
+def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
+        """ Get the address of a region for a vertex
+
+        :param region: the region to locate the base address of
+        :type region: int
+        :param vertex: the vertex to load a buffer for
+        :type vertex:\
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
+        :return: None
+        """
+        placement = placements.get_placement_of_subvertex(vertex)
+        memory_address = locate_memory_region_on_core(
+            placement.x, placement.y, placement.p, region, transceiver)
+        return memory_address
+
+
+def locate_memory_region_on_core(x, y, p, region, transceiver):
+    app_data_base_address = get_app_data_base_address(x, y, p, transceiver)
+    region_base_address_offset = utility_calls.get_region_base_address_offset(
+        app_data_base_address, region)
+    region_base_address_buf = buffer(transceiver.read_memory(
+        x, y, region_base_address_offset, 4))
+    region_base_address = struct.unpack_from("<I", region_base_address_buf)[0]
+    region_base_address += app_data_base_address
+    return region_base_address
+
+
+def get_app_data_base_address(x, y, p, transceiver):
+    return transceiver.get_cpu_information_from_core(x, y, p).user[0]
 
 
 def auto_detect_database(partitioned_graph):
@@ -241,7 +275,7 @@ def do_mapping(
     :param algorithms:
     :param required_outputs:
     :param xml_paths:
-    :param in_debug_mode:
+    :param do_timings:
     :return:
     """
 
