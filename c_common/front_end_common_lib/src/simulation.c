@@ -11,6 +11,9 @@
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
+//! function pointer to the update function
+update_func_t update_params;
+
 //! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
@@ -119,6 +122,18 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         // free the message to stop overload
         spin1_msg_free(msg);
+    } else if (msg->cmd_rc == CMD_RELOAD_PARAMS) {
+        log_info("Reloading parameters...");
+
+        // Trigger reloading parameters
+        update_params();
+
+        // free the message to stop overload
+        spin1_msg_free(msg);
+
+        // change state to CPU_STATE_14 to signal that message was received.
+        sark_cpu_state(CPU_STATE_14);
+
     } else {
 
         log_error("received packet with unknown command code %d", msg->cmd_rc);
@@ -128,8 +143,10 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
 //! \brief handles the
 void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
+        uint32_t *simulation_ticks, update_func_t update_func,
+        int sdp_packet_callback_priority) {
     pointer_to_simulation_time = simulation_ticks;
+    update_params = update_func;
     log_info("port no is %d", sdp_exit_run_command_port);
     spin1_sdp_callback_on(
         sdp_exit_run_command_port, simulation_sdp_packet_callback,

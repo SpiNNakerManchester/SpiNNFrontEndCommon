@@ -30,7 +30,8 @@ SDP_RUNNING_MESSAGE_CODES = Enum(
     names=[
         ("SDP_STOP_ID_CODE", 6),
         ("SDP_NEW_RUNTIME_ID_CODE", 7),
-        ("SDP_SWITCH_STATE", 8)]
+        ("SDP_SWITCH_STATE", 8),
+        ("SDP_RELOAD_PARAMS", 9)]
 )
 
 

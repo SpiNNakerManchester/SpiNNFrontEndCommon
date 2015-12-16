@@ -23,8 +23,10 @@ typedef enum region_elements{
 }region_elements;
 
 typedef enum simulation_commands{
-    CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8
+    CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8, CMD_RELOAD_PARAMS = 9
 }simulation_commands;
+
+typedef void (*update_func_t) (void);
 
 //! \brief Reads the timing details for the simulation out of a region,
 //!        which is formatted as:
@@ -75,6 +77,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port);
 //! sdp callback for runtime and exit states.
 //! \return does not return anything
 void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks, int sdp_packet_callback_priority);
+        uint32_t *simulation_ticks, update_func_t update_func,
+        int sdp_packet_callback_priority);
 
 #endif // _SIMULATION_H_
