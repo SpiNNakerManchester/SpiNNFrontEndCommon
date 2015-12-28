@@ -132,7 +132,7 @@ class ReverseIpTagMultiCastSource(
         return partitioned_edge.pre_subvertex.get_outgoing_edge_constraints(
             partitioned_edge, graph_mapper)
 
-    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
+    def get_static_sdram_usage_for_atoms(self, vertex_slice, graph):
         send_buffer_size = 0
         if self._send_buffer_times is not None:
             send_buffer_size = self._send_buffer_max_space
@@ -151,6 +151,8 @@ class ReverseIpTagMultiCastSource(
                 (ReverseIPTagMulticastSourcePartitionedVertex.
                  CONFIGURATION_REGION_SIZE) + send_buffer_size +
                 recording_size + mallocs_sdram_usage)
+
+
 
     def get_number_of_mallocs_used_by_dsg(self, vertex_slice, in_edges):
         mallocs = ReverseIPTagMulticastSourcePartitionedVertex.\
