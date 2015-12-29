@@ -2,12 +2,19 @@ from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.utilities.utility_objs.resource_tracker import ResourceTracker
 
 from spinn_front_end_common.interface import interface_functions
+from spinn_front_end_common.interface.abstract_recordable_interface import \
+    AbstractRecordableInterface
+from spinn_front_end_common.interface.buffer_management.buffer_models.\
+    abstract_receive_buffers_to_host import \
+    AbstractReceiveBuffersToHost
 from spinn_front_end_common.utility_models.\
     reverse_ip_tag_multicast_source_partitioned_vertex import \
     ReverseIPTagMulticastSourcePartitionedVertex
+from spinn_front_end_common.utilities import exceptions
 
 import os
 import math
+import sys
 
 
 class FrontEndCommonAutoPauseAndResumer(object):
@@ -22,14 +29,15 @@ class FrontEndCommonAutoPauseAndResumer(object):
             wait_on_confirmation, send_start_notification, machine,
             notification_interface, executable_targets, app_id, txrx,
             time_scale_factor, loaded_reverse_iptags_token, loaded_iptags_token,
-            loaded_routing_tables_token, loaded_binaries_token,
+            loaded_routing_tables_token, loaded_binaries_token, graph_mapper,
             loaded_application_data_token, no_sync_changes, partitionable_graph,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             machine_time_step, placements):
 
         steps = self._deduce_number_of_interations(
             partitioned_graph, no_machine_time_steps, time_scale_factor,
-            machine, machine_time_step, placements)
+            machine, machine_time_step, placements, graph_mapper,
+            partitionable_graph)
 
         inputs, algorthims, outputs, xmls = self._setup_pacman_executor_inputs(
             buffer_manager, wait_on_confirmation, partitionable_graph,
@@ -47,7 +55,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
     def _deduce_number_of_interations(
             self, partitioned_graph, no_machine_time_steps, time_scale_factor,
-            machine, machine_time_step, placements):
+            machine, machine_time_step, placements, graph_mapper,
+            partitionable_graph):
         """
 
         :param partitioned_graph:
@@ -85,7 +94,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # left over sdram
         min_machine_time_steps = \
             self._discover_min_time_steps_with_sdram_avilable(
-                partitioned_graph, machine, resource_tracker)
+                placements, machine, resource_tracker, graph_mapper,
+                partitionable_graph)
 
         # calculate the steps array
         number_of_full_iterations = \
@@ -101,30 +111,114 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return steps
 
     def _discover_min_time_steps_with_sdram_avilable(
-            self, partitioned_graph, machine, resource_tracker):
+            self, machine, placements, resource_tracker, graph_mapper,
+            partitionable_graph):
         """
 
-        :param partitioned_graph:
+        :param placements:
         :param machine:
         :param resource_tracker:
         :return:
         """
+        min_machine_time_steps = sys.maxint
+        for chip in machine.chips:
+            chip_placments = placements.get_placements_on_chip(chip.x, chip.y)
+            none_buffered_placements = list()
+            for chip_placment in chip_placments:
+                if ((not isinstance(
+                            chip_placment.subvertex,
+                            ReverseIPTagMulticastSourcePartitionedVertex))
+                        and ((not isinstance(chip_placment.subvertex,
+                                             AbstractReceiveBuffersToHost))
+                              and chip_placment.subvertex.buffering_output)
+                        and isinstance(chip_placment.subvertex,
+                                       AbstractRecordableInterface)):
+                    none_buffered_placements.append(chip_placment)
 
+            sdram_left_over = \
+                resource_tracker.sdram_avilable_on_chip(chip.x, chip.y)
+
+            this_chips_min_machine_time_steps = \
+                self._caculate_min_machine_time_step_for_bunch_of_placements(
+                    none_buffered_placements, sdram_left_over, graph_mapper,
+                    partitionable_graph)
+
+            if this_chips_min_machine_time_steps < min_machine_time_steps:
+                min_machine_time_steps = this_chips_min_machine_time_steps
+
+        return min_machine_time_steps
+
+    # overloadable method for optimisations on chip sdram distrubtion
+    @staticmethod
+    def _caculate_min_machine_time_step_for_bunch_of_placements(
+            placements, sdram_left_over, graph_mapper, partitionable_graph):
+        """
+
+        :param placements:
+        :param sdram_left_over:
+        :param graph_mapper:
+        :param partitionable_graph:
+        :return:
+        """
+        # assuming shared equally, maybe optimsations for unbalanced usage
+        sdram_each = math.floor(sdram_left_over / len(placements))
+        min_chip_no_machine_time_steps = sys.maxint
+        for placement in placements:
+
+            # locate individual machine time step worth of sdram usage
+            vertex_slice = graph_mapper.get_subvertex_slice(placement.subvertex)
+            individual_machine_time_step_sdram_usage = \
+                placement.subvertex.get_runtime_sdram_usage_for_atoms(
+                    vertex_slice, partitionable_graph, 1)
+
+            # calculate min sdram usage for shared sdram allocation
+            no_machine_time_steps = math.floor(
+                sdram_each / individual_machine_time_step_sdram_usage)
+
+            # safety check
+            expected_sdram_usage = \
+                placement.subvertex.get_runtime_sdram_usage_for_atoms(
+                    vertex_slice, partitionable_graph, no_machine_time_steps)
+            if expected_sdram_usage > sdram_each:
+                raise exceptions.ConfigurationException(
+                    "Havent been programmed to handle models which change "
+                    "their requriements of sdram within a runtime. Please "
+                    "fix and try again")
+
+            # update min chip machine time steps accordingly
+            if no_machine_time_steps < min_chip_no_machine_time_steps:
+                min_chip_no_machine_time_steps = no_machine_time_steps
+
+        return min_chip_no_machine_time_steps
 
     def _turn_off_buffered_out_as_required(
             self, bandwidth_resource, placements, machine, partitioned_graph):
+        """
+
+        :param bandwidth_resource:
+        :param placements:
+        :param machine:
+        :param partitioned_graph:
+        :return:
+        """
         for (ethernet_connected_chip_x,
                 ethernet_connected_chip_y) in bandwidth_resource:
-            if bandwidth_resource[(ethernet_connected_chip_x,
-                                   ethernet_connected_chip_y)] == 0:
-                chips_in_region_of_ethernet = \
+            chips_in_region_of_ethernet = \
                     machine.get_chips_via_local_ethernet(
                         ethernet_connected_chip_x, ethernet_connected_chip_y)
-                for
+            for chip in chips_in_region_of_ethernet:
+                if bandwidth_resource[(ethernet_connected_chip_x,
+                                       ethernet_connected_chip_y)] == 0:
+                    chip_placements = \
+                        placements.get_placements_on_chip(chip.x, chip.y)
+                    for chip_placement in chip_placements:
+                        subvertex = chip_placement.subvertex
+                        if (isinstance(subvertex, AbstractReceiveBuffersToHost)
 
 
+    @staticmethod
     def _update_ethernet_bandwidth_off_injectors(
-            self, bandwidth_resource, placements, machine, partitioned_graph):
+            bandwidth_resource, placements, machine, partitioned_graph):
 
         # check if buffered out has to be given over to injectors
         for vertex in partitioned_graph.subvertices:
@@ -139,9 +233,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 bandwidth_resource[(chip.nearest_ethernet_x,
                                     chip.nearest_ethernet_y)] = 0
 
-
+    @staticmethod
     def _deduce_ethernet_connected_chips_bandwidth_resource(
-            self, machine_time_step, time_scale_factor, machine):
+            machine_time_step, time_scale_factor, machine):
         """
 
         :param machine_time_step:

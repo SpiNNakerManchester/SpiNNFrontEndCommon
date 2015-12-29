@@ -778,6 +778,10 @@
         <python_class>FrontEndCommonAutoPauseAndResume</python_class>
         <required_inputs>
             <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
                 <param_name>machine_time_step</param_name>
                 <param_type>MachineTimeStep</param_type>
             </parameter>
