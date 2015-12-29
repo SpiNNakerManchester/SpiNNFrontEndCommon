@@ -849,4 +849,23 @@
             </parameter>
         </produces_outputs>
     </algorithm>
+    <algorithm name="FrontEndCommonNMachineTimeStepUpdator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resume</python_module>
+        <python_class>FrontEndCommonNMachineTimeStepUpdator</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>iteration</param_name>
+                <param_type>Iteration</param_type>
+            </parameter>
+            <parameter>
+                <param_name>steps</param_name>
+                <param_type>Steps</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+        </required_inputs>
+
+    </algorithm>
 </algorithms>
