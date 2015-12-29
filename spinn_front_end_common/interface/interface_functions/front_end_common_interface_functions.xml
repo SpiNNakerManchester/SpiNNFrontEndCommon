@@ -778,6 +778,14 @@
         <python_class>FrontEndCommonAutoPauseAndResume</python_class>
         <required_inputs>
             <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
                 <param_name>buffer_manager</param_name>
                 <param_type>BufferManager</param_type>
             </parameter>

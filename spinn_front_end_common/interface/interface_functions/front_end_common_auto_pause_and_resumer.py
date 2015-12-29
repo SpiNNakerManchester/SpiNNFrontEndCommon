@@ -1,10 +1,21 @@
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.utilities.utility_objs.resource_tracker import ResourceTracker
 
 from spinn_front_end_common.interface import interface_functions
+from spinn_front_end_common.utility_models.\
+    reverse_ip_tag_multicast_source_partitioned_vertex import \
+    ReverseIPTagMulticastSourcePartitionedVertex
 
 import os
+import math
+
 
 class FrontEndCommonAutoPauseAndResumer(object):
+    """
+    FrontEndCommonAutoPauseAndResumer: system that automaticlaly allocate
+    bandwith resoruces and deduces what pause and resume functions are needed,
+    and executes them accordingly
+    """
 
     def __call__(
             self, partitioned_graph, no_machine_time_steps, buffer_manager,
@@ -13,10 +24,12 @@ class FrontEndCommonAutoPauseAndResumer(object):
             time_scale_factor, loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, loaded_binaries_token,
             loaded_application_data_token, no_sync_changes, partitionable_graph,
-            algorthums_to_run_between_runs, extra_inputs, extra_xmls):
+            algorthums_to_run_between_runs, extra_inputs, extra_xmls,
+            machine_time_step, placements):
 
         steps = self._deduce_number_of_interations(
-            partitioned_graph, no_machine_time_steps, machine)
+            partitioned_graph, no_machine_time_steps, time_scale_factor,
+            machine, machine_time_step, placements)
 
         inputs, algorthims, outputs, xmls = self._setup_pacman_executor_inputs(
             buffer_manager, wait_on_confirmation, partitionable_graph,
@@ -32,6 +45,126 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
+    def _deduce_number_of_interations(
+            self, partitioned_graph, no_machine_time_steps, time_scale_factor,
+            machine, machine_time_step, placements):
+        """
+
+        :param partitioned_graph:
+        :param no_machine_time_steps:
+        :param time_scale_factor:
+        :param machine:
+        :param placements
+        :return:
+        """
+
+        bandwidth_resource = \
+            self._deduce_ethernet_connected_chips_bandwidth_resource(
+                machine_time_step, time_scale_factor, machine)
+
+        # build resoruce tracker for sdram usage
+        resource_tracker = ResourceTracker(machine)
+
+        # allocate static sdram usage to the resource tracker, leaving us
+        # with just the sdram avilable for runtime usage
+        for vertex in partitioned_graph.subvertices:
+            resource_tracker.allocate_constrained_resources(
+                    vertex.resources_required, vertex.constraints)
+
+        # update all ethenet resoruces for
+        # ReverseIPTagMulticastSourcePartitionedVertex's
+        self._update_ethernet_bandwidth_off_injectors(
+            bandwidth_resource, placements, machine, partitioned_graph)
+
+        # turn off all buffered out for cores which reside on chips where there
+        # ethernet connected chip has no bandwidth left, and allocate left overs
+        self._turn_off_buffered_out_as_required(
+            bandwidth_resource, placements, machine, partitioned_graph)
+
+        # locate whatever the min time step would be for all chips given
+        # left over sdram
+        min_machine_time_steps = \
+            self._discover_min_time_steps_with_sdram_avilable(
+                partitioned_graph, machine, resource_tracker)
+
+        # calculate the steps array
+        number_of_full_iterations = \
+            math.floor(no_machine_time_steps / min_machine_time_steps)
+        left_over_time_steps = \
+            (no_machine_time_steps - (number_of_full_iterations *
+                                      min_machine_time_steps))
+
+        steps = list()
+        for _ in range(0, number_of_full_iterations):
+            steps.append(min_machine_time_steps)
+        steps.append(left_over_time_steps)
+        return steps
+
+    def _discover_min_time_steps_with_sdram_avilable(
+            self, partitioned_graph, machine, resource_tracker):
+        """
+
+        :param partitioned_graph:
+        :param machine:
+        :param resource_tracker:
+        :return:
+        """
+
+
+    def _turn_off_buffered_out_as_required(
+            self, bandwidth_resource, placements, machine, partitioned_graph):
+        for (ethernet_connected_chip_x,
+                ethernet_connected_chip_y) in bandwidth_resource:
+            if bandwidth_resource[(ethernet_connected_chip_x,
+                                   ethernet_connected_chip_y)] == 0:
+                chips_in_region_of_ethernet = \
+                    machine.get_chips_via_local_ethernet(
+                        ethernet_connected_chip_x, ethernet_connected_chip_y)
+                for
+
+
+    def _update_ethernet_bandwidth_off_injectors(
+            self, bandwidth_resource, placements, machine, partitioned_graph):
+
+        # check if buffered out has to be given over to injectors
+        for vertex in partitioned_graph.subvertices:
+            if (isinstance(
+                    vertex, ReverseIPTagMulticastSourcePartitionedVertex) and
+                    vertex.buffering_output):
+                placement = placements.get_placement_of_subvertex(vertex)
+                chip = machine.get_chip_at(placement.x, placement.y)
+
+                # remove all bandwidth from that local ethernet (as we
+                # cant predict how much bandwidth is needed there)
+                bandwidth_resource[(chip.nearest_ethernet_x,
+                                    chip.nearest_ethernet_y)] = 0
+
+
+    def _deduce_ethernet_connected_chips_bandwidth_resource(
+            self, machine_time_step, time_scale_factor, machine):
+        """
+
+        :param machine_time_step:
+        :param time_scale_factor:
+        :param machine:
+        :return:
+        """
+
+        # storage for each connected chip bandewidth left over
+        resources = dict()
+
+        # deduce how much bandwidth buffered out has to play with
+        bandwidth_per_machine_time_step_per_ethernet_connected_chip = \
+            (machine_time_step * time_scale_factor) * \
+            machine.MAX_BANDWIDTH_PER_ETHERNET_CONNECTED_CHIP
+
+        # create initial supply
+        for chip in machine.ethernet_connected_chips:
+            resources[(chip.x, chip.y)] = \
+                bandwidth_per_machine_time_step_per_ethernet_connected_chip
+
+        return resources
+
     def _setup_pacman_executor_inputs(
             self, buffer_manager, wait_on_confirmation, partitionable_graph,
             send_start_notification, notification_interface,
@@ -40,6 +173,28 @@ class FrontEndCommonAutoPauseAndResumer(object):
             loaded_routing_tables_token, loaded_binaries_token,
             loaded_application_data_token, no_sync_changes,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls):
+        """
+
+        :param buffer_manager:
+        :param wait_on_confirmation:
+        :param partitionable_graph:
+        :param send_start_notification:
+        :param notification_interface:
+        :param executable_targets:
+        :param app_id:
+        :param txrx:
+        :param time_scale_factor:
+        :param loaded_reverse_iptags_token:
+        :param loaded_iptags_token:
+        :param loaded_routing_tables_token:
+        :param loaded_binaries_token:
+        :param loaded_application_data_token:
+        :param no_sync_changes:
+        :param algorthums_to_run_between_runs:
+        :param extra_inputs:
+        :param extra_xmls:
+        :return:
+        """
 
         inputs = list()
         outputs = list()
@@ -88,11 +243,17 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
     @staticmethod
     def sort_out_xmls(extra_xmls):
+        """
+
+        :param extra_xmls:
+        :return:
+        """
+
         xmls = list()
         # add the extra xmls
         xmls.extend(extra_xmls)
 
-        #check that the front end common xml has been put in, if not, put in
+        # check that the front end common xml has been put in, if not, put in
         front_end_common_interface = \
             os.path.join(os.path.dirname(interface_functions.__file__),
                          "front_end_common_interface_functions.xml")
@@ -151,6 +312,12 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
     @staticmethod
     def _locate_index_of_input(inputs, type_name):
+        """
+
+        :param inputs:
+        :param type_name:
+        :return:
+        """
         index = 0
         found = False
         while not found and index < len(inputs):
@@ -162,8 +329,16 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return index
 
 
+# TODO There must be a way to remove this requirement, but not sure how yet.
 class FrontEndCommonNMachineTimeStepUpdator(object):
 
     def __call__(self, iteration, steps, partitionable_graph):
+
+        # deduce the new runtime position
+        set_runtime = 0
+        for past_step in range(0, iteration):
+            set_runtime += steps[past_step]
+
+        # update the partitionable vertices
         for vertex in partitionable_graph.vertices:
-            vertex.set_no_machine_time_steps(steps[iteration])
+            vertex.set_no_machine_time_steps(set_runtime)
