@@ -249,7 +249,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             buffer_size_before_receive=(constants.
                                         DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
 
-        self.set_buffering_output(
+        self.activate_buffering_output(
             buffering_ip_address, buffering_port, board_address,
             notification_tag)
         self._record_buffer_size = record_buffer_size

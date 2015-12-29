@@ -38,7 +38,7 @@ class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
         """
         return self._buffering_output
 
-    def set_buffering_output(
+    def activate_buffering_output(
             self, buffering_ip_address, buffering_port, board_address=None,
             notification_tag=None):
         """ Activates the output buffering mechanism
