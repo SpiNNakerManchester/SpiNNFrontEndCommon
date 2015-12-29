@@ -37,7 +37,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         steps = self._deduce_number_of_interations(
             partitioned_graph, no_machine_time_steps, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
-            partitionable_graph)
+            partitionable_graph, buffer_manager)
 
         inputs, algorthims, outputs, xmls = self._setup_pacman_executor_inputs(
             buffer_manager, wait_on_confirmation, partitionable_graph,
@@ -56,7 +56,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
     def _deduce_number_of_interations(
             self, partitioned_graph, no_machine_time_steps, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
-            partitionable_graph):
+            partitionable_graph, buffer_manager):
         """
 
         :param partitioned_graph:
@@ -64,6 +64,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param time_scale_factor:
         :param machine:
         :param placements
+        :param buffer_manager:
         :return:
         """
 
@@ -88,7 +89,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # turn off all buffered out for cores which reside on chips where there
         # ethernet connected chip has no bandwidth left, and allocate left overs
         self._turn_off_buffered_out_as_required(
-            bandwidth_resource, placements, machine, partitioned_graph)
+            bandwidth_resource, placements, machine, graph_mapper,
+            partitionable_graph, buffer_manager)
 
         # locate whatever the min time step would be for all chips given
         # left over sdram
@@ -192,13 +194,15 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return min_chip_no_machine_time_steps
 
     def _turn_off_buffered_out_as_required(
-            self, bandwidth_resource, placements, machine, partitioned_graph):
+            self, bandwidth_resource, placements, machine, graph_mapper,
+            partitionable_graph, buffer_manager):
         """
 
         :param bandwidth_resource:
         :param placements:
         :param machine:
-        :param partitioned_graph:
+        :param partitionable_graph:
+        :param buffer_manager:
         :return:
         """
         for (ethernet_connected_chip_x,
@@ -209,12 +213,71 @@ class FrontEndCommonAutoPauseAndResumer(object):
             for chip in chips_in_region_of_ethernet:
                 if bandwidth_resource[(ethernet_connected_chip_x,
                                        ethernet_connected_chip_y)] == 0:
-                    chip_placements = \
-                        placements.get_placements_on_chip(chip.x, chip.y)
-                    for chip_placement in chip_placements:
-                        subvertex = chip_placement.subvertex
-                        if (isinstance(subvertex, AbstractReceiveBuffersToHost)
+                    self._handle_turning_off_buffering_out_for_a_chip(
+                        chip, placements, buffer_manager)
+                else:
+                    self._handle_allocating_left_over_sdram(
+                        bandwidth_resource, ethernet_connected_chip_x,
+                        ethernet_connected_chip_y, chip, placements,
+                        graph_mapper, partitionable_graph, buffer_manager)
 
+    @staticmethod
+    def _handle_allocating_left_over_sdram(
+            bandwidth_resource, ethernet_connected_chip_x,
+            ethernet_connected_chip_y, chip, placements, graph_mapper,
+            partitionable_graph, buffer_manager):
+        """
+
+        :param bandwidth_resource:
+        :param ethernet_connected_chip_x:
+        :param ethernet_connected_chip_y:
+        :param chip:
+        :param placements:
+        :param graph_mapper:
+        :param partitionable_graph:
+        :param buffer_manager:
+        :return:
+        """
+
+        chip_placements = placements.get_placements_on_chip(chip.x, chip.y)
+
+        # search each placmeent to see if it can be allocated to the bandwidth
+        for placement in chip_placements:
+            vertex_slice = graph_mapper.get_subvertex_slice(placement.subvertex)
+            individual_machine_time_step_sdram_usage = \
+                placement.subvertex.get_runtime_sdram_usage_for_atoms(
+                    vertex_slice, partitionable_graph, 1)
+
+            # if the individual bandwidth is doable, remove it from the
+            # bandwidth and continue, toherwise turn off its buffered capability
+            if (individual_machine_time_step_sdram_usage <
+                    bandwidth_resource[(ethernet_connected_chip_x,
+                                        ethernet_connected_chip_y)]):
+                bandwidth_resource[(ethernet_connected_chip_x,
+                                    ethernet_connected_chip_y)] -= \
+                    individual_machine_time_step_sdram_usage
+            else:
+                placement.subvertex.enable_buffered_recording(False)
+                buffer_manager.turn_off_buffered_output_for(placement.subvertex)
+
+    @staticmethod
+    def _handle_turning_off_buffering_out_for_a_chip(
+            chip, placements, buffer_manager):
+        """
+
+        :param chip:
+        :param placements:
+        :return:
+        """
+        chip_placements = placements.get_placements_on_chip(chip.x, chip.y)
+        for chip_placement in chip_placements:
+            subvertex = chip_placement.subvertex
+            if (isinstance(subvertex, AbstractReceiveBuffersToHost) and
+                    (not isinstance(
+                        subvertex,
+                        ReverseIPTagMulticastSourcePartitionedVertex))):
+                subvertex.enable_buffered_recording(False)
+                buffer_manager.turn_off_buffered_output_for(subvertex)
 
     @staticmethod
     def _update_ethernet_bandwidth_off_injectors(
