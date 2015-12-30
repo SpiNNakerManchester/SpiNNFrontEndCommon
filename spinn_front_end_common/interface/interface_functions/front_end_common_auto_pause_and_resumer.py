@@ -61,7 +61,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 extra_xmls, algorithum_for_dsg_generation,
                 algorithum_for_dse_execution, tags, reports_states,
                 app_data_folder, verify, routing_infos, placements,
-                graph_mapper, partitioned_graph)
+                graph_mapper, partitioned_graph, machine)
 
         no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
             processor_to_app_data_base_address, \
@@ -91,8 +91,10 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param runtime:
         :param time_scale_factor:
         :param machine:
-        :param placements
-        :param buffer_manager:
+        :param machine_time_step:
+        :param placements:
+        :param graph_mapper:
+        :param partitionable_graph:
         :return:
         """
 
@@ -386,7 +388,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution, tags,
             reports_states, app_data_folder, verify, routing_infos,
-            placements, graph_mapper, partitioned_graph):
+            placements, graph_mapper, partitioned_graph, machine):
         """
 
         :param wait_on_confirmation:
@@ -413,6 +415,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param placements:
         :param graph_mapper:
         :param partitioned_graph:
+        :param machine:
         :return:
         """
 
@@ -469,6 +472,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         inputs.append({'type': "MemoryGraphMapper", 'value': graph_mapper})
         inputs.append({'type': "MemoryPartitionedGraph",
                        'value': partitioned_graph})
+        inputs.append({'type': "MemoryExtendedMachine", 'value': machine})
 
         return inputs, first_algorithms, multi_iteration_algorithms, \
                outputs, xmls
