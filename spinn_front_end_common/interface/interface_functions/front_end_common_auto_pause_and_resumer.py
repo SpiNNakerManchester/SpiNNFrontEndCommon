@@ -111,17 +111,18 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # left over sdram
         min_machine_time_steps = \
             self._discover_min_time_steps_with_sdram_avilable(
-                placements, machine, resource_tracker, graph_mapper,
+                machine, placements, resource_tracker, graph_mapper,
                 partitionable_graph)
 
         # calculate the steps array
         total_no_machine_time_steps = \
-            (runtime / time_scale_factor) * machine_time_step
+            (runtime / time_scale_factor) * (machine_time_step / 1000)
         number_of_full_iterations = \
-            math.floor(total_no_machine_time_steps / min_machine_time_steps)
+            int(math.floor(
+                total_no_machine_time_steps / min_machine_time_steps))
         left_over_time_steps = \
-            (total_no_machine_time_steps - (number_of_full_iterations *
-                                            min_machine_time_steps))
+            int(total_no_machine_time_steps - (number_of_full_iterations *
+                                               min_machine_time_steps))
 
         steps = list()
         for _ in range(0, number_of_full_iterations):
@@ -144,14 +145,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             chip_placments = placements.get_placements_on_chip(chip.x, chip.y)
             none_buffered_placements = list()
             for chip_placment in chip_placments:
-                if ((not isinstance(
-                            chip_placment.subvertex,
-                            ReverseIPTagMulticastSourcePartitionedVertex))
-                        and ((not isinstance(chip_placment.subvertex,
-                                             AbstractReceiveBuffersToHost))
-                              and chip_placment.subvertex.buffering_output)
-                        and isinstance(chip_placment.subvertex,
-                                       AbstractRecordableInterface)):
+                if self._check_for_none_buffered_functionality(chip_placment):
                     none_buffered_placements.append(chip_placment)
 
             sdram_left_over = \
@@ -167,6 +161,32 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         return min_machine_time_steps
 
+    @staticmethod
+    def _check_for_none_buffered_functionality(chip_placment):
+
+        # get params
+        is_r_i_m_c_s = isinstance(
+            chip_placment.subvertex,
+            ReverseIPTagMulticastSourcePartitionedVertex)
+        is_sending_buffers_to_host = isinstance(
+            chip_placment.subvertex, AbstractReceiveBuffersToHost)
+        is_recording_stuff = isinstance(
+            chip_placment.subvertex, AbstractRecordableInterface)
+
+        # check if buffered out is turned on
+        if not is_sending_buffers_to_host:
+            buffered_out_turned_on = False
+        else:
+            buffered_out_turned_on = chip_placment.subvertex.buffering_output
+
+        # do check
+        if (not is_r_i_m_c_s and is_recording_stuff and
+                (not is_sending_buffers_to_host) or
+                (is_sending_buffers_to_host and not buffered_out_turned_on)):
+            return True
+        else:
+            return False
+
     # overloadable method for optimisations on chip sdram distrubtion
     @staticmethod
     def _caculate_min_machine_time_step_for_bunch_of_placements(
@@ -180,33 +200,38 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :return:
         """
         # assuming shared equally, maybe optimsations for unbalanced usage
-        sdram_each = math.floor(sdram_left_over / len(placements))
         min_chip_no_machine_time_steps = sys.maxint
-        for placement in placements:
+        if len(placements) > 0:
+            sdram_each = math.floor(sdram_left_over / len(placements))
+            for placement in placements:
 
-            # locate individual machine time step worth of sdram usage
-            vertex_slice = graph_mapper.get_subvertex_slice(placement.subvertex)
-            individual_machine_time_step_sdram_usage = \
-                placement.subvertex.get_runtime_sdram_usage_for_atoms(
-                    vertex_slice, partitionable_graph, 1)
+                # locate individual machine time step worth of sdram usage
+                vertex_slice = graph_mapper.get_subvertex_slice(
+                    placement.subvertex)
+                vertex = graph_mapper.get_vertex_from_subvertex(
+                    placement.subvertex)
+                individual_machine_time_step_sdram_usage = \
+                    vertex.get_runtime_sdram_usage_for_atoms(
+                        vertex_slice, partitionable_graph, 1)
 
-            # calculate min sdram usage for shared sdram allocation
-            no_machine_time_steps = math.floor(
-                sdram_each / individual_machine_time_step_sdram_usage)
+                # calculate min sdram usage for shared sdram allocation
+                no_machine_time_steps = math.floor(
+                    sdram_each / individual_machine_time_step_sdram_usage)
 
-            # safety check
-            expected_sdram_usage = \
-                placement.subvertex.get_runtime_sdram_usage_for_atoms(
-                    vertex_slice, partitionable_graph, no_machine_time_steps)
-            if expected_sdram_usage > sdram_each:
-                raise exceptions.ConfigurationException(
-                    "Havent been programmed to handle models which change "
-                    "their requriements of sdram within a runtime. Please "
-                    "fix and try again")
+                # safety check
+                expected_sdram_usage = \
+                    vertex.get_runtime_sdram_usage_for_atoms(
+                        vertex_slice, partitionable_graph,
+                        no_machine_time_steps)
+                if expected_sdram_usage > sdram_each:
+                    raise exceptions.ConfigurationException(
+                        "Havent been programmed to handle models which change "
+                        "their requriements of sdram within a runtime. Please "
+                        "fix and try again")
 
-            # update min chip machine time steps accordingly
-            if no_machine_time_steps < min_chip_no_machine_time_steps:
-                min_chip_no_machine_time_steps = no_machine_time_steps
+                # update min chip machine time steps accordingly
+                if no_machine_time_steps < min_chip_no_machine_time_steps:
+                    min_chip_no_machine_time_steps = no_machine_time_steps
 
         return min_chip_no_machine_time_steps
 
@@ -259,20 +284,26 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # search each placmeent to see if it can be allocated to the bandwidth
         for placement in chip_placements:
             vertex_slice = graph_mapper.get_subvertex_slice(placement.subvertex)
-            individual_machine_time_step_sdram_usage = \
-                placement.subvertex.get_runtime_sdram_usage_for_atoms(
-                    vertex_slice, partitionable_graph, 1)
+            vertex = graph_mapper.get_vertex_from_subvertex(placement.subvertex)
+            if (isinstance(placement.subvertex, AbstractReceiveBuffersToHost)
+                    and (not isinstance(
+                        placement.subvertex,
+                        ReverseIPTagMulticastSourcePartitionedVertex))):
+                individual_machine_time_step_sdram_usage = \
+                    vertex.get_runtime_sdram_usage_for_atoms(
+                        vertex_slice, partitionable_graph, 1)
 
-            # if the individual bandwidth is doable, remove it from the
-            # bandwidth and continue, toherwise turn off its buffered capability
-            if (individual_machine_time_step_sdram_usage <
+                # if the individual bandwidth is doable, remove it from the
+                # bandwidth and continue, toherwise turn off its buffered
+                #  capability
+                if (individual_machine_time_step_sdram_usage <
+                        bandwidth_resource[(ethernet_connected_chip_x,
+                                            ethernet_connected_chip_y)]):
                     bandwidth_resource[(ethernet_connected_chip_x,
-                                        ethernet_connected_chip_y)]):
-                bandwidth_resource[(ethernet_connected_chip_x,
-                                    ethernet_connected_chip_y)] -= \
-                    individual_machine_time_step_sdram_usage
-            else:
-                placement.subvertex.enable_buffered_recording(False)
+                                        ethernet_connected_chip_y)] -= \
+                        individual_machine_time_step_sdram_usage
+                else:
+                    placement.subvertex.enable_buffered_recording(False)
 
     @staticmethod
     def _handle_turning_off_buffering_out_for_a_chip(chip, placements):
@@ -491,17 +522,23 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param iteration:
         :return:
         """
-        no_sync_changes = pacman_executor.get_item("NoSyncChanges")
-        parameter_index = self._locate_index_of_input(inputs, 'NoSyncChanges')
-        inputs[parameter_index] = {'type': 'NoSyncChanges',
-                                   'value': no_sync_changes}
-        parameter_index = self._locate_index_of_input(inputs, 'Runtime')
-        inputs[parameter_index] = {'type': 'Runtime',
-                                   'value': steps[iteration]}
-        parameter_index = self._locate_index_of_input(inputs, 'Steps')
-        inputs[parameter_index] = {'type': 'Steps', 'value': steps}
-        parameter_index = self._locate_index_of_input(inputs, 'Iteration')
-        inputs[parameter_index] = {'type': 'Iteration', 'value': iteration}
+        if pacman_executor is not None:
+            no_sync_changes = pacman_executor.get_item("NoSyncChanges")
+            parameter_index = \
+                self._locate_index_of_input(inputs, 'NoSyncChanges')
+            inputs[parameter_index] = {'type': 'NoSyncChanges',
+                                       'value': no_sync_changes}
+            parameter_index = self._locate_index_of_input(inputs, 'Steps')
+            inputs[parameter_index] = {'type': 'Steps', 'value': steps}
+            parameter_index = self._locate_index_of_input(inputs, 'Iteration')
+            inputs[parameter_index] = {'type': 'Iteration', 'value': iteration}
+            parameter_index = self._locate_index_of_input(inputs, 'Runtime')
+            inputs[parameter_index] = {'type': 'Runtime',
+                                       'value': steps[iteration]}
+        else:
+            inputs.append({'type': 'Runtime', 'value': steps[iteration]})
+            inputs.append({'type': 'Steps', 'value': steps})
+            inputs.append({'type': 'Iteration', 'value': iteration})
 
     @staticmethod
     def _locate_index_of_input(inputs, type_name):
