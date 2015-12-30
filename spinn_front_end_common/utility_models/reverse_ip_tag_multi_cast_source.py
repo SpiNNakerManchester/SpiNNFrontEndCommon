@@ -152,8 +152,6 @@ class ReverseIpTagMultiCastSource(
                  CONFIGURATION_REGION_SIZE) + send_buffer_size +
                 recording_size + mallocs_sdram_usage)
 
-
-
     def get_number_of_mallocs_used_by_dsg(self, vertex_slice, in_edges):
         mallocs = ReverseIPTagMulticastSourcePartitionedVertex.\
             get_number_of_mallocs_used_by_dsg(

@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonPartitionableGraphApplicationLoader(object):
+class FrontEndCommonApplicationDataLoader(object):
     """
     """
 

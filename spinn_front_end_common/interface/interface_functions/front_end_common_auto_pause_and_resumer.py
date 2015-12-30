@@ -25,46 +25,57 @@ class FrontEndCommonAutoPauseAndResumer(object):
     """
 
     def __call__(
-            self, partitioned_graph, no_machine_time_steps, buffer_manager,
-            wait_on_confirmation, send_start_notification, machine,
-            notification_interface, executable_targets, app_id, txrx,
-            time_scale_factor, loaded_reverse_iptags_token, loaded_iptags_token,
-            loaded_routing_tables_token, loaded_binaries_token, graph_mapper,
-            loaded_application_data_token, no_sync_changes, partitionable_graph,
+            self, partitioned_graph, runtime, wait_on_confirmation,
+            send_start_notification, machine, notification_interface, app_id,
+            txrx, time_scale_factor, loaded_reverse_iptags_token,
+            loaded_iptags_token, loaded_routing_tables_token, graph_mapper,
+            no_sync_changes, partitionable_graph, app_data_folder, verify,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution,
-            machine_time_step, placements, tags, reports_states,
-            app_data_folder):
+            machine_time_step, placements, tags, reports_states):
 
         steps = self._deduce_number_of_interations(
-            partitioned_graph, no_machine_time_steps, time_scale_factor,
+            partitioned_graph, runtime, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
             partitionable_graph)
 
-        inputs, algorthims, outputs, xmls = self._setup_pacman_executor_inputs(
-            buffer_manager, wait_on_confirmation, partitionable_graph,
-            send_start_notification, notification_interface,
-            executable_targets, app_id, txrx, time_scale_factor,
-            loaded_reverse_iptags_token, loaded_iptags_token,
-            loaded_routing_tables_token, loaded_binaries_token,
-            loaded_application_data_token, no_sync_changes,
-            algorthums_to_run_between_runs, extra_inputs, extra_xmls,
-            algorithum_for_dsg_generation, algorithum_for_dse_execution,
-            tags, reports_states, app_data_folder)
+        inputs, first_algorthims, multi_run_algorithms, outputs, xmls = \
+            self._setup_pacman_executor_inputs(
+                wait_on_confirmation, partitionable_graph,
+                send_start_notification, notification_interface, app_id, txrx,
+                time_scale_factor, loaded_reverse_iptags_token,
+                loaded_iptags_token, loaded_routing_tables_token,
+                no_sync_changes, algorthums_to_run_between_runs, extra_inputs,
+                extra_xmls, algorithum_for_dsg_generation,
+                algorithum_for_dse_execution, tags, reports_states,
+                app_data_folder, verify)
 
-        no_sync_changes = self._execute_pacman_system_number_of_iterations(
-            steps, inputs, algorthims, outputs, xmls)
+        no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
+            processor_to_app_data_base_address, \
+            placement_to_application_data_files= \
+                self._execute_pacman_system_number_of_iterations(
+                    steps, inputs, first_algorthims, multi_run_algorithms,
+                    outputs, xmls)
 
-        return {'RanToken': True, "no_sync_changes": no_sync_changes}
+        return {
+            'RanToken': True, "no_sync_changes": no_sync_changes,
+            'executable_targets': executable_targets,
+            'dsg_targets': dsg_targets, "buffer_manager": buffer_manager,
+            'processor_to_app_data_base_address':
+            processor_to_app_data_base_address,
+            'placement_to_app_data_files':
+            placement_to_application_data_files,
+            "LoadedApplicationDataToken": True, "LoadBinariesToken": True,
+            }
 
     def _deduce_number_of_interations(
-            self, partitioned_graph, no_machine_time_steps, time_scale_factor,
+            self, partitioned_graph, runtime, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
             partitionable_graph):
         """
 
         :param partitioned_graph:
-        :param no_machine_time_steps:
+        :param runtime:
         :param time_scale_factor:
         :param machine:
         :param placements
@@ -104,11 +115,13 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 partitionable_graph)
 
         # calculate the steps array
+        total_no_machine_time_steps = \
+            (runtime / time_scale_factor) * machine_time_step
         number_of_full_iterations = \
-            math.floor(no_machine_time_steps / min_machine_time_steps)
+            math.floor(total_no_machine_time_steps / min_machine_time_steps)
         left_over_time_steps = \
-            (no_machine_time_steps - (number_of_full_iterations *
-                                      min_machine_time_steps))
+            (total_no_machine_time_steps - (number_of_full_iterations *
+                                            min_machine_time_steps))
 
         steps = list()
         for _ in range(0, number_of_full_iterations):
@@ -322,31 +335,25 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return resources
 
     def _setup_pacman_executor_inputs(
-            self, buffer_manager, wait_on_confirmation, partitionable_graph,
-            send_start_notification, notification_interface,
-            executable_targets, app_id, txrx, time_scale_factor,
-            loaded_reverse_iptags_token, loaded_iptags_token,
-            loaded_routing_tables_token, loaded_binaries_token,
-            loaded_application_data_token, no_sync_changes,
+            self, wait_on_confirmation, partitionable_graph,
+            send_start_notification, notification_interface, app_id, txrx,
+            time_scale_factor, loaded_reverse_iptags_token, loaded_iptags_token,
+            loaded_routing_tables_token, no_sync_changes,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
-            algorithum_for_dsg_generation, algorithum_for_dse_execution,
-            tags, reports_states, app_data_folder):
+            algorithum_for_dsg_generation, algorithum_for_dse_execution, tags,
+            reports_states, app_data_folder, verify):
         """
 
-        :param buffer_manager:
         :param wait_on_confirmation:
         :param partitionable_graph:
         :param send_start_notification:
         :param notification_interface:
-        :param executable_targets:
         :param app_id:
         :param txrx:
         :param time_scale_factor:
         :param loaded_reverse_iptags_token:
         :param loaded_iptags_token:
         :param loaded_routing_tables_token:
-        :param loaded_binaries_token:
-        :param loaded_application_data_token:
         :param no_sync_changes:
         :param algorthums_to_run_between_runs:
         :param extra_inputs:
@@ -356,22 +363,28 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param tags;
         :param reports_states:
         :param app_data_folder:
+        :param verify:
         :return:
         """
 
         inputs = list()
         outputs = list()
         xmls = self.sort_out_xmls(extra_xmls)
-        algorithms = list()
+        first_algorithms = list()
+        multi_iteration_algorithms = list()
 
         # standard algorithms needed for multi-runs before updator
-        algorithms.append(algorithum_for_dsg_generation)
-        algorithms.append(algorithum_for_dse_execution)
-        algorithms.append("FrontEndCommonBufferManagerCreater")
-        algorithms.append("FrontEndCommonApplicationRunner")
-        algorithms.append("FrontEndCommonNMachineTimeStepUpdator")
-        algorithms.extend(algorthums_to_run_between_runs)
-        algorithms.append("FrontEndCommonRuntimeUpdater")
+        # (expected order here for debug purposes)
+        first_algorithms.append("FrontEndCommonNMachineTimeStepUpdator")
+        first_algorithms.append(algorithum_for_dsg_generation)
+        first_algorithms.append(algorithum_for_dse_execution)
+        first_algorithms.append("FrontEndCommonApplicationDataLoader")
+        first_algorithms.append("FrontEndCommonLoadExecutableImages")
+        first_algorithms.append("FrontEndCommonBufferManagerCreater")
+
+        multi_iteration_algorithms.append("FrontEndCommonApplicationRunner")
+        multi_iteration_algorithms.extend(algorthums_to_run_between_runs)
+        multi_iteration_algorithms.append("FrontEndCommonRuntimeUpdater")
 
         # handle outputs
         # TODO is this all i need here????
@@ -379,7 +392,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         # handle inputs
         inputs.extend(extra_inputs)
-        inputs.append({'type': "BufferManager", 'value': buffer_manager})
+        inputs.append({'type': 'WriteCheckerFlag', 'value': verify})
         inputs.append({'type': "DatabaseWaitOnConfirmationFlag",
                        'value': wait_on_confirmation})
         inputs.append({'type': "MemoryPartitionableGraph",
@@ -388,8 +401,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
                        'value': send_start_notification})
         inputs.append({'type': "NotificationInterface",
                        'value': notification_interface})
-        inputs.append({'type': "ExecutableTargets",
-                       'value': executable_targets})
         inputs.append({'type': "APPID", 'value': app_id})
         inputs.append({'type': "MemoryTransciever", 'value': txrx})
         inputs.append({'type': "TimeScaleFactor", 'value': time_scale_factor})
@@ -399,17 +410,14 @@ class FrontEndCommonAutoPauseAndResumer(object):
                        'value': loaded_iptags_token})
         inputs.append({'type': "LoadedRoutingTablesToken",
                        'value': loaded_routing_tables_token})
-        inputs.append({'type': "LoadBinariesToken",
-                       'value': loaded_binaries_token})
-        inputs.append({'type': "LoadedApplicationDataToken",
-                       'value': loaded_application_data_token})
         inputs.append({'type': "NoSyncChanges", 'value': no_sync_changes})
         inputs.append({'type': "MemoryTags", 'value': tags})
         inputs.append({'type': "ReportStates", 'value': reports_states})
         inputs.append({'type': "ApplicationDataFolder",
                        'value': app_data_folder})
 
-        return inputs, algorithms, outputs, xmls
+        return inputs, first_algorithms, multi_iteration_algorithms, \
+               outputs, xmls
 
     @staticmethod
     def sort_out_xmls(extra_xmls):
@@ -436,13 +444,15 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return xmls
 
     def _execute_pacman_system_number_of_iterations(
-            self, steps, inputs, algorthims, outputs, xmls):
+            self, steps, inputs, first_algorithms, multi_algorithms, outputs,
+            xmls):
         """
 
         :param inputs:
-        :param algorthims:
+        :param first_algorithms:
         :param outputs:
         :param xmls:
+        :param multi_algorithms
         :return:
         """
         pacman_executor = None
@@ -452,12 +462,25 @@ class FrontEndCommonAutoPauseAndResumer(object):
             # EXTRA_ALOGIRTHMS, runtime_updater
             self._update_inputs(pacman_executor, inputs, steps, iteration)
 
-            pacman_executor = PACMANAlgorithmExecutor(
-                algorithms=algorthims, inputs=inputs, xml_paths=xmls,
-                required_outputs=outputs)
+            # if its the first iteration, do all the boiler plate of dsg, dse,
+            # app data load, executable load, etc
+            if iteration == 0:
+                pacman_executor = PACMANAlgorithmExecutor(
+                    algorithms=first_algorithms, inputs=inputs, xml_paths=xmls,
+                    required_outputs=outputs)
+            else:
+                pacman_executor = PACMANAlgorithmExecutor(
+                    algorithms=multi_algorithms, inputs=inputs, xml_paths=xmls,
+                    required_outputs=outputs)
+
             pacman_executor.execute_mapping()
 
-        return pacman_executor.get_item("NoSyncChanges")
+        return pacman_executor.get_item("NoSyncChanges"), \
+               pacman_executor.get_item("ExecutableTargets"), \
+               pacman_executor.get_item("DataSpecificationTargets"), \
+               pacman_executor.get_item("BufferManager"), \
+               pacman_executor.get_item("ProcessorToAppDataBaseAddress"), \
+               pacman_executor.get_item("PlacementToAppDataFilePaths")
 
     def _update_inputs(self, pacman_executor, inputs, steps, iteration):
         """
@@ -512,3 +535,5 @@ class FrontEndCommonNMachineTimeStepUpdator(object):
         # update the partitionable vertices
         for vertex in partitionable_graph.vertices:
             vertex.set_no_machine_time_steps(set_runtime)
+
+        return {"runtime_in_machine_time_steps": set_runtime}

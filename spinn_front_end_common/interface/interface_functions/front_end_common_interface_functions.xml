@@ -1,7 +1,7 @@
 <algorithms>
-    <algorithm name="FrontEndCommonPartitionableGraphApplicationDataLoader">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_application_data_loader</python_module>
-        <python_class>FrontEndCommonPartitionableGraphApplicationLoader</python_class>
+    <algorithm name="FrontEndCommonApplicationDataLoader">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_data_loader</python_module>
+        <python_class>FrontEndCommonApplicationDataLoader</python_class>
         <required_inputs>
             <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
@@ -773,10 +773,38 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonAutoPauseAndResume">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resume</python_module>
-        <python_class>FrontEndCommonAutoPauseAndResume</python_class>
+    <algorithm name="FrontEndCommonAutoPauseAndResumer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resumer</python_module>
+        <python_class>FrontEndCommonAutoPauseAndResumer</python_class>
         <required_inputs>
+            <parameter>
+                <param_name>verify</param_name>
+                <param_type>WriteCheckerFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>algorthums_to_run_between_runs</param_name>
+                <param_type>ExtraAlgorthums</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_inputs</param_name>
+                <param_type>ExtraInputs</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_xmls</param_name>
+                <param_type>ExtraXMLS</param_type>
+            </parameter>
             <parameter>
                 <param_name>tags</param_name>
                 <param_type>MemoryTags</param_type>
@@ -810,10 +838,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>buffer_manager</param_name>
-                <param_type>BufferManager</param_type>
-            </parameter>
-            <parameter>
                 <param_name>wait_on_confirmation</param_name>
                 <param_type>DatabaseWaitOnConfirmationFlag</param_type>
             </parameter>
@@ -824,10 +848,6 @@
             <parameter>
                 <param_name>notification_interface</param_name>
                 <param_type>NotificationInterface</param_type>
-            </parameter>
-            <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -858,14 +878,6 @@
                 <param_type>LoadedRoutingTablesToken</param_type>
             </parameter>
             <parameter>
-                <param_name>loaded_binaries_token</param_name>
-                <param_type>LoadBinariesToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>loaded_application_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
-            <parameter>
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
             </parameter>
@@ -878,6 +890,34 @@
             <parameter>
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>buffer_manager</param_name>
+                <param_type>BufferManager</param_type>
+            </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placement_to_app_data_files</param_name>
+                <param_type>PlacementToAppDataFilePaths</param_type>
+            </parameter>
+            <parameter>
+                <param_name>LoadedApplicationDataToken</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>LoadBinariesToken</param_name>
+                <param_type>LoadBinariesToken</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -898,6 +938,11 @@
                 <param_type>MemoryPartitionableGraph</param_type>
             </parameter>
         </required_inputs>
-
+        <produces_outputs>
+            <parameter>
+                <param_name>runtime_in_machine_time_steps</param_name>
+                <param_type>RunTimeMachineTimeSteps</param_type>
+            </parameter>
+        </produces_outputs>
     </algorithm>
 </algorithms>
