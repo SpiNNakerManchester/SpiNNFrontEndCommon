@@ -32,12 +32,14 @@ class FrontEndCommonAutoPauseAndResumer(object):
             loaded_routing_tables_token, loaded_binaries_token, graph_mapper,
             loaded_application_data_token, no_sync_changes, partitionable_graph,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
-            machine_time_step, placements):
+            algorithum_for_dsg_generation, algorithum_for_dse_execution,
+            machine_time_step, placements, tags, reports_states,
+            app_data_folder):
 
         steps = self._deduce_number_of_interations(
             partitioned_graph, no_machine_time_steps, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
-            partitionable_graph, buffer_manager)
+            partitionable_graph)
 
         inputs, algorthims, outputs, xmls = self._setup_pacman_executor_inputs(
             buffer_manager, wait_on_confirmation, partitionable_graph,
@@ -46,7 +48,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
             loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, loaded_binaries_token,
             loaded_application_data_token, no_sync_changes,
-            algorthums_to_run_between_runs, extra_inputs, extra_xmls)
+            algorthums_to_run_between_runs, extra_inputs, extra_xmls,
+            algorithum_for_dsg_generation, algorithum_for_dse_execution,
+            tags, reports_states, app_data_folder)
 
         no_sync_changes = self._execute_pacman_system_number_of_iterations(
             steps, inputs, algorthims, outputs, xmls)
@@ -56,7 +60,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
     def _deduce_number_of_interations(
             self, partitioned_graph, no_machine_time_steps, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
-            partitionable_graph, buffer_manager):
+            partitionable_graph):
         """
 
         :param partitioned_graph:
@@ -90,7 +94,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # ethernet connected chip has no bandwidth left, and allocate left overs
         self._turn_off_buffered_out_as_required(
             bandwidth_resource, placements, machine, graph_mapper,
-            partitionable_graph, buffer_manager)
+            partitionable_graph)
 
         # locate whatever the min time step would be for all chips given
         # left over sdram
@@ -195,14 +199,13 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
     def _turn_off_buffered_out_as_required(
             self, bandwidth_resource, placements, machine, graph_mapper,
-            partitionable_graph, buffer_manager):
+            partitionable_graph):
         """
 
         :param bandwidth_resource:
         :param placements:
         :param machine:
         :param partitionable_graph:
-        :param buffer_manager:
         :return:
         """
         for (ethernet_connected_chip_x,
@@ -214,18 +217,18 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 if bandwidth_resource[(ethernet_connected_chip_x,
                                        ethernet_connected_chip_y)] == 0:
                     self._handle_turning_off_buffering_out_for_a_chip(
-                        chip, placements, buffer_manager)
+                        chip, placements)
                 else:
                     self._handle_allocating_left_over_sdram(
                         bandwidth_resource, ethernet_connected_chip_x,
                         ethernet_connected_chip_y, chip, placements,
-                        graph_mapper, partitionable_graph, buffer_manager)
+                        graph_mapper, partitionable_graph)
 
     @staticmethod
     def _handle_allocating_left_over_sdram(
             bandwidth_resource, ethernet_connected_chip_x,
             ethernet_connected_chip_y, chip, placements, graph_mapper,
-            partitionable_graph, buffer_manager):
+            partitionable_graph):
         """
 
         :param bandwidth_resource:
@@ -235,7 +238,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param placements:
         :param graph_mapper:
         :param partitionable_graph:
-        :param buffer_manager:
         :return:
         """
 
@@ -258,11 +260,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
                     individual_machine_time_step_sdram_usage
             else:
                 placement.subvertex.enable_buffered_recording(False)
-                buffer_manager.turn_off_buffered_output_for(placement.subvertex)
 
     @staticmethod
-    def _handle_turning_off_buffering_out_for_a_chip(
-            chip, placements, buffer_manager):
+    def _handle_turning_off_buffering_out_for_a_chip(chip, placements):
         """
 
         :param chip:
@@ -277,7 +277,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
                         subvertex,
                         ReverseIPTagMulticastSourcePartitionedVertex))):
                 subvertex.enable_buffered_recording(False)
-                buffer_manager.turn_off_buffered_output_for(subvertex)
 
     @staticmethod
     def _update_ethernet_bandwidth_off_injectors(
@@ -329,7 +328,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
             loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, loaded_binaries_token,
             loaded_application_data_token, no_sync_changes,
-            algorthums_to_run_between_runs, extra_inputs, extra_xmls):
+            algorthums_to_run_between_runs, extra_inputs, extra_xmls,
+            algorithum_for_dsg_generation, algorithum_for_dse_execution,
+            tags, reports_states, app_data_folder):
         """
 
         :param buffer_manager:
@@ -350,6 +351,11 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param algorthums_to_run_between_runs:
         :param extra_inputs:
         :param extra_xmls:
+        :param algorithum_for_dsg_generation:
+        :param algorithum_for_dse_execution:
+        :param tags;
+        :param reports_states:
+        :param app_data_folder:
         :return:
         """
 
@@ -359,6 +365,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
         algorithms = list()
 
         # standard algorithms needed for multi-runs before updator
+        algorithms.append(algorithum_for_dsg_generation)
+        algorithms.append(algorithum_for_dse_execution)
+        algorithms.append("FrontEndCommonBufferManagerCreater")
         algorithms.append("FrontEndCommonApplicationRunner")
         algorithms.append("FrontEndCommonNMachineTimeStepUpdator")
         algorithms.extend(algorthums_to_run_between_runs)
@@ -395,6 +404,10 @@ class FrontEndCommonAutoPauseAndResumer(object):
         inputs.append({'type': "LoadedApplicationDataToken",
                        'value': loaded_application_data_token})
         inputs.append({'type': "NoSyncChanges", 'value': no_sync_changes})
+        inputs.append({'type': "MemoryTags", 'value': tags})
+        inputs.append({'type': "ReportStates", 'value': reports_states})
+        inputs.append({'type': "ApplicationDataFolder",
+                       'value': app_data_folder})
 
         return inputs, algorithms, outputs, xmls
 

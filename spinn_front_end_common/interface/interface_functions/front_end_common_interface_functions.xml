@@ -778,6 +778,26 @@
         <python_class>FrontEndCommonAutoPauseAndResume</python_class>
         <required_inputs>
             <parameter>
+                <param_name>tags</param_name>
+                <param_type>MemoryTags</param_type>
+            </parameter>
+            <parameter>
+                <param_name>reports_states</param_name>
+                <param_type>ReportStates</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_data_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>algorithum_for_dsg_generation</param_name>
+                <param_type>DSGeneratorAlgorithm</param_type>
+            </parameter>
+            <parameter>
+                <param_name>algorithum_for_dse_execution</param_name>
+                <param_type>DSExecutorAlgorithm</param_type>
+            </parameter>
+            <parameter>
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
