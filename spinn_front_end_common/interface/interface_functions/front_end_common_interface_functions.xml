@@ -778,6 +778,10 @@
         <python_class>FrontEndCommonAutoPauseAndResumer</python_class>
         <required_inputs>
             <parameter>
+                <param_name>routing_infos</param_name>
+                <param_type>MemoryRoutingInfos</param_type>
+            </parameter>
+            <parameter>
                 <param_name>verify</param_name>
                 <param_type>WriteCheckerFlag</param_type>
             </parameter>
@@ -921,9 +925,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonNMachineTimeStepUpdator">
+    <algorithm name="FrontEndCommonMachineTimeStepUpdator">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resume</python_module>
-        <python_class>FrontEndCommonNMachineTimeStepUpdator</python_class>
+        <python_class>FrontEndCommonMachineTimeStepUpdator</python_class>
         <required_inputs>
             <parameter>
                 <param_name>iteration</param_name>

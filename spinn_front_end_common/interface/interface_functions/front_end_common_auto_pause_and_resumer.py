@@ -15,6 +15,9 @@ from spinn_front_end_common.utilities import exceptions
 import os
 import math
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonAutoPauseAndResumer(object):
@@ -32,12 +35,21 @@ class FrontEndCommonAutoPauseAndResumer(object):
             no_sync_changes, partitionable_graph, app_data_folder, verify,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution,
-            machine_time_step, placements, tags, reports_states):
+            machine_time_step, placements, tags, reports_states, routing_infos):
 
         steps = self._deduce_number_of_interations(
             partitioned_graph, runtime, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
             partitionable_graph)
+
+        if len(steps) != 1:
+            logger.warn(
+                "The simualtion required more SDRAM for recording purposes"
+                " than what was avilable. Therefore the system deduced that"
+                " it needs to run the simulation in {} chunks, where the "
+                "chunks of time consists of {}. If this is not suitable for "
+                "your usage, please turn off use_auto_pause_and_resume in "
+                " your config file. Thank you")
 
         inputs, first_algorthims, multi_run_algorithms, outputs, xmls = \
             self._setup_pacman_executor_inputs(
@@ -48,7 +60,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 no_sync_changes, algorthums_to_run_between_runs, extra_inputs,
                 extra_xmls, algorithum_for_dsg_generation,
                 algorithum_for_dse_execution, tags, reports_states,
-                app_data_folder, verify)
+                app_data_folder, verify, routing_infos, placements,
+                graph_mapper, partitioned_graph)
 
         no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
             processor_to_app_data_base_address, \
@@ -372,7 +385,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             loaded_routing_tables_token, no_sync_changes,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution, tags,
-            reports_states, app_data_folder, verify):
+            reports_states, app_data_folder, verify, routing_infos,
+            placements, graph_mapper, partitioned_graph):
         """
 
         :param wait_on_confirmation:
@@ -395,6 +409,10 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param reports_states:
         :param app_data_folder:
         :param verify:
+        :param routing_infos:
+        :param placements:
+        :param graph_mapper:
+        :param partitioned_graph:
         :return:
         """
 
@@ -406,11 +424,11 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         # standard algorithms needed for multi-runs before updator
         # (expected order here for debug purposes)
-        first_algorithms.append("FrontEndCommonNMachineTimeStepUpdator")
+        first_algorithms.append("FrontEndCommonMachineTimeStepUpdator")
         first_algorithms.append(algorithum_for_dsg_generation)
         first_algorithms.append(algorithum_for_dse_execution)
         first_algorithms.append("FrontEndCommonApplicationDataLoader")
-        first_algorithms.append("FrontEndCommonLoadExecutableImages")
+        first_algorithms.append("FrontEndCommomLoadExecutableImages")
         first_algorithms.append("FrontEndCommonBufferManagerCreater")
 
         multi_iteration_algorithms.append("FrontEndCommonApplicationRunner")
@@ -446,6 +464,11 @@ class FrontEndCommonAutoPauseAndResumer(object):
         inputs.append({'type': "ReportStates", 'value': reports_states})
         inputs.append({'type': "ApplicationDataFolder",
                        'value': app_data_folder})
+        inputs.append({'type': "MemoryRoutingInfos", 'value': routing_infos})
+        inputs.append({"type": "MemoryPlacements", 'value': placements})
+        inputs.append({'type': "MemoryGraphMapper", 'value': graph_mapper})
+        inputs.append({'type': "MemoryPartitionedGraph",
+                       'value': partitioned_graph})
 
         return inputs, first_algorithms, multi_iteration_algorithms, \
                outputs, xmls
@@ -560,7 +583,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
 
 # TODO There must be a way to remove this requirement, but not sure how yet.
-class FrontEndCommonNMachineTimeStepUpdator(object):
+class FrontEndCommonMachineTimeStepUpdator(object):
 
     def __call__(self, iteration, steps, partitionable_graph):
 
