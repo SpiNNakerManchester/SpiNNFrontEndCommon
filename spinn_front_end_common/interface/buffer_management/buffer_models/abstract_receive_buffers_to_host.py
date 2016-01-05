@@ -1,8 +1,6 @@
 from abc import abstractmethod, ABCMeta
 from six import add_metaclass
 
-from pacman.model.abstract_classes.abstract_constrained_object import \
-    AbstractConstrainedObject
 from pacman.model.constraints.tag_allocator_constraints.\
     tag_allocator_require_iptag_constraint import \
     TagAllocatorRequireIptagConstraint
@@ -13,7 +11,7 @@ from spinn_front_end_common.utilities import exceptions
 
 
 @add_metaclass(ABCMeta)
-class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
+class AbstractReceiveBuffersToHost(object):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
@@ -22,7 +20,6 @@ class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
         :return: None
         :rtype: None
         """
-        AbstractConstrainedObject.__init__(self)
         self._buffering_output = False
         self._buffer_manager = None
         self._buffering_ip_address = None
@@ -49,8 +46,6 @@ class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
         :param buffering_port: UDP port of the host which supports\
                 the buffering output functionality
         :type buffering_port: int
-        :param notification_tag: ?????????
-        :type notification_tag: ????????????
 
         :return: None
         :rtype: None
@@ -126,8 +121,7 @@ class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
                 "The number of buffer regions must match the number of"
                 " regions sizes")
         if buffering_output:
-            for (buffer_region, region_size) in zip(
-                    buffer_regions, region_sizes):
+            for (_, region_size) in zip(buffer_regions, region_sizes):
                 if region_size > 0:
                     mallocs += 1
             mallocs += 1
@@ -173,6 +167,10 @@ class AbstractReceiveBuffersToHost(AbstractConstrainedObject):
         spec.write_value(data=time_between_requests)
         for region_size in region_sizes:
             spec.write_value(data=region_size)
+
+    @abstractmethod
+    def add_constraint(self, constraint):
+        pass
 
     @property
     def buffer_manager(self):
