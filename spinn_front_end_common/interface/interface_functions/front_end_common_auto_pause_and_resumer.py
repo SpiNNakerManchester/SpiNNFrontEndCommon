@@ -35,7 +35,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             no_sync_changes, partitionable_graph, app_data_folder, verify,
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution,
-            machine_time_step, placements, tags, reports_states, routing_infos):
+            machine_time_step, placements, tags, reports_states, routing_infos,
+            has_ran_before, has_reset_before, application_graph_changed):
 
         steps = self._deduce_number_of_interations(
             partitioned_graph, runtime, time_scale_factor,
