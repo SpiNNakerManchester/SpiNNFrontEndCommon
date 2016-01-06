@@ -108,12 +108,12 @@ class AbstractReceiveBuffersToHost(object):
     @staticmethod
     def get_number_of_mallocs_used_by_receive_buffer_dsg(
             buffer_regions, region_sizes, buffering_output):
-        """
-        helper method for deudcing how much sdram needed for the data regions
+        """ Get the number of allocations needed by this class
+
         :param buffer_regions: The regions ids to reserve for buffering
         :param region_sizes: The sizes of the regions to reserve
         :param buffering_output: bool stating if we're buffering output
-        :return: number of amllocs expected from this component
+        :return: number of allocations expected from this component
         """
         mallocs = 0
         if len(buffer_regions) != len(region_sizes):

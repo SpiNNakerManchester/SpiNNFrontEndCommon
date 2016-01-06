@@ -11,11 +11,11 @@ class AbstractPartitionableUsesMemoryMallocs(object):
 
     @abstractmethod
     def get_number_of_mallocs_used_by_dsg(self, vertex_slice, in_edges):
-        """
-        get the number of mallocs required by the model
+        """ Get the number of allocations required by the model
+
         :param in_edges: the number of edges coming into this model
-        :param vertex_slice: the slice from a partitionable vertex associated
-        with the partitioned_vertex
-        :return: the number of mallocs used by this model
+        :param vertex_slice: the slice from a partitionable vertex associated\
+                with the partitioned_vertex
+        :return: the number of allocations used by this model
         :rtype: int
         """

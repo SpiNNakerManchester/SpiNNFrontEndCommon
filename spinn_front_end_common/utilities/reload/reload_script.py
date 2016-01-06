@@ -1,7 +1,3 @@
-"""
-ReloadScript
-"""
-
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import reload
@@ -108,6 +104,7 @@ class ReloadScript(object):
 
     def add_socket_address(self, socket_address):
         """ Store a socket address for database usage
+
         :param socket_address: the socket addresses to be stored by the reload
         :return:
         """
@@ -119,6 +116,7 @@ class ReloadScript(object):
 
     def add_routing_table(self, routing_table):
         """ Add a routing table to be reloaded
+
         :param routing_table: the routing table to reload
         :return:
         """
@@ -133,6 +131,7 @@ class ReloadScript(object):
 
     def add_ip_tag(self, iptag):
         """ Add an iptag to be reloaded
+
         :param iptag: the iptag object to be loaded.
         :return:
         """
@@ -143,6 +142,7 @@ class ReloadScript(object):
 
     def add_reverse_ip_tag(self, reverse_ip_tag):
         """ Add a reverse ip tag to be reloaded
+
         :param reverse_ip_tag: the reverse iptag to be loaded.
         :return:
         """
@@ -155,6 +155,7 @@ class ReloadScript(object):
 
     def add_buffered_vertex(self, vertex, iptag, placement, buffered_files):
         """ Add a buffered vertex to be reloaded
+
         :param vertex: the buffered vertex to be used in reload purposes
         :param iptag: the iptag being used by this vertex
         :param placement: the placement object for this vertex
@@ -187,7 +188,6 @@ class ReloadScript(object):
 
     def close(self):
         """ Finish writing the reload script
-        :return:
         """
         self._println("")
         self._println(

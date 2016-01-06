@@ -8,9 +8,7 @@ import struct
 
 
 class FrontEndCommonRuntimeUpdater(object):
-    """
-    FrontEndCommonRuntimeUpdater: function to update the runtime of an
-    application running on a spinnaker machine
+    """ Updates the runtime of an application running on a spinnaker machine
     """
 
     def __call__(
@@ -41,8 +39,8 @@ class FrontEndCommonRuntimeUpdater(object):
                     flags=SDPFlag.REPLY_NOT_EXPECTED,
                     destination_cpu=p,
                     destination_chip_x=x,
-                    destination_port=
-                    constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
+                    destination_port=(
+                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
                     destination_chip_y=y), data=data))
 
             processors_ready = txrx.get_core_state_count(
@@ -71,8 +69,8 @@ class FrontEndCommonRuntimeUpdater(object):
                     flags=SDPFlag.REPLY_NOT_EXPECTED,
                     destination_cpu=p,
                     destination_chip_x=x,
-                    destination_port=
-                    constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
+                    destination_port=(
+                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
                     destination_chip_y=y), data=data))
 
             processors_ready = txrx.get_core_state_count(app_id, sync_state)
