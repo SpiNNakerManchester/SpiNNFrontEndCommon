@@ -52,8 +52,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 "your usage, please turn off use_auto_pause_and_resume in "
                 " your config file. Thank you")
 
-        inputs, first_algorthims, multi_run_algorithms, outputs, xmls = \
-            self._setup_pacman_executor_inputs(
+        inputs, first_algorthims, optional_algorithms, multi_run_algorithms, \
+            outputs, xmls = self._setup_pacman_executor_inputs(
                 wait_on_confirmation, partitionable_graph,
                 send_start_notification, notification_interface, app_id, txrx,
                 time_scale_factor, loaded_reverse_iptags_token,
@@ -62,14 +62,15 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 extra_xmls, algorithum_for_dsg_generation,
                 algorithum_for_dse_execution, tags, reports_states,
                 app_data_folder, verify, routing_infos, placements,
-                graph_mapper, partitioned_graph, machine)
+                graph_mapper, partitioned_graph, machine, has_ran_before,
+                has_reset_before, application_graph_changed)
 
         no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
             processor_to_app_data_base_address, \
-            placement_to_application_data_files= \
-                self._execute_pacman_system_number_of_iterations(
-                    steps, inputs, first_algorthims, multi_run_algorithms,
-                    outputs, xmls)
+            placement_to_application_data_files = \
+            self._execute_pacman_system_number_of_iterations(
+                steps, inputs, first_algorthims, optional_algorithms,
+                multi_run_algorithms, outputs, xmls)
 
         return {
             'RanToken': True, "no_sync_changes": no_sync_changes,
@@ -389,7 +390,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution, tags,
             reports_states, app_data_folder, verify, routing_infos,
-            placements, graph_mapper, partitioned_graph, machine):
+            placements, graph_mapper, partitioned_graph, machine,
+            has_ran_before, has_reset_before, application_graph_changed):
         """
 
         :param wait_on_confirmation:
@@ -424,16 +426,24 @@ class FrontEndCommonAutoPauseAndResumer(object):
         outputs = list()
         xmls = self.sort_out_xmls(extra_xmls)
         first_algorithms = list()
+        optiomal_algorithms = list()
         multi_iteration_algorithms = list()
 
         # standard algorithms needed for multi-runs before updator
         # (expected order here for debug purposes)
         first_algorithms.append("FrontEndCommonMachineTimeStepUpdator")
-        first_algorithms.append(algorithum_for_dsg_generation)
-        first_algorithms.append(algorithum_for_dse_execution)
-        first_algorithms.append("FrontEndCommonApplicationDataLoader")
-        first_algorithms.append("FrontEndCommomLoadExecutableImages")
-        first_algorithms.append("FrontEndCommonBufferManagerCreater")
+        if not has_ran_before and not has_reset_before:
+            first_algorithms.append(algorithum_for_dsg_generation)
+            first_algorithms.append(algorithum_for_dse_execution)
+            optiomal_algorithms.append("FrontEndCommonApplicationDataLoader")
+            first_algorithms.append("FrontEndCommomLoadExecutableImages")
+            first_algorithms.append("FrontEndCommonBufferManagerCreater")
+        elif application_graph_changed:
+            first_algorithms.append(algorithum_for_dsg_generation)
+            first_algorithms.append(algorithum_for_dse_execution)
+            optiomal_algorithms.append("FrontEndCommonApplicationDataLoader")
+            first_algorithms.append("FrontEndCommomLoadExecutableImages")
+            first_algorithms.append("FrontEndCommonBufferManagerCreater")
 
         multi_iteration_algorithms.append("FrontEndCommonApplicationRunner")
         multi_iteration_algorithms.extend(algorthums_to_run_between_runs)
@@ -475,8 +485,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
                        'value': partitioned_graph})
         inputs.append({'type': "MemoryExtendedMachine", 'value': machine})
 
-        return inputs, first_algorithms, multi_iteration_algorithms, \
-               outputs, xmls
+        return inputs, first_algorithms, optiomal_algorithms, \
+            multi_iteration_algorithms, outputs, xmls
 
     @staticmethod
     def sort_out_xmls(extra_xmls):
@@ -503,13 +513,14 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return xmls
 
     def _execute_pacman_system_number_of_iterations(
-            self, steps, inputs, first_algorithms, multi_algorithms, outputs,
-            xmls):
+            self, steps, inputs, first_algorithms, optimal_algorithms,
+            multi_algorithms, outputs, xmls):
         """
 
         :param inputs:
         :param first_algorithms:
         :param outputs:
+        :param optimal_algorithms:
         :param xmls:
         :param multi_algorithms
         :return:
@@ -524,22 +535,25 @@ class FrontEndCommonAutoPauseAndResumer(object):
             # if its the first iteration, do all the boiler plate of dsg, dse,
             # app data load, executable load, etc
             if iteration == 0:
+                all_algorithms = first_algorithms + multi_algorithms
                 pacman_executor = PACMANAlgorithmExecutor(
-                    algorithms=first_algorithms, inputs=inputs, xml_paths=xmls,
-                    required_outputs=outputs)
+                    algorithms=all_algorithms, inputs=inputs, xml_paths=xmls,
+                    required_outputs=outputs,
+                    optional_algorithms=optimal_algorithms)
             else:
                 pacman_executor = PACMANAlgorithmExecutor(
                     algorithms=multi_algorithms, inputs=inputs, xml_paths=xmls,
-                    required_outputs=outputs)
+                    required_outputs=outputs,
+                    optional_algorithms=optimal_algorithms)
 
             pacman_executor.execute_mapping()
 
         return pacman_executor.get_item("NoSyncChanges"), \
-               pacman_executor.get_item("ExecutableTargets"), \
-               pacman_executor.get_item("DataSpecificationTargets"), \
-               pacman_executor.get_item("BufferManager"), \
-               pacman_executor.get_item("ProcessorToAppDataBaseAddress"), \
-               pacman_executor.get_item("PlacementToAppDataFilePaths")
+            pacman_executor.get_item("ExecutableTargets"), \
+            pacman_executor.get_item("DataSpecificationTargets"), \
+            pacman_executor.get_item("BufferManager"), \
+            pacman_executor.get_item("ProcessorToAppDataBaseAddress"), \
+            pacman_executor.get_item("PlacementToAppDataFilePaths")
 
     def _update_inputs(self, pacman_executor, inputs, steps, iteration):
         """
@@ -560,11 +574,11 @@ class FrontEndCommonAutoPauseAndResumer(object):
             inputs[parameter_index] = {'type': 'Steps', 'value': steps}
             parameter_index = self._locate_index_of_input(inputs, 'Iteration')
             inputs[parameter_index] = {'type': 'Iteration', 'value': iteration}
-            parameter_index = self._locate_index_of_input(inputs, 'Runtime')
-            inputs[parameter_index] = {'type': 'Runtime',
+            parameter_index = self._locate_index_of_input(inputs, 'RunTime')
+            inputs[parameter_index] = {'type': 'RunTime',
                                        'value': steps[iteration]}
         else:
-            inputs.append({'type': 'Runtime', 'value': steps[iteration]})
+            inputs.append({'type': 'RunTime', 'value': steps[iteration]})
             inputs.append({'type': 'Steps', 'value': steps})
             inputs.append({'type': 'Iteration', 'value': iteration})
 
@@ -594,7 +608,7 @@ class FrontEndCommonMachineTimeStepUpdator(object):
 
         # deduce the new runtime position
         set_runtime = 0
-        for past_step in range(0, iteration):
+        for past_step in range(0, iteration + 1):
             set_runtime += steps[past_step]
 
         # update the partitionable vertices

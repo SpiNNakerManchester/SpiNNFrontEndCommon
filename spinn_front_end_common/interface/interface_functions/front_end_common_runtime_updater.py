@@ -4,6 +4,7 @@ from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.model.cpu_state import CPUState
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import exceptions
 import struct
 
 
@@ -15,7 +16,12 @@ class FrontEndCommonRuntimeUpdater(object):
 
     def __call__(
             self, placements, txrx, no_sync_changes, app_id,
-            executable_targets, graph_mapper):
+            executable_targets, graph_mapper, ran_token):
+
+        if not ran_token:
+            raise exceptions.ConfigurationException(
+                "The run time token is set to false, and therefore the runtime"
+                "updator cannot be ran yet. please fix and try again.")
 
         # check that the right number of processors are in sync0
         processors_ready = \

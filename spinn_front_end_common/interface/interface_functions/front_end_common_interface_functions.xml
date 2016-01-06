@@ -765,6 +765,10 @@
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
+            <parameter>
+                <param_name>ran_token</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
         </required_inputs>
         <produces_outputs>
             <parameter>
@@ -886,8 +890,16 @@
                 <param_type>NoSyncChanges</param_type>
             </parameter>
             <parameter>
-                <param_name></param_name>
-                <param_type></param_type>
+                <param_name>has_ran_before</param_name>
+                <param_type>HasRanBefore</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_reset_before</param_name>
+                <param_type>HasResetBefore</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_graph_changed</param_name>
+                <param_type>ApplicationGraphChanged</param_type>
             </parameter>
 
         </required_inputs>
@@ -931,7 +943,7 @@
         </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonMachineTimeStepUpdator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resume</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resumer</python_module>
         <python_class>FrontEndCommonMachineTimeStepUpdator</python_class>
         <required_inputs>
             <parameter>

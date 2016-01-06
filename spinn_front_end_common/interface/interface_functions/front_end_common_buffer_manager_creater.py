@@ -30,15 +30,10 @@ class FrontEndCommonBufferManagerCreater(object):
                     buffer_manager.add_sender_vertex(placement.subvertex)
 
             if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
-                    if placement.subvertex.buffering_output:
-                        buffer_manager.add_receiving_vertex(
-                            placement.subvertex)
-
-            # Partitioned vertices can also be output buffered
-            if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
                 if placement.subvertex.buffering_output:
-                    buffer_manager.add_receiving_vertex(placement.subvertex)
-                    placement.subvertex.buffer_manager = buffer_manager
+                    buffer_manager.add_receiving_vertex(
+                        placement.subvertex)
+
             progress_bar.update()
         progress_bar.end()
 
