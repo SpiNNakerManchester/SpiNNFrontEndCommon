@@ -13,8 +13,6 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_partitioned_vertex_pre_buffered_impl \
     import SendsBuffersFromHostPartitionedVertexPreBufferedImpl
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
@@ -22,6 +20,8 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models\
     .abstract_provides_outgoing_edge_constraints \
     import AbstractProvidesOutgoingEdgeConstraints
+from spinn_front_end_common.interface.buffer_management.buffer_models\
+    .receives_buffers_to_host_basic_impl import ReceiveBuffersToHostBasicImpl
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 
@@ -40,7 +40,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         AbstractDataSpecableVertex, PartitionedVertex,
         AbstractProvidesOutgoingEdgeConstraints,
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
-        AbstractReceiveBuffersToHost):
+        ReceiveBuffersToHostBasicImpl):
     """ A model which allows events to be injected into spinnaker and\
         converted in to multicast packets
     """
@@ -117,7 +117,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex.__init__(
             self, resources_required, label, constraints)
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
-        AbstractReceiveBuffersToHost.__init__(self)
+        ReceiveBuffersToHostBasicImpl.__init__(self)
 
         # Set up for receiving live packets
         if receive_port is not None:
@@ -289,7 +289,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         if send_buffer_times is not None:
                 default_mallocs += 1
         default_mallocs += \
-            AbstractReceiveBuffersToHost.\
+            ReceiveBuffersToHostBasicImpl.\
             get_number_of_mallocs_used_by_receive_buffer_dsg(
                 [ReverseIPTagMulticastSourcePartitionedVertex.REGIONS.
                  RECORDING_BUFFER.value], [record_buffer_size],
@@ -409,6 +409,3 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     @property
     def mask(self):
         return self._mask
-
-    def is_receives_buffers_to_host(self):
-        return True
