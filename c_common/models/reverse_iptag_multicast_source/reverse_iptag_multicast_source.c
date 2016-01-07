@@ -1016,6 +1016,12 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
+void reload_parameters() {
+    // There are no parameters we support setting except spike_times.
+    // Those are transmitted differently, so there is no need to do anything here.
+    return;
+}
+
 void sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -1042,7 +1048,7 @@ void c_main(void) {
 
     // Register callbacks
     simulation_register_simulation_sdp_callback(
-        &simulation_ticks, SDP_CALLBACK);
+        &simulation_ticks, reload_parameters, SDP_CALLBACK);
     spin1_sdp_callback_on(
         BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);

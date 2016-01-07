@@ -12,6 +12,9 @@ from spinn_front_end_common.utilities import report_functions as \
 # pacman imports
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 
+# dsg imports
+from data_specification import utility_calls as dsg_utilities
+
 # general imports
 import os
 import datetime
@@ -317,3 +320,19 @@ def get_core_status_string(core_infos):
             break_down += "    {}:{}:{} in state {}\n".format(
                 x, y, p, core_info.state.name)
     return break_down
+
+def get_region_address(region, placement, txrx):
+    """ Get the address of a region on a cpu.
+    """
+
+    app_data_base_address = txrx.get_cpu_information_from_core(
+        placement.x, placement.y, placement.p).user[0]
+
+    region_offset_in_pointer_table = \
+        dsg_utilities.get_region_base_address_offset(
+            app_data_base_address, region)
+
+    region_offset = buffer(txrx.read_memory(
+        placement.x, placement.y, region_offset_in_pointer_table, 4))
+    return (struct.unpack_from("<I", region_offset)[0] +
+        app_data_base_address)
