@@ -9,12 +9,12 @@ class Reload(object):
             self, machine_name, version, reports_states, bmp_details,
             down_chips, down_cores, number_of_boards, height, width,
             auto_detect_bmp, enable_reinjection, xml_paths,
-            scamp_connection_data, boot_port_num, placement_to_app_data_files,
-            verify, router_tables, processor_to_app_data_base_address,
+            scamp_connection_data, boot_port_num, verify, router_tables,
             executable_targets, tags, iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses,
             database_file_path, runtime, time_scale_factor,
-            send_start_notification, app_id=30):
+            send_start_notification, processor_to_app_data_base_address,
+            placement_to_app_data_files, dsg_targets, app_id=30):
 
         if scamp_connection_data == "None":
             scamp_connection_data = None
@@ -27,7 +27,7 @@ class Reload(object):
             processor_to_app_data_base_address, executable_targets, tags,
             iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses, database_file_path,
-            runtime, time_scale_factor, send_start_notification)
+            runtime, time_scale_factor, send_start_notification, dsg_targets)
         pacman_outputs = self._create_pacman_outputs()
 
         # get the list of algorithms expected to be used
@@ -47,7 +47,7 @@ class Reload(object):
             processor_to_app_data_base_address, executable_targets,
             buffered_tags, iptags, reverse_iptags, placements,
             wait_for_read_confirmation, socket_addresses, database_file_path,
-            runtime, time_scale_factor, send_start_notification):
+            runtime, time_scale_factor, send_start_notification, dsg_targets):
         """
 
         :param machine_name:
@@ -97,10 +97,6 @@ class Reload(object):
         inputs.append({'type': "ScampConnectionData",
                        'value': scamp_connection_data})
         inputs.append({"type": "BootPortNum", 'value': boot_port_num})
-        inputs.append({'type': "PlacementToAppDataFilePaths",
-                       'value': placement_to_app_data_files})
-        inputs.append({'type': "ProcessorToAppDataBaseAddress",
-                       'value': processor_to_app_data_base_address})
         inputs.append({'type': "WriteCheckerFlag", 'value': verify})
         inputs.append({'type': "ExecutableTargets",
                        "value": executable_targets})
@@ -121,6 +117,19 @@ class Reload(object):
         inputs.append({'type': "SendStartNotifications",
                        'value': send_start_notification})
         inputs.append({'type': "MemoryGraphMapper", 'value': None})
+
+        if placement_to_app_data_files is not None:
+            inputs.append({'type': "PlacementToAppDataFilePaths",
+                           'value': placement_to_app_data_files})
+
+        if processor_to_app_data_base_address is not None:
+            inputs.append({'type': "ProcessorToAppDataBaseAddress",
+                           'value': processor_to_app_data_base_address})
+
+        if dsg_targets is not None:
+            inputs.append({'type': "DataSpecificationTargets",
+                           'value': dsg_targets})
+
         return inputs
 
     @staticmethod
@@ -129,16 +138,29 @@ class Reload(object):
 
         :return:
         """
-        algorithms = \
-            "FrontEndCommonMachineInterfacer," \
-            "FrontEndCommonApplicationRunner," \
-            "FrontEndCommonPartitionableGraphApplicationDataLoader," \
-            "FrontEndCommomLoadExecutableImages," \
-            "FrontEndCommonRoutingTableLoader," \
-            "FrontEndCommonTagsLoaderSeperateLists," \
-            "FrontEndCommonBufferManagerCreater," \
-            "FrontEndCommonNotificationProtocol," \
-            "MallocBasedNoGraphChipIDAllocator"
+        if dsg_targets is None:
+            algorithms = \
+                "FrontEndCommonMachineInterfacer," \
+                "FrontEndCommonApplicationRunner," \
+                "FrontEndCommonPartitionableGraphApplicationDataLoader," \
+                "FrontEndCommomLoadExecutableImages," \
+                "FrontEndCommonRoutingTableLoader," \
+                "FrontEndCommonTagsLoaderSeperateLists," \
+                "FrontEndCommonBufferManagerCreater," \
+                "FrontEndCommonNotificationProtocol," \
+                "MallocBasedNoGraphChipIDAllocator"
+        else:
+            algorithms = \
+                "FrontEndCommonMachineInterfacer," \
+                "FrontEndCommonApplicationRunner," \
+                "FrontEndCommonPartitionableGraphApplicationDataLoader," \
+                "FrontEndCommomLoadExecutableImages," \
+                "FrontEndCommonRoutingTableLoader," \
+                "FrontEndCommonTagsLoaderSeperateLists," \
+                "FrontEndCommonBufferManagerCreater," \
+                "FrontEndCommonNotificationProtocol," \
+                "MallocBasedNoGraphChipIDAllocator," \
+                "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification"
         return algorithms
 
     @staticmethod

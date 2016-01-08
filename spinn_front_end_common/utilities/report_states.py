@@ -18,7 +18,8 @@ class ReportState(object):
                  execute_routing_info_report, execute_data_spec_report,
                  execute_write_reload_steps, generate_transciever_report,
                  generate_time_recordings_for_performance_measurements,
-                 generate_tag_allocator_report):
+                 generate_tag_allocator_report,
+                 generate_memory_map_report):
 
         self._partitioner_report = execute_parittioner_report
         self._placer_report_with_partitionable_graph = \
@@ -33,6 +34,7 @@ class ReportState(object):
         self._generate_time_recordings_for_performance_measurements = \
             generate_time_recordings_for_performance_measurements
         self._tag_allocator_report = generate_tag_allocator_report
+        self._write_memory_map_report = generate_memory_map_report
 
     @property
     def partitioner_report(self):
@@ -113,6 +115,14 @@ class ReportState(object):
         :return:
         """
         return self._generate_time_recordings_for_performance_measurements
+
+    @property
+    def write_memory_map_report(self):
+        """
+
+        :return:
+        """
+        return self._write_memory_map_report
 
     def generate_pacman_report_states(self):
         """

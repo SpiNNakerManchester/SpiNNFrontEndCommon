@@ -73,6 +73,14 @@
                 <param_name>placement_to_app_data_files</param_name>
                 <param_type>PlacementToAppDataFilePaths</param_type>
             </parameter>
+            <parameter>
+                <param_name>DSEOnHost</param_name>
+                <param_type>DSEOnHost</param_type>
+            </parameter>
+            <parameter>
+                <param_name>DSEOnChip</param_name>
+                <param_type>DSEOnChip</param_type>
+            </parameter>
         </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionableGraphMachineExecuteDataSpecification">
@@ -96,8 +104,8 @@
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>write_text_specs</param_name>
-                <param_type>WriteTextSpecsFlag</param_type>
+                <param_name>report_states</param_name>
+                <param_type>ReportStates</param_type>
             </parameter>
             <parameter>
                 <param_name>runtime_application_data_folder</param_name>
@@ -130,8 +138,20 @@
         </required_inputs>
         <produces_outputs>
             <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+            <parameter>
                 <param_name>LoadedApplicationDataToken</param_name>
                 <param_type>LoadedApplicationDataToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>DSEOnHost</param_name>
+                <param_type>DSEOnHost</param_type>
+            </parameter>
+            <parameter>
+                <param_name>DSEOnChip</param_name>
+                <param_type>DSEOnChip</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -227,8 +247,8 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonReloadScriptCreator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_reload_script_creator</python_module>
+        <algorithm name="FrontEndCommonOnHostReloadScriptCreator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_on_host_reload_script_creator</python_module>
         <python_class>FrontEndCommonReloadScriptCreator</python_class>
         <required_inputs>
             <parameter>
@@ -280,8 +300,128 @@
                 <param_type>EnableReinjectionFlag</param_type>
             </parameter>
             <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>router_tables</param_name>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>run_time</param_name>
+                <param_type>RunTime</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_scale_factor</param_name>
+                <param_type>TimeScaleFactor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>database_socket_addresses</param_name>
+                <param_type>DatabaseSocketAddresses</param_type>
+            </parameter>
+            <parameter>
+                <param_name>buffer_manager</param_name>
+                <param_type>BufferManager</param_type>
+            </parameter>
+            <parameter>
+                <param_name>scamp_connection_data</param_name>
+                <param_type>ScampConnectionData</param_type>
+            </parameter>
+            <parameter>
+                <param_name>boot_port_num</param_name>
+                <param_type>BootPortNum</param_type>
+            </parameter>
+            <parameter>
+                <param_name>verify</param_name>
+                <param_type>WriteCheckerFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>wait_on_confirmation</param_name>
+                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>database_file_path</param_name>
+                <param_type>DatabaseFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>send_start_notification</param_name>
+                <param_type>SendStartNotifications</param_type>
+            </parameter>
+            <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placement_to_app_data_files</param_name>
+                <param_type>PlacementToAppDataFilePaths</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>ReloadToken</param_name>
+                <param_type>ReloadToken</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonOnChipReloadScriptCreator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_on_chip_reload_script_creator</python_module>
+        <python_class>FrontEndCommonReloadScriptCreator</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>tags</param_name>
+                <param_type>MemoryTags</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_data_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>board_version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+            <parameter>
+                <param_name>bmp_details</param_name>
+                <param_type>BMPDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>downed_chips</param_name>
+                <param_type>DownedChipsDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>downed_cores</param_name>
+                <param_type>DownedCoresDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>number_of_boards</param_name>
+                <param_type>NumberOfBoards</param_type>
+            </parameter>
+            <parameter>
+                <param_name>height</param_name>
+                <param_type>MachineHeight</param_type>
+            </parameter>
+            <parameter>
+                <param_name>width</param_name>
+                <param_type>MachineWidth</param_type>
+            </parameter>
+            <parameter>
+                <param_name>auto_detect_bmp</param_name>
+                <param_type>AutoDetectBMPFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>enable_reinjection</param_name>
+                <param_type>EnableReinjectionFlag</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
@@ -312,10 +452,6 @@
                 <param_type>DatabaseSocketAddresses</param_type>
             </parameter>
             <parameter>
-                <param_name>placement_to_app_data_files</param_name>
-                <param_type>PlacementToAppDataFilePaths</param_type>
-            </parameter>
-            <parameter>
                 <param_name>buffer_manager</param_name>
                 <param_type>BufferManager</param_type>
             </parameter>
@@ -342,6 +478,14 @@
             <parameter>
                 <param_name>send_start_notification</param_name>
                 <param_type>SendStartNotifications</param_type>
+            </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placement_to_app_data_files</param_name>
+                <param_type>PlacementToAppDataFilePaths</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>

@@ -1,21 +1,30 @@
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+
 import logging
 import os
 
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonMemoryMapReport(object):
+class FrontEndCommonMemoryMapOnHostReport(object):
     """ Report on memory usage
     """
 
     def __call__(self, report_default_directory,
-                 processor_to_app_data_base_address):
+                 processor_to_app_data_base_address,
+                 dse_on_host, dse_on_chip):
         """
 
         :param report_default_directory:
         :param processor_to_app_data_base_address:
         :return:
         """
+
+        if dse_on_host is False or dse_on_chip is True:
+            raise SpinnFrontEndException(
+                    "This routine is only for on host data specification "
+                    "executor. Something somewhere went terribly wrong")
+
         file_name = os.path.join(report_default_directory,
                                  "memory_map_from_processor_to_address_space")
         output = None
@@ -24,6 +33,8 @@ class FrontEndCommonMemoryMapReport(object):
         except IOError:
             logger.error("Generate_placement_reports: Can't open file"
                          " {} for writing.".format(file_name))
+
+        output.write("On host data specification executor")
 
         for key in processor_to_app_data_base_address:
             output.write(str(key) + ": ")

@@ -22,6 +22,9 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
 
+# size of the on-chip DSE data structure required in bytes
+DSE_DATA_STRUCT_SIZE = 16
+
 # SDP port handling output buffering data streaming
 SDP_PORTS = Enum(
     value="SDP_PORTS",

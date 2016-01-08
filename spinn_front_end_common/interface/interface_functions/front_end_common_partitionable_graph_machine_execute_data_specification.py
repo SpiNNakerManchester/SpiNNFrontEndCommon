@@ -40,7 +40,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
 
     def __call__(
             self, hostname, placements, graph_mapper, report_default_directory,
-            write_text_specs, runtime_application_data_folder, machine,
+            report_states, runtime_application_data_folder, machine,
             board_version, dsg_targets, transceiver, dse_app_id, app_id):
         """
 
@@ -53,7 +53,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :return:
         """
         data = self.spinnaker_based_data_specification_execution(
-            hostname, placements, graph_mapper, write_text_specs,
+            hostname, placements, graph_mapper, report_states,
             runtime_application_data_folder, machine, board_version,
             report_default_directory, dsg_targets, transceiver,
             dse_app_id, app_id)
@@ -61,7 +61,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         return data
 
     def spinnaker_based_data_specification_execution(
-            self, hostname, placements, graph_mapper, write_text_specs,
+            self, hostname, placements, graph_mapper, report_states,
             application_data_runtime_folder, machine, board_version,
             report_default_directory, dsg_targets, transceiver,
             dse_app_id, app_id):
@@ -75,6 +75,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :param machine:
         :return:
         """
+        mem_map_report = report_states.write_memory_map_report
+
         # check which cores are in use
         number_of_cores_used = 0
         core_subset = CoreSubsets()
@@ -99,43 +101,48 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
                 x, y, p = placement.x, placement.y, placement.p
+                label = associated_vertex.label
 
-                data_spec_file_path = \
-                    associated_vertex.get_data_spec_file_path(
-                        x, y, p, hostname, application_data_runtime_folder)
+                dse_data_struct_addr = transceiver.malloc_sdram(
+                    x, y, constants.DSE_DATA_STRUCT_SIZE, dse_app_id)
 
+                data_spec_file_path = dsg_targets[x, y, p, label]
                 data_spec_file_size = os.path.getsize(data_spec_file_path)
 
                 application_data_file_reader = SpinnmanFileDataReader(
                     data_spec_file_path)
 
                 base_address = transceiver.malloc_sdram(
-                    placement.x, placement.y, data_spec_file_size, dse_app_id)
+                    x, y, data_spec_file_size, dse_app_id)
+
+                dse_data_struct_data = struct.pack(
+                        "<IIII",
+                        base_address,
+                        data_spec_file_size,
+                        app_id,
+                        mem_map_report)
 
                 transceiver.write_memory(
-                    x, y, base_address,
-                    application_data_file_reader, data_spec_file_size)
+                    x, y, dse_data_struct_addr, dse_data_struct_data,
+                    len(dse_data_struct_data))
 
-                # data spec file is written at specific address
-                # write start address in user 0
-                # write length in user 1
+                transceiver.write_memory(
+                    x, y, base_address, application_data_file_reader,
+                    data_spec_file_size)
+
+                # data spec file is written at specific address (base_address)
+                # this is encapsulated in a structure with four fields:
+                # 1 - data specification base address
+                # 2 - data specification file size
+                # 3 - future application ID
+                # 4 - store data for memory map report (True / False)
+                # If the memory map report is going to be produced, the
+                # address of the structure is returned in user1
                 user_0_address = transceiver.\
                     get_user_0_register_address_from_core(x, y, p)
-                user_1_address = transceiver.\
-                    get_user_1_register_address_from_core(x, y, p)
-                user_2_address = transceiver.\
-                    get_user_2_register_address_from_core(x, y, p)
-
-                encoded_address = struct.pack("<I", base_address)
-                encoded_length = struct.pack("<I", data_spec_file_size)
-                encoded_future_app_id = struct.pack("<I", app_id)
 
                 transceiver.write_memory(
-                    x, y, user_0_address, encoded_address, 4)
-                transceiver.write_memory(
-                    x, y, user_1_address, encoded_length, 4)
-                transceiver.write_memory(
-                    x, y, user_2_address, encoded_future_app_id, 4)
+                    x, y, user_0_address, dse_data_struct_addr, 4)
 
                 progress_bar.update()
         progress_bar.end()
@@ -156,7 +163,9 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         transceiver.stop_application(dse_app_id)
         logger.info("On-chip data spec executor completed")
 
-        return {"LoadedApplicationDataToken": True}
+        return {"LoadedApplicationDataToken": True,
+                "DSEOnHost": False,
+                "DSEOnChip": True}
 
     def _load_executable_images(self, transceiver, executable_targets, app_id,
                                 app_data_folder):
