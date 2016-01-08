@@ -30,11 +30,16 @@ class FrontEndCommonRuntimeUpdater(object):
             for (x, y, p) in unsuccessful_cores:
                 subvertex = placements.get_subvertex_on_processor(x, y, p)
                 vertex = graph_mapper.get_vertex_from_subvertex(subvertex)
+                infinite_run = 0
                 steps = vertex.no_machine_time_steps
+                if steps is None:
+                    infinite_run = 1
+                    steps = 0
+
                 data = struct.pack(
-                    "<II",
+                    "<III",
                     constants.SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE
-                    .value, steps)
+                    .value, steps, infinite_run)
                 txrx.send_sdp_message(SDPMessage(SDPHeader(
                     flags=SDPFlag.REPLY_NOT_EXPECTED,
                     destination_cpu=p,

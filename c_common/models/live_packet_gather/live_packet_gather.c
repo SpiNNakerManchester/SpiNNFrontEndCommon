@@ -593,7 +593,7 @@ void c_main(void) {
         USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
-        &simulation_ticks, SDP);
+        &simulation_ticks, &infinite_run, SDP);
     log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0

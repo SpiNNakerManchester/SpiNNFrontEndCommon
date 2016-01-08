@@ -31,21 +31,8 @@ class BufferedSendingRegion(object):
                             _HEADER_SIZE)) / _N_BYTES_PER_KEY
 
     def __init__(self, max_buffer_size):
-
-        # A dictionary of timestamp -> list of keys
-        self._buffer = dict()
-
-        # A list of timestamps
-        self._timestamps = list()
-
-        # The current position in the list of timestamps
-        self._current_timestamp_pos = 0
-
-        self._buffer_size = None
-
-        self._total_region_size = None
-
         self._max_size_of_buffer = max_buffer_size
+        self.clear()
 
     @property
     def buffer_size(self):
@@ -207,3 +194,20 @@ class BufferedSendingRegion(object):
         """ Rewind the buffer to initial position.
         """
         self._current_timestamp_pos = 0
+
+    def clear(self):
+        """ Clears the buffer
+        """
+
+        # A dictionary of timestamp -> list of keys
+        self._buffer = dict()
+
+        # A list of timestamps
+        self._timestamps = list()
+
+        # The current position in the list of timestamps
+        self._current_timestamp_pos = 0
+
+        self._buffer_size = None
+
+        self._total_region_size = None

@@ -103,28 +103,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
                 size=EndBufferingState.size_of_region(len(buffer_regions)),
                 label='BUFFERED_OUT_STATE', empty=True)
 
-    @staticmethod
-    def get_number_of_mallocs_used_by_receive_buffer_dsg(
-            buffer_regions, region_sizes, buffering_output):
-        """ Get the number of allocations needed by this class
-
-        :param buffer_regions: The regions ids to reserve for buffering
-        :param region_sizes: The sizes of the regions to reserve
-        :param buffering_output: bool stating if we're buffering output
-        :return: number of allocations expected from this component
-        """
-        mallocs = 0
-        if len(buffer_regions) != len(region_sizes):
-            raise exceptions.ConfigurationException(
-                "The number of buffer regions must match the number of"
-                " regions sizes")
-        if buffering_output:
-            for (_, region_size) in zip(buffer_regions, region_sizes):
-                if region_size > 0:
-                    mallocs += 1
-            mallocs += 1
-        return mallocs
-
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented
 

@@ -11,6 +11,8 @@
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
+static uint32_t *pointer_to_infinite_run;
+
 //! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
@@ -104,6 +106,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         // resetting the simulation time pointer
         *pointer_to_simulation_time = msg->arg1;
+        *pointer_to_infinite_run = msg->arg2;
 
         // free the message to stop overload
         spin1_msg_free(msg);
@@ -126,13 +129,17 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 }
 
 //! \brief handles the registration of the SDP callback
-//! \param[out] simulation_ticks The number of ticks that the simulation is to
-//!             run for
+//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
+//!            ticks, to allow this to be updated when requested via SDP
+//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
+//!            this to be updated when requested via SDP
 //! \param[in] sdp_packet_callback_priority The priority to use for the
 //!            SDP packet reception
 void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
-    pointer_to_simulation_time = simulation_ticks;
+        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
+        int sdp_packet_callback_priority) {
+    pointer_to_simulation_time = simulation_ticks_pointer;
+    pointer_to_infinite_run = infinite_run_pointer;
     log_info("port no is %d", sdp_exit_run_command_port);
     spin1_sdp_callback_on(
         sdp_exit_run_command_port, simulation_sdp_packet_callback,

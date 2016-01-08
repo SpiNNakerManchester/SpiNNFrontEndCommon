@@ -235,6 +235,7 @@ class BufferManager(object):
         """
         # reset buffered out
         self._received_data = BufferedReceivingData()
+
         # rewind buffered in
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():

@@ -1042,7 +1042,7 @@ void c_main(void) {
 
     // Register callbacks
     simulation_register_simulation_sdp_callback(
-        &simulation_ticks, SDP_CALLBACK);
+        &simulation_ticks, &infinite_run, SDP_CALLBACK);
     spin1_sdp_callback_on(
         BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);

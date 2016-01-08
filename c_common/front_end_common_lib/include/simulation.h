@@ -67,14 +67,15 @@ void simulation_handle_pause_resume(
 //! \return does not return anything
 void simulation_sdp_packet_callback(uint mailbox, uint port);
 
-//! \brief handles the registration of the SDP callback for handling the
-//!        new run times and exit modes for application models
-//! \param[in] simulation_ticks: pointer to the variable the model uses for
-//!            recording the simulation time
-//! \param[in] sdp_packet_callback_priority: the priority level wanted for the
-//!            SDP callback for runtime and exit states.
-//! \return does not return anything
+//! \brief handles the registration of the SDP callback
+//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
+//!            ticks, to allow this to be updated when requested via SDP
+//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
+//!            this to be updated when requested via SDP
+//! \param[in] sdp_packet_callback_priority The priority to use for the
+//!            SDP packet reception
 void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks, int sdp_packet_callback_priority);
+        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
+        int sdp_packet_callback_priority);
 
 #endif // _SIMULATION_H_
