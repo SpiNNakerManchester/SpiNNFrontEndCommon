@@ -121,6 +121,7 @@ class ReverseIpTagMultiCastSource(
         self._record_buffering_tag = None
         self._record_buffer_size = 0
         self._record_buffer_size_before_receive = 0
+        self._record_schedule = None
 
         # Keep the subvertices for resuming runs
         self._subvertices = list()
@@ -163,7 +164,8 @@ class ReverseIpTagMultiCastSource(
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(
-                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            schedule=[]):
         self._recording_enabled = True
         self._record_buffering_ip_address = buffering_ip_address
         self._record_buffering_port = buffering_port
@@ -171,6 +173,7 @@ class ReverseIpTagMultiCastSource(
         self._record_buffering_tag = notification_tag
         self._record_buffer_size = record_buffer_size
         self._record_buffer_size_before_receive = buffer_size_before_receive
+        self._record_schedule = schedule
 
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
         return partitioned_edge.pre_subvertex.get_outgoing_edge_constraints(
@@ -182,7 +185,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_size = self._send_buffer_max_space
 
         recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
-                          .get_recording_data_size(1))
+                          .get_recording_data_size(1, [self._record_schedule]))
         if self._record_buffer_size > 0:
             recording_size += self._record_buffer_size
             recording_size += (ReverseIPTagMulticastSourcePartitionedVertex.
@@ -257,7 +260,7 @@ class ReverseIpTagMultiCastSource(
                 self._record_buffering_ip_address, self._record_buffering_port,
                 self._record_buffering_board_address,
                 self._record_buffering_tag, self._record_buffer_size,
-                self._record_buffer_size_before_receive)
+                self._record_buffer_size_before_receive, self._record_schedule)
         self._subvertices.append((vertex_slice, subvertex))
         return subvertex
 

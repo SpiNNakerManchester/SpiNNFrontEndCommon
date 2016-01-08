@@ -594,7 +594,8 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         if (recording_flags > 0) {
             log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
+            recording_record(
+                time, SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
         }
         return true;
     } else {
@@ -603,7 +604,8 @@ static inline bool eieio_data_parse_packet(
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
         if (recording_flags > 0) {
             log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
+            recording_record(
+                time, SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
         }
         return false;
     }

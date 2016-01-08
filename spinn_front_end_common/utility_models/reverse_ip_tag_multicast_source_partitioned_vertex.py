@@ -166,6 +166,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         # Set up for recording (if requested)
         self._record_buffer_size = 0
         self._buffer_size_before_receive = 0
+        self._record_schedule = None
 
         # Sort out the keys to be used
         self._n_keys = n_keys
@@ -304,13 +305,15 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(constants.
-                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            schedule=[]):
 
         self.set_buffering_output(
             buffering_ip_address, buffering_port, board_address,
             notification_tag)
         self._record_buffer_size = record_buffer_size
         self._buffer_size_before_receive = buffer_size_before_receive
+        self._record_schedule = schedule
 
     def _reserve_regions(self, spec):
 
@@ -318,7 +321,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
             size=((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
-                  self.get_recording_data_size(1)), label='SYSTEM')
+                  self.get_recording_data_size(1, [self._record_schedule])),
+            label='SYSTEM')
         spec.reserve_memory_region(
             region=self._REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
@@ -418,7 +422,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Write the additional recording information
         self.write_recording_data(
-            spec, ip_tags, [self._record_buffer_size],
+            spec, ip_tags, [self._record_buffer_size], [self._record_schedule],
             self._buffer_size_before_receive)
 
         # Write the configuration information

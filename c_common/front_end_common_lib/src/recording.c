@@ -15,6 +15,19 @@
 //---------------------------------------
 // Structures
 //---------------------------------------
+
+//! structure that defines a recording schedule
+typedef struct schedule_item_t {
+    uint32_t start_time;
+    uint32_t end_time;
+} schedule_item_t;
+
+typedef struct recording_schedule_t {
+    schedule_item_t *schedule;
+    uint32_t n_schedule_items;
+    uint32_t schedule_pos;
+} recording_schedule_t;
+
 //! structure that defines a channel in memory.
 typedef struct recording_channel_t {
     uint8_t *start;
@@ -31,6 +44,7 @@ typedef struct recording_channel_t {
 //---------------------------------------
 //! array containing all possible channels.
 static recording_channel_t *g_recording_channels;
+static recording_schedule_t *recording_schedules;
 static uint32_t n_recording_regions = 0;
 static uint8_t buffering_output_tag;
 static uint32_t buffering_out_fsm = 0;
@@ -359,9 +373,39 @@ static void _buffering_in_handler(uint mailbox, uint port) {
     log_debug("Done freeing msg");
 }
 
-bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+bool recording_record(
+        uint32_t time, uint8_t channel, void *data, uint32_t size_bytes) {
     if (_has_been_initialsed(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
+        recording_schedule_t *schedule = &recording_schedules[channel];
+
+        // If the recording has a schedule
+        if (schedule->n_schedule_items > 0) {
+
+            // Go through the schedule until an item is found without a
+            // passed end_time
+            while ((schedule->schedule_pos < schedule->n_schedule_items) &&
+                    (schedule->schedule[
+                        schedule->schedule_pos].end_time != 0) &&
+                    (time > schedule->schedule[
+                        schedule->schedule_pos].end_time)) {
+                schedule->schedule_pos += 1;
+            }
+
+            // If there are no more schedules, don't record
+            // (but don't fail i.e. return true rather than false)
+            if (schedule->schedule_pos >= schedule->n_schedule_items) {
+                return true;
+            }
+
+            // If the current schedule item hasn't started don't record
+            // (but don't fail i.e. return true rather than false)
+            // Note that the end time cannot have expired, or else we would
+            // have moved on
+            if (time < schedule->schedule[schedule->schedule_pos].start_time) {
+                return true;
+            }
+        }
 
         uint32_t space_available = compute_available_space_in_channel(channel);
 
@@ -476,7 +520,9 @@ bool recording_initialize(
 
     g_recording_channels = (recording_channel_t*) spin1_malloc(
         n_recording_regions * sizeof(recording_channel_t));
-    if (!g_recording_channels) {
+    recording_schedules = (recording_schedule_t*) spin1_malloc(
+        n_recording_regions * sizeof(recording_schedule_t));
+    if (!g_recording_channels || !recording_schedules) {
         log_error("Not enough space to create recording channels");
         return false;
     }
@@ -484,8 +530,9 @@ bool recording_initialize(
 
     address_t address = data_specification_get_data_address();
 
+    uint32_t *data_read_ptr = &recording_data[3];
     for (i = 0; i < n_regions; i++) {
-        uint32_t region_size = recording_data[i + 3];
+        uint32_t region_size = *data_read_ptr++;
         if (region_size > 0) {
             address_t region_address = data_specification_get_region(
                 region_ids[i], address);
@@ -508,6 +555,32 @@ bool recording_initialize(
                 " starting at 0x%08x", i, region_size,
                 g_recording_channels[i].start);
 
+            // Read the schedule
+            recording_schedules[i].n_schedule_items = *data_read_ptr++;
+            log_info(
+                "%u schedule items", recording_schedules[i].n_schedule_items);
+            recording_schedules[i].schedule_pos = 0;
+            if (recording_schedules[i].n_schedule_items > 0) {
+                recording_schedules[i].schedule = (schedule_item_t *)
+                    spin1_malloc(
+                        recording_schedules[i].n_schedule_items *
+                        sizeof(schedule_item_t));
+                recording_schedules[i].schedule_pos = 0;
+                for (uint32_t j = 0;
+                        j < recording_schedules[i].n_schedule_items; j++) {
+                    recording_schedules[i].schedule[j].start_time =
+                        *data_read_ptr++;
+                    recording_schedules[i].schedule[j].end_time =
+                        *data_read_ptr++;
+                    log_info(
+                        "Schedule item %u, start=%u, end=%u", j,
+                        recording_schedules[i].schedule[j].start_time,
+                        recording_schedules[i].schedule[j].end_time);
+                }
+            } else {
+                recording_schedules[i].schedule = NULL;
+            }
+
             // The priority of this callback should not allow this to interrupt
             // the timer interrupt, or vice-versa to avoid issues with
             // state
@@ -523,6 +596,9 @@ bool recording_initialize(
                 BUFFER_OPERATION_READ;
             g_recording_channels[i].region_id = region_ids[i];
             g_recording_channels[i].missing_info = 0;
+            recording_schedules[i].n_schedule_items = 0;
+            recording_schedules[i].schedule = NULL;
+            recording_schedules[i].schedule_pos = 0;
 
             log_info("Recording channel %u left uninitialised", i);
         }

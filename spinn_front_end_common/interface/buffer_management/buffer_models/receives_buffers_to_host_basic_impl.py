@@ -69,11 +69,18 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         return EndBufferingState.size_of_region(n_buffered_regions)
 
     @staticmethod
-    def get_recording_data_size(n_buffered_regions):
+    def get_recording_data_size(n_buffered_regions, schedules):
         """ Get the size of the recording data for the given number of\
-            buffered regions
+            buffered regions and a list of schedules for each region
         """
-        return 12 + (n_buffered_regions * 4)
+
+        schedules_size = sum([8 * len(schedule) for schedule in schedules
+                              if schedule is not None])
+
+        # Header info = 4 words = 16 bytes +
+        # 2 words = 8 bytes per buffered region (size and schedule size) +
+        # The size of the schedules
+        return 16 + (n_buffered_regions * 8) + schedules_size
 
     def reserve_buffer_regions(
             self, spec, state_region, buffer_regions, region_sizes):
@@ -115,14 +122,17 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         return None
 
     def write_recording_data(
-            self, spec, ip_tags, region_sizes, buffer_size_before_receive,
-            time_between_requests=0):
+            self, spec, ip_tags, region_sizes, schedules,
+            buffer_size_before_receive, time_between_requests=0):
         """ Writes the recording data to the data specification
 
         :param spec: The data specification to write to
         :param ip_tags: The list of tags assigned to the partitioned vertex
         :param region_sizes: An ordered list of the sizes of the regions in\
                 which buffered recording will take place
+        :param schedules: An ordered list of lists of tuples of start and end\
+                timestamps over which the recording is to be made, or an empty\
+                list to record everything
         :param buffer_size_before_receive: The amount of data that can be\
                 stored in the buffer before a message is sent requesting the\
                 data be read
@@ -141,8 +151,18 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             spec.write_value(data=0)
         spec.write_value(data=buffer_size_before_receive)
         spec.write_value(data=time_between_requests)
-        for region_size in region_sizes:
+        for region_size, schedule in zip(region_sizes, schedules):
             spec.write_value(data=region_size)
+            if schedule is not None:
+                spec.write_value(len(schedule))
+                for start, end in schedule:
+                    spec.write_value(start)
+                    if end is not None:
+                        spec.write_value(end)
+                    else:
+                        spec.write_value(0)
+            else:
+                spec.write_value(0)
 
     @abstractmethod
     def add_constraint(self, constraint):

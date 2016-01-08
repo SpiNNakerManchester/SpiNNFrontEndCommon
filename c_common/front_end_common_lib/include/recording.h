@@ -49,13 +49,14 @@ inline bool recording_is_channel_enabled(
 }
 
 //! \brief records some data into a specific recording channel.
+//! \param[in] time the current timestep of the simulation
 //! \param[in] channel the channel to store the data into.
 //! \param[in] data the data to store into the channel.
 //! \param[in] size_bytes the number of bytes that this data will take up.
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_record(
-    uint8_t channel, void *data, uint32_t size_bytes);
+    uint32_t time, uint8_t channel, void *data, uint32_t size_bytes);
 
 //! \brief Finishes recording - should only be called if recording_flags is\
 //!        not 0
