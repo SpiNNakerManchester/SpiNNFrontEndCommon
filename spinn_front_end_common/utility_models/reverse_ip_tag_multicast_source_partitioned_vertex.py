@@ -14,7 +14,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_partitioned_vertex_pre_buffered_impl \
     import SendsBuffersFromHostPartitionedVertexPreBufferedImpl
 from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
+    .receives_buffers_to_host_basic_impl import ReceiveBuffersToHostBasicImpl
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
@@ -33,12 +33,14 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 from enum import Enum
 import math
 
+_DEFAULT_MALLOC_REGIONS = 2
+
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
         AbstractDataSpecableVertex, PartitionedVertex,
         AbstractProvidesOutgoingEdgeConstraints,
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
-        AbstractReceiveBuffersToHost):
+        ReceiveBuffersToHostBasicImpl):
     """ A model which allows events to be injected into spinnaker and\
         converted in to multicast packets
     """
@@ -127,7 +129,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex.__init__(
             self, resources_required, label, constraints)
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
-        AbstractReceiveBuffersToHost.__init__(self)
+        ReceiveBuffersToHostBasicImpl.__init__(self)
 
         # Set up for receiving live packets
         if receive_port is not None:
@@ -135,6 +137,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 receive_port, receive_sdp_port, board_address, receive_tag))
 
         # Work out if buffers are being sent
+        self._first_machine_time_step = 0
         self._send_buffer = None
         if send_buffer_times is None:
             self._send_buffer_times = None
@@ -150,6 +153,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send_buffer_notification_tag))
             SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
                 self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
+
+        # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
         self._send_buffer_notification_ip_address = \
             send_buffer_notification_ip_address
@@ -210,10 +215,51 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
 
-    def _fill_send_buffer(self, base_key):
+    @staticmethod
+    def n_regions_to_allocate(send_buffering, recording):
+        """ Get the number of regions that will be allocated
+        """
+        if recording and send_buffering:
+            return 5
+        elif recording or send_buffering:
+            return 4
+        return 3
+
+    @property
+    def send_buffer_times(self):
+        return self._send_buffer_times
+
+    @send_buffer_times.setter
+    def send_buffer_times(self, send_buffer_times):
+        self._send_buffer_times = send_buffer_times
+
+    @property
+    def first_machine_time_step(self):
+        return self._first_machine_time_step
+
+    @first_machine_time_step.setter
+    def first_machine_time_step(self, first_machine_time_step):
+        self._first_machine_time_step = first_machine_time_step
+        self._fill_send_buffer()
+
+    def _is_in_range(self, time_stamp_in_ticks):
+        return (
+            (self._no_machine_time_steps is None) or (
+                self._first_machine_time_step <= time_stamp_in_ticks <=
+                self._no_machine_time_steps))
+
+    def _fill_send_buffer(self):
         """ Fill the send buffer with keys to send
         """
-        if self._send_buffer_times is not None:
+
+        # Skip if the virtual key is not yet defined
+        if self._virtual_key is None:
+            return
+
+        if self._send_buffer is not None:
+            self._send_buffer.clear()
+        if (self._send_buffer_times is not None and
+                len(self._send_buffer_times) != 0):
             if hasattr(self._send_buffer_times[0], "__len__"):
 
                 # Works with a list-of-lists
@@ -222,19 +268,23 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                         time_stamp_in_ticks = int(math.ceil(
                             float(int(timeStamp * 1000.0)) /
                             self._machine_time_step))
-                        self._send_buffer.add_key(
-                            time_stamp_in_ticks, base_key + key)
+                        if self._is_in_range(time_stamp_in_ticks):
+                            self._send_buffer.add_key(
+                                time_stamp_in_ticks, self._virtual_key + key)
             else:
 
                 # Work with a single list
-                key_list = [key + base_key for key in range(self._n_keys)]
+                key_list = [
+                    key + self._virtual_key for key in range(self._n_keys)]
                 for timeStamp in sorted(self._send_buffer_times):
                     time_stamp_in_ticks = int(math.ceil(
                         float(int(timeStamp * 1000.0)) /
                         self._machine_time_step))
 
                     # add to send_buffer collection
-                    self._send_buffer.add_keys(time_stamp_in_ticks, key_list)
+                    if self._is_in_range(time_stamp_in_ticks):
+                        self._send_buffer.add_keys(
+                            time_stamp_in_ticks, key_list)
 
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
@@ -274,13 +324,12 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
 
         # Reserve send buffer region if required
-        if self._send_buffer is not None:
-            buffer_space = self.get_region_buffer_size(
+        if self._send_buffer_times is not None:
+            max_buffer_size = self.get_max_buffer_size_possible(
                 self._REGIONS.SEND_BUFFER.value)
-            if buffer_space > 0:
-                spec.reserve_memory_region(
-                    region=self._REGIONS.SEND_BUFFER.value,
-                    size=buffer_space, label="SEND_BUFFER", empty=True)
+            spec.reserve_memory_region(
+                region=self._REGIONS.SEND_BUFFER.value,
+                size=max_buffer_size, label="SEND_BUFFER", empty=True)
 
         # Reserve recording buffer regions if required
         self.reserve_buffer_regions(
@@ -324,7 +373,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         spec.write_value(data=self._mask)
 
         # Write send buffer data
-        if self._send_buffer is not None:
+        if self._send_buffer_times is not None:
 
             this_tag = None
             for tag in ip_tags:
@@ -335,7 +384,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
 
-            buffer_space = self.get_region_buffer_size(
+            buffer_space = self.get_max_buffer_size_possible(
                 self._REGIONS.SEND_BUFFER.value)
 
             spec.write_value(data=buffer_space)
@@ -359,7 +408,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         spec = DataSpecificationGenerator(data_writer, report_writer)
 
         self._update_virtual_key(routing_info, sub_graph)
-        self._fill_send_buffer(self._virtual_key)
+        self._fill_send_buffer()
 
         # Reserve regions
         self._reserve_regions(spec)
@@ -400,6 +449,3 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     @property
     def mask(self):
         return self._mask
-
-    def is_receives_buffers_to_host(self):
-        return True

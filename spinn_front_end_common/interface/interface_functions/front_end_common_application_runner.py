@@ -1,10 +1,10 @@
 from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.model.cpu_state import CPUState
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import helpful_functions
 
 import logging
 import time
-from collections import OrderedDict
 logger = logging.getLogger(__name__)
 
 
@@ -15,7 +15,7 @@ class FrontEndCommonApplicationRunner(object):
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token):
+                 loaded_application_data_token, no_sync_changes):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
@@ -27,16 +27,21 @@ class FrontEndCommonApplicationRunner(object):
 
         logger.info("*** Running simulation... *** ")
 
-        # every thing is in sync0. load the initial buffers
+        # set the buffer manager into a resume state, so that if it had ran
+        # before it'll work again
+        buffer_manager.resume()
+
+        # every thing is in sync0 so load the initial buffers
         buffer_manager.load_initial_buffers()
 
-        self.wait_for_cores_to_be_ready(executable_targets, app_id, txrx)
+        self.wait_for_cores_to_be_ready(
+            executable_targets, app_id, txrx, no_sync_changes)
 
         # wait till external app is ready for us to start if required
         if notification_interface is not None and wait_on_confirmation:
             notification_interface.wait_for_confirmation()
 
-        self.start_all_cores(executable_targets, app_id, txrx)
+        self.start_all_cores(executable_targets, app_id, txrx, no_sync_changes)
 
         if notification_interface is not None and send_start_notification:
             notification_interface.send_start_notification()
@@ -46,16 +51,23 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                buffer_manager)
+                buffer_manager, no_sync_changes)
 
-        return {'RanToken': True}
+            # when it falls out of the running, it'll be in a next sync state,
+            # thus update needed
+            no_sync_changes += 1
 
-    def wait_for_cores_to_be_ready(self, executable_targets, app_id, txrx):
+        return {'RanToken': True, "no_sync_changes": no_sync_changes}
+
+    def wait_for_cores_to_be_ready(
+            self, executable_targets, app_id, txrx, no_sync_state_changes):
         """
 
-        :param executable_targets:
-        :param app_id:
-        :param txrx:
+        :param executable_targets: the mapping between cores and binaries
+        :param app_id: the app id that being used by the simulation
+        :param no_sync_state_changes:  the number of runs been done between\
+                setup and end
+        :param txrx: the python interface to the spinnaker machine
         :return:
         """
 
@@ -72,37 +84,54 @@ class FrontEndCommonApplicationRunner(object):
             processor_c_main = txrx.get_core_state_count(
                 app_id, CPUState.C_MAIN)
 
+        # check that the right number of processors are in correct sync
+        if no_sync_state_changes % 2 == 0:
+            sync_state = CPUState.SYNC0
+        else:
+            sync_state = CPUState.SYNC1
+
         # check that the right number of processors are in sync0
         processors_ready = txrx.get_core_state_count(
-            app_id, CPUState.SYNC0)
+            app_id, sync_state)
 
         if processors_ready != total_processors:
-            unsuccessful_cores = self._get_cores_not_in_state(
-                all_core_subsets, CPUState.SYNC0, txrx)
+            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
+                all_core_subsets, sync_state, txrx)
 
             # last chance to slip out of error check
             if len(unsuccessful_cores) != 0:
-                break_down = self._get_core_status_string(unsuccessful_cores)
+                break_down = helpful_functions.get_core_status_string(
+                    unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} processors out of {} have successfully reached "
-                    "SYNC0:{}".format(
-                        processors_ready, total_processors, break_down))
+                    "{}:{}".format(
+                        processors_ready, total_processors, sync_state.name,
+                        break_down))
 
-    def start_all_cores(self, executable_targets, app_id, txrx):
+    def start_all_cores(self, executable_targets, app_id, txrx,
+                        sync_state_changes):
         """
-
-        :param executable_targets:
-        :param app_id:
-        :param txrx:
-        :return:
+        :param executable_targets: the mapping between cores and binaries
+        :param app_id: the app id that being used by the simulation
+        :param sync_state_changes: the number of runs been done between setup\
+                and end
+        :param txrx: the python interface to the spinnaker machine
+        :return: None
         """
 
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
+        # check that the right number of processors are in correct sync
+        if sync_state_changes % 2 == 0:
+            sync_state = SCPSignal.SYNC0
+        else:
+            sync_state = SCPSignal.SYNC1
+
         # if correct, start applications
         logger.info("Starting application")
-        txrx.send_signal(app_id, SCPSignal.SYNC0)
+        txrx.send_signal(app_id, sync_state)
+        sync_state_changes += 1
 
         # check all apps have gone into run state
         logger.info("Checking that the application has started")
@@ -110,15 +139,21 @@ class FrontEndCommonApplicationRunner(object):
             app_id, CPUState.RUNNING)
         if processors_running < total_processors:
 
+            # deduce the correct state value
+            if sync_state_changes % 2 == 0:
+                sync_state = CPUState.SYNC0
+            else:
+                sync_state = CPUState.SYNC1
+
             processors_finished = txrx.get_core_state_count(
-                app_id, CPUState.FINISHED)
+                app_id, sync_state)
             if processors_running + processors_finished >= total_processors:
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                unsuccessful_cores = self._get_cores_not_in_state(
+                unsuccessful_cores = helpful_functions.get_cores_not_in_state(
                     all_core_subsets, CPUState.RUNNING, txrx)
-                break_down = self._get_core_status_string(
+                break_down = helpful_functions.get_core_status_string(
                     unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started:{}"
@@ -126,7 +161,7 @@ class FrontEndCommonApplicationRunner(object):
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling,
-            txrx, buffer_manager):
+            txrx, buffer_manager, no_sync_state_changes):
         """
 
         :param executable_targets:
@@ -134,6 +169,8 @@ class FrontEndCommonApplicationRunner(object):
         :param runtime:
         :param time_scaling:
         :param buffer_manager:
+        :param no_sync_state_changes: the number of runs been done between\
+                setup and end
         :return:
         """
 
@@ -149,9 +186,10 @@ class FrontEndCommonApplicationRunner(object):
             processors_rte = txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
-                rte_cores = self._get_cores_in_state(
+                rte_cores = helpful_functions.get_cores_in_state(
                     all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-                break_down = self._get_core_status_string(rte_cores)
+                break_down = \
+                    helpful_functions.get_core_status_string(rte_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state:"
                     "{}".format(processors_rte, break_down))
@@ -163,52 +201,22 @@ class FrontEndCommonApplicationRunner(object):
                             "waiting a bit longer...")
                 time.sleep(0.5)
 
+        if no_sync_state_changes % 2 == 1:
+            sync_state = CPUState.SYNC0
+        else:
+            sync_state = CPUState.SYNC1
+
         processors_exited = txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
+            app_id, sync_state)
 
         if processors_exited < total_processors:
-            unsuccessful_cores = self._get_cores_not_in_state(
-                all_core_subsets, CPUState.FINISHED, txrx)
-            break_down = self._get_core_status_string(
+            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
+                all_core_subsets, sync_state, txrx)
+            break_down = helpful_functions.get_core_status_string(
                 unsuccessful_cores)
             raise exceptions.ExecutableFailedToStopException(
                 "{} of {} processors failed to exit successfully:"
                 "{}".format(
                     total_processors - processors_exited, total_processors,
                     break_down))
-        if buffer_manager is not None:
-            buffer_manager.stop()
         logger.info("Application has run to completion")
-
-    @staticmethod
-    def _get_cores_in_state(all_core_subsets, state, txrx):
-        core_infos = txrx.get_cpu_information(all_core_subsets)
-        cores_in_state = OrderedDict()
-        for core_info in core_infos:
-            if core_info.state == state:
-                cores_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        return cores_in_state
-
-    @staticmethod
-    def _get_cores_not_in_state(all_core_subsets, state, txrx):
-        core_infos = txrx.get_cpu_information(all_core_subsets)
-        cores_not_in_state = OrderedDict()
-        for core_info in core_infos:
-            if core_info.state != state:
-                cores_not_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        return cores_not_in_state
-
-    @staticmethod
-    def _get_core_status_string(core_infos):
-        break_down = "\n"
-        for ((x, y, p), core_info) in core_infos.iteritems():
-            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
-                break_down += "    {}:{}:{} in state {}:{}\n".format(
-                    x, y, p, core_info.state.name,
-                    core_info.run_time_error.name)
-            else:
-                break_down += "    {}:{}:{} in state {}\n".format(
-                    x, y, p, core_info.state.name)
-        return break_down

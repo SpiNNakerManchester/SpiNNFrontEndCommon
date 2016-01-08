@@ -25,6 +25,14 @@ class SendsBuffersFromHostPartitionedVertexPreBufferedImpl(
         """
         self._send_buffers = send_buffers
 
+    @property
+    def send_buffers(self):
+        return self._send_buffers
+
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
+
     def buffering_input(self):
         return self._send_buffers is not None
 
@@ -90,3 +98,13 @@ class SendsBuffersFromHostPartitionedVertexPreBufferedImpl(
         :return: bool
         """
         return len(self._send_buffers[region].timestamps) == 0
+
+    def rewind(self, region):
+        """ Rewinds the internal buffer in preparation of re-sending
+            the spikes
+
+        :param region: The region to rewind
+        :type region: int
+        :return:
+        """
+        self._send_buffers[region].rewind()
