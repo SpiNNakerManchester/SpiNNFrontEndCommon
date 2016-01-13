@@ -46,7 +46,10 @@ SDP_PORTS = Enum(
         ("OUTPUT_BUFFERING_SDP_PORT", 2),
 
         # command port for resetting runtime etc
-        ("RUNNING_COMMAND_SDP_PORT", 3)]
+        ("RUNNING_COMMAND_SDP_PORT", 3),
+
+        # command port for updating the poisson rate
+        ("POISSON_UPDATE_RATE_SDP_PORT", 4)]
 )
 
 # output buffering operations
