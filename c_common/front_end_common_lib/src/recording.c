@@ -378,7 +378,7 @@ bool recording_record(
                         schedule->schedule_pos].end_time != 0) &&
                     (time > schedule->schedule[
                         schedule->schedule_pos].end_time)) {
-                schedule->schedule_pos += 1;
+                schedule->schedule_pos = schedule->schedule_pos + 1;
             }
 
             // If there are no more schedules, don't record
