@@ -21,18 +21,15 @@ class FrontEndCommonBufferManagerCreater(object):
             placements, tags, txrx, reports_states, app_data_folder)
 
         for placement in placements.placements:
-            if isinstance(placement.subvertex,
-                          AbstractSendsBuffersFromHostPartitionedVertex):
-
+            if isinstance(
+                    placement.subvertex,
+                    AbstractSendsBuffersFromHostPartitionedVertex):
                 if placement.subvertex.buffering_input():
-
-                    # Add the vertex to the managed vertices
                     buffer_manager.add_sender_vertex(placement.subvertex)
 
             if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
-                if placement.subvertex.buffering_output:
-                    buffer_manager.add_receiving_vertex(
-                        placement.subvertex)
+                if placement.subvertex.buffering_output():
+                    buffer_manager.add_receiving_vertex(placement.subvertex)
 
             progress_bar.update()
         progress_bar.end()

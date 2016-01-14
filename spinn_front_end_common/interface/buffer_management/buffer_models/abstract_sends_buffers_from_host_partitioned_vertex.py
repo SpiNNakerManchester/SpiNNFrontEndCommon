@@ -1,7 +1,3 @@
-"""
-AbstractSendsBuffersFromHostPartitionedVertex
-"""
-
 # general imports
 from abc import ABCMeta
 from abc import abstractmethod
@@ -110,7 +106,7 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
 
     @abstractmethod
     def rewind(self, region):
-        """ Rewinds the internal buffer in preparation of resending
+        """ Rewinds the internal buffer in preparation of re-sending
             the spikes
 
         :param region: The region to rewind

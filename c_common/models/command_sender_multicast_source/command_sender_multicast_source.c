@@ -43,7 +43,7 @@ void timer_callback(uint unused0, uint unused1) {
                 uint32_t delay = delay_and_repeat_data & 0x0000ffff;
                 log_debug("Sending %08x, %08x at time %u with %u repeats and "
                           "%u delay ", key, payload, time, repeat, delay);
-                
+
                 for (uint32_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
@@ -55,8 +55,8 @@ void timer_callback(uint unused0, uint unused1) {
                 }
             } else {
                 log_debug("Sending %08x, %08x at time %u", key, payload, time);
-                
-                //if no repeats, then just sned the message
+
+                //if no repeats, then just send the message
                 spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
             }
         }
@@ -77,15 +77,15 @@ void timer_callback(uint unused0, uint unused1) {
                         repeat_count++) {
                     spin1_send_mc_packet(key, 0, NO_PAYLOAD);
 
-                    // if the delay is 0, dont call delay
+                    // if the delay is 0, don't call delay
                     if (delay > 0) {
                         spin1_delay_us(delay);
                     }
                 }
             } else {
                 log_debug("Sending %08x at time %u", key, time);
-                
-                //if no repeats, then just sned the message
+
+                //if no repeats, then just send the message
                 spin1_send_mc_packet(key, 0, NO_PAYLOAD);
             }
 
@@ -155,7 +155,8 @@ void c_main(void) {
 
     // Register callbacks
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
-    simulation_register_simulation_sdp_callback(&simulation_ticks, SDP);
+    simulation_register_simulation_sdp_callback(
+        &simulation_ticks, &infinite_run, SDP);
 
     log_info("Starting");
 

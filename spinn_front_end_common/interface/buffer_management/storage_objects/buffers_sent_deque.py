@@ -1,11 +1,8 @@
-"""
-BuffersSentDeque
-"""
-
 # spinnman imports
 from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
     import HostSendSequencedData
-from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinnman.messages.eieio.command_messages.event_stop_request\
+    import EventStopRequest
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
@@ -75,13 +72,12 @@ class BuffersSentDeque(object):
         return len(self._buffers_sent) == 0
 
     def send_stop_message(self):
-        """
-        sends a message to stop asking for requests
+        """ Send a message to indicate the end of all the messages
         :return:
         """
         if not self._sent_stop_message:
             self._sent_stop_message = True
-            self.add_message_to_send(StopRequests())
+            self.add_message_to_send(EventStopRequest())
 
     def add_message_to_send(self, message):
         """ Add a message to send.  The message is converted to a sequenced\

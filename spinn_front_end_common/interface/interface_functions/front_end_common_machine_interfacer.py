@@ -25,21 +25,21 @@ class FrontEndCommonMachineInterfacer(object):
         """
         :param hostname: the hostname or ip address of the spinnaker machine
         :param bmp_details: the details of the BMP connections
-        :param downed_chips: the chips that are down which sark thinks are\
+        :param downed_chips: the chips that are down which SARK thinks are\
                 alive
-        :param downed_cores: the cores that are down which sark thinks are\
+        :param downed_cores: the cores that are down which SARK thinks are\
                 alive
         :param board_version: the version of the boards being used within the\
                 machine (1, 2, 3, 4 or 5)
         :param number_of_boards: the number of boards within the machine
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
-        :param auto_detect_bmp: boolean which determines if the bmp should
+        :param auto_detect_bmp: boolean which determines if the BMP should
                be automatically determined
         :param enable_reinjection: True if dropped packet reinjection is to be\
                enabled
         :param boot_port_num: the port num used for the boot connection
-        :param scamp_connection_data: the list of scamp connection datas or\
+        :param scamp_connection_data: the list of scamp connection data or\
                None
         :return: None
         """
@@ -53,7 +53,7 @@ class FrontEndCommonMachineInterfacer(object):
         ignored_chips, ignored_cores = \
             self._sort_out_downed_chips_cores(downed_chips, downed_cores)
 
-        # sort out bmp connections into list of strings
+        # sort out BMP connections into list of strings
         bmp_connection_data = self._sort_out_bmp_string(bmp_details)
 
         txrx = create_transceiver_from_hostname(
@@ -139,6 +139,7 @@ class FrontEndCommonMachineInterfacer(object):
 
     def _sort_out_bmp_string(self, bmp_string):
         """ Take a BMP line and split it into the BMP connection data
+
         :param bmp_string: the BMP string to be converted
         :return: the BMP connection data
         """
@@ -181,6 +182,7 @@ class FrontEndCommonMachineInterfacer(object):
     def _sort_out_downed_chips_cores(downed_chips, downed_cores):
         """ Translate the down cores and down chips string into a form that \
             spinnman can understand
+
         :param downed_cores: string representing down cores
         :type downed_cores: str
         :param downed_chips: string representing down chips

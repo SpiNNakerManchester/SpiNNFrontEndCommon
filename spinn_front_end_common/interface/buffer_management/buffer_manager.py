@@ -1,7 +1,3 @@
-"""
-BufferManager
-"""
-
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
@@ -14,6 +10,7 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
     UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
+from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -132,6 +129,7 @@ class BufferManager(object):
                             packet.x, packet.y, packet.p)
 
                         if vertex in self._sender_vertices:
+
                             # logger.debug(
                             #     "received send request with sequence: {1:d},"
                             #     " space available: {0:d}".format(
@@ -147,6 +145,7 @@ class BufferManager(object):
                                 traceback.print_exc()
                 elif isinstance(packet, SpinnakerRequestReadData):
                     with self._thread_lock_buffer_out:
+
                         # logger.debug(
                         #     "received {} read request(s) with sequence: {},"
                         #     " from chip ({},{}, core {}".format(
@@ -230,23 +229,20 @@ class BufferManager(object):
         progress_bar.end()
 
     def reset(self):
-        """
-        resets the buffered regions to start trnasmitting from the beginning
-        of its expected regions and clears the buffered out data files
-        :return:
+        """ Resets the buffered regions to start transmitting from the\
+            beginning of its expected regions and clears the buffered out data\
+            files
         """
         # reset buffered out
         self._received_data = BufferedReceivingData()
+
         # rewind buffered in
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
                 vertex.rewind(region)
 
     def resume(self):
-        """
-        sets the buffer manager to reset any data strucurres needed to resume
-        from a extraction mode
-        :return:
+        """ Resets any data structures needed before starting running again
         """
         self._received_data.resume()
 
@@ -321,8 +317,8 @@ class BufferManager(object):
         else:
             min_size_of_packet = \
                 EIEIO32BitTimedPayloadPrefixDataMessage.get_min_packet_length()
-            is_next_time_stamp = vertex.is_next_timestamp(region)
-            while is_next_time_stamp and bytes_to_go > min_size_of_packet:
+            while (vertex.is_next_timestamp(region) and
+                    bytes_to_go > min_size_of_packet):
                 space_available = min(bytes_to_go, 280)
                 next_message = self._create_message_to_send(
                     space_available, vertex, region)
@@ -347,10 +343,10 @@ class BufferManager(object):
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             data = EventStopRequest().bytestring
-            logger.debug(
-                "Writing stop message of {} bytes to {} on {}, {}, {}".format(
-                     len(data), hex(region_base_address),
-                     placement.x, placement.y, placement.p))
+            # logger.debug(
+            #    "Writing stop message of {} bytes to {} on {}, {}, {}".format(
+            #         len(data), hex(region_base_address),
+            #         placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
             progress_bar.update(len(data))
@@ -399,17 +395,17 @@ class BufferManager(object):
                 bytes_to_go,
                 constants.UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
-            logger.debug(
-                 "Bytes to go {}, space available {}"
-                 .format(bytes_to_go, space_available))
+            # logger.debug(
+            #     "Bytes to go {}, space available {}".format(
+            #         bytes_to_go, space_available))
             next_message = self._create_message_to_send(
                 space_available, vertex, region)
             if next_message is None:
                 break
             sent_messages.add_message_to_send(next_message)
             bytes_to_go -= next_message.size
-            logger.debug("Adding additional buffer of {} bytes"
-                          .format(next_message.size))
+            # logger.debug("Adding additional buffer of {} bytes".format(
+            #     next_message.size))
 
         # If the vertex is empty, send the stop messages if there is space
         if (not sent_messages.is_full and
@@ -419,13 +415,13 @@ class BufferManager(object):
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
-            logger.debug("Sending stop")
-            self._send_request(vertex, EventStopRequest())
+            # logger.debug("Sending stop")
+            self._send_request(vertex, StopRequests())
 
         # Send the messages
         for message in sent_messages.messages:
-            logger.debug("Sending message with sequence {}"
-                         .format(message.sequence_no))
+            # logger.debug("Sending message with sequence {}".format(
+            #     message.sequence_no))
             self._send_request(vertex, message)
 
     def _locate_region_address(self, region, vertex):
@@ -697,7 +693,7 @@ class BufferManager(object):
                 new_region_id.append(region_id)
                 new_space_read.append(length)
 
-        # create return ack packet with data stored
+        # create return acknowledge packet with data stored
         ack_packet = HostDataRead(
             new_n_requests, pkt_seq, new_channel, new_region_id,
             new_space_read)

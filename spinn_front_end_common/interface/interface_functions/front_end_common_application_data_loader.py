@@ -9,8 +9,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationDataLoader(object):
-    """
-    """
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
@@ -24,23 +22,20 @@ class FrontEndCommonApplicationDataLoader(object):
             logger.debug(
                 "loading application data for vertex {}".format(label))
             key = (x, y, p, label)
-            data = processor_to_app_data_base_address[key]
-            start_address = \
-                processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
             memory_used = \
                 processor_to_app_data_base_address[key]['memory_used']
 
-            # malloc the sdram requirement and replace the start address
-            # assigned via the dse
+            # Allocate the SDRAM requirement and replace the start address
+            # assigned via the DSE
             start_address_malloced = \
                 transceiver.malloc_sdram(x, y, memory_used, app_id)
 
             processor_to_app_data_base_address[key]['start_address'] = \
                 start_address_malloced
 
-            # set start address to be that of the malloced version
+            # set start address to be that of the allocated version
             start_address = start_address_malloced
 
             application_file_paths = placement_to_app_data_files[key]

@@ -57,6 +57,7 @@ def read_data(x, y, address, length, data_format, transceiver):
 
 def auto_detect_database(partitioned_graph):
     """ Auto detects if there is a need to activate the database system
+
     :param partitioned_graph: the partitioned graph of the application\
             problem space.
     :return: a bool which represents if the database is needed
