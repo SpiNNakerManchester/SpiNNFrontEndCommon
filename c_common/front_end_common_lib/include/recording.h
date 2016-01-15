@@ -58,7 +58,7 @@ inline bool recording_is_channel_enabled(
 bool recording_record(
     uint32_t time, uint8_t channel, void *data, uint32_t size_bytes);
 
-//! \brief Finishes recording - should only be called if recording_flags is\
+//! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0
 void recording_finalise();
 
