@@ -10,7 +10,7 @@ ifndef DEBUG
     DEBUG = PRODUCTION_CODE
 endif
 
-CFLAGS += -I include -D$(DEBUG)
+CFLAGS += -Os -I include -D$(DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects

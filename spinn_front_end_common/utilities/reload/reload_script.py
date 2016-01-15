@@ -1,7 +1,3 @@
-"""
-ReloadScript
-"""
-
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import reload
@@ -24,10 +20,11 @@ class ReloadScript(object):
             boot_port_num, placement_to_app_data_files, verify,
             processor_to_app_data_base_address, executable_targets,
             wait_for_read_confirmation, database_file_path,
-            runtime, time_scale_factor, send_start_notification):
+            runtime, time_scale_factor, send_start_notification,
+            reset_machine_on_start_up):
         self._binary_directory = binary_directory
         self._wait_on_confiramtion = None
-        self._runtime = None
+        self._runtime = 0
         self._time_scale_factor = None
         if not self._binary_directory.endswith(os.sep):
             self._binary_directory += os.sep
@@ -56,6 +53,8 @@ class ReloadScript(object):
         self._println("runtime = {}".format(runtime))
         self._println(
             "send_start_notification = {}".format(send_start_notification))
+        self._println("reset_machine_on_start_up = {}"
+                      .format(reset_machine_on_start_up))
         self._println("time_scale_factor = {}".format(time_scale_factor))
         self._println("machine_name = \"{}\"".format(hostname))
         self._println("machine_version = {}".format(board_version))
@@ -75,6 +74,7 @@ class ReloadScript(object):
         self._println("database_file_path = {}".format(database_file_path))
         self._println("wait_for_read_confirmation = {}"
                       .format(wait_for_read_confirmation))
+        self._println("app_folder = \"{}\"".format(binary_directory))
         self._println("processor_to_app_data_base_address = {}"
                       .format(processor_to_app_data_base_address))
         self._println("scamp_connection_data = \"{}\""
@@ -104,6 +104,7 @@ class ReloadScript(object):
 
     def add_socket_address(self, socket_address):
         """ Store a socket address for database usage
+
         :param socket_address: the socket addresses to be stored by the reload
         :return:
         """
@@ -115,6 +116,7 @@ class ReloadScript(object):
 
     def add_routing_table(self, routing_table):
         """ Add a routing table to be reloaded
+
         :param routing_table: the routing table to reload
         :return:
         """
@@ -129,6 +131,7 @@ class ReloadScript(object):
 
     def add_ip_tag(self, iptag):
         """ Add an iptag to be reloaded
+
         :param iptag: the iptag object to be loaded.
         :return:
         """
@@ -139,6 +142,7 @@ class ReloadScript(object):
 
     def add_reverse_ip_tag(self, reverse_ip_tag):
         """ Add a reverse ip tag to be reloaded
+
         :param reverse_ip_tag: the reverse iptag to be loaded.
         :return:
         """
@@ -151,6 +155,7 @@ class ReloadScript(object):
 
     def add_buffered_vertex(self, vertex, iptag, placement, buffered_files):
         """ Add a buffered vertex to be reloaded
+
         :param vertex: the buffered vertex to be used in reload purposes
         :param iptag: the iptag being used by this vertex
         :param placement: the placement object for this vertex
@@ -183,7 +188,6 @@ class ReloadScript(object):
 
     def close(self):
         """ Finish writing the reload script
-        :return:
         """
         self._println("")
         self._println(
@@ -193,7 +197,7 @@ class ReloadScript(object):
             "scamp_connection_data,boot_port_num, placement_to_app_data_files,"
             " verify, routing_tables, processor_to_app_data_base_address,"
             " executable_targets, buffered_tags, iptags, reverse_iptags, "
-            "buffered_placements, wait_for_read_confirmation, "
+            "buffered_placements, app_folder, wait_for_read_confirmation, "
             "socket_addresses, database_file_path, runtime, time_scale_factor,"
-            "send_start_notification)")
+            "send_start_notification, reset_machine_on_start_up)")
         self._file.close()

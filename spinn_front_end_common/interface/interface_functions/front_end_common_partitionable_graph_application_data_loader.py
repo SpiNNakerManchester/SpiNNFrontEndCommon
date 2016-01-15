@@ -9,12 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonPartitionableGraphApplicationLoader(object):
-    """
-    """
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
-            placement_to_app_data_files, verify=False):
+            placement_to_app_data_files, app_id, verify=False):
 
         # go through the placements and see if there's any application data to
         # load
@@ -28,6 +26,19 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
                 processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
+            memory_used = \
+                processor_to_app_data_base_address[key]['memory_used']
+
+            # Allocate the SDRAM requirement and replace the start address
+            # assigned via the DSE
+            start_address_malloced = \
+                transceiver.malloc_sdram(x, y, memory_used, app_id)
+
+            processor_to_app_data_base_address[key]['start_address'] = \
+                start_address_malloced
+
+            # set start address to be that of the allocated version
+            start_address = start_address_malloced
 
             application_file_paths = placement_to_app_data_files[key]
 

@@ -73,6 +73,8 @@ class LiveEventConnection(DatabaseConnection):
             for label in send_labels:
                 self._start_callbacks[label] = list()
                 self._init_callbacks[label] = list()
+        self._receivers = dict()
+        self._listeners = dict()
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
@@ -119,6 +121,8 @@ class LiveEventConnection(DatabaseConnection):
         self._start_callbacks[label].append(start_callback)
 
     def _read_database_callback(self, database_reader):
+        self._handle_possible_rerun_state()
+
         vertex_sizes = OrderedDict()
         run_time_ms = database_reader.get_configuration_parameter_value(
             "runtime")
@@ -138,21 +142,19 @@ class LiveEventConnection(DatabaseConnection):
                     self._atom_id_to_key[send_label])
 
         if self._receive_labels is not None:
-            receivers = dict()
-            listeners = dict()
 
             label_id = 0
             for receive_label in self._receive_labels:
                 _, port, strip_sdp = database_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
                 if strip_sdp:
-                    if port not in receivers:
+                    if port not in self._receivers:
                         receiver = UDPEIEIOConnection(local_port=port)
                         listener = ConnectionListener(receiver)
                         listener.add_callback(self._receive_packet_callback)
                         listener.start()
-                        receivers[port] = receiver
-                        listeners[port] = listener
+                        self._receivers[port] = receiver
+                        self._listeners[port] = listener
                 else:
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
@@ -169,6 +171,18 @@ class LiveEventConnection(DatabaseConnection):
             for init_callback in self._init_callbacks[label]:
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
+
+    def _handle_possible_rerun_state(self):
+        # reset from possible previous calls
+        if self._sender_connection is not None:
+            self._sender_connection.close()
+            self._sender_connection = None
+        for port in self._receivers:
+            self._receivers[port].close()
+        self._receivers = dict()
+        for port in self._listeners:
+            self._listeners[port].close()
+        self._listeners = dict()
 
     def _start_callback(self):
         for (label, callbacks) in self._start_callbacks.iteritems():
@@ -261,3 +275,6 @@ class LiveEventConnection(DatabaseConnection):
             ip_address, port = self._send_address_details[label]
             self._sender_connection.send_eieio_message_to(
                 message, ip_address, port)
+
+    def close(self):
+        DatabaseConnection.close(self)

@@ -12,6 +12,11 @@ static uint32_t *schedule;
 static uint32_t schedule_size;
 static uint32_t next_pos;
 
+//! values for the priority for each callback
+typedef enum callback_priorities{
+    SDP = 0, TIMER = 2
+}callback_priorities;
+
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
@@ -20,9 +25,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((next_pos >= schedule_size) && (infinite_run != TRUE)
             && (time >= simulation_ticks)) {
-        log_info("Simulation complete.\n");
-        spin1_exit(0);
-        return;
+        simulation_handle_pause_resume(timer_callback, TIMER);
     }
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
@@ -40,7 +43,7 @@ void timer_callback(uint unused0, uint unused1) {
                 uint32_t delay = delay_and_repeat_data & 0x0000ffff;
                 log_debug("Sending %08x, %08x at time %u with %u repeats and "
                           "%u delay ", key, payload, time, repeat, delay);
-                
+
                 for (uint32_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
@@ -52,8 +55,8 @@ void timer_callback(uint unused0, uint unused1) {
                 }
             } else {
                 log_debug("Sending %08x, %08x at time %u", key, payload, time);
-                
-                //if no repeats, then just sned the message
+
+                //if no repeats, then just send the message
                 spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
             }
         }
@@ -74,15 +77,15 @@ void timer_callback(uint unused0, uint unused1) {
                         repeat_count++) {
                     spin1_send_mc_packet(key, 0, NO_PAYLOAD);
 
-                    // if the delay is 0, dont call delay
+                    // if the delay is 0, don't call delay
                     if (delay > 0) {
                         spin1_delay_us(delay);
                     }
                 }
             } else {
                 log_debug("Sending %08x at time %u", key, time);
-                
-                //if no repeats, then just sned the message
+
+                //if no repeats, then just send the message
                 spin1_send_mc_packet(key, 0, NO_PAYLOAD);
             }
 
@@ -151,7 +154,9 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
+    simulation_register_simulation_sdp_callback(
+        &simulation_ticks, &infinite_run, SDP);
 
     log_info("Starting");
 

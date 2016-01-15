@@ -13,7 +13,8 @@ class FrontEndCommonReloadScriptCreator(object):
             machine, executable_targets, run_time, time_scale_factor,
             database_socket_addresses, wait_on_confirmation,
             placement_to_app_data_files, buffer_manager, scamp_connection_data,
-            boot_port_num, verify, database_file_path, send_start_notification):
+            boot_port_num, verify, database_file_path, send_start_notification,
+            reset_machine_on_start_up):
 
         reload_script = ReloadScript(
             app_data_folder, hostname, board_version, bmp_details,
@@ -22,7 +23,8 @@ class FrontEndCommonReloadScriptCreator(object):
             boot_port_num, placement_to_app_data_files, verify,
             processor_to_app_data_base_address, executable_targets,
             wait_on_confirmation, database_file_path, run_time,
-            time_scale_factor, send_start_notification)
+            time_scale_factor, send_start_notification,
+            reset_machine_on_start_up)
 
         for ip_tag in tags.ip_tags:
             reload_script.add_ip_tag(ip_tag)
