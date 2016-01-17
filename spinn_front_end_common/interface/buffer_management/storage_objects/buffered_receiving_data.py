@@ -258,3 +258,14 @@ class BufferedReceivingData(object):
         :return: The end state
         """
         return self._end_buffering_state[x, y, p]
+
+    def resume(self):
+        """
+        resets states so that it can behave in a resumed mode
+        :return: None
+        """
+        self._end_buffering_state = dict()
+        self._is_flushed = defaultdict(lambda: False)
+        self._sequence_no = defaultdict(lambda: 0xFF)
+        self._last_packet_received = defaultdict(lambda: None)
+        self._last_packet_sent = defaultdict(lambda: None)

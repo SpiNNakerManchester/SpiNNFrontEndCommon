@@ -1,7 +1,3 @@
-"""
-BuffersSentDeque
-"""
-
 # spinnman imports
 from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
     import HostSendSequencedData
@@ -76,8 +72,7 @@ class BuffersSentDeque(object):
         return len(self._buffers_sent) == 0
 
     def send_stop_message(self):
-        """
-        sends a message to stop asking for requests
+        """ Send a message to indicate the end of all the messages
         :return:
         """
         if not self._sent_stop_message:

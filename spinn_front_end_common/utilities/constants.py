@@ -17,7 +17,10 @@ MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
 DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * 1024
 
 # The number of words in the AbstractDataSpecable basic setup information
-DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 4
+DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 5
+
+# The number of bytes used by SARK per memory allocation
+SARK_PER_MALLOC_SDRAM_USAGE = 8
 
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
@@ -25,12 +28,28 @@ MAX_DATABASE_PATH_LENGTH = 50000
 # size of the on-chip DSE data structure required in bytes
 DSE_DATA_STRUCT_SIZE = 16
 
+SDP_RUNNING_MESSAGE_CODES = Enum(
+    value="SDP_RUNNING_MESSAGE_ID_CODES",
+    names=[
+        ("SDP_STOP_ID_CODE", 6),
+        ("SDP_NEW_RUNTIME_ID_CODE", 7),
+        ("SDP_SWITCH_STATE", 8)]
+)
+
+
 # SDP port handling output buffering data streaming
 SDP_PORTS = Enum(
     value="SDP_PORTS",
     names=[
+
+        # command port for the buffered in functionality
         ("INPUT_BUFFERING_SDP_PORT", 1),
-        ("OUTPUT_BUFFERING_SDP_PORT", 2)]
+
+        # command port for the buffered out functionality
+        ("OUTPUT_BUFFERING_SDP_PORT", 2),
+
+        # command port for resetting runtime etc
+        ("RUNNING_COMMAND_SDP_PORT", 3)]
 )
 
 # output buffering operations

@@ -1,6 +1,5 @@
+from spinn_front_end_common.utilities import constants
 from spinn_storage_handlers.file_data_writer import FileDataWriter
-
-from spinn_front_end_common.utilities import exceptions
 
 from abc import ABCMeta
 from six import add_metaclass
@@ -47,6 +46,10 @@ class AbstractDataSpecableVertex(object):
         else:
             spec.write_value(data=0)
             spec.write_value(data=self._no_machine_time_steps)
+
+        # add SDP port number for receiving synchronisations and new run times
+        spec.write_value(
+            data=constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
 
     @abstractmethod
     def generate_data_spec(
@@ -99,12 +102,7 @@ class AbstractDataSpecableVertex(object):
         :param new_no_machine_time_steps:
         :return:
         """
-        if self._no_machine_time_steps is None:
-            self._no_machine_time_steps = new_no_machine_time_steps
-        else:
-            raise exceptions.ConfigurationException(
-                "cannot set the number of machine time steps of a given"
-                " model once it has already been set")
+        self._no_machine_time_steps = new_no_machine_time_steps
 
     @staticmethod
     def get_data_spec_file_writers(
@@ -156,7 +154,6 @@ class AbstractDataSpecableVertex(object):
                                 processor_id, hostname,
                                 application_run_time_folder):
         """
-
         :param processor_chip_x:
         :param processor_chip_y:
         :param processor_id:

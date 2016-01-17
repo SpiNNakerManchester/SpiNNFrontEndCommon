@@ -1,7 +1,3 @@
-"""
-BufferManager
-"""
-
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
@@ -14,6 +10,7 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
     UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
+from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -32,12 +29,10 @@ from spinnman.messages.eieio.command_messages.spinnaker_request_buffers \
     import SpinnakerRequestBuffers
 from spinnman.messages.eieio.command_messages.padding_request\
     import PaddingRequest
-from spinnman.messages.eieio.command_messages.event_stop_request \
-    import EventStopRequest
 from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
     import HostSendSequencedData
-from spinnman.messages.eieio.command_messages.stop_requests \
-    import StopRequests
+from spinnman.messages.eieio.command_messages.event_stop_request \
+    import EventStopRequest
 from spinnman.messages.eieio import create_eieio_command
 
 # front end common imports
@@ -136,6 +131,7 @@ class BufferManager(object):
                             packet.x, packet.y, packet.p)
 
                         if vertex in self._sender_vertices:
+
                             # logger.debug(
                             #     "received send request with sequence: {1:d},"
                             #     " space available: {0:d}".format(
@@ -151,6 +147,7 @@ class BufferManager(object):
                                 traceback.print_exc()
                 elif isinstance(packet, SpinnakerRequestReadData):
                     with self._thread_lock_buffer_out:
+
                         # logger.debug(
                         #     "received {} read request(s) with sequence: {},"
                         #     " from chip ({},{}, core {}".format(
@@ -233,6 +230,24 @@ class BufferManager(object):
                 self._send_initial_messages(vertex, region, progress_bar)
         progress_bar.end()
 
+    def reset(self):
+        """ Resets the buffered regions to start transmitting from the\
+            beginning of its expected regions and clears the buffered out data\
+            files
+        """
+        # reset buffered out
+        self._received_data = BufferedReceivingData()
+
+        # rewind buffered in
+        for vertex in self._sender_vertices:
+            for region in vertex.get_regions():
+                vertex.rewind(region)
+
+    def resume(self):
+        """ Resets any data structures needed before starting running again
+        """
+        self._received_data.resume()
+
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
 
@@ -304,9 +319,10 @@ class BufferManager(object):
         if vertex.is_empty(region):
             sent_message = True
         else:
+            min_size_of_packet = \
+                EIEIO32BitTimedPayloadPrefixDataMessage.get_min_packet_length()
             while (vertex.is_next_timestamp(region) and
-                    bytes_to_go > (EIEIO32BitTimedPayloadPrefixDataMessage
-                                   .get_min_packet_length())):
+                    bytes_to_go > min_size_of_packet):
                 space_available = min(bytes_to_go, 280)
                 next_message = self._create_message_to_send(
                     space_available, vertex, region)
@@ -400,10 +416,6 @@ class BufferManager(object):
                 not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             sent_messages.send_stop_message()
-            if self._report_states.transciever_report:
-                if (vertex, region) in self._reload_buffer_file:
-                    self._reload_buffer_file[(vertex, region)].close()
-                    del self._reload_buffer_file[(vertex, region)]
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
@@ -491,10 +503,10 @@ class BufferManager(object):
                 raw_number_of_channels = self._transceiver.read_memory(
                     x, y, state_region_base_address, 4)
                 number_of_channels = struct.unpack(
-                    "<I", raw_number_of_channels)[0]
-                channel_state_data = self._transceiver.read_memory(
+                    "<I", str(raw_number_of_channels))[0]
+                channel_state_data = str(self._transceiver.read_memory(
                     x, y, state_region_base_address,
-                    EndBufferingState.size_of_region(number_of_channels))
+                    EndBufferingState.size_of_region(number_of_channels)))
                 end_buffering_state = EndBufferingState.create_from_bytearray(
                     channel_state_data)
                 self._received_data.store_end_buffering_state(
@@ -664,7 +676,7 @@ class BufferManager(object):
                 new_region_id.append(region_id)
                 new_space_read.append(length)
 
-        # create return ack packet with data stored
+        # create return acknowledge packet with data stored
         ack_packet = HostDataRead(
             new_n_requests, pkt_seq, new_channel, new_region_id,
             new_space_read)

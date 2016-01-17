@@ -1,7 +1,3 @@
-"""
-AbstractSendsBuffersFromHostPartitionedVertex
-"""
-
 # general imports
 from abc import ABCMeta
 from abc import abstractmethod
@@ -106,4 +102,14 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
         :return: True if there are no keys to send for the region, False\
                     otherwise
         :rtype: bool
+        """
+
+    @abstractmethod
+    def rewind(self, region):
+        """ Rewinds the internal buffer in preparation of re-sending
+            the spikes
+
+        :param region: The region to rewind
+        :type region: int
+        :return:
         """

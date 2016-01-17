@@ -8,6 +8,12 @@
 #include "recording.h"
 
 //! The EIEIO message types
+
+//! \brief human readable versions of the different priorities and usages.
+typedef enum callback_priorities {
+    SDP_CALLBACK = 0, TIMER = 2
+}callback_priorities;
+
 typedef enum eieio_data_message_types {
     KEY_16_BIT, KEY_PAYLOAD_16_BIT, KEY_32_BIT, KEY_PAYLOAD_32_bIT
 } eieio_data_message_types;
@@ -226,11 +232,11 @@ static inline uint32_t get_sdram_buffer_space_available() {
         return (uint32_t) read_pointer - (uint32_t) write_pointer;
     } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
 
-        // If pointers are equal, buffer is full if last op is write
+        // If pointers are equal, buffer is full if last operation is write
         return 0;
     } else {
 
-        // If pointers are equal, buffer is empty if last op is read
+        // If pointers are equal, buffer is empty if last operation is read
         return buffer_region_size;
     }
 }
@@ -243,7 +249,7 @@ static inline bool is_eieio_packet_in_buffer(void) {
     }
 
     // There are packets as long as the buffer is not empty; the buffer is
-    // empty if the pointers are equal and the last op was read
+    // empty if the pointers are equal and the last operation was read
     return !((write_pointer == read_pointer) &&
             (last_buffer_operation == BUFFER_OPERATION_READ));
 }
@@ -417,9 +423,10 @@ static inline void process_16_bit_packets(
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
-                  " key_space=%d: %d", check, key, mask, key_space,
-                  (!check) || (check && ((key & mask) == key_space)));
+        log_debug(
+            "check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
+            " key_space=%d: %d", check, key, mask, key_space,
+            (!check) || (check && ((key & mask) == key_space)));
 
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
@@ -638,6 +645,7 @@ static inline void eieio_command_parse_sequenced_data(
     log_debug("Received packet sequence number: %d", sequence_value);
 
     if (sequence_value == next_expected_sequence_no) {
+
         // parse_event_pkt returns false in case there is an error and the
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");
@@ -681,6 +689,7 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
     case EVENT_STOP_COMMANDS:
         log_debug("command: EVENT_STOP");
         time = simulation_ticks + 1;
+        write_pointer = read_pointer;
         break;
 
     default:
@@ -713,10 +722,13 @@ void fetch_and_process_packet() {
     msg_from_sdram_in_use = false;
 
     // If we are not buffering, there is nothing to do
+    log_debug("buffer size is %d", buffer_region_size);
     if (buffer_region_size == 0) {
         return;
     }
 
+    log_debug("dealing with SDRAM is set to %d", msg_from_sdram_in_use);
+    log_debug("has_eieio_packet_in_buffer set to %d", is_eieio_packet_in_buffer());
     while ((!msg_from_sdram_in_use) && is_eieio_packet_in_buffer() && last_len > 0) {
 
         // If there is padding, move on 2 bytes
@@ -806,76 +818,6 @@ void send_buffer_request_pkt(void) {
     }
 }
 
-void timer_callback(uint unused0, uint unused1) {
-    use(unused0);
-    use(unused1);
-    time++;
-
-    log_debug("timer_callback, final time: %d, current time: %d,"
-              "next packet buffer time: %d", simulation_ticks, time,
-              next_buffer_time);
-
-    if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
-        // close recording channels
-        if (recording_flags > 0) {
-            recording_finalise();
-        }
-        log_info("Simulation complete.");
-        log_info("Incorrect keys discarded: %d", incorrect_keys);
-        log_info("Incorrect packets discarded: %d", incorrect_packets);
-        log_info("Late packets: %d", late_packets);
-        log_info("Last time of stop notification request: %d",
-                 last_stop_notification_request);
-        spin1_exit(0);
-        return;
-    }
-
-    if (send_packet_reqs &&
-            ((time - last_request_tick) >= TICKS_BETWEEN_REQUESTS)) {
-        send_buffer_request_pkt();
-        last_request_tick = time;
-    }
-
-    if (!msg_from_sdram_in_use) {
-        fetch_and_process_packet();
-    } else if (next_buffer_time < time) {
-        late_packets += 1;
-        fetch_and_process_packet();
-    } else if (next_buffer_time == time) {
-        eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
-        fetch_and_process_packet();
-    }
-
-    if (recording_flags > 0) {
-        recording_do_timestep_update(time);
-    }
-}
-
-void sdp_packet_callback(uint mailbox, uint port) {
-    use(port);
-    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
-    uint16_t length = msg->length;
-    eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
-
-    packet_handler_selector(eieio_msg_ptr, length - 8);
-
-    // free the message to stop overload
-    spin1_msg_free(msg);
-}
-
-bool setup_buffer_region(address_t region_address) {
-    buffer_region = (uint8_t *) region_address;
-    read_pointer = buffer_region;
-    write_pointer = buffer_region;
-    end_of_buffer_region = buffer_region + buffer_region_size;
-
-    log_info("buffer_region: 0x%.8x", buffer_region);
-    log_info("buffer_region_size: %d", buffer_region_size);
-    log_info("end_of_buffer_region: 0x%.8x", end_of_buffer_region);
-
-    return true;
-}
-
 bool read_parameters(address_t region_address) {
 
     // Get the configuration data
@@ -939,7 +881,42 @@ bool read_parameters(address_t region_address) {
     return true;
 }
 
-bool initialize(uint32_t *timer_period) {
+bool setup_buffer_region(address_t region_address) {
+    buffer_region = (uint8_t *) region_address;
+    read_pointer = buffer_region;
+    write_pointer = buffer_region;
+    end_of_buffer_region = buffer_region + buffer_region_size;
+
+    log_info("buffer_region: 0x%.8x", buffer_region);
+    log_info("buffer_region_size: %d", buffer_region_size);
+    log_info("end_of_buffer_region: 0x%.8x", end_of_buffer_region);
+
+    return true;
+}
+
+//! \brief Initialises the recording parts of the model
+//! \return True if recording initialisation is successful, false otherwise
+static bool initialise_recording(){
+    address_t address = data_specification_get_data_address();
+    address_t system_region =
+        data_specification_get_region(SYSTEM, address);
+    uint8_t regions_to_record[] = {
+        BUFFERING_OUT_SPIKE_RECORDING_REGION,
+    };
+    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
+    uint32_t *recording_flags_from_system_conf =
+        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
+    uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
+
+    bool success = recording_initialize(
+        n_regions_to_record, regions_to_record,
+        recording_flags_from_system_conf, state_region, 2,
+        &recording_flags);
+    log_info("Recording flags = 0x%08x", recording_flags);
+    return success;
+}
+
+bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -965,19 +942,10 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
 
-    uint8_t regions_to_record[] = {
-        BUFFERING_OUT_SPIKE_RECORDING_REGION,
-    };
-    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
-    uint32_t *recording_flags_from_system_conf =
-        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
-    uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
-
-    recording_initialize(
-        n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, state_region, 2, &recording_flags);
-
-    log_info("recording flags = 0x%08x", recording_flags);
+    // set up recording data structures
+    if(!initialise_recording()){
+         return false;
+    }
 
     // Read the buffer region
     if (buffer_region_size > 0) {
@@ -990,13 +958,86 @@ bool initialize(uint32_t *timer_period) {
     return true;
 }
 
+void timer_callback(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+    time++;
+
+    log_debug("timer_callback, final time: %d, current time: %d,"
+              "next packet buffer time: %d", simulation_ticks, time,
+              next_buffer_time);
+
+    if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
+
+        // close recording channels
+        if (recording_flags > 0) {
+            recording_finalise();
+        }
+
+        log_info("Incorrect keys discarded: %d", incorrect_keys);
+        log_info("Incorrect packets discarded: %d", incorrect_packets);
+        log_info("Late packets: %d", late_packets);
+        log_info("Last time of stop notification request: %d",
+                 last_stop_notification_request);
+
+        address_t address = data_specification_get_data_address();
+        setup_buffer_region(data_specification_get_region(BUFFER_REGION,
+                                                          address));
+
+        simulation_handle_pause_resume(timer_callback, TIMER);
+
+        // set the code to start sending packet requests again
+        send_packet_reqs = true;
+
+        // magic state to allow the model to check for stuff in the SDRAM
+        last_buffer_operation = BUFFER_OPERATION_WRITE;
+
+        // have fallen out of a resume mode, set up the functions to start
+        // resuming again
+        if(!initialise_recording()){
+            log_error("Could not reset recording regions");
+        }
+    }
+
+    if (send_packet_reqs &&
+            ((time - last_request_tick) >= TICKS_BETWEEN_REQUESTS)) {
+        send_buffer_request_pkt();
+        last_request_tick = time;
+    }
+
+    if (!msg_from_sdram_in_use) {
+        fetch_and_process_packet();
+    } else if (next_buffer_time < time) {
+        late_packets += 1;
+        fetch_and_process_packet();
+    } else if (next_buffer_time == time) {
+        eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
+        fetch_and_process_packet();
+    }
+
+    if (recording_flags > 0) {
+        recording_do_timestep_update(time);
+    }
+}
+
+void sdp_packet_callback(uint mailbox, uint port) {
+    use(port);
+    sdp_msg_t *msg = (sdp_msg_t *) mailbox;
+    uint16_t length = msg->length;
+    eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
+
+    packet_handler_selector(eieio_msg_ptr, length - 8);
+
+    // free the message to stop overload
+    spin1_msg_free(msg);
+}
 
 // Entry point
 void c_main(void) {
 
     // Configure system
     uint32_t timer_period = 0;
-    if (!initialize(&timer_period)) {
+    if (!initialise(&timer_period)) {
         return;
     }
 
@@ -1004,8 +1045,11 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_sdp_callback_on(BUFFERING_IN_SDP_PORT, sdp_packet_callback, 1);
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
+    simulation_register_simulation_sdp_callback(
+        &simulation_ticks, &infinite_run, SDP_CALLBACK);
+    spin1_sdp_callback_on(
+        BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     log_info("Starting");
 

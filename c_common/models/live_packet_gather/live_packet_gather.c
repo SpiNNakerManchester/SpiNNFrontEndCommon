@@ -23,13 +23,18 @@ static circular_buffer without_payload_buffer;
 static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
-//! Provanence data store
+//! Provenance data store
 typedef struct provenance_data_struct {
     uint32_t number_of_over_flows_none_payload;
     uint32_t number_of_over_flows_payload;
 } provenance_data_struct;
 
-//! struct holding the proenance data
+//! values for the priority for each callback
+typedef enum callback_priorities{
+    MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 2
+}callback_priorities;
+
+//! struct holding the provenance data
 provenance_data_struct provenance_data;
 
 // P bit
@@ -69,7 +74,7 @@ typedef enum regions_e {
 } regions_e;
 
 //! Human readable definitions of each element in the configuration region in
-// SDRAM
+//! SDRAM
 typedef enum configuration_region_components_e {
     APPLY_PREFIX,
     PREFIX,
@@ -152,14 +157,17 @@ void flush_events(void) {
     buffer_index = 0;
 }
 
-//! \brief function to store provenance data elements into sdram
+//! \brief function to store provenance data elements into SDRAM
 void record_provenance_data(void){
+
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
+
     // locate the provenance data region base address
     address_t provenance_region_address =
         data_specification_get_region(PROVANENCE_REGION, address);
-    // Copy provenance data into sdram region
+
+    // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
     log_info("The provenance data consisting of %d lost packets without "
@@ -173,7 +181,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    // flush the spike message and sent it over the ethernet
+    // flush the spike message and sent it over the Ethernet
     flush_events();
 
     // increase time variable to keep track of current timestep
@@ -183,8 +191,7 @@ void timer_callback(uint unused0, uint unused1) {
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         record_provenance_data();
-        log_info("Simulation complete.\n");
-        spin1_exit(0);
+        simulation_handle_pause_resume(timer_callback, TIMER);
     }
 }
 
@@ -425,12 +432,17 @@ bool configure_sdp_msg(void) {
     temp_header = 0;
     event_size = 0;
 
-    // initialize SDP header
-    g_event_message.tag = sdp_tag; // Arbitrary tag
-    g_event_message.flags = 0x07; // No reply required
+    // initialise SDP header
+    g_event_message.tag = sdp_tag;
 
-    g_event_message.dest_addr = 0; // Chip 0,0
-    g_event_message.dest_port = PORT_ETH; // Dump through Ethernet
+    // No reply required
+    g_event_message.flags = 0x07;
+
+    // Chip 0,0
+    g_event_message.dest_addr = 0;
+
+    // Dump through Ethernet
+    g_event_message.dest_port = PORT_ETH;
 
     // Set up monitoring address and port
     g_event_message.srce_addr = spin1_get_chip_id();
@@ -449,8 +461,9 @@ bool configure_sdp_msg(void) {
         return false;
     }
 
-    // initialize AER header
-    sdp_msg_aer_header = &g_event_message.cmd_rc; // pointer to data space
+    // initialise AER header
+    // pointer to data space
+    sdp_msg_aer_header = &g_event_message.cmd_rc;
 
     temp_header |= (apply_prefix << 15);
     temp_header |= (prefix_type << 14);
@@ -480,7 +493,9 @@ bool configure_sdp_msg(void) {
 
         log_debug("temp_ptr: %08x\n", (uint32_t) temp_ptr);
         log_debug("a: %08x\n", (uint32_t) a);
-        sdp_msg_aer_payload_prefix = temp_ptr; // pointer to payload prefix
+
+        // pointer to payload prefix
+        sdp_msg_aer_payload_prefix = temp_ptr;
 
         if (!(packet_type & 0x2)) {
 
@@ -511,7 +526,8 @@ bool configure_sdp_msg(void) {
         sdp_msg_aer_payload_prefix = NULL;
     }
 
-    sdp_msg_aer_data = (void *) temp_ptr; // pointer to write data
+    // pointer to write data
+    sdp_msg_aer_data = (void *) temp_ptr;
 
     switch (packet_type) {
     case 0:
@@ -570,12 +586,14 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, -1);
-    spin1_callback_on(MCPL_PACKET_RECEIVED,
-                      incoming_event_payload_callback, -1);
-    spin1_callback_on(USER_EVENT, incoming_event_process_callback, 1);
-    spin1_callback_on(TIMER_TICK, timer_callback, 2);
-
+    spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, MC_PACKET);
+    spin1_callback_on(
+        MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
+    spin1_callback_on(
+        USER_EVENT, incoming_event_process_callback, USER);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
+    simulation_register_simulation_sdp_callback(
+        &simulation_ticks, &infinite_run, SDP);
     log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0

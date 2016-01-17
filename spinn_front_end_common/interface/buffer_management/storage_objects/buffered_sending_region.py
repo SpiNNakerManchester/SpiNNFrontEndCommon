@@ -1,7 +1,3 @@
-"""
-BufferedSendingRegion
-"""
-
 # The size of the header of a message
 from spinnman.messages.eieio.command_messages.host_send_sequenced_data import \
     HostSendSequencedData
@@ -26,7 +22,7 @@ class BufferedSendingRegion(object):
         EIEIOType.KEY_32_BIT, is_payload_base=True)
 
     # The number of bytes in each key to be sent
-    _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes
+    _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
     # The number of keys allowed (different from the actual number as there is
     #  an additional header)
@@ -35,21 +31,8 @@ class BufferedSendingRegion(object):
                             _HEADER_SIZE)) / _N_BYTES_PER_KEY
 
     def __init__(self, max_buffer_size):
-
-        # A dictionary of timestamp -> list of keys
-        self._buffer = dict()
-
-        # A list of timestamps
-        self._timestamps = list()
-
-        # The current position in the list of timestamps
-        self._current_timestamp_pos = 0
-
-        self._buffer_size = None
-
-        self._total_region_size = None
-
         self._max_size_of_buffer = max_buffer_size
+        self.clear()
 
     @property
     def buffer_size(self):
@@ -63,8 +46,7 @@ class BufferedSendingRegion(object):
 
     @property
     def total_region_size(self):
-        """
-        property methof for getting the max size of this region
+        """ Get the max size of this region
         :return:
         """
         if self._total_region_size is None:
@@ -73,17 +55,13 @@ class BufferedSendingRegion(object):
 
     @property
     def max_buffer_size_possible(self):
-        """
-        property method to return the max possible size of a buffer from this
-        region
+        """ Get the max possible size of a buffer from this region
         :return:
         """
         return self._max_size_of_buffer
 
     def _calculate_sizes(self):
-        """
-        takes the data and deduces how much size the buffer and the region
-        requires.
+        """ Deduce how big the buffer and the region needs to be
         :return:
         """
         size = 0
@@ -155,8 +133,9 @@ class BufferedSendingRegion(object):
 
     def get_n_keys(self, timestamp):
         """ Get the number of keys for a given timestamp
-        :param timestamp: the time stamp to check if theres still keys to
-        transmit
+
+        :param timestamp: the time stamp to check if there's still keys to\
+                transmit
         """
         if timestamp in self._buffer:
             return len(self._buffer[timestamp])
@@ -182,8 +161,9 @@ class BufferedSendingRegion(object):
 
     def is_next_key(self, timestamp):
         """ Determine if there is another key for the given timestamp
-        :param timestamp: the time stamp to check if theres still keys to
-        transmit
+
+        :param timestamp: the time stamp to check if there's still keys to\
+                transmit
         :rtype: bool
         """
         if timestamp in self._buffer:
@@ -206,8 +186,28 @@ class BufferedSendingRegion(object):
 
     @property
     def current_timestamp(self):
-        """
-        returns the current timestamp in the iterator
-        :return:
+        """ Get the current timestamp in the iterator
         """
         return self._current_timestamp_pos
+
+    def rewind(self):
+        """ Rewind the buffer to initial position.
+        """
+        self._current_timestamp_pos = 0
+
+    def clear(self):
+        """ Clears the buffer
+        """
+
+        # A dictionary of timestamp -> list of keys
+        self._buffer = dict()
+
+        # A list of timestamps
+        self._timestamps = list()
+
+        # The current position in the list of timestamps
+        self._current_timestamp_pos = 0
+
+        self._buffer_size = None
+
+        self._total_region_size = None

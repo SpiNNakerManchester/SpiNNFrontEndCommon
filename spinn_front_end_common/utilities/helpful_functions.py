@@ -1,5 +1,6 @@
 
 # front end common imports
+from collections import OrderedDict
 from spinn_front_end_common.utility_models.live_packet_gather import \
     LivePacketGather
 from spinn_front_end_common.utility_models.\
@@ -22,6 +23,7 @@ import logging
 import re
 import inspect
 import struct
+from spinnman.model.cpu_state import CPUState
 
 logger = logging.getLogger(__name__)
 
@@ -97,6 +99,7 @@ def get_app_data_base_address(x, y, p, transceiver):
 
 def auto_detect_database(partitioned_graph):
     """ Auto detects if there is a need to activate the database system
+
     :param partitioned_graph: the partitioned graph of the application\
             problem space.
     :return: a bool which represents if the database is needed
@@ -307,3 +310,52 @@ def do_mapping(
     pacman_executor.execute_mapping()
 
     return pacman_executor
+
+
+def get_cores_in_state(all_core_subsets, state, txrx):
+    """
+
+    :param all_core_subsets:
+    :param state:
+    :param txrx:
+    :return:
+    """
+    core_infos = txrx.get_cpu_information(all_core_subsets)
+    cores_in_state = OrderedDict()
+    for core_info in core_infos:
+        if core_info.state == state:
+            cores_in_state[
+                (core_info.x, core_info.y, core_info.p)] = core_info
+    return cores_in_state
+
+
+def get_cores_not_in_state(all_core_subsets, state, txrx):
+    """
+
+    :param all_core_subsets:
+    :param state:
+    :param txrx:
+    :return:
+    """
+    core_infos = txrx.get_cpu_information(all_core_subsets)
+    cores_not_in_state = OrderedDict()
+    for core_info in core_infos:
+        if core_info.state != state:
+            cores_not_in_state[
+                (core_info.x, core_info.y, core_info.p)] = core_info
+    return cores_not_in_state
+
+
+def get_core_status_string(core_infos):
+    """ Get a string indicating the status of the given cores
+    """
+    break_down = "\n"
+    for ((x, y, p), core_info) in core_infos.iteritems():
+        if core_info.state == CPUState.RUN_TIME_EXCEPTION:
+            break_down += "    {}:{}:{} in state {}:{}\n".format(
+                x, y, p, core_info.state.name,
+                core_info.run_time_error.name)
+        else:
+            break_down += "    {}:{}:{} in state {}\n".format(
+                x, y, p, core_info.state.name)
+    return break_down
