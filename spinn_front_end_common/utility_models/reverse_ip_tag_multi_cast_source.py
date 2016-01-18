@@ -235,7 +235,7 @@ class ReverseIpTagMultiCastSource(
                 send_buffer_times = self._send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
         subvertex = ReverseIPTagMulticastSourcePartitionedVertex(
-            n_keys=self.n_atoms, resources_required=resources_required,
+            n_keys=vertex_slice.n_atoms, resources_required=resources_required,
             machine_time_step=self._machine_time_step,
             timescale_factor=self._timescale_factor, label=label,
             constraints=constraints,
