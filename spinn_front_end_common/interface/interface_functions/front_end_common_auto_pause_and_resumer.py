@@ -111,7 +111,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # with just the sdram avilable for runtime usage
         for vertex in partitioned_graph.subvertices:
             resource_tracker.allocate_constrained_resources(
-                    vertex.resources_required, vertex.constraints)
+                vertex.resources_required, vertex.constraints)
 
         # update all ethenet resoruces for
         # ReverseIPTagMulticastSourcePartitionedVertex's
@@ -266,8 +266,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
         for (ethernet_connected_chip_x,
                 ethernet_connected_chip_y) in bandwidth_resource:
             chips_in_region_of_ethernet = \
-                    machine.get_chips_via_local_ethernet(
-                        ethernet_connected_chip_x, ethernet_connected_chip_y)
+                machine.get_chips_via_local_ethernet(
+                    ethernet_connected_chip_x, ethernet_connected_chip_y)
             for chip in chips_in_region_of_ethernet:
                 self._handle_allocating_left_over_sdram(
                     bandwidth_resource, ethernet_connected_chip_x,
@@ -419,11 +419,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         # has had a reset, but no need for dsg
         if not application_graph_changed and has_reset_before:
-            first_algorithms.append("FrontEndCommomLoadExecutableImages")
-            first_algorithms.append("FrontEndCommonBufferManagerCreater")
-
-        # multi-run version
-        if not application_graph_changed and not has_reset_before:
             first_algorithms.append("FrontEndCommonBufferManagerCreater")
 
         multi_iteration_algorithms.append("FrontEndCommonApplicationRunner")
