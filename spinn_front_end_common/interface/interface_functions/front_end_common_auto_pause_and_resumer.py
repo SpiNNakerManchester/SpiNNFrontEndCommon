@@ -1,3 +1,8 @@
+from pacman.model.resources.cpu_cycles_per_tick_resource import \
+    CPUCyclesPerTickResource
+from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.sdram_resource import SDRAMResource
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.utilities.utility_objs.resource_tracker import ResourceTracker
 
@@ -36,12 +41,14 @@ class FrontEndCommonAutoPauseAndResumer(object):
             algorthums_to_run_between_runs, extra_inputs, extra_xmls,
             algorithum_for_dsg_generation, algorithum_for_dse_execution,
             machine_time_step, placements, tags, reports_states, routing_infos,
-            has_ran_before, has_reset_before, application_graph_changed):
+            has_ran_before, has_reset_before, application_graph_changed,
+            steps=None):
 
-        steps = self._deduce_number_of_interations(
-            partitioned_graph, runtime, time_scale_factor,
-            machine, machine_time_step, placements, graph_mapper,
-            partitionable_graph)
+        if steps is None:
+            steps = self._deduce_number_of_interations(
+                partitioned_graph, runtime, time_scale_factor,
+                machine, machine_time_step, placements, graph_mapper,
+                partitionable_graph)
 
         if len(steps) != 1:
             logger.warn(
@@ -110,8 +117,22 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # allocate static sdram usage to the resource tracker, leaving us
         # with just the sdram avilable for runtime usage
         for vertex in partitioned_graph.subvertices:
-            resource_tracker.allocate_constrained_resources(
-                vertex.resources_required, vertex.constraints)
+            # remove bodge memory requirement if a AbstractReceiveBuffersToHost
+            # vertex
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
+                resources = ResourceContainer(
+                    cpu=CPUCyclesPerTickResource(
+                        vertex.resources_required.cpu.get_value()),
+                    dtcm=DTCMResource(
+                        vertex.resources_required.dtcm.get_value()),
+                    sdram=SDRAMResource(
+                        vertex.resources_required.sdram.get_value() -
+                        vertex.extra_static_sdram_requirement()))
+                resource_tracker.allocate_constrained_resources(
+                    resources, vertex.constraints)
+            else:
+                resource_tracker.allocate_constrained_resources(
+                    vertex.resources_required, vertex.constraints)
 
         # update all ethenet resoruces for
         # ReverseIPTagMulticastSourcePartitionedVertex's

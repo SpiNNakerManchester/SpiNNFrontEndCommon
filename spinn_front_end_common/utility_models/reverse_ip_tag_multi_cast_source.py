@@ -48,7 +48,8 @@ class ReverseIpTagMultiCastSource(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
-            send_buffer_notification_tag=None):
+            send_buffer_notification_tag=None,
+            extra_static_sdram=0):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -89,6 +90,9 @@ class ReverseIpTagMultiCastSource(
                 send buffer is specified)
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
+        :param extra_static_sdram: the amount of extra sdram
+        the mdoel should allocate as static for recording (helps memory
+        optimised parittioners)
         """
 
         AbstractDataSpecableVertex.__init__(
@@ -121,6 +125,7 @@ class ReverseIpTagMultiCastSource(
         self._record_buffering_tag = None
         self._record_buffer_size = 0
         self._record_buffer_size_before_receive = 0
+        self._extra_static_sdram = extra_static_sdram
 
         # Keep the subvertices for resuming runs
         self._subvertices = list()
@@ -249,7 +254,8 @@ class ReverseIpTagMultiCastSource(
             send_buffer_notification_ip_address=(
                 self._send_buffer_notification_ip_address),
             send_buffer_notification_port=self._send_buffer_notification_port,
-            send_buffer_notification_tag=self._send_buffer_notification_tag)
+            send_buffer_notification_tag=self._send_buffer_notification_tag,
+            extra_static_sdram_requirement=self._extra_static_sdram)
         subvertex.set_no_machine_time_steps(self._no_machine_time_steps)
         subvertex.first_machine_time_step = self._first_machine_time_step
         if self._record_buffer_size > 0:

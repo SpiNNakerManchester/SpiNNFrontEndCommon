@@ -79,7 +79,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
-            send_buffer_notification_tag=None):
+            send_buffer_notification_tag=None,
+            extra_static_sdram_requirement=0):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -121,6 +122,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send buffer is specified)
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
+        :param extra_static_sdram_requirement: the amount of extra sdram
+        the mdoel should allocate as static for recording (helps memory
+        optimised parittioners)
         """
 
         # Set up super types
@@ -129,7 +133,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex.__init__(
             self, resources_required, label, constraints)
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
-        ReceiveBuffersToHostBasicImpl.__init__(self)
+        ReceiveBuffersToHostBasicImpl.__init__(
+            self, extra_static_sdram_requirement)
 
         # Set up for receiving live packets
         if receive_port is not None:

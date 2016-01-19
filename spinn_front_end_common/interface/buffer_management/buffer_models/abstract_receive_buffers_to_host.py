@@ -19,4 +19,14 @@ class AbstractReceiveBuffersToHost(object):
 
     @abstractmethod
     def is_receives_buffers_to_host(self):
-        pass
+        """
+        property method
+        :return:
+        """
+
+    @abstractmethod
+    def extra_static_sdram_requirement(self):
+        """
+        property method
+        :return:
+        """

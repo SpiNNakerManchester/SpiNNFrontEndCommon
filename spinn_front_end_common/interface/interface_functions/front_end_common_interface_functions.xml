@@ -901,8 +901,13 @@
                 <param_name>application_graph_changed</param_name>
                 <param_type>ApplicationGraphChanged</param_type>
             </parameter>
-
         </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>steps</param_name>
+                <param_type>Steps</param_type>
+            </parameter>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>RanToken</param_name>
