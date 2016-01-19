@@ -269,15 +269,10 @@ class FrontEndCommonAutoPauseAndResumer(object):
                     machine.get_chips_via_local_ethernet(
                         ethernet_connected_chip_x, ethernet_connected_chip_y)
             for chip in chips_in_region_of_ethernet:
-                if bandwidth_resource[(ethernet_connected_chip_x,
-                                       ethernet_connected_chip_y)] == 0:
-                    self._handle_turning_off_buffering_out_for_a_chip(
-                        chip, placements)
-                else:
-                    self._handle_allocating_left_over_sdram(
-                        bandwidth_resource, ethernet_connected_chip_x,
-                        ethernet_connected_chip_y, chip, placements,
-                        graph_mapper, partitionable_graph)
+                self._handle_allocating_left_over_sdram(
+                    bandwidth_resource, ethernet_connected_chip_x,
+                    ethernet_connected_chip_y, chip, placements,
+                    graph_mapper, partitionable_graph)
 
     @staticmethod
     def _handle_allocating_left_over_sdram(
@@ -319,25 +314,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
                     bandwidth_resource[(ethernet_connected_chip_x,
                                         ethernet_connected_chip_y)] -= \
                         individual_machine_time_step_sdram_usage
-                else:
-                    placement.subvertex.enable_buffered_recording(False)
-
-    @staticmethod
-    def _handle_turning_off_buffering_out_for_a_chip(chip, placements):
-        """
-
-        :param chip:
-        :param placements:
-        :return:
-        """
-        chip_placements = placements.get_placements_on_chip(chip.x, chip.y)
-        for chip_placement in chip_placements:
-            subvertex = chip_placement.subvertex
-            if (isinstance(subvertex, AbstractReceiveBuffersToHost) and
-                    (not isinstance(
-                        subvertex,
-                        ReverseIPTagMulticastSourcePartitionedVertex))):
-                subvertex.enable_buffered_recording(False)
 
     @staticmethod
     def _update_ethernet_bandwidth_off_injectors(
@@ -432,17 +408,22 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # standard algorithms needed for multi-runs before updator
         # (expected order here for debug purposes)
         first_algorithms.append("FrontEndCommonMachineTimeStepUpdator")
-        if not has_ran_before and not has_reset_before:
+        if ((not has_ran_before and not has_reset_before) or
+                application_graph_changed):
+            # needs a dsg rebuild
             first_algorithms.append(algorithum_for_dsg_generation)
             first_algorithms.append(algorithum_for_dse_execution)
             optiomal_algorithms.append("FrontEndCommonApplicationDataLoader")
             first_algorithms.append("FrontEndCommomLoadExecutableImages")
             first_algorithms.append("FrontEndCommonBufferManagerCreater")
-        elif application_graph_changed:
-            first_algorithms.append(algorithum_for_dsg_generation)
-            first_algorithms.append(algorithum_for_dse_execution)
-            optiomal_algorithms.append("FrontEndCommonApplicationDataLoader")
+
+        # has had a reset, but no need for dsg
+        if not application_graph_changed and has_reset_before:
             first_algorithms.append("FrontEndCommomLoadExecutableImages")
+            first_algorithms.append("FrontEndCommonBufferManagerCreater")
+
+        # multi-run version
+        if not application_graph_changed and not has_reset_before:
             first_algorithms.append("FrontEndCommonBufferManagerCreater")
 
         multi_iteration_algorithms.append("FrontEndCommonApplicationRunner")
@@ -455,35 +436,66 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         # handle inputs
         inputs.extend(extra_inputs)
-        inputs.append({'type': 'WriteCheckerFlag', 'value': verify})
-        inputs.append({'type': "DatabaseWaitOnConfirmationFlag",
-                       'value': wait_on_confirmation})
-        inputs.append({'type': "MemoryPartitionableGraph",
-                       'value': partitionable_graph})
-        inputs.append({'type': "SendStartNotifications",
-                       'value': send_start_notification})
-        inputs.append({'type': "NotificationInterface",
-                       'value': notification_interface})
-        inputs.append({'type': "APPID", 'value': app_id})
-        inputs.append({'type': "MemoryTransciever", 'value': txrx})
-        inputs.append({'type': "TimeScaleFactor", 'value': time_scale_factor})
-        inputs.append({'type': "LoadedReverseIPTagsToken",
-                       'value': loaded_reverse_iptags_token})
-        inputs.append({'type': "LoadedIPTagsToken",
-                       'value': loaded_iptags_token})
-        inputs.append({'type': "LoadedRoutingTablesToken",
-                       'value': loaded_routing_tables_token})
-        inputs.append({'type': "NoSyncChanges", 'value': no_sync_changes})
-        inputs.append({'type': "MemoryTags", 'value': tags})
-        inputs.append({'type': "ReportStates", 'value': reports_states})
-        inputs.append({'type': "ApplicationDataFolder",
-                       'value': app_data_folder})
-        inputs.append({'type': "MemoryRoutingInfos", 'value': routing_infos})
-        inputs.append({"type": "MemoryPlacements", 'value': placements})
-        inputs.append({'type': "MemoryGraphMapper", 'value': graph_mapper})
-        inputs.append({'type': "MemoryPartitionedGraph",
-                       'value': partitioned_graph})
-        inputs.append({'type': "MemoryExtendedMachine", 'value': machine})
+        inputs.append({
+            'type': 'WriteCheckerFlag',
+            'value': verify})
+        inputs.append({
+            'type': "DatabaseWaitOnConfirmationFlag",
+            'value': wait_on_confirmation})
+        inputs.append({
+            'type': "MemoryPartitionableGraph",
+            'value': partitionable_graph})
+        inputs.append({
+            'type': "SendStartNotifications",
+            'value': send_start_notification})
+        inputs.append({
+            'type': "NotificationInterface",
+            'value': notification_interface})
+        inputs.append({
+            'type': "APPID",
+            'value': app_id})
+        inputs.append({
+            'type': "MemoryTransciever",
+            'value': txrx})
+        inputs.append({
+            'type': "TimeScaleFactor",
+            'value': time_scale_factor})
+        inputs.append({
+            'type': "LoadedReverseIPTagsToken",
+            'value': loaded_reverse_iptags_token})
+        inputs.append({
+            'type': "LoadedIPTagsToken",
+            'value': loaded_iptags_token})
+        inputs.append({
+            'type': "LoadedRoutingTablesToken",
+            'value': loaded_routing_tables_token})
+        inputs.append({
+            'type': "NoSyncChanges",
+            'value': no_sync_changes})
+        inputs.append({
+            'type': "MemoryTags",
+            'value': tags})
+        inputs.append({
+            'type': "ReportStates",
+            'value': reports_states})
+        inputs.append({
+            'type': "ApplicationDataFolder",
+            'value': app_data_folder})
+        inputs.append({
+            'type': "MemoryRoutingInfos",
+            'value': routing_infos})
+        inputs.append({
+            "type": "MemoryPlacements",
+            'value': placements})
+        inputs.append({
+            'type': "MemoryGraphMapper",
+            'value': graph_mapper})
+        inputs.append({
+            'type': "MemoryPartitionedGraph",
+            'value': partitioned_graph})
+        inputs.append({
+            'type': "MemoryExtendedMachine",
+            'value': machine})
 
         return inputs, first_algorithms, optiomal_algorithms, \
             multi_iteration_algorithms, outputs, xmls
@@ -568,19 +580,31 @@ class FrontEndCommonAutoPauseAndResumer(object):
             no_sync_changes = pacman_executor.get_item("NoSyncChanges")
             parameter_index = \
                 self._locate_index_of_input(inputs, 'NoSyncChanges')
-            inputs[parameter_index] = {'type': 'NoSyncChanges',
-                                       'value': no_sync_changes}
+            inputs[parameter_index] = {
+                'type': 'NoSyncChanges',
+                'value': no_sync_changes}
             parameter_index = self._locate_index_of_input(inputs, 'Steps')
-            inputs[parameter_index] = {'type': 'Steps', 'value': steps}
+            inputs[parameter_index] = {
+                'type': 'Steps',
+                'value': steps}
             parameter_index = self._locate_index_of_input(inputs, 'Iteration')
-            inputs[parameter_index] = {'type': 'Iteration', 'value': iteration}
+            inputs[parameter_index] = {
+                'type': 'Iteration',
+                'value': iteration}
             parameter_index = self._locate_index_of_input(inputs, 'RunTime')
-            inputs[parameter_index] = {'type': 'RunTime',
-                                       'value': steps[iteration]}
+            inputs[parameter_index] = {
+                'type': 'RunTime',
+                'value': steps[iteration]}
         else:
-            inputs.append({'type': 'RunTime', 'value': steps[iteration]})
-            inputs.append({'type': 'Steps', 'value': steps})
-            inputs.append({'type': 'Iteration', 'value': iteration})
+            inputs.append({
+                'type': 'RunTime',
+                'value': steps[iteration]})
+            inputs.append({
+                'type': 'Steps',
+                'value': steps})
+            inputs.append({
+                'type': 'Iteration',
+                'value': iteration})
 
     @staticmethod
     def _locate_index_of_input(inputs, type_name):
