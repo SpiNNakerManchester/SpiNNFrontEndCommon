@@ -34,15 +34,15 @@ class FrontEndCommonMemoryMapOnHostReport(object):
             logger.error("Generate_placement_reports: Can't open file"
                          " {} for writing.".format(file_name))
 
-        output.write("On host data specification executor")
+        output.write("On host data specification executor\n")
 
         for key in processor_to_app_data_base_address:
-            output.write(str(key) + ": ")
             data = processor_to_app_data_base_address[key]
             output.write(
                 "{}: ('start_address': {}, hex({}), 'memory_used': {}, "
                 "'memory_written': {} \n".format(
                     key, data['start_address'], hex(data['start_address']),
                     data['memory_used'], data['memory_written']))
+
         output.flush()
         output.close()

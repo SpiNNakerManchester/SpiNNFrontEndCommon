@@ -1038,6 +1038,7 @@ void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
     if (!initialise(&timer_period)) {
+        rt_error(RTE_SWERR);
         return;
     }
 

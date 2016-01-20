@@ -1,11 +1,7 @@
 # spinn_io_handler imports
-from spinn_storage_handlers.file_data_writer import FileDataWriter
 from spinn_storage_handlers.file_data_reader import FileDataReader
 
 # data spec imports
-from data_specification.data_specification_executor import \
-    DataSpecificationExecutor
-from data_specification import exceptions
 import data_specification.data_spec_sender.spec_sender as spec_sender
 
 # pacman imports
@@ -13,11 +9,6 @@ from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman.model.core_subsets import CoreSubsets
-from spinnman.data.file_data_reader import FileDataReader as \
-    SpinnmanFileDataReader
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.model.cpu_state import CPUState
 
 # front end common imports
@@ -25,6 +16,7 @@ from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import \
     AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import exceptions
 
 import os
 import logging
@@ -109,7 +101,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                 data_spec_file_path = dsg_targets[x, y, p, label]
                 data_spec_file_size = os.path.getsize(data_spec_file_path)
 
-                application_data_file_reader = SpinnmanFileDataReader(
+                application_data_file_reader = FileDataReader(
                     data_spec_file_path)
 
                 base_address = transceiver.malloc_sdram(
@@ -180,7 +172,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         progress_bar = ProgressBar(len(executable_targets),
                                    "Loading executables onto the machine")
         for executable_target_key in executable_targets:
-            file_reader = SpinnmanFileDataReader(executable_target_key)
+            file_reader = FileDataReader(executable_target_key)
             core_subset = executable_targets[executable_target_key]
 
             statinfo = os.stat(executable_target_key)
@@ -192,11 +184,12 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             # checks which may not be accurate enough.
             if size > constants.MAX_SAFE_BINARY_SIZE:
                 logger.warn(
-                    "The size of this binary is large enough that its"
+                    "The size of {} is large enough that its"
                     " possible that the binary may be larger than what is"
                     " supported by spinnaker currently. Please reduce the"
                     " binary size if it starts to behave strangely, or goes"
-                    " into the wdog state before starting.")
+                    " into the wdog state before starting.".format(
+                        executable_target_key))
                 if size > constants.MAX_POSSIBLE_BINARY_SIZE:
                     raise exceptions.ConfigurationException(
                         "The size of the binary is too large and therefore"

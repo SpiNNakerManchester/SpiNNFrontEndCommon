@@ -13,7 +13,7 @@
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -44,6 +44,10 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
@@ -64,6 +68,10 @@
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
                 <param_name>dsg_targets</param_name>
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
@@ -76,6 +84,10 @@
             <parameter>
                 <param_name>placement_to_app_data_files</param_name>
                 <param_type>PlacementToAppDataFilePaths</param_type>
+            </parameter>
+            <parameter>
+                <param_name>LoadedApplicationDataToken</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
             </parameter>
             <parameter>
                 <param_name>DSEOnHost</param_name>
@@ -129,7 +141,7 @@
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>dse_app_id</param_name>
@@ -172,8 +184,8 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>transciever</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>loaded_application_data_token</param_name>
@@ -251,7 +263,7 @@
             </parameter>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -520,8 +532,8 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>transciever</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -545,7 +557,7 @@
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>
@@ -573,7 +585,7 @@
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>
@@ -685,7 +697,7 @@
             </parameter>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>reports_states</param_name>
@@ -733,7 +745,7 @@
             </parameter>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>runtime</param_name>
@@ -789,7 +801,7 @@
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -917,7 +929,7 @@
             </parameter>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>executable_targets</param_name>
@@ -943,7 +955,7 @@
             </parameter>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>no_sync_changes</param_name>

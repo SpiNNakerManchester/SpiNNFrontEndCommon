@@ -46,6 +46,8 @@ bool simulation_read_timing_details(
         log_error("Unexpected magic number 0x%08x instead of 0x%08x",
         		 address[APPLICATION_MAGIC_NUMBER],
 				 expected_app_magic_number);
+        log_error("Reading address: 0x%08x",
+                 (uint32_t) address+APPLICATION_MAGIC_NUMBER);
         return false;
     }
 

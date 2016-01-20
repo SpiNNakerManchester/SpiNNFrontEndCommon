@@ -23,7 +23,7 @@ class ReloadScript(object):
             reset_machine_on_start_up, processor_to_app_data_base_address=None,
             placement_to_app_data_files=None, dsg_targets=None):
         self._binary_directory = binary_directory
-        self._wait_on_confiramtion = None
+        self._wait_on_confirmation = None
         self._runtime = 0
         self._time_scale_factor = None
         if not self._binary_directory.endswith(os.sep):

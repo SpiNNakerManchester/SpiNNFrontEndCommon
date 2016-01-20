@@ -147,6 +147,8 @@ void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
     if (!initialize(&timer_period)) {
+        log_error("Error in initialisation - exiting!");
+        rt_error(RTE_SWERR);
         return;
     }
 
