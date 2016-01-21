@@ -1,3 +1,4 @@
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
@@ -15,6 +16,8 @@ class FrontEndCommonRuntimeUpdater(object):
     def __call__(
             self, placements, txrx, no_sync_changes, app_id,
             executable_targets, graph_mapper, ran_token):
+
+        progress_bar = ProgressBar(2, "Updating on chip's runtime")
 
         if not ran_token:
             raise exceptions.ConfigurationException(
@@ -56,6 +59,7 @@ class FrontEndCommonRuntimeUpdater(object):
 
             processors_ready = txrx.get_core_state_count(
                 app_id, CPUState.CPU_STATE_12)
+        progress_bar.update()
 
         # reset the state to the old state so that it can be used by the
         # application runner code
@@ -85,5 +89,7 @@ class FrontEndCommonRuntimeUpdater(object):
                     destination_chip_y=y), data=data))
 
             processors_ready = txrx.get_core_state_count(app_id, sync_state)
+        progress_bar.update()
+        progress_bar.end()
 
         return {'no_sync_changes': no_sync_changes}

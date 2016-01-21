@@ -20,7 +20,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommomLoadExecutableImages(object):
+class FrontEndCommonLoadExecutableImages(object):
     """
     """
 

@@ -4,6 +4,7 @@ from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from pacman.utilities.utility_objs.resource_tracker import ResourceTracker
 
 from spinn_front_end_common.interface import interface_functions
@@ -27,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 class FrontEndCommonAutoPauseAndResumer(object):
     """
-    FrontEndCommonAutoPauseAndResumer: system that automaticlaly allocate
-    bandwith resoruces and deduces what pause and resume functions are needed,
+    FrontEndCommonAutoPauseAndResumer: system that automatically allocate
+    bandwidth resources and deduces what pause and resume functions are needed,
     and executes them accordingly
     """
 
@@ -38,36 +39,36 @@ class FrontEndCommonAutoPauseAndResumer(object):
             txrx, time_scale_factor, loaded_reverse_iptags_token,
             loaded_iptags_token, loaded_routing_tables_token, graph_mapper,
             no_sync_changes, partitionable_graph, app_data_folder, verify,
-            algorthums_to_run_between_runs, extra_inputs, extra_xmls,
-            algorithum_for_dsg_generation, algorithum_for_dse_execution,
+            algorithms_to_run_between_runs, extra_inputs, extra_xmls,
+            algorithm_for_dsg_generation, algorithm_for_dse_execution,
             machine_time_step, placements, tags, reports_states, routing_infos,
             has_ran_before, has_reset_before, application_graph_changed,
             steps=None):
 
         if steps is None:
-            steps = self._deduce_number_of_interations(
+            steps = self._deduce_number_of_iterations(
                 partitioned_graph, runtime, time_scale_factor,
                 machine, machine_time_step, placements, graph_mapper,
                 partitionable_graph)
 
         if len(steps) != 1:
             logger.warn(
-                "The simualtion required more SDRAM for recording purposes"
-                " than what was avilable. Therefore the system deduced that"
+                "The simulation required more SDRAM for recording purposes"
+                " than what was available. Therefore the system deduced that"
                 " it needs to run the simulation in {} chunks, where the "
                 "chunks of time consists of {}. If this is not suitable for "
                 "your usage, please turn off use_auto_pause_and_resume in "
                 " your config file. Thank you")
 
-        inputs, first_algorthims, optional_algorithms, multi_run_algorithms, \
-            outputs, xmls = self._setup_pacman_executor_inputs(
+        inputs, first_algorithms, optional_algorithms, outputs, xmls = \
+            self._setup_pacman_executor_inputs(
                 wait_on_confirmation, partitionable_graph,
                 send_start_notification, notification_interface, app_id, txrx,
                 time_scale_factor, loaded_reverse_iptags_token,
                 loaded_iptags_token, loaded_routing_tables_token,
-                no_sync_changes, algorthums_to_run_between_runs, extra_inputs,
-                extra_xmls, algorithum_for_dsg_generation,
-                algorithum_for_dse_execution, tags, reports_states,
+                no_sync_changes, extra_inputs,
+                extra_xmls, algorithm_for_dsg_generation,
+                algorithm_for_dse_execution, tags, reports_states,
                 app_data_folder, verify, routing_infos, placements,
                 graph_mapper, partitioned_graph, machine, has_ran_before,
                 has_reset_before, application_graph_changed)
@@ -76,8 +77,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             processor_to_app_data_base_address, \
             placement_to_application_data_files = \
             self._execute_pacman_system_number_of_iterations(
-                steps, inputs, first_algorthims, optional_algorithms,
-                multi_run_algorithms, outputs, xmls)
+                steps, inputs, first_algorithms, optional_algorithms,
+                algorithms_to_run_between_runs, outputs, xmls)
 
         return {
             'RanToken': True, "no_sync_changes": no_sync_changes,
@@ -90,7 +91,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             "LoadedApplicationDataToken": True, "LoadBinariesToken": True,
             }
 
-    def _deduce_number_of_interations(
+    def _deduce_number_of_iterations(
             self, partitioned_graph, runtime, time_scale_factor,
             machine, machine_time_step, placements, graph_mapper,
             partitionable_graph):
@@ -111,11 +112,11 @@ class FrontEndCommonAutoPauseAndResumer(object):
             self._deduce_ethernet_connected_chips_bandwidth_resource(
                 machine_time_step, time_scale_factor, machine)
 
-        # build resoruce tracker for sdram usage
+        # build resource tracker for sdram usage
         resource_tracker = ResourceTracker(machine)
 
         # allocate static sdram usage to the resource tracker, leaving us
-        # with just the sdram avilable for runtime usage
+        # with just the sdram available for runtime usage
         for vertex in partitioned_graph.subvertices:
             # remove bodge memory requirement if a AbstractReceiveBuffersToHost
             # vertex
@@ -134,7 +135,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 resource_tracker.allocate_constrained_resources(
                     vertex.resources_required, vertex.constraints)
 
-        # update all ethenet resoruces for
+        # update all ethernet resources for
         # ReverseIPTagMulticastSourcePartitionedVertex's
         self._update_ethernet_bandwidth_off_injectors(
             bandwidth_resource, placements, machine, partitioned_graph)
@@ -148,7 +149,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         # locate whatever the min time step would be for all chips given
         # left over sdram
         min_machine_time_steps = \
-            self._discover_min_time_steps_with_sdram_avilable(
+            self._discover_min_time_steps_with_sdram_available(
                 machine, placements, resource_tracker, graph_mapper,
                 partitionable_graph)
 
@@ -164,11 +165,11 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         steps = list()
         for _ in range(0, number_of_full_iterations):
-            steps.append(min_machine_time_steps)
-        steps.append(left_over_time_steps)
+            steps.append(int(min_machine_time_steps))
+        steps.append(int(left_over_time_steps))
         return steps
 
-    def _discover_min_time_steps_with_sdram_avilable(
+    def _discover_min_time_steps_with_sdram_available(
             self, machine, placements, resource_tracker, graph_mapper,
             partitionable_graph):
         """
@@ -180,17 +181,17 @@ class FrontEndCommonAutoPauseAndResumer(object):
         """
         min_machine_time_steps = sys.maxint
         for chip in machine.chips:
-            chip_placments = placements.get_placements_on_chip(chip.x, chip.y)
+            chip_placements = placements.get_placements_on_chip(chip.x, chip.y)
             none_buffered_placements = list()
-            for chip_placment in chip_placments:
-                if self._check_for_none_buffered_functionality(chip_placment):
-                    none_buffered_placements.append(chip_placment)
+            for chip_placement in chip_placements:
+                if self._check_for_none_buffered_functionality(chip_placement):
+                    none_buffered_placements.append(chip_placement)
 
             sdram_left_over = \
                 resource_tracker.sdram_avilable_on_chip(chip.x, chip.y)
 
             this_chips_min_machine_time_steps = \
-                self._caculate_min_machine_time_step_for_bunch_of_placements(
+                self._calculate_min_machine_time_step_for_bunch_of_placements(
                     none_buffered_placements, sdram_left_over, graph_mapper,
                     partitionable_graph)
 
@@ -200,34 +201,28 @@ class FrontEndCommonAutoPauseAndResumer(object):
         return min_machine_time_steps
 
     @staticmethod
-    def _check_for_none_buffered_functionality(chip_placment):
+    def _check_for_none_buffered_functionality(chip_placement):
 
         # get params
         is_r_i_m_c_s = isinstance(
-            chip_placment.subvertex,
+            chip_placement.subvertex,
             ReverseIPTagMulticastSourcePartitionedVertex)
         is_sending_buffers_to_host = isinstance(
-            chip_placment.subvertex, AbstractReceiveBuffersToHost)
+            chip_placement.subvertex, AbstractReceiveBuffersToHost)
         is_recording_stuff = isinstance(
-            chip_placment.subvertex, AbstractRecordableInterface)
-
-        # check if buffered out is turned on
-        if not is_sending_buffers_to_host:
-            buffered_out_turned_on = False
-        else:
-            buffered_out_turned_on = chip_placment.subvertex.buffering_output
+            chip_placement.subvertex, AbstractRecordableInterface)
 
         # do check
         if (not is_r_i_m_c_s and is_recording_stuff and
                 (not is_sending_buffers_to_host) or
-                (is_sending_buffers_to_host and not buffered_out_turned_on)):
+                is_sending_buffers_to_host):
             return True
         else:
             return False
 
-    # overloadable method for optimisations on chip sdram distrubtion
+    # overloadable method for optimisations on chip sdram distribution
     @staticmethod
-    def _caculate_min_machine_time_step_for_bunch_of_placements(
+    def _calculate_min_machine_time_step_for_bunch_of_placements(
             placements, sdram_left_over, graph_mapper, partitionable_graph):
         """
 
@@ -237,7 +232,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param partitionable_graph:
         :return:
         """
-        # assuming shared equally, maybe optimsations for unbalanced usage
+        # assuming shared equally, maybe optimisations for unbalanced usage
         min_chip_no_machine_time_steps = sys.maxint
         if len(placements) > 0:
             sdram_each = math.floor(sdram_left_over / len(placements))
@@ -263,9 +258,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
                         no_machine_time_steps)
                 if expected_sdram_usage > sdram_each:
                     raise exceptions.ConfigurationException(
-                        "Havent been programmed to handle models which change "
-                        "their requriements of sdram within a runtime. Please "
-                        "fix and try again")
+                        "Have not been programmed to handle models which "
+                        "change their requirements of sdram within a runtime. "
+                        "Please fix and try again")
 
                 # update min chip machine time steps accordingly
                 if no_machine_time_steps < min_chip_no_machine_time_steps:
@@ -314,7 +309,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         chip_placements = placements.get_placements_on_chip(chip.x, chip.y)
 
-        # search each placmeent to see if it can be allocated to the bandwidth
+        # search each placement to see if it can be allocated to the bandwidth
         for placement in chip_placements:
             vertex_slice = graph_mapper.get_subvertex_slice(placement.subvertex)
             vertex = graph_mapper.get_vertex_from_subvertex(placement.subvertex)
@@ -327,7 +322,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                         vertex_slice, partitionable_graph, 1)
 
                 # if the individual bandwidth is doable, remove it from the
-                # bandwidth and continue, toherwise turn off its buffered
+                # bandwidth and continue, otherwise turn off its buffered
                 #  capability
                 if (individual_machine_time_step_sdram_usage <
                         bandwidth_resource[(ethernet_connected_chip_x,
@@ -364,7 +359,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :return:
         """
 
-        # storage for each connected chip bandewidth left over
+        # storage for each connected chip bandwidth left over
         resources = dict()
 
         # deduce how much bandwidth buffered out has to play with
@@ -384,8 +379,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             send_start_notification, notification_interface, app_id, txrx,
             time_scale_factor, loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, no_sync_changes,
-            algorthums_to_run_between_runs, extra_inputs, extra_xmls,
-            algorithum_for_dsg_generation, algorithum_for_dse_execution, tags,
+            extra_inputs, extra_xmls,
+            algorithm_for_dsg_generation, algorithm_for_dse_execution, tags,
             reports_states, app_data_folder, verify, routing_infos,
             placements, graph_mapper, partitioned_graph, machine,
             has_ran_before, has_reset_before, application_graph_changed):
@@ -402,11 +397,10 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param loaded_iptags_token:
         :param loaded_routing_tables_token:
         :param no_sync_changes:
-        :param algorthums_to_run_between_runs:
         :param extra_inputs:
         :param extra_xmls:
-        :param algorithum_for_dsg_generation:
-        :param algorithum_for_dse_execution:
+        :param algorithm_for_dsg_generation:
+        :param algorithm_for_dse_execution:
         :param tags;
         :param reports_states:
         :param app_data_folder:
@@ -423,28 +417,20 @@ class FrontEndCommonAutoPauseAndResumer(object):
         outputs = list()
         xmls = self.sort_out_xmls(extra_xmls)
         first_algorithms = list()
-        optiomal_algorithms = list()
+        optimal_algorithms = list()
         multi_iteration_algorithms = list()
 
-        # standard algorithms needed for multi-runs before updator
+        # standard algorithms needed for multi-runs before updater
         # (expected order here for debug purposes)
-        first_algorithms.append("FrontEndCommonMachineTimeStepUpdator")
+        first_algorithms.append("FrontEndCommonMachineTimeStepUpdater")
         if ((not has_ran_before and not has_reset_before) or
                 application_graph_changed):
             # needs a dsg rebuild
-            first_algorithms.append(algorithum_for_dsg_generation)
-            first_algorithms.append(algorithum_for_dse_execution)
-            optiomal_algorithms.append("FrontEndCommonApplicationDataLoader")
-            first_algorithms.append("FrontEndCommomLoadExecutableImages")
+            first_algorithms.append(algorithm_for_dsg_generation)
+            first_algorithms.append(algorithm_for_dse_execution)
+            optimal_algorithms.append("FrontEndCommonApplicationDataLoader")
+            first_algorithms.append("FrontEndCommonLoadExecutableImages")
             first_algorithms.append("FrontEndCommonBufferManagerCreater")
-
-        # has had a reset, but no need for dsg
-        if not application_graph_changed and has_reset_before:
-            first_algorithms.append("FrontEndCommonBufferManagerCreater")
-
-        multi_iteration_algorithms.append("FrontEndCommonApplicationRunner")
-        multi_iteration_algorithms.extend(algorthums_to_run_between_runs)
-        multi_iteration_algorithms.append("FrontEndCommonRuntimeUpdater")
 
         # handle outputs
         # TODO is this all i need here????
@@ -513,8 +499,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             'type': "MemoryExtendedMachine",
             'value': machine})
 
-        return inputs, first_algorithms, optiomal_algorithms, \
-            multi_iteration_algorithms, outputs, xmls
+        return inputs, first_algorithms, optimal_algorithms, outputs, xmls
 
     @staticmethod
     def sort_out_xmls(extra_xmls):
@@ -542,7 +527,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
     def _execute_pacman_system_number_of_iterations(
             self, steps, inputs, first_algorithms, optimal_algorithms,
-            multi_algorithms, outputs, xmls):
+            algorithms_to_run_between_runs, outputs, xmls):
         """
 
         :param inputs:
@@ -550,27 +535,39 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param outputs:
         :param optimal_algorithms:
         :param xmls:
-        :param multi_algorithms
+        :param algorithms_to_run_between_runs:
         :return:
         """
         pacman_executor = None
         for iteration in range(0, len(steps)):
             # during each iteration, you need to run:
             # application runner, no_machine_time_steps_updater,
-            # EXTRA_ALOGIRTHMS, runtime_updater
+            # EXTRA_ALGORITHMS, runtime_updater
             self._update_inputs(pacman_executor, inputs, steps, iteration)
 
             # if its the first iteration, do all the boiler plate of dsg, dse,
             # app data load, executable load, etc
             if iteration == 0:
-                all_algorithms = first_algorithms + multi_algorithms
+                all_algorithms = list(first_algorithms)
+                if len(steps) != 1:
+                    all_algorithms.append(
+                        "FrontEndCommonMachineTimeStepUpdater")
+                    all_algorithms.extend(algorithms_to_run_between_runs)
+                    all_algorithms.append(
+                        "FrontEndCommonRuntimeUpdater")
+                all_algorithms.append("FrontEndCommonApplicationRunner")
                 pacman_executor = PACMANAlgorithmExecutor(
                     algorithms=all_algorithms, inputs=inputs, xml_paths=xmls,
                     required_outputs=outputs,
                     optional_algorithms=optimal_algorithms)
             else:
+                all_algorithms = list()
+                all_algorithms.extend(algorithms_to_run_between_runs)
+                all_algorithms.append("FrontEndCommonMachineTimeStepUpdater")
+                all_algorithms.append("FrontEndCommonRuntimeUpdater")
+                all_algorithms.append("FrontEndCommonApplicationRunner")
                 pacman_executor = PACMANAlgorithmExecutor(
-                    algorithms=multi_algorithms, inputs=inputs, xml_paths=xmls,
+                    algorithms=all_algorithms, inputs=inputs, xml_paths=xmls,
                     required_outputs=outputs,
                     optional_algorithms=optimal_algorithms)
 
@@ -593,34 +590,46 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :return:
         """
         if pacman_executor is not None:
-            no_sync_changes = pacman_executor.get_item("NoSyncChanges")
-            parameter_index = \
-                self._locate_index_of_input(inputs, 'NoSyncChanges')
+            old_inputs = pacman_executor.get_items()
+            for item in old_inputs:
+                # extraction from run
+                self._update_input_variable(
+                    inputs, item, variable=old_inputs[item])
+            parameter_index = self._locate_index_of_input(
+                inputs, "CurrentRunMS")
             inputs[parameter_index] = {
-                'type': 'NoSyncChanges',
-                'value': no_sync_changes}
-            parameter_index = self._locate_index_of_input(inputs, 'Steps')
+                'type': "CurrentRunMS",
+                'value': pacman_executor.get_item("TotalCommunitiveRunTime")}
+
+        self._update_input_variable(
+            inputs, "RunTime", pacman_executor, steps[iteration])
+        self._update_input_variable(
+            inputs, "Steps", pacman_executor, steps)
+        self._update_input_variable(
+            inputs, "Iteration", pacman_executor, iteration)
+
+
+    def _update_input_variable(
+            self, inputs, variable_name, pacman_executor=None, variable=None):
+        parameter_index = self._locate_index_of_input(inputs, variable_name)
+        if parameter_index is not None and variable is not None:
             inputs[parameter_index] = {
-                'type': 'Steps',
-                'value': steps}
-            parameter_index = self._locate_index_of_input(inputs, 'Iteration')
-            inputs[parameter_index] = {
-                'type': 'Iteration',
-                'value': iteration}
-            parameter_index = self._locate_index_of_input(inputs, 'RunTime')
-            inputs[parameter_index] = {
-                'type': 'RunTime',
-                'value': steps[iteration]}
-        else:
+                'type': variable_name,
+                'value': variable}
+        elif parameter_index is None and variable is not None:
             inputs.append({
-                'type': 'RunTime',
-                'value': steps[iteration]})
+                'type': variable_name,
+                'value': variable
+            })
+        elif parameter_index is None and variable is None:
             inputs.append({
-                'type': 'Steps',
-                'value': steps})
-            inputs.append({
-                'type': 'Iteration',
-                'value': iteration})
+                'type': variable_name,
+                'value': pacman_executor.get_item(variable_name)
+            })
+        elif parameter_index is not None and variable is None:
+            inputs[parameter_index] = {
+                'type': variable_name,
+                'value': pacman_executor.get_item(variable_name)}
 
     @staticmethod
     def _locate_index_of_input(inputs, type_name):
@@ -638,13 +647,19 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 found = True
             else:
                 index += 1
+        if not found:
+            return None
         return index
 
 
 # TODO There must be a way to remove this requirement, but not sure how yet.
-class FrontEndCommonMachineTimeStepUpdator(object):
+class FrontEndCommonMachineTimeStepUpdater(object):
 
     def __call__(self, iteration, steps, partitionable_graph):
+
+        progress_bar = ProgressBar(
+            len(partitionable_graph.vertices),
+            "Updating python runtime in machine time steps")
 
         # deduce the new runtime position
         set_runtime = 0
@@ -654,5 +669,7 @@ class FrontEndCommonMachineTimeStepUpdator(object):
         # update the partitionable vertices
         for vertex in partitionable_graph.vertices:
             vertex.set_no_machine_time_steps(set_runtime)
+            progress_bar.update()
+        progress_bar.end()
 
         return {"runtime_in_machine_time_steps": set_runtime}

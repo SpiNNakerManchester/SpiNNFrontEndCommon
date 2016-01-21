@@ -87,9 +87,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommomLoadExecutableImages">
+    <algorithm name="FrontEndCommonLoadExecutableImages">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_load_executable_images</python_module>
-        <python_class>FrontEndCommomLoadExecutableImages</python_class>
+        <python_class>FrontEndCommonLoadExecutableImages</python_class>
         <required_inputs>
             <parameter>
                 <param_name>executable_targets</param_name>
@@ -171,7 +171,13 @@
                 <param_name>boot_port_num</param_name>
                 <param_type>BootPortNum</param_type>
             </parameter>
+            <parameter>
+                <param_name>max_sdram_size</param_name>
+                <param_type>MaxSDRAMSize</param_type>
+            </parameter>
         </required_inputs>
+        <optional_inputs>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>machine</param_name>
@@ -802,8 +808,8 @@
                 <param_type>MemoryPartitionableGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>algorthums_to_run_between_runs</param_name>
-                <param_type>ExtraAlgorthums</param_type>
+                <param_name>algorithms_to_run_between_runs</param_name>
+                <param_type>ExtraAlgorithms</param_type>
             </parameter>
             <parameter>
                 <param_name>extra_inputs</param_name>
@@ -826,11 +832,11 @@
                 <param_type>ApplicationDataFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>algorithum_for_dsg_generation</param_name>
+                <param_name>algorithm_for_dsg_generation</param_name>
                 <param_type>DSGeneratorAlgorithm</param_type>
             </parameter>
             <parameter>
-                <param_name>algorithum_for_dse_execution</param_name>
+                <param_name>algorithm_for_dse_execution</param_name>
                 <param_type>DSExecutorAlgorithm</param_type>
             </parameter>
             <parameter>
@@ -947,9 +953,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonMachineTimeStepUpdator">
+    <algorithm name="FrontEndCommonMachineTimeStepUpdater">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resumer</python_module>
-        <python_class>FrontEndCommonMachineTimeStepUpdator</python_class>
+        <python_class>FrontEndCommonMachineTimeStepUpdater</python_class>
         <required_inputs>
             <parameter>
                 <param_name>iteration</param_name>
