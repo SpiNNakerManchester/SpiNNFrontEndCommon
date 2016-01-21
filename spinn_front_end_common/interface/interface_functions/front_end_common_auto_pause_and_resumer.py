@@ -50,6 +50,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 partitioned_graph, runtime, time_scale_factor,
                 machine, machine_time_step, placements, graph_mapper,
                 partitionable_graph)
+        else:
+            steps = self._update_last_steps_to_cover_new_runtime(
+                steps, runtime, time_scale_factor, machine_time_step)
 
         if len(steps) != 1:
             logger.warn(
@@ -58,7 +61,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 " it needs to run the simulation in {} chunks, where the "
                 "chunks of time consists of {}. If this is not suitable for "
                 "your usage, please turn off use_auto_pause_and_resume in "
-                " your config file. Thank you")
+                " your config file. Thank you".format(len(steps), steps))
 
         inputs, first_algorithms, optional_algorithms, outputs, xmls = \
             self._setup_pacman_executor_inputs(
@@ -89,7 +92,23 @@ class FrontEndCommonAutoPauseAndResumer(object):
             'placement_to_app_data_files':
             placement_to_application_data_files,
             "LoadedApplicationDataToken": True, "LoadBinariesToken": True,
+            'steps': steps
             }
+
+    def _update_last_steps_to_cover_new_runtime(
+            self, steps, runtime, time_scale_factor, machine_time_step):
+
+        # calculate runtime covered in steps
+        total_covered_in_steps = 0
+        for index in range(0, len(steps)):
+            total_covered_in_steps += steps[index]
+
+        if total_covered_in_steps < runtime:
+            return self._generate_steps(
+                runtime, time_scale_factor, machine_time_step,
+                steps[0])
+        else:
+            return steps
 
     def _deduce_number_of_iterations(
             self, partitioned_graph, runtime, time_scale_factor,
@@ -153,9 +172,18 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 machine, placements, resource_tracker, graph_mapper,
                 partitionable_graph)
 
+        return self._generate_steps(
+            runtime, time_scale_factor, machine_time_step,
+            min_machine_time_steps)
+
+    @staticmethod
+    def _generate_steps(runtime, time_scale_factor, machine_time_step,
+                        min_machine_time_steps):
+
         # calculate the steps array
         total_no_machine_time_steps = \
             (runtime / time_scale_factor) * (machine_time_step / 1000)
+
         number_of_full_iterations = \
             int(math.floor(
                 total_no_machine_time_steps / min_machine_time_steps))
@@ -166,7 +194,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
         steps = list()
         for _ in range(0, number_of_full_iterations):
             steps.append(int(min_machine_time_steps))
-        steps.append(int(left_over_time_steps))
+        if left_over_time_steps != 0:
+            steps.append(int(left_over_time_steps))
         return steps
 
     def _discover_min_time_steps_with_sdram_available(
@@ -658,14 +687,15 @@ class FrontEndCommonAutoPauseAndResumer(object):
 # TODO There must be a way to remove this requirement, but not sure how yet.
 class FrontEndCommonMachineTimeStepUpdater(object):
 
-    def __call__(self, iteration, steps, partitionable_graph):
+    def __call__(self, iteration, steps, total_run_time_executed_so_far,
+                 partitionable_graph):
 
         progress_bar = ProgressBar(
             len(partitionable_graph.vertices),
             "Updating python runtime in machine time steps")
 
         # deduce the new runtime position
-        set_runtime = 0
+        set_runtime = total_run_time_executed_so_far
         for past_step in range(0, iteration + 1):
             set_runtime += steps[past_step]
 
