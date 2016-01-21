@@ -246,10 +246,13 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 individual_machine_time_step_sdram_usage = \
                     vertex.get_runtime_sdram_usage_for_atoms(
                         vertex_slice, partitionable_graph, 1)
-
-                # calculate min sdram usage for shared sdram allocation
-                no_machine_time_steps = math.floor(
-                    sdram_each / individual_machine_time_step_sdram_usage)
+                
+                if individual_machine_time_step_sdram_usage == 0:
+                    no_machine_time_steps = sys.maxint
+                else:
+                    # calculate min sdram usage for shared sdram allocation
+                    no_machine_time_steps = math.floor(
+                        sdram_each / individual_machine_time_step_sdram_usage)
 
                 # safety check
                 expected_sdram_usage = \
