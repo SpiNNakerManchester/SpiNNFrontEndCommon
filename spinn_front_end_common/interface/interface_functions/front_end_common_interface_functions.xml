@@ -960,6 +960,10 @@
                 <param_name>LoadBinariesToken</param_name>
                 <param_type>LoadBinariesToken</param_type>
             </parameter>
+            <parameter>
+                <param_name>total_time</param_name>
+                <param_type>TotalCommunitiveRunTime</param_type>
+            </parameter>
         </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonMachineTimeStepUpdater">
@@ -986,7 +990,7 @@
         <produces_outputs>
             <parameter>
                 <param_name>runtime_in_machine_time_steps</param_name>
-                <param_type>RunTimeMachineTimeSteps</param_type>
+                <param_type>TotalCommunitiveRunTime</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>

@@ -78,7 +78,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
 
         no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
             processor_to_app_data_base_address, \
-            placement_to_application_data_files = \
+            placement_to_application_data_files, total_time = \
             self._execute_pacman_system_number_of_iterations(
                 steps, inputs, first_algorithms, optional_algorithms,
                 algorithms_to_run_between_runs, outputs, xmls)
@@ -92,7 +92,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             'placement_to_app_data_files':
             placement_to_application_data_files,
             "LoadedApplicationDataToken": True, "LoadBinariesToken": True,
-            'steps': steps
+            'steps': steps, 'total_time': total_time
             }
 
     def _update_last_steps_to_cover_new_runtime(
@@ -582,27 +582,23 @@ class FrontEndCommonAutoPauseAndResumer(object):
             if iteration == 0:
                 all_algorithms = list(first_algorithms)
                 if len(steps) != 1:
-                    all_algorithms.append(
-                        "FrontEndCommonMachineTimeStepUpdater")
+                    all_algorithms.append("FrontEndCommonRuntimeUpdater")
+                    all_algorithms.append("FrontEndCommonApplicationRunner")
                     all_algorithms.extend(algorithms_to_run_between_runs)
-                    all_algorithms.append(
-                        "FrontEndCommonRuntimeUpdater")
-                all_algorithms.append("FrontEndCommonApplicationRunner")
-                pacman_executor = PACMANAlgorithmExecutor(
-                    algorithms=all_algorithms, inputs=inputs, xml_paths=xmls,
-                    required_outputs=outputs,
-                    optional_algorithms=optimal_algorithms)
+                else:
+                    all_algorithms.append("FrontEndCommonApplicationRunner")
             else:
                 all_algorithms = list()
                 all_algorithms.extend(algorithms_to_run_between_runs)
                 all_algorithms.append("FrontEndCommonMachineTimeStepUpdater")
                 all_algorithms.append("FrontEndCommonRuntimeUpdater")
                 all_algorithms.append("FrontEndCommonApplicationRunner")
-                pacman_executor = PACMANAlgorithmExecutor(
-                    algorithms=all_algorithms, inputs=inputs, xml_paths=xmls,
-                    required_outputs=outputs,
-                    optional_algorithms=optimal_algorithms)
 
+            # create and execute
+            pacman_executor = PACMANAlgorithmExecutor(
+                algorithms=all_algorithms, inputs=inputs, xml_paths=xmls,
+                required_outputs=outputs,
+                optional_algorithms=optimal_algorithms)
             pacman_executor.execute_mapping()
 
         return pacman_executor.get_item("NoSyncChanges"), \
@@ -610,7 +606,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             pacman_executor.get_item("DataSpecificationTargets"), \
             pacman_executor.get_item("BufferManager"), \
             pacman_executor.get_item("ProcessorToAppDataBaseAddress"), \
-            pacman_executor.get_item("PlacementToAppDataFilePaths")
+            pacman_executor.get_item("PlacementToAppDataFilePaths"), \
+            pacman_executor.get_item("TotalCommunitiveRunTime")
 
     def _update_inputs(self, pacman_executor, inputs, steps, iteration):
         """
@@ -627,11 +624,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 # extraction from run
                 self._update_input_variable(
                     inputs, item, variable=old_inputs[item])
-            parameter_index = self._locate_index_of_input(
-                inputs, "CurrentRunMS")
-            inputs[parameter_index] = {
-                'type': "CurrentRunMS",
-                'value': pacman_executor.get_item("TotalCommunitiveRunTime")}
 
         self._update_input_variable(
             inputs, "RunTime", pacman_executor, steps[iteration])
@@ -696,8 +688,7 @@ class FrontEndCommonMachineTimeStepUpdater(object):
 
         # deduce the new runtime position
         set_runtime = total_run_time_executed_so_far
-        for past_step in range(0, iteration + 1):
-            set_runtime += steps[past_step]
+        set_runtime += steps[iteration]
 
         # update the partitionable vertices
         for vertex in partitionable_graph.vertices:
