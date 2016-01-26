@@ -51,8 +51,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 machine, machine_time_step, placements, graph_mapper,
                 partitionable_graph)
         else:
-            steps = self._update_last_steps_to_cover_new_runtime(
-                steps, runtime, time_scale_factor, machine_time_step)
+            steps = self._generate_steps(runtime, machine_time_step, steps[0])
 
         if len(steps) != 1:
             logger.warn(
@@ -94,21 +93,6 @@ class FrontEndCommonAutoPauseAndResumer(object):
             "LoadedApplicationDataToken": True, "LoadBinariesToken": True,
             'steps': steps, 'total_time': total_time
             }
-
-    def _update_last_steps_to_cover_new_runtime(
-            self, steps, runtime, time_scale_factor, machine_time_step):
-
-        # calculate runtime covered in steps
-        total_covered_in_steps = 0
-        for index in range(0, len(steps)):
-            total_covered_in_steps += steps[index]
-
-        if total_covered_in_steps < runtime:
-            return self._generate_steps(
-                runtime, time_scale_factor, machine_time_step,
-                steps[0])
-        else:
-            return steps
 
     def _deduce_number_of_iterations(
             self, partitioned_graph, runtime, time_scale_factor,
