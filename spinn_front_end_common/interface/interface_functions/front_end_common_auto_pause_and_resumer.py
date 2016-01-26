@@ -173,16 +173,13 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 partitionable_graph)
 
         return self._generate_steps(
-            runtime, time_scale_factor, machine_time_step,
-            min_machine_time_steps)
+            runtime, machine_time_step, min_machine_time_steps)
 
     @staticmethod
-    def _generate_steps(runtime, time_scale_factor, machine_time_step,
-                        min_machine_time_steps):
+    def _generate_steps(runtime, machine_time_step, min_machine_time_steps):
 
         # calculate the steps array
-        total_no_machine_time_steps = \
-            (runtime / time_scale_factor) * (machine_time_step / 1000)
+        total_no_machine_time_steps = (runtime * 1000) / machine_time_step
 
         number_of_full_iterations = \
             int(math.floor(
