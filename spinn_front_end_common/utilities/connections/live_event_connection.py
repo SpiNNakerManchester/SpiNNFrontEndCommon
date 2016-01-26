@@ -173,7 +173,7 @@ class LiveEventConnection(DatabaseConnection):
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def _handle_possible_rerun_state(self):
-        # reset from possible preivous calls
+        # reset from possible previous calls
         if self._sender_connection is not None:
             self._sender_connection.close()
             self._sender_connection = None

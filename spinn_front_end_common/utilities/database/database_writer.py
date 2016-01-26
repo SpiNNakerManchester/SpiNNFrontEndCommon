@@ -1,7 +1,3 @@
-"""
-FrontEndCommonDataBaseInterface
-"""
-
 # general imports
 import os
 import logging
@@ -12,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseWriter(object):
-    """ The interface for the database system for main front ends.
+    """ The interface for the database system for main front ends.\
         Any special tables needed from a front end should be done\
         by sub classes of this interface.
     """
@@ -313,8 +309,9 @@ class DatabaseWriter(object):
             traceback.print_exc()
 
     def add_routing_infos(self, routing_infos, partitioned_graph):
-        """ Adds the routing infos (key masks etc) into the database
-        :param routing_infos: the routing infos object
+        """ Adds the routing information (key masks etc) into the database
+
+        :param routing_infos: the routing information object
         :param partitioned_graph: the partitioned graph object
         :return:
         """

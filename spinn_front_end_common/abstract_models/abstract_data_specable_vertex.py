@@ -46,7 +46,8 @@ class AbstractDataSpecableVertex(object):
         else:
             spec.write_value(data=0)
             spec.write_value(data=self._no_machine_time_steps)
-        # add sdp port number for recieving syncs and new runtimes
+
+        # add SDP port number for receiving synchronisations and new run times
         spec.write_value(
             data=constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
 

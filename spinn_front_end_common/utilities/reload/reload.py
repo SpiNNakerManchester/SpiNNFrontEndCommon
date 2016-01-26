@@ -51,40 +51,6 @@ class Reload(object):
             wait_for_read_confirmation, socket_addresses, database_file_path,
             runtime, time_scale_factor, send_start_notification,
             reset_machine_on_start_up, loading, running):
-        """
-
-        :param machine_name:
-        :param version:
-        :param reports_states:
-        :param bmp_details:
-        :param down_chips:
-        :param down_cores:
-        :param number_of_boards:
-        :param height:
-        :param width:
-        :param auto_detect_bmp:
-        :param enable_reinjection:
-        :param app_id:
-        :param scamp_connection_data:
-        :param boot_port_num:
-        :param placement_to_app_data_files:
-        :param verify:
-        :param router_tables:
-        :param processor_to_app_data_base_address:
-        :param executable_targets:
-        :param buffered_tags:
-        :param iptags:
-        :param reverse_iptags:
-        :param placements:
-        :param app_folder:
-        :param wait_for_read_confirmation:
-        :param socket_addresses:
-        :param database_file_path:
-        :param runtime:
-        :param time_scale_factor:
-        :param reset_machine_on_start_up:
-        :return:
-        """
         inputs = list()
         if loading:
             inputs.append({'type': "NoSyncChanges", 'value': 0})
@@ -146,10 +112,6 @@ class Reload(object):
 
     @staticmethod
     def create_list_of_algorithms(loading, running):
-        """
-
-        :return:
-        """
         algorithms = list()
         if loading:
             algorithms.append(
@@ -169,10 +131,6 @@ class Reload(object):
 
     @staticmethod
     def _create_pacman_outputs(loading, running):
-        """
-
-        :return:
-        """
         required_outputs = list()
         if loading:
             required_outputs.append("LoadedIPTagsToken")

@@ -8,9 +8,6 @@ from spinn_front_end_common.abstract_models.\
     import AbstractProvidesOutgoingEdgeConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
-from spinn_front_end_common.abstract_models.\
-    abstract_uses_memory_mallocs import \
-    AbstractPartitionableUsesMemoryMallocs
 from spinn_front_end_common.utilities import constants
 
 # general imports
@@ -22,8 +19,7 @@ from spinn_front_end_common.utility_models\
 
 class ReverseIpTagMultiCastSource(
         AbstractPartitionableVertex, AbstractDataSpecableVertex,
-        AbstractProvidesOutgoingEdgeConstraints,
-        AbstractPartitionableUsesMemoryMallocs):
+        AbstractProvidesOutgoingEdgeConstraints):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -31,11 +27,22 @@ class ReverseIpTagMultiCastSource(
     def __init__(
             self, n_keys, machine_time_step, timescale_factor, label=None,
             constraints=None, max_atoms_per_core=sys.maxint,
-            board_address=None, receive_port=None,
+
+            # General parameters
+            board_address=None,
+
+            # Live input parameters
+            receive_port=None,
             receive_sdp_port=(
                 constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
-            receive_tag=None, virtual_key=None, prefix=None, prefix_type=None,
-            check_keys=False, send_buffer_times=None,
+            receive_tag=None,
+
+            # Key parameters
+            virtual_key=None, prefix=None,
+            prefix_type=None, check_keys=False,
+
+            # Send buffer parameters
+            send_buffer_times=None,
             send_buffer_max_space=(
                 constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
@@ -88,7 +95,6 @@ class ReverseIpTagMultiCastSource(
             self, machine_time_step, timescale_factor)
         AbstractPartitionableVertex.__init__(
             self, n_keys, label, max_atoms_per_core, constraints)
-        AbstractPartitionableUsesMemoryMallocs.__init__(self)
 
         # Store the parameters
         self._board_address = board_address
@@ -108,6 +114,7 @@ class ReverseIpTagMultiCastSource(
         self._send_buffer_notification_tag = send_buffer_notification_tag
 
         # Store recording parameters for later
+        self._recording_enabled = False
         self._record_buffering_ip_address = None
         self._record_buffering_port = None
         self._record_buffering_board_address = None
@@ -115,12 +122,49 @@ class ReverseIpTagMultiCastSource(
         self._record_buffer_size = 0
         self._record_buffer_size_before_receive = 0
 
+        # Keep the subvertices for resuming runs
+        self._subvertices = list()
+        self._first_machine_time_step = 0
+
+    @property
+    def send_buffer_times(self):
+        return self._send_buffer_times
+
+    @send_buffer_times.setter
+    def send_buffer_times(self, send_buffer_times):
+        self._send_buffer_times = send_buffer_times
+        for (vertex_slice, subvertex) in self._subvertices:
+            send_buffer_times_to_set = self._send_buffer_times
+            if (self._send_buffer_times is not None and
+                    len(self._send_buffer_times) > 0):
+                if hasattr(self._send_buffer_times[0], "__len__"):
+                    send_buffer_times_to_set = self._send_buffer_times[
+                        vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
+            subvertex.send_buffer_times = send_buffer_times_to_set
+
+    @property
+    def first_machine_time_step(self):
+        return self._first_machine_time_step
+
+    @first_machine_time_step.setter
+    def first_machine_time_step(self, first_machine_time_step):
+        self._first_machine_time_step = first_machine_time_step
+        for (_, subvertex) in self._subvertices:
+            subvertex.first_machine_time_step = first_machine_time_step
+
+    def set_no_machine_time_steps(self, new_no_machine_time_steps):
+        AbstractDataSpecableVertex.set_no_machine_time_steps(
+            self, new_no_machine_time_steps)
+        for (_, subvertex) in self._subvertices:
+            subvertex.set_no_machine_time_steps(new_no_machine_time_steps)
+
     def enable_recording(
             self, buffering_ip_address, buffering_port,
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(
-                constants. DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+        self._recording_enabled = True
         self._record_buffering_ip_address = buffering_ip_address
         self._record_buffering_port = buffering_port
         self._record_buffering_board_address = board_address
@@ -143,21 +187,15 @@ class ReverseIpTagMultiCastSource(
             recording_size += self._record_buffer_size
             recording_size += (ReverseIPTagMulticastSourcePartitionedVertex.
                                get_buffer_state_region_size(1))
-        mallocs = self.get_number_of_mallocs_used_by_dsg(
-            vertex_slice, graph.incoming_edges_to_vertex(self))
-        mallocs_sdram_usage = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
+        mallocs = \
+            ReverseIPTagMulticastSourcePartitionedVertex.n_regions_to_allocate(
+                self._send_buffer_times is not None, self._recording_enabled)
+        allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
 
         return ((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
                 (ReverseIPTagMulticastSourcePartitionedVertex.
-                 CONFIGURATION_REGION_SIZE) + send_buffer_size +
-                recording_size + mallocs_sdram_usage)
-
-    def get_number_of_mallocs_used_by_dsg(self, vertex_slice, in_edges):
-        mallocs = ReverseIPTagMulticastSourcePartitionedVertex.\
-            get_number_of_mallocs_used_by_dsg(
-                self._send_buffer_times, self._record_buffer_size,
-                self._record_buffer_size > 0)
-        return mallocs
+                 _CONFIGURATION_REGION_SIZE) + send_buffer_size +
+                recording_size + allocation_size)
 
     @property
     def model_name(self):
@@ -187,13 +225,12 @@ class ReverseIpTagMultiCastSource(
 
     def create_subvertex(self, vertex_slice, resources_required, label=None,
                          constraints=None):
-        send_buffer_times = None
-        if self._send_buffer_times is not None:
+        send_buffer_times = self._send_buffer_times
+        if (self._send_buffer_times is not None and
+                len(self._send_buffer_times) > 0):
             if hasattr(self._send_buffer_times[0], "__len__"):
                 send_buffer_times = self._send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-            else:
-                send_buffer_times = self._send_buffer_times
         subvertex = ReverseIPTagMulticastSourcePartitionedVertex(
             n_keys=self.n_atoms, resources_required=resources_required,
             machine_time_step=self._machine_time_step,
@@ -214,12 +251,14 @@ class ReverseIpTagMultiCastSource(
             send_buffer_notification_port=self._send_buffer_notification_port,
             send_buffer_notification_tag=self._send_buffer_notification_tag)
         subvertex.set_no_machine_time_steps(self._no_machine_time_steps)
+        subvertex.first_machine_time_step = self._first_machine_time_step
         if self._record_buffer_size > 0:
             subvertex.enable_recording(
                 self._record_buffering_ip_address, self._record_buffering_port,
                 self._record_buffering_board_address,
                 self._record_buffering_tag, self._record_buffer_size,
                 self._record_buffer_size_before_receive)
+        self._subvertices.append((vertex_slice, subvertex))
         return subvertex
 
     def is_data_specable(self):

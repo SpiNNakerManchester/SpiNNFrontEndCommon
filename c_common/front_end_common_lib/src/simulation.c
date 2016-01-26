@@ -11,6 +11,8 @@
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
+static uint32_t *pointer_to_infinite_run;
+
 //! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
@@ -19,21 +21,22 @@ static int sdp_exit_run_command_port;
 static bool exited = false;
 
 
-//! \method that checks that the data in this region has the correct identifier
-//! for the model calling this method and also interprets the timer period and
-//! runtime for the model.
+//! \brief method that checks that the data in this region has the correct
+//!        identifier for the model calling this method and also interprets the
+//!        timer period and runtime for the model.
 //! \param[in] address The memory address to start reading the parameters from
 //! \param[in] expected_app_magic_number The application's magic number thats
-//! requesting timing details from this memory address.
+//!            requesting timing details from this memory address.
 //! \param[out] timer_period A pointer for storing the timer period once read
-//! from the memory region
+//!             from the memory region
 //! \param[out] n_simulation_ticks A pointer for storing the number of timer
-//! tics this executable should run for, which is read from this region
+//!             ticks this executable should run for, which is read from this
+//!             region
 //! \param INFINITE_RUN[out] a pointer to an int which represents if the model
 //!                          should run for infinite time
 //! \return True if the method was able to read the parameters and the
-//! application magic number corresponded to the magic number in memory.
-//! Otherwise the method will return False.
+//!         application magic number corresponded to the magic number in
+//!         memory, otherwise the method will return False.
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period, uint32_t* n_simulation_ticks,
@@ -53,16 +56,14 @@ bool simulation_read_timing_details(
     return true;
 }
 
-//! \general method to encapsulate the setting off of any executable.
-//! Just calls the spin1api start command.
-//! \return does not return anything
+//! \brief General method to encapsulate the setting off of any executable.
+//!        Just calls the spin1api start command.
 void simulation_run() {
     spin1_start(SYNC_WAIT);
 }
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
-//! \return does not return anything
 void simulation_handle_pause_resume(
         callback_t timer_function, int timer_function_priority){
 
@@ -83,10 +84,10 @@ void simulation_handle_pause_resume(
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
-//! runtime counter, as well as switching off the binary when it truly needs
-//! to be stopped.
-//! \param[in] mailbox ????????????
-//! \param[in] port ??????????????
+//!        runtime counter, as well as switching off the binary when it truly
+//!        needs to be stopped.
+//! \param[in] mailbox The SDP message mailbox
+//! \param[in] port The SDP port on which the message was received
 void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -105,6 +106,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         // resetting the simulation time pointer
         *pointer_to_simulation_time = msg->arg1;
+        *pointer_to_infinite_run = msg->arg2;
 
         // free the message to stop overload
         spin1_msg_free(msg);
@@ -114,7 +116,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
     } else if (msg->cmd_rc == SDP_SWITCH_STATE){
 
-        // change the state of the cpu into whats requested from the host
+        // change the state of the cpu into what's requested from the host
         sark_cpu_state(msg->arg1);
 
         // free the message to stop overload
@@ -126,12 +128,19 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     }
 }
 
-//! \brief handles the
+//! \brief handles the registration of the SDP callback
+//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
+//!            ticks, to allow this to be updated when requested via SDP
+//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
+//!            this to be updated when requested via SDP
+//! \param[in] sdp_packet_callback_priority The priority to use for the
+//!            SDP packet reception
 void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks, int sdp_packet_callback_priority) {
-    pointer_to_simulation_time = simulation_ticks;
-    log_info("simulation sdp callback port no is %d",
-             sdp_exit_run_command_port);
+        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
+        int sdp_packet_callback_priority) {
+    pointer_to_simulation_time = simulation_ticks_pointer;
+    pointer_to_infinite_run = infinite_run_pointer;
+    log_info("port no is %d", sdp_exit_run_command_port);
     spin1_sdp_callback_on(
         sdp_exit_run_command_port, simulation_sdp_packet_callback,
         sdp_packet_callback_priority);

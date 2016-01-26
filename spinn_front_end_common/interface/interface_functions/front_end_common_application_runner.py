@@ -28,9 +28,10 @@ class FrontEndCommonApplicationRunner(object):
         logger.info("*** Running simulation... *** ")
 
         # set the buffer manager into a resume state, so that if it had ran
-        # before itll work again
+        # before it'll work again
         buffer_manager.resume()
-        # every thing is in sync0. load the initial buffers
+
+        # every thing is in sync0 so load the initial buffers
         buffer_manager.load_initial_buffers()
 
         self.wait_for_cores_to_be_ready(
@@ -52,7 +53,7 @@ class FrontEndCommonApplicationRunner(object):
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
                 buffer_manager, no_sync_changes)
 
-            # when it falls out of the running, itll be in a next sync state,
+            # when it falls out of the running, it'll be in a next sync state,
             # thus update needed
             no_sync_changes += 1
 
@@ -63,7 +64,7 @@ class FrontEndCommonApplicationRunner(object):
         """
 
         :param executable_targets: the mapping between cores and binaries
-        :param app_id: the appid that being used by the simulation
+        :param app_id: the app id that being used by the simulation
         :param no_sync_state_changes:  the number of runs been done between\
                 setup and end
         :param txrx: the python interface to the spinnaker machine
@@ -111,7 +112,7 @@ class FrontEndCommonApplicationRunner(object):
                         sync_state_changes):
         """
         :param executable_targets: the mapping between cores and binaries
-        :param app_id: the appid that being used by the simulation
+        :param app_id: the app id that being used by the simulation
         :param sync_state_changes: the number of runs been done between setup\
                 and end
         :param txrx: the python interface to the spinnaker machine
@@ -168,8 +169,8 @@ class FrontEndCommonApplicationRunner(object):
         :param runtime:
         :param time_scaling:
         :param buffer_manager:
-        :param no_sync_state_changes: the number of runs been done between
-        setup and end
+        :param no_sync_state_changes: the number of runs been done between\
+                setup and end
         :return:
         """
 

@@ -232,11 +232,11 @@ static inline uint32_t get_sdram_buffer_space_available() {
         return (uint32_t) read_pointer - (uint32_t) write_pointer;
     } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
 
-        // If pointers are equal, buffer is full if last op is write
+        // If pointers are equal, buffer is full if last operation is write
         return 0;
     } else {
 
-        // If pointers are equal, buffer is empty if last op is read
+        // If pointers are equal, buffer is empty if last operation is read
         return buffer_region_size;
     }
 }
@@ -249,7 +249,7 @@ static inline bool is_eieio_packet_in_buffer(void) {
     }
 
     // There are packets as long as the buffer is not empty; the buffer is
-    // empty if the pointers are equal and the last op was read
+    // empty if the pointers are equal and the last operation was read
     return !((write_pointer == read_pointer) &&
             (last_buffer_operation == BUFFER_OPERATION_READ));
 }
@@ -423,9 +423,10 @@ static inline void process_16_bit_packets(
         key |= pkt_key_prefix;
         payload |= pkt_payload_prefix;
 
-        log_debug("check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
-                  " key_space=%d: %d", check, key, mask, key_space,
-                  (!check) || (check && ((key & mask) == key_space)));
+        log_debug(
+            "check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
+            " key_space=%d: %d", check, key, mask, key_space,
+            (!check) || (check && ((key & mask) == key_space)));
 
         if (!check || (check && ((key & mask) == key_space))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
@@ -644,6 +645,7 @@ static inline void eieio_command_parse_sequenced_data(
     log_debug("Received packet sequence number: %d", sequence_value);
 
     if (sequence_value == next_expected_sequence_no) {
+
         // parse_event_pkt returns false in case there is an error and the
         // packet is dropped (i.e. as it was never received)
         log_debug("add_eieio_packet_to_sdram");
@@ -723,7 +725,7 @@ void fetch_and_process_packet() {
         return;
     }
 
-    log_debug("dealing with sdram is set to %d", msg_from_sdram_in_use);
+    log_debug("dealing with SDRAM is set to %d", msg_from_sdram_in_use);
     log_debug("has_eieio_packet_in_buffer set to %d", is_eieio_packet_in_buffer());
     while ((!msg_from_sdram_in_use) && is_eieio_packet_in_buffer()) {
 
@@ -889,7 +891,7 @@ bool setup_buffer_region(address_t region_address) {
 }
 
 //! \brief Initialises the recording parts of the model
-//! \return True if recording initisation is successful, false otherwise
+//! \return True if recording initialisation is successful, false otherwise
 static bool initialise_recording(){
     address_t address = data_specification_get_data_address();
     address_t system_region =
@@ -936,7 +938,7 @@ bool initialise(uint32_t *timer_period) {
         return false;
     }
 
-    // set up recording data strucutres
+    // set up recording data structures
     if(!initialise_recording()){
          return false;
     }
@@ -962,14 +964,15 @@ void timer_callback(uint unused0, uint unused1) {
               next_buffer_time);
 
     if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
+
         // close recording channels
- 		if (recording_flags > 0) {
+        if (recording_flags > 0) {
             recording_finalise();
         }
 
         log_info("Incorrect keys discarded: %d", incorrect_keys);
         log_info("Incorrect packets discarded: %d", incorrect_packets);
-		log_info("Late packets: %d", late_packets);
+        log_info("Late packets: %d", late_packets);
         log_info("Last time of stop notification request: %d",
                  last_stop_notification_request);
 
@@ -981,8 +984,10 @@ void timer_callback(uint unused0, uint unused1) {
 
         // set the code to start sending packet requests again
         send_packet_reqs = true;
-        // magic state to allow the model to check for stuff in the sdram
+
+        // magic state to allow the model to check for stuff in the SDRAM
         last_buffer_operation = BUFFER_OPERATION_WRITE;
+
         // have fallen out of a resume mode, set up the functions to start
         // resuming again
         if(!initialise_recording()){
@@ -999,14 +1004,14 @@ void timer_callback(uint unused0, uint unused1) {
     if (!msg_from_sdram_in_use) {
         fetch_and_process_packet();
     } else if (next_buffer_time < time) {
-		late_packets += 1;
+        late_packets += 1;
         fetch_and_process_packet();
     } else if (next_buffer_time == time) {
         eieio_data_parse_packet(msg_from_sdram, msg_from_sdram_length);
         fetch_and_process_packet();
     }
 
-	if (recording_flags > 0) {
+    if (recording_flags > 0) {
         recording_do_timestep_update(time);
     }
 }
@@ -1037,7 +1042,7 @@ void c_main(void) {
 
     // Register callbacks
     simulation_register_simulation_sdp_callback(
-        &simulation_ticks, SDP_CALLBACK);
+        &simulation_ticks, &infinite_run, SDP_CALLBACK);
     spin1_sdp_callback_on(
         BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);

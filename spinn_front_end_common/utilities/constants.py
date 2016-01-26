@@ -19,8 +19,8 @@ DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * 1024
 # The number of words in the AbstractDataSpecable basic setup information
 DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 5
 
-# The number of bytes used by sark per malloc
-SARK_PER_MALLOC_SDRAM_USAGE = 2
+# The number of bytes used by SARK per memory allocation
+SARK_PER_MALLOC_SDRAM_USAGE = 8
 
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
