@@ -353,6 +353,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 "{} doesn't have any outgoing connections - no spikes will be"
                 " generated".format(self.label))
             self._send_keys = False
+            if self._virtual_key is None:
+                self._virtual_key = 0
+                self._mask = 0
         elif self._virtual_key is None:
             subedge_routing_info = \
                 routing_info.get_subedge_information_from_subedge(subedges[0])
@@ -390,12 +393,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             spec.write_value(data=0)
 
         # Write key and mask
-        if self._virtual_key is not None:
-            spec.write_value(data=self._virtual_key)
-            spec.write_value(data=self._mask)
-        else:
-            spec.write_value(data=0)
-            spec.write_value(data=0)
+        spec.write_value(data=self._virtual_key)
+        spec.write_value(data=self._mask)
 
         # Write send buffer data
         if self._send_buffer_times is not None:
