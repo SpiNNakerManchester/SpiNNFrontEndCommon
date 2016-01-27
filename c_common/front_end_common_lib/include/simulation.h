@@ -47,16 +47,14 @@ bool simulation_read_timing_details(
         uint32_t* timer_period, uint32_t* n_simulation_ticks,
         uint32_t* infinite_run);
 
-//! \brief Starts the simulation running, returning when it is complete
-void simulation_run();
-
-//! \brief cleans up the house keeping, falls into a sync state and handles
+//! \brief Starts the simulation running, returning when it is complete,
+//!        cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
 //! \param[in] timer_function: The callback function used for the
 //!            timer_callback interrupt registration
 //! \param[in] timer_function_priority: the priority level wanted for the
 //! timer callback used by the application model.
-void simulation_handle_pause_resume(
+void simulation_handle_run_pause_resume(
          callback_t timer_function, int timer_function_priority);
 
 //! \brief handles the new commands needed to resume the binary with a new

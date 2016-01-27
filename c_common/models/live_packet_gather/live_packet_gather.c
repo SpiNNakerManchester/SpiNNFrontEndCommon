@@ -191,7 +191,7 @@ void timer_callback(uint unused0, uint unused1) {
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         record_provenance_data();
-        simulation_handle_pause_resume(timer_callback, TIMER);
+        simulation_handle_run_pause_resume(timer_callback, TIMER);
     }
 }
 
@@ -598,5 +598,5 @@ void c_main(void) {
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run();
+    simulation_handle_run_pause_resume(timer_callback, TIMER);
 }

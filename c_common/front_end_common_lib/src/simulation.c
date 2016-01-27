@@ -13,6 +13,9 @@ static uint32_t *pointer_to_simulation_time;
 
 static uint32_t *pointer_to_infinite_run;
 
+static bool has_received_runtime_update = false;
+static bool is_first_runtime_update = true;
+
 //! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
@@ -25,7 +28,7 @@ static bool exited = false;
 //!        identifier for the model calling this method and also interprets the
 //!        timer period and runtime for the model.
 //! \param[in] address The memory address to start reading the parameters from
-//! \param[in] expected_app_magic_number The application's magic number thats
+//! \param[in] expected_app_magic_number The application's magic number that's
 //!            requesting timing details from this memory address.
 //! \param[out] timer_period A pointer for storing the timer period once read
 //!             from the memory region
@@ -51,24 +54,24 @@ bool simulation_read_timing_details(
 
     *timer_period = address[SIMULATION_TIMER_PERIOD];
     *infinite_run = address[INFINITE_RUN];
-    *n_simulation_ticks = address[N_SIMULATION_TICS];
+
     sdp_exit_run_command_port = address[SDP_EXIT_RUNTIME_COMMAND_PORT];
     return true;
 }
 
-//! \brief General method to encapsulate the setting off of any executable.
-//!        Just calls the spin1api start command.
-void simulation_run() {
-    spin1_start(SYNC_WAIT);
-}
-
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
-void simulation_handle_pause_resume(
+void simulation_handle_run_pause_resume(
         callback_t timer_function, int timer_function_priority){
 
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
+
+    // reset the has received runtime flag, for the next run
+    has_received_runtime_update = false;
+
+    // set up interrupts
+    spin1_start(SYNC_NO_WAIT);
 
     // Fall into a sync state to await further calls (sark level call)
     event_wait();
@@ -78,7 +81,16 @@ void simulation_handle_pause_resume(
         log_info("exited");
     }
     else{
-        log_info("resuming");
+        if (has_received_runtime_update & is_first_runtime_update){
+            log_info("starting");
+            is_first_runtime_update = false;
+        }else if (has_received_runtime_update & !is_first_runtime_update){
+            log_info("resuming");
+        }else if (!has_received_runtime_update){
+            log_error("Been asked to run again even though I've not had my" +
+                      " runtime updated. Therefore exiting in error state")
+            rt_error(RTE_API);
+        }
         spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
     }
 }
@@ -113,6 +125,9 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         // change state to CPU_STATE_12
         sark_cpu_state(CPU_STATE_12);
+
+        // update flag to state ive received a runtime
+        has_received_runtime_update = true;
 
     } else if (msg->cmd_rc == SDP_SWITCH_STATE){
 

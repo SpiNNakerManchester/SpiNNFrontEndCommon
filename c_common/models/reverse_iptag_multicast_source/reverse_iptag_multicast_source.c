@@ -980,7 +980,7 @@ void timer_callback(uint unused0, uint unused1) {
         setup_buffer_region(data_specification_get_region(BUFFER_REGION,
                                                           address));
 
-        simulation_handle_pause_resume(timer_callback, TIMER);
+        simulation_handle_run_pause_resume(timer_callback, TIMER);
 
         // set the code to start sending packet requests again
         send_packet_reqs = true;
@@ -1051,5 +1051,5 @@ void c_main(void) {
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run();
+    simulation_handle_run_pause_resume(timer_callback, TIMER);
 }
