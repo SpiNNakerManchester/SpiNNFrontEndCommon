@@ -153,16 +153,17 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         spec.write_value(data=time_between_requests)
         for region_size, schedule in zip(region_sizes, schedules):
             spec.write_value(data=region_size)
-            if schedule is not None:
-                spec.write_value(len(schedule))
-                for start, end in schedule:
-                    spec.write_value(start)
-                    if end is not None:
-                        spec.write_value(end)
-                    else:
-                        spec.write_value(0)
-            else:
-                spec.write_value(0)
+            if region_size > 0:
+                if schedule is not None:
+                    spec.write_value(len(schedule))
+                    for start, end in schedule:
+                        spec.write_value(start)
+                        if end is not None:
+                            spec.write_value(end)
+                        else:
+                            spec.write_value(0)
+                else:
+                    spec.write_value(0)
 
     @abstractmethod
     def add_constraint(self, constraint):
