@@ -119,7 +119,7 @@ class Reload(object):
             algorithms.append("FrontEndCommomLoadExecutableImages")
             algorithms.append("FrontEndCommonRoutingTableLoader")
             algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
-            algorithms.append("MallocBasedNoGraphChipIDAllocator")
+            algorithms.append("MallocBasedChipIDAllocator")
 
         if running:
             algorithms.append("FrontEndCommonApplicationExiter")

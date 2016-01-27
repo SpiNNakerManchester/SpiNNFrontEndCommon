@@ -49,6 +49,14 @@ class SocketAddress(object):
         else:
             return False
 
+    def __ne__(self, other):
+        """
+        comparison  method for comparing socket addresses
+        :param other: instance of SocketAddress
+        :return:
+        """
+        return not self.__eq__(other)
+
     def __hash__(self):
         """
         over rides the standard hash
