@@ -32,6 +32,9 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 from enum import Enum
 import math
+import logging
+
+logger = logging.getLogger(__file__)
 
 _DEFAULT_MALLOC_REGIONS = 2
 
@@ -53,7 +56,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                ('RECORDING_BUFFER', 3),
                ('RECORDING_BUFFER_STATE', 4)])
 
-    _CONFIGURATION_REGION_SIZE = 36
+    _CONFIGURATION_REGION_SIZE = 40
 
     def __init__(
             self, n_keys, resources_required, machine_time_step,
@@ -216,6 +219,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
 
+        self._send_keys = True
+
     @staticmethod
     def n_regions_to_allocate(send_buffering, recording):
         """ Get the number of regions that will be allocated
@@ -341,10 +346,16 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             [self._REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
 
     def _update_virtual_key(self, routing_info, sub_graph):
-        if self._virtual_key is None:
+        subedges = sub_graph.outgoing_subedges_from_subvertex(self)
+
+        if subedges is None or len(subedges) == 0:
+            logger.warn(
+                "{} doesn't have any outgoing connections - no spikes will be"
+                " generated".format(self.label))
+            self._send_keys = False
+        elif self._virtual_key is None:
             subedge_routing_info = \
-                routing_info.get_subedge_information_from_subedge(
-                    sub_graph.outgoing_subedges_from_subvertex(self)[0])
+                routing_info.get_subedge_information_from_subedge(subedges[0])
             key_and_mask = subedge_routing_info.keys_and_masks[0]
             self._mask = key_and_mask.mask
             self._virtual_key = key_and_mask.key
@@ -355,6 +366,12 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
     def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
+
+        # Write whether to send anything at all
+        if self._send_keys:
+            spec.write_value(data=1)
+        else:
+            spec.write_value(data=0)
 
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
@@ -373,8 +390,12 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             spec.write_value(data=0)
 
         # Write key and mask
-        spec.write_value(data=self._virtual_key)
-        spec.write_value(data=self._mask)
+        if self._virtual_key is not None:
+            spec.write_value(data=self._virtual_key)
+            spec.write_value(data=self._mask)
+        else:
+            spec.write_value(data=0)
+            spec.write_value(data=0)
 
         # Write send buffer data
         if self._send_buffer_times is not None:

@@ -25,7 +25,7 @@ typedef enum eieio_prefix_types {
 
 //! The parameter positions
 typedef enum read_in_parameters{
-    APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, KEY_SPACE, MASK,
+    SEND_KEYS, APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, KEY_SPACE, MASK,
     BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
 } read_in_parameters;
 
@@ -69,6 +69,7 @@ typedef struct {
 } req_packet_sdp_t;
 
 // Globals
+static bool send_keys;
 static uint32_t time;
 static uint32_t simulation_ticks;
 static uint32_t infinite_run;
@@ -428,7 +429,7 @@ static inline void process_16_bit_packets(
             " key_space=%d: %d", check, key, mask, key_space,
             (!check) || (check && ((key & mask) == key_space)));
 
-        if (!check || (check && ((key & mask) == key_space))) {
+        if (send_keys && (!check || (check && ((key & mask) == key_space)))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
                 log_debug("mc packet 16-bit key=%d", key);
                 while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
@@ -475,7 +476,7 @@ static inline void process_32_bit_packets(
         log_debug("check before send packet: %d",
                   (!check) || (check && ((key & mask) == key_space)));
 
-        if (!check || (check && ((key & mask) == key_space))) {
+        if (send_keys && (!check || (check && ((key & mask) == key_space)))) {
             if (pkt_has_payload && !pkt_payload_is_timestamp) {
                 log_debug("mc packet 32-bit key=0x%08x", key);
                 while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
@@ -819,6 +820,7 @@ void send_buffer_request_pkt(void) {
 bool read_parameters(address_t region_address) {
 
     // Get the configuration data
+    send_keys = (bool) region_address[SEND_KEYS];
     apply_prefix = region_address[APPLY_PREFIX];
     prefix = region_address[PREFIX];
     prefix_type = (eieio_prefix_types) region_address[PREFIX_TYPE];
