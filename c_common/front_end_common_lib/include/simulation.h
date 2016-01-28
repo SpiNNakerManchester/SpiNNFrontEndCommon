@@ -18,8 +18,7 @@
 // containing the timing details.
 typedef enum region_elements{
     APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD, INFINITE_RUN,
-    N_SIMULATION_TICS, SDP_EXIT_RUNTIME_COMMAND_PORT,
-    SIMULATION_N_TIMING_DETAIL_WORDS
+    SDP_EXIT_RUNTIME_COMMAND_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
 } region_elements;
 
 typedef enum simulation_commands{
@@ -47,15 +46,16 @@ bool simulation_read_timing_details(
         uint32_t* timer_period, uint32_t* n_simulation_ticks,
         uint32_t* infinite_run);
 
-//! \brief Starts the simulation running, returning when it is complete,
-//!        cleans up the house keeping, falls into a sync state and handles
+//! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
+void simulation_handle_pause_resume();
+
+//! \brief Starts the simulation running, returning when it is complete,
 //! \param[in] timer_function: The callback function used for the
 //!            timer_callback interrupt registration
 //! \param[in] timer_function_priority: the priority level wanted for the
 //! timer callback used by the application model.
-void simulation_handle_run_pause_resume(
-         callback_t timer_function, int timer_function_priority);
+void simulation_run(callback_t timer_function, int timer_function_priority);
 
 //! \brief handles the new commands needed to resume the binary with a new
 //! runtime counter, as well as switching off the binary when it truly needs
@@ -75,5 +75,13 @@ void simulation_sdp_packet_callback(uint mailbox, uint port);
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
         int sdp_packet_callback_priority);
+
+//! \brief timer callback to support updating runtime via sdp message during
+//! first run
+//! \param[in] timer_function: The callback function used for the
+//!            timer_callback interrupt registration
+//! \param[in] timer_function_priority: the priority level wanted for the
+//! timer callback used by the application model.
+void simulation_timer_tic_callback(uint timer_count, uint unused);
 
 #endif // _SIMULATION_H_

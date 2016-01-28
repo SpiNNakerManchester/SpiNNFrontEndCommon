@@ -42,10 +42,8 @@ class AbstractDataSpecableVertex(object):
         # check for infinite runs and add data as required
         if self._no_machine_time_steps is None:
             spec.write_value(data=1)
-            spec.write_value(data=0)
         else:
             spec.write_value(data=0)
-            spec.write_value(data=self._no_machine_time_steps)
 
         # add SDP port number for receiving synchronisations and new run times
         spec.write_value(

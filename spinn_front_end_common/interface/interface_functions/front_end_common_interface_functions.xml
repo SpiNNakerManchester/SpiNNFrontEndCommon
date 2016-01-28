@@ -772,8 +772,8 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>ran_token</param_name>
-                <param_type>RanToken</param_type>
+                <param_name>loaded_binaries_token</param_name>
+                <param_type>LoadBinariesToken</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>

@@ -15,14 +15,15 @@ class FrontEndCommonRuntimeUpdater(object):
 
     def __call__(
             self, placements, txrx, no_sync_changes, app_id,
-            executable_targets, graph_mapper, ran_token):
+            executable_targets, graph_mapper, loaded_binaries_token):
 
         progress_bar = ProgressBar(2, "Updating on chip's runtime")
 
-        if not ran_token:
+        if not loaded_binaries_token:
             raise exceptions.ConfigurationException(
-                "The run time token is set to false, and therefore the runtime"
-                "updator cannot be ran yet. please fix and try again.")
+                "The loaded executable token is set to false, and therefore "
+                "the runtime updater cannot be ran yet. please fix and try "
+                "again.")
 
         # check that the right number of processors are in sync0
         processors_ready = \

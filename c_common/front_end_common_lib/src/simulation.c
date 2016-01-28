@@ -10,10 +10,17 @@
 
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
-
+//! the pointer to the flag for if it is a infinite run
 static uint32_t *pointer_to_infinite_run;
 
+//! the pointer to the users timer tic callback
+static callback_t users_timer_callback;
+//! the user timer tic priority
+static int user_timer_tic_priority;
+
+//! flag to state that code has received a runtime update.
 static bool has_received_runtime_update = false;
+//! flag to state that the first runtime update.
 static bool is_first_runtime_update = true;
 
 //! the port used by the host machine for setting up the sdp port for
@@ -59,23 +66,45 @@ bool simulation_read_timing_details(
     return true;
 }
 
+
+void simulation_run(
+        callback_t timer_function, int timer_function_priority){
+    // Store end users timer tic callbacks to be used once runtime stuff been
+    // set up for the first time.
+    users_timer_callback = timer_function;
+    user_timer_tic_priority = timer_function_priority;
+
+    // turn off any timer tic callbacks, as we're replacing them for the moment
+    spin1_callback_off(TIMER_TICK);
+    // Set off simulation runtime callback
+    spin1_callback_on(TIMER_TICK, simulation_timer_tic_callback, 1);
+    // go into sark start
+    spin1_start(SYNC_NOWAIT);
+    // return from running
+    return;
+}
+
+//! \brief timer callback to support updating runtime via sdp message during
+//! first run
+//! \param[in] timer_function: The callback function used for the
+//!            timer_callback interrupt registration
+//! \param[in] timer_function_priority: the priority level wanted for the
+//! timer callback used by the application model.
+void simulation_timer_tic_callback(uint timer_count, uint unused){
+    log_info("Setting off the second run for "
+             "simulation_handle_run_pause_resume");
+    simulation_handle_pause_resume();
+}
+
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
-void simulation_handle_run_pause_resume(
-        callback_t timer_function, int timer_function_priority){
-
+void simulation_handle_pause_resume(){
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
-
     // reset the has received runtime flag, for the next run
     has_received_runtime_update = false;
-
-    // set up interrupts
-    spin1_start(SYNC_NO_WAIT);
-
     // Fall into a sync state to await further calls (sark level call)
     event_wait();
-
     if (exited){
         spin1_exit(0);
         log_info("exited");
@@ -87,11 +116,12 @@ void simulation_handle_run_pause_resume(
         }else if (has_received_runtime_update & !is_first_runtime_update){
             log_info("resuming");
         }else if (!has_received_runtime_update){
-            log_error("Been asked to run again even though I've not had my" +
-                      " runtime updated. Therefore exiting in error state")
+            log_error("Been asked to run again even though I've not had my"
+                      " runtime updated. Therefore exiting in error state");
             rt_error(RTE_API);
         }
-        spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
+        spin1_callback_on(TIMER_TICK, users_timer_callback,
+                          user_timer_tic_priority);
     }
 }
 
