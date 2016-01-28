@@ -69,6 +69,7 @@ void simulation_handle_pause_resume(
 
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
+    report_warns();
 
     // Fall into a sync state to await further calls (sark level call)
     event_wait();
