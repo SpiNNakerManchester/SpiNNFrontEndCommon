@@ -441,6 +441,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             # needs a dsg rebuild
             first_algorithms.append(algorithm_for_dsg_generation)
             first_algorithms.append(algorithm_for_dse_execution)
+            first_algorithms.append("FrontEndCommonRuntimeUpdater")
             optimal_algorithms.append("FrontEndCommonApplicationDataLoader")
             first_algorithms.append("FrontEndCommonLoadExecutableImages")
             first_algorithms.append("FrontEndCommonBufferManagerCreater")
