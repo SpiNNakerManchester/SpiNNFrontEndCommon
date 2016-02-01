@@ -4,8 +4,8 @@ from pacman.model.partitionable_graph.abstract_partitionable_vertex import \
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_edge_constraints \
-    import AbstractProvidesOutgoingEdgeConstraints
+    abstract_provides_outgoing_partition_constraints \
+    import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
@@ -19,7 +19,7 @@ from spinn_front_end_common.utility_models\
 
 class ReverseIpTagMultiCastSource(
         AbstractPartitionableVertex, AbstractDataSpecableVertex,
-        AbstractProvidesOutgoingEdgeConstraints):
+        AbstractProvidesOutgoingPartitionConstraints):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -172,9 +172,9 @@ class ReverseIpTagMultiCastSource(
         self._record_buffer_size = record_buffer_size
         self._record_buffer_size_before_receive = buffer_size_before_receive
 
-    def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
-        return partitioned_edge.pre_subvertex.get_outgoing_edge_constraints(
-            partitioned_edge, graph_mapper)
+    def get_outgoing_partition_constraints(self, partition, graph_mapper):
+        return partition.edges[0].pre_subvertex.\
+            get_outgoing_partition_constraints(partition, graph_mapper)
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         send_buffer_size = 0
