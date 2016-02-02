@@ -20,8 +20,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models\
-    .abstract_provides_outgoing_edge_constraints \
-    import AbstractProvidesOutgoingEdgeConstraints
+    .abstract_provides_outgoing_partition_constraints \
+    import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 
@@ -38,7 +38,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
         AbstractDataSpecableVertex, PartitionedVertex,
-        AbstractProvidesOutgoingEdgeConstraints,
+        AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
         ReceiveBuffersToHostBasicImpl):
     """ A model which allows events to be injected into spinnaker and\
@@ -128,7 +128,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             self, machine_time_step, timescale_factor)
         PartitionedVertex.__init__(
             self, resources_required, label, constraints)
-        AbstractProvidesOutgoingEdgeConstraints.__init__(self)
+        AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         ReceiveBuffersToHostBasicImpl.__init__(self)
 
         # Set up for receiving live packets
@@ -338,18 +338,19 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             spec, self._REGIONS.RECORDING_BUFFER_STATE.value,
             [self._REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
 
-    def _update_virtual_key(self, routing_info, sub_graph):
+    def _update_virtual_key(self, routing_info, partitioned_graph):
         if self._virtual_key is None:
-            subedge_routing_info = \
-                routing_info.get_subedge_information_from_subedge(
-                    sub_graph.outgoing_subedges_from_subvertex(self)[0])
-            key_and_mask = subedge_routing_info.keys_and_masks[0]
-            self._mask = key_and_mask.mask
-            self._virtual_key = key_and_mask.key
+            partitions = partitioned_graph.\
+                outgoing_edges_partitions_from_vertex(self)
+            for partition in partitions.values():
+                key_and_mask = \
+                    routing_info.get_keys_and_masks_from_partition(partition)[0]
+                self._mask = key_and_mask.mask
+                self._virtual_key = key_and_mask.key
 
-            if self._prefix is None:
-                self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
-                self._prefix = self._virtual_key
+                if self._prefix is None:
+                    self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
+                    self._prefix = self._virtual_key
 
     def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
@@ -435,7 +436,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
 
-    def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
+    def get_outgoing_partition_constraints(self, partition, graph_mapper):
         if self._virtual_key is not None:
             return list([KeyAllocatorFixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])

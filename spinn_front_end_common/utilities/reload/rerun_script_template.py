@@ -6,7 +6,7 @@ general reload script - note that imports are required so don't remove them!
 from pacman.model.placements.placements import Placements
 from pacman.model.placements.placement import Placement
 from pacman.model.routing_info.routing_info import RoutingInfo
-from pacman.model.routing_info.subedge_routing_info import SubedgeRoutingInfo
+from pacman.model.routing_info.partition_routing_info import PartitionRoutingInfo
 from pacman.model.routing_tables.multicast_routing_tables import \
     MulticastRoutingTables
 from pacman.model.tags.tags import Tags

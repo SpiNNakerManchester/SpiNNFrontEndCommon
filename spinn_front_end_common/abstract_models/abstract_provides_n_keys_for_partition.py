@@ -10,12 +10,12 @@ class AbstractProvidesNKeysForEdge(object):
     """
 
     @abstractmethod
-    def get_n_keys_for_partitioned_edge(self, partitioned_edge, graph_mapper):
+    def get_n_keys_for_partition(self, partition, graph_mapper):
         """ Get the number of keys required by the given partitioned edge
 
-        :param partitioned_edge: An edge that comes out of this vertex
-        :type partitioned_edge:\
-                    :py:class:`pacman.model.partitioned_graph.partitioned_edge.PartitionedEdge`
+        :param partition: An partition that comes out of this vertex
+        :type partition:\
+                    :py:class:`pacman.utilities.utility_objs.outgoing_partition.OutgoingPartition`
         :param graph_mapper: A mapper between the partitioned edge and the \
                     associated partitionable edge
         :type graph_mapper:\
