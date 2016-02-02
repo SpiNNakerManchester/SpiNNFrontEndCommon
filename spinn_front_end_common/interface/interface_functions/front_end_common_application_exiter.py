@@ -57,17 +57,11 @@ class FrontEndCommonApplicationExiter(object):
                 app_id, CPUState.WATCHDOG)
 
             if processors_rte > 0 or processors_watchdogged > 0:
-                fail_message = ""
-                if processors_rte > 0:
-                    rte_cores = helpful_functions.get_cores_in_state(
-                        all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-                    fail_message += helpful_functions.get_core_status_string(
-                        rte_cores)
-                if processors_watchdogged > 0:
-                    watchdog_cores = helpful_functions.get_cores_in_state(
-                        all_core_subsets, CPUState.WATCHDOG, txrx)
-                    fail_message += helpful_functions.get_core_status_string(
-                        watchdog_cores)
+                error_cores = helpful_functions.get_cores_in_state(
+                    all_core_subsets,
+                    {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG}, txrx)
+                fail_message = helpful_functions.get_core_status_string(
+                    error_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} of {} processors went into an error state when"
                     " shutting down: {}".format(
@@ -76,7 +70,7 @@ class FrontEndCommonApplicationExiter(object):
 
             successful_cores_cpu_state13 = set(
                 helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.CPU_STATE_13, txrx))
+                    all_core_subsets, [CPUState.CPU_STATE_13], txrx))
 
             all_cores = set(all_core_subsets)
             unsuccessful_cores = all_cores - successful_cores_cpu_state13

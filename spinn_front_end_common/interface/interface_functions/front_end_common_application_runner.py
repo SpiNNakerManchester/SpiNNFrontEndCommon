@@ -96,7 +96,7 @@ class FrontEndCommonApplicationRunner(object):
 
         if processors_ready != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, sync_state, txrx)
+                all_core_subsets, [sync_state], txrx)
 
             # last chance to slip out of error check
             if len(unsuccessful_cores) != 0:
@@ -152,12 +152,15 @@ class FrontEndCommonApplicationRunner(object):
                             "transmissions. Could be a sign of an error")
             else:
                 unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                    all_core_subsets, CPUState.RUNNING, txrx)
-                break_down = helpful_functions.get_core_status_string(
-                    unsuccessful_cores)
-                raise exceptions.ExecutableFailedToStartException(
-                    "Only {} of {} processors started:{}"
-                    .format(processors_running, total_processors, break_down))
+                    all_core_subsets, [CPUState.RUNNING, sync_state], txrx)
+
+                # Last chance to get out of error state
+                if len(unsuccessful_cores) > 0:
+                    break_down = helpful_functions.get_core_status_string(
+                        unsuccessful_cores)
+                    raise exceptions.ExecutableFailedToStartException(
+                        "Only {} of {} processors started:{}".format(
+                            processors_running, total_processors, break_down))
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling,
@@ -177,28 +180,38 @@ class FrontEndCommonApplicationRunner(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        time_to_wait = ((runtime * time_scaling) / 1000.0) + 1.0
+        time_to_wait = ((runtime * time_scaling) / 1000.0) + 0.1
         logger.info("Application started - waiting {} seconds for it to"
                     " stop".format(time_to_wait))
         time.sleep(time_to_wait)
         processors_not_finished = total_processors
-        while processors_not_finished != 0:
-            processors_rte = txrx.get_core_state_count(
-                app_id, CPUState.RUN_TIME_EXCEPTION)
-            if processors_rte > 0:
-                rte_cores = helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-                break_down = \
-                    helpful_functions.get_core_status_string(rte_cores)
-                raise exceptions.ExecutableFailedToStopException(
-                    "{} cores have gone into a run time error state:"
-                    "{}".format(processors_rte, break_down))
 
-            processors_not_finished = txrx.get_core_state_count(
-                app_id, CPUState.RUNNING)
-            if processors_not_finished > 0:
-                logger.info("Simulation still not finished or failed - "
-                            "waiting a bit longer...")
+        retries = 0
+        while processors_not_finished != 0:
+            try:
+                processors_rte = txrx.get_core_state_count(
+                    app_id, CPUState.RUN_TIME_EXCEPTION)
+                if processors_rte > 0:
+                    rte_cores = helpful_functions.get_cores_in_state(
+                        all_core_subsets, [CPUState.RUN_TIME_EXCEPTION], txrx)
+                    break_down = \
+                        helpful_functions.get_core_status_string(rte_cores)
+                    raise exceptions.ExecutableFailedToStopException(
+                        "{} cores have gone into a run time error state:"
+                        "{}".format(processors_rte, break_down))
+
+                processors_not_finished = txrx.get_core_state_count(
+                    app_id, CPUState.RUNNING)
+                if processors_not_finished > 0:
+                    logger.info("Simulation still not finished or failed - "
+                                "waiting a bit longer...")
+                    time.sleep(0.5)
+            except Exception as e:
+                retries += 1
+                if retries >= 10:
+                    logger.error("Error getting state")
+                    raise e
+                logger.info("Error getting state - retrying...")
                 time.sleep(0.5)
 
         if no_sync_state_changes % 2 == 1:
@@ -211,12 +224,15 @@ class FrontEndCommonApplicationRunner(object):
 
         if processors_exited < total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, sync_state, txrx)
-            break_down = helpful_functions.get_core_status_string(
-                unsuccessful_cores)
-            raise exceptions.ExecutableFailedToStopException(
-                "{} of {} processors failed to exit successfully:"
-                "{}".format(
-                    total_processors - processors_exited, total_processors,
-                    break_down))
+                all_core_subsets, [sync_state], txrx)
+
+            # Last chance to get out of the error state
+            if len(unsuccessful_cores) > 0:
+                break_down = helpful_functions.get_core_status_string(
+                    unsuccessful_cores)
+                raise exceptions.ExecutableFailedToStopException(
+                    "{} of {} processors failed to exit successfully:"
+                    "{}".format(
+                        total_processors - processors_exited, total_processors,
+                        break_down))
         logger.info("Application has run to completion")

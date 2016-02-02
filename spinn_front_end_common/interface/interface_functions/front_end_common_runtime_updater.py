@@ -25,31 +25,38 @@ class FrontEndCommonRuntimeUpdater(object):
         # the core has received the new runtime
         while processors_ready != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, CPUState.CPU_STATE_12, txrx)
+                all_core_subsets, [CPUState.CPU_STATE_12], txrx)
 
-            for (x, y, p) in unsuccessful_cores:
-                subvertex = placements.get_subvertex_on_processor(x, y, p)
-                vertex = graph_mapper.get_vertex_from_subvertex(subvertex)
-                infinite_run = 0
-                steps = vertex.no_machine_time_steps
-                if steps is None:
-                    infinite_run = 1
-                    steps = 0
+            if len(unsuccessful_cores) > 0:
 
-                data = struct.pack(
-                    "<III",
-                    constants.SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE
-                    .value, steps, infinite_run)
-                txrx.send_sdp_message(SDPMessage(SDPHeader(
-                    flags=SDPFlag.REPLY_NOT_EXPECTED,
-                    destination_cpu=p,
-                    destination_chip_x=x,
-                    destination_port=(
-                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
-                    destination_chip_y=y), data=data))
+                for (x, y, p) in unsuccessful_cores:
+                    subvertex = placements.get_subvertex_on_processor(x, y, p)
+                    vertex = graph_mapper.get_vertex_from_subvertex(subvertex)
+                    infinite_run = 0
+                    steps = vertex.no_machine_time_steps
+                    if steps is None:
+                        infinite_run = 1
+                        steps = 0
 
-            processors_ready = txrx.get_core_state_count(
-                app_id, CPUState.CPU_STATE_12)
+                    data = struct.pack(
+                        "<III", (constants.SDP_RUNNING_MESSAGE_CODES
+                                 .SDP_NEW_RUNTIME_ID_CODE.value),
+                        steps, infinite_run)
+                    txrx.send_sdp_message(SDPMessage(SDPHeader(
+                        flags=SDPFlag.REPLY_NOT_EXPECTED,
+                        destination_cpu=p,
+                        destination_chip_x=x,
+                        destination_port=(
+                            constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT
+                            .value),
+                        destination_chip_y=y), data=data))
+
+                processors_ready = txrx.get_core_state_count(
+                    app_id, CPUState.CPU_STATE_12)
+            else:
+
+                # If the count has failed, we might find ourselves here
+                processors_ready = total_processors
 
         # reset the state to the old state so that it can be used by the
         # application runner code
@@ -63,21 +70,29 @@ class FrontEndCommonRuntimeUpdater(object):
         # the core has received the new runtime
         while processors_ready != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, sync_state, txrx)
+                all_core_subsets, [sync_state], txrx)
 
-            for (x, y, p) in unsuccessful_cores:
-                data = struct.pack(
-                    "<II",
-                    constants.SDP_RUNNING_MESSAGE_CODES.SDP_SWITCH_STATE.value,
-                    sync_state.value)
-                txrx.send_sdp_message(SDPMessage(SDPHeader(
-                    flags=SDPFlag.REPLY_NOT_EXPECTED,
-                    destination_cpu=p,
-                    destination_chip_x=x,
-                    destination_port=(
-                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
-                    destination_chip_y=y), data=data))
+            if len(unsuccessful_cores) > 0:
 
-            processors_ready = txrx.get_core_state_count(app_id, sync_state)
+                for (x, y, p) in unsuccessful_cores:
+                    data = struct.pack(
+                        "<II", (constants.SDP_RUNNING_MESSAGE_CODES
+                                .SDP_SWITCH_STATE.value),
+                        sync_state.value)
+                    txrx.send_sdp_message(SDPMessage(SDPHeader(
+                        flags=SDPFlag.REPLY_NOT_EXPECTED,
+                        destination_cpu=p,
+                        destination_chip_x=x,
+                        destination_port=(
+                            constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT
+                            .value),
+                        destination_chip_y=y), data=data))
+
+                processors_ready = txrx.get_core_state_count(
+                    app_id, sync_state)
+            else:
+
+                # If the count fails, we might find ourselves here
+                processors_ready = total_processors
 
         return {'no_sync_changes': no_sync_changes}

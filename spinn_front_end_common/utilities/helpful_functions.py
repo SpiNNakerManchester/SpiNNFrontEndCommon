@@ -306,7 +306,7 @@ def do_mapping(
     return pacman_executor
 
 
-def get_cores_in_state(all_core_subsets, state, txrx):
+def get_cores_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
@@ -317,13 +317,13 @@ def get_cores_in_state(all_core_subsets, state, txrx):
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state == state:
+        if core_info.state in states:
             cores_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_in_state
 
 
-def get_cores_not_in_state(all_core_subsets, state, txrx):
+def get_cores_not_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
@@ -334,7 +334,7 @@ def get_cores_not_in_state(all_core_subsets, state, txrx):
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state != state:
+        if core_info.state not in states:
             cores_not_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_not_in_state
