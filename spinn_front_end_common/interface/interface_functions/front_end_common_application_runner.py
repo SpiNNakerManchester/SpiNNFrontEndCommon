@@ -191,13 +191,16 @@ class FrontEndCommonApplicationRunner(object):
             try:
                 processors_rte = txrx.get_core_state_count(
                     app_id, CPUState.RUN_TIME_EXCEPTION)
-                if processors_rte > 0:
-                    rte_cores = helpful_functions.get_cores_in_state(
-                        all_core_subsets, [CPUState.RUN_TIME_EXCEPTION], txrx)
+                processors_wdog = txrx.get_core_state_count(
+                    app_id, CPUState.WATCHDOG)
+                if processors_rte > 0 or processors_wdog > 0:
+                    error_cores = helpful_functions.get_cores_in_state(
+                        all_core_subsets,
+                        [CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG], txrx)
                     break_down = \
-                        helpful_functions.get_core_status_string(rte_cores)
+                        helpful_functions.get_core_status_string(error_cores)
                     raise exceptions.ExecutableFailedToStopException(
-                        "{} cores have gone into a run time error state:"
+                        "{} cores have gone into an error state:"
                         "{}".format(processors_rte, break_down))
 
                 processors_not_finished = txrx.get_core_state_count(
