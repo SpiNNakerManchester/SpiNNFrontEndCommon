@@ -1,6 +1,7 @@
 """
 FrontEndCommonIOBufExtractor
 """
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import exceptions
 
 
@@ -10,7 +11,13 @@ class FrontEndCommonIOBufExtractor(object):
     errors from the standard iobuf
     """
 
-    def __call__(self, transceiver, placements=None, core_subsets=None):
+    def __call__(self, transceiver, has_ran, placements=None,
+                 core_subsets=None):
+        if not has_ran:
+            raise exceptions.ConfigurationException(
+                "The simulation needs to have tried to run before asking for"
+                "iobuf. Please fix and try again")
+
         if placements is None and core_subsets is not None:
             io_buffers, error_entries =\
                 self._run_for_core_subsets(core_subsets, transceiver)
@@ -26,20 +33,28 @@ class FrontEndCommonIOBufExtractor(object):
                 'error_entries': error_entries}
 
     def _run_for_core_subsets(self, core_subsets, transceiver):
+        progress_bar = ProgressBar(len(core_subsets),
+                                   "Extracting IOBUF from failed cores")
         error_entries = dict()
         io_buffers = list(transceiver.get_iobuf(core_subsets))
         for io_buffer in io_buffers:
             self._check_iobuf_for_error(io_buffer, error_entries)
+            progress_bar.update()
+        progress_bar.end()
         return io_buffers, error_entries
 
     def _run_for_placements(self, placements, transceiver):
         io_buffers = list()
         error_entries = dict()
+        progress_bar = ProgressBar(len(placements),
+                                   "Extracting IOBUF from all cores")
         for placement in placements:
             iobuf = transceiver.get_iobuf_from_core(
                 placement.x, placement.y, placement.p)
             io_buffers.append(iobuf)
             self._check_iobuf_for_error(iobuf, error_entries)
+            progress_bar.update()
+        progress_bar.end()
         return io_buffers, error_entries
 
     @staticmethod
