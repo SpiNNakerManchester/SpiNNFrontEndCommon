@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationRunner(object):
+    """
+    FrontEndCommonApplicationRunner: functionality which ensures all cores are
+    initialised correctly, ran, and competed successfully.
+    """
 
     def __call__(self, buffer_manager, wait_on_confirmation,
                  send_start_notification, notification_interface,
@@ -21,7 +25,7 @@ class FrontEndCommonApplicationRunner(object):
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
                 not loaded_routing_tables_token or not loaded_binaries_token or
                 not loaded_application_data_token):
-            raise exceptions.ExecutableFailedToStartException(
+            raise exceptions.ConfigurationException(
                 "Not all valid tokens have been given in the positive state. "
                 "please rerun and try again")
 
@@ -51,7 +55,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                buffer_manager, no_sync_changes)
+                no_sync_changes)
 
             # when it falls out of the running, it'll be in a next sync state,
             # thus update needed
@@ -59,8 +63,9 @@ class FrontEndCommonApplicationRunner(object):
 
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
+    @staticmethod
     def wait_for_cores_to_be_ready(
-            self, executable_targets, app_id, txrx, no_sync_state_changes):
+            executable_targets, app_id, txrx, no_sync_state_changes):
         """
 
         :param executable_targets: the mapping between cores and binaries
@@ -106,10 +111,10 @@ class FrontEndCommonApplicationRunner(object):
                     "Only {} processors out of {} have successfully reached "
                     "{}:{}".format(
                         processors_ready, total_processors, sync_state.name,
-                        break_down))
+                        break_down), unsuccessful_cores)
 
-    def start_all_cores(self, executable_targets, app_id, txrx,
-                        sync_state_changes):
+    @staticmethod
+    def start_all_cores(executable_targets, app_id, txrx, sync_state_changes):
         """
         :param executable_targets: the mapping between cores and binaries
         :param app_id: the app id that being used by the simulation
@@ -157,18 +162,19 @@ class FrontEndCommonApplicationRunner(object):
                     unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started:{}"
-                    .format(processors_running, total_processors, break_down))
+                    .format(processors_running, total_processors, break_down),
+                    unsuccessful_cores)
 
+    @staticmethod
     def wait_for_execution_to_complete(
-            self, executable_targets, app_id, runtime, time_scaling,
-            txrx, buffer_manager, no_sync_state_changes):
+            executable_targets, app_id, runtime, time_scaling, txrx,
+            no_sync_state_changes):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param buffer_manager:
         :param no_sync_state_changes: the number of runs been done between\
                 setup and end
         :return:
@@ -192,7 +198,7 @@ class FrontEndCommonApplicationRunner(object):
                     helpful_functions.get_core_status_string(rte_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state:"
-                    "{}".format(processors_rte, break_down))
+                    "{}".format(processors_rte, break_down), rte_cores)
 
             processors_not_finished = txrx.get_core_state_count(
                 app_id, CPUState.RUNNING)
@@ -218,5 +224,5 @@ class FrontEndCommonApplicationRunner(object):
                 "{} of {} processors failed to exit successfully:"
                 "{}".format(
                     total_processors - processors_exited, total_processors,
-                    break_down))
+                    break_down), unsuccessful_cores)
         logger.info("Application has run to completion")

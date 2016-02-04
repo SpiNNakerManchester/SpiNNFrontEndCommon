@@ -5,12 +5,6 @@ from spinn_front_end_common.utility_models.live_packet_gather import \
     LivePacketGather
 from spinn_front_end_common.utility_models.\
     reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions as \
-    front_end_common_report_functions
-
-# pacman imports
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 
 # general imports
 import os
@@ -46,7 +40,7 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param address: base address of the sdram chip to read
     :param length: length to read
     :param data_format: the format to read memory
-    :param transceiver: the spinnman interface
+    :param transceiver: the SpinnMan interface
     """
 
     # turn byte array into str for unpack to work
@@ -234,40 +228,6 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
             shutil.rmtree(os.path.join(starting_directory, oldest_file),
                           ignore_errors=True)
             files_in_report_folder.remove(oldest_file)
-
-
-def do_mapping(
-        inputs, algorithms, required_outputs, xml_paths, do_timings):
-    """
-    :param do_timings: bool which states if each algorithm should time itself
-    :param inputs:
-    :param algorithms:
-    :param required_outputs:
-    :param xml_paths:
-    :param in_debug_mode:
-    :return:
-    """
-
-    # add xml path to front end common interface functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(interface_functions.__file__),
-                     "front_end_common_interface_functions.xml"))
-
-    # add xml path to front end common report functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(
-            front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml"))
-
-    # create executor
-    pacman_executor = PACMANAlgorithmExecutor(
-        do_timings=do_timings, inputs=inputs, xml_paths=xml_paths,
-        algorithms=algorithms, required_outputs=required_outputs)
-
-    # execute mapping process
-    pacman_executor.execute_mapping()
-
-    return pacman_executor
 
 
 def get_cores_in_state(all_core_subsets, state, txrx):

@@ -19,7 +19,7 @@ class FrontEndCommonProvenanceGatherer(object):
                  placements):
         """
         :param file_path: the file path to write the provenance data to
-        :param transceiver: the spinnman interface object
+        :param transceiver: the SpiNNMan interface object
         :param machine: the python representation of the spinnaker machine
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran
@@ -43,7 +43,7 @@ class FrontEndCommonProvenanceGatherer(object):
                               AbstractProvidesProvenanceData):
                     core_file_path = os.path.join(
                         file_path,
-                        "Provanence_data_for_{}_{}_{}_{}.xml".format(
+                        "Provenance_data_for_{}_{}_{}_{}.xml".format(
                             placement.subvertex.label,
                             placement.x, placement.y, placement.p))
                     placement.subvertex.write_provenance_data_in_xml(
@@ -81,7 +81,7 @@ class FrontEndCommonProvenanceGatherer(object):
         doc = etree.SubElement(root, "router_counters")
         expected_routers = etree.SubElement(doc, "Used_Routers")
         for x, y in router_diagnostics:
-            self._write_router_diag(
+            self._write_router_diagnostics(
                 expected_routers, x, y, router_diagnostics[x, y],
                 reinjector_statuses[x, y])
             progress.update()
@@ -102,15 +102,15 @@ class FrontEndCommonProvenanceGatherer(object):
                     if (has_dropped_mc_packets or
                             has_local_multicast_packets or
                             has_external_multicast_packets):
-                        self._write_router_diag(
+                        self._write_router_diagnostics(
                             unexpected_routers, chip.x, chip.y,
                             router_diagnostic, reinjector_status)
                         progress.update()
         progress.end()
 
     @staticmethod
-    def _write_router_diag(parent_xml_element, x, y, router_diagnostic,
-                           reinjector_status):
+    def _write_router_diagnostics(
+            parent_xml_element, x, y, router_diagnostic, reinjector_status):
         router = etree.SubElement(
             parent_xml_element, "router_at_chip_{}_{}".format(x, y))
         etree.SubElement(router, "Loc__MC").text = str(
@@ -138,7 +138,7 @@ class FrontEndCommonProvenanceGatherer(object):
         etree.SubElement(router, "Dump_FR").text = str(
             router_diagnostic.n_dropped_fixed_route_packets)
         if reinjector_status is not None:
-            etree.SubElement(router, "ReceviedForReinjection").text = str(
+            etree.SubElement(router, "ReceivedForReinjection").text = str(
                 reinjector_status.n_dropped_packets)
             etree.SubElement(router, "MissedForReinjection").text = str(
                 reinjector_status.n_missed_dropped_packets)
