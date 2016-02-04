@@ -10,7 +10,7 @@ from spinn_front_end_common.utilities import exceptions \
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman import exceptions as pacman_exceptions
 
-# spinnman imports
+# SpinnMan imports
 from spinnman.model.core_subsets import CoreSubsets
 
 # general imports
