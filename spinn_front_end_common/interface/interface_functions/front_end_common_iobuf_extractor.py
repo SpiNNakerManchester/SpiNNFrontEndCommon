@@ -78,7 +78,7 @@ class FrontEndCommonIOBufExtractor(object):
             bits = line.split("[ERROR]")
             if len(bits) != 1:
                 self._convert_line_bits(bits, iobuf, error_entries)
-            bits = line.split("[WARN]")
+            bits = line.split("[WARNING]")
             if len(bits) != 1:
                 self._convert_line_bits(bits, iobuf, warn_entries)
 
