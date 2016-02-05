@@ -48,9 +48,9 @@ class LivePacketGather(
         value="LIVE_DATA_GATHER_REGIONS",
         names=[('SYSTEM', 0),
                ('CONFIG', 1),
-               ('PROVANENCE', 2)])
+               ('PROVENANCE', 2)])
     _CONFIG_SIZE = 44
-    _PROVANENCE_REGION_SIZE = 8
+    _PROVENANCE_REGION_SIZE = 8
 
     def __init__(self, machine_time_step, timescale_factor, ip_address,
                  port, board_address=None, tag=None, strip_sdp=True,
@@ -80,7 +80,7 @@ class LivePacketGather(
             raise ConfigurationException(
                 "the type of a prefix type should be of a EIEIOPrefix, "
                 "which can be located in :"
-                "spinnman.messages.eieio.eieio_prefix_type")
+                "SpinnMan.messages.eieio.eieio_prefix_type")
         if label is None:
             label = "Live Packet Gatherer"
 
@@ -180,7 +180,7 @@ class LivePacketGather(
             size=self._CONFIG_SIZE, label='config')
         spec.reserve_memory_region(
             region=self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value,
-            size=self._PROVANENCE_REGION_SIZE, label='provenance')
+            size=self._PROVENANCE_REGION_SIZE, label='provenance')
 
     def write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
@@ -256,15 +256,11 @@ class LivePacketGather(
         self._write_basic_setup_info(
             spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
-    def write_provenance_data_in_xml(self, file_path, transceiver,
-                                     placement=None):
+    def write_provenance_data_in_xml(
+            self, file_path, transceiver, message_store, placement=None):
         """ Extracts provenance data from the SDRAM of the core and stores it\
             in an xml file for end user digestion
-
-        :param file_path: the file path to the xml document
-        :param transceiver: the spinnman interface object
-        :param placement: the placement object for this subvertex
-        :return: None
+        @implements pacman.interface.abstract_provides_provenance_data.AbstractProvidesProvenanceData.write_provenance_data_in_xml
         """
         if placement is None:
             raise ConfigurationException(
@@ -277,38 +273,52 @@ class LivePacketGather(
             placement.x, placement.y, placement.p).user[0]
 
         # Get the provenance region base address
-        provanence_data_region_base_address_offset = \
+        provenance_data_region_base_address_offset = \
             dsg_utility_calls.get_region_base_address_offset(
                 app_data_base_address,
                 self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value)
-        provanence_data_region_base_address_buf = \
+        provenance_data_region_base_address_buff = \
             buffer(transceiver.read_memory(
                 placement.x, placement.y,
-                provanence_data_region_base_address_offset, 4))
-        provanence_data_region_base_address = \
-            struct.unpack("I", provanence_data_region_base_address_buf)[0]
-        provanence_data_region_base_address += app_data_base_address
+                provenance_data_region_base_address_offset, 4))
+        provenance_data_region_base_address = \
+            struct.unpack("I", provenance_data_region_base_address_buff)[0]
+        provenance_data_region_base_address += app_data_base_address
 
         # read in the provenance data
-        provanence_data_region_contents_buff = \
+        provenance_data_region_contents_buff = \
             buffer(transceiver.read_memory(
-                placement.x, placement.y, provanence_data_region_base_address,
-                self._PROVANENCE_REGION_SIZE))
-        provanence_data_region_contents = \
-            struct.unpack("<II", provanence_data_region_contents_buff)
+                placement.x, placement.y, provenance_data_region_base_address,
+                self._PROVENANCE_REGION_SIZE))
+        provenance_data_region_contents = \
+            struct.unpack("<II", provenance_data_region_contents_buff)
 
         # create provenance data xml form
         from lxml import etree
         root = etree.Element("Live_packet_gatherer_located_at_{}_{}_{}"
                              .format(placement.x, placement.y, placement.p))
-        none_payload_provanence_data = \
+        none_payload_provenance_data = \
             etree.SubElement(root, "lost_packets_without_payload")
-        payload_provanence_data = \
+        payload_provenance_data = \
             etree.SubElement(root, "lost_packets_with_payload")
-        none_payload_provanence_data.text = \
-            str(provanence_data_region_contents[0])
-        payload_provanence_data.text = \
-            str(provanence_data_region_contents[1])
+        none_payload_provenance_data.text = \
+            str(provenance_data_region_contents[0])
+        payload_provenance_data.text = \
+            str(provenance_data_region_contents[1])
+
+        # add warnings to list if needed
+        if provenance_data_region_contents[0] != 0:
+            message_store.add_core_message(
+                placement.x, placement.y, placement.p,
+                "The live packet gatherer has lost {} packets which have "
+                "payloads during its execution".format(
+                    provenance_data_region_contents[0]), "")
+        if provenance_data_region_contents[1] != 0:
+            message_store.add_core_message(
+                placement.x, placement.y, placement.p,
+                "The live packet gatherer has lost {} packets which do not "
+                "have payloads during its execution".format(
+                    provenance_data_region_contents[1]), "")
 
         # write xml form into file provided
         writer = open(file_path, "w")

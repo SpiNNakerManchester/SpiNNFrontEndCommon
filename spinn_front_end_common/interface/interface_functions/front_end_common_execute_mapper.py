@@ -124,12 +124,13 @@ class FrontEndCommonExecuteMapper(object):
         # only if the system has ran does provenance gathering make sense
         if has_failed_to_end:
             pacman_algorithms.append("FrontEndCommonProvenanceGatherer")
+        pacman_algorithms.append("FrontEndCommonMessagePrinter")
 
         # pacman outputs
         pacman_outputs = list()
         pacman_outputs.append("IOBuffers")
-        pacman_outputs.append("CoresErrorMessages")
-        pacman_outputs.append("CoresWarnMessages")
+        pacman_outputs.append("ErrorMessages")
+        pacman_outputs.append("WarnMessages")
 
         # pacman xmls
         xml_paths = list()
@@ -141,35 +142,6 @@ class FrontEndCommonExecuteMapper(object):
         pacman_executor = PACMANAlgorithmExecutor(
             pacman_algorithms, pacman_inputs, xml_paths, pacman_outputs)
         pacman_executor.execute_mapping()
-
-        # get data
-        error_messages = pacman_executor.get_item("CoresErrorMessages")
-        warn_messages =  pacman_executor.get_item("CoresWarnMessages")
-        io_buffers = pacman_executor.get_item("IOBuffers")
-
-        # print out error states
-        if len(error_messages) != 0:
-            logger.error("Errors stated from the executed code are:")
-            for (x, y, p) in error_messages:
-                logger.error("{}:{}:{}:{}".format(
-                    x, y, p, error_messages[(x, y, p)]))
-
-        # print out warning states
-        if len(warn_messages) != 0:
-            logger.warn("Warnings stated from the executed code are: ")
-            for (x, y, p) in warn_messages:
-                logger.warn("{}:{}:{}:{}".format(
-                    x, y, p, warn_messages[(x, y, p)]))
-
-        prov_path = pacman_executor.get_item("ProvenanceFilePath")
-        for iobuf in io_buffers:
-            file_path = os.path.join(
-                prov_path,
-                "IO_buffer_for[{}:{}:{}]".format(iobuf.x, iobuf.y, iobuf.p))
-            output = open(file_path, mode="w")
-            output.writelines(iobuf.iobuf)
-            output.flush()
-            output.close()
 
         # exit the system, as system has failed
         logger.error(

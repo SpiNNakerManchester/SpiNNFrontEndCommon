@@ -620,6 +620,12 @@
                 <param_type>RanToken</param_type>
             </parameter>
         </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>warn_messages</param_name>
+                <param_type>WarnMessages</param_type>
+            </parameter>
+        </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonDatabaseWriter">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_database_interface</python_module>
@@ -813,6 +819,11 @@
                 <param_type>FailedCoresSubsets</param_type>
                 <param_rank>1</param_rank>
             </parameter>
+            <parameter>
+                <param_name>warn_entries</param_name>
+                <param_type>WarnMessages</param_type>
+                <param_rank>3</param_rank>
+            </parameter>
         </required_optional_inputs>
         <produces_outputs>
             <parameter>
@@ -821,12 +832,34 @@
             </parameter>
             <parameter>
                 <param_name>error_entries</param_name>
-                <param_type>CoresErrorMessages</param_type>
+                <param_type>ErrorMessages</param_type>
             </parameter>
             <parameter>
                 <param_name>warn_entries</param_name>
-                <param_type>CoresWarnMessages</param_type>
+                <param_type>WarnMessages</param_type>
             </parameter>
         </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonMessagePrinter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_message_printer</python_module>
+        <python_class>FrontEndCommonMessagePrinter</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>error_messages</param_name>
+                <param_type>ErrorMessages</param_type>
+            </parameter>
+            <parameter>
+                <param_name>warn_messages</param_name>
+                <param_type>WarnMessages</param_type>
+            </parameter>
+            <parameter>
+                <param_name>io_buffers</param_name>
+                <param_type>IOBuffers</param_type>
+            </parameter>
+            <parameter>
+                <param_name>prov_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
+        </required_inputs>
     </algorithm>
 </algorithms>
