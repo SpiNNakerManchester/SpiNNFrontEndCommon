@@ -821,7 +821,11 @@
             </parameter>
             <parameter>
                 <param_name>error_entries</param_name>
-                <param_type>FailedCoresErrorMessages</param_type>
+                <param_type>CoresErrorMessages</param_type>
+            </parameter>
+            <parameter>
+                <param_name>warn_entries</param_name>
+                <param_type>CoresWarnMessages</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>

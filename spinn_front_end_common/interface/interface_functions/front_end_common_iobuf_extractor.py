@@ -19,10 +19,10 @@ class FrontEndCommonIOBufExtractor(object):
                 "iobuf. Please fix and try again")
 
         if placements is None and core_subsets is not None:
-            io_buffers, error_entries =\
+            io_buffers, error_entries, warn_entries =\
                 self._run_for_core_subsets(core_subsets, transceiver)
         elif placements is not None and core_subsets is None:
-            io_buffers, error_entries =\
+            io_buffers, error_entries, warn_entries =\
                 self._run_for_placements(placements, transceiver)
         else:
             raise exceptions.ConfigurationException(
@@ -30,44 +30,52 @@ class FrontEndCommonIOBufExtractor(object):
                 " object or a core sets object to be able to execute. Please"
                 " fix and try again.")
         return {'io_buffers': io_buffers,
-                'error_entries': error_entries}
+                'error_entries': error_entries,
+                'warn_entries': warn_entries}
 
     def _run_for_core_subsets(self, core_subsets, transceiver):
         progress_bar = ProgressBar(len(core_subsets),
                                    "Extracting IOBUF from failed cores")
         error_entries = dict()
+        warn_entries = dict()
         io_buffers = list(transceiver.get_iobuf(core_subsets))
         for io_buffer in io_buffers:
-            self._check_iobuf_for_error(io_buffer, error_entries)
+            self._check_iobuf_for_error(io_buffer, error_entries, warn_entries)
             progress_bar.update()
         progress_bar.end()
-        return io_buffers, error_entries
+        return io_buffers, error_entries, warn_entries
 
     def _run_for_placements(self, placements, transceiver):
         io_buffers = list()
         error_entries = dict()
+        warn_entries = dict()
         progress_bar = ProgressBar(len(placements),
                                    "Extracting IOBUF from all cores")
         for placement in placements:
             iobuf = transceiver.get_iobuf_from_core(
                 placement.x, placement.y, placement.p)
             io_buffers.append(iobuf)
-            self._check_iobuf_for_error(iobuf, error_entries)
+            self._check_iobuf_for_error(iobuf, error_entries, warn_entries)
             progress_bar.update()
         progress_bar.end()
-        return io_buffers, error_entries
+        return io_buffers, error_entries, warn_entries
 
-    @staticmethod
-    def _check_iobuf_for_error(iobuf, error_entries):
+    def _check_iobuf_for_error(self, iobuf, error_entries, warn_entries):
         lines = iobuf.iobuf.split("\n")
         for line in lines:
             line = line.encode('ascii', 'ignore')
             bits = line.split("[ERROR]")
             if len(bits) != 1:
-                error_line = bits[1]
-                bits = error_line.split("):")
-                error_final_line = bits[1] + ":" + bits[0]
-                if (iobuf.x, iobuf.y, iobuf.p) not in error_entries:
-                    error_entries[(iobuf.x, iobuf.y, iobuf.p)] = list()
-                error_entries[(iobuf.x, iobuf.y, iobuf.p)].append(
-                    error_final_line)
+                self._convert_line_bits(bits, iobuf, error_entries)
+            bits = line.split("[WARN]")
+            if len(bits) != 1:
+                self._convert_line_bits(bits, iobuf, warn_entries)
+
+    @staticmethod
+    def _convert_line_bits(bits, iobuf, entries):
+        error_line = bits[1]
+        bits = error_line.split("):")
+        error_final_line = bits[1] + ":" + bits[0]
+        if (iobuf.x, iobuf.y, iobuf.p) not in entries:
+            entries[(iobuf.x, iobuf.y, iobuf.p)] = list()
+        entries[(iobuf.x, iobuf.y, iobuf.p)].append(error_final_line)

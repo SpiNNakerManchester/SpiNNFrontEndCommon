@@ -128,7 +128,8 @@ class FrontEndCommonExecuteMapper(object):
         # pacman outputs
         pacman_outputs = list()
         pacman_outputs.append("IOBuffers")
-        pacman_outputs.append("FailedCoresErrorMessages")
+        pacman_outputs.append("CoresErrorMessages")
+        pacman_outputs.append("CoresWarnMessages")
 
         # pacman xmls
         xml_paths = list()
@@ -142,14 +143,23 @@ class FrontEndCommonExecuteMapper(object):
         pacman_executor.execute_mapping()
 
         # get data
-        error_messages = pacman_executor.get_item("FailedCoresErrorMessages")
+        error_messages = pacman_executor.get_item("CoresErrorMessages")
+        warn_messages =  pacman_executor.get_item("CoresWarnMessages")
         io_buffers = pacman_executor.get_item("IOBuffers")
 
         # print out error states
-        logger.warn("Errors stated from the executed code are:")
-        for (x, y, p) in error_messages:
-            logger.warn("{}:{}:{}:{}".format(
-                x, y, p, error_messages[(x, y, p)]))
+        if len(error_messages) != 0:
+            logger.error("Errors stated from the executed code are:")
+            for (x, y, p) in error_messages:
+                logger.error("{}:{}:{}:{}".format(
+                    x, y, p, error_messages[(x, y, p)]))
+
+        # print out warning states
+        if len(warn_messages) != 0:
+            logger.warn("Warnings stated from the executed code are: ")
+            for (x, y, p) in warn_messages:
+                logger.warn("{}:{}:{}:{}".format(
+                    x, y, p, warn_messages[(x, y, p)]))
 
         prov_path = pacman_executor.get_item("ProvenanceFilePath")
         for iobuf in io_buffers:
@@ -163,11 +173,10 @@ class FrontEndCommonExecuteMapper(object):
 
         # exit the system, as system has failed
         logger.error(
-            "Something failed during the run. I have outputted the errors "
-            "from the executable code and stored the io_buffers of said cores "
-            "in the provenance data. I will now exit.")
+            "Something failed during the run. I have outputted important "
+            "messages from the executable code and stored the io_buffers of "
+            "said cores in the provenance data. I will now exit.")
         sys.exit(0)
-
 
     @staticmethod
     def _convert_to_core_subsets(failed_core_subsets_listing):
