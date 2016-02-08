@@ -35,7 +35,8 @@ typedef enum memory_regions{
     CONFIGURATION,
     BUFFER_REGION,
     BUFFERING_OUT_SPIKE_RECORDING_REGION,
-    BUFFERING_OUT_CONTROL_REGION
+    BUFFERING_OUT_CONTROL_REGION,
+    PROVENANCE_REGION,
 } memory_regions;
 
 //! The number of regions that can be recorded
@@ -979,7 +980,7 @@ void timer_callback(uint unused0, uint unused1) {
         address_t address = data_specification_get_data_address();
         setup_buffer_region(data_specification_get_region(BUFFER_REGION,
                                                           address));
-
+        simulation_store_provenance_data(PROVENANCE_REGION);
         simulation_handle_pause_resume(timer_callback, TIMER);
 
         // set the code to start sending packet requests again

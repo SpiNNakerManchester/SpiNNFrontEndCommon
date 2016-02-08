@@ -22,6 +22,12 @@ typedef enum region_elements{
     SIMULATION_N_TIMING_DETAIL_WORDS
 } region_elements;
 
+//! elements that are always grabbed for provenance if possible when requested
+typedef enum provenance_data_elements{
+    TRANSMISSION_EVENT_OVERFLOW, TIMER_TIC_QUEUE_OVERLOADED,
+    DMA_QUEUE_OVERLOADED
+}provenance_data_elements;
+
 typedef enum simulation_commands{
     CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8
 }simulation_commands;
@@ -77,5 +83,11 @@ void simulation_sdp_packet_callback(uint mailbox, uint port);
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
         int sdp_packet_callback_priority);
+
+//! \brief handles the storing of basic provenance data
+//! \param[in] provenance_data_region_id The region id to which the provenance
+//!                                      data should be stored
+//! \return None
+void simulation_store_provenance_data(uint32_t provenance_data_region_id);
 
 #endif // _SIMULATION_H_

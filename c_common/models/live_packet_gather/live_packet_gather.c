@@ -25,6 +25,9 @@ static bool processing_events = false;
 
 //! Provenance data store
 typedef struct provenance_data_struct {
+    uint32_t transmission_event_overflow;
+    uint32_t timer_tic_queue_overload;
+    uint32_t dma_queue_overload;
     uint32_t number_of_over_flows_none_payload;
     uint32_t number_of_over_flows_payload;
 } provenance_data_struct;
@@ -167,13 +170,14 @@ void record_provenance_data(void){
     address_t provenance_region_address =
         data_specification_get_region(PROVANENCE_REGION, address);
 
+    // add basic stuff
+    provenance_data.transmission_event_overflow = 0;
+    provenance_data.timer_tic_queue_overload = 0;
+    provenance_data.dma_queue_overload = 0;
+
     // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
-    log_info("The provenance data consisting of %d lost packets without "
-             "payload and %d lost packets with payload.",
-             provenance_data.number_of_over_flows_none_payload,
-             provenance_data.number_of_over_flows_payload);
 }
 
 // Callbacks

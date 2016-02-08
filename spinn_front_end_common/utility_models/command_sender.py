@@ -14,6 +14,9 @@ from data_specification.data_specification_generator \
     import DataSpecificationGenerator
 
 # spinn front end common imports
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_provenance_partitionable_vertex import \
+    AbstractProvidesProvenancePartitionableVertex
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
@@ -29,7 +32,7 @@ _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 
 
 class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
-                    AbstractPartitionableVertex,
+                    AbstractProvidesProvenancePartitionableVertex,
                     AbstractDataSpecableVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
@@ -37,11 +40,13 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
     SYSTEM_REGION = 0
     COMMANDS = 1
+    PROVENANCE_REGION = 2
 
     def __init__(self, machine_time_step, timescale_factor):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        AbstractPartitionableVertex.__init__(self, 1, "Command Sender", 1)
+        AbstractProvidesProvenancePartitionableVertex.__init__(
+            self, 1, "Command Sender", 1, self.PROVENANCE_REGION)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
 
@@ -319,6 +324,10 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
             spec.reserve_memory_region(region=self.COMMANDS,
                                        size=command_size,
                                        label='commands')
+        spec.reserve_memory_region(
+            region=self.PROVENANCE_REGION,
+            size=constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES,
+            label="provenance region")
 
     @property
     def model_name(self):

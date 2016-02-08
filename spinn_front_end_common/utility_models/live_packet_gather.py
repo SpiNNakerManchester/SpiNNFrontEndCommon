@@ -291,34 +291,72 @@ class LivePacketGather(
                 placement.x, placement.y, provenance_data_region_base_address,
                 self._PROVENANCE_REGION_SIZE))
         provenance_data_region_contents = \
-            struct.unpack("<II", provenance_data_region_contents_buff)
+            struct.unpack("<IIIII", provenance_data_region_contents_buff)
 
         # create provenance data xml form
         from lxml import etree
         root = etree.Element("Live_packet_gatherer_located_at_{}_{}_{}"
                              .format(placement.x, placement.y, placement.p))
+        transmission_event_overflow_element = \
+            etree.SubElement(root, "Times_the_transmission_of_spikes_overran")
+        timer_tic_queue_overloaded_element = \
+            etree.SubElement(root, "Times_the_timer_tic_queue_was_overloaded")
+        dma_queue_overloaded_element = \
+            etree.SubElement(root, "Times_the_dma_queue_was_overloaded")
         none_payload_provenance_data = \
             etree.SubElement(root, "lost_packets_without_payload")
         payload_provenance_data = \
             etree.SubElement(root, "lost_packets_with_payload")
-        none_payload_provenance_data.text = \
+
+        # add values
+        transmission_event_overflow_element.text = \
             str(provenance_data_region_contents[0])
-        payload_provenance_data.text = \
+        timer_tic_queue_overloaded_element.text = \
             str(provenance_data_region_contents[1])
+        dma_queue_overloaded_element.text = \
+            str(provenance_data_region_contents[2])
+        none_payload_provenance_data.text = \
+            str(provenance_data_region_contents[3])
+        payload_provenance_data.text = \
+            str(provenance_data_region_contents[4])
 
         # add warnings to list if needed
         if provenance_data_region_contents[0] != 0:
             message_store.add_core_message(
                 placement.x, placement.y, placement.p,
+                "The input buffer lost packets on {} occasions. This is "
+                "often a sign that the system is running too quickly for the"
+                " number of neurons per core, please increase the timer_tic "
+                "or time_scale_factor or decrease the number of neurons "
+                "per core.".format(provenance_data_region_contents[0]), "")
+        if provenance_data_region_contents[1] != 0:
+            message_store.add_core_message(
+                placement.x, placement.y, placement.p,
+                "The timer tic queue overloaded on {} occasions. This is "
+                "often a sign that the system is running too quickly for the"
+                " number of neurons per core, please increase the timer_tic "
+                "or time_scale_factor or decrease the number of neurons "
+                "per core.".format(provenance_data_region_contents[1]), "")
+        if provenance_data_region_contents[2] != 0:
+            message_store.add_core_message(
+                placement.x, placement.y, placement.p,
+                "The DMA queue overloaded on {} occasions. This is "
+                "often a sign that the system is running too quickly for the"
+                " number of neurons per core, please increase the timer_tic "
+                "or time_scale_factor or decrease the number of neurons "
+                "per core.".format(provenance_data_region_contents[2]), "")
+        if provenance_data_region_contents[3] != 0:
+            message_store.add_core_message(
+                placement.x, placement.y, placement.p,
                 "The live packet gatherer has lost {} packets which have "
                 "payloads during its execution".format(
-                    provenance_data_region_contents[0]), "")
-        if provenance_data_region_contents[1] != 0:
+                    provenance_data_region_contents[3]), "")
+        if provenance_data_region_contents[4] != 0:
             message_store.add_core_message(
                 placement.x, placement.y, placement.p,
                 "The live packet gatherer has lost {} packets which do not "
                 "have payloads during its execution".format(
-                    provenance_data_region_contents[1]), "")
+                    provenance_data_region_contents[4]), "")
 
         # write xml form into file provided
         writer = open(file_path, "w")

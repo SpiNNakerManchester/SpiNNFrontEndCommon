@@ -145,3 +145,21 @@ void simulation_register_simulation_sdp_callback(
         sdp_exit_run_command_port, simulation_sdp_packet_callback,
         sdp_packet_callback_priority);
 }
+
+//! \brief handles the storing of basic provenance data
+//! \param[in] provenance_data_region_id The region id to which the provenance
+//!                                      data should be stored
+//! \return None
+void simulation_store_provenance_data(uint32_t provenance_data_region_id){
+
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+    // get the address of the start of the core's provenance data region
+    address_t provenance_region = data_specification_get_region(
+        provenance_data_region_id, address);
+
+    // store the data into the provenance data region
+    provenance_region[TRANSMISSION_EVENT_OVERFLOW] = 0;
+    provenance_region[TIMER_TIC_QUEUE_OVERLOADED] = 0;
+    provenance_region[DMA_QUEUE_OVERLOADED] = 0;
+}
