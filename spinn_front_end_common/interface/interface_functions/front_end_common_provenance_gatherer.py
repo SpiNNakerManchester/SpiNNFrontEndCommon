@@ -54,8 +54,7 @@ class FrontEndCommonProvenanceGatherer(object):
                         placement.subvertex.label,
                         placement.x, placement.y, placement.p))
                 placement.subvertex.write_provenance_data_in_xml(
-                    core_file_path, transceiver, placement,
-                    warning_messages)
+                    core_file_path, transceiver, warning_messages, placement)
             progress.update()
         progress.end()
 

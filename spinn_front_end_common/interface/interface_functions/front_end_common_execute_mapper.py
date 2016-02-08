@@ -81,6 +81,9 @@ class FrontEndCommonExecuteMapper(object):
                 self._prov_collection_during_error_state(
                     pacman_exception, pacman_executor, has_failed_to_end)
             else:
+                logger.error("Exception found in {}, {}, {}".format(
+                    pacman_exception.algorithm, pacman_exception.exception,
+                    pacman_exception.message))
                 raise pacman_exception.exception
         return pacman_executor
 
