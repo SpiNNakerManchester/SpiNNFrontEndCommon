@@ -13,14 +13,19 @@ from pacman.model.resources.cpu_cycles_per_tick_resource import \
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-
-# spinn front end imports
 from pacman.interfaces.abstract_provides_provenance_data \
     import AbstractProvidesProvenanceData
+
+# spinn front end imports
+from pacman.utilities.utility_objs.provenance_data_item import \
+    ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utility_models.\
+    provides_provenance_partitioned_vertex import \
+    ProvidesProvenancePartitionedVertex
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -37,8 +42,8 @@ import struct
 
 
 class LivePacketGather(
-        AbstractDataSpecableVertex, AbstractPartitionableVertex,
-        AbstractProvidesProvenanceData, PartitionedVertex):
+        AbstractDataSpecableVertex, ProvidesProvenancePartitionedVertex,
+        PartitionedVertex, AbstractPartitionableVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -90,13 +95,16 @@ class LivePacketGather(
         AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
                                              max_atoms_per_core=1,
                                              constraints=constraints)
-        AbstractProvidesProvenanceData.__init__(self)
-        PartitionedVertex.__init__(
-            self, label=label, resources_required=ResourceContainer(
+        ProvidesProvenancePartitionedVertex.__init__(
+            self, label=label,
+            resources_required=ResourceContainer(
                 cpu=CPUCyclesPerTickResource(
                     self.get_cpu_usage_for_atoms(1, None)),
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
-                sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))))
+                sdram=SDRAMResource(self.get_sdram_usage_for_atoms(1, None))),
+            constraints=constraints,
+            provenance_region_id=
+            self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value)
 
         # Try to place this near the Ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
@@ -179,7 +187,7 @@ class LivePacketGather(
             region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
             size=self._CONFIG_SIZE, label='config')
         spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value,
+            region=self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             size=self._PROVENANCE_REGION_SIZE, label='provenance')
 
     def write_configuration_region(self, spec, ip_tags):
@@ -256,11 +264,10 @@ class LivePacketGather(
         self._write_basic_setup_info(
             spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
-    def write_provenance_data_in_xml(
-            self, file_path, transceiver, message_store, placement=None):
+    def get_provenance_data_items(self, transceiver, placement=None):
         """ Extracts provenance data from the SDRAM of the core and stores it\
             in an xml file for end user digestion
-        @implements pacman.interface.abstract_provides_provenance_data.AbstractProvidesProvenanceData.write_provenance_data_in_xml
+        @implements pacman.interface.abstract_provides_provenance_data.AbstractProvidesProvenanceData.get_provenance_data_items
         """
         if placement is None:
             raise ConfigurationException(
@@ -268,6 +275,13 @@ class LivePacketGather(
                 "you must provide a placement object that points to where the "
                 "live packet gatherer resides on the spinnaker machine")
 
+        # get the basic ones
+        basic_provenance_entries = ProvidesProvenancePartitionedVertex.\
+            get_provenance_data_items(self, transceiver, placement)
+
+        # get live packet gatherer specific ones
+
+        #todo this code should be stored somewhere (merge with rowley and sergio branches)
         # Get the App Data for the core
         app_data_base_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
@@ -276,7 +290,7 @@ class LivePacketGather(
         provenance_data_region_base_address_offset = \
             dsg_utility_calls.get_region_base_address_offset(
                 app_data_base_address,
-                self._LIVE_DATA_GATHER_REGIONS.PROVANENCE.value)
+                self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value)
         provenance_data_region_base_address_buff = \
             buffer(transceiver.read_memory(
                 placement.x, placement.y,
@@ -285,84 +299,42 @@ class LivePacketGather(
             struct.unpack("I", provenance_data_region_base_address_buff)[0]
         provenance_data_region_base_address += app_data_base_address
 
+        # update with the fact that basic prov entries are first.
+        provenance_data_region_base_address += \
+            constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES
+
         # read in the provenance data
         provenance_data_region_contents_buff = \
             buffer(transceiver.read_memory(
                 placement.x, placement.y, provenance_data_region_base_address,
                 self._PROVENANCE_REGION_SIZE))
         provenance_data_region_contents = \
-            struct.unpack("<IIIII", provenance_data_region_contents_buff)
+            struct.unpack("<II", provenance_data_region_contents_buff)
 
-        # create provenance data xml form
-        from lxml import etree
-        root = etree.Element("Live_packet_gatherer_located_at_{}_{}_{}"
-                             .format(placement.x, placement.y, placement.p))
-        transmission_event_overflow_element = \
-            etree.SubElement(root, "Times_the_transmission_of_spikes_overran")
-        timer_tic_queue_overloaded_element = \
-            etree.SubElement(root, "Times_the_timer_tic_queue_was_overloaded")
-        dma_queue_overloaded_element = \
-            etree.SubElement(root, "Times_the_dma_queue_was_overloaded")
-        none_payload_provenance_data = \
-            etree.SubElement(root, "lost_packets_without_payload")
-        payload_provenance_data = \
-            etree.SubElement(root, "lost_packets_with_payload")
+        basic_provenance_entries.append(ProvenanceDataItem(
+            name="lost_packets_without_payload",
+            item=provenance_data_region_contents[0],
+            needs_reporting_to_end_user=provenance_data_region_contents[0] > 0,
+            message_to_end_user=
+            "The live packet gatherer has lost {} packets which have "
+            "payloads during its execution. Try increasing the machine time "
+            "step or increasing the time scale factor. If you are running in "
+            "real time, try reducing the number of vertices which are "
+            "feeding this live packet gatherer".format(
+                provenance_data_region_contents[0])))
+        basic_provenance_entries.append(ProvenanceDataItem(
+            name="lost_packets_with_payload",
+            item=provenance_data_region_contents[1],
+            needs_reporting_to_end_user=provenance_data_region_contents[1] > 0,
+            message_to_end_user=
+            "The live packet gatherer has lost {} packets which do not have "
+            "payloads during its execution. Try increasing the machine time "
+            "step or increasing the time scale factor. If you are running in "
+            "real time, try reducing the number of vertices which are "
+            "feeding this live packet gatherer".format(
+                provenance_data_region_contents[1])))
 
-        # add values
-        transmission_event_overflow_element.text = \
-            str(provenance_data_region_contents[0])
-        timer_tic_queue_overloaded_element.text = \
-            str(provenance_data_region_contents[1])
-        dma_queue_overloaded_element.text = \
-            str(provenance_data_region_contents[2])
-        none_payload_provenance_data.text = \
-            str(provenance_data_region_contents[3])
-        payload_provenance_data.text = \
-            str(provenance_data_region_contents[4])
-
-        # add warnings to list if needed
-        if provenance_data_region_contents[0] != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The input buffer lost packets on {} occasions. This is "
-                "often a sign that the system is running too quickly for the"
-                " number of neurons per core, please increase the timer_tic "
-                "or time_scale_factor or decrease the number of neurons "
-                "per core.".format(provenance_data_region_contents[0]), "")
-        if provenance_data_region_contents[1] != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The timer tic queue overloaded on {} occasions. This is "
-                "often a sign that the system is running too quickly for the"
-                " number of neurons per core, please increase the timer_tic "
-                "or time_scale_factor or decrease the number of neurons "
-                "per core.".format(provenance_data_region_contents[1]), "")
-        if provenance_data_region_contents[2] != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The DMA queue overloaded on {} occasions. This is "
-                "often a sign that the system is running too quickly for the"
-                " number of neurons per core, please increase the timer_tic "
-                "or time_scale_factor or decrease the number of neurons "
-                "per core.".format(provenance_data_region_contents[2]), "")
-        if provenance_data_region_contents[3] != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The live packet gatherer has lost {} packets which have "
-                "payloads during its execution".format(
-                    provenance_data_region_contents[3]), "")
-        if provenance_data_region_contents[4] != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The live packet gatherer has lost {} packets which do not "
-                "have payloads during its execution".format(
-                    provenance_data_region_contents[4]), "")
-
-        # write xml form into file provided
-        writer = open(file_path, "w")
-        writer.write(etree.tostring(root, pretty_print=True))
-        writer.flush()
-        writer.close()
+        return basic_provenance_entries
 
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'

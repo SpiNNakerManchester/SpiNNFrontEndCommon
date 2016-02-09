@@ -1,6 +1,8 @@
 from pacman.interfaces.abstract_provides_provenance_data import \
     AbstractProvidesProvenanceData
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
+from pacman.utilities.utility_objs.provenance_data_item import \
+    ProvenanceDataItem
 
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import constants
@@ -23,10 +25,9 @@ class ProvidesProvenancePartitionedVertex(
         AbstractProvidesProvenanceData.__init__(self)
         self._provenance_region_id = provenance_region_id
 
-    def write_provenance_data_in_xml(
-            self, file_path, transceiver, message_store, placement=None):
+    def get_provenance_data_items(self, transceiver, placement=None):
         """
-        @implements pacman.interfaces.abstract_provides_provenance_data.AbstractProvidesProvenanceData.write_provenance_data_in_xml
+        @implements pacman.interfaces.abstract_provides_provenance_data.AbstractProvidesProvenanceData.get_provenance_data_items
         """
         if placement is None:
             raise exceptions.ConfigurationException(
@@ -50,7 +51,7 @@ class ProvidesProvenancePartitionedVertex(
             struct.unpack("I", provenance_data_region_base_address_buff)[0]
         provenance_data_region_base_address += app_data_base_address
 
-    # todo this was a function call, but alas the call only returned the first
+        # todo this was a function call, but alas the call only returned the first
         # get data from the machine
         data = buffer(transceiver.read_memory(
             placement.x, placement.y, provenance_data_region_base_address,
@@ -64,72 +65,39 @@ class ProvidesProvenancePartitionedVertex(
         dma_queue_overloaded = provenance_data[
             constants.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED.value]
 
-        self._add_core_warnings_if_applicable(
-            transmission_event_overflow, timer_tic_queue_overloaded,
-            dma_queue_overloaded, message_store, placement)
+        # create provenance data items for returning
+        data_items = list()
+        data_items.append(ProvenanceDataItem(
+            item=transmission_event_overflow,
+            name="Times_the_transmission_of_spikes_overran",
+            needs_reporting_to_end_user=transmission_event_overflow != 0,
+            message_to_end_user=
+            "The input buffer lost packets on {} occasions. This is "
+            "often a sign that the system is running too quickly for the"
+            " number of neurons per core, please increase the timer_tic "
+            "or time_scale_factor or decrease the number of neurons "
+            "per core.".format(transmission_event_overflow)))
 
-        self._generate_xml(
-            file_path, transmission_event_overflow,
-            timer_tic_queue_overloaded, dma_queue_overloaded, placement)
+        data_items.append(ProvenanceDataItem(
+            item=timer_tic_queue_overloaded,
+            name="Times_the_timer_tic_queue_was_overloaded",
+            needs_reporting_to_end_user=timer_tic_queue_overloaded != 0,
+            message_to_end_user=
+            "The timer tic queue overloaded on {} occasions. This is "
+            "often a sign that the system is running too quickly for the"
+            " number of neurons per core, please increase the timer_tic "
+            "or time_scale_factor or decrease the number of neurons "
+            "per core.".format(timer_tic_queue_overloaded)))
 
-    @staticmethod
-    def _add_core_warnings_if_applicable(
-            transmission_event_overflow, timer_tic_queue_overloaded,
-            dma_queue_overloaded, message_store, placement):
+        data_items.append(ProvenanceDataItem(
+            item=dma_queue_overloaded,
+            name="Times_the_dma_queue_was_overloaded",
+            needs_reporting_to_end_user=dma_queue_overloaded != 0,
+            message_to_end_user=
+            "The DMA queue overloaded on {} occasions. This is "
+            "often a sign that the system is running too quickly for the"
+            " number of neurons per core, please increase the timer_tic "
+            "or time_scale_factor or decrease the number of neurons "
+            "per core.".format(timer_tic_queue_overloaded)))
 
-        # check for errors
-        if transmission_event_overflow != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The input buffer lost packets on {} occasions. This is "
-                "often a sign that the system is running too quickly for the"
-                " number of neurons per core, please increase the timer_tic "
-                "or time_scale_factor or decrease the number of neurons "
-                "per core.".format(transmission_event_overflow), "")
-        if timer_tic_queue_overloaded != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The timer tic queue overloaded on {} occasions. This is "
-                "often a sign that the system is running too quickly for the"
-                " number of neurons per core, please increase the timer_tic "
-                "or time_scale_factor or decrease the number of neurons "
-                "per core.".format(timer_tic_queue_overloaded), "")
-        if dma_queue_overloaded != 0:
-            message_store.add_core_message(
-                placement.x, placement.y, placement.p,
-                "The DMA queue overloaded on {} occasions. This is "
-                "often a sign that the system is running too quickly for the"
-                " number of neurons per core, please increase the timer_tic "
-                "or time_scale_factor or decrease the number of neurons "
-                "per core.".format(timer_tic_queue_overloaded), "")
-
-    @staticmethod
-    def _generate_xml(
-            file_path, transmission_event_overflow,
-            timer_tic_queue_overloaded, dma_queue_overloaded, placement):
-
-        # store data in xml
-        from lxml import etree
-
-        # generate tree elements
-        root = etree.Element(
-            "located_at_{}_{}_{}".format(placement.x, placement.y, placement.p))
-        transmission_event_overflow_element = \
-            etree.SubElement(root, "Times_the_transmission_of_spikes_overran")
-        timer_tic_queue_overloaded_element = \
-            etree.SubElement(root, "Times_the_timer_tic_queue_was_overloaded")
-        dma_queue_overloaded_element = \
-            etree.SubElement(root, "Times_the_dma_queue_was_overloaded")
-
-        # add values
-        transmission_event_overflow_element.text = \
-            str(transmission_event_overflow)
-        timer_tic_queue_overloaded_element.text = \
-            str(timer_tic_queue_overloaded)
-        dma_queue_overloaded_element.text = str(dma_queue_overloaded)
-
-        # write xml form into file provided
-        writer = open(file_path, "w")
-        writer.write(etree.tostring(root, pretty_print=True))
-        writer.flush()
-        writer.close()
+        return data_items

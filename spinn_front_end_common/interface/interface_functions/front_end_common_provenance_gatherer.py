@@ -48,17 +48,54 @@ class FrontEndCommonProvenanceGatherer(object):
         for placement in placements.placements:
             if isinstance(placement.subvertex,
                           AbstractProvidesProvenanceData):
+
+                # generate file path for xml
                 core_file_path = os.path.join(
                     file_path,
                     "Provenance_data_for_{}_{}_{}_{}.xml".format(
                         placement.subvertex.label,
                         placement.x, placement.y, placement.p))
-                placement.subvertex.write_provenance_data_in_xml(
-                    core_file_path, transceiver, warning_messages, placement)
+
+                # get data
+                prov_data_items = \
+                    placement.subvertex.get_provenance_data_items(
+                        transceiver, placement)
+
+                # write to xml
+                self._write_data_items_in_xml(
+                    prov_data_items, core_file_path, placement)
+
+                # write to warnings as needed
+                self._add_core_warnings_as_needed(
+                    prov_data_items, warning_messages, placement)
+
             progress.update()
         progress.end()
 
         return {'warn_messages': warning_messages}
+
+    @staticmethod
+    def _add_core_warnings_as_needed(
+            prov_data_items, warning_messages, placement):
+        for item in prov_data_items:
+            if item.needs_reporting_to_end_user:
+                warning_messages.add_core_message(
+                    placement.x, placement.y, item.message_to_end_user)
+
+    @staticmethod
+    def _write_data_items_in_xml(prov_data_items, core_file_path, placement):
+        # generate tree elements
+        root = etree.Element(
+            "located_at_{}_{}_{}".format(placement.x, placement.y, placement.p))
+        for item in prov_data_items:
+            element = etree.SubElement(root, item.name)
+            element.text = str(item.item)
+
+        # write xml form into file provided
+        writer = open(core_file_path, "w")
+        writer.write(etree.tostring(root, pretty_print=True))
+        writer.flush()
+        writer.close()
 
     def _write_router_provenance_data(
             self, root, router_tables, machine, txrx, chip_warn_messages):
