@@ -28,11 +28,11 @@ class FrontEndCommonExecuteMapper(object):
     """
 
     def __init__(self):
-        pass
+        self._prov_path = None
 
     def do_mapping(
             self, inputs, algorithms, required_outputs, xml_paths, do_timings,
-            algorithms_to_catch_prov_on_crash):
+            algorithms_to_catch_prov_on_crash, prov_path):
         """
         :param do_timings: bool which states if each algorithm should time
         itself
@@ -54,6 +54,9 @@ class FrontEndCommonExecuteMapper(object):
             os.path.join(os.path.dirname(
                 front_end_common_report_functions.__file__),
                 "front_end_common_reports.xml"))
+
+        # add prov path to internal store
+        self._prov_path = prov_path
 
         # create executor
         pacman_executor = PACMANAlgorithmExecutor(
@@ -100,7 +103,7 @@ class FrontEndCommonExecuteMapper(object):
         pacman_inputs = list()
         pacman_inputs.append({
             'type': 'ProvenanceFilePath',
-            'value': pacman_executor.get_item("ProvenanceFilePath")})
+            'value': self._prov_path})
         pacman_inputs.append({
             'type': 'MemoryTransciever',
             'value': pacman_executor.get_item("MemoryTransciever")})
@@ -127,6 +130,7 @@ class FrontEndCommonExecuteMapper(object):
         # only if the system has ran does provenance gathering make sense
         if has_failed_to_end:
             pacman_algorithms.append("FrontEndCommonProvenanceGatherer")
+
         pacman_algorithms.append("FrontEndCommonMessagePrinter")
 
         # pacman outputs

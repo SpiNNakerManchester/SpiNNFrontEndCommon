@@ -30,8 +30,8 @@ class FrontEndCommonMessagePrinter(object):
         if len(warn_messages.get_chips_with_messages()) != 0:
             logger.warn("Warnings stated from the SpiNNaker chips are: ")
             for (x, y) in warn_messages.get_chips_with_messages():
-                for message in warn_messages.get_core_messages(x, y):
-                    logger.warn("{}:{}:{}:{}".format(x, y, message['message']))
+                for message in warn_messages.get_chip_messages(x, y):
+                    logger.warn("{}:{}:{}".format(x, y, message))
 
         for iobuf in io_buffers:
             file_path = os.path.join(
