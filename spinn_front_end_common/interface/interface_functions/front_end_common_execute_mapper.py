@@ -126,11 +126,14 @@ class FrontEndCommonExecuteMapper(object):
 
         # make pacman algorithms
         pacman_algorithms = list()
-        pacman_algorithms.append("FrontEndCommonIOBufExtractor")
         # only if the system has ran does provenance gathering make sense
         if has_failed_to_end:
+            #pacman_algorithms.append("FrontEndCommonChipProvenanceUpdater")
             pacman_algorithms.append("FrontEndCommonProvenanceGatherer")
+            pacman_algorithms.append("FrontEndCommonProvenanceXMLWriter")
+            pacman_algorithms.append("FrontEndCommonWarningGenerator")
 
+        pacman_algorithms.append("FrontEndCommonIOBufExtractor")
         pacman_algorithms.append("FrontEndCommonMessagePrinter")
 
         # pacman outputs
