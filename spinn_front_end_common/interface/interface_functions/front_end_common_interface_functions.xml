@@ -579,6 +579,10 @@
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
             </parameter>
+            <parameter>
+                <param_name>time_theshold</param_name>
+                <param_type>TimeTheshold</param_type>
+            </parameter>
         </required_inputs>
         <produces_outputs>
             <parameter>
@@ -616,13 +620,13 @@
                 <param_type>RanToken</param_type>
             </parameter>
         </required_inputs>
-        <required_optional_inputs>
+        <optional_inputs>
             <parameter>
                 <param_name>provenance_data_objects</param_name>
                 <param_type>ProvenanceItems</param_type>
                 <param_rank>1</param_rank>
             </parameter>
-        </required_optional_inputs>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>prov_items</param_name>

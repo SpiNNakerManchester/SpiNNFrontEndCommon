@@ -1,5 +1,7 @@
 
 # front end common imports
+from pacman.exceptions import PacmanConfigurationException, \
+    PacmanAlgorithmFailedToCompleteException
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
@@ -17,6 +19,7 @@ from spinnman.model.core_subsets import CoreSubsets
 import os
 import sys
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -77,12 +80,27 @@ class FrontEndCommonExecuteMapper(object):
             has_failed_to_end = isinstance(
                 pacman_exception.exception,
                 front_end_common_exceptions.ExecutableFailedToStopException)
-
             if ((has_failed_to_start or has_failed_to_end) and
                     pacman_exception.algorithm.algorithm_id in
                     algorithms_to_catch_prov_on_crash):
-                self._prov_collection_during_error_state(
-                    pacman_exception, pacman_executor, has_failed_to_end)
+                try:
+                    self._prov_collection_during_error_state(
+                        pacman_exception, pacman_executor, has_failed_to_end)
+                except PacmanAlgorithmFailedToCompleteException as e:
+                    logger.error(
+                        "trying to extract the provenance and iobuf data from "
+                        "a crashed application failed due to {}\n\n {}. Will "
+                        "attempt to shut down cleanly for the end usage"
+                        .format(e.message, e.traceback.format_exc()))
+                except PacmanConfigurationException as e:
+                    logger.error(
+                        "trying to extract the provenance and iobuf data from "
+                        "a crashed application failed due to {}\n. Will "
+                        "attempt to shut down cleanly for the end usage"
+                        .format(e.message))
+                    pacman_executor.get_item("MemoryTransciever")\
+                        .stop_application(pacman_executor.get_item("APPID"))
+                    sys.exit(1)
             else:
                 logger.error("Exception found in {}, {}, {}".format(
                     pacman_exception.algorithm, pacman_exception.exception,
@@ -158,7 +176,7 @@ class FrontEndCommonExecuteMapper(object):
             "Something failed during the run. I have outputted important "
             "messages from the executable code and stored the io_buffers of "
             "said cores in the provenance data. I will now exit.")
-        sys.exit(0)
+        sys.exit(1)
 
     @staticmethod
     def _convert_to_core_subsets(failed_core_subsets_listing):
