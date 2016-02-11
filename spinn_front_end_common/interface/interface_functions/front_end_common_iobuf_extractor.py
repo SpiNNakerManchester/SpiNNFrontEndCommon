@@ -19,11 +19,11 @@ class FrontEndCommonIOBufExtractor(object):
                 "The simulation needs to have tried to run before asking for"
                 "iobuf. Please fix and try again")
 
-        if placements is None and core_subsets is not None:
+        if core_subsets is not None:
             io_buffers, error_entries, warn_entries =\
                 self._run_for_core_subsets(
                     core_subsets, transceiver, warning_messages)
-        elif placements is not None and core_subsets is None:
+        elif placements is not None:
             io_buffers, error_entries, warn_entries =\
                 self._run_for_placements(
                     placements, transceiver, warning_messages)

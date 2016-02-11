@@ -25,9 +25,6 @@ static bool processing_events = false;
 
 //! Provenance data store
 typedef struct provenance_data_struct {
-    uint32_t transmission_event_overflow;
-    uint32_t timer_tic_queue_overload;
-    uint32_t dma_queue_overload;
     uint32_t number_of_over_flows_none_payload;
     uint32_t number_of_over_flows_payload;
 } provenance_data_struct;
@@ -73,7 +70,7 @@ static uint32_t packets_per_timestamp;
 typedef enum regions_e {
     SYSTEM_REGION,
     CONFIGURATION_REGION,
-    PROVANENCE_REGION
+    PROVENANCE_REGION
 } regions_e;
 
 //! Human readable definitions of each element in the configuration region in
@@ -161,19 +158,7 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(void){
-
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-
-    // locate the provenance data region base address
-    address_t provenance_region_address =
-        data_specification_get_region(PROVANENCE_REGION, address);
-
-    // add basic stuff
-    provenance_data.transmission_event_overflow = 0;
-    provenance_data.timer_tic_queue_overload = 0;
-    provenance_data.dma_queue_overload = 0;
+void record_provenance_data(address_t provenance_region_address){
 
     // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
@@ -194,7 +179,6 @@ void timer_callback(uint unused0, uint unused1) {
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
-        record_provenance_data();
         simulation_handle_pause_resume(timer_callback, TIMER);
     }
 }
@@ -598,6 +582,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
+    simulation_register_provenance_function_call(
+        record_provenance_data, PROVENANCE_REGION);
     log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0

@@ -980,7 +980,6 @@ void timer_callback(uint unused0, uint unused1) {
         address_t address = data_specification_get_data_address();
         setup_buffer_region(data_specification_get_region(BUFFER_REGION,
                                                           address));
-        simulation_store_provenance_data(PROVENANCE_REGION);
         simulation_handle_pause_resume(timer_callback, TIMER);
 
         // set the code to start sending packet requests again
@@ -1044,10 +1043,10 @@ void c_main(void) {
     // Register callbacks
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP_CALLBACK);
+    simulation_register_provenance_function_call(NULL, PROVENANCE_REGION);
     spin1_sdp_callback_on(
         BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
-
     log_info("Starting");
 
     // Start the time at "-1" so that the first tick will be 0

@@ -30,7 +30,6 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((next_pos >= schedule_size) && (infinite_run != TRUE)
             && (time >= simulation_ticks)) {
-        simulation_store_provenance_data(PROVENANCE_REGION);
         simulation_handle_pause_resume(timer_callback, TIMER);
     }
 
@@ -163,6 +162,7 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
+    simulation_register_provenance_function_call(NULL, PROVENANCE_REGION);
 
     log_info("Starting");
 

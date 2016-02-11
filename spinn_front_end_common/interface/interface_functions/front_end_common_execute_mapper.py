@@ -135,6 +135,9 @@ class FrontEndCommonExecuteMapper(object):
             'type': 'MemoryPlacements',
             'value': pacman_executor.get_item("MemoryPlacements")})
         pacman_inputs.append({
+            'type': "APPID",
+            'value': pacman_executor.get_item("APPID")})
+        pacman_inputs.append({
             'type': 'RanToken',
             'value': True})
         pacman_inputs.append({
@@ -146,7 +149,7 @@ class FrontEndCommonExecuteMapper(object):
         pacman_algorithms = list()
         # only if the system has ran does provenance gathering make sense
         if has_failed_to_end:
-            #pacman_algorithms.append("FrontEndCommonChipProvenanceUpdater")
+            pacman_algorithms.append("FrontEndCommonChipProvenanceUpdater")
             pacman_algorithms.append("FrontEndCommonProvenanceGatherer")
             pacman_algorithms.append("FrontEndCommonProvenanceXMLWriter")
             pacman_algorithms.append("FrontEndCommonWarningGenerator")
@@ -167,9 +170,16 @@ class FrontEndCommonExecuteMapper(object):
             "front_end_common_interface_functions.xml"))
 
         # execute pacman executor
-        pacman_executor = PACMANAlgorithmExecutor(
-            pacman_algorithms, pacman_inputs, xml_paths, pacman_outputs)
-        pacman_executor.execute_mapping()
+        try:
+            pacman_executor = PACMANAlgorithmExecutor(
+                pacman_algorithms, pacman_inputs, xml_paths, pacman_outputs)
+            pacman_executor.execute_mapping()
+        except PacmanAlgorithmFailedToCompleteException as e:
+            logger.error(
+                "trying to extract the provenance and iobuf data from "
+                "a crashed application failed due to {}\n\n {}. Will "
+                "attempt to shut down cleanly for the end usage"
+                .format(e.message, e.traceback.format_exc()))
 
         # exit the system, as system has failed
         logger.error(
