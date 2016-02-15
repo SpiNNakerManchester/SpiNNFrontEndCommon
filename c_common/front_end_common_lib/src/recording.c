@@ -32,12 +32,16 @@ typedef struct recording_channel_t {
 //! array containing all possible channels.
 static recording_channel_t *g_recording_channels;
 static uint32_t n_recording_regions = 0;
-static uint8_t buffering_output_tag;
 static uint32_t buffering_out_fsm = 0;
 static uint8_t buffering_out_state_region = 0;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
 static uint32_t time_between_triggers = 0;
+
+//! An SDP Message and parts
+static sdp_msg_t msg;
+static read_request_packet_header *req_hdr;
+static read_request_packet_data *data_ptr;
 
 //! The time between buffer read messages
 #define MIN_TIME_BETWEEN_TRIGGERS 50
@@ -49,8 +53,7 @@ static uint32_t time_between_triggers = 0;
 //! \param[in] channel the channel to check
 //! \return True if the channel has been initialised or false otherwise
 static inline bool _has_been_initialsed(uint8_t channel) {
-    return g_recording_channels[channel].start != NULL &&
-        g_recording_channels[channel].end != NULL;
+    return g_recording_channels[channel].start != NULL;
 }
 
 //----------------------------------------
@@ -251,18 +254,25 @@ static inline bool _recording_write_memory(
 
 }
 
+static void _create_buffer_message(
+        read_request_packet_data *data_ptr, uint n_requests,
+        uint channel, uint8_t *read_pointer, uint32_t space_to_be_read) {
+    data_ptr[n_requests].processor_and_request = 0;
+    data_ptr[n_requests].sequence = 0;
+    data_ptr[n_requests].channel = channel;
+    data_ptr[n_requests].region =
+        g_recording_channels[channel].region_id;
+    data_ptr[n_requests].start_address = (uint32_t) read_pointer;
+    data_ptr[n_requests].space_to_be_read = space_to_be_read;
+}
+
 static inline void _recording_send_buffering_out_trigger_message(
         bool flush_all) {
-    uint channel;
-    sdp_msg_t msg;
-    read_request_packet_header *req_hdr =
-        (read_request_packet_header *) &(msg.cmd_rc);
-    read_request_packet_data *data_ptr =
-        (read_request_packet_data *) &(req_hdr[1]);
+
     uint msg_size = 16 + sizeof(read_request_packet_header);
     uint n_requests = 0;
 
-    for (channel = 0; channel < n_recording_regions; channel++) {
+    for (uint channel = 0; channel < n_recording_regions; channel++) {
         uint32_t channel_space_total =
             (uint32_t) (g_recording_channels[channel].end -
                         g_recording_channels[channel].start);
@@ -280,36 +290,21 @@ static inline void _recording_send_buffering_out_trigger_message(
                 g_recording_channels[channel].last_buffer_operation;
 
             if (read_pointer < write_pointer) {
-                data_ptr[n_requests].processor_and_request = 0;
-                data_ptr[n_requests].sequence = 0;
-                data_ptr[n_requests].channel = channel;
-                data_ptr[n_requests].region =
-                    g_recording_channels[channel].region_id;
-                data_ptr[n_requests].start_address = (uint32_t) read_pointer;
-                data_ptr[n_requests].space_to_be_read =
-                    write_pointer - read_pointer;
+                _create_buffer_message(
+                    data_ptr, n_requests, channel, read_pointer,
+                    write_pointer - read_pointer);
                 n_requests++;
             } else if ((write_pointer < read_pointer) ||
                     (write_pointer == read_pointer &&
                      last_buffer_operation == BUFFER_OPERATION_WRITE)) {
-                data_ptr[n_requests].processor_and_request = 0;
-                data_ptr[n_requests].sequence = 0;
-                data_ptr[n_requests].channel = channel;
-                data_ptr[n_requests].region =
-                    g_recording_channels[channel].region_id;
-                data_ptr[n_requests].start_address = (uint32_t) read_pointer;
-                data_ptr[n_requests].space_to_be_read =
-                    end_of_buffer_region - read_pointer;
+                _create_buffer_message(
+                    data_ptr, n_requests, channel, read_pointer,
+                    end_of_buffer_region - read_pointer);
                 n_requests++;
 
-                data_ptr[n_requests].processor_and_request = 0;
-                data_ptr[n_requests].sequence = 0;
-                data_ptr[n_requests].channel = channel;
-                data_ptr[n_requests].region =
-                    g_recording_channels[channel].region_id;
-                data_ptr[n_requests].start_address = (uint32_t) buffer_region;
-                data_ptr[n_requests].space_to_be_read =
-                    write_pointer - buffer_region;
+                _create_buffer_message(
+                    data_ptr, n_requests, channel, buffer_region,
+                    write_pointer - buffer_region);
                 n_requests++;
             } else {
 
@@ -335,12 +330,6 @@ static inline void _recording_send_buffering_out_trigger_message(
         data_ptr[0].sequence = buffering_out_fsm;
         msg_size += (n_requests * sizeof(read_request_packet_data));
         msg.length = msg_size;
-        msg.flags = 0x7;
-        msg.tag = buffering_output_tag;
-        msg.dest_port = 0xFF;
-        msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
-        msg.dest_addr = 0;
-        msg.srce_addr = spin1_get_chip_id();
 
         spin1_send_sdp_msg(&msg, 1);
     }
@@ -463,7 +452,7 @@ bool recording_initialize(
 
     n_recording_regions = n_regions;
     buffering_out_state_region = state_region;
-    buffering_output_tag = recording_data[0];
+    uint8_t buffering_output_tag = recording_data[0];
     buffer_size_before_trigger = recording_data[1];
     time_between_triggers = recording_data[2];
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
@@ -528,6 +517,16 @@ bool recording_initialize(
             log_info("Recording channel %u left uninitialised", i);
         }
     }
+
+    // Set up the buffer message
+    req_hdr = (read_request_packet_header *) &(msg.cmd_rc);
+    data_ptr = (read_request_packet_data *) &(req_hdr[1]);
+    msg.flags = 0x7;
+    msg.tag = buffering_output_tag;
+    msg.dest_port = 0xFF;
+    msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
+    msg.dest_addr = 0;
+    msg.srce_addr = spin1_get_chip_id();
     return true;
 }
 
