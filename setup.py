@@ -19,7 +19,7 @@ setup(
               'spinn_front_end_common.utilities.reload',
               'spinn_front_end_common.utility_models'],
     package_data={'spinn_front_end_common.common_model_binaries': ['*.aplx']},
-    install_requires=['SpiNNMachine == 2016.001.01',
+    install_requires=['SpiNNMachine == 2015.004.01',
                       'SpiNNMan == 2016.001.01',
                       'SpiNNaker_PACMAN == 2016.001.01',
                       'SpiNNaker_DataSpecification == 2016.001.01',
