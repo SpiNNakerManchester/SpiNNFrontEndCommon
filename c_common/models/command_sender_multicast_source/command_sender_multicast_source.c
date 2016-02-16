@@ -17,6 +17,11 @@ typedef enum callback_priorities{
     SDP = 0, TIMER = 2
 }callback_priorities;
 
+//! region identifiers
+typedef enum region_identifiers{
+    SYSTEM_REGION = 0, COMMANDS = 1, PROVENANCE_REGION = 2
+}region_identifiers;
+
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
@@ -129,14 +134,14 @@ bool initialize(uint32_t *timer_period) {
 
     // Get the timing details
     if (!simulation_read_timing_details(
-            data_specification_get_region(0, address),
+            data_specification_get_region(SYSTEM_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
             &infinite_run)) {
         return false;
     }
 
     // Read the parameters
-    read_parameters(data_specification_get_region(1, address));
+    read_parameters(data_specification_get_region(COMMANDS, address));
 
     return true;
 }
@@ -157,6 +162,7 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
+    simulation_register_provenance_function_call(NULL, PROVENANCE_REGION);
 
     log_info("Starting");
 

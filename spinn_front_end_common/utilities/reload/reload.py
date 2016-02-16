@@ -35,10 +35,13 @@ class Reload(object):
         # get the list of algorithms expected to be used
         pacman_algorithms = self.create_list_of_algorithms(loading, running)
 
+        # create prov listing
+        prov_listing = list()
+
         # run the pacman executor
         helpful_functions.do_mapping(
             pacman_inputs, pacman_algorithms, pacman_outputs, xml_paths,
-            False)
+            False, prov_listing)
 
     @staticmethod
     def _create_pacman_inputs(

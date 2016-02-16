@@ -25,7 +25,7 @@ class ExecutableTargets(object):
             self._targets[binary] = CoreSubsets()
         else:
             raise exceptions.ConfigurationException(
-                "cant add a binary thats already been added.")
+                "cant add a binary that is already been added.")
 
     def has_binary(self, binary):
         """

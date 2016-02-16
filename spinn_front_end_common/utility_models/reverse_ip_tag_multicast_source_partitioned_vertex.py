@@ -1,4 +1,3 @@
-from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint \
     import TagAllocatorRequireIptagConstraint
@@ -24,6 +23,9 @@ from spinn_front_end_common.abstract_models\
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
+from spinn_front_end_common.utility_models.\
+    provides_provenance_partitioned_vertex import \
+    ProvidesProvenancePartitionedVertex
 
 from data_specification.data_specification_generator \
     import DataSpecificationGenerator
@@ -37,7 +39,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
-        AbstractDataSpecableVertex, PartitionedVertex,
+        AbstractDataSpecableVertex, ProvidesProvenancePartitionedVertex,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
         ReceiveBuffersToHostBasicImpl):
@@ -51,7 +53,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                ('CONFIGURATION', 1),
                ('SEND_BUFFER', 2),
                ('RECORDING_BUFFER', 3),
-               ('RECORDING_BUFFER_STATE', 4)])
+               ('RECORDING_BUFFER_STATE', 4),
+               ('PROVENANCE_REGION', 5)])
 
     _CONFIGURATION_REGION_SIZE = 36
 
@@ -126,8 +129,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         # Set up super types
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
-        PartitionedVertex.__init__(
-            self, resources_required, label, constraints)
+        ProvidesProvenancePartitionedVertex.__init__(
+            self, resources_required, label, constraints,
+            self._REGIONS.PROVENANCE_REGION.value)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         ReceiveBuffersToHostBasicImpl.__init__(self)
 
@@ -335,6 +339,11 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self.reserve_buffer_regions(
             spec, self._REGIONS.RECORDING_BUFFER_STATE.value,
             [self._REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
+
+        spec.reserve_memory_region(
+            region=self._REGIONS.PROVENANCE_REGION.value,
+            size=constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES,
+            label="Provenance region")
 
     def _update_virtual_key(self, routing_info, partitioned_graph):
         if self._virtual_key is None:

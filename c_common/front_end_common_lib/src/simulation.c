@@ -11,7 +11,14 @@
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
 
+//! the pointer to the flag which indicates if this simulation runs forever
 static uint32_t *pointer_to_infinite_run;
+
+//! the function call to run when extracting provenance data from the chip
+static prov_callback_t stored_provenance_function = NULL;
+
+//! the region id for storing provenance data from the chip
+static uint32_t stored_provenance_data_region_id = NULL;
 
 //! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
@@ -19,7 +26,6 @@ static int sdp_exit_run_command_port;
 
 //! flag for checking if we're in exit state
 static bool exited = false;
-
 
 //! \brief method that checks that the data in this region has the correct
 //!        identifier for the model calling this method and also interprets the
@@ -59,7 +65,26 @@ bool simulation_read_timing_details(
 //! \brief General method to encapsulate the setting off of any executable.
 //!        Just calls the spin1api start command.
 void simulation_run() {
-    spin1_start(SYNC_WAIT);
+    // check that the top level code has registered a provenance region id
+    if (stored_provenance_data_region_id == NULL){
+        log_error(
+            "The top level code needs to register a provenance region id via"
+            " the simulation_register_provenance_function_call() function");
+        rt_error(RTE_API);
+    }
+    else{
+        spin1_start(SYNC_WAIT);
+    }
+}
+
+//! \brief helper private method for running provenance data storage
+void _execute_provenance_storage(){
+    log_info("Starting basic provenance gathering");
+    address_t region_to_start_with = simulation_store_provenance_data();
+    if (stored_provenance_function != NULL){
+        log_info("running other provenance gathering");
+        stored_provenance_function(region_to_start_with);
+    }
 }
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
@@ -70,7 +95,11 @@ void simulation_handle_pause_resume(
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
 
+    // Store provenance data as required
+    _execute_provenance_storage();
+
     // Fall into a sync state to await further calls (sark level call)
+    log_info("Falling into sync state");
     event_wait();
 
     if (exited){
@@ -93,38 +122,50 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
 
-    if (msg->cmd_rc == CMD_STOP) {
-        log_info("Received exit signal. Program complete.");
+    switch (msg->cmd_rc) {
+        case CMD_STOP:
+            log_info("Received exit signal. Program complete.");
 
-        // free the message to stop overload
-        spin1_msg_free(msg);
-        exited = true;
-        sark_cpu_state(CPU_STATE_13);
+            // free the message to stop overload
+            spin1_msg_free(msg);
+            exited = true;
+            sark_cpu_state(CPU_STATE_13);
+            break;
 
-    } else if (msg->cmd_rc == CMD_RUNTIME) {
-        log_info("Setting the runtime of this model to %d", msg->arg1);
+        case CMD_RUNTIME:
+            log_info("Setting the runtime of this model to %d", msg->arg1);
 
-        // resetting the simulation time pointer
-        *pointer_to_simulation_time = msg->arg1;
-        *pointer_to_infinite_run = msg->arg2;
+            // resetting the simulation time pointer
+            *pointer_to_simulation_time = msg->arg1;
+            *pointer_to_infinite_run = msg->arg2;
 
-        // free the message to stop overload
-        spin1_msg_free(msg);
+            // free the message to stop overload
+            spin1_msg_free(msg);
 
-        // change state to CPU_STATE_12
-        sark_cpu_state(CPU_STATE_12);
+            // change state to CPU_STATE_12
+            sark_cpu_state(CPU_STATE_12);
+            break;
 
-    } else if (msg->cmd_rc == SDP_SWITCH_STATE){
+        case SDP_SWITCH_STATE:
 
-        // change the state of the cpu into what's requested from the host
-        sark_cpu_state(msg->arg1);
+            // change the state of the cpu into what's requested from the host
+            sark_cpu_state(msg->arg1);
 
-        // free the message to stop overload
-        spin1_msg_free(msg);
-    } else {
+            // free the message to stop overload
+            spin1_msg_free(msg);
+            break;
+        case PROVENANCE_DATA_GATHERING:
 
-        log_error("received packet with unknown command code %d", msg->cmd_rc);
-        spin1_msg_free(msg);
+            // force provenance to be executed and then exit
+            _execute_provenance_storage();
+            rt_error(RTE_API);
+            break;
+
+        default:
+
+            log_error("received packet with unknown command code %d",
+                      msg->cmd_rc);
+            spin1_msg_free(msg);
     }
 }
 
@@ -144,4 +185,41 @@ void simulation_register_simulation_sdp_callback(
     spin1_sdp_callback_on(
         sdp_exit_run_command_port, simulation_sdp_packet_callback,
         sdp_packet_callback_priority);
+}
+
+//! \brief handles the registration for storing provenance data (needs to be
+//! done at least with the provenance region id)
+//! \param[in] provenance_function: function to call for extra provenance data
+//!     can be NULL as well.
+//! \param[in] provenance_data_region_id: the region id in dsg for where
+//!  provenance is to be stored
+//! \return does not return anything
+void simulation_register_provenance_function_call(
+        prov_callback_t provenance_function,
+        uint32_t provenance_data_region_id){
+    stored_provenance_function = provenance_function;
+    stored_provenance_data_region_id = provenance_data_region_id;
+}
+
+//! \brief handles the storing of basic provenance data
+//! \param[in] provenance_data_region_id The region id to which the provenance
+//!                                      data should be stored
+//! \return the address place to carry on storing prov data from
+address_t simulation_store_provenance_data(){
+    //! gets access to the diagnostics object from sark
+    extern diagnostics_t diagnostics;
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+    // get the address of the start of the core's provenance data region
+    address_t provenance_region = data_specification_get_region(
+        stored_provenance_data_region_id, address);
+
+    // store the data into the provenance data region
+    provenance_region[TRANSMISSION_EVENT_OVERFLOW] =
+        diagnostics.tx_packet_queue_full;
+    provenance_region[TIMER_TIC_QUEUE_OVERLOADED] =
+        diagnostics.task_queue_full;
+    provenance_region[DMA_QUEUE_OVERLOADED] =
+        diagnostics.dma_queue_full;
+    return &provenance_region[PROVENANCE_DATA_ELEMENTS];
 }

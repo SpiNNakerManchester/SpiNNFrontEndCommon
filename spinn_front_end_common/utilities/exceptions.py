@@ -1,6 +1,6 @@
 class SpinnFrontEndException(Exception):
-    """rasied when the pynn front end detects that a routing error has occurred
-    (during multicast soruce)
+    """raised when the PyNN front end detects that a routing error has occurred
+    (during multicast source)
 
     :raise None: does not raise any known exceptions
     """
@@ -8,8 +8,8 @@ class SpinnFrontEndException(Exception):
 
 
 class RallocException(SpinnFrontEndException):
-    """rasied when the pynn front end detects that a routing error has occurred
-    (during multicast soruce)
+    """raised when the PyNN front end detects that a routing error has occurred
+    (during multicast source)
 
     :raise None: does not raise any known exceptions
     """
@@ -17,31 +17,51 @@ class RallocException(SpinnFrontEndException):
 
 
 class ConfigurationException(SpinnFrontEndException):
-    """raised when the pynn front end determines a input param is invalid
+    """raised when the PyNN front end determines a input param is invalid
 
     :raise None: does not raise any known exceptions"""
     pass
 
 
 class ExecutableFailedToStartException(SpinnFrontEndException):
-    """ raised when the messgaes from the trnasicever state that some or all
+    """ raised when the messages from the transceiver state that some or all
     the application images pushed to the board have failed to start when asked
 
 
     :raise None: does not raise any known exceptions
     """
-    pass
+    def __init__(self, output_string, failed_core_subsets):
+        SpinnFrontEndException.__init__(self, output_string)
+        self._failed_core_subsets = failed_core_subsets
+
+    @property
+    def failed_core_subsets(self):
+        """
+        property method for returning data from a failed to start exception
+        :return:
+        """
+        return self._failed_core_subsets
 
 
 class ExecutableFailedToStopException(SpinnFrontEndException):
-    """ raised when the messgaes from the trnasicever state that some or all
+    """ raised when the messages from the transceiver state that some or all
     the application images pushed to the board have failed to stop when
     expected
 
 
     :raise None: does not raise any known exceptions
     """
-    pass
+    def __init__(self, output_string, failed_core_subsets):
+        SpinnFrontEndException.__init__(self, output_string)
+        self._failed_core_subsets = failed_core_subsets
+
+    @property
+    def failed_core_subsets(self):
+        """
+        property method for returning data from a failed to stop exception
+        :return:
+        """
+        return self._failed_core_subsets
 
 
 class ExecutableNotFoundException(SpinnFrontEndException):

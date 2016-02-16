@@ -5,23 +5,28 @@ from spinn_front_end_common.utilities import helpful_functions
 
 import logging
 import time
+import math
 logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationRunner(object):
+    """
+    FrontEndCommonApplicationRunner: functionality which ensures all cores are
+    initialised correctly, ran, and competed successfully.
+    """
 
     def __call__(self, buffer_manager, wait_on_confirmation,
                  send_start_notification, notification_interface,
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token, no_sync_changes):
+                 loaded_application_data_token, no_sync_changes, time_theshold):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
                 not loaded_routing_tables_token or not loaded_binaries_token or
                 not loaded_application_data_token):
-            raise exceptions.ExecutableFailedToStartException(
+            raise exceptions.ConfigurationException(
                 "Not all valid tokens have been given in the positive state. "
                 "please rerun and try again")
 
@@ -51,7 +56,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                buffer_manager, no_sync_changes)
+                no_sync_changes, time_theshold)
 
             # when it falls out of the running, it'll be in a next sync state,
             # thus update needed
@@ -59,8 +64,9 @@ class FrontEndCommonApplicationRunner(object):
 
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
+    @staticmethod
     def wait_for_cores_to_be_ready(
-            self, executable_targets, app_id, txrx, no_sync_state_changes):
+            executable_targets, app_id, txrx, no_sync_state_changes):
         """
 
         :param executable_targets: the mapping between cores and binaries
@@ -106,10 +112,10 @@ class FrontEndCommonApplicationRunner(object):
                     "Only {} processors out of {} have successfully reached "
                     "{}:{}".format(
                         processors_ready, total_processors, sync_state.name,
-                        break_down))
+                        break_down), unsuccessful_cores)
 
-    def start_all_cores(self, executable_targets, app_id, txrx,
-                        sync_state_changes):
+    @staticmethod
+    def start_all_cores(executable_targets, app_id, txrx, sync_state_changes):
         """
         :param executable_targets: the mapping between cores and binaries
         :param app_id: the app id that being used by the simulation
@@ -157,18 +163,20 @@ class FrontEndCommonApplicationRunner(object):
                     unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStartException(
                     "Only {} of {} processors started:{}"
-                    .format(processors_running, total_processors, break_down))
+                    .format(processors_running, total_processors, break_down),
+                    unsuccessful_cores)
 
     def wait_for_execution_to_complete(
-            self, executable_targets, app_id, runtime, time_scaling,
-            txrx, buffer_manager, no_sync_state_changes):
+            self, executable_targets, app_id, runtime, time_scaling, txrx,
+            no_sync_state_changes, time_theshold):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param buffer_manager:
+        :param time_theshold:
+        :param txrx:
         :param no_sync_state_changes: the number of runs been done between\
                 setup and end
         :return:
@@ -181,8 +189,12 @@ class FrontEndCommonApplicationRunner(object):
         logger.info("Application started - waiting {} seconds for it to"
                     " stop".format(time_to_wait))
         time.sleep(time_to_wait)
+        rte_cores = None
         processors_not_finished = total_processors
-        while processors_not_finished != 0:
+        start_time = time.time()
+        while (processors_not_finished != 0 and
+                self._in_time_check(start_time,
+                                    min(runtime/1000,  time_theshold))):
             processors_rte = txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
@@ -192,7 +204,7 @@ class FrontEndCommonApplicationRunner(object):
                     helpful_functions.get_core_status_string(rte_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} cores have gone into a run time error state:"
-                    "{}".format(processors_rte, break_down))
+                    "{}".format(processors_rte, break_down), rte_cores)
 
             processors_not_finished = txrx.get_core_state_count(
                 app_id, CPUState.RUNNING)
@@ -200,6 +212,14 @@ class FrontEndCommonApplicationRunner(object):
                 logger.info("Simulation still not finished or failed - "
                             "waiting a bit longer...")
                 time.sleep(0.5)
+
+        if processors_not_finished != 0:
+            running_cores = helpful_functions.get_cores_in_state(
+                    all_core_subsets, CPUState.RUNNING, txrx)
+            raise exceptions.ExecutableFailedToStopException(
+                "Simulation did not finish within the time alloted. "
+                "Please try increasing the machine time step and / "
+                "or time scale factor in your simulation.", running_cores)
 
         if no_sync_state_changes % 2 == 1:
             sync_state = CPUState.SYNC0
@@ -218,5 +238,19 @@ class FrontEndCommonApplicationRunner(object):
                 "{} of {} processors failed to exit successfully:"
                 "{}".format(
                     total_processors - processors_exited, total_processors,
-                    break_down))
+                    break_down), unsuccessful_cores)
         logger.info("Application has run to completion")
+
+    @staticmethod
+    def _in_time_check(start_time, time_theshold):
+        """
+        checks if the time has gone above a theshold.
+        :param time_theshold: how much time needs to alapsed befored statings
+        its failed the time check
+        :return:  bool
+        """
+        current_time = time.time()
+        if current_time - start_time > time_theshold:
+            return False
+        else:
+            return True

@@ -15,7 +15,7 @@ class FrontEndCommonRuntimeUpdater(object):
             self, placements, txrx, no_sync_changes, app_id,
             executable_targets, graph_mapper):
 
-        # check that the right number of processors are in sync0
+        # check that the right number of processors are in sync
         processors_ready = \
             txrx.get_core_state_count(app_id, CPUState.CPU_STATE_12)
         total_processors = executable_targets.total_processors
