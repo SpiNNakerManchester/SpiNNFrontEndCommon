@@ -12,7 +12,7 @@ from spinn_front_end_common.utilities import exceptions
 import re
 
 
-class FrontEndCommonMachineInterfacer(object):
+class FrontEndCommonMachineGenerator(object):
     """ Interface to make a transceiver and a spinn_machine object
     """
 

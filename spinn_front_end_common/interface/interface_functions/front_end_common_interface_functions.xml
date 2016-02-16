@@ -115,9 +115,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonMachineInterfacer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_interfacer</python_module>
-        <python_class>FrontEndCommonMachineInterfacer</python_class>
+    <algorithm name="FrontEndCommonMachineGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_generator</python_module>
+        <python_class>FrontEndCommonMachineGenerator</python_class>
         <required_inputs>
             <parameter>
                 <param_name>hostname</param_name>
