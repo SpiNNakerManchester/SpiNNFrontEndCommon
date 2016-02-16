@@ -19,7 +19,6 @@ from spinnman.model.core_subsets import CoreSubsets
 import os
 import sys
 import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
