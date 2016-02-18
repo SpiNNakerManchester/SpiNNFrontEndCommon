@@ -104,7 +104,7 @@ class FrontEndCommonExecuteMapper(object):
                 logger.error("Exception found in {}, {}, {}".format(
                     pacman_exception.algorithm, pacman_exception.exception,
                     pacman_exception.message))
-                raise pacman_exception.exception
+                self._handle_hbp_service(pacman_executor)
         return pacman_executor
 
     def _prov_collection_during_error_state(
@@ -143,6 +143,9 @@ class FrontEndCommonExecuteMapper(object):
             'type': "FailedCoresSubsets",
             'value': self._convert_to_core_subsets(
                 pacman_exception.exception.failed_core_subsets)})
+        pacman_inputs.append({
+            'type': "HBPPortalState",
+            'value': pacman_executor.get_item("HBPPortalState")})
 
         # make pacman algorithms
         pacman_algorithms = list()
@@ -185,7 +188,7 @@ class FrontEndCommonExecuteMapper(object):
             "Something failed during the run. I have outputted important "
             "messages from the executable code and stored the io_buffers of "
             "said cores in the provenance data. I will now exit.")
-        sys.exit(1)
+        self._handle_hbp_service(pacman_executor)
 
     @staticmethod
     def _convert_to_core_subsets(failed_core_subsets_listing):
@@ -193,3 +196,10 @@ class FrontEndCommonExecuteMapper(object):
         for (x, y, p) in failed_core_subsets_listing:
             core_subsets.add_processor(x, y, p)
         return core_subsets
+
+    @staticmethod
+    def _handle_hbp_service(pacman_executor):
+        hbp_service_provider = pacman_executor.get_item("HBPPortalState")
+        if hbp_service_provider is not None:
+            hbp_service_provider.destroy()
+        sys.exit(1)

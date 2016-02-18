@@ -144,7 +144,7 @@ class FrontEndCommonMachineGenerator(object):
         :return: the BMP connection data
         """
         bmp_details = list()
-        if bmp_string == "None":
+        if bmp_string is None:
             return bmp_details
 
         for bmp_detail in bmp_string.split(":"):

@@ -1,4 +1,4 @@
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.progress_bar import ProgressBar
 from spinn_front_end_common.interface.buffer_management.buffer_manager import \
     BufferManager
 from spinn_front_end_common.interface.buffer_management.\

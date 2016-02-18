@@ -2,7 +2,7 @@
 from pacman.interfaces.abstract_provides_provenance_data import \
     AbstractProvidesProvenanceData
 from pacman.model.placements.placement import Placement
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.progress_bar import ProgressBar
 
 # front end common imports
 from pacman.utilities.utility_objs.provenance_data_item import \

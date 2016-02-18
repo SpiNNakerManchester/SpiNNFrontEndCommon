@@ -7,7 +7,7 @@ from data_specification.file_data_writer import FileDataWriter
 from data_specification import exceptions
 
 # pacman imports
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\

@@ -937,4 +937,44 @@
             </parameter>
         </required_inputs>
     </algorithm>
+    <algorithm name="FrontEndCommonHBPPortalMode">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_HBP_portal_mode</python_module>
+        <python_class>FrontEndCommonHBPPortalMode</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>hbp_service_provider</param_name>
+                <param_type>HBPServiceProvider</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>hbp_portal_state</param_name>
+                <param_type>HBPPortalState</param_type>
+            </parameter>
+            <parameter>
+                <param_name>ip_address</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>bmp_details</param_name>
+                <param_type>BMPDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>width</param_name>
+                <param_type>MachineWidth</param_type>
+            </parameter>
+            <parameter>
+                <param_name>height</param_name>
+                <param_type>MachineHeight</param_type>
+            </parameter>
+            <parameter>
+                <param_name>version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
 </algorithms>

@@ -1,4 +1,4 @@
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.progress_bar import ProgressBar
 
 from spinnman.data.file_data_reader import FileDataReader \
     as SpinnmanFileDataReader
