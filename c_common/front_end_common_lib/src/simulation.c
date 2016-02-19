@@ -99,10 +99,11 @@ void simulation_run(
 
 //! \brief timer callback to support updating runtime via sdp message during
 //! first run
-//! \param[in] timer_function: The callback function used for the
-//!            timer_callback interrupt registration
-//! \param[in] timer_function_priority: the priority level wanted for the
+//! \param[in] timer_count the number of times this call back has been
+//!            executed since start of simulation
+//! \param[in] unused unused parameter kept for API consistency
 //! timer callback used by the application model.
+//! \return: none
 void simulation_timer_tic_callback(uint timer_count, uint unused){
     log_debug("Setting off the second run for "
               "simulation_handle_run_pause_resume");
@@ -151,8 +152,9 @@ void simulation_handle_pause_resume(){
                       " runtime updated. Therefore exiting in error state");
             rt_error(RTE_API);
         }
-        spin1_callback_on(TIMER_TICK, users_timer_callback,
-                          user_timer_tic_priority);
+
+        spin1_callback_on(
+            TIMER_TICK, users_timer_callback, user_timer_tic_priority);
     }
 }
 
@@ -266,9 +268,13 @@ address_t simulation_store_provenance_data(){
     // store the data into the provenance data region
     provenance_region[TRANSMISSION_EVENT_OVERFLOW] =
         diagnostics.tx_packet_queue_full;
-    provenance_region[TIMER_TIC_QUEUE_OVERLOADED] =
+    provenance_region[CALLBACK_QUEUE_OVERLOADED] =
         diagnostics.task_queue_full;
     provenance_region[DMA_QUEUE_OVERLOADED] =
         diagnostics.dma_queue_full;
+    provenance_region[TIMER_TIC_HAS_OVERRUN] =
+        diagnostics.total_times_tick_tic_callback_overran;
+    provenance_region[MAX_NUMBER_OF_TIMER_TIC_OVERRUN] =
+        diagnostics.largest_number_of_concurrent_timer_tic_overruns;
     return &provenance_region[PROVENANCE_DATA_ELEMENTS];
 }

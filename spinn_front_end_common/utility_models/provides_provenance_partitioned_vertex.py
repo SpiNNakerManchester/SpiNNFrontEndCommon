@@ -56,14 +56,19 @@ class ProvidesProvenancePartitionedVertex(
         data = buffer(transceiver.read_memory(
             placement.x, placement.y, provenance_data_region_base_address,
             constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES))
-        provenance_data = struct.unpack_from("<III", data)
+        provenance_data = struct.unpack_from("<IIIII", data)
 
         transmission_event_overflow = provenance_data[
             constants.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW.value]
-        timer_tic_queue_overloaded = provenance_data[
-            constants.PROVENANCE_DATA_ENTRIES.TIMER_TIC_QUEUE_OVERLOADED.value]
+        callback_queue_overloaded = provenance_data[
+            constants.PROVENANCE_DATA_ENTRIES.CALLBACK_QUEUE_OVERLOADED.value]
         dma_queue_overloaded = provenance_data[
             constants.PROVENANCE_DATA_ENTRIES.DMA_QUEUE_OVERLOADED.value]
+        number_of_times_timer_tic_over_ran = provenance_data[
+            constants.PROVENANCE_DATA_ENTRIES.TIMER_TIC_HAS_OVERRUN.value]
+        max_number_of_times_timer_tic_over_ran = provenance_data[
+            constants.PROVENANCE_DATA_ENTRIES.
+            MAX_NUMBER_OF_TIMER_TIC_OVERRUN.value]
 
         # create provenance data items for returning
         data_items = list()
@@ -79,15 +84,15 @@ class ProvidesProvenancePartitionedVertex(
             "per core.".format(transmission_event_overflow)))
 
         data_items.append(ProvenanceDataItem(
-            item=timer_tic_queue_overloaded,
-            name="Times_the_timer_tic_queue_was_overloaded",
-            needs_reporting_to_end_user=timer_tic_queue_overloaded != 0,
+            item=callback_queue_overloaded,
+            name="Times_the_callback_queue_was_overloaded",
+            needs_reporting_to_end_user=callback_queue_overloaded != 0,
             message_to_end_user=
-            "The timer tic queue overloaded on {} occasions. This is "
+            "The callback queue overloaded on {} occasions. This is "
             "often a sign that the system is running too quickly for the"
             " number of neurons per core, please increase the timer_tic "
             "or time_scale_factor or decrease the number of neurons "
-            "per core.".format(timer_tic_queue_overloaded)))
+            "per core.".format(callback_queue_overloaded)))
 
         data_items.append(ProvenanceDataItem(
             item=dma_queue_overloaded,
@@ -98,6 +103,32 @@ class ProvidesProvenancePartitionedVertex(
             "often a sign that the system is running too quickly for the"
             " number of neurons per core, please increase the timer_tic "
             "or time_scale_factor or decrease the number of neurons "
-            "per core.".format(timer_tic_queue_overloaded)))
+            "per core.".format(dma_queue_overloaded)))
+
+        data_items.append(ProvenanceDataItem(
+            item=number_of_times_timer_tic_over_ran,
+            name="Times_the_timer_tic_over_ran",
+            needs_reporting_to_end_user=number_of_times_timer_tic_over_ran != 0,
+            message_to_end_user=
+            "A Timer tic callback was still executing when the next timer tic"
+            " callback was fired off {} times. This is a sign of the system "
+            "being overloaded and therefore the results are likely wrong. "
+            "Please increase the timer_tic or time_scale_factor or decrease the"
+            " number of neurons per core"
+            .format(number_of_times_timer_tic_over_ran)))
+
+        data_items.append(ProvenanceDataItem(
+            item=max_number_of_times_timer_tic_over_ran,
+            name="max_number_of_times_timer_tic_over_ran",
+            needs_reporting_to_end_user=
+            max_number_of_times_timer_tic_over_ran != 0,
+            message_to_end_user=
+            "There were {} timer tic callbacks waiting to be services at the "
+            "worst level. This should be considered with the "
+            "provenance data item \"Times_the_timer_tic_over_ran\"."
+            " This is a sign of the system being overloaded and therefore "
+            "the results are likely wrong. Please increase the timer_tic or "
+            "time_scale_factor or decrease the number of neurons per core"
+            .format(max_number_of_times_timer_tic_over_ran)))
 
         return data_items

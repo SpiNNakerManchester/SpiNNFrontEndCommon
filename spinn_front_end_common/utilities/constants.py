@@ -67,8 +67,11 @@ BUFFERING_OPERATIONS = Enum(
 PROVENANCE_DATA_ENTRIES = Enum(
     value="PROVENANCE_DATA_ENTRIES",
     names=[("TRANSMISSION_EVENT_OVERFLOW", 0),
-           ("TIMER_TIC_QUEUE_OVERLOADED", 1),
-           ("DMA_QUEUE_OVERLOADED", 2)])
+           ("CALLBACK_QUEUE_OVERLOADED", 1),
+           ("DMA_QUEUE_OVERLOADED", 2),
+           ("TIMER_TIC_HAS_OVERRUN", 3),
+           ("MAX_NUMBER_OF_TIMER_TIC_OVERRUN", 4)]
+)
 
 # the size most neural models needs for provenance data
 PROVENANCE_DATA_REGION_SIZE_IN_BYTES = len(PROVENANCE_DATA_ENTRIES) * 4

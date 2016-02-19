@@ -23,8 +23,9 @@ typedef enum region_elements{
 
 //! elements that are always grabbed for provenance if possible when requested
 typedef enum provenance_data_elements{
-    TRANSMISSION_EVENT_OVERFLOW, TIMER_TIC_QUEUE_OVERLOADED,
-    DMA_QUEUE_OVERLOADED, PROVENANCE_DATA_ELEMENTS
+    TRANSMISSION_EVENT_OVERFLOW, CALLBACK_QUEUE_OVERLOADED,
+    DMA_QUEUE_OVERLOADED, TIMER_TIC_HAS_OVERRUN,
+    MAX_NUMBER_OF_TIMER_TIC_OVERRUN, PROVENANCE_DATA_ELEMENTS
 }provenance_data_elements;
 
 typedef enum simulation_commands{
