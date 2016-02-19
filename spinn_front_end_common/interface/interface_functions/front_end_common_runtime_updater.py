@@ -60,6 +60,10 @@ class FrontEndCommonRuntimeUpdater(object):
 
             processors_ready = txrx.get_core_state_count(
                 app_id, CPUState.CPU_STATE_12)
+
+            # check for cores that have rte'ed or watch-dogged.
+            self._check_for_bad_cores(app_id, txrx, all_core_subsets)
+
         progress_bar.update()
 
         # reset the state to the old state so that it can be used by the
@@ -94,3 +98,27 @@ class FrontEndCommonRuntimeUpdater(object):
         progress_bar.end()
 
         return {'no_sync_changes': no_sync_changes}
+
+    @staticmethod
+    def _check_for_bad_cores(app_id, txrx, all_core_subsets):
+        """
+        tries locating cores which are in bad states
+        :param app_id: the app_id to look for abd cores in
+        :param txrx:  the transciever
+        :param all_core_subsets: all cores in this application
+        :return: None
+        :raises: ExecutableFailedToStartException: if there are failed cores
+        """
+        # check that cores are not in unstable states already
+        bad_processor_count = \
+            txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+        bad_processor_count += \
+            txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        if bad_processor_count != 0:
+            bad_processors = helpful_functions.get_cores_in_state(
+                all_core_subsets, [CPUState.RUN_TIME_EXCEPTION,
+                                   CPUState.WATCHDOG],
+                txrx)
+            raise exceptions.ExecutableFailedToStartException(
+                "{} cores were in dodgy states before getting runtime set up"
+                .format(bad_processor_count), bad_processors)

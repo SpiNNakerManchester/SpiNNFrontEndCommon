@@ -34,8 +34,9 @@ class FrontEndCommonExecuteMapper(object):
         self._prov_path = None
 
     def do_mapping(
-            self, inputs, algorithms, required_outputs, xml_paths, do_timings,
-            algorithms_to_catch_prov_on_crash, prov_path):
+            self, inputs, algorithms, optional_algorithms, required_outputs,
+            xml_paths, do_timings, algorithms_to_catch_prov_on_crash,
+            prov_path):
         """
         :param do_timings: bool which states if each algorithm should time
         itself
@@ -44,6 +45,7 @@ class FrontEndCommonExecuteMapper(object):
         :param required_outputs:
         :param xml_paths:
         :param algorithms_to_catch_prov_on_crash:
+        :param optional_algorithms:
         :return:
         """
 
@@ -64,8 +66,8 @@ class FrontEndCommonExecuteMapper(object):
         # create executor
         pacman_executor = PACMANAlgorithmExecutor(
             do_timings=do_timings, inputs=inputs, xml_paths=xml_paths,
-            algorithms=algorithms, required_outputs=required_outputs)
-
+            algorithms=algorithms, required_outputs=required_outputs,
+            optional_algorithms=optional_algorithms)
         # try to execute all mapping and execution processes, if it fails, catch
         # standard exceptions and try to grab provenance data from machine
         # execute mapping process
@@ -169,10 +171,13 @@ class FrontEndCommonExecuteMapper(object):
             os.path.dirname(interface_functions.__file__),
             "front_end_common_interface_functions.xml"))
 
+        optional_algorithms = list()
+
         # execute pacman executor
         try:
             pacman_executor = PACMANAlgorithmExecutor(
-                pacman_algorithms, pacman_inputs, xml_paths, pacman_outputs)
+                pacman_algorithms, optional_algorithms,
+                pacman_inputs, xml_paths, pacman_outputs)
             pacman_executor.execute_mapping()
         except PacmanAlgorithmFailedToCompleteException as e:
             logger.error(

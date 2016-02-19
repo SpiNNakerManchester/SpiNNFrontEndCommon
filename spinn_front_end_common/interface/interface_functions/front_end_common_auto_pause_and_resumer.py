@@ -43,7 +43,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             algorithm_for_dsg_generation, algorithm_for_dse_execution,
             machine_time_step, placements, tags, reports_states, routing_infos,
             has_ran_before, has_reset_before, application_graph_changed,
-            steps=None):
+            time_theshold, steps=None):
 
         if steps is None:
             steps = self._deduce_number_of_iterations(
@@ -73,7 +73,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 algorithm_for_dse_execution, tags, reports_states,
                 app_data_folder, verify, routing_infos, placements,
                 graph_mapper, partitioned_graph, machine, has_ran_before,
-                has_reset_before, application_graph_changed)
+                has_reset_before, application_graph_changed, time_theshold)
 
         no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
             processor_to_app_data_base_address, \
@@ -396,7 +396,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             algorithm_for_dsg_generation, algorithm_for_dse_execution, tags,
             reports_states, app_data_folder, verify, routing_infos,
             placements, graph_mapper, partitioned_graph, machine,
-            has_ran_before, has_reset_before, application_graph_changed):
+            has_ran_before, has_reset_before, application_graph_changed,
+            time_theshold):
         """
 
         :param wait_on_confirmation:
@@ -423,6 +424,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param graph_mapper:
         :param partitioned_graph:
         :param machine:
+        :param time_theshold:
         :return:
         """
 
@@ -512,6 +514,9 @@ class FrontEndCommonAutoPauseAndResumer(object):
         inputs.append({
             'type': "MemoryExtendedMachine",
             'value': machine})
+        inputs.append({
+            'type': "TimeTheshold",
+            'value': time_theshold})
 
         return inputs, first_algorithms, optimal_algorithms, outputs, xmls
 

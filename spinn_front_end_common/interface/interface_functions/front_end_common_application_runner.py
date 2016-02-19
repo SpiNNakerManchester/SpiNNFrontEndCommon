@@ -215,9 +215,9 @@ class FrontEndCommonApplicationRunner(object):
 
         if processors_not_finished != 0:
             running_cores = helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.RUNNING, txrx)
+                all_core_subsets, CPUState.RUNNING, txrx)
             raise exceptions.ExecutableFailedToStopException(
-                "Simulation did not finish within the time alloted. "
+                "Simulation did not finish within the time allocated. "
                 "Please try increasing the machine time step and / "
                 "or time scale factor in your simulation.", running_cores)
 
@@ -244,8 +244,8 @@ class FrontEndCommonApplicationRunner(object):
     @staticmethod
     def _in_time_check(start_time, time_theshold):
         """
-        checks if the time has gone above a theshold.
-        :param time_theshold: how much time needs to alapsed befored statings
+        checks if the time has gone above a threshold.
+        :param time_theshold: how much time needs to lapse before stating
         its failed the time check
         :return:  bool
         """

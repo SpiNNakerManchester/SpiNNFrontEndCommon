@@ -92,7 +92,7 @@ void simulation_run(
     // Set off simulation runtime callback
     spin1_callback_on(TIMER_TICK, simulation_timer_tic_callback, 1);
     // go into sark start
-    spin1_start(SYNC_WAIT);
+    spin1_start(SYNC_NOWAIT);
     // return from running
     return;
 }
@@ -104,8 +104,8 @@ void simulation_run(
 //! \param[in] timer_function_priority: the priority level wanted for the
 //! timer callback used by the application model.
 void simulation_timer_tic_callback(uint timer_count, uint unused){
-    log_info("Setting off the second run for "
-             "simulation_handle_run_pause_resume");
+    log_debug("Setting off the second run for "
+              "simulation_handle_run_pause_resume");
     simulation_handle_pause_resume();
 }
 
@@ -128,7 +128,9 @@ void simulation_handle_pause_resume(){
     has_received_runtime_update = false;
 
     // Store provenance data as required
-    _execute_provenance_storage();
+    if (!is_first_runtime_update){
+        _execute_provenance_storage();
+    }
 
     // Fall into a sync state to await further calls (sark level call)
     log_info("Falling into sync state");
@@ -184,29 +186,32 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             // free the message to stop overload
             spin1_msg_free(msg);
 
-        // change state to CPU_STATE_12
-        sark_cpu_state(CPU_STATE_12);
+            // change state to CPU_STATE_12
+            sark_cpu_state(CPU_STATE_12);
 
-        // update flag to state ive received a runtime
-        has_received_runtime_update = true;
+            // update flag to state ive received a runtime
+            has_received_runtime_update = true;
+            break;
 
         case SDP_SWITCH_STATE:
 
+            log_info("Switching to state %d", msg->arg1);
             // change the state of the cpu into what's requested from the host
             sark_cpu_state(msg->arg1);
 
             // free the message to stop overload
             spin1_msg_free(msg);
             break;
-        case PROVENANCE_DATA_GATHERING:
 
+        case PROVENANCE_DATA_GATHERING:
+            log_info("Forced provenance gathering");
             // force provenance to be executed and then exit
             _execute_provenance_storage();
             rt_error(RTE_API);
             break;
 
         default:
-
+            // should never get here
             log_error("received packet with unknown command code %d",
                       msg->cmd_rc);
             spin1_msg_free(msg);
