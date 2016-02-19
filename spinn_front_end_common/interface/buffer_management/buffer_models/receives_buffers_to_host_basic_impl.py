@@ -15,7 +15,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
-    def __init__(self):
+    def __init__(self, extra_static_sdram_requirement):
         """
         :return: None
         :rtype: None
@@ -23,6 +23,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffering_output = False
         self._buffering_ip_address = None
         self._buffering_port = None
+        self._extra_static_sdram_requirement = extra_static_sdram_requirement
 
     def buffering_output(self):
         """ True if the output buffering mechanism is activated
@@ -33,7 +34,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """
         return self._buffering_output
 
-    def set_buffering_output(
+    def activate_buffering_output(
             self, buffering_ip_address, buffering_port, board_address=None,
             notification_tag=None):
         """ Activates the output buffering mechanism
@@ -150,3 +151,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
 
     def is_receives_buffers_to_host(self):
         return True
+
+    def extra_static_sdram_requirement(self):
+        return self._extra_static_sdram_requirement

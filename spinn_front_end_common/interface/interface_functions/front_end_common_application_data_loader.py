@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonPartitionableGraphApplicationLoader(object):
+class FrontEndCommonApplicationDataLoader(object):
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
@@ -22,8 +22,6 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
             logger.debug(
                 "loading application data for vertex {}".format(label))
             key = (x, y, p, label)
-            start_address = \
-                processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
             memory_used = \

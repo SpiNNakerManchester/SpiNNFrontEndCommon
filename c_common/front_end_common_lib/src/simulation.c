@@ -20,6 +20,16 @@ static prov_callback_t stored_provenance_function = NULL;
 //! the region id for storing provenance data from the chip
 static uint32_t stored_provenance_data_region_id = NULL;
 
+//! the pointer to the users timer tic callback
+static callback_t users_timer_callback;
+//! the user timer tic priority
+static int user_timer_tic_priority;
+
+//! flag to state that code has received a runtime update.
+static bool has_received_runtime_update = false;
+//! flag to state that the first runtime update.
+static bool is_first_runtime_update = true;
+
 //! the port used by the host machine for setting up the sdp port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
@@ -31,7 +41,7 @@ static bool exited = false;
 //!        identifier for the model calling this method and also interprets the
 //!        timer period and runtime for the model.
 //! \param[in] address The memory address to start reading the parameters from
-//! \param[in] expected_app_magic_number The application's magic number thats
+//! \param[in] expected_app_magic_number The application's magic number that's
 //!            requesting timing details from this memory address.
 //! \param[out] timer_period A pointer for storing the timer period once read
 //!             from the memory region
@@ -57,14 +67,14 @@ bool simulation_read_timing_details(
 
     *timer_period = address[SIMULATION_TIMER_PERIOD];
     *infinite_run = address[INFINITE_RUN];
-    *n_simulation_ticks = address[N_SIMULATION_TICS];
+
     sdp_exit_run_command_port = address[SDP_EXIT_RUNTIME_COMMAND_PORT];
     return true;
 }
 
-//! \brief General method to encapsulate the setting off of any executable.
-//!        Just calls the spin1api start command.
-void simulation_run() {
+
+void simulation_run(
+        callback_t timer_function, int timer_function_priority){
     // check that the top level code has registered a provenance region id
     if (stored_provenance_data_region_id == NULL){
         log_error(
@@ -72,9 +82,31 @@ void simulation_run() {
             " the simulation_register_provenance_function_call() function");
         rt_error(RTE_API);
     }
-    else{
-        spin1_start(SYNC_WAIT);
-    }
+    // Store end users timer tic callbacks to be used once runtime stuff been
+    // set up for the first time.
+    users_timer_callback = timer_function;
+    user_timer_tic_priority = timer_function_priority;
+
+    // turn off any timer tic callbacks, as we're replacing them for the moment
+    spin1_callback_off(TIMER_TICK);
+    // Set off simulation runtime callback
+    spin1_callback_on(TIMER_TICK, simulation_timer_tic_callback, 1);
+    // go into sark start
+    spin1_start(SYNC_WAIT);
+    // return from running
+    return;
+}
+
+//! \brief timer callback to support updating runtime via sdp message during
+//! first run
+//! \param[in] timer_function: The callback function used for the
+//!            timer_callback interrupt registration
+//! \param[in] timer_function_priority: the priority level wanted for the
+//! timer callback used by the application model.
+void simulation_timer_tic_callback(uint timer_count, uint unused){
+    log_info("Setting off the second run for "
+             "simulation_handle_run_pause_resume");
+    simulation_handle_pause_resume();
 }
 
 //! \brief helper private method for running provenance data storage
@@ -89,11 +121,11 @@ void _execute_provenance_storage(){
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
-void simulation_handle_pause_resume(
-        callback_t timer_function, int timer_function_priority){
-
+void simulation_handle_pause_resume(){
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
+    // reset the has received runtime flag, for the next run
+    has_received_runtime_update = false;
 
     // Store provenance data as required
     _execute_provenance_storage();
@@ -107,8 +139,18 @@ void simulation_handle_pause_resume(
         log_info("exited");
     }
     else{
-        log_info("resuming");
-        spin1_callback_on(TIMER_TICK, timer_function, timer_function_priority);
+        if (has_received_runtime_update & is_first_runtime_update){
+            log_info("starting");
+            is_first_runtime_update = false;
+        }else if (has_received_runtime_update & !is_first_runtime_update){
+            log_info("resuming");
+        }else if (!has_received_runtime_update){
+            log_error("Been asked to run again even though I've not had my"
+                      " runtime updated. Therefore exiting in error state");
+            rt_error(RTE_API);
+        }
+        spin1_callback_on(TIMER_TICK, users_timer_callback,
+                          user_timer_tic_priority);
     }
 }
 
@@ -142,9 +184,11 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             // free the message to stop overload
             spin1_msg_free(msg);
 
-            // change state to CPU_STATE_12
-            sark_cpu_state(CPU_STATE_12);
-            break;
+        // change state to CPU_STATE_12
+        sark_cpu_state(CPU_STATE_12);
+
+        // update flag to state ive received a runtime
+        has_received_runtime_update = true;
 
         case SDP_SWITCH_STATE:
 

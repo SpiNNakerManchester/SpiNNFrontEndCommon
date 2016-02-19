@@ -980,7 +980,9 @@ void timer_callback(uint unused0, uint unused1) {
         address_t address = data_specification_get_data_address();
         setup_buffer_region(data_specification_get_region(BUFFER_REGION,
                                                           address));
-        simulation_handle_pause_resume(timer_callback, TIMER);
+
+        // fall into pause and resume states
+        simulation_handle_pause_resume();
 
         // set the code to start sending packet requests again
         send_packet_reqs = true;
@@ -1047,9 +1049,8 @@ void c_main(void) {
     spin1_sdp_callback_on(
         BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
-    log_info("Starting");
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run();
+    simulation_run(timer_callback, TIMER);
 }

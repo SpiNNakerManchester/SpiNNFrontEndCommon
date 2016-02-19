@@ -1,7 +1,7 @@
 <algorithms>
-    <algorithm name="FrontEndCommonPartitionableGraphApplicationDataLoader">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_application_data_loader</python_module>
-        <python_class>FrontEndCommonPartitionableGraphApplicationLoader</python_class>
+    <algorithm name="FrontEndCommonApplicationDataLoader">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_data_loader</python_module>
+        <python_class>FrontEndCommonApplicationDataLoader</python_class>
         <required_inputs>
             <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
@@ -87,9 +87,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommomLoadExecutableImages">
+    <algorithm name="FrontEndCommonLoadExecutableImages">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_load_executable_images</python_module>
-        <python_class>FrontEndCommomLoadExecutableImages</python_class>
+        <python_class>FrontEndCommonLoadExecutableImages</python_class>
         <required_inputs>
             <parameter>
                 <param_name>executable_targets</param_name>
@@ -171,7 +171,13 @@
                 <param_name>boot_port_num</param_name>
                 <param_type>BootPortNum</param_type>
             </parameter>
+            <parameter>
+                <param_name>max_sdram_size</param_name>
+                <param_type>MaxSDRAMSize</param_type>
+            </parameter>
         </required_inputs>
+        <optional_inputs>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>machine</param_name>
@@ -838,11 +844,226 @@
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
+            <parameter>
+                <param_name>loaded_binaries_token</param_name>
+                <param_type>LoadBinariesToken</param_type>
+            </parameter>
         </required_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonAutoPauseAndResumer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resumer</python_module>
+        <python_class>FrontEndCommonAutoPauseAndResumer</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>routing_infos</param_name>
+                <param_type>MemoryRoutingInfos</param_type>
+            </parameter>
+            <parameter>
+                <param_name>verify</param_name>
+                <param_type>WriteCheckerFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>algorithms_to_run_between_runs</param_name>
+                <param_type>ExtraAlgorithms</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_inputs</param_name>
+                <param_type>ExtraInputs</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_xmls</param_name>
+                <param_type>ExtraXMLS</param_type>
+            </parameter>
+            <parameter>
+                <param_name>tags</param_name>
+                <param_type>MemoryTags</param_type>
+            </parameter>
+            <parameter>
+                <param_name>reports_states</param_name>
+                <param_type>ReportStates</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_data_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>algorithm_for_dsg_generation</param_name>
+                <param_type>DSGeneratorAlgorithm</param_type>
+            </parameter>
+            <parameter>
+                <param_name>algorithm_for_dse_execution</param_name>
+                <param_type>DSExecutorAlgorithm</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>wait_on_confirmation</param_name>
+                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>send_start_notification</param_name>
+                <param_type>SendStartNotifications</param_type>
+            </parameter>
+            <parameter>
+                <param_name>notification_interface</param_name>
+                <param_type>NotificationInterface</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>txrx</param_name>
+                <param_type>MemoryTransciever</param_type>
+            </parameter>
+            <parameter>
+                <param_name>runtime</param_name>
+                <param_type>RunTime</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_scale_factor</param_name>
+                <param_type>TimeScaleFactor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>loaded_reverse_iptags_token</param_name>
+                <param_type>LoadedReverseIPTagsToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>loaded_iptags_token</param_name>
+                <param_type>LoadedIPTagsToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>loaded_routing_tables_token</param_name>
+                <param_type>LoadedRoutingTablesToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>no_sync_changes</param_name>
+                <param_type>NoSyncChanges</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_ran_before</param_name>
+                <param_type>HasRanBefore</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_reset_before</param_name>
+                <param_type>HasResetBefore</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_graph_changed</param_name>
+                <param_type>ApplicationGraphChanged</param_type>
+            </parameter>
+            <parameter>
+                <param_name>steps</param_name>
+                <param_type>Steps</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>steps</param_name>
+                <param_type>Steps</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>steps</param_name>
+                <param_type>Steps</param_type>
+            </parameter>
+            <parameter>
+                <param_name>RanToken</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>no_sync_changes</param_name>
+                <param_type>NoSyncChanges</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>buffer_manager</param_name>
+                <param_type>BufferManager</param_type>
+            </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placement_to_app_data_files</param_name>
+                <param_type>PlacementToAppDataFilePaths</param_type>
+            </parameter>
+            <parameter>
+                <param_name>LoadedApplicationDataToken</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>LoadBinariesToken</param_name>
+                <param_type>LoadBinariesToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>total_time</param_name>
+                <param_type>TotalCommunitiveRunTime</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonMachineTimeStepUpdater">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resumer</python_module>
+        <python_class>FrontEndCommonMachineTimeStepUpdater</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>iteration</param_name>
+                <param_type>Iteration</param_type>
+            </parameter>
+            <parameter>
+                <param_name>steps</param_name>
+                <param_type>Steps</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>total_run_time_executed_so_far</param_name>
+                <param_type>TotalCommunitiveRunTime</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>runtime_in_machine_time_steps</param_name>
+                <param_type>TotalCommunitiveRunTime</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
