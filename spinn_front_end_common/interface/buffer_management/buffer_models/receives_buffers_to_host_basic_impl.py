@@ -90,18 +90,17 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             raise exceptions.ConfigurationException(
                 "The number of buffer regions must match the number of"
                 " regions sizes")
-        if self._buffering_output:
-            for (buffer_region, region_size) in zip(
-                    buffer_regions, region_sizes):
-                if region_size > 0:
-                    spec.reserve_memory_region(
-                        region=buffer_region, size=region_size,
-                        label="RECORDING_REGION_{}".format(buffer_region),
-                        empty=True)
-            spec.reserve_memory_region(
-                region=state_region,
-                size=EndBufferingState.size_of_region(len(buffer_regions)),
-                label='BUFFERED_OUT_STATE', empty=True)
+        for (buffer_region, region_size) in zip(
+                buffer_regions, region_sizes):
+            if region_size > 0:
+                spec.reserve_memory_region(
+                    region=buffer_region, size=region_size,
+                    label="RECORDING_REGION_{}".format(buffer_region),
+                    empty=True)
+        spec.reserve_memory_region(
+            region=state_region,
+            size=EndBufferingState.size_of_region(len(buffer_regions)),
+            label='BUFFERED_OUT_STATE', empty=True)
 
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented
