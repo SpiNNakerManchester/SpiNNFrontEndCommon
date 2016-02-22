@@ -13,9 +13,9 @@ from pacman.utilities.utility_objs.progress_bar import ProgressBar
 import struct
 
 
-class FrontEndCommonApplicationExiter(object):
+class FrontEndCommonApplicationFinisher(object):
     """
-    FrontEndCommonApplicationExiter
+    FrontEndCommonApplicationFinisher
     """
 
     def __call__(self, app_id, txrx, executable_targets, no_sync_changes,

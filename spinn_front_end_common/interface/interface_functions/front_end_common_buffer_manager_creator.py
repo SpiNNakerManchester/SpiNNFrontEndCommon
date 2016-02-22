@@ -9,7 +9,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
     import AbstractReceiveBuffersToHost
 
 
-class FrontEndCommonBufferManagerCreater(object):
+class FrontEndCommonBufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx, reports_states, app_data_folder):

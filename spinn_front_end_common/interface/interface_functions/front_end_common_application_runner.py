@@ -20,7 +20,8 @@ class FrontEndCommonApplicationRunner(object):
                  executable_targets, app_id, txrx, runtime, time_scale_factor,
                  loaded_reverse_iptags_token, loaded_iptags_token,
                  loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token, no_sync_changes, time_theshold):
+                 loaded_application_data_token, no_sync_changes,
+                 time_threshold):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
@@ -56,7 +57,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                no_sync_changes, time_theshold)
+                no_sync_changes, time_threshold)
 
             # when it falls out of the running, it'll be in a next sync state,
             # thus update needed
@@ -168,14 +169,14 @@ class FrontEndCommonApplicationRunner(object):
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling, txrx,
-            no_sync_state_changes, time_theshold):
+            no_sync_state_changes, time_threshold):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param time_theshold:
+        :param time_threshold:
         :param txrx:
         :param no_sync_state_changes: the number of runs been done between\
                 setup and end
@@ -194,7 +195,7 @@ class FrontEndCommonApplicationRunner(object):
         start_time = time.time()
         while (processors_not_finished != 0 and
                 self._in_time_check(start_time,
-                                    min(runtime/1000,  time_theshold))):
+                                    min(runtime/1000,  time_threshold))):
             processors_rte = txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_rte > 0:
@@ -242,15 +243,15 @@ class FrontEndCommonApplicationRunner(object):
         logger.info("Application has run to completion")
 
     @staticmethod
-    def _in_time_check(start_time, time_theshold):
+    def _in_time_check(start_time, time_threshold):
         """
         checks if the time has gone above a threshold.
-        :param time_theshold: how much time needs to lapse before stating
+        :param time_threshold: how much time needs to lapse before stating
         its failed the time check
         :return:  bool
         """
         current_time = time.time()
-        if current_time - start_time > time_theshold:
+        if current_time - start_time > time_threshold:
             return False
         else:
             return True

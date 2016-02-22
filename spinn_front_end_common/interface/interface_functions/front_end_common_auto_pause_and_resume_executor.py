@@ -26,9 +26,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonAutoPauseAndResumer(object):
+class FrontEndCommonAutoPauseAndResumeExecutor(object):
     """
-    FrontEndCommonAutoPauseAndResumer: system that automatically allocate
+    FrontEndCommonAutoPauseAndResumeExecutor: system that automatically allocate
     bandwidth resources and deduces what pause and resume functions are needed,
     and executes them accordingly
     """
@@ -43,7 +43,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             algorithm_for_dsg_generation, algorithm_for_dse_execution,
             machine_time_step, placements, tags, reports_states, routing_infos,
             has_ran_before, has_reset_before, application_graph_changed,
-            time_theshold, steps=None):
+            time_threshold, steps=None):
 
         if steps is None:
             steps = self._deduce_number_of_iterations(
@@ -73,7 +73,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
                 algorithm_for_dse_execution, tags, reports_states,
                 app_data_folder, verify, routing_infos, placements,
                 graph_mapper, partitioned_graph, machine, has_ran_before,
-                has_reset_before, application_graph_changed, time_theshold)
+                has_reset_before, application_graph_changed, time_threshold)
 
         no_sync_changes, executable_targets, dsg_targets, buffer_manager, \
             processor_to_app_data_base_address, \
@@ -397,7 +397,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             reports_states, app_data_folder, verify, routing_infos,
             placements, graph_mapper, partitioned_graph, machine,
             has_ran_before, has_reset_before, application_graph_changed,
-            time_theshold):
+            time_threshold):
         """
 
         :param wait_on_confirmation:
@@ -424,7 +424,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
         :param graph_mapper:
         :param partitioned_graph:
         :param machine:
-        :param time_theshold:
+        :param time_threshold:
         :return:
         """
 
@@ -446,7 +446,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             first_algorithms.append("FrontEndCommonRuntimeUpdater")
             optimal_algorithms.append("FrontEndCommonApplicationDataLoader")
             first_algorithms.append("FrontEndCommonLoadExecutableImages")
-            first_algorithms.append("FrontEndCommonBufferManagerCreater")
+            first_algorithms.append("FrontEndCommonBufferManagerCreator")
 
         # handle outputs
         # TODO is this all i need here????
@@ -515,8 +515,8 @@ class FrontEndCommonAutoPauseAndResumer(object):
             'type': "MemoryExtendedMachine",
             'value': machine})
         inputs.append({
-            'type': "TimeTheshold",
-            'value': time_theshold})
+            'type': "TimeThreshold",
+            'value': time_threshold})
 
         return inputs, first_algorithms, optimal_algorithms, outputs, xmls
 
@@ -594,7 +594,7 @@ class FrontEndCommonAutoPauseAndResumer(object):
             pacman_executor.get_item("BufferManager"), \
             pacman_executor.get_item("ProcessorToAppDataBaseAddress"), \
             pacman_executor.get_item("PlacementToAppDataFilePaths"), \
-            pacman_executor.get_item("TotalCommunitiveRunTime")
+            pacman_executor.get_item("TotalAccumulativeRunTime")
 
     def _update_inputs(self, pacman_executor, inputs, steps, iteration):
         """
