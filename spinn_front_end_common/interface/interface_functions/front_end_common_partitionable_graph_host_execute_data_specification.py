@@ -148,14 +148,14 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
                 # allocate memory where the app data is going to be written
                 # this raises an exception in case there is not enough
-                # sdram to allocate
+                # SDRAM to allocate
                 start_address = transceiver.malloc_sdram(
-                        x, y, bytes_used_by_spec, app_id)
+                    x, y, bytes_used_by_spec, app_id)
 
                 # the base address address needs to be passed to the DSE to
                 # generate the pointer table with absolute addresses
                 host_based_data_spec_executor.write_dse_output_file(
-                        start_address)
+                    start_address)
 
                 # close the application data file writer
                 data_writer.close()
@@ -173,7 +173,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
                 start_address_encoded = \
                     buffer(struct.pack("<I", start_address))
                 transceiver.write_memory(
-                        x, y, user_0_address, start_address_encoded)
+                    x, y, user_0_address, start_address_encoded)
 
                 # write information for the memory map report
                 processor_to_app_data_base_address[

@@ -1,6 +1,3 @@
-"""
-
-"""
 
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
@@ -20,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommomLoadExecutableImages(object):
-    """
-    """
 
     def __call__(self, executable_targets, app_id, transceiver,
                  loaded_application_data_token):
@@ -56,7 +51,7 @@ class FrontEndCommomLoadExecutableImages(object):
                     " possible that the binary may be larger than what is"
                     " supported by spinnaker currently. Please reduce the"
                     " binary size if it starts to behave strangely, or goes"
-                    " into the wdog state before starting.".format(
+                    " into the WDOG state before starting.".format(
                         executable_target_key))
                 if size > constants.MAX_POSSIBLE_BINARY_SIZE:
                     raise exceptions.ConfigurationException(

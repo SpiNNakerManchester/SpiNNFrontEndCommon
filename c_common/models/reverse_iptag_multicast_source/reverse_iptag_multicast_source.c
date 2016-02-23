@@ -728,8 +728,11 @@ void fetch_and_process_packet() {
     }
 
     log_debug("dealing with SDRAM is set to %d", msg_from_sdram_in_use);
-    log_debug("has_eieio_packet_in_buffer set to %d", is_eieio_packet_in_buffer());
-    while ((!msg_from_sdram_in_use) && is_eieio_packet_in_buffer() && last_len > 0) {
+    log_debug(
+        "has_eieio_packet_in_buffer set to %d",
+        is_eieio_packet_in_buffer());
+    while ((!msg_from_sdram_in_use) && is_eieio_packet_in_buffer() &&
+            last_len > 0) {
 
         // If there is padding, move on 2 bytes
         uint16_t next_header = (uint16_t) *read_pointer;
@@ -743,8 +746,8 @@ void fetch_and_process_packet() {
             uint8_t *dst_ptr = (uint8_t *) msg_from_sdram;
             uint32_t len = calculate_eieio_packet_size(
                 (eieio_msg_t) read_pointer);
-	    
-	        last_len = len;
+
+            last_len = len;
             if (len > MAX_PACKET_SIZE) {
                 log_error("Packet from SDRAM of %u bytes is too big!", len);
                 rt_error(RTE_SWERR);

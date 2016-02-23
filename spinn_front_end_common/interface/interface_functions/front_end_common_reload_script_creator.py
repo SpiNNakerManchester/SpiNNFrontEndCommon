@@ -14,9 +14,7 @@ class FrontEndCommonReloadScriptCreator(object):
             wait_on_confirmation, buffer_manager, scamp_connection_data,
             boot_port_num, verify, database_file_path, send_start_notification,
             reset_machine_on_start_up, processor_to_app_data_base_address=None,
-            placement_to_app_data_files=None, processor_to_dsg_files=None):
-
-            # TODO: Why the processor_to_dsg_files parameter is not used?
+            placement_to_app_data_files=None):
         reload_script = ReloadScript(
             app_data_folder, hostname, board_version, bmp_details,
             downed_chips, downed_cores, number_of_boards, height, width,

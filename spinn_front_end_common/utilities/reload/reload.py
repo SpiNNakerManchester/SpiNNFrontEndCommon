@@ -34,7 +34,7 @@ class Reload(object):
 
         # get the list of algorithms expected to be used
         pacman_algorithms = self.create_list_of_algorithms(
-                loading, running, dsg_targets)
+            loading, running, dsg_targets)
 
         # run the pacman executor
         helpful_functions.do_mapping(
@@ -131,7 +131,8 @@ class Reload(object):
             algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
             algorithms.append("MallocBasedNoGraphChipIDAllocator")
             if dsg_targets is not None:
-                algorithms.append("FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")
+                algorithms.append(
+                    "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
 
         if running:
             algorithms.append("FrontEndCommonApplicationExiter")

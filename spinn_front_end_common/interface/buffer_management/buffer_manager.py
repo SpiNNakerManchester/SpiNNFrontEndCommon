@@ -1,9 +1,6 @@
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
-# dsg imports
-from data_specification import utility_calls as dsg_utilities
-
 # spinnman imports
 from spinnman import constants
 from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
@@ -427,20 +424,6 @@ class BufferManager(object):
             # logger.debug("Sending message with sequence {}".format(
             #     message.sequence_no))
             self._send_request(vertex, message)
-
-#    def _locate_region_address(self, region, vertex):
-#        """ Get the address of a region for a vertex
-#
-#        :param region: the region to locate the base address of
-#        :type region: int
-#        :param vertex: the vertex to load a buffer for
-#        :type vertex:\
-#                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
-#        :return: None
-#        """
-#        region_address = locate_memory_region_for_vertex(
-#            vertex, region, self._transceiver)
-#        return region_address
 
     def _send_request(self, vertex, message):
         """ Sends a request

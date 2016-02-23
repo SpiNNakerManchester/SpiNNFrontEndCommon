@@ -1,6 +1,3 @@
-"""
-ReportState
-"""
 
 # pacman imports
 from pacman.utilities.utility_objs.report_states import ReportState as \

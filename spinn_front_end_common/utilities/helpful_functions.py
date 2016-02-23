@@ -46,7 +46,7 @@ def read_data(x, y, address, length, data_format, transceiver):
 
     :param x: chip x
     :param y: chip y
-    :param address: base address of the sdram chip to read
+    :param address: base address of the SDRAM chip to read
     :param length: length to read
     :param data_format: the format to read memory
     :param transceiver: the spinnman interface

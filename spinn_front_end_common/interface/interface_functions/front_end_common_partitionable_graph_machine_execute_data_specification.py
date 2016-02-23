@@ -108,11 +108,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                     x, y, data_spec_file_size, dse_app_id)
 
                 dse_data_struct_data = struct.pack(
-                        "<IIII",
-                        base_address,
-                        data_spec_file_size,
-                        app_id,
-                        mem_map_report)
+                    "<IIII", base_address, data_spec_file_size, app_id,
+                    mem_map_report)
 
                 transceiver.write_memory(
                     x, y, dse_data_struct_addr, dse_data_struct_data,
@@ -146,8 +143,9 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         processors_exited = transceiver.get_core_state_count(
             dse_app_id, CPUState.FINISHED)
         while processors_exited < number_of_cores_used:
-            logger.info("Data spec executor on chip not completed, waiting "
-                        "1 sec. for it to complete")
+            logger.info(
+                "Data spec executor on chip not completed, waiting "
+                "1 second for it to complete")
             time.sleep(1)
             processors_exited = transceiver.get_core_state_count(
                 dse_app_id, CPUState.FINISHED)
@@ -155,9 +153,10 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         transceiver.stop_application(dse_app_id)
         logger.info("On-chip data spec executor completed")
 
-        return {"LoadedApplicationDataToken": True,
-                "DSEOnHost": False,
-                "DSEOnChip": True}
+        return {
+            "LoadedApplicationDataToken": True,
+            "DSEOnHost": False,
+            "DSEOnChip": True}
 
     def _load_executable_images(self, transceiver, executable_targets, app_id,
                                 app_data_folder):
@@ -165,9 +164,6 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             everywhere and then send a start request to the cores that \
             actually use it
         """
-        #if self._reports_states.transciever_report:
-        #    reports.re_load_script_load_executables_init(
-        #        app_data_folder, executable_targets)
 
         progress_bar = ProgressBar(len(executable_targets),
                                    "Loading executables onto the machine")
@@ -188,7 +184,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                     " possible that the binary may be larger than what is"
                     " supported by spinnaker currently. Please reduce the"
                     " binary size if it starts to behave strangely, or goes"
-                    " into the wdog state before starting.".format(
+                    " into the WDOG state before starting.".format(
                         executable_target_key))
                 if size > constants.MAX_POSSIBLE_BINARY_SIZE:
                     raise exceptions.ConfigurationException(
@@ -201,9 +197,5 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             transceiver.execute_flood(core_subset, file_reader, app_id,
                                       size)
 
-#            if self._reports_states.transciever_report:
-#                reports.re_load_script_load_executables_individual(
-#                    app_data_folder, executable_target_key,
-#                    app_id, size)
             progress_bar.update()
         progress_bar.end()

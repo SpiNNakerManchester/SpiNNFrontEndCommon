@@ -22,8 +22,8 @@ class FrontEndCommonMemoryMapOnHostReport(object):
 
         if dse_on_host is False or dse_on_chip is True:
             raise SpinnFrontEndException(
-                    "This routine is only for on host data specification "
-                    "executor. Something somewhere went terribly wrong")
+                "This routine is only for on host data specification "
+                "executor. Something somewhere went terribly wrong")
 
         file_name = os.path.join(report_default_directory,
                                  "memory_map_from_processor_to_address_space")

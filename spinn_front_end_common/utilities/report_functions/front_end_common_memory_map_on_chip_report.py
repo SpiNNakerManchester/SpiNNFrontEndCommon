@@ -26,12 +26,11 @@ class FrontEndCommonMemoryMapOnChipReport(object):
 
         if dse_on_host is True or dse_on_chip is False:
             raise SpinnFrontEndException(
-                    "This routine is only for on host data specification "
-                    "executor. Something somewhere went terribly wrong")
+                "This routine is only for on host data specification "
+                "executor. Something somewhere went terribly wrong")
 
         directory_name = os.path.join(
-                    report_default_directory,
-                    MEM_MAP_SUBDIR_NAME)
+            report_default_directory, MEM_MAP_SUBDIR_NAME)
         if not os.path.exists(directory_name):
             os.makedirs(directory_name)
 
@@ -41,9 +40,9 @@ class FrontEndCommonMemoryMapOnChipReport(object):
             x, y, p = placement.x, placement.y, placement.p
 
             file_name = os.path.join(
-                    directory_name,
-                    "memory_map_from_processor"
-                    "_{0:d}_{1:d}_{2:d}.txt".format(x, y, p))
+                directory_name,
+                "memory_map_from_processor"
+                "_{0:d}_{1:d}_{2:d}.txt".format(x, y, p))
             output = None
             try:
                 output = open(file_name, "w")
@@ -60,18 +59,18 @@ class FrontEndCommonMemoryMapOnChipReport(object):
                 x, y, report_data_address_pointer, 4))
 
             report_data_address = struct.unpack_from(
-                    "<I", report_data_address_encoded)[0]
+                "<I", report_data_address_encoded)[0]
 
             report_bytes = \
                 _MemoryChannelState.STRUCT_SIZE * constants.MAX_MEM_REGIONS
 
             mem_map_report_data = buffer(transceiver.read_memory(
-                    x, y, report_data_address, report_bytes))
+                x, y, report_data_address, report_bytes))
 
             offset = 0
             for i in xrange(constants.MAX_MEM_REGIONS):
                 region = _MemoryChannelState.from_bytestring(
-                        mem_map_report_data, offset)
+                    mem_map_report_data, offset)
                 offset += _MemoryChannelState.STRUCT_SIZE
 
                 if region.start_address == 0:
@@ -83,12 +82,12 @@ class FrontEndCommonMemoryMapOnChipReport(object):
                         space_written = region.written
 
                     output.write(
-                        "Region {0:d}:\n"
-                        "\tstart address: 0x{1:x}\n"
-                        "\tsize: {2:d}\n"
-                        "\tunfilled: {3:s}\n"
-                        "\twrite pointer: 0x{4:x}\n"
-                        "\tsize currently written(based on the "
+                        "Region {0:d}:\n\t"
+                        "start address: 0x{1:x}\n\t"
+                        "size: {2:d}\n\t"
+                        "unfilled: {3:s}\n\t"
+                        "write pointer: 0x{4:x}\n\t"
+                        "size currently written(based on the "
                         "write pointer): {5:d}\n\n".format(
                             i, region.start_address, region.size,
                             region.unfilled_tf, region.write_pointer,
@@ -142,12 +141,12 @@ class _MemoryChannelState(object):
     @staticmethod
     def from_bytestring(data, offset=0):
         start_address = struct.unpack_from("<I", data, offset)[0]
-        size = struct.unpack_from("<I", data, offset+4)[0]
-        unfilled = struct.unpack_from("<I", data, offset+8)[0]
-        write_pointer = struct.unpack_from("<I", data, offset+12)[0]
+        size = struct.unpack_from("<I", data, offset + 4)[0]
+        unfilled = struct.unpack_from("<I", data, offset + 8)[0]
+        write_pointer = struct.unpack_from("<I", data, offset + 12)[0]
 
         state = _MemoryChannelState(
-                start_address, size, unfilled, write_pointer)
+            start_address, size, unfilled, write_pointer)
         return state
 
     def bytestring(self):

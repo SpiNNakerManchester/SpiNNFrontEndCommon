@@ -440,7 +440,6 @@ bool recording_initialize(
         uint32_t *recording_flags) {
     uint32_t i;
 
-    log_info("Recording initialise: recording %d elements", n_regions);
     // if already initialised, don't re-initialise
     if (!n_recording_regions && n_regions <= 0) {
         return false;
