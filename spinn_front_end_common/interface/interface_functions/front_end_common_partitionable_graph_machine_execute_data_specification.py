@@ -70,8 +70,9 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         mem_map_report = report_states.write_memory_map_report
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(len(list(placements.placements)),
-                                   "Loading data specifications on chip")
+        progress_bar = ProgressBar(
+            len(list(placements.placements)),
+            "Loading data specifications")
 
         number_of_cores_used = 0
         core_subset = CoreSubsets()
