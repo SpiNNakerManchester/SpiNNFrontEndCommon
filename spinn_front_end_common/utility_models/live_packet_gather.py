@@ -286,8 +286,7 @@ class LivePacketGather(
                 placement.x, placement.y,
                 provanence_data_region_base_address_offset, 4))
         provanence_data_region_base_address = \
-            struct.unpack("I", provanence_data_region_base_address_buf)[0]
-        provanence_data_region_base_address += app_data_base_address
+            struct.unpack("<I", provanence_data_region_base_address_buf)[0]
 
         # read in the provenance data
         provanence_data_region_contents_buff = \

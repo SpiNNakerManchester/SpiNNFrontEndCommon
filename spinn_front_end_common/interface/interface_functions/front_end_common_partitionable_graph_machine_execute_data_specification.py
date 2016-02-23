@@ -16,12 +16,12 @@ from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import \
     AbstractDataSpecableVertex
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
 
 import os
 import logging
 import struct
 import time
+from spinn_front_end_common.utilities import helpful_functions
 
 logger = logging.getLogger(__name__)
 
@@ -69,22 +69,12 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         """
         mem_map_report = report_states.write_memory_map_report
 
-        # check which cores are in use
-        number_of_cores_used = 0
-        core_subset = CoreSubsets()
-        for placement in placements.placements:
-            core_subset.add_processor(placement.x, placement.y, placement.p)
-            number_of_cores_used += 1
-
-        # read DSE exec name
-        executable_targets = {
-            os.path.dirname(spec_sender.__file__) +
-            '/data_specification_executor.aplx': core_subset}
-
         # create a progress bar for end users
         progress_bar = ProgressBar(len(list(placements.placements)),
                                    "Loading data specifications on chip")
 
+        number_of_cores_used = 0
+        core_subset = CoreSubsets()
         for placement in placements.placements:
             associated_vertex = graph_mapper.get_vertex_from_subvertex(
                 placement.subvertex)
@@ -93,6 +83,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
                 x, y, p = placement.x, placement.y, placement.p
+                core_subset.add_processor(x, y, p)
                 label = associated_vertex.label
 
                 dse_data_struct_addr = transceiver.malloc_sdram(
@@ -133,69 +124,43 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                 transceiver.write_memory(
                     x, y, user_0_address, dse_data_struct_addr, 4)
 
-                progress_bar.update()
+            progress_bar.update()
         progress_bar.end()
 
-        self._load_executable_images(
-            transceiver, executable_targets, dse_app_id,
-            app_data_folder=application_data_runtime_folder)
+        # Execute the DSE on all the cores
+        logger.info("Loading the Data Specification Executer")
+        dse_exec = os.path.join(
+            os.path.dirname(spec_sender.__file__),
+            'data_specification_executor.aplx')
+        file_reader = FileDataReader(dse_exec)
+        size = os.stat(dse_exec).st_size
+        transceiver.execute_flood(
+            core_subset, file_reader, app_id, size)
 
+        logger.info(
+            "Waiting for On-chip Data Specification Executer to complete")
         processors_exited = transceiver.get_core_state_count(
             dse_app_id, CPUState.FINISHED)
         while processors_exited < number_of_cores_used:
-            logger.info(
-                "Data spec executor on chip not completed, waiting "
-                "1 second for it to complete")
+            processors_errored = transceiver.get_core_state_count(
+                dse_app_id, CPUState.RUN_TIME_EXCEPTION)
+            if processors_errored > 0:
+                error_cores = helpful_functions.get_cores_in_state(
+                    core_subset, CPUState, transceiver)
+                if len(error_cores) > 0:
+                    error = helpful_functions.get_core_status_string(
+                        error_cores)
+                    raise Exception(
+                        "Data Specification Execution has failed: {}".format(
+                            error))
             time.sleep(1)
             processors_exited = transceiver.get_core_state_count(
                 dse_app_id, CPUState.FINISHED)
 
         transceiver.stop_application(dse_app_id)
-        logger.info("On-chip data spec executor completed")
+        logger.info("On-chip Data Specification Executer completed")
 
         return {
             "LoadedApplicationDataToken": True,
             "DSEOnHost": False,
             "DSEOnChip": True}
-
-    def _load_executable_images(self, transceiver, executable_targets, app_id,
-                                app_data_folder):
-        """ Go through the executable targets and load each binary to \
-            everywhere and then send a start request to the cores that \
-            actually use it
-        """
-
-        progress_bar = ProgressBar(len(executable_targets),
-                                   "Loading executables onto the machine")
-        for executable_target_key in executable_targets:
-            file_reader = FileDataReader(executable_target_key)
-            core_subset = executable_targets[executable_target_key]
-
-            statinfo = os.stat(executable_target_key)
-            size = statinfo.st_size
-
-            # TODO there is a need to parse the binary and see if its
-            # ITCM and DTCM requirements are within acceptable params for
-            # operating on spinnaker. Currently there are just a few safety
-            # checks which may not be accurate enough.
-            if size > constants.MAX_SAFE_BINARY_SIZE:
-                logger.warn(
-                    "The size of {} is large enough that its"
-                    " possible that the binary may be larger than what is"
-                    " supported by spinnaker currently. Please reduce the"
-                    " binary size if it starts to behave strangely, or goes"
-                    " into the WDOG state before starting.".format(
-                        executable_target_key))
-                if size > constants.MAX_POSSIBLE_BINARY_SIZE:
-                    raise exceptions.ConfigurationException(
-                        "The size of the binary is too large and therefore"
-                        " will very likely cause a WDOG state. Until a more"
-                        " precise measurement of ITCM and DTCM can be produced"
-                        " this is deemed as an error state. Please reduce the"
-                        " size of your binary or circumvent this error check.")
-
-            transceiver.execute_flood(core_subset, file_reader, app_id,
-                                      size)
-
-            progress_bar.update()
-        progress_bar.end()
