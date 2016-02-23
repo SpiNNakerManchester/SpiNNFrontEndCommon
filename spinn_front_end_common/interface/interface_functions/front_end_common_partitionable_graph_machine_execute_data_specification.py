@@ -31,9 +31,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, hostname, placements, graph_mapper, report_default_directory,
-            report_states, runtime_application_data_folder, machine,
-            board_version, dsg_targets, transceiver, dse_app_id, app_id):
+            self, placements, graph_mapper, report_states, machine,
+            dsg_targets, transceiver, dse_app_id, app_id):
         """
 
         :param hostname:
@@ -45,18 +44,14 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :return:
         """
         data = self.spinnaker_based_data_specification_execution(
-            hostname, placements, graph_mapper, report_states,
-            runtime_application_data_folder, machine, board_version,
-            report_default_directory, dsg_targets, transceiver,
-            dse_app_id, app_id)
+            placements, graph_mapper, report_states, machine,
+            dsg_targets, transceiver, dse_app_id, app_id)
 
         return data
 
     def spinnaker_based_data_specification_execution(
-            self, hostname, placements, graph_mapper, report_states,
-            application_data_runtime_folder, machine, board_version,
-            report_default_directory, dsg_targets, transceiver,
-            dse_app_id, app_id):
+            self, placements, graph_mapper, report_states, machine,
+            dsg_targets, transceiver, dse_app_id, app_id):
         """
 
         :param hostname:

@@ -104,10 +104,6 @@
         <python_class>FrontEndCommonPartitionableGraphMachineExecuteDataSpecification</python_class>
         <required_inputs>
             <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
@@ -116,24 +112,12 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>report_default_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>report_states</param_name>
                 <param_type>ReportStates</param_type>
             </parameter>
             <parameter>
-                <param_name>runtime_application_data_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
-            </parameter>
-            <parameter>
-                <param_name>board_version</param_name>
-                <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
                 <param_name>dsg_targets</param_name>
@@ -153,10 +137,6 @@
             </parameter>
         </required_inputs>
         <produces_outputs>
-            <parameter>
-                <param_name>processor_to_app_data_base_address</param_name>
-                <param_type>ProcessorToAppDataBaseAddress</param_type>
-            </parameter>
             <parameter>
                 <param_name>LoadedApplicationDataToken</param_name>
                 <param_type>LoadedApplicationDataToken</param_type>
