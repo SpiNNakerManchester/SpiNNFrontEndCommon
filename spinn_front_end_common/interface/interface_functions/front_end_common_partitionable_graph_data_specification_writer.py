@@ -14,7 +14,7 @@ class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
             self, placements, graph_mapper, tags, executable_finder,
             partitioned_graph, partitionable_graph, routing_infos, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder):
+            app_data_runtime_folder, do_write=True):
         """ generates the dsg for the graph.
 
         :return:
@@ -37,7 +37,7 @@ class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
                 graph_mapper, tags, executable_finder, partitioned_graph,
                 partitionable_graph, routing_infos, hostname,
                 report_default_directory, write_text_specs,
-                app_data_runtime_folder)
+                app_data_runtime_folder, do_write)
 
             progress_bar.update()
 
@@ -52,25 +52,26 @@ class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
             dsg_targets, graph_mapper, tags, executable_finder,
             partitioned_graph, partitionable_graph, routing_infos, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder):
+            app_data_runtime_folder, do_write):
 
         # if the vertex can generate a DSG, call it
         if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
-            ip_tags = tags.get_ip_tags_for_vertex(
-                placement.subvertex)
-            reverse_ip_tags = tags.get_reverse_ip_tags_for_vertex(
-                placement.subvertex)
-            file_paths = associated_vertex.generate_data_spec(
-                placement.subvertex, placement, partitioned_graph,
-                partitionable_graph, routing_infos, hostname, graph_mapper,
-                report_default_directory, ip_tags, reverse_ip_tags,
-                write_text_specs, app_data_runtime_folder)
+            if do_write:
+                ip_tags = tags.get_ip_tags_for_vertex(
+                    placement.subvertex)
+                reverse_ip_tags = tags.get_reverse_ip_tags_for_vertex(
+                    placement.subvertex)
+                file_paths = associated_vertex.generate_data_spec(
+                    placement.subvertex, placement, partitioned_graph,
+                    partitionable_graph, routing_infos, hostname, graph_mapper,
+                    report_default_directory, ip_tags, reverse_ip_tags,
+                    write_text_specs, app_data_runtime_folder)
 
-            # link dsg file to subvertex
-            dsg_targets[placement.subvertex] = list()
-            for file_path in file_paths:
-                dsg_targets[placement.subvertex].append(file_path)
+                # link dsg file to subvertex
+                dsg_targets[placement.subvertex] = list()
+                for file_path in file_paths:
+                    dsg_targets[placement.subvertex].append(file_path)
 
             # Get name of binary from vertex
             binary_name = associated_vertex.get_binary_file_name()

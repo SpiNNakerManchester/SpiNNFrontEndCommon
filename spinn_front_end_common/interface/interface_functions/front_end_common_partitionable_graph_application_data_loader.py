@@ -12,7 +12,11 @@ class FrontEndCommonPartitionableGraphApplicationLoader(object):
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
-            placement_to_app_data_files, app_id, verify=False):
+            placement_to_app_data_files, app_id, verify=False, do_load=True):
+
+        if not do_load:
+            logger.info("Skipping Data Loading")
+            return {"LoadedApplicationDataToken": True}
 
         # go through the placements and see if there's any application data to
         # load
