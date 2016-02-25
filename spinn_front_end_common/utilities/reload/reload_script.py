@@ -17,13 +17,13 @@ class ReloadScript(object):
             self, binary_directory, hostname, board_version, bmp_details,
             down_chips, down_cores, number_of_boards, height, width,
             auto_detect_bmp, enable_reinjection, scamp_connection_data,
-            boot_port_num, placement_to_app_data_files, verify,
-            processor_to_app_data_base_address, executable_targets,
+            boot_port_num, verify, executable_targets,
             wait_for_read_confirmation, database_file_path,
             runtime, time_scale_factor, send_start_notification,
-            reset_machine_on_start_up):
+            reset_machine_on_start_up, processor_to_app_data_base_address=None,
+            placement_to_app_data_files=None, dsg_targets=None):
         self._binary_directory = binary_directory
-        self._wait_on_confiramtion = None
+        self._wait_on_confirmation = None
         self._runtime = 0
         self._time_scale_factor = None
         if not self._binary_directory.endswith(os.sep):
@@ -40,15 +40,6 @@ class ReloadScript(object):
         except IOError:
             raise exceptions.SpinnFrontEndException(
                 "Cannot open {} to write the rerun script".format(file_name))
-
-        # Convert file paths to local file names
-        local_placement_to_app_data_files = dict()
-        for (placement, file_paths) in placement_to_app_data_files.iteritems():
-            local_file_paths = list()
-            for file_path in file_paths:
-                local_file_path = os.path.basename(file_path)
-                local_file_paths.append(local_file_path)
-            local_placement_to_app_data_files[placement] = local_file_paths
 
         self._println("runtime = {}".format(runtime))
         self._println(
@@ -68,8 +59,38 @@ class ReloadScript(object):
         self._println("enable_reinjection = {}".format(enable_reinjection))
         self._println("placements = dict()")
         self._println("boot_port_num = {}".format(boot_port_num))
-        self._println("placement_to_app_data_files = {}"
-                      .format(local_placement_to_app_data_files))
+
+        if placement_to_app_data_files is not None:
+            # Convert file paths to local file names
+            local_placement_to_app_data_files = dict()
+            if placement_to_app_data_files is not None:
+                for (placement, file_paths) in \
+                        placement_to_app_data_files.iteritems():
+                    local_file_paths = list()
+                    for file_path in file_paths:
+                        local_file_path = os.path.basename(file_path)
+                        local_file_paths.append(local_file_path)
+                    local_placement_to_app_data_files[placement] = \
+                        local_file_paths
+
+            # Write them in the reload script
+            self._println("placement_to_app_data_files = {}"
+                          .format(local_placement_to_app_data_files))
+        else:
+            self._println("placement_to_app_data_files = None")
+
+        if dsg_targets is not None:
+            local_dsg_targets = dict()
+            for (placement, file_paths) in dsg_targets.iteritems():
+                local_file_paths = list()
+                for file_path in file_paths:
+                    local_file_path = os.path.basename(file_path)
+                    local_file_paths.append(local_file_path)
+                local_dsg_targets[placement] = local_file_paths
+            self._println("dsg_targets = {}".format(local_dsg_targets))
+        else:
+            self._println("dsg_targets = None")
+
         self._println("verify = {}".format(verify))
         self._println("database_file_path = {}".format(database_file_path))
         self._println("wait_for_read_confirmation = {}"
@@ -194,10 +215,11 @@ class ReloadScript(object):
             "reloader = Reload(machine_name, machine_version, reports_states, "
             "bmp_details, down_chips, down_cores, number_of_boards, height, "
             "width, auto_detect_bmp, enable_reinjection, xml_paths, "
-            "scamp_connection_data,boot_port_num, placement_to_app_data_files,"
-            " verify, routing_tables, processor_to_app_data_base_address,"
+            "scamp_connection_data,boot_port_num, verify, routing_tables,"
             " executable_targets, buffered_tags, iptags, reverse_iptags, "
             "buffered_placements, app_folder, wait_for_read_confirmation, "
             "socket_addresses, database_file_path, runtime, time_scale_factor,"
-            "send_start_notification, reset_machine_on_start_up)")
+            "send_start_notification, reset_machine_on_start_up, "
+            "processor_to_app_data_base_address, placement_to_app_data_files,"
+            "dsg_targets)")
         self._file.close()

@@ -433,7 +433,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         spec.end_specification()
         data_writer.close()
 
-        return [data_writer.filename]
+        return data_writer.filename
 
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
