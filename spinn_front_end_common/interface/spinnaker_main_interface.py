@@ -256,12 +256,12 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         if config.get("Reports", "writeProvenanceData"):
             # get pacman provenance items
             prov_items = pacman_executor.get_provenance_data_items(
-                pacman_executor.get_item("MemoryTransciever"))
+                pacman_executor.get_item("MemoryTransceiver"))
             self._provenance_data_items.add_provenance_item_by_operation(
                 "PACMAN", prov_items)
             # get spynnaker provenance
             prov_items = self.get_provenance_data_items(
-                pacman_executor.get_item("MemoryTransciever"))
+                pacman_executor.get_item("MemoryTransceiver"))
             self._provenance_data_items.add_provenance_item_by_operation(
                 "FrontEndProvenanceData", prov_items)
 
@@ -343,7 +343,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         """
         if application_graph_changed:
             if not config.getboolean("Machine", "virtual_board"):
-                self._txrx = pacman_executor.get_item("MemoryTransciever")
+                self._txrx = pacman_executor.get_item("MemoryTransceiver")
                 self._executable_targets = \
                     pacman_executor.get_item("ExecutableTargets")
                 self._buffer_manager = pacman_executor.get_item("BufferManager")
@@ -427,11 +427,11 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             self, in_debug_mode, application_graph_changed, executing_reset,
             using_auto_pause_and_resume):
         """
-        method required to be implimented by front ends. supported by the
+        method required to be implemented by front ends. supported by the
         private method _create_all_flows_algorithm_common
         :param in_debug_mode: if the code should run in debug mode
         :param application_graph_changed: has the application graph changed
-        :param executing_reset: are we exeucting a reset function
+        :param executing_reset: are we executing a reset function
         :param using_auto_pause_and_resume: are we using auto pause and
         resume functionality
         :return: a iterable of algorithm names
@@ -440,7 +440,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
     def _create_all_flows_algorithm_common(
             self, in_debug_mode, application_graph_changed, executing_reset,
-            using_auto_pause_and_resume, mapping_algorithms):
+            using_auto_pause_and_resume):
         """
         creates the list of algorithms to use within the system
         :param in_debug_mode: if the tools should be operating in debug mode
@@ -448,8 +448,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         :param executing_reset: are we executing a reset function
         :param using_auto_pause_and_resume: check if the system is to use
         auto pause and resume functionality
-        :param mapping_algorithms: list of algorithms to use during mapping
-        process
         :return: list of algorithms to use and a list of optional
         algorithms to use
         """
@@ -477,9 +475,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             if in_debug_mode:
                 algorithms.append("ValidRoutesChecker")
 
-            # add mapping algorithms to the pile
-            algorithms.extend(mapping_algorithms)
-
             # if using virtual machine, add to list of algorithms the virtual
             # machine generator, otherwise add the standard machine generator
             if using_virtual_board:
@@ -491,15 +486,15 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     self._txrx.close()
                     self._txrx = None
 
-                if self._exec_dse_on_host:
-                    # The following lines are not split to avoid error
-                    # in future search
-                    algorithms.append(
-                        "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
-                else:
-                    algorithms.append(
-                        "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
-
+                if not self._using_auto_pause_and_resume:
+                    if self._exec_dse_on_host:
+                        # The following lines are not split to avoid error
+                        # in future search
+                        algorithms.append(
+                            "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                    else:
+                        algorithms.append(
+                            "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
 
                 algorithms.append("FrontEndCommonMachineInterfacer")
                 algorithms.append("FrontEndCommonNotificationProtocol")
@@ -524,16 +519,10 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                         algorithms.append(
                             "FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
                         algorithms.append(
-                            "FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor")  # @IgnorePep8
-
-                algorithms.append("FrontEndCommonMachineInterfacer")
-                algorithms.append("FrontEndCommonApplicationRunner")
-                algorithms.append("FrontEndCommonNotificationProtocol")
-                algorithms.append("FrontEndCommomLoadExecutableImages")
-                algorithms.append("FrontEndCommonRoutingTableLoader")
-                algorithms.append("FrontEndCommonTagsLoader")
-                algorithms.append("FrontEndCommomPartitionableGraphData"
-                                  "SpecificationWriter")
+                            "FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor")  # @IgnorePep8
+                else:
+                    algorithms.append(
+                        "FrontEndCommonAutoPauseAndResumeExecutor")
 
                 # if the end user wants reload script, add the reload script
                 # creator to the list (reload script currently only supported
@@ -607,14 +596,15 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     "FrontEndCommonApplicationDataLoader")
                 algorithms.append("FrontEndCommonLoadExecutableImages")
 
-                if self._exec_dse_on_host:
-                    # The following lines are not split to avoid error
-                    # in future search
-                    algorithms.append(
-                        "FrontEndCommonPartitionableGraphApplicationDataLoader")  # @IgnorePep8
-                else:
-                    algorithms.append(
-                        "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+                if not self._using_auto_pause_and_resume:
+                    if self._exec_dse_on_host:
+                        # The following lines are not split to avoid error
+                        # in future search
+                        algorithms.append(
+                            "FrontEndCommonPartitionableGraphApplicationDataLoader")  # @IgnorePep8
+                    else:
+                        algorithms.append(
+                            "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
 
             # add default algorithms
             algorithms.append("FrontEndCommonNotificationProtocol")
@@ -1245,7 +1235,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
         pacman_inputs = list()
         pacman_inputs.append({
-            'type': "MemoryTransciever",
+            'type': "MemoryTransceiver",
             'value': self._txrx})
         pacman_inputs.append({
             'type': "RanToken",

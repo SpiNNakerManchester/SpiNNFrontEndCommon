@@ -126,7 +126,7 @@ class FrontEndCommonExecuteMapper(object):
             'value': self._prov_path})
         pacman_inputs.append({
             'type': 'MemoryTransciever',
-            'value': pacman_executor.get_item("MemoryTransciever")})
+            'value': pacman_executor.get_item("MemoryTransceiver")})
         pacman_inputs.append({
             'type': 'MemoryExtendedMachine',
             'value': pacman_executor.get_item("MemoryExtendedMachine")})

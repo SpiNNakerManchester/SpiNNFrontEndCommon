@@ -15,7 +15,7 @@ from spinn_front_end_common.abstract_models.\
 from spinn_front_end_common.utilities import exceptions
 
 
-class FrontEndCommonEdgeToKeyMapper(object):
+class FrontEndCommonEdgeToNKeysMapper(object):
 
     def __call__(self, partitioned_graph, partitionable_graph=None,
                  graph_mapper=None):

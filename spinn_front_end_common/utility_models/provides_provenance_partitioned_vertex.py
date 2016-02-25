@@ -6,8 +6,8 @@ from pacman.utilities.utility_objs.provenance_data_item import \
 
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import helpful_functions
 
-from data_specification import utility_calls as dsg_utility_calls
 
 import struct
 
@@ -36,20 +36,9 @@ class ProvidesProvenancePartitionedVertex(
                 "live packet gatherer resides on the spinnaker machine")
 
         # Get the App Data for the core
-        app_data_base_address = transceiver.get_cpu_information_from_core(
-            placement.x, placement.y, placement.p).user[0]
-
-        # Get the provenance region base address
-        provenance_data_region_base_address_offset = \
-            dsg_utility_calls.get_region_base_address_offset(
-                app_data_base_address, self._provenance_region_id)
-        provenance_data_region_base_address_buff = \
-            buffer(transceiver.read_memory(
-                placement.x, placement.y,
-                provenance_data_region_base_address_offset, 4))
         provenance_data_region_base_address = \
-            struct.unpack("I", provenance_data_region_base_address_buff)[0]
-        provenance_data_region_base_address += app_data_base_address
+            helpful_functions.locate_memory_region_for_placement(
+                placement, self._provenance_region_id, transceiver)
 
         # todo this was a function call, but alas the call only returned the first
         # get data from the machine

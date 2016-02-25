@@ -13,8 +13,6 @@ from pacman.model.resources.cpu_cycles_per_tick_resource import \
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.interfaces.abstract_provides_provenance_data \
-    import AbstractProvidesProvenanceData
 from pacman.utilities.utility_objs.provenance_data_item import \
     ProvenanceDataItem
 

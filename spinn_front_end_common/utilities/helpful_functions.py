@@ -1,14 +1,7 @@
-
-# front end common imports
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-
 # dsg imports
 from data_specification import utility_calls as dsg_utilities
 
-# spinnman imports
+# SpiNNMan imports
 from spinnman.model.cpu_state import CPUState
 
 # general imports
@@ -54,58 +47,32 @@ def read_data(x, y, address, length, data_format, transceiver):
     return result
 
 
-def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
-        """ Get the address of a region for a vertex
+def locate_memory_region_for_placement(placement, region, transceiver):
+    """ Get the address of a region for a placement
 
-        :param region: the region to locate the base address of
-        :type region: int
-        :param vertex: the vertex to load a buffer for
-        :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
-        :return: None
-        """
-        placement = placements.get_placement_of_subvertex(vertex)
-        memory_address = locate_memory_region_on_core(
-            placement.x, placement.y, placement.p, region, transceiver)
-        return memory_address
-
-
-def locate_memory_region_on_core(x, y, p, region, transceiver):
-        regions_base_address = get_app_data_base_address(x, y, p, transceiver)
-
-        # Get the position of the region in the pointer table
-        region_offset_in_pointer_table = \
-            dsg_utilities.get_region_base_address_offset(
-                regions_base_address, region)
-        region_address = buffer(transceiver.read_memory(
-            x, y, region_offset_in_pointer_table, 4))
-        region_address_decoded = struct.unpack_from("<I", region_address)[0]
-        return region_address_decoded
-
-
-def get_app_data_base_address(x, y, p, transceiver):
-    app_data_base_address = transceiver.get_user_0_register_address_from_core(
-        x, y, p)
-    regions_base_address_encoded = buffer(transceiver.read_memory(
-        x, y, app_data_base_address, 4))
-    regions_base_address = struct.unpack_from(
-        "<I", regions_base_address_encoded)[0]
-    return regions_base_address
-
-
-def auto_detect_database(partitioned_graph):
-    """ Auto detects if there is a need to activate the database system
-
-    :param partitioned_graph: the partitioned graph of the application\
-            problem space.
-    :return: a bool which represents if the database is needed
+    :param region: the region to locate the base address of
+    :type region: int
+    :param placement: the placement object to get the region address of
+    :type placement: pacman.model.placements.placement.Placement
+    :param transceiver: the python interface to the spinnaker machine
+    :type transceiver: spiNNMan.transciever.Transciever
+    :return: None
     """
-    for vertex in partitioned_graph.subvertices:
-        if (isinstance(vertex, LivePacketGather) or
-                isinstance(vertex, ReverseIpTagMultiCastSource)):
-            return True
-    else:
-        return False
+    app_data_base_address = transceiver.get_user_0_register_address_from_core(
+        placement.x, placement.y, placement.p)
+    regions_base_address_encoded = buffer(transceiver.read_memory(
+        placement.x, placement.y, app_data_base_address, 4))
+    regions_base_address = \
+        struct.unpack_from("<I", regions_base_address_encoded)[0]
+
+    # Get the position of the region in the pointer table
+    region_offset_in_pointer_table = \
+        dsg_utilities.get_region_base_address_offset(
+            regions_base_address, region)
+    region_address = buffer(transceiver.read_memory(
+        placement.x, placement.y, region_offset_in_pointer_table, 4))
+    region_address_decoded = struct.unpack_from("<I", region_address)[0]
+    return region_address_decoded
 
 
 def set_up_output_application_data_specifics(
@@ -273,11 +240,12 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
                           ignore_errors=True)
             files_in_report_folder.remove(oldest_file)
 
+
 def get_cores_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
-    :param state:
+    :param states:
     :param txrx:
     :return:
     """

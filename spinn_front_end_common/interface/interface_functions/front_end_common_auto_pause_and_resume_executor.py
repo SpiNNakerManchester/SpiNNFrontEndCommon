@@ -473,7 +473,7 @@ class FrontEndCommonAutoPauseAndResumeExecutor(object):
             'type': "APPID",
             'value': app_id})
         inputs.append({
-            'type': "MemoryTransciever",
+            'type': "MemoryTransceiver",
             'value': txrx})
         inputs.append({
             'type': "TimeScaleFactor",

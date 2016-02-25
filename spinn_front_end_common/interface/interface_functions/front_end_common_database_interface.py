@@ -2,7 +2,6 @@
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.database.database_writer import \
     DatabaseWriter
 
@@ -27,7 +26,7 @@ class FrontEndCommonDatabaseInterface(object):
 
         # add database generation if requested
         self._needs_database = \
-            helpful_functions.auto_detect_database(partitioned_graph)
+            self._writer.auto_detect_database(partitioned_graph)
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
 
