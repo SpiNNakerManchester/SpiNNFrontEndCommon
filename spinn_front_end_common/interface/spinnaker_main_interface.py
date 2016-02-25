@@ -125,6 +125,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         # state that's needed the first time around
         if self._app_id is None:
             self._app_id = config.getint("Machine", "appID")
+            self._dse_app_id = config.getint("Machine", "DSEappID")
 
             if config.getboolean("Reports", "reportsEnabled"):
                 self._reports_states = ReportState(
@@ -139,7 +140,8 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     config.getboolean("Reports", "writeReloadSteps"),
                     config.getboolean("Reports", "writeTransceiverReport"),
                     config.getboolean("Reports", "outputTimesForSections"),
-                    config.getboolean("Reports", "writeTagAllocationReports"))
+                    config.getboolean("Reports", "writeTagAllocationReports"),
+                    config.getboolean("Reports", "writeMemoryMapReport"))
 
             # set up reports default folder
             self._report_default_directory, this_run_time_string = \
@@ -165,6 +167,9 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                 os.path.join(self._report_default_directory, "provenance_data")
             if not os.path.exists(self._provenance_file_path):
                 os.mkdir(self._provenance_file_path)
+
+            self._exec_dse_on_host = config.getboolean(
+                "SpecExecution", "specExecOnHost")
 
         # if your using the auto pause and resume, then add the inputs needed
         # for this functionality.
@@ -486,6 +491,16 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     self._txrx.close()
                     self._txrx = None
 
+                if self._exec_dse_on_host:
+                    # The following lines are not split to avoid error
+                    # in future search
+                    algorithms.append(
+                        "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                else:
+                    algorithms.append(
+                        "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+
+
                 algorithms.append("FrontEndCommonMachineInterfacer")
                 algorithms.append("FrontEndCommonNotificationProtocol")
                 optional_algorithms.append("FrontEndCommonRoutingTableLoader")
@@ -502,17 +517,23 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
                     if len(self._partitionable_graph.vertices) != 0:
                         algorithms.append(
-                            "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")
+                            "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
                         algorithms.append(
-                            "FrontEndCommonPartitionableGraphDataSpecificationWriter")
+                            "FrontEndCommonPartitionableGraphDataSpecificationWriter")  # @IgnorePep8
                     elif len(self._partitioned_graph.subvertices) != 0:
                         algorithms.append(
-                            "FrontEndCommonPartitionedGraphDataSpecificationWriter")
+                            "FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
                         algorithms.append(
-                            "FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor")
-                else:
-                    algorithms.append(
-                        "FrontEndCommonAutoPauseAndResumeExecutor")
+                            "FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor")  # @IgnorePep8
+
+                algorithms.append("FrontEndCommonMachineInterfacer")
+                algorithms.append("FrontEndCommonApplicationRunner")
+                algorithms.append("FrontEndCommonNotificationProtocol")
+                algorithms.append("FrontEndCommomLoadExecutableImages")
+                algorithms.append("FrontEndCommonRoutingTableLoader")
+                algorithms.append("FrontEndCommonTagsLoader")
+                algorithms.append("FrontEndCommomPartitionableGraphData"
+                                  "SpecificationWriter")
 
                 # if the end user wants reload script, add the reload script
                 # creator to the list (reload script currently only supported
@@ -541,7 +562,10 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
             if (config.getboolean("Reports", "writeMemoryMapReport")
                     and not using_virtual_board):
-                algorithms.append("FrontEndCommonMemoryMapReport")
+                if self._exec_dse_on_host:
+                    algorithms.append("FrontEndCommonMemoryMapOnHostReport")
+                else:
+                    algorithms.append("FrontEndCommonMemoryMapOnChipReport")
 
             if config.getboolean("Reports", "writeNetworkSpecificationReport"):
                 algorithms.append(
@@ -582,6 +606,15 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                 optional_algorithms.append(
                     "FrontEndCommonApplicationDataLoader")
                 algorithms.append("FrontEndCommonLoadExecutableImages")
+
+                if self._exec_dse_on_host:
+                    # The following lines are not split to avoid error
+                    # in future search
+                    algorithms.append(
+                        "FrontEndCommonPartitionableGraphApplicationDataLoader")  # @IgnorePep8
+                else:
+                    algorithms.append(
+                        "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
 
             # add default algorithms
             algorithms.append("FrontEndCommonNotificationProtocol")
@@ -847,6 +880,9 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             'type': "APPID",
             'value': self._app_id})
         inputs.append({
+            'type': "DSEAPPID",
+            'value': self._dse_app_id})
+        inputs.append({
             'type': "TimeScaleFactor",
             'value': self._time_scale_factor})
         inputs.append({
@@ -1016,6 +1052,10 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         extra_inputs.append({
             'type': "MachineTimeStep",
             'value': self._machine_time_step})
+        if not self._exec_dse_on_host:
+            extra_inputs.append({
+                'type': "DSEAPPID",
+                'value': self._dse_app_id})
 
         # standard inputs
         inputs.append({
@@ -1030,10 +1070,16 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         inputs.append({
             'type': "DSGeneratorAlgorithm",
             'value': "FrontEndCommonPartitionableGraphDataSpecificationWriter"})
-        inputs.append({
-            'type': "DSExecutorAlgorithm",
-            'value':
-                "FrontEndCommonPartitionableGraphHostExecuteDataSpecification"})
+        if self._exec_dse_on_host:
+            inputs.append({
+                'type': "DSExecutorAlgorithm",
+                'value':
+                    "FrontEndCommonPartitionableGraphHostExecuteDataSpecification"})  # @IgnorePep8
+        else:
+            inputs.append({
+                'type': "DSExecutorAlgorithm",
+                'value':
+                    "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification"})  # @IgnorePep8
         inputs.append({
             'type': "HasRanBefore",
             'value': self._has_ran})
@@ -1273,7 +1319,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         :return: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        # check that theres no partitioned vertices added so far
+        # check that there's no partitioned vertices added so far
         if len(self._partitionable_graph.vertices) > 0:
             raise exceptions.ConfigurationException(
                 "The partitionable graph has already got some vertices, and "
