@@ -486,16 +486,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     self._txrx.close()
                     self._txrx = None
 
-                if not self._using_auto_pause_and_resume:
-                    if self._exec_dse_on_host:
-                        # The following lines are not split to avoid error
-                        # in future search
-                        algorithms.append(
-                            "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
-                    else:
-                        algorithms.append(
-                            "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
-
                 algorithms.append("FrontEndCommonMachineInterfacer")
                 algorithms.append("FrontEndCommonNotificationProtocol")
                 optional_algorithms.append("FrontEndCommonRoutingTableLoader")
@@ -503,26 +493,30 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
                 # add algorithms that the auto supplies if not using it
                 if not using_auto_pause_and_resume:
-                    optional_algorithms.append(
-                        "FrontEndCommonLoadExecutableImages")
+
+                    # handle the dse interfaces
+                    if self._exec_dse_on_host:
+                        # The following lines are not split to avoid error
+                        # in future search
+                        algorithms.append("FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                        optional_algorithms.append("FrontEndCommonApplicationDataLoader")  # @IgnorePep8
+                    else:
+                        algorithms.append("FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+
+                    # handle
+                    algorithms.append("FrontEndCommonRuntimeUpdater")
+                    optional_algorithms.append("FrontEndCommonLoadExecutableImages")   # @IgnorePep8
                     algorithms.append("FrontEndCommonApplicationRunner")
-                    optional_algorithms.append(
-                        "FrontEndCommonApplicationDataLoader")
                     algorithms.append("FrontEndCommonLoadExecutableImages")
 
                     if len(self._partitionable_graph.vertices) != 0:
-                        algorithms.append(
-                            "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
-                        algorithms.append(
-                            "FrontEndCommonPartitionableGraphDataSpecificationWriter")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonPartitionableGraphDataSpecificationWriter")  # @IgnorePep8
                     elif len(self._partitioned_graph.subvertices) != 0:
-                        algorithms.append(
-                            "FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
-                        algorithms.append(
-                            "FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor")  # @IgnorePep8
                 else:
-                    algorithms.append(
-                        "FrontEndCommonAutoPauseAndResumeExecutor")
+                    algorithms.append("FrontEndCommonAutoPauseAndResumeExecutor")  # @IgnorePep8
 
                 # if the end user wants reload script, add the reload script
                 # creator to the list (reload script currently only supported
@@ -588,9 +582,9 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         elif not executing_reset:
             # add function for extracting all the recorded data from
             # recorded populations
-            if self._has_ran:
-                # add functions for updating the models
-                algorithms.append("FrontEndCommonRuntimeUpdater")
+
+            # add functions for updating the models
+            algorithms.append("FrontEndCommonRuntimeUpdater")
             if not self._has_ran:
                 optional_algorithms.append(
                     "FrontEndCommonApplicationDataLoader")

@@ -19,7 +19,6 @@ from spinnman.model.core_subsets import CoreSubsets
 import os
 import sys
 import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -100,7 +99,7 @@ class FrontEndCommonExecuteMapper(object):
                         "a crashed application failed due to {}\n. Will "
                         "attempt to shut down cleanly for the end usage"
                         .format(e.message))
-                    pacman_executor.get_item("MemoryTransciever")\
+                    pacman_executor.get_item("MemoryTransceiver")\
                         .stop_application(pacman_executor.get_item("APPID"))
                     sys.exit(1)
             else:
