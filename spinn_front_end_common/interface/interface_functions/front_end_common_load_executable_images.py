@@ -1,13 +1,9 @@
-"""
-
-"""
 
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 # spinnman imports
-from spinnman.data.file_data_reader import FileDataReader \
-    as SpinnmanFileDataReader
+from spinn_storage_handlers.file_data_reader import FileDataReader
 
 # front end common imports
 from spinn_front_end_common.utilities import constants
@@ -24,7 +20,7 @@ class FrontEndCommonLoadExecutableImages(object):
     """
     """
 
-    def __call__(self, executable_targets, app_id, transciever,
+    def __call__(self, executable_targets, app_id, transceiver,
                  loaded_application_data_token):
         """ Go through the executable targets and load each binary to \
             everywhere and then send a start request to the cores that \
@@ -40,7 +36,7 @@ class FrontEndCommonLoadExecutableImages(object):
         progress_bar = ProgressBar(executable_targets.total_processors,
                                    "Loading executables onto the machine")
         for executable_target_key in executable_targets.binary_paths():
-            file_reader = SpinnmanFileDataReader(executable_target_key)
+            file_reader = FileDataReader(executable_target_key)
             core_subset = executable_targets.\
                 retrieve_cores_for_a_executable_target(executable_target_key)
 
@@ -57,7 +53,7 @@ class FrontEndCommonLoadExecutableImages(object):
                     " possible that the binary may be larger than what is"
                     " supported by spinnaker currently. Please reduce the"
                     " binary size if it starts to behave strangely, or goes"
-                    " into the wdog state before starting.".format(
+                    " into the WDOG state before starting.".format(
                         executable_target_key))
                 if size > constants.MAX_POSSIBLE_BINARY_SIZE:
                     raise exceptions.ConfigurationException(
@@ -68,7 +64,7 @@ class FrontEndCommonLoadExecutableImages(object):
                         " size of your binary or circumvent this error check."
                         .format(executable_target_key))
 
-            transciever.execute_flood(core_subset, file_reader, app_id, size)
+            transceiver.execute_flood(core_subset, file_reader, app_id, size)
 
             acutal_cores_loaded = 0
             for chip_based in core_subset.core_subsets:

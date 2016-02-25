@@ -15,10 +15,10 @@ from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 from pacman.interfaces.abstract_provides_provenance_data \
     import AbstractProvidesProvenanceData
-
-# spinn front end imports
 from pacman.utilities.utility_objs.provenance_data_item import \
     ProvenanceDataItem
+
+# spinn front end imports
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
@@ -168,7 +168,7 @@ class LivePacketGather(
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
-        return [data_writer.filename]
+        return data_writer.filename
 
     def reserve_memory_regions(self, spec):
         """
@@ -195,7 +195,7 @@ class LivePacketGather(
 
         :param spec: the spec object for the dsg
         :type spec: \
-                    :py:class:`data_specification.file_data_writer.FileDataWriter`
+                    :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
         :param ip_tags: The set of ip tags assigned to the object
         :type ip_tags: iterable of :py:class:`spinn_machine.tags.iptag.IPTag`
         :raises DataSpecificationException: when something goes wrong with the\
@@ -296,8 +296,7 @@ class LivePacketGather(
                 placement.x, placement.y,
                 provenance_data_region_base_address_offset, 4))
         provenance_data_region_base_address = \
-            struct.unpack("I", provenance_data_region_base_address_buff)[0]
-        provenance_data_region_base_address += app_data_base_address
+            struct.unpack("<I", provenance_data_region_base_address_buff)[0]
 
         # update with the fact that basic prov entries are first.
         provenance_data_region_base_address += \

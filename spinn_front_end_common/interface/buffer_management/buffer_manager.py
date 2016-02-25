@@ -1,9 +1,6 @@
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
-# dsg imports
-from data_specification import utility_calls as dsg_utilities
-
 # spinnman imports
 from spinnman import constants
 from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
@@ -36,6 +33,8 @@ from spinnman.messages.eieio.command_messages.event_stop_request \
 from spinnman.messages.eieio import create_eieio_command
 
 # front end common imports
+from spinn_front_end_common.utilities.helpful_functions import \
+    locate_memory_region_for_vertex, locate_memory_region_on_core
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque import BuffersSentDeque
@@ -301,7 +300,9 @@ class BufferManager(object):
         """
 
         # Get the vertex load details
-        region_base_address = self._locate_region_address(region, vertex)
+        # region_base_address = self._locate_region_address(region, vertex)
+        region_base_address = locate_memory_region_for_vertex(
+            self._placements, vertex, region, self._transceiver)
         placement = self._placements.get_placement_of_subvertex(vertex)
 
         # Add packets until out of space
@@ -424,30 +425,6 @@ class BufferManager(object):
             #     message.sequence_no))
             self._send_request(vertex, message)
 
-    def _locate_region_address(self, region, vertex):
-        """ Get the address of a region for a vertex
-
-        :param region: the region to locate the base address of
-        :type region: int
-        :param vertex: the vertex to load a buffer for
-        :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
-        :return: None
-        """
-        placement = self._placements.get_placement_of_subvertex(vertex)
-        app_data_base_address = \
-            self._transceiver.get_cpu_information_from_core(
-                placement.x, placement.y, placement.p).user[0]
-
-        # Get the position of the region in the pointer table
-        region_offset_in_pointer_table = \
-            dsg_utilities.get_region_base_address_offset(
-                app_data_base_address, region)
-        region_offset = buffer(self._transceiver.read_memory(
-            placement.x, placement.y, region_offset_in_pointer_table, 4))
-        return (struct.unpack_from("<I", region_offset)[0] +
-                app_data_base_address)
-
     def _send_request(self, vertex, message):
         """ Sends a request
 
@@ -501,20 +478,9 @@ class BufferManager(object):
                     x, y, p):
 
                 # Get the App Data for the core
-                app_data_base_address = \
-                    self._transceiver.get_cpu_information_from_core(
-                        x, y, p).user[0]
-
-                # Get the position of the buffer
-                state_region_base_offset_address = \
-                    dsg_utilities.get_region_base_address_offset(
-                        app_data_base_address, state_region)
-                state_region_base_address_buf = buffer(
-                    self._transceiver.read_memory(
-                        x, y, state_region_base_offset_address, 4))
-                state_region_base_address = struct.unpack_from(
-                    "<I", state_region_base_address_buf)[0]
-                state_region_base_address += app_data_base_address
+                state_region_base_address = \
+                    locate_memory_region_on_core(
+                        x, y, p, state_region, self._transceiver)
 
                 # retrieve channel state memory area
                 raw_number_of_channels = self._transceiver.read_memory(

@@ -9,13 +9,12 @@ class FrontEndCommonReloadScriptCreator(object):
             self, tags, app_data_folder, hostname, board_version,
             bmp_details, downed_chips, downed_cores, number_of_boards,
             height, width, auto_detect_bmp, enable_reinjection,
-            processor_to_app_data_base_address, placements, router_tables,
-            machine, executable_targets, run_time, time_scale_factor,
-            database_socket_addresses, wait_on_confirmation,
-            placement_to_app_data_files, buffer_manager, scamp_connection_data,
+            placements, router_tables, machine, executable_targets,
+            run_time, time_scale_factor, database_socket_addresses,
+            wait_on_confirmation, buffer_manager, scamp_connection_data,
             boot_port_num, verify, database_file_path, send_start_notification,
-            reset_machine_on_start_up):
-
+            reset_machine_on_start_up, processor_to_app_data_base_address=None,
+            placement_to_app_data_files=None):
         reload_script = ReloadScript(
             app_data_folder, hostname, board_version, bmp_details,
             downed_chips, downed_cores, number_of_boards, height, width,

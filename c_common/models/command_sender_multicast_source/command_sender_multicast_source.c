@@ -15,7 +15,7 @@ static uint32_t next_pos;
 //! values for the priority for each callback
 typedef enum callback_priorities{
     SDP = 0, TIMER = 2
-}callback_priorities;
+} callback_priorities;
 
 //! region identifiers
 typedef enum region_identifiers{
@@ -35,8 +35,9 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
         uint32_t with_payload_count = schedule[++next_pos];
-        log_debug("Sending %u packets with payloads at time %u",
-                  with_payload_count, time);
+        log_debug(
+            "Sending %u packets with payloads at time %u",
+            with_payload_count, time);
         for (uint32_t i = 0; i < with_payload_count; i++) {
             uint32_t key = schedule[++next_pos];
             uint32_t payload = schedule[++next_pos];
@@ -46,8 +47,9 @@ void timer_callback(uint unused0, uint unused1) {
             if (delay_and_repeat_data != 0) {
                 uint32_t repeat = delay_and_repeat_data >> 16;
                 uint32_t delay = delay_and_repeat_data & 0x0000ffff;
-                log_debug("Sending %08x, %08x at time %u with %u repeats and "
-                          "%u delay ", key, payload, time, repeat, delay);
+                log_debug(
+                    "Sending %08x, %08x at time %u with %u repeats and "
+                    "%u delay ", key, payload, time, repeat, delay);
 
                 for (uint32_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
@@ -67,8 +69,9 @@ void timer_callback(uint unused0, uint unused1) {
         }
 
         uint32_t without_payload_count = schedule[++next_pos];
-        log_debug("Sending %u packets without payloads at time %u",
-                  without_payload_count, time);
+        log_debug(
+            "Sending %u packets without payloads at time %u",
+            without_payload_count, time);
         for (uint32_t i = 0; i < without_payload_count; i++) {
             uint32_t key = schedule[++next_pos];
             log_debug("Sending %08x", key);
@@ -152,7 +155,8 @@ void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
     if (!initialize(&timer_period)) {
-        return;
+        log_error("Error in initialisation - exiting!");
+        rt_error(RTE_SWERR);
     }
 
     // Set timer_callback

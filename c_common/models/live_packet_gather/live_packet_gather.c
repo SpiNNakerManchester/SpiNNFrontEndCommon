@@ -32,7 +32,7 @@ typedef struct provenance_data_struct {
 //! values for the priority for each callback
 typedef enum callback_priorities{
     MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 2
-}callback_priorities;
+} callback_priorities;
 
 //! struct holding the provenance data
 provenance_data_struct provenance_data;
@@ -558,6 +558,7 @@ void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
     if (!initialize(&timer_period)) {
+         log_error("Error in initialisation - exiting!");
          rt_error(RTE_SWERR);
     }
 
