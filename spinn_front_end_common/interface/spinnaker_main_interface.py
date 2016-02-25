@@ -125,7 +125,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         # state that's needed the first time around
         if self._app_id is None:
             self._app_id = config.getint("Machine", "appID")
-            self._dse_app_id = config.getint("Machine", "DSEappID")
+            self._dse_app_id = config.getint("Machine", "DSEAppID")
 
             if config.getboolean("Reports", "reportsEnabled"):
                 self._reports_states = ReportState(
