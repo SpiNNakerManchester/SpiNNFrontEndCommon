@@ -429,6 +429,102 @@
             </parameter>
         </produces_outputs>
     </algorithm>
+    <algorithm name="FrontEndCommonPartitionedGraphDataSpecificationWriter">
+        <python_module>spinn_front_end_common.iterface.interface_functions.front_end_common_partitioned_graph_data_specification_writer</python_module>
+        <python_class>FrontEndCommonPartitionedGraphDataSpecificationWriter</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>tags</param_name>
+                <param_type>MemoryTags</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>routing_infos</param_name>
+                <param_type>MemoryRoutingInfos</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_text_specs</param_name>
+                <param_type>WriteTextSpecsFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_data_runtime_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor">
+        <python_module>spinn_front_end_common.iterface.interface_functions.front_end_common_partitioned_graph_host_based_data_specification_executor</python_module>
+        <python_class>FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_text_specs</param_name>
+                <param_type>WriteTextSpecsFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_data_runtime_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placement_to_app_data_files</param_name>
+                <param_type>PlacementToAppDataFilePaths</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
     <algorithm name="FrontEndCommonPartitionableGraphDataSpecificationWriter">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_data_specification_writer</python_module>
         <python_class>FrontEndCommonPartitionableGraphDataSpecificationWriter</python_class>
@@ -1157,5 +1253,39 @@
                 <param_type>ProvenanceFilePath</param_type>
             </parameter>
         </required_inputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonEdgeToNKeysMapper">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_edge_to_n_keys_mapper</python_module>
+        <python_class>FrontEndCommonEdgeToNKeysMapper</python_class>
+        <required_optional_inputs>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>2</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>1</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+        </required_optional_inputs>
+        <parameters>
+        </parameters>
+        <produces_outputs>
+            <parameter>
+                <param_name>n_keys_map</param_name>
+                <param_type>MemoryPartitionedPartitionNKeysMap</param_type>
+            </parameter>
+        </produces_outputs>
     </algorithm>
 </algorithms>

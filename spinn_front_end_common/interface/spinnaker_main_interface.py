@@ -7,6 +7,7 @@ from pacman.interfaces.abstract_provides_provenance_data import \
     AbstractProvidesProvenanceData
 from pacman.model.partitionable_graph.partitionable_graph import \
     PartitionableGraph
+from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
 from pacman.operations import algorithm_reports as pacman_algorithm_reports
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.utilities.utility_objs.provenance_data_item import \
@@ -18,7 +19,7 @@ from spinn_front_end_common.interface.abstract_mappable_interface import \
 from spinn_front_end_common.interface.interface_functions. \
     front_end_common_execute_mapper import \
     FrontEndCommonExecuteMapper
-from spinn_front_end_common.utilities import exceptions as common_exceptions
+from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities.utility_objs. \
     provenance_data_items import ProvenanceDataItems
 from spinn_front_end_common.utilities.utility_objs.report_states \
@@ -27,6 +28,9 @@ from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface import interface_functions
 
 # general imports
+from abc import ABCMeta
+from six import add_metaclass
+from abc import abstractmethod
 import logging
 import os
 
@@ -35,7 +39,7 @@ logger = logging.getLogger(__name__)
 executable_finder = None
 config = None
 
-
+@add_metaclass(ABCMeta)
 class SpinnakerMainInterface(AbstractProvidesProvenanceData):
     """
     SpinnakerMainInterface: central entrance for front ends if desired
@@ -66,7 +70,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
         # pacman objects
         self._partitionable_graph = PartitionableGraph(label=graph_label)
-        self._partitioned_graph = None
+        self._partitioned_graph = PartitionedGraph(label=graph_label)
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
@@ -78,6 +82,10 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         self._app_id = None
         self._buffer_manager = None
         self._extra_algorithm_xml_paths = extra_algorithm_xml_paths
+
+        # vertex label safety (used by reports mainly)
+        self._non_labelled_vertex_count = 0
+        self._none_labelled_edge_count = 0
 
         # database objects
         self._database_socket_addresses = set()
@@ -184,7 +192,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
         if (self._original_first_run < run_time and
                 not uses_auto_pause_and_resume):
-            raise common_exceptions.ConfigurationException(
+            raise exceptions.ConfigurationException(
                 "Currently spynnaker cannot handle a runtime greater than what"
                 " was used during the initial run, unless you use the "
                 "\" auto_pause_and_resume\" functionality. To turn this on, "
@@ -192,7 +200,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                 "[Mode] and use_auto_pause_and_resume = False")
 
         if application_graph_changed and self._has_ran:
-            raise common_exceptions.ConfigurationException(
+            raise exceptions.ConfigurationException(
                 "Changes to the application graph are not currently supported;"
                 " please instead call p.reset(), p.end(), add changes and then"
                 " call p.setup()")
@@ -264,7 +272,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                 this_run_time=0, is_resetting=True)
 
         if self._has_ran and application_graph_changed:
-            raise common_exceptions.ConfigurationException(
+            raise exceptions.ConfigurationException(
                 "Resetting the simulation after changing the model"
                 " is not supported")
 
@@ -409,9 +417,25 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             pacman_algorithm_reports.__file__), "reports_metadata.xml"))
         return xml_paths
 
+    @abstractmethod
     def _create_algorithm_list(
             self, in_debug_mode, application_graph_changed, executing_reset,
             using_auto_pause_and_resume):
+        """
+        method required to be implimented by front ends. supported by the
+        private method _create_all_flows_algorithm_common
+        :param in_debug_mode: if the code should run in debug mode
+        :param application_graph_changed: has the application graph changed
+        :param executing_reset: are we exeucting a reset function
+        :param using_auto_pause_and_resume: are we using auto pause and
+        resume functionality
+        :return: a iterable of algorithm names
+        :rtype: iterable of str
+        """
+
+    def _create_all_flows_algorithm_common(
+            self, in_debug_mode, application_graph_changed, executing_reset,
+            using_auto_pause_and_resume, mapping_algorithms):
         """
         creates the list of algorithms to use within the system
         :param in_debug_mode: if the tools should be operating in debug mode
@@ -419,6 +443,8 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         :param executing_reset: are we executing a reset function
         :param using_auto_pause_and_resume: check if the system is to use
         auto pause and resume functionality
+        :param mapping_algorithms: list of algorithms to use during mapping
+        process
         :return: list of algorithms to use and a list of optional
         algorithms to use
         """
@@ -446,21 +472,8 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             if in_debug_mode:
                 algorithms.append("ValidRoutesChecker")
 
-            algorithm_names = \
-                config.get("Mapping", "algorithms")
-
-            algorithm_strings = algorithm_names.split(",")
-            for algorithm_string in algorithm_strings:
-                split_string = algorithm_string.split(":")
-                if len(split_string) == 1:
-                    algorithms.append(split_string[0])
-                else:
-                    raise common_exceptions.ConfigurationException(
-                        "The tool chain expects config params of list of 1 "
-                        "element with ,. Where the elements are either: the "
-                        "algorithm_name:algorithm_config_file_path, or "
-                        "algorithm_name if its a internal to pacman algorithm."
-                        " Please rectify this and try again")
+            # add mapping algorithms to the pile
+            algorithms.extend(mapping_algorithms)
 
             # if using virtual machine, add to list of algorithms the virtual
             # machine generator, otherwise add the standard machine generator
@@ -485,11 +498,18 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     algorithms.append("FrontEndCommonApplicationRunner")
                     optional_algorithms.append(
                         "FrontEndCommonApplicationDataLoader")
-                    algorithms.append("FrontEndCommonPartitionableGraphHost"
-                                      "ExecuteDataSpecification")
                     algorithms.append("FrontEndCommonLoadExecutableImages")
-                    algorithms.append(
-                        "FrontEndCommonPartitionableGraphDataSpecificationWriter")
+
+                    if len(self._partitionable_graph.vertices) != 0:
+                        algorithms.append(
+                            "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")
+                        algorithms.append(
+                            "FrontEndCommonPartitionableGraphDataSpecificationWriter")
+                    elif len(self._partitioned_graph.subvertices) != 0:
+                        algorithms.append(
+                            "FrontEndCommonPartitionedGraphDataSpecificationWriter")
+                        algorithms.append(
+                            "FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor")
                 else:
                     algorithms.append(
                         "FrontEndCommonAutoPauseAndResumeExecutor")
@@ -501,11 +521,11 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
                 # if reload and auto pause and resume are on, raise exception
                 if write_reload and using_auto_pause_and_resume:
-                    raise common_exceptions.ConfigurationException(
+                    raise exceptions.ConfigurationException(
                         "You cannot use auto pause and resume with a "
                         "reload script. This is due to reload not being able to"
-                        "extract data from the machine. Please fix"
-                        " and try again")
+                        "extract data from the machine. Please fix and try "
+                        "again")
 
                 # if first run, create reload
                 if not self._has_ran and write_reload:
@@ -1106,155 +1126,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                         partitioned_edge.mark_no_changes()
         return changed
 
-    @property
-    def app_id(self):
-        """
-
-        :return:
-        """
-        return self._app_id
-
-    @property
-    def using_auto_pause_and_resume(self):
-        """
-
-        :return:
-        """
-        return self._using_auto_pause_and_resume
-
-    @property
-    def has_ran(self):
-        """
-
-        :return:
-        """
-        return self._has_ran
-
-    @property
-    def machine_time_step(self):
-        """
-
-        :return:
-        """
-        return self._machine_time_step
-
-    @property
-    def no_machine_time_steps(self):
-        """
-
-        :return:
-        """
-        return self._no_machine_time_steps
-
-    @property
-    def writing_reload_script(self):
-        """
-        returns if the system is to use auto_pause and resume
-        :return:
-        """
-        return config.getboolean("Reports", "writeReloadSteps")
-
-    @property
-    def partitioned_graph(self):
-        """
-
-        :return:
-        """
-        return self._partitioned_graph
-
-    @property
-    def partitionable_graph(self):
-        """
-
-        :return:
-        """
-        return self._partitionable_graph
-
-    @property
-    def placements(self):
-        """
-
-        :return:
-        """
-        return self._placements
-
-    @property
-    def transceiver(self):
-        """
-
-        :return:
-        """
-        return self._txrx
-
-    @property
-    def graph_mapper(self):
-        """
-
-        :return:
-        """
-        return self._graph_mapper
-
-    @property
-    def routing_infos(self):
-        """
-
-        :return:
-        """
-        return self._routing_infos
-
-    @property
-    def buffer_manager(self):
-        """
-        returns the buffer manager used for extracting/injecting data in
-        buffer form
-        :return:
-        """
-        return self._buffer_manager
-
-    def set_app_id(self, value):
-        """
-
-        :param value:
-        :return:
-        """
-        self._app_id = value
-
-    def get_current_time(self):
-        """
-
-        :return:
-        """
-        if self._has_ran:
-            return float(self._current_run_ms)
-        return 0.0
-
-    def __repr__(self):
-        return "general front end instance for machine {}"\
-            .format(self._hostname)
-
-    def add_vertex(self, vertex_to_add):
-        """
-
-        :param vertex_to_add:
-        :return:
-        """
-
-        self._partitionable_graph.add_vertex(vertex_to_add)
-
-    def add_edge(self, edge_to_add, partition_identifier=None,
-                 partition_constraints=None):
-        """
-
-        :param edge_to_add:
-        :param partition_identifier: the partition identifier for the outgoing
-                    edge partition
-        :param partition_constraints: the constraints of a partition
-        associated with this edge
-        :return:
-        """
-        self._partitionable_graph.add_edge(edge_to_add, partition_identifier,
-                                           partition_constraints)
-
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
         """
@@ -1380,6 +1251,72 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             optional_algorithms=list())
         pacman_executor.execute_mapping()
 
+    def add_partitionable_vertex(self, vertex_to_add):
+        """
+
+        :param vertex_to_add: the partitionable vertex to add to the graph
+        :return: None
+        :raises: ConfigurationException when both graphs contain vertices
+        """
+        if len(self._partitioned_graph.subvertices) > 0:
+            raise exceptions.ConfigurationException(
+                "The partitioned graph has already got some vertices, and "
+                "therefore the application cannot be executed correctly due "
+                "to not knowing how these two graphs interact with each "
+                "other. Please rectify and try again")
+        self._partitionable_graph.add_vertex(vertex_to_add)
+
+    def add_partitioned_vertex(self, vertex):
+        """
+
+        :param vertex the partitioned vertex to add to the graph
+        :return: None
+        :raises: ConfigurationException when both graphs contain vertices
+        """
+        # check that theres no partitioned vertices added so far
+        if len(self._partitionable_graph.vertices) > 0:
+            raise exceptions.ConfigurationException(
+                "The partitionable graph has already got some vertices, and "
+                "therefore the application cannot be executed correctly due "
+                "to not knowing how these two graphs interact with each "
+                "other. Please rectify and try again")
+
+        if self._partitioned_graph is None:
+            self._partitioned_graph = PartitionedGraph(
+                label="partitioned_graph for application id {}"
+                .format(self._app_id))
+        self._partitioned_graph.add_subvertex(vertex)
+
+    def add_partitionable_edge(
+            self, edge_to_add, partition_identifier=None,
+            partition_constraints=None):
+        """
+
+        :param edge_to_add:
+        :param partition_identifier: the partition identifier for the outgoing
+                    edge partition
+        :param partition_constraints: the constraints of a partition
+        associated with this edge
+        :return:
+        """
+
+        self._partitionable_graph.add_edge(
+            edge_to_add, partition_identifier, partition_constraints)
+
+    def add_partitioned_edge(
+            self, edge, partition_id=None, partition_constraints=None):
+        """
+
+        :param edge: the partitioned edge to add to the partitioned graph
+        :param partition_constraints:the constraints of a partition
+        associated with this edge
+        :param partition_id: the partition identifier for the outgoing
+                    edge partition
+        :return:
+        """
+        self._partitioned_graph.add_subedge(
+            edge, partition_id, partition_constraints)
+
     def _add_socket_address(self, socket_address):
         """
 
@@ -1387,3 +1324,159 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         :return:
         """
         self._database_socket_addresses.add(socket_address)
+
+    @property
+    def app_id(self):
+        """
+
+        :return:
+        """
+        return self._app_id
+
+    @property
+    def using_auto_pause_and_resume(self):
+        """
+
+        :return:
+        """
+        return self._using_auto_pause_and_resume
+
+    @property
+    def has_ran(self):
+        """
+
+        :return:
+        """
+        return self._has_ran
+
+    @property
+    def machine_time_step(self):
+        """
+
+        :return:
+        """
+        return self._machine_time_step
+
+    @property
+    def no_machine_time_steps(self):
+        """
+
+        :return:
+        """
+        return self._no_machine_time_steps
+
+    @property
+    def writing_reload_script(self):
+        """
+        returns if the system is to use auto_pause and resume
+        :return:
+        """
+        return config.getboolean("Reports", "writeReloadSteps")
+
+    @property
+    def partitioned_graph(self):
+        """
+
+        :return:
+        """
+        return self._partitioned_graph
+
+    @property
+    def partitionable_graph(self):
+        """
+
+        :return:
+        """
+        return self._partitionable_graph
+
+    @property
+    def placements(self):
+        """
+
+        :return:
+        """
+        return self._placements
+
+    @property
+    def transceiver(self):
+        """
+
+        :return:
+        """
+        return self._txrx
+
+    @property
+    def graph_mapper(self):
+        """
+
+        :return:
+        """
+        return self._graph_mapper
+
+    @property
+    def routing_infos(self):
+        """
+
+        :return:
+        """
+        return self._routing_infos
+
+    @property
+    def buffer_manager(self):
+        """
+        returns the buffer manager used for extracting/injecting data in
+        buffer form
+        :return:
+        """
+        return self._buffer_manager
+
+    @property
+    def none_labelled_vertex_count(self):
+        """
+        the number of times vertices have not been labelled.
+        :return: the number of times the vertices have not been labelled
+        """
+        return self._non_labelled_vertex_count
+
+    def increment_none_labelled_vertex_count(self):
+        """
+        increments the number of new vertices which havent been labelled.
+        :return: None
+        """
+        self._non_labelled_vertex_count += 1
+
+    @property
+    def none_labelled_edge_count(self):
+        """
+        the number of times vertices have not been labelled.
+        :return: the number of times the vertices have not been labelled
+        """
+        return self._none_labelled_edge_count
+
+    def increment_none_labelled_edge_count(self):
+        """
+        increments the number of new edges which havent been labelled.
+        :return: None
+        """
+        self._non_labelled_edge_count += 1
+
+    def set_app_id(self, value):
+        """
+
+        :param value:
+        :return:
+        """
+        self._app_id = value
+
+    def get_current_time(self):
+        """
+
+        :return:
+        """
+        if self._has_ran:
+            return float(self._current_run_ms)
+        return 0.0
+
+    def __repr__(self):
+        return "general front end instance for machine {}"\
+            .format(self._hostname)
