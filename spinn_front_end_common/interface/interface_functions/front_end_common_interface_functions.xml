@@ -99,18 +99,10 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonPartitionableGraphMachineExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_machine_execute_data_specification</python_module>
-        <python_class>FrontEndCommonPartitionableGraphMachineExecuteDataSpecification</python_class>
+    <algorithm name="FrontEndCommonMachineExecuteDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_execute_data_specification</python_module>
+        <python_class>FrontEndCommonMachineExecuteDataSpecification</python_class>
         <required_inputs>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
             <parameter>
                 <param_name>report_states</param_name>
                 <param_type>ReportStates</param_type>
@@ -669,9 +661,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor">
-        <python_module>spinn_front_end_common.iterface.interface_functions.front_end_common_partitioned_graph_host_based_data_specification_executor</python_module>
-        <python_class>FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor</python_class>
+    <algorithm name="FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitioned_graph_host_based_data_specification_executor</python_module>
+        <python_class>FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor</python_class>
         <required_inputs>
             <parameter>
                 <param_name>hostname</param_name>
@@ -1361,7 +1353,7 @@
         <required_inputs>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -1381,7 +1373,7 @@
         <required_inputs>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>has_ran</param_name>
@@ -1451,18 +1443,16 @@
                 <param_type>MemoryPartitionedGraph</param_type>
             </parameter>
         </required_inputs>
-        <required_optional_inputs>
+        <optional_inputs>
             <parameter>
                 <param_name>graph_mapper</param_name>
                 <param_type>MemoryGraphMapper</param_type>
-                <param_rank>1</param_rank>
             </parameter>
             <parameter>
                 <param_name>partitionable_graph</param_name>
                 <param_type>MemoryPartitionableGraph</param_type>
-                <param_rank>1</param_rank>
             </parameter>
-        </required_optional_inputs>
+        </optional_inputs>
         <parameters>
         </parameters>
         <produces_outputs>

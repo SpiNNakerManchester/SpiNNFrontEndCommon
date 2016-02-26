@@ -1,4 +1,4 @@
-from spinn_machine.progress_bar import ProgressBar
+from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import \
@@ -11,8 +11,9 @@ from spinnaker_graph_front_end.\
 
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
-from data_specification.file_data_reader import FileDataReader
-from data_specification.file_data_writer import FileDataWriter
+
+from spinn_storage_handlers.file_data_reader import FileDataReader
+from spinn_storage_handlers.file_data_writer import FileDataWriter
 from data_specification import exceptions
 
 import os
@@ -21,8 +22,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonPartitionedGraphHostBasedDataSpecificationExeuctor(
+class FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor(
         object):
+    """
+    FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor
+    """
 
     def __call__(self, placements, report_default_directory,
                  hostname, application_data_runtime_folder, machine,

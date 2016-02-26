@@ -1,4 +1,3 @@
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 import logging
 import os
@@ -10,20 +9,14 @@ class FrontEndCommonMemoryMapOnHostReport(object):
     """ Report on memory usage
     """
 
-    def __call__(self, report_default_directory,
-                 processor_to_app_data_base_address,
-                 dse_on_host, dse_on_chip):
+    def __call__(
+            self, report_default_directory, processor_to_app_data_base_address):
         """
 
         :param report_default_directory:
         :param processor_to_app_data_base_address:
         :return:
         """
-
-        if dse_on_host is False or dse_on_chip is True:
-            raise SpinnFrontEndException(
-                "This routine is only for on host data specification "
-                "executor. Something somewhere went terribly wrong")
 
         file_name = os.path.join(report_default_directory,
                                  "memory_map_from_processor_to_address_space")

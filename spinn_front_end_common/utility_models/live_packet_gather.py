@@ -100,9 +100,10 @@ class LivePacketGather(
                     self.get_cpu_usage_for_atoms(1, None)),
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
                 sdram=SDRAMResource(
-                    self.get_static_sdram_usage_for_atoms(1, None)),
+                    self.get_static_sdram_usage_for_atoms(1, None))),
             provenance_region_id=
-                self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value))
+            self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
+            constraints=constraints)
 
         # Try to place this near the Ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))

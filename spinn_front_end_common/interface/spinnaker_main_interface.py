@@ -198,10 +198,10 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         if (self._original_first_run < run_time and
                 not uses_auto_pause_and_resume):
             raise exceptions.ConfigurationException(
-                "Currently spynnaker cannot handle a runtime greater than what"
-                " was used during the initial run, unless you use the "
+                "Currently this front end cannot handle a runtime greater "
+                "than what was used during the initial run, unless you use the "
                 "\" auto_pause_and_resume\" functionality. To turn this on, "
-                " please go to your .spynnaker.cfg file and add "
+                " please go to your .cfg file and add "
                 "[Mode] and use_auto_pause_and_resume = False")
 
         if application_graph_changed and self._has_ran:
@@ -259,7 +259,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                 pacman_executor.get_item("MemoryTransceiver"))
             self._provenance_data_items.add_provenance_item_by_operation(
                 "PACMAN", prov_items)
-            # get spynnaker provenance
+            # get front end provenance
             prov_items = self.get_provenance_data_items(
                 pacman_executor.get_item("MemoryTransceiver"))
             self._provenance_data_items.add_provenance_item_by_operation(
@@ -493,28 +493,27 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
                 # add algorithms that the auto supplies if not using it
                 if not using_auto_pause_and_resume:
-
-                    # handle the dse interfaces
-                    if self._exec_dse_on_host:
-                        # The following lines are not split to avoid error
-                        # in future search
-                        algorithms.append("FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
-                        optional_algorithms.append("FrontEndCommonApplicationDataLoader")  # @IgnorePep8
-                    else:
-                        algorithms.append("FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
-
-                    # handle
+                    # handle standard stuff
                     algorithms.append("FrontEndCommonRuntimeUpdater")
                     optional_algorithms.append("FrontEndCommonLoadExecutableImages")   # @IgnorePep8
                     algorithms.append("FrontEndCommonApplicationRunner")
-                    algorithms.append("FrontEndCommonLoadExecutableImages")
 
-                    if len(self._partitionable_graph.vertices) != 0:
-                        algorithms.append("FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
-                        algorithms.append("FrontEndCommonPartitionableGraphDataSpecificationWriter")  # @IgnorePep8
-                    elif len(self._partitioned_graph.subvertices) != 0:
-                        algorithms.append("FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
-                        algorithms.append("FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor")  # @IgnorePep8
+                    # handle dse interfaces
+                    if self._exec_dse_on_host:
+                        if len(self._partitionable_graph.vertices) != 0:
+                            algorithms.append("FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                            algorithms.append("FrontEndCommonPartitionableGraphDataSpecificationWriter")  # @IgnorePep8
+                        elif len(self._partitioned_graph.subvertices) != 0:
+                            algorithms.append("FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
+                            algorithms.append("FrontEndCommonPartitionedGraphHostBasedDataSpecificationExecutor")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonApplicationDataLoader")  # @IgnorePep8
+                    else:
+                        if len(self._partitionable_graph.vertices) != 0:
+                            algorithms.append("FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
+                            algorithms.append("FrontEndCommonPartitionableGraphDataSpecificationWriter")  # @IgnorePep8
+                        elif len(self._partitioned_graph.subvertices) != 0:
+                            algorithms.append("FrontEndCommonPartitionedGraphDataSpecificationWriter")  # @IgnorePep8
+                            algorithms.append("FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
                 else:
                     algorithms.append("FrontEndCommonAutoPauseAndResumeExecutor")  # @IgnorePep8
 
@@ -551,28 +550,32 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     algorithms.append("FrontEndCommonMemoryMapOnChipReport")
 
             if config.getboolean("Reports", "writeNetworkSpecificationReport"):
-                algorithms.append(
-                    "FrontEndCommonNetworkSpecificationPartitionableReport")
+                if len(self._partitionable_graph.vertices) != 0:
+                    algorithms.append("FrontEndCommonNetworkSpecificationPartitionableReport")  # @IgnorePep8
+                elif len(self._partitioned_graph.subvertices) != 0:
+                    algorithms.append("FrontEndCommonNetworkSpecificationReportPartitionedGraphReport")  # @IgnorePep8
 
             # define mapping between output types and reports
-            if self._reports_states is not None \
-                    and self._reports_states.tag_allocation_report:
+            if (self._reports_states is not None and
+                    self._reports_states.tag_allocation_report):
                 algorithms.append("TagReport")
-            if self._reports_states is not None \
-                    and self._reports_states.routing_info_report:
+            if (self._reports_states is not None and
+                    self._reports_states.routing_info_report):
                 algorithms.append("routingInfoReports")
                 algorithms.append("unCompressedRoutingTableReports")
                 algorithms.append("compressedRoutingTableReports")
                 algorithms.append("comparisonOfRoutingTablesReport")
-            if self._reports_states is not None \
-                    and self._reports_states.router_report:
+            if (self._reports_states is not None and
+                    self._reports_states.router_report):
                 algorithms.append("RouterReports")
-            if self._reports_states is not None \
-                    and self._reports_states.partitioner_report:
+            if (self._reports_states is not None and
+                    self._reports_states.partitioner_report and
+                    len(self._partitionable_graph.vertices) != 0):
                 algorithms.append("PartitionerReport")
             if (self._reports_states is not None and
                     self._reports_states.
-                    placer_report_with_partitionable_graph):
+                    placer_report_with_partitionable_graph and
+                    len(self._partitionable_graph.vertices) != 0):
                 algorithms.append("PlacerReportWithPartitionableGraph")
             if (self._reports_states is not None and
                     self._reports_states.
@@ -592,13 +595,9 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
                 if not self._using_auto_pause_and_resume:
                     if self._exec_dse_on_host:
-                        # The following lines are not split to avoid error
-                        # in future search
-                        algorithms.append(
-                            "FrontEndCommonPartitionableGraphApplicationDataLoader")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonPartitionableGraphApplicationDataLoader")  # @IgnorePep8
                     else:
-                        algorithms.append(
-                            "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+                        algorithms.append("FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
 
             # add default algorithms
             algorithms.append("FrontEndCommonNotificationProtocol")
@@ -614,7 +613,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
     def _create_pacman_executor_outputs(
             self, requires_reset, application_graph_changed):
 
-        # explicitly define what outputs spynnaker expects
+        # explicitly define what outputs the front end expects
         required_outputs = list()
         if config.getboolean("Machine", "virtual_board"):
             if application_graph_changed:
@@ -772,7 +771,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             'type': "APPID",
             'value': self._app_id})
         inputs.append({
-            "type": "MemoryTransciever",
+            "type": "MemoryTransceiver",
             'value': self._txrx})
         inputs.append({
             'type': "TimeScaleFactor",
@@ -800,9 +799,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             'type': "MemoryGraphMapper",
             'value': self._graph_mapper})
         inputs.append({
-            'type': "MemoryPartitionableGraph",
-            'value': self._partitionable_graph})
-        inputs.append({
             'type': "MemoryExtendedMachine",
             'value': self._machine})
         inputs.append({
@@ -811,6 +807,14 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         inputs.append({
             'type': "RanToken",
             'value': self._has_ran})
+        if len(self.partitionable_graph.vertices) != 0:
+            inputs.append({
+                'type': "MemoryPartitionableGraph",
+                'value': self._partitionable_graph})
+        if len(self._partitioned_graph.subvertices) != 0:
+            inputs.append({
+                'type': "MemoryPartitionedGraph",
+                'value': self._partitioned_graph})
         return inputs
 
     def _add_mapping_inputs(
@@ -818,9 +822,14 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             json_folder, number_of_boards):
 
         # basic input stuff
-        inputs.append({
-            'type': "MemoryPartitionableGraph",
-            'value': self._partitionable_graph})
+        if len(self.partitionable_graph.vertices) != 0:
+            inputs.append({
+                'type': "MemoryPartitionableGraph",
+                'value': self._partitionable_graph})
+        if len(self._partitioned_graph.subvertices) != 0:
+            inputs.append({
+                'type': "MemoryPartitionedGraph",
+                'value': self._partitioned_graph})
         inputs.append({
             'type': 'ReportFolder',
             'value': self._report_default_directory})
@@ -891,10 +900,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             'type': "UserCreateDatabaseFlag",
             'value': config.get("Database", "create_database")})
         inputs.append({
-            'type': "ExecuteMapping",
-            'value': config.getboolean(
-                "Database", "create_routing_info_to_neuron_id_mapping")})
-        inputs.append({
             'type': "SendStartNotifications",
             'value': config.getboolean("Database", "send_start_notification")})
 
@@ -923,7 +928,7 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
 
     def _add_inputs_for_reset_with_changes(self, inputs):
         inputs.append({
-            "type": "MemoryTransciever",
+            "type": "MemoryTransceiver",
             'value': self._txrx})
         inputs.append({
             'type': "ExecutableTargets",
@@ -1055,10 +1060,14 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             'type': "DSGeneratorAlgorithm",
             'value': "FrontEndCommonPartitionableGraphDataSpecificationWriter"})
         if self._exec_dse_on_host:
-            inputs.append({
-                'type': "DSExecutorAlgorithm",
-                'value':
-                    "FrontEndCommonPartitionableGraphHostExecuteDataSpecification"})  # @IgnorePep8
+            if len(self._partitionable_graph.vertices) != 0:
+                inputs.append({
+                    'type': "DSExecutorAlgorithm",
+                    'value': "FrontEndCommonPartitionableGraphHostBasedExecuteDataSpecification"})
+            elif len(self._partitioned_graph.subvertices) != 0:
+                inputs.append({
+                    'type': "DSExecutorAlgorithm",
+                    'value': "FrontEndCommonPartitionedGraphHostBasedExecuteDataSpecification"})
         else:
             inputs.append({
                 'type': "DSExecutorAlgorithm",
