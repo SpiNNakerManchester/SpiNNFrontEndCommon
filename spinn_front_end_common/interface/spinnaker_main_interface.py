@@ -494,7 +494,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                 # add algorithms that the auto supplies if not using it
                 if not using_auto_pause_and_resume:
                     # handle standard stuff
-                    algorithms.append("FrontEndCommonRuntimeUpdater")
                     optional_algorithms.append("FrontEndCommonLoadExecutableImages")   # @IgnorePep8
                     algorithms.append("FrontEndCommonApplicationRunner")
 
@@ -585,9 +584,6 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         elif not executing_reset:
             # add function for extracting all the recorded data from
             # recorded populations
-
-            # add functions for updating the models
-            algorithms.append("FrontEndCommonRuntimeUpdater")
             if not self._has_ran:
                 optional_algorithms.append(
                     "FrontEndCommonApplicationDataLoader")
@@ -1058,16 +1054,16 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
             'value': extra_xmls})
         inputs.append({
             'type': "DSGeneratorAlgorithm",
-            'value': "FrontEndCommonPartitionableGraphDataSpecificationWriter"})
+            'value': "FrontEndCommonPartitionableGraphDataSpecificationWriter"})  # @IgnorePep8
         if self._exec_dse_on_host:
             if len(self._partitionable_graph.vertices) != 0:
                 inputs.append({
                     'type': "DSExecutorAlgorithm",
-                    'value': "FrontEndCommonPartitionableGraphHostBasedExecuteDataSpecification"})
+                    'value': "FrontEndCommonPartitionableGraphHostExecuteDataSpecification"})  # @IgnorePep8
             elif len(self._partitioned_graph.subvertices) != 0:
                 inputs.append({
                     'type': "DSExecutorAlgorithm",
-                    'value': "FrontEndCommonPartitionedGraphHostBasedExecuteDataSpecification"})
+                    'value': "FrontEndCommonPartitionedGraphHostBasedExecuteDataSpecification"})  # @IgnorePep8
         else:
             inputs.append({
                 'type': "DSExecutorAlgorithm",

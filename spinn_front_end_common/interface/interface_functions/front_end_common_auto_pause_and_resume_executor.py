@@ -443,7 +443,7 @@ class FrontEndCommonAutoPauseAndResumeExecutor(object):
             # needs a dsg rebuild
             first_algorithms.append(algorithm_for_dsg_generation)
             first_algorithms.append(algorithm_for_dse_execution)
-            first_algorithms.append("FrontEndCommonRuntimeUpdater")
+            first_algorithms.append("FrontEndCommonChipRuntimeUpdater")
             optimal_algorithms.append("FrontEndCommonApplicationDataLoader")
             first_algorithms.append("FrontEndCommonLoadExecutableImages")
             first_algorithms.append("FrontEndCommonBufferManagerCreator")
@@ -569,7 +569,7 @@ class FrontEndCommonAutoPauseAndResumeExecutor(object):
             if iteration == 0:
                 all_algorithms = list(first_algorithms)
                 if len(steps) != 1:
-                    all_algorithms.append("FrontEndCommonRuntimeUpdater")
+                    all_algorithms.append("FrontEndCommonChipRuntimeUpdater")
                     all_algorithms.append("FrontEndCommonApplicationRunner")
                     all_algorithms.extend(algorithms_to_run_between_runs)
                 else:
@@ -578,7 +578,7 @@ class FrontEndCommonAutoPauseAndResumeExecutor(object):
                 all_algorithms = list()
                 all_algorithms.extend(algorithms_to_run_between_runs)
                 all_algorithms.append("FrontEndCommonMachineTimeStepUpdater")
-                all_algorithms.append("FrontEndCommonRuntimeUpdater")
+                all_algorithms.append("FrontEndCommonChipRuntimeUpdater")
                 all_algorithms.append("FrontEndCommonApplicationRunner")
 
             # create and execute

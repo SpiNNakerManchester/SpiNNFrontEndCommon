@@ -1092,9 +1092,9 @@
             </parameter>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonRuntimeUpdater">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_runtime_updater</python_module>
-        <python_class>FrontEndCommonRuntimeUpdater</python_class>
+    <algorithm name="FrontEndCommonChipRuntimeUpdater">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_runtime_updater</python_module>
+        <python_class>FrontEndCommonChipRuntimeUpdater</python_class>
         <required_inputs>
             <parameter>
                 <param_name>placements</param_name>
