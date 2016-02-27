@@ -22,7 +22,7 @@ class FrontEndCommonRuntimeUpdater(object):
         if not ran_token:
             raise exceptions.ConfigurationException(
                 "The run time token is set to false, and therefore the runtime"
-                "updator cannot be ran yet. please fix and try again.")
+                "updater cannot be ran yet.")
 
         # check that the right number of processors are in sync0
         processors_ready = \

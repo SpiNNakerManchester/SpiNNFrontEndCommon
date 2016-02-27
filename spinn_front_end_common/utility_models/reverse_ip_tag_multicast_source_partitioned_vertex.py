@@ -79,8 +79,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
-            send_buffer_notification_tag=None,
-            extra_static_sdram_requirement=0):
+            send_buffer_notification_tag=None):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -122,9 +121,6 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send buffer is specified)
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
-        :param extra_static_sdram_requirement: the amount of extra sdram
-        the mdoel should allocate as static for recording (helps memory
-        optimised parittioners)
         """
 
         # Set up super types
@@ -133,8 +129,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex.__init__(
             self, resources_required, label, constraints)
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
-        ReceiveBuffersToHostBasicImpl.__init__(
-            self, extra_static_sdram_requirement)
+        ReceiveBuffersToHostBasicImpl.__init__()
 
         # Set up for receiving live packets
         if receive_port is not None:
@@ -309,11 +304,13 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(constants.
-                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            minimum_sdram_for_buffering=0, buffered_sdram_per_timestep=0):
 
         self.activate_buffering_output(
             buffering_ip_address, buffering_port, board_address,
-            notification_tag)
+            notification_tag, minimum_sdram_for_buffering,
+            buffered_sdram_per_timestep)
         self._record_buffer_size = record_buffer_size
         self._buffer_size_before_receive = buffer_size_before_receive
 

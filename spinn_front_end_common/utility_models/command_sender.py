@@ -337,7 +337,7 @@ class CommandSender(AbstractProvidesOutgoingEdgeConstraints,
         """
         return 0
 
-    def get_static_sdram_usage_for_atoms(self, vertex_slice, graph):
+    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         """ Return how much SDRAM is used by the model for a given number of\
             atoms
 
