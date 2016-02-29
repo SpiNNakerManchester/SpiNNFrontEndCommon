@@ -610,7 +610,7 @@
         </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionedGraphDataSpecificationWriter">
-        <python_module>spinn_front_end_common.iterface.interface_functions.front_end_common_partitioned_graph_data_specification_writer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitioned_graph_data_specification_writer</python_module>
         <python_class>FrontEndCommonPartitionedGraphDataSpecificationWriter</python_class>
         <required_inputs>
             <parameter>
