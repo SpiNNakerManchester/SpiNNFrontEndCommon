@@ -486,7 +486,10 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
                     self._txrx.close()
                     self._txrx = None
 
-                algorithms.append("FrontEndCommonMachineInterfacer")
+                # only go looking for a machine if its not already been found
+                if self._machine is None and self._txrx is None:
+                    algorithms.append("FrontEndCommonMachineInterfacer")
+
                 algorithms.append("FrontEndCommonNotificationProtocol")
                 optional_algorithms.append("FrontEndCommonRoutingTableLoader")
                 optional_algorithms.append("FrontEndCommonTagsLoader")
@@ -953,6 +956,16 @@ class SpinnakerMainInterface(AbstractProvidesProvenanceData):
         needs_to_reset_machine = \
             (reset_machine_on_startup and not self._has_ran
              and not is_resetting)
+
+        if self._machine is not None:
+            inputs.append({
+                'type': "MemoryMachine",
+                'value': self._machine})
+
+        if self._txrx is not None:
+            inputs.append({
+                'type': "MemoryTransceiver",
+                'value': self._txrx})
 
         inputs.append({
             'type': 'TimeThreshold',

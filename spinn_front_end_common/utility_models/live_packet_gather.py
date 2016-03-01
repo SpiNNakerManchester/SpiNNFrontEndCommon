@@ -24,6 +24,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models.\
     provides_provenance_partitioned_vertex import \
     ProvidesProvenancePartitionedVertex
+from spinn_front_end_common.utilities import helpful_functions
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -167,6 +168,7 @@ class LivePacketGather(
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
+
         return data_writer.filename
 
     def reserve_memory_regions(self, spec):
@@ -279,27 +281,10 @@ class LivePacketGather(
             get_provenance_data_items(self, transceiver, placement)
 
         # get live packet gatherer specific ones
-
-        #todo this code should be stored somewhere (merge with rowley and sergio branches)
-        # Get the App Data for the core
-        app_data_base_address = transceiver.get_cpu_information_from_core(
-            placement.x, placement.y, placement.p).user[0]
-
-        # Get the provenance region base address
-        provenance_data_region_base_address_offset = \
-            dsg_utility_calls.get_region_base_address_offset(
-                app_data_base_address,
-                self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value)
-        provenance_data_region_base_address_buff = \
-            buffer(transceiver.read_memory(
-                placement.x, placement.y,
-                provenance_data_region_base_address_offset, 4))
-        provenance_data_region_base_address = \
-            struct.unpack("<I", provenance_data_region_base_address_buff)[0]
-
-        # update with the fact that basic prov entries are first.
-        provenance_data_region_base_address += \
-            constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES
+        provenance_data_region_base_address = helpful_functions.\
+            locate_memory_region_for_placement(
+                placement, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
+                transceiver)
 
         # read in the provenance data
         provenance_data_region_contents_buff = \

@@ -8,13 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationDataLoader(object):
+    """
+    FrontEndCommonApplicationDataLoader
+    """
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
             placement_to_app_data_files, app_id, verify=False):
-
-        raise "This routine is deprecated and has not been kept up to date " \
-              "with the remaining of the project"
 
         # go through the placements and see if there's any application data to
         # load

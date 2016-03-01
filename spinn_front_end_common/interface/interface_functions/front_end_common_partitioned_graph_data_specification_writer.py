@@ -37,7 +37,7 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                 reverse_ip_tags = \
                     tags.get_reverse_ip_tags_for_vertex(
                         placement.subvertex)
-                file_paths = placement.subvertex.generate_data_spec(
+                file_path = placement.subvertex.generate_data_spec(
                     placement, partitioned_graph,
                     routing_infos, hostname,
                     report_default_directory, ip_tags,
@@ -45,9 +45,10 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                     app_data_runtime_folder)
 
                 # link dsg file to subvertex
-                dsg_targets[placement.subvertex] = list()
-                for file_path in file_paths:
-                    dsg_targets[placement.subvertex].append(file_path)
+                mapping_key = \
+                    placement.x, placement.y, placement.p, \
+                    placement.subvertex.label
+                dsg_targets[mapping_key] = file_path
 
                 progress_bar.update()
 
@@ -70,7 +71,7 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                 reverse_ip_tags = \
                     tags.get_reverse_ip_tags_for_vertex(
                         placement.subvertex)
-                file_paths = placement.subvertex.generate_data_spec(
+                file_path = placement.subvertex.generate_data_spec(
                     placement.subvertex, placement, partitioned_graph,
                     None, routing_infos, hostname, None,
                     report_default_directory, ip_tags,
@@ -78,9 +79,10 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                     app_data_runtime_folder)
 
                 # link dsg file to subvertex
-                dsg_targets[placement.subvertex] = list()
-                for file_path in file_paths:
-                    dsg_targets[placement.subvertex].append(file_path)
+                mapping_key = \
+                    placement.x, placement.y, placement.p, \
+                    placement.subvertex.label
+                dsg_targets[mapping_key] = file_path
 
                 progress_bar.update()
 

@@ -23,8 +23,6 @@ import struct
 logger = logging.getLogger(__name__)
 
 
-# this class is currently not required and unused. IT is kept here only for
-# future reference - may be easily removed from the project
 class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
     """ Executes the host based data specification
     """
@@ -135,7 +133,6 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
                 # run data spec executor
                 try:
-                    # bytes_used_by_spec, bytes_written_by_spec = \
                     host_based_data_spec_executor.execute()
                 except exceptions.DataSpecificationException as e:
                     logger.error(
@@ -191,6 +188,4 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
                 processor_to_app_data_base_address,
                 'placement_to_app_data_files':
                 placement_to_application_data_files,
-                'LoadedApplicationDataToken': True,
-                "DSEOnHost": True,
-                "DSEOnChip": False}
+                'LoadedApplicationDataToken': True}

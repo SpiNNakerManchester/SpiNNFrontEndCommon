@@ -77,13 +77,7 @@ bool simulation_read_timing_details(
 
 void simulation_run(
         callback_t timer_function, int timer_function_priority){
-    // check that the top level code has registered a provenance region id
-    if (stored_provenance_data_region_id == NULL){
-        log_error(
-            "The top level code needs to register a provenance region id via"
-            " the simulation_register_provenance_function_call() function");
-        rt_error(RTE_API);
-    }
+
     // Store end users timer tic callbacks to be used once runtime stuff been
     // set up for the first time.
     users_timer_callback = timer_function;
@@ -108,17 +102,23 @@ void simulation_run(
 //! \return: none
 void simulation_timer_tic_callback(uint timer_count, uint unused){
     log_debug("Setting off the second run for "
-              "simulation_handle_run_pause_resume");
+              "simulation_handle_run_pause_resume\n");
     simulation_handle_pause_resume();
 }
 
 //! \brief helper private method for running provenance data storage
 void _execute_provenance_storage(){
-    log_info("Starting basic provenance gathering");
-    address_t region_to_start_with = simulation_store_provenance_data();
-    if (stored_provenance_function != NULL){
-        log_info("running other provenance gathering");
-        stored_provenance_function(region_to_start_with);
+    if (stored_provenance_data_region_id == NULL){
+        log_warning("No provenance region id was given, so basic "
+                    "provenance will not be gathered.\n");
+    }
+    else{
+        log_info("Starting basic provenance gathering\n");
+        address_t region_to_start_with = simulation_store_provenance_data();
+        if (stored_provenance_function != NULL){
+            log_info("running other provenance gathering\n");
+            stored_provenance_function(region_to_start_with);
+        }
     }
 }
 
@@ -169,10 +169,11 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
+    log_info("AHHHH\n");
 
     switch (msg->cmd_rc) {
         case CMD_STOP:
-            log_info("Received exit signal. Program complete.");
+            log_info("Received exit signal. Program complete.\n");
 
             // free the message to stop overload
             spin1_msg_free(msg);
@@ -181,7 +182,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             break;
 
         case CMD_RUNTIME:
-            log_info("Setting the runtime of this model to %d", msg->arg1);
+            log_info("Setting the runtime of this model to %d\n", msg->arg1);
 
             // resetting the simulation time pointer
             *pointer_to_simulation_time = msg->arg1;
@@ -199,7 +200,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         case SDP_SWITCH_STATE:
 
-            log_info("Switching to state %d", msg->arg1);
+            log_info("Switching to state %d\n", msg->arg1);
             // change the state of the cpu into what's requested from the host
             sark_cpu_state(msg->arg1);
 
@@ -208,7 +209,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             break;
 
         case PROVENANCE_DATA_GATHERING:
-            log_info("Forced provenance gathering");
+            log_info("Forced provenance gathering\n");
             // force provenance to be executed and then exit
             _execute_provenance_storage();
             rt_error(RTE_API);
@@ -216,7 +217,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
         default:
             // should never get here
-            log_error("received packet with unknown command code %d",
+            log_error("received packet with unknown command code %d\n",
                       msg->cmd_rc);
             spin1_msg_free(msg);
     }

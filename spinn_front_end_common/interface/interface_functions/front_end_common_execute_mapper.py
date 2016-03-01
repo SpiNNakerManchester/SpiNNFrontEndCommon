@@ -19,6 +19,7 @@ from spinnman.model.core_subsets import CoreSubsets
 import os
 import sys
 import logging
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +107,7 @@ class FrontEndCommonExecuteMapper(object):
                 logger.error("Exception found in {}, {}, {}".format(
                     pacman_exception.algorithm, pacman_exception.exception,
                     pacman_exception.message))
+                traceback.print_exc()
                 raise pacman_exception.exception
         return pacman_executor
 

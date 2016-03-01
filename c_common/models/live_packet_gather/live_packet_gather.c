@@ -581,6 +581,8 @@ void c_main(void) {
     spin1_callback_on(
         USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
+
+    // register simulation based requirements
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
     simulation_register_provenance_function_call(
