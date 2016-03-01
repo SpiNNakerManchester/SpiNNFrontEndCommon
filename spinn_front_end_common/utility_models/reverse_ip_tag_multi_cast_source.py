@@ -89,10 +89,6 @@ class ReverseIpTagMultiCastSource(
                 send buffer is specified)
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
-        :param minimum_sdram_for_buffering: The minimum amount of SDRAM to\
-                reserve when doing auto pause and resume recording
-        :param using_auto_pause_and_resume:\
-                True if we are using auto pause and resume
         """
 
         AbstractDataSpecableVertex.__init__(
