@@ -129,7 +129,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex.__init__(
             self, resources_required, label, constraints)
         AbstractProvidesOutgoingEdgeConstraints.__init__(self)
-        ReceiveBuffersToHostBasicImpl.__init__()
+        ReceiveBuffersToHostBasicImpl.__init__(self)
 
         # Set up for receiving live packets
         if receive_port is not None:

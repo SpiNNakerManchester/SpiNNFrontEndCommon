@@ -11,7 +11,6 @@ class FrontEndCommonDatabaseInterface(object):
     """
     """
 
-
     def __init__(self):
         self._writer = None
         self._user_create_database = None

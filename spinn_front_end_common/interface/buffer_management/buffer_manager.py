@@ -68,7 +68,7 @@ class BufferManager(object):
     """ Manager of send buffers
     """
 
-    def __init__(self, placements, tags, transceiver, report_states,
+    def __init__(self, placements, tags, transceiver, write_reload_files,
                  application_folder_path):
         """
 
@@ -89,7 +89,7 @@ class BufferManager(object):
         self._transceiver = transceiver
 
         # params used for reload purposes
-        self._report_states = report_states
+        self._write_reload_files = write_reload_files
         self._application_folder_path = application_folder_path
         self._reload_buffer_file = dict()
         self._reload_buffer_file_paths = dict()
@@ -111,7 +111,6 @@ class BufferManager(object):
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
-        # self._file_debug = open("/tmp/buffer_manager_debug", "w", 0)
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -200,7 +199,7 @@ class BufferManager(object):
                 local_port=tag.port, local_host=tag.ip_address)
 
         # if reload script is set up, store the buffers for future usage
-        if self._report_states.transciever_report:
+        if self._write_reload_files:
             for region in vertex.get_regions():
                 filename = "{}_{}".format(
                     re.sub("[\"':]", "_", vertex.label), region)
@@ -281,7 +280,7 @@ class BufferManager(object):
             message.add_key(key)
             bytes_to_go -= _N_BYTES_PER_KEY
 
-            if self._report_states.transciever_report:
+            if self._write_reload_files:
                 self._reload_buffer_file[(vertex, region)].write(
                     "{}:{}\n".format(next_timestamp, key))
         return message
@@ -448,7 +447,7 @@ class BufferManager(object):
         with self._thread_lock_buffer_in:
             with self._thread_lock_buffer_out:
                 self._finished = True
-        if self._report_states.transciever_report:
+        if self._write_reload_files:
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
 
@@ -516,7 +515,7 @@ class BufferManager(object):
             seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
             if seq_no_internal_fsm == seq_no_last_ack_packet:
 
-                # if the last ack packet has not been processed on the chip,
+                # if the last ACK packet has not been processed on the chip,
                 # process it now
                 last_sent_ack_sdp_packet = \
                     self._received_data.last_sent_packet_to_core(x, y, p)
@@ -638,7 +637,7 @@ class BufferManager(object):
                                 "possible?")
             return
 
-        # read data from memory, store it and create data for return ack packet
+        # read data from memory, store it and create data for return ACK packet
         n_requests = packet.n_requests
         new_channel = list()
         new_region_id = list()
