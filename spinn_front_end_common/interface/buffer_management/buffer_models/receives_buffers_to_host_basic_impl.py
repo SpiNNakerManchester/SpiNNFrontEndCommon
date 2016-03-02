@@ -1,14 +1,19 @@
-from abc import abstractmethod
-
+# pacman imports
 from pacman.model.constraints.tag_allocator_constraints.\
     tag_allocator_require_iptag_constraint import \
     TagAllocatorRequireIptagConstraint
 
+# front end common imports
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .end_buffering_state import EndBufferingState
 from spinn_front_end_common.utilities import exceptions
+
+# general imports
+from abc import abstractmethod
+import sys
+import math
 
 
 class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
@@ -154,4 +159,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         return self._minimum_sdram_for_buffering
 
     def get_n_timesteps_in_buffer_space(self, buffer_space):
-        return int(buffer_space / self._buffered_sdram_per_timestep)
+        if self._buffered_sdram_per_timestep == 0:
+            return sys.maxint
+        return int(math.floor(buffer_space / self._buffered_sdram_per_timestep))
