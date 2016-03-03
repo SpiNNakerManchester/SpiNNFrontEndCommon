@@ -161,4 +161,5 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     def get_n_timesteps_in_buffer_space(self, buffer_space):
         if self._buffered_sdram_per_timestep == 0:
             return sys.maxint
-        return int(math.floor(buffer_space / self._buffered_sdram_per_timestep))
+        return int(math.floor(
+            buffer_space / self._buffered_sdram_per_timestep))
