@@ -9,9 +9,6 @@ from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
 
-# pacman imports
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
-
 # dsg imports
 from data_specification import utility_calls as dsg_utilities
 
@@ -278,38 +275,17 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
             files_in_report_folder.remove(oldest_file)
 
 
-def do_mapping(
-        inputs, algorithms, required_outputs, xml_paths, do_timings):
+def get_front_end_common_pacman_xml_paths():
+    """ Get the XML path for the front end common interface functions
     """
-    :param do_timings: bool which states if each algorithm should time itself
-    :param inputs:
-    :param algorithms:
-    :param required_outputs:
-    :param xml_paths:
-    :param do_timings:
-    :return:
-    """
-
-    # add xml path to front end common interface functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(interface_functions.__file__),
-                     "front_end_common_interface_functions.xml"))
-
-    # add xml path to front end common report functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(
-            front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml"))
-
-    # create executor
-    pacman_executor = PACMANAlgorithmExecutor(
-        do_timings=do_timings, inputs=inputs, xml_paths=xml_paths,
-        algorithms=algorithms, required_outputs=required_outputs)
-
-    # execute mapping process
-    pacman_executor.execute_mapping()
-
-    return pacman_executor
+    return [
+        os.path.join(
+            os.path.dirname(interface_functions.__file__),
+            "front_end_common_interface_functions.xml"),
+        os.path.join(
+            os.path.dirname(front_end_common_report_functions.__file__),
+            "front_end_common_reports.xml")
+    ]
 
 
 def get_cores_in_state(all_core_subsets, state, txrx):

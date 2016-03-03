@@ -31,7 +31,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, placements, graph_mapper, report_states, machine,
+            self, placements, graph_mapper, write_memory_map_report, machine,
             dsg_targets, transceiver, dse_app_id, app_id):
         """
 
@@ -44,13 +44,13 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :return:
         """
         data = self.spinnaker_based_data_specification_execution(
-            placements, graph_mapper, report_states, machine,
+            placements, graph_mapper, write_memory_map_report, machine,
             dsg_targets, transceiver, dse_app_id, app_id)
 
         return data
 
     def spinnaker_based_data_specification_execution(
-            self, placements, graph_mapper, report_states, machine,
+            self, placements, graph_mapper, write_memory_map_report, machine,
             dsg_targets, transceiver, dse_app_id, app_id):
         """
 
@@ -62,7 +62,6 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :param machine:
         :return:
         """
-        mem_map_report = report_states.write_memory_map_report
 
         # create a progress bar for end users
         progress_bar = ProgressBar(
@@ -96,7 +95,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
 
                 dse_data_struct_data = struct.pack(
                     "<IIII", base_address, data_spec_file_size, app_id,
-                    mem_map_report)
+                    write_memory_map_report)
 
                 transceiver.write_memory(
                     x, y, dse_data_struct_addr, dse_data_struct_data,

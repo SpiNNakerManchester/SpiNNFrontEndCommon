@@ -1,8 +1,7 @@
 # general imports
-import os
 import logging
 import traceback
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +18,10 @@ class DatabaseWriter(object):
         self._database_directory = database_directory
         self._database_path = os.path.join(self._database_directory,
                                            "input_output_database.db")
+
+        # delete any old database
+        if os.path.isfile(self._database_path):
+            os.remove(self._database_path)
 
         # set up checks
         self._machine_id = 0
