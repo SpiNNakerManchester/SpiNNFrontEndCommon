@@ -385,16 +385,16 @@ void recording_finalise() {
     // Get the region address store channel details
     address_t buffering_out_control_reg = data_specification_get_region(
         buffering_out_state_region, address);
+
     address_t out_ptr = buffering_out_control_reg;
 
     log_info(
-        "Storing channel state info in region %d starting at 0x%08x",
+        "Storing channel state info in region %d starting at 0x%08x\n",
         buffering_out_state_region, out_ptr);
 
     // store number of recording regions
     spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
     out_ptr++;
-
     // store info related to the state of the transmission to avoid possible
     // duplication of info on the host side
     spin1_memcpy(out_ptr, &buffering_out_fsm, sizeof(buffering_out_fsm));

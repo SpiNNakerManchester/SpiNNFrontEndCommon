@@ -169,7 +169,6 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
-    log_info("AHHHH\n");
 
     switch (msg->cmd_rc) {
         case CMD_STOP:
