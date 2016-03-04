@@ -121,6 +121,8 @@ class ReverseIpTagMultiCastSource(
         self._record_buffering_tag = None
         self._record_buffer_size = 0
         self._record_buffer_size_before_receive = 0
+        self._minimum_sdram_for_buffering = 0
+        self._using_auto_pause_and_resume = False
 
         # Keep the subvertices for resuming runs
         self._subvertices = list()
@@ -163,7 +165,9 @@ class ReverseIpTagMultiCastSource(
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(
-                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            minimum_sdram_for_buffering=0,
+            using_auto_pause_and_resume=False):
         self._recording_enabled = True
         self._record_buffering_ip_address = buffering_ip_address
         self._record_buffering_port = buffering_port
@@ -171,6 +175,8 @@ class ReverseIpTagMultiCastSource(
         self._record_buffering_tag = notification_tag
         self._record_buffer_size = record_buffer_size
         self._record_buffer_size_before_receive = buffer_size_before_receive
+        self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
+        self._using_auto_pause_and_resume = using_auto_pause_and_resume
 
     def get_outgoing_edge_constraints(self, partitioned_edge, graph_mapper):
         return partitioned_edge.pre_subvertex.get_outgoing_edge_constraints(
@@ -183,10 +189,14 @@ class ReverseIpTagMultiCastSource(
 
         recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
                           .get_recording_data_size(1))
-        if self._record_buffer_size > 0:
-            recording_size += self._record_buffer_size
-            recording_size += (ReverseIPTagMulticastSourcePartitionedVertex.
-                               get_buffer_state_region_size(1))
+        if self._recording_enabled:
+            if self._using_auto_pause_and_resume:
+                recording_size += self._minimum_sdram_for_buffering
+            else:
+                recording_size += self._record_buffer_size
+                recording_size += (
+                    ReverseIPTagMulticastSourcePartitionedVertex.
+                    get_buffer_state_region_size(1))
         mallocs = \
             ReverseIPTagMulticastSourcePartitionedVertex.n_regions_to_allocate(
                 self._send_buffer_times is not None, self._recording_enabled)
@@ -253,11 +263,19 @@ class ReverseIpTagMultiCastSource(
         subvertex.set_no_machine_time_steps(self._no_machine_time_steps)
         subvertex.first_machine_time_step = self._first_machine_time_step
         if self._record_buffer_size > 0:
+            sdram_per_ts = 0
+            if self._using_auto_pause_and_resume:
+
+                # Currently not known how much SDRAM might be used per
+                # timestep by this object, so we assume a minimum value here
+                sdram_per_ts = 8
+
             subvertex.enable_recording(
                 self._record_buffering_ip_address, self._record_buffering_port,
                 self._record_buffering_board_address,
                 self._record_buffering_tag, self._record_buffer_size,
-                self._record_buffer_size_before_receive)
+                self._record_buffer_size_before_receive,
+                self._minimum_sdram_for_buffering, sdram_per_ts)
         self._subvertices.append((vertex_slice, subvertex))
         return subvertex
 

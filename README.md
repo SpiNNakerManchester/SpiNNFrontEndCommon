@@ -7,6 +7,7 @@ In addition to a standard Python installation, this package depends on:
 
     six
     enum34
+    SpiNNStorageHandlers
     DataSpecification
     PACMAN
     SpiNNMan
@@ -14,7 +15,16 @@ In addition to a standard Python installation, this package depends on:
     PyNN
     numpy
 
-These dependencies, excluding numpy, can be installed using pip: pip install six pip install enum34 pip install DataSpecification pip install PACMAN pip install SpiNNMan pip install PyNN pip install SpiNNFrontEndCommon pip install SpiNNMachine
+These dependencies, excluding numpy, can be installed using pip:
+    pip install six
+    pip install enum34
+    pip install SpiNNStorageHandlers
+    pip install DataSpecification
+    pip install PACMAN
+    pip install SpiNNMan
+    pip install PyNN
+    pip install SpiNNFrontEndCommon
+    pip install SpiNNMachine
 
 Details of the installation of numpy on various operating systems are shown below.
 

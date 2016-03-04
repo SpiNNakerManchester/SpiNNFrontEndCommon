@@ -25,6 +25,9 @@ SARK_PER_MALLOC_SDRAM_USAGE = 8
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
 
+# size of the on-chip DSE data structure required in bytes
+DSE_DATA_STRUCT_SIZE = 16
+
 SDP_RUNNING_MESSAGE_CODES = Enum(
     value="SDP_RUNNING_MESSAGE_ID_CODES",
     names=[

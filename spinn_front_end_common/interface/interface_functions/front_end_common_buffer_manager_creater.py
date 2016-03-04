@@ -12,13 +12,13 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 class FrontEndCommonBufferManagerCreater(object):
 
     def __call__(
-            self, placements, tags, txrx, reports_states, app_data_folder):
+            self, placements, tags, txrx, write_reload_files, app_data_folder):
         progress_bar = ProgressBar(
             len(list(placements.placements)), "Initialising buffers")
 
         # Create the buffer manager
         buffer_manager = BufferManager(
-            placements, tags, txrx, reports_states, app_data_folder)
+            placements, tags, txrx, write_reload_files, app_data_folder)
 
         for placement in placements.placements:
             if isinstance(
