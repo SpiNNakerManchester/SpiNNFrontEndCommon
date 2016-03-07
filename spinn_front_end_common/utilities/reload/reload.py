@@ -1,4 +1,4 @@
-from spinn_front_end_common.utilities import helpful_functions
+from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 
 
 class Reload(object):
@@ -37,9 +37,10 @@ class Reload(object):
             loading, running, dsg_targets)
 
         # run the pacman executor
-        helpful_functions.do_mapping(
-            pacman_inputs, pacman_algorithms, pacman_outputs, xml_paths,
-            False)
+        executer = PACMANAlgorithmExecutor(
+            pacman_algorithms, [], pacman_inputs, xml_paths, pacman_outputs,
+            False, False)
+        executer.execute_mapping()
 
     @staticmethod
     def _create_pacman_inputs(
@@ -129,7 +130,7 @@ class Reload(object):
             algorithms.append("FrontEndCommomLoadExecutableImages")
             algorithms.append("FrontEndCommonRoutingTableLoader")
             algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
-            algorithms.append("MallocBasedNoGraphChipIDAllocator")
+            algorithms.append("MallocBasedChipIDAllocator")
             if dsg_targets is not None:
                 algorithms.append(
                     "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
