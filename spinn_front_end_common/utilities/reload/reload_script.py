@@ -76,17 +76,17 @@ class ReloadScript(object):
         self._println("")
 
         # Write running and loading flags
-        self._println("running = True")
-        self._println("loading = True")
+        self._println("running = False")
+        self._println("loading = False")
         self._println("for i in range(1, len(sys.argv)):")
         self._println("    if sys.argv[i] == \"--run\":")
-        self._println("        loading = False")
+        self._println("        running = True")
         self._println("    if sys.argv[i] == \"--load\":")
-        self._println("        running = False")
+        self._println("        loading = True")
         self._println("if not running and not loading:")
-        self._println(
-            "    print \"Only one of --run or --load should be specified\"")
-        self._println("    sys.exit(1)")
+        self._println("    running = True")
+        self._println("    loading = True")
+        self._println("")
 
         # Write logging system
         self._println("logging.basicConfig(level=logging.INFO)")
