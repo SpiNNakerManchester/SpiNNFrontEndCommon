@@ -340,11 +340,11 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
     def _update_virtual_key(self, routing_info, partitioned_graph):
         if self._virtual_key is None:
-            partitions = partitioned_graph.\
-                outgoing_edges_partitions_from_vertex(self)
+            partitions = \
+                partitioned_graph.outgoing_edges_partitions_from_vertex(self)
             for partition in partitions.values():
-                key_and_mask = \
-                    routing_info.get_keys_and_masks_from_partition(partition)[0]
+                key_and_mask = routing_info.get_keys_and_masks_from_partition(
+                    partition)[0]
                 self._mask = key_and_mask.mask
                 self._virtual_key = key_and_mask.key
 

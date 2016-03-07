@@ -214,8 +214,8 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
             spec.write_value(len(with_payload))
             for command in with_payload:
-                spec.write_value(self._get_key(command, graph_mapper,
-                                               routing_info, partitioned_graph))
+                spec.write_value(self._get_key(
+                    command, graph_mapper, routing_info, partitioned_graph))
                 payload = command.get_payload(routing_info, partitioned_graph,
                                               graph_mapper)
                 spec.write_value(payload)
@@ -224,8 +224,8 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
             spec.write_value(len(without_payload))
             for command in without_payload:
-                spec.write_value(self._get_key(command, graph_mapper,
-                                               routing_info, partitioned_graph))
+                spec.write_value(self._get_key(
+                    command, graph_mapper, routing_info, partitioned_graph))
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
