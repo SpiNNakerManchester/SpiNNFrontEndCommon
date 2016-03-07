@@ -33,10 +33,10 @@ class FrontEndCommonLoadExecutableImages(object):
 
         progress_bar = ProgressBar(executable_targets.total_processors,
                                    "Loading executables onto the machine")
-        for executable_target_key in executable_targets.binary_paths():
+        for executable_target_key in executable_targets.binaries:
             file_reader = FileDataReader(executable_target_key)
-            core_subset = executable_targets.\
-                retrieve_cores_for_a_executable_target(executable_target_key)
+            core_subset = executable_targets.get_cores_for_binary(
+                executable_target_key)
 
             statinfo = os.stat(executable_target_key)
             size = statinfo.st_size

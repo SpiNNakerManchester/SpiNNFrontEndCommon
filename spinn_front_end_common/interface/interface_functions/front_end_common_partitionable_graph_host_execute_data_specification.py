@@ -4,17 +4,15 @@ from data_specification.data_specification_executor import \
     DataSpecificationExecutor
 from data_specification import exceptions
 
+from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
+    import AbstractDataSpecableVertex
+
 # spinn_storage_handlers import
 from spinn_storage_handlers.file_data_reader import FileDataReader
 from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 # pacman imports
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
-
-# front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_data_specable_vertex import \
-    AbstractDataSpecableVertex
 
 import os
 import logging
@@ -30,9 +28,9 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, hostname, placements, transceiver, graph_mapper,
-            report_default_directory, write_text_specs,
-            runtime_application_data_folder, machine, app_id, dsg_targets):
+            self, hostname, transceiver, report_default_directory,
+            write_text_specs, runtime_application_data_folder, machine,
+            app_id, dsg_targets):
         """
 
         :param hostname:
@@ -44,7 +42,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         :return:
         """
         data = self.host_based_data_specification_execution(
-            hostname, placements, transceiver, graph_mapper, write_text_specs,
+            hostname, transceiver, write_text_specs,
             runtime_application_data_folder, machine,
             report_default_directory, app_id, dsg_targets)
 
@@ -52,7 +50,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
     @staticmethod
     def host_based_data_specification_execution(
-            hostname, placements, transceiver, graph_mapper, write_text_specs,
+            hostname, transceiver, write_text_specs,
             application_data_runtime_folder, machine, report_default_directory,
             app_id, dsg_targets):
         """
@@ -70,117 +68,99 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         :return:
         """
         processor_to_app_data_base_address = dict()
-        placement_to_application_data_files = dict()
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(len(list(placements.placements)),
+        progress_bar = ProgressBar(len(list(dsg_targets)),
                                    "Executing data specifications")
 
-        for placement in placements.placements:
-            associated_vertex = graph_mapper.get_vertex_from_subvertex(
-                placement.subvertex)
+        for ((x, y, p), data_spec_file_path) in dsg_targets.iteritems():
 
-            # if the vertex can generate a DSG, call it
-            if isinstance(associated_vertex, AbstractDataSpecableVertex):
+            # build specification reader
+            data_spec_file_path = dsg_targets[x, y, p]
+            data_spec_reader = FileDataReader(data_spec_file_path)
 
-                x, y, p = placement.x, placement.y, placement.p
-                label = associated_vertex.label
+            # build application data writer
+            app_data_file_path = \
+                AbstractDataSpecableVertex.get_application_data_file_path(
+                    x, y, p, hostname, application_data_runtime_folder)
 
-                processor_mapping_key = (x, y, p, label)
+            data_writer = FileDataWriter(app_data_file_path)
 
-                placement_to_application_data_files[processor_mapping_key] = \
-                    list()
+            # generate a file writer for DSE report (app pointer table)
+            report_writer = None
+            if write_text_specs:
+                new_report_directory = os.path.join(
+                    report_default_directory, "data_spec_text_files")
 
-                # build specification reader
-                data_spec_file_path = dsg_targets[processor_mapping_key]
-                data_spec_reader = FileDataReader(data_spec_file_path)
+                if not os.path.exists(new_report_directory):
+                    os.mkdir(new_report_directory)
 
-                # build application data writer
-                app_data_file_path = \
-                    associated_vertex.get_application_data_file_path(
-                        x, y, p, hostname, application_data_runtime_folder)
+                file_name = "{}_DSE_report_for_{}_{}_{}.txt".format(
+                    hostname, x, y, p)
+                report_file_path = os.path.join(new_report_directory,
+                                                file_name)
+                report_writer = FileDataWriter(report_file_path)
 
-                # update application data file path tracker
-                placement_to_application_data_files[processor_mapping_key].\
-                    append(app_data_file_path)
+            # maximum available memory
+            # however system updates the memory available
+            # independently, so the check on the space available actually
+            # happens when memory is allocated
+            chip = machine.get_chip_at(x, y)
+            memory_available = chip.sdram.size
 
-                data_writer = FileDataWriter(app_data_file_path)
+            # generate data spec executor
+            host_based_data_spec_executor = DataSpecificationExecutor(
+                data_spec_reader, data_writer, memory_available,
+                report_writer)
 
-                # generate a file writer for DSE report (app pointer table)
-                report_writer = None
-                if write_text_specs:
-                    new_report_directory = os.path.join(
-                        report_default_directory, "data_spec_text_files")
+            # run data spec executor
+            try:
+                # bytes_used_by_spec, bytes_written_by_spec = \
+                host_based_data_spec_executor.execute()
+            except exceptions.DataSpecificationException as e:
+                logger.error(
+                    "Error executing data specification for {}, {}, {}".format(
+                        x, y, p))
+                raise e
 
-                    if not os.path.exists(new_report_directory):
-                        os.mkdir(new_report_directory)
+            bytes_used_by_spec = \
+                host_based_data_spec_executor.get_constructed_data_size()
 
-                    file_name = "{}_DSE_report_for_{}_{}_{}.txt".format(
-                        hostname, x, y, p)
-                    report_file_path = os.path.join(new_report_directory,
-                                                    file_name)
-                    report_writer = FileDataWriter(report_file_path)
+            # allocate memory where the app data is going to be written
+            # this raises an exception in case there is not enough
+            # SDRAM to allocate
+            start_address = transceiver.malloc_sdram(
+                x, y, bytes_used_by_spec, app_id)
 
-                # maximum available memory
-                # however system updates the memory available
-                # independently, so the check on the space available actually
-                # happens when memory is allocated
-                chip = machine.get_chip_at(placement.x, placement.y)
-                memory_available = chip.sdram.size
+            # the base address address needs to be passed to the DSE to
+            # generate the pointer table with absolute addresses
+            host_based_data_spec_executor.write_dse_output_file(
+                start_address)
 
-                # generate data spec executor
-                host_based_data_spec_executor = DataSpecificationExecutor(
-                    data_spec_reader, data_writer, memory_available,
-                    report_writer)
+            # close the application data file writer
+            data_writer.close()
 
-                # run data spec executor
-                try:
-                    # bytes_used_by_spec, bytes_written_by_spec = \
-                    host_based_data_spec_executor.execute()
-                except exceptions.DataSpecificationException as e:
-                    logger.error(
-                        "Error executing data specification for {}"
-                        .format(associated_vertex))
-                    raise e
+            # the data is written to memory
+            file_reader = FileDataReader(app_data_file_path)
+            app_data = file_reader.readall()
+            bytes_written_by_spec = len(app_data)
+            transceiver.write_memory(x, y, start_address, app_data)
+            file_reader.close()
 
-                bytes_used_by_spec = \
-                    host_based_data_spec_executor.get_constructed_data_size()
+            # set user 0 register appropriately to the application data
+            user_0_address = \
+                transceiver.get_user_0_register_address_from_core(x, y, p)
+            start_address_encoded = \
+                buffer(struct.pack("<I", start_address))
+            transceiver.write_memory(
+                x, y, user_0_address, start_address_encoded)
 
-                # allocate memory where the app data is going to be written
-                # this raises an exception in case there is not enough
-                # SDRAM to allocate
-                start_address = transceiver.malloc_sdram(
-                    x, y, bytes_used_by_spec, app_id)
-
-                # the base address address needs to be passed to the DSE to
-                # generate the pointer table with absolute addresses
-                host_based_data_spec_executor.write_dse_output_file(
-                    start_address)
-
-                # close the application data file writer
-                data_writer.close()
-
-                # the data is written to memory
-                file_reader = FileDataReader(app_data_file_path)
-                app_data = file_reader.readall()
-                bytes_written_by_spec = len(app_data)
-                transceiver.write_memory(x, y, start_address, app_data)
-                file_reader.close()
-
-                # set user 0 register appropriately to the application data
-                user_0_address = \
-                    transceiver.get_user_0_register_address_from_core(x, y, p)
-                start_address_encoded = \
-                    buffer(struct.pack("<I", start_address))
-                transceiver.write_memory(
-                    x, y, user_0_address, start_address_encoded)
-
-                # write information for the memory map report
-                processor_to_app_data_base_address[
-                    processor_mapping_key] = {
-                        'start_address': start_address,
-                        'memory_used': bytes_used_by_spec,
-                        'memory_written': bytes_written_by_spec}
+            # write information for the memory map report
+            processor_to_app_data_base_address[x, y, p] = {
+                'start_address': start_address,
+                'memory_used': bytes_used_by_spec,
+                'memory_written': bytes_written_by_spec
+            }
 
             # update the progress bar
             progress_bar.update()
@@ -189,8 +169,6 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         progress_bar.end()
         return {'processor_to_app_data_base_address':
                 processor_to_app_data_base_address,
-                'placement_to_app_data_files':
-                placement_to_application_data_files,
                 'LoadedApplicationDataToken': True,
                 "DSEOnHost": True,
                 "DSEOnChip": False}
