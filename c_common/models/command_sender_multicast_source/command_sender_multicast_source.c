@@ -25,7 +25,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
             (time >= simulation_ticks)) {
-        simulation_handle_pause_resume(timer_callback, TIMER);
+        simulation_handle_pause_resume();
     }
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
@@ -50,7 +50,7 @@ void timer_callback(uint unused0, uint unused1) {
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
 
-                    // if the delay is 0, dont call delay
+                    // if the delay is 0, don't call delay
                     if (delay > 0) {
                         spin1_delay_us(delay);
                     }
@@ -133,8 +133,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
 
@@ -162,9 +161,7 @@ void c_main(void) {
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
 
-    log_info("Starting");
-
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run();
+    simulation_run(timer_callback, TIMER);
 }

@@ -360,6 +360,10 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
+                <param_name>total_machine_timesteps</param_name>
+                <param_type>TotalMachineTimeSteps</param_type>
+            </parameter>
+            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
@@ -818,10 +822,6 @@
         <python_class>FrontEndCommonRuntimeUpdater</python_class>
         <required_inputs>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
                 <param_name>txrx</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
@@ -838,12 +838,12 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
+                <param_name>no_machine_timesteps</param_name>
+                <param_type>TotalMachineTimeSteps</param_type>
             </parameter>
             <parameter>
-                <param_name>ran_token</param_name>
-                <param_type>RanToken</param_type>
+                <param_name>loaded_binaries_token</param_name>
+                <param_type>LoadBinariesToken</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>

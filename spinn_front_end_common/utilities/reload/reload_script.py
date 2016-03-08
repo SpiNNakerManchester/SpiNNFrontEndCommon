@@ -47,7 +47,7 @@ class ReloadScript(object):
             send_start_notification,
 
             # Execute information
-            app_id, runtime, time_scale_factor):
+            app_id, runtime, time_scale_factor, total_machine_timesteps):
 
         self._app_data_runtime_folder = app_data_runtime_folder
         file_name = os.path.join(
@@ -148,6 +148,8 @@ class ReloadScript(object):
         self._println("app_id = {}".format(app_id))
         self._println("runtime = {}".format(runtime))
         self._println("time_scale_factor = {}".format(time_scale_factor))
+        self._println("total_machine_timesteps = {}".format(
+            total_machine_timesteps))
         self._println("")
 
     def _write_import_class(self, cls):
@@ -286,6 +288,6 @@ class ReloadScript(object):
         self._println("    database_socket_addresses, database_file_path,")
         self._println("    send_start_notification,")
         self._println("    executable_targets, app_id, runtime,")
-        self._println("    time_scale_factor,")
+        self._println("    time_scale_factor, total_machine_timesteps,")
         self._println("    running, loading)")
         self._file.close()
