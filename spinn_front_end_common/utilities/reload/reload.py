@@ -28,6 +28,7 @@ class Reload(object):
 
             # Execute information
             executable_targets, app_id, runtime, time_scale_factor,
+            total_machine_timesteps,
 
             # Flags that indicate what to actually do
             loading=True, running=True):
@@ -79,6 +80,7 @@ class Reload(object):
         inputs["NoSyncChanges"] = 0
         inputs["TimeScaleFactor"] = time_scale_factor
         inputs["RunTime"] = runtime
+        inputs["TotalMachineTimeSteps"] = total_machine_timesteps
         inputs["ExecutableTargets"] = executable_targets
 
         algorithms = list()
@@ -99,6 +101,7 @@ class Reload(object):
             algorithms.append("FrontEndCommonBufferManagerCreater")
             algorithms.append("FrontEndCommonLoadExecutableImages")
             algorithms.append("FrontEndCommonNotificationProtocol")
+            algorithms.append("FrontEndCommonRuntimeUpdater")
             algorithms.append("FrontEndCommonApplicationRunner")
 
         # run the pacman executor

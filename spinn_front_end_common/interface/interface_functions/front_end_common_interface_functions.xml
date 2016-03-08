@@ -360,6 +360,10 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
+                <param_name>total_machine_timesteps</param_name>
+                <param_type>TotalMachineTimeSteps</param_type>
+            </parameter>
+            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
@@ -838,8 +842,8 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
+                <param_name>no_machine_timesteps</param_name>
+                <param_type>TotalMachineTimeSteps</param_type>
             </parameter>
             <parameter>
                 <param_name>loaded_binaries_token</param_name>

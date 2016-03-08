@@ -27,7 +27,7 @@ class FrontEndCommonReloadScriptCreator(object):
 
             # Execute information
             executable_targets, app_id, runtime, time_scale_factor,
-            executable_finder):
+            total_machine_timesteps, executable_finder):
 
         reload_script = ReloadScript(
 
@@ -41,7 +41,7 @@ class FrontEndCommonReloadScriptCreator(object):
             wait_for_read_confirmation, database_file_path,
             send_start_notification,
 
-            app_id, runtime, time_scale_factor)
+            app_id, runtime, time_scale_factor, total_machine_timesteps)
 
         for ip_tag in tags.ip_tags:
             reload_script.add_ip_tag(ip_tag)

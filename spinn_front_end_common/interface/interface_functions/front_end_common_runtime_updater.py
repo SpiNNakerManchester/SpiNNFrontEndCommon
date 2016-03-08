@@ -15,7 +15,7 @@ class FrontEndCommonRuntimeUpdater(object):
 
     def __call__(
             self, placements, txrx, no_sync_changes, app_id,
-            executable_targets, graph_mapper, loaded_binaries_token):
+            executable_targets, no_machine_timesteps, loaded_binaries_token):
 
         progress_bar = ProgressBar(2, "Updating on chip's runtime")
 
@@ -37,18 +37,16 @@ class FrontEndCommonRuntimeUpdater(object):
                 all_core_subsets, CPUState.CPU_STATE_12, txrx)
 
             for (x, y, p) in unsuccessful_cores:
-                subvertex = placements.get_subvertex_on_processor(x, y, p)
-                vertex = graph_mapper.get_vertex_from_subvertex(subvertex)
                 infinite_run = 0
-                steps = vertex.no_machine_time_steps
-                if steps is None:
+                if no_machine_timesteps is None:
                     infinite_run = 1
-                    steps = 0
+                    no_machine_timesteps = 0
 
                 data = struct.pack(
                     "<III",
-                    constants.SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE
-                    .value, steps, infinite_run)
+                    (constants.SDP_RUNNING_MESSAGE_CODES
+                     .SDP_NEW_RUNTIME_ID_CODE.value),
+                    no_machine_timesteps, infinite_run)
                 txrx.send_sdp_message(SDPMessage(SDPHeader(
                     flags=SDPFlag.REPLY_NOT_EXPECTED,
                     destination_cpu=p,
