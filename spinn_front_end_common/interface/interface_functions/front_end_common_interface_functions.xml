@@ -822,10 +822,6 @@
         <python_class>FrontEndCommonRuntimeUpdater</python_class>
         <required_inputs>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
                 <param_name>txrx</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
