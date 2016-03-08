@@ -21,9 +21,8 @@ class FrontEndCommonRuntimeUpdater(object):
 
         if not loaded_binaries_token:
             raise exceptions.ConfigurationException(
-                "The loaded executable token is set to false, and therefore "
-                "the runtime updater cannot be ran yet. please fix and try "
-                "again.")
+                "The run time token is set to false, and therefore the runtime"
+                "updater cannot be ran yet.")
 
         # check that the right number of processors are in sync0
         processors_ready = \

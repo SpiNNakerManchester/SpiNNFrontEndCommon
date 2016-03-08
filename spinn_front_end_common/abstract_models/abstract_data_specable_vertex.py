@@ -1,5 +1,5 @@
-from data_specification.file_data_writer import FileDataWriter
 from spinn_front_end_common.utilities import constants
+from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 from abc import ABCMeta
 from six import add_metaclass

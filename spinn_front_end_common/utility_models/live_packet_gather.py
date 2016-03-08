@@ -97,7 +97,7 @@ class LivePacketGather(
                     self.get_cpu_usage_for_atoms(1, None)),
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
                 sdram=SDRAMResource(
-                    self.get_static_sdram_usage_for_atoms(1, None))))
+                    self.get_sdram_usage_for_atoms(1, None))))
 
         # Try to place this near the Ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
@@ -161,7 +161,7 @@ class LivePacketGather(
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
-        return [data_writer.filename]
+        return data_writer.filename
 
     def reserve_memory_regions(self, spec):
         """
@@ -188,7 +188,7 @@ class LivePacketGather(
 
         :param spec: the spec object for the dsg
         :type spec: \
-                    :py:class:`data_specification.file_data_writer.FileDataWriter`
+                    :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
         :param ip_tags: The set of ip tags assigned to the object
         :type ip_tags: iterable of :py:class:`spinn_machine.tags.iptag.IPTag`
         :raises DataSpecificationException: when something goes wrong with the\
@@ -287,8 +287,7 @@ class LivePacketGather(
                 placement.x, placement.y,
                 provanence_data_region_base_address_offset, 4))
         provanence_data_region_base_address = \
-            struct.unpack("I", provanence_data_region_base_address_buf)[0]
-        provanence_data_region_base_address += app_data_base_address
+            struct.unpack("<I", provanence_data_region_base_address_buf)[0]
 
         # read in the provenance data
         provanence_data_region_contents_buff = \
@@ -324,7 +323,7 @@ class LivePacketGather(
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
         return 0
 
-    def get_static_sdram_usage_for_atoms(self, vertex_slice, graph):
+    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
                 self._CONFIG_SIZE)
 

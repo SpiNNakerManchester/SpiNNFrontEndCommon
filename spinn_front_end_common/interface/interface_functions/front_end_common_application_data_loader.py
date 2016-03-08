@@ -1,7 +1,6 @@
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 
-from spinnman.data.file_data_reader import FileDataReader \
-    as SpinnmanFileDataReader
+from spinn_storage_handlers.file_data_reader import FileDataReader
 
 import logging
 
@@ -22,6 +21,8 @@ class FrontEndCommonApplicationDataLoader(object):
             logger.debug(
                 "loading application data for vertex {}".format(label))
             key = (x, y, p, label)
+            start_address = \
+                processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
             memory_used = \
@@ -41,7 +42,7 @@ class FrontEndCommonApplicationDataLoader(object):
             application_file_paths = placement_to_app_data_files[key]
 
             for file_path_for_application_data in application_file_paths:
-                application_data_file_reader = SpinnmanFileDataReader(
+                application_data_file_reader = FileDataReader(
                     file_path_for_application_data)
                 logger.debug(
                     "writing application data for vertex {}".format(label))
@@ -51,7 +52,7 @@ class FrontEndCommonApplicationDataLoader(object):
                 application_data_file_reader.close()
 
                 if verify:
-                    application_data_file_reader = SpinnmanFileDataReader(
+                    application_data_file_reader = FileDataReader(
                         file_path_for_application_data)
                     all_data = application_data_file_reader.readall()
                     read_data = transceiver.read_memory(

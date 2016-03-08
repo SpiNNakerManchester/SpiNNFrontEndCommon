@@ -9,8 +9,8 @@ from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
 
-# pacman imports
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+# dsg imports
+from data_specification import utility_calls as dsg_utilities
 
 # general imports
 import os
@@ -43,7 +43,7 @@ def read_data(x, y, address, length, data_format, transceiver):
 
     :param x: chip x
     :param y: chip y
-    :param address: base address of the sdram chip to read
+    :param address: base address of the SDRAM chip to read
     :param length: length to read
     :param data_format: the format to read memory
     :param transceiver: the spinnman interface
@@ -53,6 +53,45 @@ def read_data(x, y, address, length, data_format, transceiver):
     data = buffer(transceiver.read_memory(x, y, address, length))
     result = struct.unpack_from(data_format, data)[0]
     return result
+
+
+def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
+        """ Get the address of a region for a vertex
+
+        :param region: the region to locate the base address of
+        :type region: int
+        :param vertex: the vertex to load a buffer for
+        :type vertex:\
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
+        :return: None
+        """
+        placement = placements.get_placement_of_subvertex(vertex)
+        memory_address = locate_memory_region_on_core(
+            placement.x, placement.y, placement.p, region, transceiver)
+        return memory_address
+
+
+def locate_memory_region_on_core(x, y, p, region, transceiver):
+        regions_base_address = get_app_data_base_address(x, y, p, transceiver)
+
+        # Get the position of the region in the pointer table
+        region_offset_in_pointer_table = \
+            dsg_utilities.get_region_base_address_offset(
+                regions_base_address, region)
+        region_address = buffer(transceiver.read_memory(
+            x, y, region_offset_in_pointer_table, 4))
+        region_address_decoded = struct.unpack_from("<I", region_address)[0]
+        return region_address_decoded
+
+
+def get_app_data_base_address(x, y, p, transceiver):
+    app_data_base_address = transceiver.get_user_0_register_address_from_core(
+        x, y, p)
+    regions_base_address_encoded = buffer(transceiver.read_memory(
+        x, y, app_data_base_address, 4))
+    regions_base_address = struct.unpack_from(
+        "<I", regions_base_address_encoded)[0]
+    return regions_base_address
 
 
 def auto_detect_database(partitioned_graph):
@@ -236,45 +275,17 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
             files_in_report_folder.remove(oldest_file)
 
 
-def do_mapping(
-        inputs, algorithms, optional_algorithms, required_outputs, xml_paths,
-        do_timings):
+def get_front_end_common_pacman_xml_paths():
+    """ Get the XML path for the front end common interface functions
     """
-    :param do_timings: bool which states if each algorithm should time itself
-    :param inputs: the list of inputs to put into the pacman exeuctor
-    :param algorithms: the list of algorithms which need to be executed
-    :param optional_algorithms: a list of algorithms which dont
-        nessariy need to be ran but are there for extra functionality to
-        support the mapping process
-    :param required_outputs: the outputs required from the pacman executor
-    :param xml_paths: the list of paths to xml files which define the
-        algorithms inputs, outputs, names etc
-    :param in_debug_mode: bool which states if the system is running in debug
-    mode
-    :return:
-    """
-
-    # add xml path to front end common interface functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(interface_functions.__file__),
-                     "front_end_common_interface_functions.xml"))
-
-    # add xml path to front end common report functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(
-            front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml"))
-
-    # create executor
-    pacman_executor = PACMANAlgorithmExecutor(
-        do_timings=do_timings, inputs=inputs, xml_paths=xml_paths,
-        algorithms=algorithms, optional_algorithms=optional_algorithms,
-        required_outputs=required_outputs)
-
-    # execute mapping process
-    pacman_executor.execute_mapping()
-
-    return pacman_executor
+    return [
+        os.path.join(
+            os.path.dirname(interface_functions.__file__),
+            "front_end_common_interface_functions.xml"),
+        os.path.join(
+            os.path.dirname(front_end_common_report_functions.__file__),
+            "front_end_common_reports.xml")
+    ]
 
 
 def get_cores_in_state(all_core_subsets, state, txrx):

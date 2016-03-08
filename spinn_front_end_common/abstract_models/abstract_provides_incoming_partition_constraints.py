@@ -4,19 +4,19 @@ from abc import abstractmethod
 
 
 @add_metaclass(ABCMeta)
-class AbstractProvidesIncomingEdgeConstraints(object):
+class AbstractProvidesIncomingPartitionConstraints(object):
     """ A vertex that can provide constraints for its incoming partitioned\
         edges
     """
 
     @abstractmethod
-    def get_incoming_edge_constraints(self, partitioned_edge, graph_mapper):
+    def get_incoming_partition_constraints(self, partition, graph_mapper):
         """ Get constraints to be added to the given edge that goes in to\
             a partitioned vertex of this vertex
 
-        :param partitioned_edge: An edge that goes in to this vertex
-        :type partitioned_edge:\
-                    :py:class:`pacman.model.partitioned_graph.partitioned_edge.PartitionedEdge`
+        :param partition: An partition that goes in to this vertex
+        :type partition:\
+                    :py:class:`pacman.utilities.utility_objs.outgoing_partition.OutgoingPartition`
         :param graph_mapper: A mapper between the partitioned edge and the \
                     associated partitionable edge
         :type graph_mapper:\
