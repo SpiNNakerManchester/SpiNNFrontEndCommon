@@ -15,7 +15,7 @@ class FrontEndCommonMemoryMapOnChipReport(object):
     """ Report on memory usage
     """
 
-    def __call__(self, report_default_directory, placements, transceiver,
+    def __call__(self, report_default_directory, dsg_targets, transceiver,
                  dse_on_host, dse_on_chip):
         """
 
@@ -34,10 +34,9 @@ class FrontEndCommonMemoryMapOnChipReport(object):
         if not os.path.exists(directory_name):
             os.makedirs(directory_name)
 
-        progress_bar = ProgressBar(placements.n_placements,
+        progress_bar = ProgressBar(len(dsg_targets),
                                    "Writing memory map reports")
-        for placement in placements:
-            x, y, p = placement.x, placement.y, placement.p
+        for (x, y, p) in dsg_targets:
 
             file_name = os.path.join(
                 directory_name,

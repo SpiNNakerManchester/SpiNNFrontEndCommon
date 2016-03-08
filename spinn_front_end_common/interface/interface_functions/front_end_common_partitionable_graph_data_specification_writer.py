@@ -46,8 +46,7 @@ class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
                     write_text_specs, app_data_runtime_folder)
 
                 # link dsg file to subvertex
-                dsg_targets[placement.x, placement.y, placement.p,
-                            associated_vertex.label] = file_path
+                dsg_targets[placement.x, placement.y, placement.p] = file_path
 
                 # Get name of binary from vertex
                 binary_name = associated_vertex.get_binary_file_name()

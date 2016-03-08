@@ -32,8 +32,8 @@
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
                 <param_name>transceiver</param_name>
