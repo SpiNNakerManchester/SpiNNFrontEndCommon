@@ -126,3 +126,6 @@ class DatabaseReader(object):
             "SELECT value FROM configuration_parameters"
             " WHERE parameter_id = \"{}\"".format(parameter_name))
         return float(self._cursor.fetchone()["value"])
+
+    def close(self):
+        self._connection.close()
