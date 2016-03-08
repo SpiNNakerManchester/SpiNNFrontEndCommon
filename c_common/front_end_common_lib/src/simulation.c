@@ -10,20 +10,23 @@
 
 //! the pointer to the simulation time used by application models
 static uint32_t *pointer_to_simulation_time;
+
 //! the pointer to the flag for if it is a infinite run
 static uint32_t *pointer_to_infinite_run;
 
-//! the pointer to the users timer tic callback
+//! the pointer to the users timer tick callback
 static callback_t users_timer_callback;
-//! the user timer tic priority
-static int user_timer_tic_priority;
+
+//! the user timer tick priority
+static int user_timer_tick_priority;
 
 //! flag to state that code has received a runtime update.
 static bool has_received_runtime_update = false;
+
 //! flag to state that the first runtime update.
 static bool is_first_runtime_update = true;
 
-//! the port used by the host machine for setting up the sdp port for
+//! the port used by the host machine for setting up the SDP port for
 //! receiving the exit, new runtime etc
 static int sdp_exit_run_command_port;
 
@@ -39,18 +42,12 @@ static bool exited = false;
 //!            requesting timing details from this memory address.
 //! \param[out] timer_period A pointer for storing the timer period once read
 //!             from the memory region
-//! \param[out] n_simulation_ticks A pointer for storing the number of timer
-//!             ticks this executable should run for, which is read from this
-//!             region
-//! \param INFINITE_RUN[out] a pointer to an int which represents if the model
-//!                          should run for infinite time
 //! \return True if the method was able to read the parameters and the
 //!         application magic number corresponded to the magic number in
 //!         memory, otherwise the method will return False.
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_app_magic_number,
-        uint32_t* timer_period, uint32_t* n_simulation_ticks,
-        uint32_t* infinite_run) {
+        uint32_t* timer_period) {
 
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
         log_error(
@@ -62,7 +59,6 @@ bool simulation_read_timing_details(
     }
 
     *timer_period = address[SIMULATION_TIMER_PERIOD];
-    *infinite_run = address[INFINITE_RUN];
 
     sdp_exit_run_command_port = address[SDP_EXIT_RUNTIME_COMMAND_PORT];
     return true;
@@ -71,59 +67,64 @@ bool simulation_read_timing_details(
 
 void simulation_run(
         callback_t timer_function, int timer_function_priority){
-    // Store end users timer tic callbacks to be used once runtime stuff been
+
+    // Store end users timer tick callbacks to be used once runtime stuff been
     // set up for the first time.
     users_timer_callback = timer_function;
-    user_timer_tic_priority = timer_function_priority;
+    user_timer_tick_priority = timer_function_priority;
 
-    // turn off any timer tic callbacks, as we're replacing them for the moment
+    // turn off any timer tick callbacks, as we're replacing them for the moment
     spin1_callback_off(TIMER_TICK);
+
     // Set off simulation runtime callback
     spin1_callback_on(TIMER_TICK, simulation_timer_tic_callback, 1);
-    // go into sark start
+
+    // go into SARK start
     spin1_start(SYNC_NOWAIT);
+
     // return from running
     return;
 }
 
-//! \brief timer callback to support updating runtime via sdp message during
-//! first run
+//! \brief timer callback to support updating runtime via SDP message during
+//!        first run
 //! \param[in] timer_function: The callback function used for the
 //!            timer_callback interrupt registration
 //! \param[in] timer_function_priority: the priority level wanted for the
 //! timer callback used by the application model.
 void simulation_timer_tic_callback(uint timer_count, uint unused){
-    log_info("Setting off the second run for "
-             "simulation_handle_run_pause_resume");
+    log_debug(
+        "Setting off the second run for simulation_handle_run_pause_resume");
     simulation_handle_pause_resume();
 }
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
 void simulation_handle_pause_resume(){
+
     // Wait for the next run of the simulation
     spin1_callback_off(TIMER_TICK);
+
     // reset the has received runtime flag, for the next run
     has_received_runtime_update = false;
-    // Fall into a sync state to await further calls (sark level call)
+
+    // Fall into a sync state to await further calls (SARK level call)
     event_wait();
     if (exited){
         spin1_exit(0);
-        log_info("exited");
-    }
-    else{
-        if (has_received_runtime_update & is_first_runtime_update){
-            log_info("starting");
+        log_info("Exiting");
+    } else {
+        if (has_received_runtime_update & is_first_runtime_update) {
+            log_info("Starting");
             is_first_runtime_update = false;
-        }else if (has_received_runtime_update & !is_first_runtime_update){
-            log_info("resuming");
-        }else if (!has_received_runtime_update){
-            log_error("Been asked to run again even though I've not had my"
-                      " runtime updated. Therefore exiting in error state");
+        } else if (has_received_runtime_update & !is_first_runtime_update) {
+            log_info("Resuming");
+        } else if (!has_received_runtime_update){
+            log_error("Runtime has not been updated!");
             rt_error(RTE_API);
         }
-        spin1_callback_on(TIMER_TICK, users_timer_callback,
-                          user_timer_tic_priority);
+        spin1_callback_on(
+            TIMER_TICK, users_timer_callback, user_timer_tick_priority);
     }
 }
 
@@ -158,10 +159,10 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
         // change state to CPU_STATE_12
         sark_cpu_state(CPU_STATE_12);
 
-        // update flag to state ive received a runtime
+        // update flag to state received a runtime
         has_received_runtime_update = true;
 
-    } else if (msg->cmd_rc == SDP_SWITCH_STATE){
+    } else if (msg->cmd_rc == SDP_SWITCH_STATE) {
 
         // change the state of the cpu into what's requested from the host
         sark_cpu_state(msg->arg1);

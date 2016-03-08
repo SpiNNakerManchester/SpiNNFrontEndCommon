@@ -50,7 +50,7 @@ void timer_callback(uint unused0, uint unused1) {
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
 
-                    // if the delay is 0, dont call delay
+                    // if the delay is 0, don't call delay
                     if (delay > 0) {
                         spin1_delay_us(delay);
                     }
@@ -133,8 +133,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(0, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
 

@@ -932,12 +932,9 @@ bool initialise(uint32_t *timer_period) {
     // Get the timing details
     address_t system_region = data_specification_get_region(SYSTEM, address);
     if (!simulation_read_timing_details(
-            system_region, APPLICATION_NAME_HASH, timer_period,
-            &simulation_ticks, &infinite_run)) {
+            system_region, APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
-
-    log_info("have been told to run for %d timer tics", simulation_ticks);
 
     // Read the parameters
     if (!read_parameters(

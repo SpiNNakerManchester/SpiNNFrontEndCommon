@@ -58,7 +58,7 @@ static uint32_t payload_timestamp;
 // D bit
 static uint32_t payload_apply_prefix;
 
-// Payload prefix data (for the rcvr)
+// Payload prefix data (for the receiver)
 static uint32_t payload_prefix;
 
 // Right payload shift (for the sender)
@@ -407,8 +407,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
 
@@ -474,7 +473,7 @@ bool configure_sdp_msg(void) {
     header_len = 2;
     temp_ptr = (void *) sdp_msg_aer_header[1];
 
-    // pointers for AER packet header, prefix(es) and data
+    // pointers for AER packet header, prefix and data
     if (apply_prefix) {
 
         // pointer to key prefix
