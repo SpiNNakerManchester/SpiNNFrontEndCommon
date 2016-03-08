@@ -3,9 +3,7 @@ from spinnman.model.core_subsets import CoreSubsets
 
 
 class ExecutableTargets(object):
-    """
-    obejct to encapsulate the binaries and coresets in an object for
-    interface usages
+    """ Encapsulate the binaries and cores on which to execute them
     """
 
     def __init__(self):
@@ -15,31 +13,27 @@ class ExecutableTargets(object):
         self._core_subsets = list()
 
     def add_binary(self, binary):
-        """
-        adds a binary path to the list of exeuctables with a blank list of
-         processors
-        :param binary:
-        :return:
+        """ Add a binary to the list of things to execute
+
+        :param binary: The binary to add
         """
         if binary not in self._targets:
             self._targets[binary] = CoreSubsets()
         else:
             raise exceptions.ConfigurationException(
-                "cant add a binary that is already been added.")
+                "Binary {} already added".format(binary))
 
     def has_binary(self, binary):
-        """
-        returns true if the binary naem is already in the list of executable
-        targets
-        :param binary:
-        :return: boolean which si true if exists, false otherwise
+        """ Determine if the binary is already in the set
+
+        :param binary: The binary to find
+        :return: True if the binary exists, false otherwise
         """
         return binary in self._targets
 
     def add_subsets(self, binary, subsets):
-        """
-        adds a subset to a binary
-        :param binary: the path to the binary needed to be exeucted
+        """ Add core subsets to a binary
+        :param binary: the path to the binary needed to be executed
         :param subsets: the subset of cores that the binary needs to be loaded\
                     on
         :return:
@@ -69,8 +63,8 @@ class ExecutableTargets(object):
         self._total_processors += 1
         self._need_to_create_subset_list = True
 
-    def retrieve_cores_for_a_executable_target(self, binary):
-        """ from a binary name, retrieves the core subsets associated with it
+    def get_cores_for_binary(self, binary):
+        """ Get the cores that a binary is to run on
 
         :param binary:
         :return:
@@ -80,29 +74,24 @@ class ExecutableTargets(object):
         else:
             return None
 
-    def binary_paths(self):
-        """
-        retrusn the binaries paths required from these exeuctables.
-        :return:
+    @property
+    def binaries(self):
+        """ The binaries of the executables
         """
         return self._targets.keys()
 
     @property
     def total_processors(self):
-        """
-        property for the total number of processors which need executables
-        :return:
+        """ The total number of cores to be loaded
         """
         return self._total_processors
 
     @property
     def all_core_subsets(self):
-        """
-        iterates though all the core subsets and returns a list of them all,
-        no matter which executable binary is running on them.
-        :return:
+        """ All the core subsets for all the binaries
         """
         if self._need_to_create_subset_list:
+
             # clear the list in case others have been added since
             del self._core_subsets[:]
             for executable_target in self._targets:

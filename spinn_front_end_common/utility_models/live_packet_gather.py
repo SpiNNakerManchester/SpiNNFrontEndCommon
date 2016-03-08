@@ -13,8 +13,6 @@ from pacman.model.resources.cpu_cycles_per_tick_resource import \
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.interfaces.abstract_provides_provenance_data \
-    import AbstractProvidesProvenanceData
 
 # spinn front end imports
 from pacman.utilities.utility_objs.provenance_data_item import \
@@ -102,8 +100,8 @@ class LivePacketGather(
                     self.get_cpu_usage_for_atoms(1, None)),
                 dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
                 sdram=SDRAMResource(
-                    self.get_static_sdram_usage_for_atoms(1, None)),
-            provenance_region_id=
+                    self.get_sdram_usage_for_atoms(1, None))),
+            provenance_region_id=(
                 self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value))
 
         # Try to place this near the Ethernet
@@ -168,7 +166,7 @@ class LivePacketGather(
         # End-of-Spec:
         spec.end_specification()
         data_writer.close()
-        return [data_writer.filename]
+        return data_writer.filename
 
     def reserve_memory_regions(self, spec):
         """
@@ -195,7 +193,7 @@ class LivePacketGather(
 
         :param spec: the spec object for the dsg
         :type spec: \
-                    :py:class:`data_specification.file_data_writer.FileDataWriter`
+                    :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
         :param ip_tags: The set of ip tags assigned to the object
         :type ip_tags: iterable of :py:class:`spinn_machine.tags.iptag.IPTag`
         :raises DataSpecificationException: when something goes wrong with the\
@@ -267,7 +265,6 @@ class LivePacketGather(
     def get_provenance_data_items(self, transceiver, placement=None):
         """ Extracts provenance data from the SDRAM of the core and stores it\
             in an xml file for end user digestion
-        @implements pacman.interface.abstract_provides_provenance_data.AbstractProvidesProvenanceData.get_provenance_data_items
         """
         if placement is None:
             raise ConfigurationException(
@@ -281,7 +278,6 @@ class LivePacketGather(
 
         # get live packet gatherer specific ones
 
-        #todo this code should be stored somewhere (merge with rowley and sergio branches)
         # Get the App Data for the core
         app_data_base_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
@@ -291,48 +287,48 @@ class LivePacketGather(
             dsg_utility_calls.get_region_base_address_offset(
                 app_data_base_address,
                 self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value)
-        provenance_data_region_base_address_buff = \
+        provenance_data_region_base_address_buf = \
             buffer(transceiver.read_memory(
                 placement.x, placement.y,
                 provenance_data_region_base_address_offset, 4))
         provenance_data_region_base_address = \
-            struct.unpack("I", provenance_data_region_base_address_buff)[0]
+            struct.unpack("<I", provenance_data_region_base_address_buf)[0]
         provenance_data_region_base_address += app_data_base_address
 
-        # update with the fact that basic prov entries are first.
+        # update with the fact that basic provenance entries are first.
         provenance_data_region_base_address += \
             constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES
 
         # read in the provenance data
-        provenance_data_region_contents_buff = \
+        provenance_data_region_contents_buf = \
             buffer(transceiver.read_memory(
                 placement.x, placement.y, provenance_data_region_base_address,
                 self._PROVENANCE_REGION_SIZE))
         provenance_data_region_contents = \
-            struct.unpack("<II", provenance_data_region_contents_buff)
+            struct.unpack("<II", provenance_data_region_contents_buf)
 
         basic_provenance_entries.append(ProvenanceDataItem(
             name="lost_packets_without_payload",
             item=provenance_data_region_contents[0],
             needs_reporting_to_end_user=provenance_data_region_contents[0] > 0,
-            message_to_end_user=
-            "The live packet gatherer has lost {} packets which have "
-            "payloads during its execution. Try increasing the machine time "
-            "step or increasing the time scale factor. If you are running in "
-            "real time, try reducing the number of vertices which are "
-            "feeding this live packet gatherer".format(
-                provenance_data_region_contents[0])))
+            message_to_end_user=(
+                "The live packet gatherer has lost {} packets which have "
+                "payloads during its execution. Try increasing the machine "
+                "time step or increasing the time scale factor. If you are "
+                "running in real time, try reducing the number of vertices "
+                "which are feeding this live packet gatherer".format(
+                    provenance_data_region_contents[0]))))
         basic_provenance_entries.append(ProvenanceDataItem(
             name="lost_packets_with_payload",
             item=provenance_data_region_contents[1],
             needs_reporting_to_end_user=provenance_data_region_contents[1] > 0,
-            message_to_end_user=
-            "The live packet gatherer has lost {} packets which do not have "
-            "payloads during its execution. Try increasing the machine time "
-            "step or increasing the time scale factor. If you are running in "
-            "real time, try reducing the number of vertices which are "
-            "feeding this live packet gatherer".format(
-                provenance_data_region_contents[1])))
+            message_to_end_user=(
+                "The live packet gatherer has lost {} packets which do not "
+                "have payloads during its execution. Try increasing the "
+                "machine time step or increasing the time scale factor. If "
+                "you are running in real time, try reducing the number of "
+                "vertices which are feeding this live packet gatherer".format(
+                    provenance_data_region_contents[1]))))
 
         return basic_provenance_entries
 
@@ -343,7 +339,7 @@ class LivePacketGather(
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
         return 0
 
-    def get_static_sdram_usage_for_atoms(self, vertex_slice, graph):
+    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
                 self._CONFIG_SIZE)
 

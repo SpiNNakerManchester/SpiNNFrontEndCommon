@@ -1,5 +1,5 @@
-from data_specification.file_data_writer import FileDataWriter
 from spinn_front_end_common.utilities import constants
+from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 from abc import ABCMeta
 from six import add_metaclass
@@ -38,12 +38,6 @@ class AbstractDataSpecableVertex(object):
         spec.switch_write_focus(region=region_id)
         spec.write_value(data=int(application_name_hash, 16))
         spec.write_value(data=self._machine_time_step * self._timescale_factor)
-
-        # check for infinite runs and add data as required
-        if self._no_machine_time_steps is None:
-            spec.write_value(data=1)
-        else:
-            spec.write_value(data=0)
 
         # add SDP port number for receiving synchronisations and new run times
         spec.write_value(

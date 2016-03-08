@@ -313,11 +313,13 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             board_address=None, notification_tag=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(constants.
-                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE)):
+                                        DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            minimum_sdram_for_buffering=0, buffered_sdram_per_timestep=0):
 
         self.activate_buffering_output(
             buffering_ip_address, buffering_port, board_address,
-            notification_tag)
+            notification_tag, minimum_sdram_for_buffering,
+            buffered_sdram_per_timestep)
         self._record_buffer_size = record_buffer_size
         self._buffer_size_before_receive = buffer_size_before_receive
 
@@ -352,11 +354,11 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
     def _update_virtual_key(self, routing_info, partitioned_graph):
         if self._virtual_key is None:
-            partitions = partitioned_graph.\
-                outgoing_edges_partitions_from_vertex(self)
+            partitions = \
+                partitioned_graph.outgoing_edges_partitions_from_vertex(self)
             for partition in partitions.values():
-                key_and_mask = \
-                    routing_info.get_keys_and_masks_from_partition(partition)[0]
+                key_and_mask = routing_info.get_keys_and_masks_from_partition(
+                    partition)[0]
                 self._mask = key_and_mask.mask
                 self._virtual_key = key_and_mask.key
 
@@ -443,7 +445,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         spec.end_specification()
         data_writer.close()
 
-        return [data_writer.filename]
+        return data_writer.filename
 
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"

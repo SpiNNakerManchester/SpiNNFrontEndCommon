@@ -219,8 +219,8 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
             spec.write_value(len(with_payload))
             for command in with_payload:
-                spec.write_value(self._get_key(command, graph_mapper,
-                                               routing_info, partitioned_graph))
+                spec.write_value(self._get_key(
+                    command, graph_mapper, routing_info, partitioned_graph))
                 payload = command.get_payload(routing_info, partitioned_graph,
                                               graph_mapper)
                 spec.write_value(payload)
@@ -229,8 +229,8 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
             spec.write_value(len(without_payload))
             for command in without_payload:
-                spec.write_value(self._get_key(command, graph_mapper,
-                                               routing_info, partitioned_graph))
+                spec.write_value(self._get_key(
+                    command, graph_mapper, routing_info, partitioned_graph))
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
@@ -238,7 +238,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         spec.end_specification()
         data_writer.close()
 
-        return [data_writer.filename]
+        return data_writer.filename
 
     def _get_key(self, command, graph_mapper, routing_info, partitioned_graph):
         """ Return a key for a command
@@ -348,7 +348,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         """
         return 0
 
-    def get_static_sdram_usage_for_atoms(self, vertex_slice, graph):
+    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         """ Return how much SDRAM is used by the model for a given number of\
             atoms
 
