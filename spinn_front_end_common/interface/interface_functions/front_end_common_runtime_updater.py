@@ -132,4 +132,5 @@ class FrontEndCommonRuntimeUpdater(object):
                 txrx)
             raise exceptions.ExecutableFailedToStartException(
                 "{} cores were in invalid states before getting runtime set up"
-                .format(bad_processor_count), bad_processors)
+                .format(bad_processor_count),
+                helpful_functions.get_core_subsets(bad_processors))

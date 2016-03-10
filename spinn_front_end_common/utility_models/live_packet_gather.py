@@ -7,23 +7,15 @@ from pacman.model.constraints.tag_allocator_constraints\
     import TagAllocatorRequireIptagConstraint
 from pacman.model.partitionable_graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
-from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
 
 # spinn front end imports
-from pacman.utilities.utility_objs.provenance_data_item import \
-    ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utility_models.\
-    provides_provenance_partitioned_vertex import \
-    ProvidesProvenancePartitionedVertex
+from spinn_front_end_common.utility_models\
+    .live_packet_gather_partitioned_vertex \
+    import LivePacketGatherPartitionedVertex
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -32,26 +24,15 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 # dataspec imports
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
-from data_specification import utility_calls as dsg_utility_calls
-
-# general imports
-from enum import Enum
-import struct
 
 
 class LivePacketGather(
-        AbstractDataSpecableVertex, ProvidesProvenancePartitionedVertex,
-        PartitionedVertex, AbstractPartitionableVertex):
+        AbstractDataSpecableVertex, AbstractPartitionableVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
     """
 
-    _LIVE_DATA_GATHER_REGIONS = Enum(
-        value="LIVE_DATA_GATHER_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1),
-               ('PROVENANCE', 2)])
     _CONFIG_SIZE = 44
     _PROVENANCE_REGION_SIZE = 8
 
@@ -90,19 +71,9 @@ class LivePacketGather(
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step=machine_time_step,
             timescale_factor=timescale_factor)
-        AbstractPartitionableVertex.__init__(self, n_atoms=1, label=label,
-                                             max_atoms_per_core=1,
-                                             constraints=constraints)
-        ProvidesProvenancePartitionedVertex.__init__(
-            self, label=label,
-            resources_required=ResourceContainer(
-                cpu=CPUCyclesPerTickResource(
-                    self.get_cpu_usage_for_atoms(1, None)),
-                dtcm=DTCMResource(self.get_dtcm_usage_for_atoms(1, None)),
-                sdram=SDRAMResource(
-                    self.get_sdram_usage_for_atoms(1, None))),
-            provenance_region_id=(
-                self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value))
+        AbstractPartitionableVertex.__init__(
+            self, n_atoms=1, label=label, max_atoms_per_core=1,
+            constraints=constraints)
 
         # Try to place this near the Ethernet
         self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
@@ -122,6 +93,12 @@ class LivePacketGather(
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
+
+    def create_subvertex(
+            self, vertex_slice, resources_required, label=None,
+            constraints=None):
+        return LivePacketGatherPartitionedVertex(
+            resources_required, label, constraints)
 
     @property
     def model_name(self):
@@ -159,7 +136,7 @@ class LivePacketGather(
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
-        self.reserve_memory_regions(spec)
+        self.reserve_memory_regions(spec, subvertex)
         self.write_setup_info(spec)
         self.write_configuration_region(spec, ip_tags)
 
@@ -168,7 +145,7 @@ class LivePacketGather(
         data_writer.close()
         return data_writer.filename
 
-    def reserve_memory_regions(self, spec):
+    def reserve_memory_regions(self, spec, subvertex):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -178,15 +155,17 @@ class LivePacketGather(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value,
+            region=(
+                LivePacketGatherPartitionedVertex.
+                _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
             size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
             label='system')
         spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value,
+            region=(
+                LivePacketGatherPartitionedVertex.
+                _LIVE_DATA_GATHER_REGIONS.CONFIG.value),
             size=self._CONFIG_SIZE, label='config')
-        spec.reserve_memory_region(
-            region=self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
-            size=self._PROVENANCE_REGION_SIZE, label='provenance')
+        subvertex.reserve_provenance_data_region(spec)
 
     def write_configuration_region(self, spec, ip_tags):
         """ writes the configuration region to the spec
@@ -200,7 +179,9 @@ class LivePacketGather(
                     dsg generation
         """
         spec.switch_write_focus(
-            region=self._LIVE_DATA_GATHER_REGIONS.CONFIG.value)
+            region=(
+                LivePacketGatherPartitionedVertex.
+                _LIVE_DATA_GATHER_REGIONS.CONFIG.value))
 
         # has prefix
         if self._use_prefix:
@@ -258,79 +239,13 @@ class LivePacketGather(
 
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
-            region=self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
+            region=(
+                LivePacketGatherPartitionedVertex.
+                _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
         self._write_basic_setup_info(
-            spec, self._LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
-
-    def get_provenance_data_items(self, transceiver, placement=None):
-        """ Extracts provenance data from the SDRAM of the core and stores it\
-            in an xml file for end user digestion
-        """
-        if placement is None:
-            raise ConfigurationException(
-                "To acquire provenance data from the live packet gatherer,"
-                "you must provide a placement object that points to where the "
-                "live packet gatherer resides on the spinnaker machine")
-
-        # get the basic ones
-        basic_provenance_entries = ProvidesProvenancePartitionedVertex.\
-            get_provenance_data_items(self, transceiver, placement)
-
-        # get live packet gatherer specific ones
-
-        # Get the App Data for the core
-        app_data_base_address = transceiver.get_cpu_information_from_core(
-            placement.x, placement.y, placement.p).user[0]
-
-        # Get the provenance region base address
-        provenance_data_region_base_address_offset = \
-            dsg_utility_calls.get_region_base_address_offset(
-                app_data_base_address,
-                self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value)
-        provenance_data_region_base_address_buf = \
-            buffer(transceiver.read_memory(
-                placement.x, placement.y,
-                provenance_data_region_base_address_offset, 4))
-        provenance_data_region_base_address = \
-            struct.unpack("<I", provenance_data_region_base_address_buf)[0]
-        provenance_data_region_base_address += app_data_base_address
-
-        # update with the fact that basic provenance entries are first.
-        provenance_data_region_base_address += \
-            constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES
-
-        # read in the provenance data
-        provenance_data_region_contents_buf = \
-            buffer(transceiver.read_memory(
-                placement.x, placement.y, provenance_data_region_base_address,
-                self._PROVENANCE_REGION_SIZE))
-        provenance_data_region_contents = \
-            struct.unpack("<II", provenance_data_region_contents_buf)
-
-        basic_provenance_entries.append(ProvenanceDataItem(
-            name="lost_packets_without_payload",
-            item=provenance_data_region_contents[0],
-            needs_reporting_to_end_user=provenance_data_region_contents[0] > 0,
-            message_to_end_user=(
-                "The live packet gatherer has lost {} packets which have "
-                "payloads during its execution. Try increasing the machine "
-                "time step or increasing the time scale factor. If you are "
-                "running in real time, try reducing the number of vertices "
-                "which are feeding this live packet gatherer".format(
-                    provenance_data_region_contents[0]))))
-        basic_provenance_entries.append(ProvenanceDataItem(
-            name="lost_packets_with_payload",
-            item=provenance_data_region_contents[1],
-            needs_reporting_to_end_user=provenance_data_region_contents[1] > 0,
-            message_to_end_user=(
-                "The live packet gatherer has lost {} packets which do not "
-                "have payloads during its execution. Try increasing the "
-                "machine time step or increasing the time scale factor. If "
-                "you are running in real time, try reducing the number of "
-                "vertices which are feeding this live packet gatherer".format(
-                    provenance_data_region_contents[1]))))
-
-        return basic_provenance_entries
+            spec,
+            LivePacketGatherPartitionedVertex.
+            _LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
@@ -340,15 +255,15 @@ class LivePacketGather(
         return 0
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        return (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-                self._CONFIG_SIZE)
+        return (
+            constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
+            self._CONFIG_SIZE +
+            LivePacketGatherPartitionedVertex.get_provenance_data_size(
+                LivePacketGatherPartitionedVertex
+                .N_ADDITIONAL_PROVENANCE_ITEMS))
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         return self._CONFIG_SIZE
-
-    def create_subvertex(self, vertex_slice, resources_required, label=None,
-                         constraints=None):
-        return self
 
     def is_data_specable(self):
         return True

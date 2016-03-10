@@ -165,7 +165,7 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
-    simulation_register_provenance_function_call(NULL, PROVENANCE_REGION);
+    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;

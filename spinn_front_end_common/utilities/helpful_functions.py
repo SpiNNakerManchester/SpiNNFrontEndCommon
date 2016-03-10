@@ -21,6 +21,7 @@ import re
 import inspect
 import struct
 from spinnman.model.cpu_state import CPUState
+from spinnman.model.core_subsets import CoreSubsets
 
 logger = logging.getLogger(__name__)
 
@@ -61,8 +62,6 @@ def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
         :param region: the region to locate the base address of
         :type region: int
         :param vertex: the vertex to load a buffer for
-        :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
         :return: None
         """
         placement = placements.get_placement_of_subvertex(vertex)
@@ -300,30 +299,32 @@ def get_cores_in_state(all_core_subsets, states, txrx):
     cores_in_state = OrderedDict()
     for core_info in core_infos:
         if hasattr(states, "__iter__"):
-            for state in states:
-                if core_info.state == state:
-                    cores_in_state[
-                        (core_info.x, core_info.y, core_info.p)] = core_info
-        else:
-            if core_info.state == states:
-                    cores_in_state[
-                        (core_info.x, core_info.y, core_info.p)] = core_info
+            if core_info.state in states:
+                cores_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        elif core_info.state == states:
+            cores_in_state[
+                (core_info.x, core_info.y, core_info.p)] = core_info
 
     return cores_in_state
 
 
-def get_cores_not_in_state(all_core_subsets, state, txrx):
+def get_cores_not_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
-    :param state:
+    :param states:
     :param txrx:
     :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state != state:
+        if hasattr(states, "__iter__"):
+            if core_info.state not in states:
+                cores_not_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        elif core_info.state != states:
             cores_not_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_not_in_state
@@ -342,3 +343,12 @@ def get_core_status_string(core_infos):
             break_down += "    {}:{}:{} in state {}\n".format(
                 x, y, p, core_info.state.name)
     return break_down
+
+
+def get_core_subsets(core_infos):
+    """ Convert core information from get_cores_in_state to core_subset objects
+    """
+    core_subsets = CoreSubsets()
+    for (x, y, p) in core_infos:
+        core_subsets.add_processor(x, y, p)
+    return core_subsets

@@ -39,17 +39,55 @@ static prov_callback_t stored_provenance_function = NULL;
 //! the region id for storing provenance data from the chip
 static uint32_t stored_provenance_data_region_id = NULL;
 
-//! \brief method that checks that the data in this region has the correct
-//!        identifier for the model calling this method and also interprets the
-//!        timer period and runtime for the model.
-//! \param[in] address The memory address to start reading the parameters from
-//! \param[in] expected_app_magic_number The application's magic number that's
-//!            requesting timing details from this memory address.
-//! \param[out] timer_period A pointer for storing the timer period once read
-//!             from the memory region
-//! \return True if the method was able to read the parameters and the
-//!         application magic number corresponded to the magic number in
-//!         memory, otherwise the method will return False.
+//! \brief timer callback to support updating runtime via SDP message during
+//!        first run
+//! \param[in] timer_count the number of times this call back has been
+//!            executed since start of simulation
+//! \param[in] unused unused parameter kept for API consistency
+void _simulation_timer_tic_callback(uint timer_count, uint unused){
+    log_debug(
+        "Setting off the second run for simulation_handle_run_pause_resume");
+    simulation_handle_pause_resume();
+}
+
+//! \brief handles the storing of basic provenance data
+//! \return the address after which new provenance data can be stored
+address_t _simulation_store_provenance_data() {
+
+    //! gets access to the diagnostics object from SARK
+    extern diagnostics_t diagnostics;
+
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+
+    // get the address of the start of the core's provenance data region
+    address_t provenance_region = data_specification_get_region(
+        stored_provenance_data_region_id, address);
+
+    // store the data into the provenance data region
+    provenance_region[TRANSMISSION_EVENT_OVERFLOW] =
+        diagnostics.tx_packet_queue_full;
+    provenance_region[CALLBACK_QUEUE_OVERLOADED] =
+        diagnostics.task_queue_full;
+    provenance_region[DMA_QUEUE_OVERLOADED] =
+        diagnostics.dma_queue_full;
+    provenance_region[TIMER_TIC_HAS_OVERRUN] =
+        diagnostics.total_times_tick_tic_callback_overran;
+    provenance_region[MAX_NUMBER_OF_TIMER_TIC_OVERRUN] =
+        diagnostics.largest_number_of_concurrent_timer_tic_overruns;
+    return &provenance_region[PROVENANCE_DATA_ELEMENTS];
+}
+
+//! \brief helper private method for running provenance data storage
+void _execute_provenance_storage(){
+    log_info("Starting basic provenance gathering");
+    address_t region_to_start_with = _simulation_store_provenance_data();
+    if (stored_provenance_function != NULL){
+        log_info("running other provenance gathering");
+        stored_provenance_function(region_to_start_with);
+    }
+}
+
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period) {
@@ -90,7 +128,7 @@ void simulation_run(
     spin1_callback_off(TIMER_TICK);
 
     // Set off simulation runtime callback
-    spin1_callback_on(TIMER_TICK, simulation_timer_tic_callback, 1);
+    spin1_callback_on(TIMER_TICK, _simulation_timer_tic_callback, 1);
 
     // go into SARK start
     spin1_start(SYNC_NOWAIT);
@@ -99,29 +137,6 @@ void simulation_run(
     return;
 }
 
-//! \brief timer callback to support updating runtime via SDP message during
-//!        first run
-//! \param[in] timer_count the number of times this call back has been
-//!            executed since start of simulation
-//! \param[in] unused unused parameter kept for API consistency
-void simulation_timer_tic_callback(uint timer_count, uint unused){
-    log_debug(
-        "Setting off the second run for simulation_handle_run_pause_resume");
-    simulation_handle_pause_resume();
-}
-
-//! \brief helper private method for running provenance data storage
-void _execute_provenance_storage(){
-    log_info("Starting basic provenance gathering");
-    address_t region_to_start_with = simulation_store_provenance_data();
-    if (stored_provenance_function != NULL){
-        log_info("running other provenance gathering");
-        stored_provenance_function(region_to_start_with);
-    }
-}
-
-//! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
 void simulation_handle_pause_resume(){
 
     // Wait for the next run of the simulation
@@ -155,11 +170,6 @@ void simulation_handle_pause_resume(){
     }
 }
 
-//! \brief handles the new commands needed to resume the binary with a new
-//!        runtime counter, as well as switching off the binary when it truly
-//!        needs to be stopped.
-//! \param[in] mailbox The SDP message mailbox
-//! \param[in] port The SDP port on which the message was received
 void simulation_sdp_packet_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -208,7 +218,9 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
 
             // force provenance to be executed and then exit
             _execute_provenance_storage();
-            rt_error(RTE_API);
+            spin1_msg_free(msg);
+            sark_cpu_state(CPU_STATE_RTE);
+            exited = true;
             break;
 
         default:
@@ -219,13 +231,6 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     }
 }
 
-//! \brief handles the registration of the SDP callback
-//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
-//!            ticks, to allow this to be updated when requested via SDP
-//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
-//!            this to be updated when requested via SDP
-//! \param[in] sdp_packet_callback_priority The priority to use for the
-//!            SDP packet reception
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
         int sdp_packet_callback_priority) {
@@ -237,46 +242,9 @@ void simulation_register_simulation_sdp_callback(
         sdp_packet_callback_priority);
 }
 
-//! \brief handles the registration for storing provenance data (needs to be
-//! done at least with the provenance region id)
-//! \param[in] provenance_function: function to call for extra provenance data
-//!     can be NULL as well.
-//! \param[in] provenance_data_region_id: the region id in dsg for where
-//!  provenance is to be stored
-//! \return does not return anything
-void simulation_register_provenance_function_call(
+void simulation_register_provenance_callback(
         prov_callback_t provenance_function,
         uint32_t provenance_data_region_id){
     stored_provenance_function = provenance_function;
     stored_provenance_data_region_id = provenance_data_region_id;
-}
-
-//! \brief handles the storing of basic provenance data
-//! \param[in] provenance_data_region_id The region id to which the provenance
-//!                                      data should be stored
-//! \return the address place to carry on storing provenance data from
-address_t simulation_store_provenance_data(){
-
-    //! gets access to the diagnostics object from SARK
-    extern diagnostics_t diagnostics;
-
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-
-    // get the address of the start of the core's provenance data region
-    address_t provenance_region = data_specification_get_region(
-        stored_provenance_data_region_id, address);
-
-    // store the data into the provenance data region
-    provenance_region[TRANSMISSION_EVENT_OVERFLOW] =
-        diagnostics.tx_packet_queue_full;
-    provenance_region[CALLBACK_QUEUE_OVERLOADED] =
-        diagnostics.task_queue_full;
-    provenance_region[DMA_QUEUE_OVERLOADED] =
-        diagnostics.dma_queue_full;
-    provenance_region[TIMER_TIC_HAS_OVERRUN] =
-        diagnostics.total_times_tick_tic_callback_overran;
-    provenance_region[MAX_NUMBER_OF_TIMER_TIC_OVERRUN] =
-        diagnostics.largest_number_of_concurrent_timer_tic_overruns;
-    return &provenance_region[PROVENANCE_DATA_ELEMENTS];
 }

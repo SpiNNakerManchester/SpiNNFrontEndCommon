@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 @add_metaclass(ABCMeta)
-class AbstractSendsBuffersFromHostPartitionedVertex(object):
-    """ Interface to a partitioned vertex that sends buffers of keys to be\
+class AbstractSendsBuffersFromHost(object):
+    """ Interface to an object that sends buffers of keys to be\
         transmitted at given timestamps in the simulation
     """
 

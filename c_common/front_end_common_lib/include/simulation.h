@@ -26,12 +26,12 @@ typedef enum provenance_data_elements{
     TRANSMISSION_EVENT_OVERFLOW, CALLBACK_QUEUE_OVERLOADED,
     DMA_QUEUE_OVERLOADED, TIMER_TIC_HAS_OVERRUN,
     MAX_NUMBER_OF_TIMER_TIC_OVERRUN, PROVENANCE_DATA_ELEMENTS
-}provenance_data_elements;
+} provenance_data_elements;
 
 typedef enum simulation_commands{
     CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8,
     PROVENANCE_DATA_GATHERING = 9,
-}simulation_commands;
+} simulation_commands;
 
 //! the definition of the callback used by provenance data functions
 typedef void (*prov_callback_t)(address_t);
@@ -82,28 +82,13 @@ void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
         int sdp_packet_callback_priority);
 
-//! \brief timer callback to support updating runtime via SDP message during
-//! first run
-//! \param[in] timer_function: The callback function used for the
-//!            timer_callback interrupt registration
-//! \param[in] timer_function_priority: the priority level wanted for the
-//! timer callback used by the application model.
-void simulation_timer_tic_callback(uint timer_count, uint unused);
-
-//! \brief handles the storing of basic provenance data
-//! \param[in] provenance_data_region_id The region id to which the provenance
-//!                                      data should be stored
-//! \return the address place to carry on storing prov data from
-address_t simulation_store_provenance_data();
-
-//! \brief handles the registration for storing provenance data (needs to be
-//! done at least with the provenance region id)
+//! \brief handles the registration for storing provenance data
 //! \param[in] provenance_function: function to call for extra provenance data
-//!     can be NULL as well.
-//! \param[in] provenance_data_region_id: the region id in dsg for where
-//!  provenance is to be stored
+//!            (can be NULL if no additional provenance data is to be stored)
+//! \param[in] provenance_data_region_id: the id of the region where
+//!            provenance is to be stored
 //! \return does not return anything
-void simulation_register_provenance_function_call(
+void simulation_register_provenance_callback(
         prov_callback_t provenance_function,
         uint32_t provenance_data_region_id);
 

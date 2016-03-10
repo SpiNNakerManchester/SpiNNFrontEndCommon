@@ -158,7 +158,7 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(address_t provenance_region_address){
+void record_provenance_data(address_t provenance_region_address) {
 
     // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
@@ -582,9 +582,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
-    simulation_register_provenance_function_call(
+    simulation_register_provenance_callback(
         record_provenance_data, PROVENANCE_REGION);
-    log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;

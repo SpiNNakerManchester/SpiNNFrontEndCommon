@@ -9,20 +9,21 @@ import struct
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
-    """ Updates the runtime of an application running on a spinnaker machine
+    """ Forces all cores to generate provenance data, and then go into RTE\
+        state
     """
 
     def __call__(self, txrx, app_id, all_core_subsets):
 
         # check that the right number of processors are in sync
-        processors_completed = \
-            txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
+        processors_completed = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 
         progress_bar = ProgressBar(
             left_to_do_cores,
-            "Forcing misbehaving cores to generate provenance data")
+            "Forcing error cores to generate provenance data")
 
         # check that all cores are in the state CPU_STATE_12 which shows that
         # the core has received the message and done provenance updating

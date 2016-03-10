@@ -8,10 +8,11 @@ from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 
 from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .sends_buffers_from_host_partitioned_vertex_pre_buffered_impl \
-    import SendsBuffersFromHostPartitionedVertexPreBufferedImpl
+    .sends_buffers_from_host_pre_buffered_impl \
+    import SendsBuffersFromHostPreBufferedImpl
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .receives_buffers_to_host_basic_impl import ReceiveBuffersToHostBasicImpl
 from spinn_front_end_common.interface.buffer_management.storage_objects\
@@ -23,9 +24,9 @@ from spinn_front_end_common.abstract_models\
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-from spinn_front_end_common.utility_models.\
-    provides_provenance_partitioned_vertex import \
-    ProvidesProvenancePartitionedVertex
+from spinn_front_end_common.interface.provenance\
+    .provides_provenance_data_from_machine_impl import \
+    ProvidesProvenanceDataFromMachineImpl
 
 from data_specification.data_specification_generator \
     import DataSpecificationGenerator
@@ -39,9 +40,10 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
-        AbstractDataSpecableVertex, ProvidesProvenancePartitionedVertex,
+        PartitionedVertex,
+        AbstractDataSpecableVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
-        SendsBuffersFromHostPartitionedVertexPreBufferedImpl,
+        SendsBuffersFromHostPreBufferedImpl,
         ReceiveBuffersToHostBasicImpl):
     """ A model which allows events to be injected into spinnaker and\
         converted in to multicast packets
@@ -82,8 +84,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
-            send_buffer_notification_tag=None,
-            extra_static_sdram_requirement=0):
+            send_buffer_notification_tag=None):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -125,20 +126,17 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send buffer is specified)
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
-        :param extra_static_sdram_requirement: the amount of extra sdram
-        the mdoel should allocate as static for recording (helps memory
-        optimised parittioners)
         """
 
         # Set up super types
+        PartitionedVertex.__init__(
+            self, resources_required, label, constraints)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
-        ProvidesProvenancePartitionedVertex.__init__(
-            self, resources_required, label, constraints,
-            self._REGIONS.PROVENANCE_REGION.value)
+        ProvidesProvenanceDataFromMachineImpl.__init__(
+            self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        ReceiveBuffersToHostBasicImpl.__init__(
-            self, extra_static_sdram_requirement)
+        ReceiveBuffersToHostBasicImpl.__init__(self)
 
         # Set up for receiving live packets
         if receive_port is not None:
@@ -150,7 +148,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self._send_buffer = None
         if send_buffer_times is None:
             self._send_buffer_times = None
-            SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
+            SendsBuffersFromHostPreBufferedImpl.__init__(
                 self, None)
         else:
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
@@ -160,7 +158,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 send_buffer_notification_ip_address,
                 send_buffer_notification_port, True, board_address,
                 send_buffer_notification_tag))
-            SendsBuffersFromHostPartitionedVertexPreBufferedImpl.__init__(
+            SendsBuffersFromHostPreBufferedImpl.__init__(
                 self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
 
         # buffered out parameters
@@ -347,10 +345,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             spec, self._REGIONS.RECORDING_BUFFER_STATE.value,
             [self._REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
 
-        spec.reserve_memory_region(
-            region=self._REGIONS.PROVENANCE_REGION.value,
-            size=constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES,
-            label="Provenance region")
+        self.reserve_provenance_data_region(spec)
 
     def _update_virtual_key(self, routing_info, partitioned_graph):
         if self._virtual_key is None:

@@ -645,7 +645,7 @@
             </parameter>
             <parameter>
                 <param_name>time_theshold</param_name>
-                <param_type>TimeTheshold</param_type>
+                <param_type>PostSimulationOverrunBeforeError</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>
@@ -659,9 +659,40 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonProvenanceGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_gatherer</python_module>
-        <python_class>FrontEndCommonProvenanceGatherer</python_class>
+    <algorithm name="FrontEndCommonPlacementsProvenanceGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_placements_provenance_gatherer</python_module>
+        <python_class>FrontEndCommonPlacementsProvenanceGatherer</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_ran</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>ProvenanceItems</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>prov_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonRouterProvenanceGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_router_provenance_gatherer</python_module>
+        <python_class>FrontEndCommonRouterProvenanceGatherer</python_class>
         <required_inputs>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -674,10 +705,6 @@
             <parameter>
                 <param_name>router_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
                 <param_name>has_ran</param_name>
@@ -703,10 +730,6 @@
         <python_class>FrontEndCommonProvenanceXMLWriter</python_class>
         <required_inputs>
             <parameter>
-                <param_name>router_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
-            </parameter>
-            <parameter>
                 <param_name>provenance_data_items</param_name>
                 <param_type>ProvenanceItems</param_type>
             </parameter>
@@ -718,28 +741,20 @@
         <produces_outputs>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonWarningGenerator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_warning_generator</python_module>
-        <python_class>FrontEndCommonWarningGenerator</python_class>
+    <algorithm name="FrontEndCommonProvenanceJSONWriter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_json_writer</python_module>
+        <python_class>FrontEndCommonProvenanceJSONWriter</python_class>
         <required_inputs>
             <parameter>
-                <param_name>router_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
-            </parameter>
-            <parameter>
-                <param_name>prov_data_items</param_name>
+                <param_name>provenance_data_items</param_name>
                 <param_type>ProvenanceItems</param_type>
             </parameter>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_name>provenance_data_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>
-            <parameter>
-                <param_name>warning_messages</param_name>
-                <param_type>WarnMessages</param_type>
-            </parameter>
         </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonDatabaseWriter">
@@ -916,7 +931,7 @@
         <required_inputs>
             <parameter>
                 <param_name>txrx</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -936,7 +951,7 @@
         <required_inputs>
             <parameter>
                 <param_name>transceiver</param_name>
-                <param_type>MemoryTransciever</param_type>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
                 <param_name>has_ran</param_name>
@@ -974,27 +989,5 @@
                 <param_type>WarnMessages</param_type>
             </parameter>
         </produces_outputs>
-    </algorithm>
-    <algorithm name="FrontEndCommonMessagePrinter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_message_printer</python_module>
-        <python_class>FrontEndCommonMessagePrinter</python_class>
-        <required_inputs>
-            <parameter>
-                <param_name>error_messages</param_name>
-                <param_type>ErrorMessages</param_type>
-            </parameter>
-            <parameter>
-                <param_name>warn_messages</param_name>
-                <param_type>WarnMessages</param_type>
-            </parameter>
-            <parameter>
-                <param_name>io_buffers</param_name>
-                <param_type>IOBuffers</param_type>
-            </parameter>
-            <parameter>
-                <param_name>prov_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
-            </parameter>
-        </required_inputs>
     </algorithm>
 </algorithms>

@@ -1,7 +1,6 @@
 # spinn front end common imports
 from spinn_front_end_common.interface.buffer_management.buffer_models.\
-    abstract_sends_buffers_from_host_partitioned_vertex \
-    import AbstractSendsBuffersFromHostPartitionedVertex
+    abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
 # general imports
 import logging
@@ -9,9 +8,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SendsBuffersFromHostPartitionedVertexPreBufferedImpl(
-        AbstractSendsBuffersFromHostPartitionedVertex):
-    """ Implementation of the AbstractSendsBuffersFromHostPartitionedVertex\
+class SendsBuffersFromHostPreBufferedImpl(
+        AbstractSendsBuffersFromHost):
+    """ Implementation of the AbstractSendsBuffersFromHost\
         which uses an existing set of buffers for the details
     """
 

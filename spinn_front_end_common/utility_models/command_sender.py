@@ -14,9 +14,6 @@ from data_specification.data_specification_generator \
     import DataSpecificationGenerator
 
 # spinn front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_provenance_partitionable_vertex import \
-    AbstractProvidesProvenancePartitionableVertex
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
@@ -24,6 +21,8 @@ from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utility_models.command_sender_partitioned_vertex \
+    import CommandSenderPartitionedVertex
 
 
 _COMMAND_WITH_PAYLOAD_SIZE = 12
@@ -32,21 +31,17 @@ _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 
 
 class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
-                    AbstractProvidesProvenancePartitionableVertex,
+                    AbstractPartitionableVertex,
                     AbstractDataSpecableVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
 
-    SYSTEM_REGION = 0
-    COMMANDS = 1
-    PROVENANCE_REGION = 2
-
     def __init__(self, machine_time_step, timescale_factor):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        AbstractProvidesProvenancePartitionableVertex.__init__(
-            self, 1, "Command Sender", 1, self.PROVENANCE_REGION)
+        AbstractPartitionableVertex.__init__(
+            self, 1, "Command Sender", 1)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
 
@@ -55,6 +50,12 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         self._times_with_commands = set()
         self._commands_with_payloads = dict()
         self._commands_without_payloads = dict()
+
+    def create_subvertex(
+            self, vertex_slice, resources_required, label=None,
+            constraints=None):
+        return CommandSenderPartitionedVertex(
+            resources_required, label, constraints)
 
     def add_commands(self, commands, edge):
         """ Add commands to be sent down a given edge
@@ -163,11 +164,12 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
         # reserve region - add a word for the region size
         n_command_bytes = self._get_n_command_bytes()
-        self._reserve_memory_regions(spec, n_command_bytes + 4)
+        self._reserve_memory_regions(spec, n_command_bytes + 4, subvertex)
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
-        self._write_basic_setup_info(spec, self.SYSTEM_REGION)
+        self._write_basic_setup_info(
+            spec, CommandSenderPartitionedVertex.SYSTEM_REGION)
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -203,7 +205,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
                 new_times.add(time)
 
         # write commands
-        spec.switch_write_focus(region=self.COMMANDS)
+        spec.switch_write_focus(region=CommandSenderPartitionedVertex.COMMANDS)
         spec.write_value(n_command_bytes)
         for time in sorted(new_times):
 
@@ -306,7 +308,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
             return self._edge_constraints[edge]
         return list()
 
-    def _reserve_memory_regions(self, spec, command_size):
+    def _reserve_memory_regions(self, spec, command_size, subvertex):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -317,17 +319,14 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=self.SYSTEM_REGION,
+            region=CommandSenderPartitionedVertex.SYSTEM_REGION,
             size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
             label='setup')
         if command_size > 0:
-            spec.reserve_memory_region(region=self.COMMANDS,
-                                       size=command_size,
-                                       label='commands')
-        spec.reserve_memory_region(
-            region=self.PROVENANCE_REGION,
-            size=constants.PROVENANCE_DATA_REGION_SIZE_IN_BYTES,
-            label="provenance region")
+            spec.reserve_memory_region(
+                region=CommandSenderPartitionedVertex.COMMANDS,
+                size=command_size, label='commands')
+        subvertex.reserve_provenance_data_region(spec)
 
     @property
     def model_name(self):
@@ -361,7 +360,9 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
         # Add a word for the size of the command region,
         # and the size of the system region
-        return self._get_n_command_bytes() + 4 + 12
+        return (
+            self._get_n_command_bytes() + 4 + 12 +
+            CommandSenderPartitionedVertex.get_provenance_data_size(0))
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         """ Return how much DTCM is used by the model for a given number of\

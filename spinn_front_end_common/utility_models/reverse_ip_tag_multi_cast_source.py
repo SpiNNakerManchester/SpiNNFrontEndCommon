@@ -202,10 +202,13 @@ class ReverseIpTagMultiCastSource(
                 self._send_buffer_times is not None, self._recording_enabled)
         allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
 
-        return ((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
-                (ReverseIPTagMulticastSourcePartitionedVertex.
-                 _CONFIGURATION_REGION_SIZE) + send_buffer_size +
-                recording_size + allocation_size)
+        return (
+            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
+            (ReverseIPTagMulticastSourcePartitionedVertex.
+                _CONFIGURATION_REGION_SIZE) +
+            send_buffer_size + recording_size + allocation_size +
+            (ReverseIPTagMulticastSourcePartitionedVertex.
+                get_provenance_data_size(0)))
 
     @property
     def model_name(self):
