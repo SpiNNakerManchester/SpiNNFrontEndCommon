@@ -1,10 +1,6 @@
 
 # front end common imports
 from collections import OrderedDict
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
@@ -22,6 +18,8 @@ import inspect
 import struct
 from spinnman.model.cpu_state import CPUState
 from spinnman.model.core_subsets import CoreSubsets
+from spinn_front_end_common.utility_models.live_packet_gather_partitioned_vertex import LivePacketGatherPartitionedVertex
+from spinn_front_end_common.utility_models.reverse_ip_tag_multicast_source_partitioned_vertex import ReverseIPTagMulticastSourcePartitionedVertex
 
 logger = logging.getLogger(__name__)
 
@@ -101,8 +99,9 @@ def auto_detect_database(partitioned_graph):
     :return: a bool which represents if the database is needed
     """
     for vertex in partitioned_graph.subvertices:
-        if (isinstance(vertex, LivePacketGather) or
-                isinstance(vertex, ReverseIpTagMultiCastSource)):
+        if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
+                isinstance(
+                    vertex, ReverseIPTagMulticastSourcePartitionedVertex)):
             return True
     else:
         return False

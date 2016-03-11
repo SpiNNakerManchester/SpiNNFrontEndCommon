@@ -984,6 +984,9 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
 
+        // Enter pause and resume state to avoid another tick
+        simulation_handle_pause_resume(resume_callback);
+
         // close recording channels
         if (recording_flags > 0) {
             recording_finalise();
@@ -999,8 +1002,6 @@ void timer_callback(uint unused0, uint unused1) {
         setup_buffer_region(data_specification_get_region(BUFFER_REGION,
                                                           address));
 
-        // fall into pause and resume states
-        simulation_handle_pause_resume(resume_callback);
         return;
     }
 
