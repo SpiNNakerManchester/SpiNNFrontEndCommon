@@ -959,6 +959,20 @@ bool initialise(uint32_t *timer_period) {
     return true;
 }
 
+void resume_callback() {
+    // set the code to start sending packet requests again
+    send_packet_reqs = true;
+
+    // magic state to allow the model to check for stuff in the SDRAM
+    last_buffer_operation = BUFFER_OPERATION_WRITE;
+
+    // have fallen out of a resume mode, set up the functions to start
+    // resuming again
+    if(!initialise_recording()){
+        log_error("Could not reset recording regions");
+    }
+}
+
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -986,19 +1000,8 @@ void timer_callback(uint unused0, uint unused1) {
                                                           address));
 
         // fall into pause and resume states
-        simulation_handle_pause_resume();
-
-        // set the code to start sending packet requests again
-        send_packet_reqs = true;
-
-        // magic state to allow the model to check for stuff in the SDRAM
-        last_buffer_operation = BUFFER_OPERATION_WRITE;
-
-        // have fallen out of a resume mode, set up the functions to start
-        // resuming again
-        if(!initialise_recording()){
-            log_error("Could not reset recording regions");
-        }
+        simulation_handle_pause_resume(resume_callback);
+        return;
     }
 
     if (send_packet_reqs &&
@@ -1057,5 +1060,5 @@ void c_main(void) {
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run(timer_callback, TIMER);
+    simulation_run();
 }

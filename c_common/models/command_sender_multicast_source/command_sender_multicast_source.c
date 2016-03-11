@@ -30,7 +30,8 @@ void timer_callback(uint unused0, uint unused1) {
 
     if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
             (time >= simulation_ticks)) {
-        simulation_handle_pause_resume();
+        simulation_handle_pause_resume(NULL);
+        return;
     }
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
@@ -169,5 +170,5 @@ void c_main(void) {
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run(timer_callback, TIMER);
+    simulation_run();
 }

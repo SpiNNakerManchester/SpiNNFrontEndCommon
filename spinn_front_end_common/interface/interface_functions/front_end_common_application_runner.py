@@ -47,6 +47,10 @@ class FrontEndCommonApplicationRunner(object):
 
         self.start_all_cores(executable_targets, app_id, txrx, no_sync_changes)
 
+        # when it falls out of the running, it'll be in a next sync state,
+        # thus update needed
+        no_sync_changes += 1
+
         if notification_interface is not None and send_start_notification:
             notification_interface.send_start_notification()
 
@@ -55,11 +59,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                no_sync_changes, time_theshold)
-
-            # when it falls out of the running, it'll be in a next sync state,
-            # thus update needed
-            no_sync_changes += 1
+                time_theshold)
 
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
@@ -79,11 +79,9 @@ class FrontEndCommonApplicationRunner(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        processor_c_main = txrx.get_core_state_count(
-            app_id, CPUState.C_MAIN)
-
         # check that everything has gone though c main to reach sync0 or
         # failing for some unknown reason
+        processor_c_main = txrx.get_core_state_count(app_id, CPUState.C_MAIN)
         while processor_c_main != 0:
             time.sleep(0.1)
             processor_c_main = txrx.get_core_state_count(
@@ -111,7 +109,8 @@ class FrontEndCommonApplicationRunner(object):
                     "Only {} processors out of {} have successfully reached "
                     "{}:{}".format(
                         processors_ready, total_processors, sync_state.name,
-                        break_down), unsuccessful_cores)
+                        break_down),
+                    helpful_functions.get_core_subsets(unsuccessful_cores))
 
     @staticmethod
     def start_all_cores(executable_targets, app_id, txrx, sync_state_changes):
@@ -134,7 +133,7 @@ class FrontEndCommonApplicationRunner(object):
             sync_state = SCPSignal.SYNC1
 
         # if correct, start applications
-        logger.info("Starting application")
+        logger.info("Starting application ({})".format(sync_state))
         txrx.send_signal(app_id, sync_state)
         sync_state_changes += 1
 
@@ -144,20 +143,15 @@ class FrontEndCommonApplicationRunner(object):
             app_id, CPUState.RUNNING)
         if processors_running < total_processors:
 
-            # deduce the correct state value
-            if sync_state_changes % 2 == 0:
-                sync_state = CPUState.SYNC0
-            else:
-                sync_state = CPUState.SYNC1
-
             processors_finished = txrx.get_core_state_count(
-                app_id, sync_state)
+                app_id, CPUState.PAUSED)
             if processors_running + processors_finished >= total_processors:
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
                 unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                    all_core_subsets, {CPUState.RUNNING, sync_state}, txrx)
+                    all_core_subsets, {CPUState.RUNNING, CPUState.PAUSED},
+                    txrx)
 
                 # Last chance to get out of error state
                 if len(unsuccessful_cores) > 0:
@@ -166,11 +160,11 @@ class FrontEndCommonApplicationRunner(object):
                     raise exceptions.ExecutableFailedToStartException(
                         "Only {} of {} processors started:{}".format(
                             processors_running, total_processors, break_down),
-                        unsuccessful_cores)
+                        helpful_functions.get_core_subsets(unsuccessful_cores))
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling, txrx,
-            no_sync_state_changes, time_theshold):
+            time_theshold):
         """
 
         :param executable_targets:
@@ -238,17 +232,11 @@ class FrontEndCommonApplicationRunner(object):
                     "or time scale factor in your simulation.",
                     helpful_functions.get_core_subsets(running_cores), False)
 
-        if no_sync_state_changes % 2 == 1:
-            sync_state = CPUState.SYNC0
-        else:
-            sync_state = CPUState.SYNC1
-
-        processors_exited = txrx.get_core_state_count(
-            app_id, sync_state)
+        processors_exited = txrx.get_core_state_count(app_id, CPUState.PAUSED)
 
         if processors_exited < total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, sync_state, txrx)
+                all_core_subsets, CPUState.PAUSED, txrx)
 
             # Last chance to get out of the error state
             if len(unsuccessful_cores) > 0:

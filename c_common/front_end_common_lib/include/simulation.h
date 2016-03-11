@@ -36,6 +36,9 @@ typedef enum simulation_commands{
 //! the definition of the callback used by provenance data functions
 typedef void (*prov_callback_t)(address_t);
 
+//! the definition of the callback used by pause and resume
+typedef void (*resume_callback_t)();
+
 //! \brief Reads the timing details for the simulation out of a region,
 //!        which is formatted as:
 //!            uint32_t magic_number;
@@ -54,14 +57,12 @@ bool simulation_read_timing_details(
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
-void simulation_handle_pause_resume();
+//! \param[in] resume_function The function to call just before the simulation
+//!            is resumed (to allow the resetting of the simulation)
+void simulation_handle_pause_resume(resume_callback_t resume_function);
 
 //! \brief Starts the simulation running, returning when it is complete,
-//! \param[in] timer_function: The callback function used for the
-//!            timer_callback interrupt registration
-//! \param[in] timer_function_priority: the priority level wanted for the
-//! timer callback used by the application model.
-void simulation_run(callback_t timer_function, int timer_function_priority);
+void simulation_run();
 
 //! \brief handles the new commands needed to resume the binary with a new
 //! runtime counter, as well as switching off the binary when it truly needs

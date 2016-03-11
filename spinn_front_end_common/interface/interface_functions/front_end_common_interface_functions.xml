@@ -880,10 +880,6 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>no_sync_changes</param_name>
-                <param_type>NoSyncChanges</param_type>
-            </parameter>
-            <parameter>
                 <param_name>has_ran</param_name>
                 <param_type>RanToken</param_type>
             </parameter>
