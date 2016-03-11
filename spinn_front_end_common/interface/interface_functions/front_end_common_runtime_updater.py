@@ -89,16 +89,18 @@ class FrontEndCommonRuntimeUpdater(object):
         :raises: ExecutableFailedToStartException: if there are failed cores
         """
         # check that cores are not in unstable states already
-        bad_processor_count = \
-            txrx.get_core_state_count(app_id, CPUState.RUN_TIME_EXCEPTION)
-        bad_processor_count += \
-            txrx.get_core_state_count(app_id, CPUState.WATCHDOG)
+        bad_processor_count = txrx.get_core_state_count(
+            app_id, CPUState.RUN_TIME_EXCEPTION)
+        bad_processor_count += txrx.get_core_state_count(
+            app_id, CPUState.WATCHDOG)
         if bad_processor_count != 0:
             bad_processors = helpful_functions.get_cores_in_state(
-                all_core_subsets, [CPUState.RUN_TIME_EXCEPTION,
-                                   CPUState.WATCHDOG],
+                all_core_subsets,
+                {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG},
                 txrx)
+            error_string = helpful_functions.get_core_status_string(
+                bad_processors)
             raise exceptions.ExecutableFailedToStartException(
-                "{} cores were in invalid states before getting runtime set up"
-                .format(bad_processor_count),
+                "{} cores were in invalid states before getting runtime set"
+                " up: {}".format(bad_processor_count, error_string),
                 helpful_functions.get_core_subsets(bad_processors))

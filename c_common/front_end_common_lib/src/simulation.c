@@ -4,6 +4,7 @@
  */
 
 #include "simulation.h"
+#include "data_specification.h"
 
 #include <debug.h>
 #include <spin1_api.h>
@@ -92,14 +93,11 @@ void simulation_run() {
         log_error(
             "The top level code needs to register a provenance region id via"
             " the simulation_register_provenance_function_call() function");
-        spin1_rte(RTE_API);
+        rt_error(RTE_API);
     }
 
     // go into spin1 API start, but paused (no SYNC)
     spin1_start_paused();
-
-    // return from running
-    return;
 }
 
 void simulation_handle_pause_resume(resume_callback_t callback){
@@ -134,15 +132,16 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             *pointer_to_simulation_time = msg->arg1;
             *pointer_to_infinite_run = msg->arg2;
 
-            // free the message to stop overload
-            spin1_msg_free(msg);
-
-            log_info("Resuming");
             if (stored_resume_function != NULL) {
+                log_info("Calling pre-resume function");
                 stored_resume_function();
                 stored_resume_function = NULL;
             }
+            log_info("Resuming");
             spin1_resume(SYNC_WAIT);
+
+            // free the message to stop overload
+            spin1_msg_free(msg);
             break;
 
         case SDP_SWITCH_STATE:
@@ -162,7 +161,7 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             // force provenance to be executed and then exit
             _execute_provenance_storage();
             spin1_msg_free(msg);
-            spin1_rte(RTE_SWERR);
+            spin1_exit(1);
             break;
 
         default:
