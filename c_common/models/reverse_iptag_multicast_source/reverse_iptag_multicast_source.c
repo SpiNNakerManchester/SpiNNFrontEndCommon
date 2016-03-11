@@ -999,8 +999,8 @@ void timer_callback(uint unused0, uint unused1) {
                  last_stop_notification_request);
 
         address_t address = data_specification_get_data_address();
-        setup_buffer_region(data_specification_get_region(BUFFER_REGION,
-                                                          address));
+        setup_buffer_region(data_specification_get_region(
+            BUFFER_REGION, address));
 
         return;
     }

@@ -30,7 +30,7 @@ static uint32_t stored_provenance_data_region_id = NULL;
 
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
-address_t _simulation_store_provenance_data() {
+static address_t _simulation_store_provenance_data() {
 
     //! gets access to the diagnostics object from SARK
     extern diagnostics_t diagnostics;
@@ -57,12 +57,14 @@ address_t _simulation_store_provenance_data() {
 }
 
 //! \brief helper private method for running provenance data storage
-void _execute_provenance_storage(){
-    log_info("Starting basic provenance gathering");
-    address_t region_to_start_with = _simulation_store_provenance_data();
-    if (stored_provenance_function != NULL){
-        log_info("running other provenance gathering");
-        stored_provenance_function(region_to_start_with);
+static void _execute_provenance_storage() {
+    if (stored_provenance_data_region_id != NULL) {
+        log_info("Starting basic provenance gathering");
+        address_t region_to_start_with = _simulation_store_provenance_data();
+        if (stored_provenance_function != NULL){
+            log_info("running other provenance gathering");
+            stored_provenance_function(region_to_start_with);
+        }
     }
 }
 
@@ -88,15 +90,7 @@ bool simulation_read_timing_details(
 
 void simulation_run() {
 
-    // check that the top level code has registered a provenance region id
-    if (stored_provenance_data_region_id == NULL){
-        log_error(
-            "The top level code needs to register a provenance region id via"
-            " the simulation_register_provenance_function_call() function");
-        rt_error(RTE_API);
-    }
-
-    // go into spin1 API start, but paused (no SYNC)
+    // go into spin1 API start, but paused (no SYNC yet)
     spin1_start_paused();
 }
 

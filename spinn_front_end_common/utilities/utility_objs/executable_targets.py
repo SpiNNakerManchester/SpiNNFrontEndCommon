@@ -33,6 +33,7 @@ class ExecutableTargets(object):
 
     def add_subsets(self, binary, subsets):
         """ Add core subsets to a binary
+
         :param binary: the path to the binary needed to be executed
         :param subsets: the subset of cores that the binary needs to be loaded\
                     on
@@ -47,8 +48,8 @@ class ExecutableTargets(object):
                 self._total_processors += 1
 
     def add_processor(self, binary, chip_x, chip_y, chip_p):
-        """
-        adds a processor to the executable targets
+        """ Add a processor to the executable targets
+
         :param binary: the binary path for executable
         :param chip_x: the coordinate on the machine in terms of x for the chip
         :param chip_y: the coordinate on the machine in terms of y for the chip
@@ -66,8 +67,7 @@ class ExecutableTargets(object):
     def get_cores_for_binary(self, binary):
         """ Get the cores that a binary is to run on
 
-        :param binary:
-        :return:
+        :param binary: The binary to find the cores for
         """
         if self.has_binary(binary):
             return self._targets[binary]

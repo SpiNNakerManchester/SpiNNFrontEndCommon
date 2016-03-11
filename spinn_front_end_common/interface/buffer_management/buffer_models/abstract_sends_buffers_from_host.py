@@ -94,7 +94,7 @@ class AbstractSendsBuffersFromHost(object):
 
     @abstractmethod
     def is_empty(self, region):
-        """ Return true if there are no spikes to be buffered for the
+        """ Return true if there are no spikes to be buffered for the\
             specified region
 
         :param region: The region to get the next key from

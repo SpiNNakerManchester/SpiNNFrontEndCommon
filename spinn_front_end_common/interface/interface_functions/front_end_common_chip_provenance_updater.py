@@ -9,8 +9,7 @@ import struct
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
-    """ Forces all cores to generate provenance data, and then go into RTE\
-        state
+    """ Forces all cores to generate provenance data, and then exit
     """
 
     def __call__(self, txrx, app_id, all_core_subsets):

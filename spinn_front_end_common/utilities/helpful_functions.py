@@ -4,6 +4,13 @@ from collections import OrderedDict
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
+from spinn_front_end_common.utility_models\
+    .live_packet_gather_partitioned_vertex import \
+    LivePacketGatherPartitionedVertex
+from spinn_front_end_common.utility_models\
+    .reverse_ip_tag_multicast_source_partitioned_vertex \
+    import ReverseIPTagMulticastSourcePartitionedVertex
+
 
 # dsg imports
 from data_specification import utility_calls as dsg_utilities
@@ -18,8 +25,6 @@ import inspect
 import struct
 from spinnman.model.cpu_state import CPUState
 from spinnman.model.core_subsets import CoreSubsets
-from spinn_front_end_common.utility_models.live_packet_gather_partitioned_vertex import LivePacketGatherPartitionedVertex
-from spinn_front_end_common.utility_models.reverse_ip_tag_multicast_source_partitioned_vertex import ReverseIPTagMulticastSourcePartitionedVertex
 
 logger = logging.getLogger(__name__)
 

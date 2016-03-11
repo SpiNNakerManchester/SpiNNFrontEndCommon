@@ -80,8 +80,8 @@ class FrontEndCommonRuntimeUpdater(object):
 
     @staticmethod
     def _check_for_bad_cores(app_id, txrx, all_core_subsets):
-        """
-        tries locating cores which are in bad states
+        """ Locates cores that have gone into an error state
+
         :param app_id: the app_id to look for bad cores in
         :param txrx: the transceiver
         :param all_core_subsets: all cores in this application

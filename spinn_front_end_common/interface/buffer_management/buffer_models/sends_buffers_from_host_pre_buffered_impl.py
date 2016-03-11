@@ -99,7 +99,7 @@ class SendsBuffersFromHostPreBufferedImpl(
         return len(self._send_buffers[region].timestamps) == 0
 
     def rewind(self, region):
-        """ Rewinds the internal buffer in preparation of re-sending
+        """ Rewinds the internal buffer in preparation of re-sending\
             the spikes
 
         :param region: The region to rewind
