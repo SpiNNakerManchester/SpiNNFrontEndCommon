@@ -43,7 +43,7 @@ class FrontEndCommonProvenanceJSONWriter(object):
                 for cat_name in item.names[1:-1]:
 
                     if (cat_name in super_element and
-                            isinstance(cat_name, dict)):
+                            isinstance(super_element[cat_name], dict)):
 
                         # If there is already a category of this name under the
                         # super element, use it
