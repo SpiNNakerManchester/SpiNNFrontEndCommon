@@ -25,6 +25,11 @@ class FrontEndCommonProvenanceJSONWriter(object):
             # generate file path for xml
             file_path = os.path.join(
                 provenance_data_path, "{}.json".format(filename))
+            count = 2
+            while os.path.exists(file_path):
+                file_path = os.path.join(
+                    provenance_data_path, "{}_{}.json".format(filename, count))
+                count += 1
 
             # Create a root node
             root = dict()

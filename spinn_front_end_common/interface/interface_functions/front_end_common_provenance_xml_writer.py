@@ -25,6 +25,11 @@ class FrontEndCommonProvenanceXMLWriter(object):
             # generate file path for xml
             file_path = os.path.join(
                 provenance_data_path, "{}.xml".format(filename))
+            count = 2
+            while os.path.exists(file_path):
+                file_path = os.path.join(
+                    provenance_data_path, "{}_{}.xml".format(filename, count))
+                count += 1
 
             # Create a root node
             root = etree.Element("provenance_data_items", name=name)
