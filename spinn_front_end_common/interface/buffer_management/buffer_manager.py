@@ -176,9 +176,10 @@ class BufferManager(object):
             logger.debug("Listening for receive packets using tag {} on"
                          " {}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
-            self._transceiver.register_udp_listener(
-                self.receive_buffer_command_message, UDPEIEIOConnection,
-                local_port=tag.port, local_host=tag.ip_address)
+            if self._transceiver is not None:
+                self._transceiver.register_udp_listener(
+                    self.receive_buffer_command_message, UDPEIEIOConnection,
+                    local_port=tag.port, local_host=tag.ip_address)
 
     def add_sender_vertex(self, vertex):
         """ Add a partitioned vertex into the managed list for vertices
@@ -194,9 +195,10 @@ class BufferManager(object):
             logger.debug("Listening for send packets using tag {} on"
                          " {}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
-            self._transceiver.register_udp_listener(
-                self.receive_buffer_command_message, UDPEIEIOConnection,
-                local_port=tag.port, local_host=tag.ip_address)
+            if self._transceiver is not None:
+                self._transceiver.register_udp_listener(
+                    self.receive_buffer_command_message, UDPEIEIOConnection,
+                    local_port=tag.port, local_host=tag.ip_address)
 
         # if reload script is set up, store the buffers for future usage
         if self._write_reload_files:
@@ -210,6 +212,16 @@ class BufferManager(object):
                 if vertex not in self._reload_buffer_file_paths:
                     self._reload_buffer_file_paths[vertex] = dict()
                 self._reload_buffer_file_paths[vertex][region] = file_path
+
+                # If there is no transceiver, push all the output to the file
+                if self._transceiver is not None:
+                    while vertex.is_next_timestamp(region):
+                        next_timestamp = vertex.get_next_timestamp(region)
+                        while vertex.is_next_key(region, next_timestamp):
+                            key = vertex.get_next_key(region)
+                            self._reload_buffer_file[(vertex, region)].write(
+                                "{}:{}\n".format(next_timestamp, key))
+                    self._reload_buffer_file[(vertex, region)].close()
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes

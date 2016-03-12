@@ -17,9 +17,9 @@ from spinn_front_end_common.utilities.reload.reload_buffered_vertex \
     import ReloadBufferedVertex
 from spinn_front_end_common.utilities.notification_protocol.socket_address \
     import SocketAddress
-from spinn_front_end_common.utilities.executable_targets \
-    import ExecutableTargets
 from spinn_front_end_common.utilities.reload.reload import Reload
+from spinn_front_end_common.utilities.utility_objs.executable_targets \
+    import ExecutableTargets
 
 # general imports
 import os
@@ -47,7 +47,8 @@ class ReloadScript(object):
             send_start_notification,
 
             # Execute information
-            app_id, runtime, time_scale_factor, total_machine_timesteps):
+            app_id, runtime, time_scale_factor, total_machine_timesteps,
+            time_threshold):
 
         self._app_data_runtime_folder = app_data_runtime_folder
         file_name = os.path.join(
@@ -150,6 +151,7 @@ class ReloadScript(object):
         self._println("time_scale_factor = {}".format(time_scale_factor))
         self._println("total_machine_timesteps = {}".format(
             total_machine_timesteps))
+        self._println("time_threshold = {}".format(time_threshold))
         self._println("")
 
     def _write_import_class(self, cls):
@@ -195,9 +197,14 @@ class ReloadScript(object):
         :param iptag: the iptag object to be loaded.
         :return:
         """
+        board_address = None
+        if iptag.board_address == "127.0.0.1":
+            board_address = "machine_name"
+        else:
+            board_address = "\"{}\"".format(iptag.board_address)
         self._println("iptags.append(")
-        self._println("    IPTag(\"{}\", {}, \"{}\", {}, {})) ".format(
-            iptag.board_address, iptag.tag, iptag.ip_address, iptag.port,
+        self._println("    IPTag({}, {}, \"{}\", {}, {})) ".format(
+            board_address, iptag.tag, iptag.ip_address, iptag.port,
             iptag.strip_sdp))
 
     def add_reverse_ip_tag(self, reverse_ip_tag):
@@ -206,9 +213,14 @@ class ReloadScript(object):
         :param reverse_ip_tag: the reverse iptag to be loaded.
         :return:
         """
+        board_address = None
+        if reverse_ip_tag.board_address == "127.0.0.1":
+            board_address = "machine_name"
+        else:
+            board_address = "\"{}\"".format(reverse_ip_tag.board_address)
         self._println("reverse_iptags.append(")
-        self._println("    ReverseIPTag(\"{}\", {}, {}, {}, {}, {}))".format(
-            reverse_ip_tag.board_address, reverse_ip_tag.tag,
+        self._println("    ReverseIPTag({}, {}, {}, {}, {}, {}))".format(
+            board_address, reverse_ip_tag.tag,
             reverse_ip_tag.port, reverse_ip_tag.destination_x,
             reverse_ip_tag.destination_y, reverse_ip_tag.destination_p,
             reverse_ip_tag.sdp_port))
@@ -289,5 +301,6 @@ class ReloadScript(object):
         self._println("    send_start_notification,")
         self._println("    executable_targets, app_id, runtime,")
         self._println("    time_scale_factor, total_machine_timesteps,")
+        self._println("    time_threshold,")
         self._println("    running, loading)")
         self._file.close()

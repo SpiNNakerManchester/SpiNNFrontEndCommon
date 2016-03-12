@@ -28,10 +28,16 @@ class Reload(object):
 
             # Execute information
             executable_targets, app_id, runtime, time_scale_factor,
-            total_machine_timesteps,
+            total_machine_timesteps, time_threshold,
 
             # Flags that indicate what to actually do
             loading=True, running=True):
+
+        if machine_name == "None":
+            raise Exception(
+                "This reload script was created using a virtual board.  To"
+                " use it, please set machine_name to the hostname or IP"
+                " address of a real board")
 
         if scamp_connection_data == "None":
             scamp_connection_data = None
@@ -82,6 +88,7 @@ class Reload(object):
         inputs["RunTime"] = runtime
         inputs["TotalMachineTimeSteps"] = total_machine_timesteps
         inputs["ExecutableTargets"] = executable_targets
+        inputs["PostSimulationOverrunBeforeError"] = time_threshold
 
         algorithms = list()
         algorithms.append("FrontEndCommonMachineInterfacer")
