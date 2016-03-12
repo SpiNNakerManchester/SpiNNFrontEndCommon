@@ -3,11 +3,9 @@ from spinn_machine.virutal_machine import VirtualMachine
 
 
 class FrontEndCommonVirtualMachineGenerator(object):
-    """
-    """
 
-    def __call__(self, width, height, virtual_has_wrap_arounds,
-                 version):
+    def __call__(
+            self, width, height, virtual_has_wrap_arounds, version):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
