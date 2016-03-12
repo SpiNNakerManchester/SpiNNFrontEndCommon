@@ -214,7 +214,7 @@ class BufferManager(object):
                 self._reload_buffer_file_paths[vertex][region] = file_path
 
                 # If there is no transceiver, push all the output to the file
-                if self._transceiver is not None:
+                if self._transceiver is None:
                     while vertex.is_next_timestamp(region):
                         next_timestamp = vertex.get_next_timestamp(region)
                         while vertex.is_next_key(region, next_timestamp):
