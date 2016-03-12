@@ -8,9 +8,6 @@ from spinn_front_end_common.utilities.database.database_writer import \
 
 
 class FrontEndCommonDatabaseInterface(object):
-    """
-    """
-
 
     def __init__(self):
         self._writer = None

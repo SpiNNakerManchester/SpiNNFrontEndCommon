@@ -32,7 +32,7 @@ typedef struct provenance_data_struct {
 //! values for the priority for each callback
 typedef enum callback_priorities{
     MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 2
-}callback_priorities;
+} callback_priorities;
 
 //! struct holding the provenance data
 provenance_data_struct provenance_data;
@@ -58,7 +58,7 @@ static uint32_t payload_timestamp;
 // D bit
 static uint32_t payload_apply_prefix;
 
-// Payload prefix data (for the rcvr)
+// Payload prefix data (for the receiver)
 static uint32_t payload_prefix;
 
 // Right payload shift (for the sender)
@@ -158,7 +158,7 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(address_t provenance_region_address){
+void record_provenance_data(address_t provenance_region_address) {
 
     // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
@@ -179,7 +179,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
-        simulation_handle_pause_resume(timer_callback, TIMER);
+        simulation_handle_pause_resume(NULL);
     }
 }
 
@@ -395,8 +395,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
 
@@ -462,7 +461,7 @@ bool configure_sdp_msg(void) {
     header_len = 2;
     temp_ptr = (void *) sdp_msg_aer_header[1];
 
-    // pointers for AER packet header, prefix(es) and data
+    // pointers for AER packet header, prefix and data
     if (apply_prefix) {
 
         // pointer to key prefix
@@ -558,6 +557,7 @@ void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
     if (!initialize(&timer_period)) {
+         log_error("Error in initialisation - exiting!");
          rt_error(RTE_SWERR);
     }
 
@@ -582,9 +582,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
-    simulation_register_provenance_function_call(
+    simulation_register_provenance_callback(
         record_provenance_data, PROVENANCE_REGION);
-    log_info("Starting\n");
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;

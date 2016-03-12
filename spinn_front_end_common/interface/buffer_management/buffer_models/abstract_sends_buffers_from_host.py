@@ -8,8 +8,8 @@ logger = logging.getLogger(__name__)
 
 
 @add_metaclass(ABCMeta)
-class AbstractSendsBuffersFromHostPartitionedVertex(object):
-    """ Interface to a partitioned vertex that sends buffers of keys to be\
+class AbstractSendsBuffersFromHost(object):
+    """ Interface to an object that sends buffers of keys to be\
         transmitted at given timestamps in the simulation
     """
 
@@ -94,7 +94,7 @@ class AbstractSendsBuffersFromHostPartitionedVertex(object):
 
     @abstractmethod
     def is_empty(self, region):
-        """ Return true if there are no spikes to be buffered for the
+        """ Return true if there are no spikes to be buffered for the\
             specified region
 
         :param region: The region to get the next key from
