@@ -25,13 +25,16 @@ SARK_PER_MALLOC_SDRAM_USAGE = 8
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
 
+# size of the on-chip DSE data structure required in bytes
+DSE_DATA_STRUCT_SIZE = 16
+
 SDP_RUNNING_MESSAGE_CODES = Enum(
     value="SDP_RUNNING_MESSAGE_ID_CODES",
     names=[
         ("SDP_STOP_ID_CODE", 6),
         ("SDP_NEW_RUNTIME_ID_CODE", 7),
-        ("SDP_SWITCH_STATE", 8)]
-)
+        ("SDP_SWITCH_STATE", 8),
+        ("SDP_UPDATE_PROVENCE_REGION_AND_EXIT", 9)])
 
 
 # SDP port handling output buffering data streaming

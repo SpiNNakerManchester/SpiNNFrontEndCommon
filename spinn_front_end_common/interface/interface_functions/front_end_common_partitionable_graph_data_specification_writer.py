@@ -1,7 +1,7 @@
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities.executable_targets import \
+from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
 
@@ -39,16 +39,14 @@ class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
                     placement.subvertex)
                 reverse_ip_tags = tags.get_reverse_ip_tags_for_vertex(
                     placement.subvertex)
-                file_paths = associated_vertex.generate_data_spec(
+                file_path = associated_vertex.generate_data_spec(
                     placement.subvertex, placement, partitioned_graph,
                     partitionable_graph, routing_infos, hostname, graph_mapper,
                     report_default_directory, ip_tags, reverse_ip_tags,
                     write_text_specs, app_data_runtime_folder)
 
                 # link dsg file to subvertex
-                dsg_targets[placement.subvertex] = list()
-                for file_path in file_paths:
-                    dsg_targets[placement.subvertex].append(file_path)
+                dsg_targets[placement.x, placement.y, placement.p] = file_path
 
                 # Get name of binary from vertex
                 binary_name = associated_vertex.get_binary_file_name()

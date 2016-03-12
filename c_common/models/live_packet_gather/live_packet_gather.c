@@ -32,7 +32,7 @@ typedef struct provenance_data_struct {
 //! values for the priority for each callback
 typedef enum callback_priorities{
     MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 2
-}callback_priorities;
+} callback_priorities;
 
 //! struct holding the provenance data
 provenance_data_struct provenance_data;
@@ -58,7 +58,7 @@ static uint32_t payload_timestamp;
 // D bit
 static uint32_t payload_apply_prefix;
 
-// Payload prefix data (for the rcvr)
+// Payload prefix data (for the receiver)
 static uint32_t payload_prefix;
 
 // Right payload shift (for the sender)
@@ -70,7 +70,7 @@ static uint32_t packets_per_timestamp;
 typedef enum regions_e {
     SYSTEM_REGION,
     CONFIGURATION_REGION,
-    PROVANENCE_REGION
+    PROVENANCE_REGION
 } regions_e;
 
 //! Human readable definitions of each element in the configuration region in
@@ -158,22 +158,11 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(void){
-
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-
-    // locate the provenance data region base address
-    address_t provenance_region_address =
-        data_specification_get_region(PROVANENCE_REGION, address);
+void record_provenance_data(address_t provenance_region_address) {
 
     // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
-    log_info("The provenance data consisting of %d lost packets without "
-             "payload and %d lost packets with payload.",
-             provenance_data.number_of_over_flows_none_payload,
-             provenance_data.number_of_over_flows_payload);
 }
 
 // Callbacks
@@ -190,8 +179,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
-        record_provenance_data();
-        simulation_handle_pause_resume(timer_callback, TIMER);
+        simulation_handle_pause_resume(NULL);
     }
 }
 
@@ -407,8 +395,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
 
@@ -474,7 +461,7 @@ bool configure_sdp_msg(void) {
     header_len = 2;
     temp_ptr = (void *) sdp_msg_aer_header[1];
 
-    // pointers for AER packet header, prefix(es) and data
+    // pointers for AER packet header, prefix and data
     if (apply_prefix) {
 
         // pointer to key prefix
@@ -570,6 +557,7 @@ void c_main(void) {
     // Configure system
     uint32_t timer_period = 0;
     if (!initialize(&timer_period)) {
+         log_error("Error in initialisation - exiting!");
          rt_error(RTE_SWERR);
     }
 
@@ -594,7 +582,8 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
-    log_info("Starting\n");
+    simulation_register_provenance_callback(
+        record_provenance_data, PROVENANCE_REGION);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
