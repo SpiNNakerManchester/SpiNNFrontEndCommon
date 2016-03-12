@@ -1,5 +1,5 @@
 # spinn_machine imports
-from spinn_machine.virutal_machine import VirtualMachine
+from spinn_machine.virtual_machine import VirtualMachine
 
 
 class FrontEndCommonVirtualMachineGenerator(object):
