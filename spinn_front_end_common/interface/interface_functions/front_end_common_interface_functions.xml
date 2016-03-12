@@ -367,6 +367,10 @@
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
+            <parameter>
+                <param_name>time_threshold</param_name>
+                <param_type>PostSimulationOverrunBeforeError</param_type>
+            </parameter>
         </required_inputs>
         <produces_outputs>
             <parameter>
@@ -463,9 +467,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonVirtualMachineInterfacer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_virtual_machine_interfacer</python_module>
-        <python_class>FrontEndCommonVirtualMachineInterfacer</python_class>
+    <algorithm name="FrontEndCommonVirtualMachineGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_virtual_machine_generator</python_module>
+        <python_class>FrontEndCommonVirtualMachineGenerator</python_class>
         <required_inputs>
             <parameter>
                 <param_name>width</param_name>
@@ -479,7 +483,21 @@
                 <param_name>virtual_has_wrap_arounds</param_name>
                 <param_type>MachineHasWrapAroundsFlag</param_type>
             </parameter>
+            <parameter>
+                <param_name>version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
         </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>n_cpus_per_chip</param_name>
+                <param_type>CPUsPerVirtualChip</param_type>
+            </parameter>
+            <parameter>
+                <param_name>with_monitors</param_name>
+                <param_type>VirtualChipsHaveMonitor</param_type>
+            </parameter>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>machine</param_name>
