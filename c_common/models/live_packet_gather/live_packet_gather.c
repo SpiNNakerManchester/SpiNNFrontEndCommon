@@ -70,7 +70,7 @@ static uint32_t packets_per_timestamp;
 typedef enum regions_e {
     SYSTEM_REGION,
     CONFIGURATION_REGION,
-    PROVANENCE_REGION
+    PROVENANCE_REGION
 } regions_e;
 
 //! Human readable definitions of each element in the configuration region in
@@ -158,22 +158,11 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(void){
-
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-
-    // locate the provenance data region base address
-    address_t provenance_region_address =
-        data_specification_get_region(PROVANENCE_REGION, address);
+void record_provenance_data(address_t provenance_region_address) {
 
     // Copy provenance data into SDRAM region
     memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
-    log_info("The provenance data consisting of %d lost packets without "
-             "payload and %d lost packets with payload.",
-             provenance_data.number_of_over_flows_none_payload,
-             provenance_data.number_of_over_flows_payload);
 }
 
 // Callbacks
@@ -190,8 +179,7 @@ void timer_callback(uint unused0, uint unused1) {
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
-        record_provenance_data();
-        simulation_handle_pause_resume();
+        simulation_handle_pause_resume(NULL);
     }
 }
 
@@ -594,8 +582,10 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
+    simulation_register_provenance_callback(
+        record_provenance_data, PROVENANCE_REGION);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run(timer_callback, TIMER);
+    simulation_run();
 }

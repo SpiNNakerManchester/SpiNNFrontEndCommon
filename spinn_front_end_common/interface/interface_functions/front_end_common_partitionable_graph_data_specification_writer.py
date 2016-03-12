@@ -1,7 +1,7 @@
 from pacman.utilities.utility_objs.progress_bar import ProgressBar
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities.executable_targets import \
+from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
 

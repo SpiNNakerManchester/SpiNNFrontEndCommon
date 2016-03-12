@@ -21,9 +21,23 @@ typedef enum region_elements{
     SDP_EXIT_RUNTIME_COMMAND_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
 } region_elements;
 
+//! elements that are always grabbed for provenance if possible when requested
+typedef enum provenance_data_elements{
+    TRANSMISSION_EVENT_OVERFLOW, CALLBACK_QUEUE_OVERLOADED,
+    DMA_QUEUE_OVERLOADED, TIMER_TIC_HAS_OVERRUN,
+    MAX_NUMBER_OF_TIMER_TIC_OVERRUN, PROVENANCE_DATA_ELEMENTS
+} provenance_data_elements;
+
 typedef enum simulation_commands{
-    CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8
-}simulation_commands;
+    CMD_STOP = 6, CMD_RUNTIME = 7, SDP_SWITCH_STATE = 8,
+    PROVENANCE_DATA_GATHERING = 9,
+} simulation_commands;
+
+//! the definition of the callback used by provenance data functions
+typedef void (*prov_callback_t)(address_t);
+
+//! the definition of the callback used by pause and resume
+typedef void (*resume_callback_t)();
 
 //! \brief Reads the timing details for the simulation out of a region,
 //!        which is formatted as:
@@ -43,14 +57,12 @@ bool simulation_read_timing_details(
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
-void simulation_handle_pause_resume();
+//! \param[in] resume_function The function to call just before the simulation
+//!            is resumed (to allow the resetting of the simulation)
+void simulation_handle_pause_resume(resume_callback_t resume_function);
 
 //! \brief Starts the simulation running, returning when it is complete,
-//! \param[in] timer_function: The callback function used for the
-//!            timer_callback interrupt registration
-//! \param[in] timer_function_priority: the priority level wanted for the
-//! timer callback used by the application model.
-void simulation_run(callback_t timer_function, int timer_function_priority);
+void simulation_run();
 
 //! \brief handles the new commands needed to resume the binary with a new
 //! runtime counter, as well as switching off the binary when it truly needs
@@ -71,12 +83,14 @@ void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
         int sdp_packet_callback_priority);
 
-//! \brief timer callback to support updating runtime via SDP message during
-//! first run
-//! \param[in] timer_function: The callback function used for the
-//!            timer_callback interrupt registration
-//! \param[in] timer_function_priority: the priority level wanted for the
-//! timer callback used by the application model.
-void simulation_timer_tic_callback(uint timer_count, uint unused);
+//! \brief handles the registration for storing provenance data
+//! \param[in] provenance_function: function to call for extra provenance data
+//!            (can be NULL if no additional provenance data is to be stored)
+//! \param[in] provenance_data_region_id: the id of the region where
+//!            provenance is to be stored
+//! \return does not return anything
+void simulation_register_provenance_callback(
+        prov_callback_t provenance_function,
+        uint32_t provenance_data_region_id);
 
 #endif // _SIMULATION_H_

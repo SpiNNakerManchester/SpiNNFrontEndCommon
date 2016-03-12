@@ -643,6 +643,10 @@
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
             </parameter>
+            <parameter>
+                <param_name>time_theshold</param_name>
+                <param_type>PostSimulationOverrunBeforeError</param_type>
+            </parameter>
         </required_inputs>
         <produces_outputs>
             <parameter>
@@ -655,14 +659,41 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonProvenanceGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_gatherer</python_module>
-        <python_class>FrontEndCommonProvenanceGatherer</python_class>
+    <algorithm name="FrontEndCommonPlacementsProvenanceGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_placements_provenance_gatherer</python_module>
+        <python_class>FrontEndCommonPlacementsProvenanceGatherer</python_class>
         <required_inputs>
             <parameter>
-                <param_name>file_path</param_name>
-                <param_type>ProvenanceFilePath</param_type>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_ran</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>ProvenanceItems</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>prov_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonRouterProvenanceGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_router_provenance_gatherer</python_module>
+        <python_class>FrontEndCommonRouterProvenanceGatherer</python_class>
+        <required_inputs>
             <parameter>
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
@@ -676,14 +707,55 @@
                 <param_type>MemoryRoutingTables</param_type>
             </parameter>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
                 <param_name>has_ran</param_name>
                 <param_type>RanToken</param_type>
             </parameter>
         </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>ProvenanceItems</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>prov_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonProvenanceXMLWriter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_xml_writer</python_module>
+        <python_class>FrontEndCommonProvenanceXMLWriter</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>provenance_data_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_data_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonProvenanceJSONWriter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_json_writer</python_module>
+        <python_class>FrontEndCommonProvenanceJSONWriter</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>provenance_data_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_data_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+        </produces_outputs>
     </algorithm>
     <algorithm name="FrontEndCommonDatabaseWriter">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_database_interface</python_module>
@@ -808,10 +880,6 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>no_sync_changes</param_name>
-                <param_type>NoSyncChanges</param_type>
-            </parameter>
-            <parameter>
                 <param_name>has_ran</param_name>
                 <param_type>RanToken</param_type>
             </parameter>
@@ -853,31 +921,68 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonMachineTimeStepUpdater">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_auto_pause_and_resumer</python_module>
-        <python_class>FrontEndCommonMachineTimeStepUpdater</python_class>
+    <algorithm name="FrontEndCommonChipProvenanceUpdater">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_provenance_updater</python_module>
+        <python_class>FrontEndCommonChipProvenanceUpdater</python_class>
         <required_inputs>
             <parameter>
-                <param_name>iteration</param_name>
-                <param_type>Iteration</param_type>
+                <param_name>txrx</param_name>
+                <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>steps</param_name>
-                <param_type>Steps</param_type>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>partitionable_graph</param_name>
-                <param_type>MemoryPartitionableGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>total_run_time_executed_so_far</param_name>
-                <param_type>TotalCommunitiveRunTime</param_type>
+                <param_name>all_core_subsets</param_name>
+                <param_type>FailedCoresSubsets</param_type>
             </parameter>
         </required_inputs>
         <produces_outputs>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonIOBufExtractor">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_iobuf_extractor</python_module>
+        <python_class>FrontEndCommonIOBufExtractor</python_class>
+        <required_inputs>
             <parameter>
-                <param_name>runtime_in_machine_time_steps</param_name>
-                <param_type>TotalCommunitiveRunTime</param_type>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_ran</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+        </required_inputs>
+        <required_optional_inputs>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+            <parameter>
+                <param_name>core_subsets</param_name>
+                <param_type>FailedCoresSubsets</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+            <parameter>
+                <param_name>warning_messages</param_name>
+                <param_type>WarnMessages</param_type>
+                <param_rank>1</param_rank>
+            </parameter>
+        </required_optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>io_buffers</param_name>
+                <param_type>IOBuffers</param_type>
+            </parameter>
+            <parameter>
+                <param_name>error_entries</param_name>
+                <param_type>ErrorMessages</param_type>
+            </parameter>
+            <parameter>
+                <param_name>warn_entries</param_name>
+                <param_type>WarnMessages</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>

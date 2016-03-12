@@ -186,7 +186,7 @@ class BufferManager(object):
 
         :param vertex: the vertex to be managed
         :type vertex:\
-                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
+                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
         tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
@@ -251,7 +251,7 @@ class BufferManager(object):
         :type size: int
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         :param region: The region of the vertex to get keys from
         :type region: int
         :return: A new message, or None if no keys can be added
@@ -290,7 +290,7 @@ class BufferManager(object):
 
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         :param region: The region to get the keys from
         :type region: int
         :return: A list of messages

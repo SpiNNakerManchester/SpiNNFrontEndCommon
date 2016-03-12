@@ -1,13 +1,16 @@
 
 # front end common imports
 from collections import OrderedDict
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
+from spinn_front_end_common.utility_models\
+    .live_packet_gather_partitioned_vertex import \
+    LivePacketGatherPartitionedVertex
+from spinn_front_end_common.utility_models\
+    .reverse_ip_tag_multicast_source_partitioned_vertex \
+    import ReverseIPTagMulticastSourcePartitionedVertex
+
 
 # dsg imports
 from data_specification import utility_calls as dsg_utilities
@@ -21,6 +24,7 @@ import re
 import inspect
 import struct
 from spinnman.model.cpu_state import CPUState
+from spinnman.model.core_subsets import CoreSubsets
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +50,7 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param address: base address of the SDRAM chip to read
     :param length: length to read
     :param data_format: the format to read memory
-    :param transceiver: the spinnman interface
+    :param transceiver: the SpinnMan interface
     """
 
     # turn byte array into str for unpack to work
@@ -61,8 +65,6 @@ def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
         :param region: the region to locate the base address of
         :type region: int
         :param vertex: the vertex to load a buffer for
-        :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
         :return: None
         """
         placement = placements.get_placement_of_subvertex(vertex)
@@ -102,8 +104,9 @@ def auto_detect_database(partitioned_graph):
     :return: a bool which represents if the database is needed
     """
     for vertex in partitioned_graph.subvertices:
-        if (isinstance(vertex, LivePacketGather) or
-                isinstance(vertex, ReverseIpTagMultiCastSource)):
+        if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
+                isinstance(
+                    vertex, ReverseIPTagMulticastSourcePartitionedVertex)):
             return True
     else:
         return False
@@ -288,7 +291,7 @@ def get_front_end_common_pacman_xml_paths():
     ]
 
 
-def get_cores_in_state(all_core_subsets, state, txrx):
+def get_cores_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
@@ -299,24 +302,33 @@ def get_cores_in_state(all_core_subsets, state, txrx):
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state == state:
+        if hasattr(states, "__iter__"):
+            if core_info.state in states:
+                cores_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        elif core_info.state == states:
             cores_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
+
     return cores_in_state
 
 
-def get_cores_not_in_state(all_core_subsets, state, txrx):
+def get_cores_not_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
-    :param state:
+    :param states:
     :param txrx:
     :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state != state:
+        if hasattr(states, "__iter__"):
+            if core_info.state not in states:
+                cores_not_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        elif core_info.state != states:
             cores_not_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_not_in_state
@@ -335,3 +347,12 @@ def get_core_status_string(core_infos):
             break_down += "    {}:{}:{} in state {}\n".format(
                 x, y, p, core_info.state.name)
     return break_down
+
+
+def get_core_subsets(core_infos):
+    """ Convert core information from get_cores_in_state to core_subset objects
+    """
+    core_subsets = CoreSubsets()
+    for (x, y, p) in core_infos:
+        core_subsets.add_processor(x, y, p)
+    return core_subsets
