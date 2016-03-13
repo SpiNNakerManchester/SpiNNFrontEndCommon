@@ -76,12 +76,7 @@ bool data_specification_read_header(uint32_t* address) {
 //!            app_pointer table as created by the host DSE.
 //! \return a address_t which represents the absolute SDRAM address for the
 //!         start of the requested region.
-
 address_t data_specification_get_region(
         uint32_t region, address_t data_address) {
-
-    // As the address is a uint32_t array, we need to divide the byte address
-    // in the region table by 4 (hence down-shift by 2) to get the position in
-    // the "address array"
-    return data_address[REGION_START_INDEX + region];
+    return (address_t) (data_address[REGION_START_INDEX + region]);
 }

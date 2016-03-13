@@ -1,13 +1,7 @@
-# spinn front end common imports
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
-
 # general imports
-import os
 import logging
 import traceback
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +19,10 @@ class DatabaseWriter(object):
         self._database_path = os.path.join(self._database_directory,
                                            "input_output_database.db")
 
+        # delete any old database
+        if os.path.isfile(self._database_path):
+            os.remove(self._database_path)
+
         # set up checks
         self._machine_id = 0
 
@@ -35,21 +33,6 @@ class DatabaseWriter(object):
         :return:
         """
         return self._database_path
-
-    @staticmethod
-    def auto_detect_database(partitioned_graph):
-        """ Auto detects if there is a need to activate the database system
-
-        :param partitioned_graph: the partitioned graph of the application\
-                problem space.
-        :return: a bool which represents if the database is needed
-        """
-        for vertex in partitioned_graph.subvertices:
-            if (isinstance(vertex, LivePacketGather) or
-                    isinstance(vertex, ReverseIpTagMultiCastSource)):
-                return True
-        else:
-            return False
 
     def add_machine_objects(self, machine):
         """ Store the machine object into the database
@@ -479,6 +462,7 @@ class DatabaseWriter(object):
             cur = connection.cursor()
 
             # create table
+            self._done_mapping = True
             cur.execute(
                 "CREATE TABLE event_to_atom_mapping("
                 "vertex_id INTEGER, atom_id INTEGER, "

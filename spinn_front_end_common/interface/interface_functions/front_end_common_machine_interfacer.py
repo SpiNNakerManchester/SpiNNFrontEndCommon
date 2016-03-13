@@ -41,13 +41,13 @@ class FrontEndCommonMachineInterfacer(object):
         :param boot_port_num: the port num used for the boot connection
         :param scamp_connection_data: the list of scamp connection data or\
                None
-        :param max_sdram_size: the max size each chip can say it has for sdram (
-        mainly used in debugguing purposes)
+        :param max_sdram_size: the maximum SDRAM each chip can say it has
+               (mainly used in debugging purposes)
         :type max_sdram_size: int or None
         :return: None
         """
 
-        # if the end user gives you scamp data, use it and dont discover them
+        # if the end user gives you scamp data, use it and don't discover them
         if scamp_connection_data is not None:
             scamp_connection_data = \
                 self._sort_out_scamp_connections(scamp_connection_data)

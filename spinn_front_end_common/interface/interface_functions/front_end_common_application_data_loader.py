@@ -24,6 +24,8 @@ class FrontEndCommonApplicationDataLoader(object):
             logger.debug(
                 "loading application data for vertex {}".format(label))
             key = (x, y, p, label)
+            start_address = \
+                processor_to_app_data_base_address[key]['start_address']
             memory_written = \
                 processor_to_app_data_base_address[key]['memory_written']
             memory_used = \

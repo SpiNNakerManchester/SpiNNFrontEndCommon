@@ -933,12 +933,9 @@ bool initialise(uint32_t *timer_period) {
     // Get the timing details
     address_t system_region = data_specification_get_region(SYSTEM, address);
     if (!simulation_read_timing_details(
-            system_region, APPLICATION_NAME_HASH, timer_period,
-            &simulation_ticks, &infinite_run)) {
+            system_region, APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
-
-    log_info("have been told to run for %d timer tics", simulation_ticks);
 
     // Read the parameters
     if (!read_parameters(
@@ -962,6 +959,20 @@ bool initialise(uint32_t *timer_period) {
     return true;
 }
 
+void resume_callback() {
+    // set the code to start sending packet requests again
+    send_packet_reqs = true;
+
+    // magic state to allow the model to check for stuff in the SDRAM
+    last_buffer_operation = BUFFER_OPERATION_WRITE;
+
+    // have fallen out of a resume mode, set up the functions to start
+    // resuming again
+    if(!initialise_recording()){
+        log_error("Could not reset recording regions");
+    }
+}
+
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
@@ -972,6 +983,9 @@ void timer_callback(uint unused0, uint unused1) {
               next_buffer_time);
 
     if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
+
+        // Enter pause and resume state to avoid another tick
+        simulation_handle_pause_resume(resume_callback);
 
         // close recording channels
         if (recording_flags > 0) {
@@ -985,23 +999,10 @@ void timer_callback(uint unused0, uint unused1) {
                  last_stop_notification_request);
 
         address_t address = data_specification_get_data_address();
-        setup_buffer_region(data_specification_get_region(BUFFER_REGION,
-                                                          address));
+        setup_buffer_region(data_specification_get_region(
+            BUFFER_REGION, address));
 
-        // fall into pause and resume states
-        simulation_handle_pause_resume();
-
-        // set the code to start sending packet requests again
-        send_packet_reqs = true;
-
-        // magic state to allow the model to check for stuff in the SDRAM
-        last_buffer_operation = BUFFER_OPERATION_WRITE;
-
-        // have fallen out of a resume mode, set up the functions to start
-        // resuming again
-        if(!initialise_recording()){
-            log_error("Could not reset recording regions");
-        }
+        return;
     }
 
     if (send_packet_reqs &&
@@ -1053,12 +1054,12 @@ void c_main(void) {
     // Register callbacks
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP_CALLBACK);
-    simulation_register_provenance_function_call(NULL, PROVENANCE_REGION);
+    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
     spin1_sdp_callback_on(
         BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run(timer_callback, TIMER);
+    simulation_run();
 }

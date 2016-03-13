@@ -6,24 +6,43 @@ class FrontEndCommonReloadScriptCreator(object):
     """
 
     def __call__(
-            self, tags, app_data_folder, hostname, board_version,
-            bmp_details, downed_chips, downed_cores, number_of_boards,
-            height, width, auto_detect_bmp, enable_reinjection,
-            placements, router_tables, machine, executable_targets,
-            run_time, time_scale_factor, database_socket_addresses,
-            wait_on_confirmation, buffer_manager, scamp_connection_data,
-            boot_port_num, verify, database_file_path, send_start_notification,
-            reset_machine_on_start_up, processor_to_app_data_base_address=None,
-            placement_to_app_data_files=None):
+            self,
+
+            # Machine information
+            machine, machine_name, version, bmp_details, down_chips,
+            down_cores, number_of_boards, height, width, auto_detect_bmp,
+            enable_reinjection, scamp_connection_data, boot_port_num,
+            reset_machine_on_start_up, max_sdram_per_chip,
+
+            # Load data information
+            router_tables, tags, app_data_runtime_folder,
+            dsg_targets, exec_dse_on_host, dse_app_id,
+
+            # Buffer information
+            buffer_manager, placements,
+
+            # Database notification information
+            wait_for_read_confirmation, database_socket_addresses,
+            database_file_path, send_start_notification,
+
+            # Execute information
+            executable_targets, app_id, runtime, time_scale_factor,
+            total_machine_timesteps, executable_finder, time_threshold):
+
         reload_script = ReloadScript(
-            app_data_folder, hostname, board_version, bmp_details,
-            downed_chips, downed_cores, number_of_boards, height, width,
-            auto_detect_bmp, enable_reinjection, scamp_connection_data,
-            boot_port_num, placement_to_app_data_files, verify,
-            processor_to_app_data_base_address, executable_targets,
-            wait_on_confirmation, database_file_path, run_time,
-            time_scale_factor, send_start_notification,
-            reset_machine_on_start_up)
+
+            machine_name, version, bmp_details, down_chips, down_cores,
+            number_of_boards, height, width, auto_detect_bmp,
+            enable_reinjection, scamp_connection_data, boot_port_num,
+
+            reset_machine_on_start_up, max_sdram_per_chip,
+            app_data_runtime_folder, exec_dse_on_host, dse_app_id,
+
+            wait_for_read_confirmation, database_file_path,
+            send_start_notification,
+
+            app_id, runtime, time_scale_factor, total_machine_timesteps,
+            time_threshold)
 
         for ip_tag in tags.ip_tags:
             reload_script.add_ip_tag(ip_tag)
@@ -47,6 +66,14 @@ class FrontEndCommonReloadScriptCreator(object):
             reload_script.add_buffered_vertex(
                 buffered_vertex, tag, placement,
                 buffered_vertices_regions_file_paths[buffered_vertex])
+
+        for ((x, y, p), file_path) in dsg_targets.iteritems():
+            reload_script.add_dsg_target(x, y, p, file_path)
+
+        for binary in executable_targets.binaries:
+            reload_script.add_executable_target(
+                executable_finder.get_executable_path(binary),
+                executable_targets.get_cores_for_binary(binary))
 
         # end reload script
         reload_script.close()
