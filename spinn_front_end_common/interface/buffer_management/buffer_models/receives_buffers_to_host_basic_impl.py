@@ -1,21 +1,26 @@
-from abc import abstractmethod
-
+# pacman imports
 from pacman.model.constraints.tag_allocator_constraints.\
     tag_allocator_require_iptag_constraint import \
     TagAllocatorRequireIptagConstraint
 
+# front end common imports
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .end_buffering_state import EndBufferingState
 from spinn_front_end_common.utilities import exceptions
 
+# general imports
+from abc import abstractmethod
+import sys
+import math
+
 
 class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
-    def __init__(self, extra_static_sdram_requirement):
+    def __init__(self):
         """
         :return: None
         :rtype: None
@@ -23,7 +28,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffering_output = False
         self._buffering_ip_address = None
         self._buffering_port = None
-        self._extra_static_sdram_requirement = extra_static_sdram_requirement
+        self._minimum_sdram_for_buffering = 0
+        self._buffered_sdram_per_timestep = 0
 
     def buffering_output(self):
         """ True if the output buffering mechanism is activated
@@ -35,8 +41,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         return self._buffering_output
 
     def activate_buffering_output(
-            self, buffering_ip_address, buffering_port, board_address=None,
-            notification_tag=None):
+            self, buffering_ip_address=None, buffering_port=None,
+            board_address=None, notification_tag=None,
+            minimum_sdram_for_buffering=0, buffered_sdram_per_timestep=0):
         """ Activates the output buffering mechanism
 
         :param buffering_ip_address: IP address of the host which supports\
@@ -49,18 +56,18 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         :return: None
         :rtype: None
         """
-        if not self._buffering_output:
+        if (not self._buffering_output and buffering_ip_address is not None and
+                buffering_port is not None):
             self._buffering_output = True
-
             notification_strip_sdp = True
-
             self.add_constraint(
                 TagAllocatorRequireIptagConstraint(
                     buffering_ip_address, buffering_port,
                     notification_strip_sdp, board_address, notification_tag))
-
             self._buffering_ip_address = buffering_ip_address
             self._buffering_port = buffering_port
+        self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
+        self._buffered_sdram_per_timestep = buffered_sdram_per_timestep
 
     @staticmethod
     def get_buffer_state_region_size(n_buffered_regions):
@@ -91,18 +98,17 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             raise exceptions.ConfigurationException(
                 "The number of buffer regions must match the number of"
                 " regions sizes")
-        if self._buffering_output:
-            for (buffer_region, region_size) in zip(
-                    buffer_regions, region_sizes):
-                if region_size > 0:
-                    spec.reserve_memory_region(
-                        region=buffer_region, size=region_size,
-                        label="RECORDING_REGION_{}".format(buffer_region),
-                        empty=True)
-            spec.reserve_memory_region(
-                region=state_region,
-                size=EndBufferingState.size_of_region(len(buffer_regions)),
-                label='BUFFERED_OUT_STATE', empty=True)
+        for (buffer_region, region_size) in zip(
+                buffer_regions, region_sizes):
+            if region_size > 0:
+                spec.reserve_memory_region(
+                    region=buffer_region, size=region_size,
+                    label="RECORDING_REGION_{}".format(buffer_region),
+                    empty=True)
+        spec.reserve_memory_region(
+            region=state_region,
+            size=EndBufferingState.size_of_region(len(buffer_regions)),
+            label='BUFFERED_OUT_STATE', empty=True)
 
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented
@@ -149,8 +155,11 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     def add_constraint(self, constraint):
         pass
 
-    def is_receives_buffers_to_host(self):
-        return True
+    def get_minimum_buffer_sdram_usage(self):
+        return self._minimum_sdram_for_buffering
 
-    def extra_static_sdram_requirement(self):
-        return self._extra_static_sdram_requirement
+    def get_n_timesteps_in_buffer_space(self, buffer_space):
+        if self._buffered_sdram_per_timestep == 0:
+            return sys.maxint
+        return int(math.floor(
+            buffer_space / self._buffered_sdram_per_timestep))

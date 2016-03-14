@@ -18,15 +18,16 @@ class AbstractReceiveBuffersToHost(object):
         """
 
     @abstractmethod
-    def is_receives_buffers_to_host(self):
-        """
-        property method
-        :return:
+    def get_minimum_buffer_sdram_usage(self):
+        """ Get the minimum amount of SDRAM to reserve for buffers
         """
 
     @abstractmethod
-    def extra_static_sdram_requirement(self):
-        """
-        property method
-        :return:
+    def get_n_timesteps_in_buffer_space(self, buffer_space):
+        """ Get the number of timesteps that can be stored fully in the given\
+            buffer space in bytes
+
+        :param buffer_space The buffer space in bytes
+        :return: The number of time steps that can be stored in the buffer
+        :rtype: int
         """

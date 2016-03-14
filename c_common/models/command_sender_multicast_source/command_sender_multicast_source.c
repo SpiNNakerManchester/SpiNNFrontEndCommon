@@ -20,7 +20,7 @@ typedef enum callback_priorities{
 //! region identifiers
 typedef enum region_identifiers{
     SYSTEM_REGION = 0, COMMANDS = 1, PROVENANCE_REGION = 2
-}region_identifiers;
+} region_identifiers;
 
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
@@ -28,9 +28,10 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    if ((next_pos >= schedule_size) && (infinite_run != TRUE)
-            && (time >= simulation_ticks)) {
-        simulation_handle_pause_resume();
+    if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
+            (time >= simulation_ticks)) {
+        simulation_handle_pause_resume(NULL);
+        return;
     }
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
@@ -55,7 +56,7 @@ void timer_callback(uint unused0, uint unused1) {
                         repeat_count++) {
                     spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
 
-                    // if the delay is 0, dont call delay
+                    // if the delay is 0, don't call delay
                     if (delay > 0) {
                         spin1_delay_us(delay);
                     }
@@ -138,8 +139,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details
     if (!simulation_read_timing_details(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run)) {
+            APPLICATION_NAME_HASH, timer_period)) {
         return false;
     }
 
@@ -166,9 +166,9 @@ void c_main(void) {
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
     simulation_register_simulation_sdp_callback(
         &simulation_ticks, &infinite_run, SDP);
-    simulation_register_provenance_function_call(NULL, PROVENANCE_REGION);
+    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;
-    simulation_run(timer_callback, TIMER);
+    simulation_run();
 }

@@ -1,12 +1,12 @@
 # general imports
 import os
-from lxml import etree
 import itertools
+import json
 import string
 
 
-class FrontEndCommonProvenanceXMLWriter(object):
-    """ Write provenance data into XML
+class FrontEndCommonProvenanceJSONWriter(object):
+    """ Write provenance data into JSON
     """
 
     VALID_CHARS = frozenset(
@@ -24,18 +24,15 @@ class FrontEndCommonProvenanceXMLWriter(object):
 
             # generate file path for xml
             file_path = os.path.join(
-                provenance_data_path, "{}.xml".format(filename))
+                provenance_data_path, "{}.json".format(filename))
             count = 2
             while os.path.exists(file_path):
                 file_path = os.path.join(
-                    provenance_data_path, "{}_{}.xml".format(filename, count))
+                    provenance_data_path, "{}_{}.json".format(filename, count))
                 count += 1
 
             # Create a root node
-            root = etree.Element("provenance_data_items", name=name)
-
-            # Keep track of sub-categories
-            categories = {root: dict()}
+            root = dict()
 
             # Go through the items and add them
             for item in group:
@@ -43,35 +40,26 @@ class FrontEndCommonProvenanceXMLWriter(object):
                 # Add the "categories" for the item (any name between the first
                 # and last)
                 super_element = root
-                cats = categories[root]
                 for cat_name in item.names[1:-1]:
 
-                    if cat_name in cats:
+                    if (cat_name in super_element and
+                            isinstance(super_element[cat_name], dict)):
 
                         # If there is already a category of this name under the
                         # super element, use it
-                        super_element = cats[cat_name]
+                        super_element = super_element[cat_name]
                     else:
 
                         # Otherwise, create a new category under the super
                         # element
-                        super_element = etree.SubElement(
-                            super_element, "provenance_data_items",
-                            name=cat_name)
-                        cats[cat_name] = super_element
-                        categories[super_element] = dict()
-
-                    # Get the next category for the next run of the loop
-                    cats = categories[super_element]
+                        super_element[cat_name] = dict()
+                        super_element = super_element[cat_name]
 
                 # Add the item
-                element = etree.SubElement(
-                    super_element, "provenance_data_item",
-                    name=item.names[-1])
-                element.text = str(item.value)
+                super_element[item.names[-1]] = str(item.value)
 
-            # write xml form into file provided
+            # write json form into file provided
             writer = open(file_path, "w")
-            writer.write(etree.tostring(root, pretty_print=True))
+            json.dump(root, writer, indent=4, separators=(',', ': '))
             writer.flush()
             writer.close()
