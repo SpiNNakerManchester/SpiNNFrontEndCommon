@@ -23,7 +23,6 @@ class AbstractDataSpecableVertex(object):
     def __init__(self, machine_time_step, timescale_factor):
         self._machine_time_step = machine_time_step
         self._timescale_factor = timescale_factor
-        self._application_runtime = None
         self._no_machine_time_steps = None
 
     def _write_basic_setup_info(self, spec, region_id):

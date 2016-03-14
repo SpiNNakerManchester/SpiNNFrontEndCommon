@@ -33,7 +33,6 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 # dataspec imports
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
-from data_specification import utility_calls as dsg_utility_calls
 
 # general imports
 from enum import Enum
