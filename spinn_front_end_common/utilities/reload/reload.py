@@ -1,3 +1,4 @@
+from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from spinn_front_end_common.utilities import helpful_functions
 
 
@@ -6,138 +7,112 @@ class Reload(object):
     """
 
     def __init__(
-            self, machine_name, version, reports_states, bmp_details,
-            down_chips, down_cores, number_of_boards, height, width,
-            auto_detect_bmp, enable_reinjection, xml_paths,
-            scamp_connection_data, boot_port_num, placement_to_app_data_files,
-            verify, router_tables, processor_to_app_data_base_address,
-            executable_targets, tags, iptags, reverse_iptags, placements,
-            app_folder, wait_for_read_confirmation, socket_addresses,
-            database_file_path, runtime, time_scale_factor,
-            send_start_notification, reset_machine_on_start_up,
-            loading=True, running=True, app_id=30):
+            self,
+
+            # Machine information
+            machine_name, version, bmp_details, down_chips, down_cores,
+            number_of_boards, height, width, auto_detect_bmp,
+            enable_reinjection, scamp_connection_data, boot_port_num,
+            reset_machine_on_start_up, max_sdram_per_chip,
+
+            # Load data information
+            router_tables, iptags, reverse_iptags, app_data_runtime_folder,
+            dsg_targets, exec_dse_on_host, dse_app_id,
+
+            # Buffer information
+            buffered_tags, buffered_placements,
+
+            # Database notification information
+            wait_for_read_confirmation, database_socket_addresses,
+            database_file_path, send_start_notification,
+
+            # Execute information
+            executable_targets, app_id, runtime, time_scale_factor,
+            total_machine_timesteps, time_threshold,
+
+            # Flags that indicate what to actually do
+            loading=True, running=True):
+
+        if machine_name == "None":
+            raise Exception(
+                "This reload script was created using a virtual board.  To"
+                " use it, please set machine_name to the hostname or IP"
+                " address of a real board")
 
         if scamp_connection_data == "None":
             scamp_connection_data = None
 
-        pacman_inputs = self._create_pacman_inputs(
-            machine_name, version, reports_states, bmp_details,
-            down_chips, down_cores, number_of_boards, height, width,
-            auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
-            boot_port_num, placement_to_app_data_files, verify, router_tables,
-            processor_to_app_data_base_address, executable_targets, tags,
-            iptags, reverse_iptags, placements, app_folder,
-            wait_for_read_confirmation, socket_addresses, database_file_path,
-            runtime, time_scale_factor, send_start_notification,
-            reset_machine_on_start_up, loading, running)
-        pacman_outputs = self._create_pacman_outputs(loading, running)
+        inputs = dict()
 
-        # get the list of algorithms expected to be used
-        pacman_algorithms = self.create_list_of_algorithms(loading, running)
+        # Machine inputs
+        inputs['IPAddress'] = machine_name
+        inputs["BoardVersion"] = version
+        inputs["BMPDetails"] = bmp_details
+        inputs["DownedChipsDetails"] = down_chips
+        inputs["DownedCoresDetails"] = down_cores
+        inputs["NumberOfBoards"] = number_of_boards
+        inputs["MachineWidth"] = width
+        inputs["MachineHeight"] = height
+        inputs["AutoDetectBMPFlag"] = auto_detect_bmp
+        inputs["EnableReinjectionFlag"] = enable_reinjection
+        inputs["ScampConnectionData"] = scamp_connection_data
+        inputs["BootPortNum"] = boot_port_num
+        inputs["ResetMachineOnStartupFlag"] = reset_machine_on_start_up
+        inputs["MaxSDRAMSize"] = max_sdram_per_chip
 
-        # run the pacman executor
-        helpful_functions.do_mapping(
-            pacman_inputs, pacman_algorithms, pacman_outputs, xml_paths,
-            False)
+        # Loading inputs
+        inputs["MemoryRoutingTables"] = router_tables
+        inputs["MemoryIpTags"] = iptags
+        inputs["MemoryReverseTags"] = reverse_iptags
+        inputs["ApplicationDataFolder"] = app_data_runtime_folder
+        inputs["DataSpecificationTargets"] = dsg_targets
+        inputs["WriteTextSpecsFlag"] = False
+        inputs["WriteMemoryMapReportFlag"] = False
+        inputs["DSEAPPID"] = dse_app_id
 
-    @staticmethod
-    def _create_pacman_inputs(
-            machine_name, version, reports_states, bmp_details,
-            down_chips, down_cores, number_of_boards, height, width,
-            auto_detect_bmp, enable_reinjection, app_id, scamp_connection_data,
-            boot_port_num, placement_to_app_data_files, verify, router_tables,
-            processor_to_app_data_base_address, executable_targets,
-            buffered_tags, iptags, reverse_iptags, placements, app_folder,
-            wait_for_read_confirmation, socket_addresses, database_file_path,
-            runtime, time_scale_factor, send_start_notification,
-            reset_machine_on_start_up, loading, running):
-        inputs = list()
-        if loading:
-            inputs.append({'type': "NoSyncChanges", 'value': 0})
-            inputs.append({'type': "ReportStates", 'value': reports_states})
-            inputs.append({'type': 'IPAddress', 'value': machine_name})
-            inputs.append({'type': "BoardVersion", 'value': version})
-            inputs.append({'type': "BMPDetails", 'value': bmp_details})
-            inputs.append({'type': "DownedChipsDetails", 'value': down_chips})
-            inputs.append({'type': "DownedCoresDetails", 'value': down_cores})
-            inputs.append({'type': "NumberOfBoards",
-                           'value': number_of_boards})
-            inputs.append({'type': "MachineWidth", 'value': width})
-            inputs.append({'type': "MachineHeight", 'value': height})
-            inputs.append({'type': "APPID", 'value': app_id})
-            inputs.append({'type': "AutoDetectBMPFlag",
-                           'value': auto_detect_bmp})
-            inputs.append({'type': "EnableReinjectionFlag",
-                           'value': enable_reinjection})
-            inputs.append({'type': "ScampConnectionData",
-                           'value': scamp_connection_data})
-            inputs.append({"type": "BootPortNum", 'value': boot_port_num})
-            inputs.append({'type': "PlacementToAppDataFilePaths",
-                           'value': placement_to_app_data_files})
-            inputs.append({'type': "ProcessorToAppDataBaseAddress",
-                           'value': processor_to_app_data_base_address})
-            inputs.append({'type': "WriteCheckerFlag", 'value': verify})
-            inputs.append({'type': "ExecutableTargets",
-                           "value": executable_targets})
-            inputs.append({"type": "MemoryRoutingTables",
-                           'value': router_tables})
-            inputs.append({'type': "MemoryTags", 'value': buffered_tags})
-            inputs.append({'type': "MemoryIpTags", 'value': iptags})
-            inputs.append({"type": "MemoryReverseTags",
-                           'value': reverse_iptags})
-            inputs.append({'type': "MemoryPlacements", 'value': placements})
-            inputs.append({'type': "ApplicationDataFolder",
-                           "value": app_folder})
-            inputs.append({'type': "DatabaseWaitOnConfirmationFlag",
-                           'value': wait_for_read_confirmation})
-            inputs.append({'type': "DatabaseSocketAddresses",
-                           'value': socket_addresses})
-            inputs.append({'type': "DatabaseFilePath",
-                           'value': database_file_path})
-            inputs.append({"type": "RunTime", 'value': runtime})
-            inputs.append({'type': "TimeScaleFactor",
-                           'value': time_scale_factor})
-            inputs.append({'type': "SendStartNotifications",
-                           'value': send_start_notification})
-            inputs.append({'type': "ResetMachineOnStartupFlag",
-                           'value': reset_machine_on_start_up})
-        if running and not loading:
-            inputs.append({'type': "LoadedIPTagsToken", "value": True})
-            inputs.append({'type': "LoadedReverseIPTagsToken", "value": True})
-            inputs.append({'type': "LoadedRoutingTablesToken", "value": True})
-            inputs.append({'type': "LoadBinariesToken", "value": True})
-            inputs.append({'type': "LoadedApplicationDataToken",
-                           "value": True})
-        return inputs
+        # Buffered inputs
+        inputs["MemoryTags"] = buffered_tags
+        inputs["MemoryPlacements"] = buffered_placements
+        inputs["WriteReloadFilesFlag"] = False
 
-    @staticmethod
-    def create_list_of_algorithms(loading, running):
+        # Database notification inputs
+        inputs["DatabaseSocketAddresses"] = database_socket_addresses
+        inputs["DatabaseWaitOnConfirmationFlag"] = wait_for_read_confirmation
+        inputs["SendStartNotifications"] = send_start_notification
+        inputs["DatabaseFilePath"] = database_file_path
+
+        # Execute inputs
+        inputs["APPID"] = app_id
+        inputs["NoSyncChanges"] = 0
+        inputs["TimeScaleFactor"] = time_scale_factor
+        inputs["RunTime"] = runtime
+        inputs["TotalMachineTimeSteps"] = total_machine_timesteps
+        inputs["ExecutableTargets"] = executable_targets
+        inputs["PostSimulationOverrunBeforeError"] = time_threshold
+
         algorithms = list()
+        algorithms.append("FrontEndCommonMachineInterfacer")
+        algorithms.append("MallocBasedChipIDAllocator")
+
         if loading:
-            algorithms.append(
-                "FrontEndCommonPartitionableGraphApplicationDataLoader")
-            algorithms.append("FrontEndCommomLoadExecutableImages")
             algorithms.append("FrontEndCommonRoutingTableLoader")
             algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
-            algorithms.append("MallocBasedChipIDAllocator")
+            if exec_dse_on_host:
+                algorithms.append(
+                    "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+            else:
+                algorithms.append(
+                    "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
 
         if running:
-            algorithms.append("FrontEndCommonApplicationExiter")
             algorithms.append("FrontEndCommonBufferManagerCreater")
+            algorithms.append("FrontEndCommonLoadExecutableImages")
             algorithms.append("FrontEndCommonNotificationProtocol")
+            algorithms.append("FrontEndCommonRuntimeUpdater")
             algorithms.append("FrontEndCommonApplicationRunner")
-            algorithms.append("FrontEndCommonMachineInterfacer")
-        return algorithms
 
-    @staticmethod
-    def _create_pacman_outputs(loading, running):
-        required_outputs = list()
-        if loading:
-            required_outputs.append("LoadedIPTagsToken")
-            required_outputs.append("LoadedReverseIPTagsToken")
-            required_outputs.append("LoadedRoutingTablesToken")
-            required_outputs.append("LoadBinariesToken")
-            required_outputs.append("LoadedApplicationDataToken")
-        elif running:
-            required_outputs.append("RanToken")
-        return required_outputs
+        # run the pacman executor
+        xml_paths = helpful_functions.get_front_end_common_pacman_xml_paths()
+        executer = PACMANAlgorithmExecutor(
+            algorithms, [], inputs, xml_paths, [], False, False)
+        executer.execute_mapping()

@@ -1,16 +1,16 @@
 
 # front end common imports
 from collections import OrderedDict
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multi_cast_source import ReverseIpTagMultiCastSource
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
+from spinn_front_end_common.utility_models\
+    .live_packet_gather_partitioned_vertex import \
+    LivePacketGatherPartitionedVertex
+from spinn_front_end_common.utility_models\
+    .reverse_ip_tag_multicast_source_partitioned_vertex \
+    import ReverseIPTagMulticastSourcePartitionedVertex
 
-# pacman imports
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 
 # dsg imports
 from data_specification import utility_calls
@@ -24,6 +24,7 @@ import re
 import inspect
 import struct
 from spinnman.model.cpu_state import CPUState
+from spinnman.model.core_subsets import CoreSubsets
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +47,10 @@ def read_data(x, y, address, length, data_format, transceiver):
 
     :param x: chip x
     :param y: chip y
-    :param address: base address of the sdram chip to read
+    :param address: base address of the SDRAM chip to read
     :param length: length to read
     :param data_format: the format to read memory
-    :param transceiver: the spinnman interface
+    :param transceiver: the SpinnMan interface
     """
 
     # turn byte array into str for unpack to work
@@ -75,14 +76,16 @@ def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
 
 
 def locate_memory_region_on_core(x, y, p, region, transceiver):
-    app_data_base_address = get_app_data_base_address(x, y, p, transceiver)
-    region_base_address_offset = utility_calls.get_region_base_address_offset(
-        app_data_base_address, region)
-    region_base_address_buf = buffer(transceiver.read_memory(
-        x, y, region_base_address_offset, 4))
-    region_base_address = struct.unpack_from("<I", region_base_address_buf)[0]
-    region_base_address += app_data_base_address
-    return region_base_address
+    regions_base_address = get_app_data_base_address(x, y, p, transceiver)
+
+    # Get the position of the region in the pointer table
+    region_offset_in_pointer_table = \
+        utility_calls.get_region_base_address_offset(
+            regions_base_address, region)
+    region_address = buffer(transceiver.read_memory(
+        x, y, region_offset_in_pointer_table, 4))
+    region_address_decoded = struct.unpack_from("<I", region_address)[0]
+    return region_address_decoded
 
 
 def get_app_data_base_address(x, y, p, transceiver):
@@ -97,8 +100,9 @@ def auto_detect_database(partitioned_graph):
     :return: a bool which represents if the database is needed
     """
     for vertex in partitioned_graph.subvertices:
-        if (isinstance(vertex, LivePacketGather) or
-                isinstance(vertex, ReverseIpTagMultiCastSource)):
+        if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
+                isinstance(
+                    vertex, ReverseIPTagMulticastSourcePartitionedVertex)):
             return True
     else:
         return False
@@ -270,40 +274,17 @@ def _move_report_and_binary_files(max_to_keep, starting_directory):
             files_in_report_folder.remove(oldest_file)
 
 
-def do_mapping(
-        inputs, algorithms, required_outputs, xml_paths, do_timings,
-        print_timings=False):
+def get_front_end_common_pacman_xml_paths():
+    """ Get the XML path for the front end common interface functions
     """
-    :param do_timings: bool which states if each algorithm should time itself
-    :param inputs:
-    :param algorithms:
-    :param required_outputs:
-    :param xml_paths:
-    :param do_timings:
-    :return:
-    """
-
-    # add xml path to front end common interface functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(interface_functions.__file__),
-                     "front_end_common_interface_functions.xml"))
-
-    # add xml path to front end common report functions
-    xml_paths.append(
-        os.path.join(os.path.dirname(
-            front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml"))
-
-    # create executor
-    pacman_executor = PACMANAlgorithmExecutor(
-        do_timings=do_timings, inputs=inputs, xml_paths=xml_paths,
-        algorithms=algorithms, required_outputs=required_outputs,
-        print_timings=print_timings)
-
-    # execute mapping process
-    pacman_executor.execute_mapping()
-
-    return pacman_executor
+    return [
+        os.path.join(
+            os.path.dirname(interface_functions.__file__),
+            "front_end_common_interface_functions.xml"),
+        os.path.join(
+            os.path.dirname(front_end_common_report_functions.__file__),
+            "front_end_common_reports.xml")
+    ]
 
 
 def get_cores_in_state(all_core_subsets, states, txrx):
@@ -317,9 +298,14 @@ def get_cores_in_state(all_core_subsets, states, txrx):
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state in states:
+        if hasattr(states, "__iter__"):
+            if core_info.state in states:
+                cores_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        elif core_info.state == states:
             cores_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
+
     return cores_in_state
 
 
@@ -327,14 +313,18 @@ def get_cores_not_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
-    :param state:
+    :param states:
     :param txrx:
     :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
     for core_info in core_infos:
-        if core_info.state not in states:
+        if hasattr(states, "__iter__"):
+            if core_info.state not in states:
+                cores_not_in_state[
+                    (core_info.x, core_info.y, core_info.p)] = core_info
+        elif core_info.state != states:
             cores_not_in_state[
                 (core_info.x, core_info.y, core_info.p)] = core_info
     return cores_not_in_state
@@ -353,3 +343,12 @@ def get_core_status_string(core_infos):
             break_down += "    {}:{}:{} in state {}\n".format(
                 x, y, p, core_info.state.name)
     return break_down
+
+
+def get_core_subsets(core_infos):
+    """ Convert core information from get_cores_in_state to core_subset objects
+    """
+    core_subsets = CoreSubsets()
+    for (x, y, p) in core_infos:
+        core_subsets.add_processor(x, y, p)
+    return core_subsets
