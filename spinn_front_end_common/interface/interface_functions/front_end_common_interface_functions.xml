@@ -76,8 +76,8 @@
         </required_inputs>
         <optional_inputs>
             <parameter>
-                <param_name>do_write</param_name>
-                <param_type>DoWriteFlag</param_type>
+                <param_name>do_load</param_name>
+                <param_type>DoLoadFlag</param_type>
             </parameter>
         </optional_inputs>
         <produces_outputs>
@@ -128,6 +128,12 @@
                 <param_type>APPID</param_type>
             </parameter>
         </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>do_load</param_name>
+                <param_type>DoLoadFlag</param_type>
+            </parameter>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>LoadedApplicationDataToken</param_name>

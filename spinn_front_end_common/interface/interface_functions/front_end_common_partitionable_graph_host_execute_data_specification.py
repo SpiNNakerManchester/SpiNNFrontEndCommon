@@ -30,7 +30,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
     def __call__(
             self, hostname, transceiver, report_default_directory,
             write_text_specs, runtime_application_data_folder, machine,
-            app_id, dsg_targets, do_write=True):
+            app_id, dsg_targets, do_load=True):
         """
 
         :param hostname:
@@ -42,11 +42,14 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         :return:
         """
 
-        if not do_write:
+        if not do_load:
             logger.info("Skipping Data Specification Execution")
             return {
                 'processor_to_app_data_base_address': dict(),
-                'placement_to_app_data_files': dict()}
+                'LoadedApplicationDataToken': True,
+                "DSEOnHost": True,
+                "DSEOnChip": False
+            }
 
         data = self.host_based_data_specification_execution(
             hostname, transceiver, write_text_specs,
@@ -174,8 +177,10 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
         # close the progress bar
         progress_bar.end()
-        return {'processor_to_app_data_base_address':
+        return {
+            'processor_to_app_data_base_address':
                 processor_to_app_data_base_address,
-                'LoadedApplicationDataToken': True,
-                "DSEOnHost": True,
-                "DSEOnChip": False}
+            'LoadedApplicationDataToken': True,
+            "DSEOnHost": True,
+            "DSEOnChip": False
+        }
