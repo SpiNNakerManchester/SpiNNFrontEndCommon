@@ -1,0 +1,93 @@
+from spinn_front_end_common.utilities.utility_objs\
+    .abstract_machine_allocation_controller \
+    import AbstractMachineAllocationController
+
+from spalloc import Job
+from spalloc.states import JobState
+
+import math
+import logging
+import sys
+from threading import Thread
+
+logger = logging.getLogger(__name__)
+
+
+class _SpallocJobController(Thread, AbstractMachineAllocationController):
+
+    def __init__(self, job):
+        Thread.__init__(self)
+        self._job = job
+        self._exited = False
+
+    def extend_allocation(self, new_total_run_time):
+
+        # Does Nothing in this allocator - machines are held until exit
+        pass
+
+    def close(self):
+        self._exited = True
+        self._job.destroy()
+
+    def run(self):
+        state = self._job.state
+        while (state != JobState.destroyed):
+            state = self._job.wait_for_state_change(state)
+
+        if not self._exited:
+            logger.error(
+                "The allocated machine has been released before the end of"
+                " the script - this script will now exit")
+            sys.exit(1)
+
+
+class FrontEndCommonSpallocAllocator(object):
+    """ Request a machine from a SPALLOC server that will fit the given\
+        partitioned graph
+    """
+
+    # Use a worst case calculation
+    _N_CORES_PER_CHIP = 15.0
+    _N_CHIPS_PER_BOARD = 48.0
+
+    def __call__(
+            self, spalloc_server, spalloc_user, partitioned_graph,
+            spalloc_port=None):
+        """
+
+        :param spalloc_server: The server from which the machine should be\
+                    requested
+        :param spalloc_port: The port of the SPALLOC server
+        :param spalloc_user: The user to allocate the machine to
+        :param partitioned_graph: The partitioned graph to fit on the machine
+        """
+
+        # Work out how many boards are needed
+        n_cores = len(partitioned_graph.subvertices)
+        n_chips = float(n_cores) / self._N_CORES_PER_CHIP
+        n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
+
+        # If the number of boards rounded up is less than 10% bigger than the\
+        # actual number of boards, add another board just in case
+        if math.ceil(n_boards) - n_boards < 0.1:
+            n_boards += 1
+        n_boards = int(math.ceil(n_boards))
+
+        job = None
+        if spalloc_port is None:
+            job = Job(n_boards, hostname=spalloc_server, owner=spalloc_user)
+        else:
+            job = Job(
+                n_boards, hostname=spalloc_server, port=spalloc_port,
+                owner=spalloc_user)
+
+        job.wait_until_ready()
+
+        machine_allocation_controller = _SpallocJobController(job)
+        machine_allocation_controller.start()
+
+        return {
+            "machine_name": job.hostname,
+            "machine_width": job.width,
+            "machine_height": job.height,
+            "machine_allocation_controller": machine_allocation_controller}
