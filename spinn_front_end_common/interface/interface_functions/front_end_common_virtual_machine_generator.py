@@ -5,8 +5,8 @@ from spinn_machine.virtual_machine import VirtualMachine
 class FrontEndCommonVirtualMachineGenerator(object):
 
     def __call__(
-            self, width, height, virtual_has_wrap_arounds, version,
-            n_cpus_per_chip=18, with_monitors=True):
+            self, width=None, height=None, virtual_has_wrap_arounds=False,
+            version=None, n_cpus_per_chip=18, with_monitors=True):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
@@ -21,6 +21,7 @@ class FrontEndCommonVirtualMachineGenerator(object):
         machine = VirtualMachine(
             width=width, height=height,
             with_wrap_arounds=virtual_has_wrap_arounds,
-            version=version)
+            version=version, n_cpus_per_chip=n_cpus_per_chip,
+            with_monitors=with_monitors)
 
         return {"machine": machine}

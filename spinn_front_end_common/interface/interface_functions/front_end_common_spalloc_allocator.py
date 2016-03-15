@@ -17,6 +17,7 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
     def __init__(self, job):
         Thread.__init__(self)
+        self.daemon = True
         self._job = job
         self._exited = False
 
@@ -31,8 +32,10 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
     def run(self):
         state = self._job.state
-        while (state != JobState.destroyed):
+        while (state != JobState.destroyed and not self._exited):
             state = self._job.wait_for_state_change(state)
+
+        self._job.close()
 
         if not self._exited:
             logger.error(
@@ -49,6 +52,7 @@ class FrontEndCommonSpallocAllocator(object):
     # Use a worst case calculation
     _N_CORES_PER_CHIP = 15.0
     _N_CHIPS_PER_BOARD = 48.0
+    _MACHINE_VERSION = 5
 
     def __call__(
             self, spalloc_server, spalloc_user, partitioned_graph,
@@ -88,6 +92,17 @@ class FrontEndCommonSpallocAllocator(object):
 
         return {
             "machine_name": job.hostname,
+            "machine_version": self._MACHINE_VERSION,
             "machine_width": job.width,
             "machine_height": job.height,
-            "machine_allocation_controller": machine_allocation_controller}
+            "machine_n_boards": None,
+            "machine_down_chips": None,
+            "machine_down_cores": None,
+            "machine_bmp_details": None,
+            "reset_machine_on_start_up": False,
+            "auto_detect_bmp": False,
+            "scamp_connection_data": None,
+            "boot_port_number": None,
+            "max_sdram_size": None,
+            "machine_allocation_controller": machine_allocation_controller
+        }
