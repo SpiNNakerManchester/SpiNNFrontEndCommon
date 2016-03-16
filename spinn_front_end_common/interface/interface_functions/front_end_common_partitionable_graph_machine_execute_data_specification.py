@@ -28,8 +28,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, write_memory_map_report, machine, dsg_targets, transceiver,
-            dse_app_id, app_id, do_load=True):
+            self, write_memory_map_report, dsg_targets, transceiver,
+            dse_app_id, app_id):
         """
 
         :param hostname:
@@ -40,22 +40,15 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :param machine:
         :return:
         """
-        if not do_load:
-            logger.info("Skipping Data Specification Execution")
-            return {
-                "LoadedApplicationDataToken": True,
-                "DSEOnHost": False,
-                "DSEOnChip": True
-            }
 
         data = self.spinnaker_based_data_specification_execution(
-            write_memory_map_report, machine, dsg_targets, transceiver,
+            write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id)
 
         return data
 
     def spinnaker_based_data_specification_execution(
-            self, write_memory_map_report, machine, dsg_targets, transceiver,
+            self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
         """
 

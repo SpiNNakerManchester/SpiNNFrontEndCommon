@@ -24,12 +24,6 @@
                 <param_type>WriteCheckerFlag</param_type>
             </parameter>
         </required_inputs>
-        <optional_inputs>
-            <parameter>
-                <param_name>do_load</param_name>
-                <param_type>DoLoadFlag</param_type>
-            </parameter>
-        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>LoadedApplicationDataToken</param_name>
@@ -74,12 +68,6 @@
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
         </required_inputs>
-        <optional_inputs>
-            <parameter>
-                <param_name>do_load</param_name>
-                <param_type>DoLoadFlag</param_type>
-            </parameter>
-        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
@@ -128,12 +116,6 @@
                 <param_type>APPID</param_type>
             </parameter>
         </required_inputs>
-        <optional_inputs>
-            <parameter>
-                <param_name>do_load</param_name>
-                <param_type>DoLoadFlag</param_type>
-            </parameter>
-        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>LoadedApplicationDataToken</param_name>
