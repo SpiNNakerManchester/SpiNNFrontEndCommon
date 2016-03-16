@@ -79,19 +79,25 @@ class FrontEndCommonRouterProvenanceGatherer(object):
 
         for chip in sorted(machine.chips, key=lambda chip: (chip.x, chip.y)):
             if not chip.virtual and (chip.x, chip.y) not in seen_chips:
-                diagnostic = txrx.get_router_diagnostics(
-                    chip.x, chip.y)
-
-                if (diagnostic.n_dropped_multicast_packets != 0 or
-                        diagnostic.n_local_multicast_packets != 0 or
-                        diagnostic.n_external_multicast_packets != 0):
-
-                    reinjector_status = txrx.get_reinjection_status(
+                try:
+                    diagnostic = txrx.get_router_diagnostics(
                         chip.x, chip.y)
-                    items.extend(self._write_router_diagnostics(
-                        chip.x, chip.y, diagnostic, reinjector_status, False))
-                    self._add_totals(router_diagnostic, reinjector_status)
-                    progress.update()
+
+                    if (diagnostic.n_dropped_multicast_packets != 0 or
+                            diagnostic.n_local_multicast_packets != 0 or
+                            diagnostic.n_external_multicast_packets != 0):
+
+                        reinjector_status = txrx.get_reinjection_status(
+                            chip.x, chip.y)
+                        items.extend(self._write_router_diagnostics(
+                            chip.x, chip.y, diagnostic, reinjector_status,
+                            False))
+                        self._add_totals(router_diagnostic, reinjector_status)
+                        progress.update()
+                except:
+
+                    # There could be issues with unused chips - don't worry!
+                    pass
         progress.end()
         return items
 
