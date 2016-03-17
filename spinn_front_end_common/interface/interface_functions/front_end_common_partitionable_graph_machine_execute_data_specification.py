@@ -28,7 +28,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, write_memory_map_report, machine, dsg_targets, transceiver,
+            self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
         """
 
@@ -40,14 +40,15 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
         :param machine:
         :return:
         """
+
         data = self.spinnaker_based_data_specification_execution(
-            write_memory_map_report, machine, dsg_targets, transceiver,
+            write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id)
 
         return data
 
     def spinnaker_based_data_specification_execution(
-            self, write_memory_map_report, machine, dsg_targets, transceiver,
+            self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
         """
 

@@ -41,6 +41,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         :param machine:
         :return:
         """
+
         data = self.host_based_data_specification_execution(
             hostname, transceiver, write_text_specs,
             runtime_application_data_folder, machine,
@@ -167,8 +168,10 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
         # close the progress bar
         progress_bar.end()
-        return {'processor_to_app_data_base_address':
+        return {
+            'processor_to_app_data_base_address':
                 processor_to_app_data_base_address,
-                'LoadedApplicationDataToken': True,
-                "DSEOnHost": True,
-                "DSEOnChip": False}
+            'LoadedApplicationDataToken': True,
+            "DSEOnHost": True,
+            "DSEOnChip": False
+        }
