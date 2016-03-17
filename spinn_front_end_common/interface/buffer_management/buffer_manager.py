@@ -1,5 +1,5 @@
-# pacman imports
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+# spinn_machine imports
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman import constants

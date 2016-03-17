@@ -1,8 +1,7 @@
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
-
-from spinn_storage_handlers.file_data_reader import FileDataReader
-
 import logging
+
+from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_storage_handlers.file_data_reader import FileDataReader
 
 logger = logging.getLogger(__name__)
 
