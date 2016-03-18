@@ -5,7 +5,7 @@ from spinn_storage_handlers.file_data_reader import FileDataReader
 import data_specification.data_spec_sender.spec_sender as spec_sender
 
 # pacman imports
-from spinn_machine.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman.model.core_subsets import CoreSubsets

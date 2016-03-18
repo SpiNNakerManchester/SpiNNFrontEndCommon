@@ -1,5 +1,5 @@
 # pacman imports
-from spinn_machine.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.utilities import helpful_functions

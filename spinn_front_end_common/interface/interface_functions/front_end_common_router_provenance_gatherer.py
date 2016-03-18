@@ -1,5 +1,5 @@
 # pacman imports
-from spinn_machine.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
@@ -79,9 +79,8 @@ class FrontEndCommonRouterProvenanceGatherer(object):
 
         for chip in sorted(machine.chips, key=lambda chip: (chip.x, chip.y)):
             if not chip.virtual and (chip.x, chip.y) not in seen_chips:
-                try:
-                    diagnostic = txrx.get_router_diagnostics(
-                        chip.x, chip.y)
+                diagnostic = txrx.get_router_diagnostics(
+                    chip.x, chip.y)
 
                     if (diagnostic.n_dropped_multicast_packets != 0 or
                             diagnostic.n_local_multicast_packets != 0 or
