@@ -1,12 +1,12 @@
-import struct
-
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
+
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.model.cpu_state import CPUState
+
 from spinn_machine.utilities.progress_bar import ProgressBar
 
 import struct
