@@ -16,7 +16,7 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
     _WAIT_TIME_MS = 10000
 
     def __init__(self, url):
-        Thread.__init__(self)
+        Thread.__init__(self, name="HBPJobController")
         self.daemon = True
         self._url = url
         self._exited = False
@@ -31,7 +31,7 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
 
     def run(self):
         job_allocated = True
-        while (job_allocated and not self._exited):
+        while job_allocated and not self._exited:
             job_allocated_request = requests.get(
                 "{}/checkLease".format(self._url),
                 params={"waitTime": self._WAIT_TIME_MS})
