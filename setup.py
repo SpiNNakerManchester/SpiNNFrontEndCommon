@@ -23,6 +23,7 @@ setup(
                       'SpiNNMan == 2016.001',
                       'SpiNNaker_PACMAN == 2016.001',
                       'SpiNNaker_DataSpecification == 2016.001',
-                      'SpiNNStorageHandlers >= 2016.001',
+                      'SpiNNStorageHandlers == 2016.001',
+                      'spalloc >= 0.2.2', 'requests >= 2.4.1'
                       'numpy', 'six']
 )

@@ -1,10 +1,12 @@
+from data_specification import constants
+
+from spinn_machine.utilities.progress_bar import ProgressBar
+
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+
 import logging
 import os
 import struct
-
-from data_specification import constants
-from spinn_machine.utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = logging.getLogger(__name__)
 
