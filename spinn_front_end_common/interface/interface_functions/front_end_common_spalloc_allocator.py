@@ -10,13 +10,14 @@ import logging
 import sys
 from threading import Thread
 
+
 logger = logging.getLogger(__name__)
 
 
 class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
     def __init__(self, job):
-        Thread.__init__(self)
+        Thread.__init__(self, name="SpallocJobController")
         self.daemon = True
         self._job = job
         self._exited = False
@@ -32,8 +33,13 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
     def run(self):
         state = self._job.state
-        while (state != JobState.destroyed and not self._exited):
-            state = self._job.wait_for_state_change(state)
+        while state != JobState.destroyed and not self._exited:
+
+            try:
+                if self._job is not None:
+                    state = self._job.wait_for_state_change(state)
+            except TypeError:
+                pass
 
         self._job.close()
 
@@ -87,14 +93,19 @@ class FrontEndCommonSpallocAllocator(object):
 
         job.wait_until_ready()
 
+        # get param from jobs before starting, so that hanging doesnt occur
+        width = job.width
+        height = job.height
+        hostname = job.hostname
+
         machine_allocation_controller = _SpallocJobController(job)
         machine_allocation_controller.start()
 
         return {
-            "machine_name": job.hostname,
+            "machine_name": hostname,
             "machine_version": self._MACHINE_VERSION,
-            "machine_width": job.width,
-            "machine_height": job.height,
+            "machine_width": width,
+            "machine_height": height,
             "machine_n_boards": None,
             "machine_down_chips": None,
             "machine_down_cores": None,
