@@ -5,7 +5,7 @@ from spinn_storage_handlers.file_data_reader import FileDataReader
 import data_specification.data_spec_sender.spec_sender as spec_sender
 
 # pacman imports
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman.model.core_subsets import CoreSubsets
@@ -28,17 +28,34 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, report_states, dsg_targets, transceiver, dse_app_id, app_id):
+            self, write_memory_map_report, dsg_targets, transceiver, 
+            dse_app_id, app_id):
         """
-        :param report_states:
+        :param write_memory_map_report:
         :param dsg_targets:
         :param transceiver:
         :param dse_app_id: the app_id used by the dse on chip application
         :param app_id:
         :return:
         """
+        data = self.spinnaker_based_data_specification_execution(
+            write_memory_map_report, dsg_targets, transceiver,
+            dse_app_id, app_id)
+        return data
 
-        mem_map_report = report_states.write_memory_map_report
+
+    def spinnaker_based_data_specification_execution(
+            self, write_memory_map_report, dsg_targets, transceiver,
+            dse_app_id, app_id):
+        """
+        
+        :param write_memory_map_report: 
+        :param dsg_targets: 
+        :param transceiver: 
+        :param dse_app_id: 
+        :param app_id: 
+        :return:
+        """
 
         # create a progress bar for end users
         progress_bar = ProgressBar(
@@ -63,8 +80,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
                 x, y, data_spec_file_size, dse_app_id)
 
             dse_data_struct_data = struct.pack(
-                "<IIII", base_address, data_spec_file_size, app_id,
-                mem_map_report)
+                "<4I", base_address, data_spec_file_size, app_id,
+                write_memory_map_report)
 
             transceiver.write_memory(
                 x, y, dse_data_struct_address, dse_data_struct_data,

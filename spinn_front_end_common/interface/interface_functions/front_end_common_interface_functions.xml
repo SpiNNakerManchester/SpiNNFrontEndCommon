@@ -88,10 +88,6 @@
                 <param_type>WriteMemoryMapReportFlag</param_type>
             </parameter>
             <parameter>
-                <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
-            </parameter>
-            <parameter>
                 <param_name>dsg_targets</param_name>
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
@@ -101,7 +97,7 @@
             </parameter>
             <parameter>
                 <param_name>dse_app_id</param_name>
-                <param_type>DSEAPPID</param_type>
+                <param_type>DSEAppID</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -151,9 +147,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonMachineInterfacer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_interfacer</python_module>
-        <python_class>FrontEndCommonMachineInterfacer</python_class>
+    <algorithm name="FrontEndCommonMachineGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_generator</python_module>
+        <python_class>FrontEndCommonMachineGenerator</python_class>
         <required_inputs>
             <parameter>
                 <param_name>hostname</param_name>
@@ -462,7 +458,7 @@
     <algorithm name="FrontEndCommonVirtualMachineGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_virtual_machine_generator</python_module>
         <python_class>FrontEndCommonVirtualMachineGenerator</python_class>
-        <required_inputs>
+        <optional_inputs>
             <parameter>
                 <param_name>width</param_name>
                 <param_type>MachineWidth</param_type>
@@ -479,8 +475,6 @@
                 <param_name>version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
-        </required_inputs>
-        <optional_inputs>
             <parameter>
                 <param_name>n_cpus_per_chip</param_name>
                 <param_type>CPUsPerVirtualChip</param_type>
@@ -1157,6 +1151,214 @@
             <parameter>
                 <param_name>n_keys_map</param_name>
                 <param_type>MemoryPartitionedPartitionNKeysMap</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonSpallocAllocator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_spalloc_allocator</python_module>
+        <python_class>FrontEndCommonSpallocAllocator</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>spalloc_server</param_name>
+                <param_type>SpallocServer</param_type>
+            </parameter>
+            <parameter>
+                <param_name>spalloc_user</param_name>
+                <param_type>SpallocUser</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>spalloc_port</param_name>
+                <param_type>SpallocPort</param_type>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>machine_name</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_width</param_name>
+                <param_type>MachineWidth</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_height</param_name>
+                <param_type>MachineHeight</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_n_boards</param_name>
+                <param_type>NumberOfBoards</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_down_chips</param_name>
+                <param_type>DownedChipsDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_down_cores</param_name>
+                <param_type>DownedCoresDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_bmp_details</param_name>
+                <param_type>BMPDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>reset_machine_on_start_up</param_name>
+                <param_type>ResetMachineOnStartupFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>auto_detect_bmp</param_name>
+                <param_type>AutoDetectBMPFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>scamp_connection_data</param_name>
+                <param_type>ScampConnectionData</param_type>
+            </parameter>
+            <parameter>
+                <param_name>boot_port_number</param_name>
+                <param_type>BootPortNum</param_type>
+            </parameter>
+            <parameter>
+                <param_name>max_sdram_size</param_name>
+                <param_type>MaxSDRAMSize</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_allocation_controller</param_name>
+                <param_type>MachineAllocationContoller</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonHBPAllocator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_hbp_allocator</python_module>
+        <python_class>FrontEndCommonHBPAllocator</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>hbp_server_url</param_name>
+                <param_type>RemoteSpinnakerUrl</param_type>
+            </parameter>
+            <parameter>
+                <param_name>total_run_time</param_name>
+                <param_type>TotalRunTime</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>machine_name</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_width</param_name>
+                <param_type>MachineWidth</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_height</param_name>
+                <param_type>MachineHeight</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_n_boards</param_name>
+                <param_type>NumberOfBoards</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_down_chips</param_name>
+                <param_type>DownedChipsDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_down_cores</param_name>
+                <param_type>DownedCoresDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_bmp_details</param_name>
+                <param_type>BMPDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>reset_machine_on_start_up</param_name>
+                <param_type>ResetMachineOnStartupFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>auto_detect_bmp</param_name>
+                <param_type>AutoDetectBMPFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>scamp_connection_data</param_name>
+                <param_type>ScampConnectionData</param_type>
+            </parameter>
+            <parameter>
+                <param_name>boot_port_number</param_name>
+                <param_type>BootPortNum</param_type>
+            </parameter>
+            <parameter>
+                <param_name>max_sdram_size</param_name>
+                <param_type>MaxSDRAMSize</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_allocation_controller</param_name>
+                <param_type>MachineAllocationContoller</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonSpallocMaxMachineGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_spalloc_max_machine_generator</python_module>
+        <python_class>FrontEndCommonSpallocMaxMachineGenerator</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>spalloc_server</param_name>
+                <param_type>SpallocServer</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>spalloc_port</param_name>
+                <param_type>SpallocPort</param_type>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>max_width</param_name>
+                <param_type>MachineWidth</param_type>
+            </parameter>
+            <parameter>
+                <param_name>max_height</param_name>
+                <param_type>MachineHeight</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonHBPMaxMachineGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_hbp_max_machine_generator</python_module>
+        <python_class>FrontEndCommonHBPMaxMachineGenerator</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>hbp_server_url</param_name>
+                <param_type>RemoteSpinnakerUrl</param_type>
+            </parameter>
+            <parameter>
+                <param_name>total_run_time</param_name>
+                <param_type>TotalRunTime</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>max_width</param_name>
+                <param_type>MachineWidth</param_type>
+            </parameter>
+            <parameter>
+                <param_name>max_height</param_name>
+                <param_type>MachineHeight</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>

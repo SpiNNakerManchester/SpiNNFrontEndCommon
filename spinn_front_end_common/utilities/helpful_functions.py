@@ -1,5 +1,14 @@
 # dsg imports
-from data_specification import utility_calls as dsg_utilities
+from data_specification import utility_calls
+
+# front end common imports
+from spinn_front_end_common.interface import interface_functions
+from spinn_front_end_common.utilities import report_functions as \
+    front_end_common_report_functions
+
+# spinnman imports
+from spinnman.model.cpu_state import CPUState
+from spinnman.model.core_subsets import CoreSubsets
 
 # general imports
 import os
@@ -9,8 +18,7 @@ import logging
 import re
 import inspect
 import struct
-from spinnman.model.cpu_state import CPUState
-from spinnman.model.core_subsets import CoreSubsets
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +73,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
 
     # Get the position of the region in the pointer table
     region_offset_in_pointer_table = \
-        dsg_utilities.get_region_base_address_offset(
+        utility_calls.get_region_base_address_offset(
             regions_base_address, region)
     region_address = buffer(transceiver.read_memory(
         placement.x, placement.y, region_offset_in_pointer_table, 4))

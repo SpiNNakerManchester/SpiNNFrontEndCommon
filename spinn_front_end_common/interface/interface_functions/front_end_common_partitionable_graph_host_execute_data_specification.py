@@ -13,7 +13,7 @@ from spinn_storage_handlers.file_data_reader import FileDataReader
 from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 # pacman imports
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 import os
 import logging
@@ -40,6 +40,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         :param machine:
         :return:
         """
+
         data = self.host_based_data_specification_execution(
             hostname, transceiver, write_text_specs,
             runtime_application_data_folder, machine,
@@ -168,6 +169,4 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         progress_bar.end()
         return {'processor_to_app_data_base_address':
                 processor_to_app_data_base_address,
-                'placement_to_app_data_files':
-                placement_to_application_data_files,
                 'LoadedApplicationDataToken': True}

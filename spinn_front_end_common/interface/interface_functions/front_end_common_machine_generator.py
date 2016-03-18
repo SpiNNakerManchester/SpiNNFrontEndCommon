@@ -12,7 +12,7 @@ from spinn_front_end_common.utilities import exceptions
 import re
 
 
-class FrontEndCommonMachineInterfacer(object):
+class FrontEndCommonMachineGenerator(object):
     """ Interface to make a transceiver and a spinn_machine object
     """
 
@@ -148,7 +148,7 @@ class FrontEndCommonMachineInterfacer(object):
         :return: the BMP connection data
         """
         bmp_details = list()
-        if bmp_string == "None":
+        if bmp_string is None:
             return bmp_details
 
         for bmp_detail in bmp_string.split(":"):
