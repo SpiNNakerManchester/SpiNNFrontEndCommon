@@ -19,7 +19,8 @@ from spinn_front_end_common.interface.buffer_management\
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-from spinn_front_end_common.interface.executable_finder import ExecutableFinder
+from spinn_front_end_common.utilities.utility_objs.executable_finder \
+    import ExecutableFinder
 from spinn_front_end_common.utilities.exceptions \
     import ExecutableFailedToStartException
 from spinn_front_end_common.utilities.exceptions \
@@ -362,7 +363,8 @@ class Spinnaker(object):
             if isinstance(vertex, AbstractDataSpecableVertex):
                 vertex.set_no_machine_time_steps(n_machine_time_steps)
 
-    def _read_config(self, section, item):
+    @staticmethod
+    def _read_config(section, item):
         value = config.get(section, item)
         if value == "None":
             return None
@@ -414,7 +416,7 @@ class Spinnaker(object):
             "Machine", "boot_connection_port_num")
         inputs["APPID"] = self._app_id
         inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
-        inputs["DSEAPPID"] = config.getint("Machine", "DSEappID")
+        inputs["DSEAppID"] = config.getint("Machine", "DSEAppID")
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
@@ -449,7 +451,7 @@ class Spinnaker(object):
             self._json_folder, "partitioned_graph.json")
         inputs["FilePlacementFilePath"] = os.path.join(
             self._json_folder, "placements.json")
-        inputs["FileRouingPathsFilePath"] = os.path.join(
+        inputs["FileRoutingPathsFilePath"] = os.path.join(
             self._json_folder, "routing_paths.json")
         inputs["FileConstraintsFilePath"] = os.path.join(
             self._json_folder, "constraints.json")
@@ -536,7 +538,7 @@ class Spinnaker(object):
 
         # Run the data generation algorithms
         algorithms = [
-            "FrontEndCommomPartitionableGraphDataSpecificationWriter"]
+            "FrontEndCommonPartitionableGraphDataSpecificationWriter"]
 
         executor = PACMANAlgorithmExecutor(
             algorithms, [], inputs, self._xml_paths, [], self._do_timings,
@@ -621,7 +623,7 @@ class Spinnaker(object):
                 config.getboolean("Reports", "reportsEnabled") and
                 config.getboolean("Reports", "writeReloadSteps")
             )
-            algorithms.append("FrontEndCommonBufferManagerCreater")
+            algorithms.append("FrontEndCommonBufferManagerCreator")
         else:
             inputs["BufferManager"] = self._buffer_manager
 
@@ -807,8 +809,8 @@ class Spinnaker(object):
             executor.execute_mapping()
             self._write_iobuf(executor.get_item("IOBuffers"))
 
-    def _write_iobuf(self, iobufs):
-        for iobuf in iobufs:
+    def _write_iobuf(self, io_buffers):
+        for iobuf in io_buffers:
             file_name = os.path.join(
                 self._provenance_file_path,
                 "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
@@ -822,7 +824,8 @@ class Spinnaker(object):
             writer.write(iobuf.iobuf)
             writer.close()
 
-    def _print_iobuf(self, errors, warnings):
+    @staticmethod
+    def _print_iobuf(errors, warnings):
         for warning in warnings:
             logger.warn(warning)
         for error in errors:
@@ -1020,6 +1023,10 @@ class Spinnaker(object):
 
     @property
     def use_virtual_board(self):
+        """
+        returns bool that states if this run is suing a virtual machine
+        :return:
+        """
         return self._use_virtual_board
 
     def get_current_time(self):

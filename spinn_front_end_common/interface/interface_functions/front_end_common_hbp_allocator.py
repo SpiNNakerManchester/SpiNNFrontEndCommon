@@ -1,12 +1,11 @@
-from spinn_front_end_common.utilities.utility_objs\
-    .abstract_machine_allocation_controller \
-    import AbstractMachineAllocationController
-
 from threading import Thread
 import math
 import requests
 import logging
 import sys
+
+from spinn_front_end_common.abstract_models.abstract_machine_allocation_controller \
+    import AbstractMachineAllocationController
 
 logger = logging.getLogger(__name__)
 

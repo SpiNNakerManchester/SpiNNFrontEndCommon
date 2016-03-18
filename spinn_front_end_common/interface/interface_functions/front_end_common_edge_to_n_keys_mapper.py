@@ -1,8 +1,12 @@
-
+# pacman imports
 from pacman.model.routing_info.\
     dict_based_partitioned_partition_n_keys_map import \
     DictBasedPartitionedPartitionNKeysMap
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+
+# spinnMachine imports
+from spinn_machine.utilities.progress_bar import ProgressBar
+
+# front end common imports
 from spinn_front_end_common.abstract_models.\
     abstract_provides_incoming_partition_constraints import \
     AbstractProvidesIncomingPartitionConstraints
@@ -92,7 +96,8 @@ class FrontEndCommonEdgeToNKeysMapper(object):
             partition, n_keys_map, partition_id, graph_mapper,
             partitionable_graph):
         partitioned_edge = partition.edges[0]
-        vertex_slice = None
+        vertex_slice = graph_mapper.get_subvertex_slice(
+            partitioned_edge.pre_subvertex)
         edge = graph_mapper.get_partitionable_edge_from_partitioned_edge(
             partitioned_edge)
 
@@ -125,7 +130,8 @@ class FrontEndCommonEdgeToNKeysMapper(object):
             partition, n_keys_map, partition_id, partitioned_graph):
         edge = partition.edges[0]
 
-        if not isinstance(edge.pre_subvertex, AbstractProvidesNKeysForPartition):
+        if not isinstance(edge.pre_subvertex,
+                          AbstractProvidesNKeysForPartition):
             n_keys_map.set_n_keys_for_partition(partition, 1)
         else:
             n_keys_map.set_n_keys_for_partition(
