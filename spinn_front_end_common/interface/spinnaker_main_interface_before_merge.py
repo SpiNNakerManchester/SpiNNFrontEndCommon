@@ -4,7 +4,10 @@ from pacman.model.partitionable_graph.partitionable_graph \
     import PartitionableGraph
 from pacman.model.partitionable_graph.multi_cast_partitionable_edge\
     import MultiCastPartitionableEdge
+from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from spinn_front_end_common.interface.abstract_mappable_interface import \
+    AbstractMappableInterface
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
@@ -19,12 +22,8 @@ from spinn_front_end_common.interface.buffer_management\
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities.utility_objs.executable_finder \
+from spinn_front_end_common.utilities.utility_objs.executable_finder\
     import ExecutableFinder
-from spinn_front_end_common.utilities.exceptions \
-    import ExecutableFailedToStartException
-from spinn_front_end_common.utilities.exceptions \
-    import ExecutableFailedToStopException
 
 # local front end imports
 from spynnaker.pyNN.models.common.abstract_gsyn_recordable\
@@ -33,18 +32,13 @@ from spynnaker.pyNN.models.common.abstract_v_recordable\
     import AbstractVRecordable
 from spynnaker.pyNN.models.common.abstract_spike_recordable \
     import AbstractSpikeRecordable
-from spynnaker.pyNN.models.pynn_population import Population
-from spynnaker.pyNN.models.pynn_projection import Projection
-from spynnaker.pyNN import overridden_pacman_functions
 from spynnaker.pyNN.utilities.conf import config
-from spynnaker.pyNN import model_binaries
 from spynnaker.pyNN.models.abstract_models\
     .abstract_send_me_multicast_commands_vertex \
     import AbstractSendMeMulticastCommandsVertex
 from spynnaker.pyNN.models.abstract_models\
     .abstract_vertex_with_dependent_vertices \
     import AbstractVertexWithEdgeToDependentVertices
-from spynnaker.pyNN.utilities import constants
 from spynnaker.pyNN.models.abstract_models\
     .abstract_has_first_machine_time_step \
     import AbstractHasFirstMachineTimeStep
@@ -63,28 +57,31 @@ logger = logging.getLogger(__name__)
 executable_finder = ExecutableFinder()
 
 
-class Spinnaker(object):
+class SpinnakerMainInterface(object):
 
-    def __init__(self, host_name=None, timestep=None, min_delay=None,
-                 max_delay=None, graph_label=None,
-                 database_socket_addresses=None):
+    def __init__(self, this_config, version, this_executable_finder,
+                 host_name=None, graph_label=None,
+                 database_socket_addresses=None,
+                 extra_algorithm_xml_paths=None,
+                 extra_mapping_inputs=None, extra_mapping_algorithms=None,
+                 extra_pre_run_algorithms=None, extra_post_run_algorithms=None):
+
+        # global params
+        global config
+        config = this_config
+        global executable_finder
+        executable_finder = this_executable_finder
 
         self._hostname = host_name
+        self._version = version
 
         # update graph label if needed
         if graph_label is None:
             graph_label = "Application_graph"
 
-        # delays parameters
-        self._min_supported_delay = None
-        self._max_supported_delay = None
-
         # pacman objects
         self._partitionable_graph = PartitionableGraph(label=graph_label)
-        self._mapping_outputs = None
-        self._load_outputs = None
-        self._last_run_outputs = None
-        self._partitioned_graph = None
+        self._partitioned_graph = PartitionedGraph(label=graph_label)
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
@@ -93,31 +90,42 @@ class Spinnaker(object):
         self._machine = None
         self._txrx = None
         self._buffer_manager = None
+
+        # pacman executor objects
+        self._mapping_outputs = None
+        self._load_outputs = None
+        self._last_run_outputs = None
         self._pacman_provenance = PacmanProvenanceExtractor()
+        self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
+
+        # extra algorithms and inputs for runs, should disappear in future
+        #  releases
+        self._extra_mapping_algorithms = extra_mapping_algorithms.copy()
+        self._extra_mapping_inputs = extra_mapping_inputs.copy()
+        self._extra_pre_run_algorithms = extra_pre_run_algorithms.copy()
+        self._extra_post_run_algorithms = extra_post_run_algorithms.copy()
+
+        # vertex label safety (used by reports mainly)
+        self._non_labelled_vertex_count = 0
+        self._none_labelled_edge_count = 0
 
         # database objects
         self._database_socket_addresses = set()
         if database_socket_addresses is not None:
             self._database_socket_addresses.union(database_socket_addresses)
-
-        # Determine default executable folder location
-        # and add this default to end of list of search paths
-        executable_finder.add_path(os.path.dirname(model_binaries.__file__))
-
-        # population holders
-        self._populations = list()
-        self._projections = list()
-        self._multi_cast_vertex = None
-        self._edge_count = 0
+        self._database_interface = None
+        self._create_database = None
+        self._database_file_path = None
 
         # holder for timing related values
         self._has_ran = False
         self._has_reset_last = False
         self._current_run_timesteps = 0
-        self._no_machine_time_steps = None
-        self._machine_time_step = None
         self._no_sync_changes = 0
         self._minimum_step_generated = None
+        self._no_machine_time_steps = None
+        self._machine_time_step = None
+        self._time_scale_factor = None
 
         self._app_id = config.getint("Machine", "appID")
 
@@ -145,12 +153,14 @@ class Spinnaker(object):
             self._report_default_directory, "json_files")
         if not os.path.exists(self._json_folder):
             os.makedirs(self._json_folder)
+
+        # make a folder for the provenance data storage
         self._provenance_file_path = os.path.join(
             self._report_default_directory, "provenance_data")
         if not os.path.exists(self._provenance_file_path):
             os.makedirs(self._provenance_file_path)
 
-        self._xml_paths = self._create_xml_paths()
+        # timing provenance elements
         self._do_timings = config.getboolean(
             "Reports", "writeAlgorithmTimings")
         self._print_timings = config.getboolean(
@@ -164,92 +174,17 @@ class Spinnaker(object):
 
         # set up machine targeted data
         self._use_virtual_board = config.getboolean("Machine", "virtual_board")
-        self._set_up_machine_specifics(
-            timestep, min_delay, max_delay, host_name)
 
-        logger.info("Setting time scale factor to {}.".format(
-            self._time_scale_factor))
-
+        # log appid to end user
         logger.info("Setting appID to %d." % self._app_id)
 
-        # get the machine time step
-        logger.info("Setting machine time step to {} micro-seconds.".format(
-            self._machine_time_step))
-
-    def _set_up_machine_specifics(self, timestep, min_delay, max_delay,
-                                  hostname):
-        self._machine_time_step = config.getint("Machine", "machineTimeStep")
-
-        # deal with params allowed via the setup options
-        if timestep is not None:
-
-            # convert into milliseconds from microseconds
-            timestep *= 1000
-            self._machine_time_step = timestep
-
-        if min_delay is not None and float(min_delay * 1000) < 1.0 * timestep:
-            raise common_exceptions.ConfigurationException(
-                "Pacman does not support min delays below {} ms with the "
-                "current machine time step"
-                .format(constants.MIN_SUPPORTED_DELAY * timestep))
-
-        natively_supported_delay_for_models = \
-            constants.MAX_SUPPORTED_DELAY_TICS
-        delay_extention_max_supported_delay = \
-            constants.MAX_DELAY_BLOCKS \
-            * constants.MAX_TIMER_TICS_SUPPORTED_PER_BLOCK
-
-        max_delay_tics_supported = \
-            natively_supported_delay_for_models + \
-            delay_extention_max_supported_delay
-
-        if max_delay is not None\
-           and float(max_delay * 1000) > max_delay_tics_supported * timestep:
-            raise common_exceptions.ConfigurationException(
-                "Pacman does not support max delays above {} ms with the "
-                "current machine time step".format(0.144 * timestep))
-        if min_delay is not None:
-            self._min_supported_delay = min_delay
-        else:
-            self._min_supported_delay = timestep / 1000.0
-
-        if max_delay is not None:
-            self._max_supported_delay = max_delay
-        else:
-            self._max_supported_delay = (max_delay_tics_supported *
-                                         (timestep / 1000.0))
-
-        if (config.has_option("Machine", "timeScaleFactor") and
-                config.get("Machine", "timeScaleFactor") != "None"):
-            self._time_scale_factor = \
-                config.getint("Machine", "timeScaleFactor")
-            if timestep * self._time_scale_factor < 1000:
-                logger.warn("the combination of machine time step and the "
-                            "machine time scale factor results in a real "
-                            "timer tick that is currently not reliably "
-                            "supported by the spinnaker machine.")
-        else:
-            self._time_scale_factor = max(1,
-                                          math.ceil(1000.0 / float(timestep)))
-            if self._time_scale_factor > 1:
-                logger.warn("A timestep was entered that has forced pacman103 "
-                            "to automatically slow the simulation down from "
-                            "real time by a factor of {}. To remove this "
-                            "automatic behaviour, please enter a "
-                            "timescaleFactor value in your .pacman.cfg"
-                            .format(self._time_scale_factor))
-
-        if hostname is not None:
-            self._hostname = hostname
-            logger.warn("The machine name from pyNN setup is overriding the "
-                        "machine name defined in the spynnaker.cfg file")
-        else:
-            self._hostname = self._read_config("Machine", "machineName")
-        if self._hostname is None and not self._use_virtual_board:
-            raise Exception("A SpiNNaker machine must be specified in "
-                            "spynnaker.cfg.")
-
     def run(self, run_time):
+        """
+
+        :param run_time: the runtime expected to run for in milliseconds.
+        :return: None
+        """
+        logger.info("Starting execution process")
 
         n_machine_time_steps = None
         if run_time is not None:
@@ -268,7 +203,6 @@ class Spinnaker(object):
             self._do_mapping(run_time, n_machine_time_steps)
 
         # Work out an array of timesteps to perform
-        steps = None
         if not config.getboolean("Buffers", "use_auto_pause_and_resume"):
 
             # Not currently possible to run the second time for more than the
@@ -363,25 +297,6 @@ class Spinnaker(object):
             if isinstance(vertex, AbstractDataSpecableVertex):
                 vertex.set_no_machine_time_steps(n_machine_time_steps)
 
-    @staticmethod
-    def _read_config(section, item):
-        value = config.get(section, item)
-        if value == "None":
-            return None
-        return value
-
-    def _read_config_int(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return int(value)
-
-    def _read_config_boolean(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return bool(value)
-
     def _do_mapping(self, run_time, n_machine_time_steps):
 
         # Set the initial n_machine_time_steps to all of them for mapping
@@ -390,11 +305,24 @@ class Spinnaker(object):
         # of the setting)
         self._update_n_machine_time_steps(n_machine_time_steps)
 
-        inputs = dict()
+        # update inputs with extra mapping inputs if required
+        if self._extra_mapping_inputs is not None:
+            inputs = self._extra_mapping_inputs
+        else:
+            inputs = dict()
+
         inputs["RunTime"] = run_time
         inputs["PostSimulationOverrunBeforeError"] = config.getint(
             "Machine", "post_simulation_overrun_before_error")
-        inputs["MemoryPartitionableGraph"] = self._partitionable_graph
+        if len(self.partitionable_graph.vertices) != 0:
+            inputs["MemoryPartitionableGraph"] = self._partitionable_graph
+        elif len(self._partitioned_graph.subvertices) != 0:
+            inputs['MemoryPartitionedGraph'] = self._partitioned_graph
+        else:
+            raise common_exceptions.ConfigurationException(
+                "There needs to be a graph which contains at least one vertex"
+                " for the tool chain to map anything. ")
+
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs['IPAddress'] = self._hostname
@@ -415,7 +343,6 @@ class Spinnaker(object):
         inputs["BootPortNum"] = self._read_config_int(
             "Machine", "boot_connection_port_num")
         inputs["APPID"] = self._app_id
-        inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
         inputs["DSEAppID"] = config.getint("Machine", "DSEAppID")
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
@@ -431,8 +358,6 @@ class Spinnaker(object):
             "Machine", "requires_wrap_arounds")
         inputs["UserCreateDatabaseFlag"] = config.get(
             "Database", "create_database")
-        inputs["ExecuteMapping"] = config.getboolean(
-            "Database", "create_routing_info_to_neuron_id_mapping")
         inputs["SendStartNotifications"] = config.getboolean(
             "Database", "send_start_notification")
         inputs["ResetMachineOnStartupFlag"] = config.getboolean(
@@ -456,7 +381,11 @@ class Spinnaker(object):
         inputs["FileConstraintsFilePath"] = os.path.join(
             self._json_folder, "constraints.json")
 
-        algorithms = list()
+        # handle extra mapping algorithms if required
+        if self._extra_mapping_algorithms is not None:
+            algorithms = self._extra_mapping_algorithms
+        else:
+            algorithms = list()
 
         # handle virtual machine and its linking to multi-run
         if self._use_virtual_board:
@@ -615,7 +544,11 @@ class Spinnaker(object):
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time
 
-        algorithms = list()
+        # update algorithm list with extra pre algorithms if needed
+        if self._extra_pre_run_algorithms is not None:
+            algorithms = self._extra_pre_run_algorithms
+        else:
+            algorithms = list()
 
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
@@ -655,6 +588,10 @@ class Spinnaker(object):
                     "it handle resets, therefore it will only contain the "
                     "initial run")
 
+        # add any extra post algorithms as needed
+        if self._extra_post_run_algorithms is not None:
+            algorithms.update(self._extra_post_run_algorithms)
+
         outputs = [
             "NoSyncChanges",
             "BufferManager"
@@ -681,12 +618,12 @@ class Spinnaker(object):
 
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
-            self._recover_from_error(e, executor.get_items())
-
-            # self._txrx.stop_application(self._app_id)
-
-            exc_info = sys.exc_info()
-            raise exc_info[0], exc_info[1], exc_info[2]
+            try:
+                self._recover_from_error(e, executor.get_items())
+            except Exception:
+                self.stop()
+                ex_type, ex_value, ex_traceback = sys.exc_info()
+                raise ex_type, ex_value, ex_traceback
 
         self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
@@ -753,9 +690,9 @@ class Spinnaker(object):
     def _recover_from_error(self, e, error_outputs):
         error = e.exception
         has_failed_to_start = isinstance(
-            error, ExecutableFailedToStartException)
+            error, common_exceptions.ExecutableFailedToStartException)
         has_failed_to_end = isinstance(
-            error, ExecutableFailedToStopException)
+            error, common_exceptions.ExecutableFailedToStopException)
 
         # If we have failed to start or end, get some extra data
         if has_failed_to_start or has_failed_to_end:
@@ -779,6 +716,7 @@ class Spinnaker(object):
             algorithms.append("FrontEndCommonIOBufExtractor")
             algorithms.append("FrontEndCommonRouterProvenanceGatherer")
 
+            # define outputs for the execution
             outputs.append("ProvenanceItems")
             outputs.append("IOBuffers")
             outputs.append("ErrorMessages")
@@ -861,7 +799,7 @@ class Spinnaker(object):
         self._has_reset_last = True
 
     @staticmethod
-    def _create_xml_paths():
+    def _create_xml_paths(extra_algorithm_xml_paths):
 
         # add the extra xml files from the config file
         xml_paths = config.get("Mapping", "extra_xmls_paths")
@@ -870,12 +808,7 @@ class Spinnaker(object):
         else:
             xml_paths = xml_paths.split(",")
 
-        # add extra xml paths for pynn algorithms
-        xml_paths.append(os.path.join(
-            os.path.dirname(overridden_pacman_functions.__file__),
-            "algorithms_metadata.xml"))
-        xml_paths.extend(
-            helpful_functions.get_front_end_common_pacman_xml_paths())
+        xml_paths.extend(extra_algorithm_xml_paths)
         return xml_paths
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
@@ -907,18 +840,34 @@ class Spinnaker(object):
         """ Iterates though the graph and looks changes
         """
         changed = False
-        for population in self._populations:
-            if population.requires_mapping:
-                changed = True
-            if reset_flags:
-                population.mark_no_changes()
-
-        for projection in self._projections:
-            if projection.requires_mapping:
-                changed = True
-            if reset_flags:
-                projection.mark_no_changes()
-
+        # if partitionable graph is filled, check their changes
+        if len(self._partitionable_graph.vertices) != 0:
+            for partitionable_vertex in self._partitionable_graph.vertices:
+                if isinstance(partitionable_vertex, AbstractMappableInterface):
+                    if partitionable_vertex.requires_mapping:
+                        changed = True
+                    if reset_flags:
+                        partitionable_vertex.mark_no_changes()
+            for partitionable_edge in self._partitionable_graph.edges:
+                if isinstance(partitionable_edge, AbstractMappableInterface):
+                    if partitionable_edge.requires_mapping:
+                        changed = True
+                    if reset_flags:
+                        partitionable_edge.mark_no_changes()
+        # if no partitionable, but a partitioned graph, check for changes there
+        elif len(self._partitioned_graph.subvertices) != 0:
+            for partitioned_vertex in self._partitioned_graph.subvertices:
+                if isinstance(partitioned_vertex, AbstractMappableInterface):
+                    if partitioned_vertex.requires_mapping:
+                        changed = True
+                    if reset_flags:
+                        partitioned_vertex.mark_no_changes()
+            for partitioned_edge in self._partitioned_graph.subedges:
+                if isinstance(partitioned_edge, AbstractMappableInterface):
+                    if partitioned_edge.requires_mapping:
+                        changed = True
+                    if reset_flags:
+                        partitioned_edge.mark_no_changes()
         return changed
 
     @property
@@ -1002,22 +951,6 @@ class Spinnaker(object):
         return self._graph_mapper
 
     @property
-    def min_supported_delay(self):
-        """
-        the min supported delay based in milliseconds
-        :return:
-        """
-        return self._min_supported_delay
-
-    @property
-    def max_supported_delay(self):
-        """
-        the max supported delay based in milliseconds
-        :return:
-        """
-        return self._max_supported_delay
-
-    @property
     def buffer_manager(self):
         return self._buffer_manager
 
@@ -1088,59 +1021,6 @@ class Spinnaker(object):
         """
         self._partitionable_graph.add_edge(edge_to_add, partition_identifier,
                                            partition_constraints)
-
-    def create_population(self, size, cellclass, cellparams, structure, label):
-        """
-
-        :param size:
-        :param cellclass:
-        :param cellparams:
-        :param structure:
-        :param label:
-        :return:
-        """
-        return Population(
-            size=size, cellclass=cellclass, cellparams=cellparams,
-            structure=structure, label=label, spinnaker=self)
-
-    def _add_population(self, population):
-        """ Called by each population to add itself to the list
-        """
-        self._populations.append(population)
-
-    def _add_projection(self, projection):
-        """ called by each projection to add itself to the list
-        :param projection:
-        :return:
-        """
-        self._projections.append(projection)
-
-    def create_projection(
-            self, presynaptic_population, postsynaptic_population, connector,
-            source, target, synapse_dynamics, label, rng):
-        """
-
-        :param presynaptic_population:
-        :param postsynaptic_population:
-        :param connector:
-        :param source:
-        :param target:
-        :param synapse_dynamics:
-        :param label:
-        :param rng:
-        :return:
-        """
-        if label is None:
-            label = "Projection {}".format(self._edge_count)
-            self._edge_count += 1
-        return Projection(
-            presynaptic_population=presynaptic_population, label=label,
-            postsynaptic_population=postsynaptic_population, rng=rng,
-            connector=connector, source=source, target=target,
-            synapse_dynamics=synapse_dynamics, spinnaker_control=self,
-            machine_time_step=self._machine_time_step,
-            timescale_factor=self._time_scale_factor,
-            user_max_delay=self.max_supported_delay)
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
@@ -1216,3 +1096,22 @@ class Spinnaker(object):
         :return:
         """
         self._database_socket_addresses.add(socket_address)
+
+    @staticmethod
+    def _read_config(section, item):
+        value = config.get(section, item)
+        if value == "None":
+            return None
+        return value
+
+    def _read_config_int(self, section, item):
+        value = self._read_config(section, item)
+        if value is None:
+            return value
+        return int(value)
+
+    def _read_config_boolean(self, section, item):
+        value = self._read_config(section, item)
+        if value is None:
+            return value
+        return bool(value)
