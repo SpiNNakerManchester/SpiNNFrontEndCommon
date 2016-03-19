@@ -3,7 +3,6 @@ from spinn_front_end_common.utilities.utility_objs\
     import AbstractMachineAllocationController
 
 from threading import Thread
-import math
 import requests
 import logging
 import sys
@@ -49,9 +48,6 @@ class FrontEndCommonHBPAllocator(object):
         a given partitioned graph
     """
 
-    # Use a worst case calculation
-    _N_CORES_PER_CHIP = 15.0
-
     def __call__(
             self, hbp_server_url, total_run_time, partitioned_graph):
         """
@@ -64,14 +60,13 @@ class FrontEndCommonHBPAllocator(object):
 
         # Work out how many boards are needed
         n_cores = len(partitioned_graph.subvertices)
-        n_chips = int(math.ceil(float(n_cores) / self._N_CORES_PER_CHIP))
 
         url = hbp_server_url
         if url.endswith("/"):
             url = url[:-1]
 
         get_machine_request = requests.get(
-            url, params={"nChips": n_chips, "runTime": total_run_time})
+            url, params={"nCores": n_cores, "runTime": total_run_time})
         machine = get_machine_request.json()
         machine_allocation_controller = _HBPJobController(url)
         machine_allocation_controller.start()
