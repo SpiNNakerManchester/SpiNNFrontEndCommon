@@ -2,20 +2,13 @@
 # pacman imports
 from pacman.model.partitionable_graph.partitionable_graph \
     import PartitionableGraph
-from pacman.model.partitionable_graph.multi_cast_partitionable_edge\
-    import MultiCastPartitionableEdge
 from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from spinn_front_end_common.interface.abstract_mappable_interface import \
-    AbstractMappableInterface
-from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
-    import PacmanProvenanceExtractor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 
 # common front end imports
 from spinn_front_end_common.utilities import exceptions as common_exceptions
-from spinn_front_end_common.utility_models.command_sender import CommandSender
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
@@ -24,24 +17,12 @@ from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.utility_objs.executable_finder\
     import ExecutableFinder
-
-# local front end imports
-from spynnaker.pyNN.models.common.abstract_gsyn_recordable\
-    import AbstractGSynRecordable
-from spynnaker.pyNN.models.common.abstract_v_recordable\
-    import AbstractVRecordable
-from spynnaker.pyNN.models.common.abstract_spike_recordable \
-    import AbstractSpikeRecordable
-from spynnaker.pyNN.utilities.conf import config
-from spynnaker.pyNN.models.abstract_models\
-    .abstract_send_me_multicast_commands_vertex \
-    import AbstractSendMeMulticastCommandsVertex
-from spynnaker.pyNN.models.abstract_models\
-    .abstract_vertex_with_dependent_vertices \
-    import AbstractVertexWithEdgeToDependentVertices
-from spynnaker.pyNN.models.abstract_models\
-    .abstract_has_first_machine_time_step \
-    import AbstractHasFirstMachineTimeStep
+from spinn_front_end_common.abstract_models.\
+    abstract_recordable_interface import AbstractRecordableInterface
+from spinn_front_end_common.interface.abstract_mappable_interface import \
+    AbstractMappableInterface
+from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
+    import PacmanProvenanceExtractor
 
 
 # general imports
@@ -106,7 +87,7 @@ class SpinnakerMainInterface(object):
         self._extra_post_run_algorithms = extra_post_run_algorithms.copy()
 
         # vertex label safety (used by reports mainly)
-        self._non_labelled_vertex_count = 0
+        self._none_labelled_vertex_count = 0
         self._none_labelled_edge_count = 0
 
         # database objects
@@ -297,6 +278,33 @@ class SpinnakerMainInterface(object):
             if isinstance(vertex, AbstractDataSpecableVertex):
                 vertex.set_no_machine_time_steps(n_machine_time_steps)
 
+    def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
+        total_run_timesteps = next_run_timesteps
+        if next_run_timesteps is not None:
+            total_run_timesteps += self._current_run_timesteps
+            machine_time_steps = (
+                (total_run_timesteps * 1000.0) / self._machine_time_step)
+            if machine_time_steps != int(machine_time_steps):
+                logger.warn(
+                    "The runtime and machine time step combination result in "
+                    "a fractional number of machine time steps")
+            self._no_machine_time_steps = int(math.ceil(machine_time_steps))
+        else:
+            self._no_machine_time_steps = None
+            for vertex in self._partitionable_graph.vertices:
+                if (isinstance(vertex, AbstractRecordableInterface)
+                        and vertex.is_recording()):
+                    raise common_exceptions.ConfigurationException(
+                        "recording a vertex when set to infinite runtime "
+                        "is not currently supported")
+            for vertex in self._partitioned_graph.subvertices:
+                if (isinstance(vertex, AbstractRecordableInterface)
+                        and vertex.is_recording()):
+                    raise common_exceptions.ConfigurationException(
+                        "recording a vertex when set to infinite runtime "
+                        "is not currently supported")
+        return total_run_timesteps
+
     def _do_mapping(self, run_time, n_machine_time_steps):
 
         # Set the initial n_machine_time_steps to all of them for mapping
@@ -383,7 +391,7 @@ class SpinnakerMainInterface(object):
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
-            algorithms = self._extra_mapping_algorithms
+            algorithms = list(self._extra_mapping_algorithms)
         else:
             algorithms = list()
 
@@ -518,19 +526,8 @@ class SpinnakerMainInterface(object):
 
     def _do_run(self, n_machine_time_steps):
 
-        # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
-        self._update_n_machine_time_steps(total_run_timesteps)
-        run_time = (
-            n_machine_time_steps * (float(self._machine_time_step) / 1000.0))
-
-        # Calculate the first machine time step to start from and set this
-        # where necessary
-        first_machine_time_step = self._current_run_timesteps
-        for vertex in self._partitionable_graph.vertices:
-            if isinstance(vertex, AbstractHasFirstMachineTimeStep):
-                vertex.set_first_machine_time_step(first_machine_time_step)
 
         inputs = None
         if self._load_outputs is not None:
@@ -541,12 +538,10 @@ class SpinnakerMainInterface(object):
         inputs["NoSyncChanges"] = self._no_sync_changes
         inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
-        inputs["TotalMachineTimeSteps"] = total_run_timesteps
-        inputs["RunTime"] = run_time
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
-            algorithms = self._extra_pre_run_algorithms
+            algorithms = list(self._extra_pre_run_algorithms)
         else:
             algorithms = list()
 
@@ -561,16 +556,9 @@ class SpinnakerMainInterface(object):
             inputs["BufferManager"] = self._buffer_manager
 
         if not self._use_virtual_board:
-            if self._has_ran and not self._has_reset_last:
-
-                # add function for extracting all the recorded data from
-                # recorded populations
-                algorithms.append("SpyNNakerRecordingExtractor")
-
             algorithms.append("FrontEndCommonRuntimeUpdater")
 
         # Add the database writer in case it is needed
-        algorithms.append("SpynnakerDatabaseWriter")
         algorithms.append("FrontEndCommonNotificationProtocol")
 
         # Sort out reload if needed
@@ -590,7 +578,7 @@ class SpinnakerMainInterface(object):
 
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
-            algorithms.update(self._extra_post_run_algorithms)
+            algorithms += self._extra_post_run_algorithms
 
         outputs = [
             "NoSyncChanges",
@@ -625,8 +613,8 @@ class SpinnakerMainInterface(object):
                 ex_type, ex_value, ex_traceback = sys.exc_info()
                 raise ex_type, ex_value, ex_traceback
 
-        self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
+        self._current_run_timesteps = total_run_timesteps
         self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._buffer_manager = executor.get_item("BufferManager")
         self._has_reset_last = False
@@ -811,31 +799,6 @@ class SpinnakerMainInterface(object):
         xml_paths.extend(extra_algorithm_xml_paths)
         return xml_paths
 
-    def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
-        total_run_timesteps = next_run_timesteps
-        if next_run_timesteps is not None:
-            total_run_timesteps += self._current_run_timesteps
-            machine_time_steps = (
-                (total_run_timesteps * 1000.0) / self._machine_time_step)
-            if machine_time_steps != int(machine_time_steps):
-                logger.warn(
-                    "The runtime and machine time step combination result in "
-                    "a fractional number of machine time steps")
-            self._no_machine_time_steps = int(math.ceil(machine_time_steps))
-        else:
-            self._no_machine_time_steps = None
-            for vertex in self._partitionable_graph.vertices:
-                if ((isinstance(vertex, AbstractSpikeRecordable) and
-                        vertex.is_recording_spikes()) or
-                        (isinstance(vertex, AbstractVRecordable) and
-                            vertex.is_recording_v()) or
-                        (isinstance(vertex, AbstractGSynRecordable) and
-                            vertex.is_recording_gsyn)):
-                    raise common_exceptions.ConfigurationException(
-                        "recording a population when set to infinite runtime "
-                        "is not currently supported")
-        return total_run_timesteps
-
     def _detect_if_graph_has_changed(self, reset_flags=True):
         """ Iterates though the graph and looks changes
         """
@@ -955,6 +918,36 @@ class SpinnakerMainInterface(object):
         return self._buffer_manager
 
     @property
+    def none_labelled_vertex_count(self):
+        """
+        the number of times vertices have not been labelled.
+        :return: the number of times the vertices have not been labelled
+        """
+        return self._none_labelled_vertex_count
+
+    def increment_none_labelled_vertex_count(self):
+        """
+        increments the number of new vertices which havent been labelled.
+        :return: None
+        """
+        self._none_labelled_vertex_count += 1
+
+    @property
+    def none_labelled_edge_count(self):
+        """
+        the number of times vertices have not been labelled.
+        :return: the number of times the vertices have not been labelled
+        """
+        return self._none_labelled_edge_count
+
+    def increment_none_labelled_edge_count(self):
+        """
+        increments the number of new edges which havent been labelled.
+        :return: None
+        """
+        self._none_labelled_edge_count += 1
+
+    @property
     def use_virtual_board(self):
         """
         returns bool that states if this run is suing a virtual machine
@@ -974,53 +967,74 @@ class SpinnakerMainInterface(object):
         return 0.0
 
     def __repr__(self):
-        return "Spinnaker object for machine {}".format(self._hostname)
+        return "general front end instance for machine {}"\
+            .format(self._hostname)
 
-    def add_vertex(self, vertex_to_add):
+    def add_partitionable_vertex(self, vertex_to_add):
         """
 
-        :param vertex_to_add:
-        :return:
+        :param vertex_to_add: the partitionable vertex to add to the graph
+        :return: None
+        :raises: ConfigurationException when both graphs contain vertices
         """
-        if isinstance(vertex_to_add, CommandSender):
-            self._multi_cast_vertex = vertex_to_add
-
+        if len(self._partitioned_graph.subvertices) > 0:
+            raise common_exceptions.ConfigurationException(
+                "The partitioned graph has already got some vertices, and "
+                "therefore the application cannot be executed correctly due "
+                "to not knowing how these two graphs interact with each "
+                "other. Please rectify and try again")
         self._partitionable_graph.add_vertex(vertex_to_add)
 
-        if isinstance(vertex_to_add, AbstractSendMeMulticastCommandsVertex):
-            if self._multi_cast_vertex is None:
-                self._multi_cast_vertex = CommandSender(
-                    self._machine_time_step, self._time_scale_factor)
-                self.add_vertex(self._multi_cast_vertex)
-            edge = MultiCastPartitionableEdge(
-                self._multi_cast_vertex, vertex_to_add)
-            self._multi_cast_vertex.add_commands(vertex_to_add.commands, edge)
-            self.add_edge(edge)
+    def add_partitioned_vertex(self, vertex):
+        """
 
-        # add any dependent edges and vertices if needed
-        if isinstance(vertex_to_add,
-                      AbstractVertexWithEdgeToDependentVertices):
-            for dependant_vertex in vertex_to_add.dependent_vertices:
-                self.add_vertex(dependant_vertex)
-                dependant_edge = MultiCastPartitionableEdge(
-                    pre_vertex=vertex_to_add, post_vertex=dependant_vertex)
-                self.add_edge(
-                    dependant_edge,
-                    vertex_to_add.edge_partition_identifier_for_dependent_edge)
+        :param vertex the partitioned vertex to add to the graph
+        :return: None
+        :raises: ConfigurationException when both graphs contain vertices
+        """
+        # check that there's no partitioned vertices added so far
+        if len(self._partitionable_graph.vertices) > 0:
+            raise common_exceptions.ConfigurationException(
+                "The partitionable graph has already got some vertices, and "
+                "therefore the application cannot be executed correctly due "
+                "to not knowing how these two graphs interact with each "
+                "other. Please rectify and try again")
 
-    def add_edge(self, edge_to_add, partition_identifier=None,
-                 partition_constraints=None):
+        if self._partitioned_graph is None:
+            self._partitioned_graph = PartitionedGraph(
+                label="partitioned_graph for application id {}"
+                .format(self._app_id))
+        self._partitioned_graph.add_subvertex(vertex)
+
+    def add_partitionable_edge(
+            self, edge_to_add, partition_identifier=None,
+            partition_constraints=None):
         """
 
         :param edge_to_add:
-        :param partition_identifier: the partition identifier for the outgoing\
+        :param partition_identifier: the partition identifier for the outgoing
                     edge partition
         :param partition_constraints: the constraints of a partition
         associated with this edge
         :return:
         """
-        self._partitionable_graph.add_edge(edge_to_add, partition_identifier,
-                                           partition_constraints)
+
+        self._partitionable_graph.add_edge(
+            edge_to_add, partition_identifier, partition_constraints)
+
+    def add_partitioned_edge(
+            self, edge, partition_id=None, partition_constraints=None):
+        """
+
+        :param edge: the partitioned edge to add to the partitioned graph
+        :param partition_constraints:the constraints of a partition
+        associated with this edge
+        :param partition_id: the partition identifier for the outgoing
+                    edge partition
+        :return:
+        """
+        self._partitioned_graph.add_subedge(
+            edge, partition_id, partition_constraints)
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
@@ -1037,8 +1051,6 @@ class SpinnakerMainInterface(object):
         :type clear_tags: boolean
         :return: None
         """
-        for population in self._populations:
-            population._end()
 
         self._extract_provenance()
         self._extract_iobuf()
