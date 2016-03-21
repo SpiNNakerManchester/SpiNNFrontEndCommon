@@ -300,12 +300,12 @@
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>exec_dse_on_host</param_name>
-                <param_type>ExecDSEOnHostFlag</param_type>
+                <param_name>dse_app_id</param_name>
+                <param_type>DSEAppID</param_type>
             </parameter>
             <parameter>
-                <param_name>dse_app_id</param_name>
-                <param_type>DSEAPPID</param_type>
+                <param_name>exec_dse_on_host</param_name>
+                <param_type>ExecDSEOnHostFlag</param_type>
             </parameter>
             <parameter>
                 <param_name>buffer_manager</param_name>

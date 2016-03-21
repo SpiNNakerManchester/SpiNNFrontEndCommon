@@ -1,9 +1,11 @@
-from spinn_machine.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
+
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.executable_targets import \
     ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
+
 from spinnaker_graph_front_end.\
     abstract_partitioned_data_specable_vertex import \
     AbstractPartitionedDataSpecableVertex

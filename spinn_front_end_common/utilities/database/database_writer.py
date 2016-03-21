@@ -1,3 +1,11 @@
+# spinn front end common
+from spinn_front_end_common.utility_models.\
+    live_packet_gather_partitioned_vertex import \
+    LivePacketGatherPartitionedVertex
+from spinn_front_end_common.utility_models.\
+    reverse_ip_tag_multicast_source_partitioned_vertex import \
+    ReverseIPTagMulticastSourcePartitionedVertex
+
 # general imports
 import logging
 import traceback
@@ -16,8 +24,8 @@ class DatabaseWriter(object):
 
         self._done = False
         self._database_directory = database_directory
-        self._database_path = os.path.join(self._database_directory,
-                                           "input_output_database.db")
+        self._database_path = os.path.join(
+            self._database_directory, "input_output_database.db")
 
         # delete any old database
         if os.path.isfile(self._database_path):
@@ -25,6 +33,22 @@ class DatabaseWriter(object):
 
         # set up checks
         self._machine_id = 0
+
+    @staticmethod
+    def auto_detect_database(partitioned_graph):
+        """ Auto detects if there is a need to activate the database system
+
+        :param partitioned_graph: the partitioned graph of the application\
+                problem space.
+        :return: a bool which represents if the database is needed
+        """
+        for vertex in partitioned_graph.subvertices:
+            if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
+                    isinstance(
+                        vertex, ReverseIPTagMulticastSourcePartitionedVertex)):
+                return True
+        else:
+            return False
 
     @property
     def database_path(self):
