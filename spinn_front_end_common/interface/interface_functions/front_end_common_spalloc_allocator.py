@@ -56,25 +56,21 @@ class FrontEndCommonSpallocAllocator(object):
     """
 
     # Use a worst case calculation
-    _N_CORES_PER_CHIP = 15.0
     _N_CHIPS_PER_BOARD = 48.0
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, spalloc_user, partitioned_graph,
-            spalloc_port=None):
+            self, spalloc_server, spalloc_user, n_chips, spalloc_port=None):
         """
 
         :param spalloc_server: The server from which the machine should be\
                     requested
         :param spalloc_port: The port of the SPALLOC server
         :param spalloc_user: The user to allocate the machine to
-        :param partitioned_graph: The partitioned graph to fit on the machine
+        :param n_chips: The number of chips required
         """
 
         # Work out how many boards are needed
-        n_cores = len(partitioned_graph.subvertices)
-        n_chips = float(n_cores) / self._N_CORES_PER_CHIP
         n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
 
         # If the number of boards rounded up is less than 10% bigger than the\
@@ -93,7 +89,7 @@ class FrontEndCommonSpallocAllocator(object):
 
         job.wait_until_ready()
 
-        # get param from jobs before starting, so that hanging doesnt occur
+        # get param from jobs before starting, so that hanging doesn't occur
         width = job.width
         height = job.height
         hostname = job.hostname
