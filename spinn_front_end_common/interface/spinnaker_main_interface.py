@@ -53,8 +53,7 @@ class SpinnakerMainInterface(object):
                  database_socket_addresses=None,
                  extra_algorithm_xml_paths=None,
                  extra_mapping_inputs=None, extra_mapping_algorithms=None,
-                 extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-                 dsg_algorithm=None):
+                 extra_pre_run_algorithms=None, extra_post_run_algorithms=None):
 
         # global params
         global config
@@ -98,11 +97,8 @@ class SpinnakerMainInterface(object):
         self._extra_pre_run_algorithms = list(extra_pre_run_algorithms)
         self._extra_post_run_algorithms = list(extra_post_run_algorithms)
         self._dsg_algorithm = None
-        if dsg_algorithm is None:
-            self._dsg_algorithm = \
-                "FrontEndCommonPartitionableGraphDataSpecificationWriter"
-        else:
-            self._dsg_algorithm = dsg_algorithm
+        self._dsg_algorithm = \
+            "FrontEndCommonPartitionableGraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
         self._none_labelled_vertex_count = 0
@@ -474,35 +470,9 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
-        # Handle virtual machine, which will also be needed if an allocation
-        # server is to be used
-        if (self._machine is None and self._txrx is None and (
-                self._use_virtual_board or self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None)):
-            if self._spalloc_server is not None:
-                algorithms.append("FrontEndCommonSpallocMaxMachineGenerator")
-            elif self._remote_spinnaker_url is not None:
-                algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
-            algorithms.append("FrontEndCommonVirtualMachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
-            if config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
-
-        # Only do allocation or generate a machine if not virtual
-        if not self._use_virtual_board:
-            if self._machine is None and self._txrx is None:
-                if self._spalloc_server is not None:
-                    algorithms.append("FrontEndCommonSpallocAllocator")
-                elif self._remote_spinnaker_url is not None:
-                    algorithms.append("FrontEndCommonHBPAllocator")
-
-                algorithms.append("FrontEndCommonMachineGenerator")
-            else:
-                inputs["MemoryMachine"] = self._machine
-                inputs["MemoryTransceiver"] = self._txrx
-                inputs["IPAddress"] = self._ip_address
+        # handle algorithms and inputs for finding machine
+        self._generate_inputs_and_algorithms_for_getting_machine(
+            algorithms, inputs)
 
         # Add reports
         if config.getboolean("Reports", "reportsEnabled"):
@@ -576,6 +546,38 @@ class SpinnakerMainInterface(object):
                 self._remote_spinnaker_url is not None)):
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
+
+    def _generate_inputs_and_algorithms_for_getting_machine(
+            self, algorithms, inputs):
+        # Handle virtual machine, which will also be needed if an allocation
+        # server is to be used
+        if (self._machine is None and self._txrx is None and (
+                self._use_virtual_board or self._spalloc_server is not None or
+                self._remote_spinnaker_url is not None)):
+            if self._spalloc_server is not None:
+                algorithms.append("FrontEndCommonSpallocMaxMachineGenerator")
+            elif self._remote_spinnaker_url is not None:
+                algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
+            algorithms.append("FrontEndCommonVirtualMachineGenerator")
+            algorithms.append("MallocBasedChipIDAllocator")
+            if config.getboolean("Machine", "enable_reinjection"):
+                inputs["CPUsPerVirtualChip"] = 15
+            else:
+                inputs["CPUsPerVirtualChip"] = 16
+
+        # Only do allocation or generate a machine if not virtual
+        if not self._use_virtual_board:
+            if self._machine is None and self._txrx is None:
+                if self._spalloc_server is not None:
+                    algorithms.append("FrontEndCommonSpallocAllocator")
+                elif self._remote_spinnaker_url is not None:
+                    algorithms.append("FrontEndCommonHBPAllocator")
+
+                algorithms.append("FrontEndCommonMachineGenerator")
+            else:
+                inputs["MemoryMachine"] = self._machine
+                inputs["MemoryTransceiver"] = self._txrx
+                inputs["IPAddress"] = self._ip_address
 
     def _add_machine_mapping_inputs(self, inputs):
         inputs['IPAddress'] = self._hostname
@@ -1062,6 +1064,23 @@ class SpinnakerMainInterface(object):
         :return:
         """
         return self._buffer_manager
+
+    @property
+    def dsg_algorithm(self):
+        """
+        returns the dsg algorithm used by the tools
+        :return:
+        """
+        return self._dsg_algorithm
+
+    @dsg_algorithm.setter
+    def dsg_algorithm(self, new_dsg_algorithm):
+        """
+        sets the dsg algorithm to be used by the tools
+        :param new_dsg_algorithm: the new dsg algorithm name
+        :return:
+        """
+        self._dsg_algorithm = new_dsg_algorithm
 
     @property
     def none_labelled_vertex_count(self):
