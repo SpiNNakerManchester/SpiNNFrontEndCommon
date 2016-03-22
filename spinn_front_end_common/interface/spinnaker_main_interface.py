@@ -1192,11 +1192,6 @@ class SpinnakerMainInterface(object):
                 "therefore the application cannot be executed correctly due "
                 "to not knowing how these two graphs interact with each "
                 "other. Please rectify and try again")
-
-        if self._partitioned_graph is None:
-            self._partitioned_graph = PartitionedGraph(
-                label="partitioned_graph for application id {}"
-                .format(self._app_id))
         self._partitioned_graph.add_subvertex(vertex)
 
     def add_partitionable_edge(
