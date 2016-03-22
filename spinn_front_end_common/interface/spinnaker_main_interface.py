@@ -82,6 +82,7 @@ class SpinnakerMainInterface(object):
         self._machine = None
         self._txrx = None
         self._buffer_manager = None
+        self._ip_address = None
 
         # pacman executor objects
         self._mapping_outputs = None
@@ -378,7 +379,7 @@ class SpinnakerMainInterface(object):
 
         # update inputs with extra mapping inputs if required
         if self._extra_mapping_inputs is not None:
-            inputs = self._extra_mapping_inputs
+            inputs = dict(self._extra_mapping_inputs)
         else:
             inputs = dict()
 
@@ -418,14 +419,6 @@ class SpinnakerMainInterface(object):
             "Database", "create_database")
         inputs["SendStartNotifications"] = config.getboolean(
             "Database", "send_start_notification")
-        inputs["ResetMachineOnStartupFlag"] = config.getboolean(
-            "Machine", "reset_machine_on_startup")
-        inputs["MaxSDRAMSize"] = self._read_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
-
-        # add reinjection flag
-        inputs["EnableReinjectionFlag"] = config.getboolean(
-            "Machine", "enable_reinjection")
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(
@@ -442,27 +435,6 @@ class SpinnakerMainInterface(object):
             self._json_folder, "routing_paths.json")
         inputs["FileConstraintsFilePath"] = os.path.join(
             self._json_folder, "constraints.json")
-
-        # Add inputs based on how the machine is obtained
-        if self._hostname is not None:
-            self._add_machine_mapping_inputs(inputs)
-
-        # if using spalloc system
-        if self._spalloc_server is not None:
-            inputs["SpallocServer"] = self._spalloc_server
-            inputs["SpallocPort"] = self._read_config_int(
-                "Machine", "spalloc_port")
-            inputs["SpallocUser"] = self._read_config(
-                "Machine", "spalloc_user")
-
-        # if using HBP server system
-        if self._remote_spinnaker_url is not None:
-            inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-
-        # if using virtual board
-        if self._use_virtual_board:
-            self._add_machine_mapping_inputs(inputs)
-            inputs["MemoryTransceiver"] = None
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -486,15 +458,27 @@ class SpinnakerMainInterface(object):
                 algorithms.append("unCompressedRoutingTableReports")
                 algorithms.append("compressedRoutingTableReports")
                 algorithms.append("comparisonOfRoutingTablesReport")
-            if config.getboolean("Reports", "writePartitionerReports"):
+
+            # only add partitioner report if using a partitionable graph
+            if (config.getboolean("Reports", "writePartitionerReports") and
+                    len(self._partitionable_graph.vertices) != 0):
                 algorithms.append("PartitionerReport")
-            if config.getboolean(
-                    "Reports", "writePlacerReportWithPartitionable"):
+
+            # only add write placer report with partitionable graph when
+            # there's partitionable vertices
+            if (config.getboolean(
+                    "Reports", "writePlacerReportWithPartitionable") and
+                    len(self._partitionable_graph.vertices) != 0):
                 algorithms.append("PlacerReportWithPartitionableGraph")
+
             if config.getboolean(
                     "Reports", "writePlacerReportWithoutPartitionable"):
                 algorithms.append("PlacerReportWithoutPartitionableGraph")
-            if config.getboolean("Reports", "writeNetworkSpecificationReport"):
+
+            # only add network specification partitionable report if there's
+            # partitionable vertices.
+            if (config.getboolean("Reports", "writeNetworkSpecificationReport")
+                    and len(self._partitionable_graph.vertices) != 0):
                 algorithms.append(
                     "FrontEndCommonNetworkSpecificationPartitionableReport")
 
@@ -512,10 +496,21 @@ class SpinnakerMainInterface(object):
         algorithms.extend(config.get(
             "Mapping", "partitioned_to_machine_algorithms").split(","))
 
-        outputs = [
-            "MemoryPlacements", "MemoryRoutingTables",
-            "MemoryTags", "MemoryGraphMapper", "MemoryPartitionedGraph",
-            "MemoryMachine", "MemoryRoutingInfos"]
+        # decide upon the outputs based off if there is a
+        # partitionable graph that has vertices added to it.
+        if len(self._partitionable_graph.vertices) != 0:
+            outputs = [
+                "MemoryPlacements", "MemoryRoutingTables",
+                "MemoryTags", "MemoryGraphMapper", "MemoryPartitionedGraph",
+                "MemoryMachine", "MemoryRoutingInfos"]
+        else:
+            outputs = [
+                "MemoryPlacements", "MemoryRoutingTables",
+                "MemoryTags", "MemoryPartitionedGraph", "MemoryMachine",
+                "MemoryRoutingInfos"]
+
+        # if not using a virtual board, need the spinnman interface
+        # and ip-address
         if not self._use_virtual_board:
             outputs.append("MemoryTransceiver")
             outputs.append("IPAddress")
@@ -552,6 +547,31 @@ class SpinnakerMainInterface(object):
 
     def _generate_inputs_and_algorithms_for_getting_machine(
             self, algorithms, inputs):
+
+        # general machine inputs
+        inputs["ResetMachineOnStartupFlag"] = config.getboolean(
+            "Machine", "reset_machine_on_startup")
+
+        # add reinjection flag
+        inputs["EnableReinjectionFlag"] = config.getboolean(
+            "Machine", "enable_reinjection")
+
+        # add max sdram size which we're going to allow (debug purposes)
+        inputs["MaxSDRAMSize"] = self._read_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
+
+        # if using spalloc system
+        if self._spalloc_server is not None:
+            inputs["SpallocServer"] = self._spalloc_server
+            inputs["SpallocPort"] = self._read_config_int(
+                "Machine", "spalloc_port")
+            inputs["SpallocUser"] = self._read_config(
+                "Machine", "spalloc_user")
+
+        # if using HBP server system
+        if self._remote_spinnaker_url is not None:
+            inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
+
         # Handle virtual machine, which will also be needed if an allocation
         # server is to be used
         if (self._machine is None and self._txrx is None and (
@@ -567,6 +587,8 @@ class SpinnakerMainInterface(object):
                 inputs["CPUsPerVirtualChip"] = 15
             else:
                 inputs["CPUsPerVirtualChip"] = 16
+        elif self._hostname is not None:
+            self._add_machine_inputs(inputs)
 
         # Only do allocation or generate a machine if not virtual
         if not self._use_virtual_board:
@@ -581,8 +603,11 @@ class SpinnakerMainInterface(object):
                 inputs["MemoryMachine"] = self._machine
                 inputs["MemoryTransceiver"] = self._txrx
                 inputs["IPAddress"] = self._ip_address
+        else:
+            self._add_machine_inputs(inputs)
+            inputs["MemoryTransceiver"] = None
 
-    def _add_machine_mapping_inputs(self, inputs):
+    def _add_machine_inputs(self, inputs):
         inputs['IPAddress'] = self._hostname
         inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
         inputs["DownedChipsDetails"] = config.get("Machine", "down_chips")
