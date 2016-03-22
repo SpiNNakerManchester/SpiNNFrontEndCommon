@@ -7,6 +7,10 @@ from spinn_front_end_common.utilities.database.database_writer import \
 
 
 class FrontEndCommonDatabaseInterface(object):
+    """
+    FrontEndCommonDatabaseInterface: interface for writing the database for
+    the notification protocol.
+    """
 
     def __init__(self):
         self._writer = None
@@ -28,7 +32,8 @@ class FrontEndCommonDatabaseInterface(object):
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
 
-            if len(partitionable_graph.vertices) != 0:
+            if (partitionable_graph is not None and
+                    len(partitionable_graph.vertices) != 0):
                 database_progress = ProgressBar(11, "Creating database")
             else:
                 database_progress = ProgressBar(10, "Creating database")
@@ -38,7 +43,8 @@ class FrontEndCommonDatabaseInterface(object):
             database_progress.update()
             self._writer.add_machine_objects(machine)
             database_progress.update()
-            if len(partitionable_graph.vertices) != 0:
+            if (partitionable_graph is not None
+                    and len(partitionable_graph.vertices) != 0):
                 self._writer.add_partitionable_vertices(partitionable_graph)
                 database_progress.update()
             self._writer.add_partitioned_vertices(

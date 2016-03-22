@@ -22,7 +22,7 @@ import struct
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
+class FrontEndCommonHostExecuteDataSpecification(object):
     """ Executes the host based data specification
     """
 
@@ -33,8 +33,6 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         """
 
         :param hostname:
-        :param placements:
-        :param graph_mapper:
         :param write_text_specs:
         :param runtime_application_data_folder:
         :param machine:
@@ -56,9 +54,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         """
 
         :param hostname:
-        :param placements:
         :param transceiver:
-        :param graph_mapper:
         :param write_text_specs:
         :param application_data_runtime_folder:
         :param machine:

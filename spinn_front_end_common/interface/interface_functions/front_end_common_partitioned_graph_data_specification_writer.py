@@ -2,16 +2,19 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities.executable_targets import \
+from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
-
-from spinnaker_graph_front_end.\
+from spinn_front_end_common.abstract_models.\
     abstract_partitioned_data_specable_vertex import \
     AbstractPartitionedDataSpecableVertex
 
 
 class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
+    """
+    FrontEndCommonPartitionedGraphDataSpecificationWriter: writer of dsg's for
+    partitioned graph based applciations.
+    """
 
     def __call__(
             self, placements, tags, partitioned_graph, routing_infos, hostname,
@@ -47,10 +50,7 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                     app_data_runtime_folder)
 
                 # link dsg file to subvertex
-                mapping_key = \
-                    placement.x, placement.y, placement.p, \
-                    placement.subvertex.label
-                dsg_targets[mapping_key] = file_path
+                dsg_targets[placement.x, placement.y, placement.p] = file_path
 
                 progress_bar.update()
 

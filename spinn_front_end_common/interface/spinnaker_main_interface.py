@@ -13,6 +13,8 @@ from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from spinn_front_end_common.abstract_models.\
     abstract_has_first_machine_time_step import \
     AbstractHasFirstMachineTimeStep
+from spinn_front_end_common.abstract_models.abstract_partitioned_data_specable_vertex import \
+    AbstractPartitionedDataSpecableVertex
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management\
@@ -338,8 +340,18 @@ class SpinnakerMainInterface(object):
         return steps
 
     def _update_n_machine_time_steps(self, n_machine_time_steps):
+        """
+        updates all vertices with the n_machine_time_steps if they use
+        dsg interface.
+        :param n_machine_time_steps: the number of machine time steps to run
+        this iteration.
+        :return: None
+        """
         for vertex in self._partitionable_graph.vertices:
             if isinstance(vertex, AbstractDataSpecableVertex):
+                vertex.set_no_machine_time_steps(n_machine_time_steps)
+        for vertex in self._partitioned_graph.subvertices:
+            if isinstance(vertex, AbstractPartitionedDataSpecableVertex):
                 vertex.set_no_machine_time_steps(n_machine_time_steps)
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
@@ -660,13 +672,13 @@ class SpinnakerMainInterface(object):
         optional_algorithms.append("FrontEndCommonTagsLoader")
         if self._exec_dse_on_host:
             optional_algorithms.append(
-                "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")
+                "FrontEndCommonHostExecuteDataSpecification")
             if config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnHostReport")
         else:
             optional_algorithms.append(
-                "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+                "FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
             if config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")

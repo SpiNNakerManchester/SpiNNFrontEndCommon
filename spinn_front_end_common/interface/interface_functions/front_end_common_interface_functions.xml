@@ -31,9 +31,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonPartitionableGraphHostExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_host_execute_data_specification</python_module>
-        <python_class>FrontEndCommonPartitionableGraphHostExecuteDataSpecification</python_class>
+    <algorithm name="FrontEndCommonHostExecuteDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_host_execute_data_specification</python_module>
+        <python_class>FrontEndCommonHostExecuteDataSpecification</python_class>
         <required_inputs>
             <parameter>
                 <param_name>hostname</param_name>

@@ -585,7 +585,8 @@ class DatabaseWriter(object):
                 "FOREIGN KEY (vertex_id)"
                 " REFERENCES Partitioned_vertices(vertex_id))")
 
-            if len(partitionable_graph.vertices) != 0:
+            if (partitionable_graph is not None and
+                    len(partitionable_graph.vertices) != 0):
 
                 # insert into table
                 vertices = list(partitionable_graph.vertices)
@@ -614,13 +615,12 @@ class DatabaseWriter(object):
                 # insert into table
                 vertices = list(partitioned_graph.subvertices)
                 for partitioned_vertex in partitioned_graph.subvertices:
-                    out_going_edges = (partitioned_graph
-                                       .outgoing_subedges_from_subvertex(
+                    out_going_partitions = (partitioned_graph
+                                       .outgoing_edges_partitions_from_vertex(
                                            partitioned_vertex))
-                    if len(out_going_edges) > 0:
-                        routing_info = (routing_infos
-                                        .get_subedge_information_from_subedge(
-                                            out_going_edges[0]))
+                    for partition in out_going_partitions.values():
+                        routing_info = routing_infos.\
+                            get_routing_info_from_partition(partition)
                         vertex_id = vertices.index(partitioned_vertex) + 1
                         event_ids = routing_info.get_keys()
                         for key in event_ids:
