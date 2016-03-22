@@ -1,5 +1,4 @@
 from threading import Thread
-import math
 import requests
 import logging
 import sys
@@ -48,22 +47,15 @@ class FrontEndCommonHBPAllocator(object):
         a given partitioned graph
     """
 
-    # Use a worst case calculation
-    _N_CORES_PER_CHIP = 15.0
-
     def __call__(
-            self, hbp_server_url, total_run_time, partitioned_graph):
+            self, hbp_server_url, total_run_time, n_chips):
         """
 
         :param hbp_server_url: The URL of the HBP server from which to get\
                     the machine
         :param total_run_time: The total run time to request
-        :param partitioned_graph: The partitioned graph to allocate for
+        :param n_chips: The number of chips required
         """
-
-        # Work out how many boards are needed
-        n_cores = len(partitioned_graph.subvertices)
-        n_chips = int(math.ceil(float(n_cores) / self._N_CORES_PER_CHIP))
 
         url = hbp_server_url
         if url.endswith("/"):
