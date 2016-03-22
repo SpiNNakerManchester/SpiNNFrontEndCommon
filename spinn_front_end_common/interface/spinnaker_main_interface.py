@@ -498,8 +498,11 @@ class SpinnakerMainInterface(object):
                 algorithms.append(
                     "FrontEndCommonNetworkSpecificationPartitionableReport")
 
-        algorithms.extend(config.get(
-            "Mapping", "partitionable_to_partitioned_algorithms").split(","))
+        # only add the partitioner if there is a partitionable graph to use.
+        if len(self._partitionable_graph.vertices) != 0:
+            algorithms.extend(config.get(
+                "Mapping",
+                "partitionable_to_partitioned_algorithms").split(","))
 
         # If using an allocator, we will need to do chip allocation again
         # after partitioning
