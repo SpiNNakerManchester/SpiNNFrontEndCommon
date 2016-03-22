@@ -30,6 +30,8 @@ class FrontEndCommonRouterProvenanceGatherer(object):
                 " This is deemed an error, please rectify and try again")
 
         self._total_sent_packets = 0
+        self._total_new_packets = 0
+        self._total_dropped_packets = 0
         self._total_missed_dropped_packets = 0
         self._total_lost_dropped_packets = 0
 
@@ -44,6 +46,12 @@ class FrontEndCommonRouterProvenanceGatherer(object):
         prov_items.append(ProvenanceDataItem(
             ["router_provenance", "total_sent_packets"],
             self._total_sent_packets))
+        prov_items.append(ProvenanceDataItem(
+            ["router_provenance", "total_created_packets"],
+            self._total_new_packets))
+        prov_items.append(ProvenanceDataItem(
+            ["router_provenance", "total_dropped_packets"],
+            self._total_dropped_packets))
         prov_items.append(ProvenanceDataItem(
             ["router_provenance", "total_missed_dropped_packets"],
             self._total_missed_dropped_packets))
@@ -107,6 +115,9 @@ class FrontEndCommonRouterProvenanceGatherer(object):
         self._total_sent_packets += (
             router_diagnostic.n_local_multicast_packets +
             router_diagnostic.n_external_multicast_packets)
+        self._total_new_packets += router_diagnostic.n_local_multicast_packets
+        self._total_dropped_packets += (
+            router_diagnostic.n_dropped_multicast_packets)
         if reinjector_status is not None:
             self._total_missed_dropped_packets += (
                 reinjector_status.n_missed_dropped_packets)
