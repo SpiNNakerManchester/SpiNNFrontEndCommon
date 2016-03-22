@@ -1234,7 +1234,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_allocation_controller</param_name>
-                <param_type>MachineAllocationContoller</param_type>
+                <param_type>MachineAllocationController</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -1310,7 +1310,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_allocation_controller</param_name>
-                <param_type>MachineAllocationContoller</param_type>
+                <param_type>MachineAllocationController</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
