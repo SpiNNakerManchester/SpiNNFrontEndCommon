@@ -174,6 +174,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self._record_buffer_size = 0
         self._buffer_size_before_receive = 0
 
+        # set flag for checking if in injection mode
+        self._in_injection_mode = receive_port is not None
+
         # Sort out the keys to be used
         self._n_keys = n_keys
         self._virtual_key = virtual_key
@@ -463,3 +466,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     @property
     def mask(self):
         return self._mask
+
+    @property
+    def is_in_injection_mode(self):
+        return self._in_injection_mode

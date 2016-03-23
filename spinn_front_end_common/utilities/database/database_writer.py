@@ -46,8 +46,9 @@ class DatabaseWriter(object):
         """
         for vertex in partitioned_graph.subvertices:
             if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
-                    isinstance(
-                        vertex, ReverseIPTagMulticastSourcePartitionedVertex)):
+                    (isinstance(
+                        vertex, ReverseIPTagMulticastSourcePartitionedVertex)
+                     and vertex.is_in_injection_mode)):
                 return True
         else:
             return False
@@ -517,9 +518,11 @@ class DatabaseWriter(object):
             cur = connection.cursor()
             cur.execute(
                 "CREATE TABLE IP_tags("
-                "vertex_id INTEGER PRIMARY KEY, tag INTEGER, "
+                "vertex_id INTEGER, tag INTEGER, "
                 "board_address TEXT, ip_address TEXT, port INTEGER, "
                 "strip_sdp BOOLEAN,"
+                "PRIMARY KEY ("
+                "vertex_id, tag, board_address, ip_address, port, strip_sdp),"
                 "FOREIGN KEY (vertex_id) REFERENCES "
                 "Partitioned_vertices(vertex_id))")
             cur.execute(
