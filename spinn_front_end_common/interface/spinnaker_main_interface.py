@@ -280,7 +280,7 @@ class SpinnakerMainInterface(object):
                 self._has_reset_last):
 
             # Data generation needs to be done if not already done
-            if application_graph_changed:
+            if not self._has_ran or application_graph_changed:
                 self._do_data_generation(steps[0])
 
             # If we are using a virtual board, don't load
@@ -323,8 +323,10 @@ class SpinnakerMainInterface(object):
                     sdram_per_vertex)
                 if min_time_steps is None or n_time_steps < min_time_steps:
                     min_time_steps = n_time_steps
-
-        return self._generate_steps(n_machine_time_steps, min_time_steps)
+        if min_time_steps is None:
+            return [n_machine_time_steps]
+        else:
+            return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
     def _generate_steps(n_machine_time_steps, min_machine_time_steps):
@@ -1032,6 +1034,15 @@ class SpinnakerMainInterface(object):
         :return:
         """
         return self._machine_time_step
+
+    @property
+    def machine(self):
+        """
+        returns the python machine object
+        :return: the python machine object
+        :rtype: SpinnMachine.machine.Machine
+        """
+        return self._machine
 
     @property
     def no_machine_time_steps(self):
