@@ -1,6 +1,6 @@
 # spinn front end common
-from spinn_front_end_common.abstract_models.abstract_recordable_interface import \
-    AbstractRecordableInterface
+from spinn_front_end_common.abstract_models.abstract_recordable import \
+    AbstractRecordable
 from spinn_front_end_common.utility_models.\
     live_packet_gather_partitioned_vertex import \
     LivePacketGatherPartitionedVertex
@@ -47,8 +47,9 @@ class DatabaseWriter(object):
         for vertex in partitioned_graph.subvertices:
             if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
                     (isinstance(
-                        vertex, ReverseIPTagMulticastSourcePartitionedVertex)
-                     and vertex.is_in_injection_mode)):
+                        vertex,
+                        ReverseIPTagMulticastSourcePartitionedVertex) and
+                     vertex.is_in_injection_mode)):
                 return True
         else:
             return False
@@ -155,7 +156,7 @@ class DatabaseWriter(object):
 
             # add vertices
             for vertex in partitionable_graph.vertices:
-                if isinstance(vertex, AbstractRecordableInterface):
+                if isinstance(vertex, AbstractRecordable):
                     cur.execute(
                         "INSERT INTO Partitionable_vertices("
                         "vertex_label, no_atoms, max_atom_constrant, recorded)"
@@ -201,7 +202,6 @@ class DatabaseWriter(object):
             connection.close()
         except Exception:
             traceback.print_exc()
-
 
     def add_system_params(self, time_scale_factor, machine_time_step, runtime):
         """ Write system params into the database
@@ -618,9 +618,9 @@ class DatabaseWriter(object):
                 # insert into table
                 vertices = list(partitioned_graph.subvertices)
                 for partitioned_vertex in partitioned_graph.subvertices:
-                    out_going_partitions = (partitioned_graph
-                                       .outgoing_edges_partitions_from_vertex(
-                                           partitioned_vertex))
+                    out_going_partitions = partitioned_graph.\
+                        outgoing_edges_partitions_from_vertex(
+                            partitioned_vertex)
                     for partition in out_going_partitions.values():
                         routing_info = routing_infos.\
                             get_routing_info_from_partition(partition)

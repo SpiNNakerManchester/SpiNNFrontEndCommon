@@ -66,8 +66,9 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(len(list(dsg_targets)),
-                                   "Executing data specifications")
+        progress_bar = ProgressBar(
+            len(list(dsg_targets)),
+            "Executing data specifications and loading data")
 
         for ((x, y, p), data_spec_file_path) in dsg_targets.iteritems():
 

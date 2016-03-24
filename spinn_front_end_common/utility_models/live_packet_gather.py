@@ -82,8 +82,7 @@ class LivePacketGather(
 
     @property
     def number_of_packets_sent_per_time_step(self):
-        """
-        sets how many full UDP packets this model can send per timer tick
+        """ How many full UDP packets this model can send per timer tick
         :return:
         """
         return self._number_of_packets_sent_per_time_step
@@ -102,22 +101,6 @@ class LivePacketGather(
                            routing_info, hostname, graph_sub_graph_mapper,
                            report_folder, ip_tags, reverse_ip_tags,
                            write_text_specs, application_run_time_folder):
-        """
-        implementing the AbstractDataSpecableVertex.generate_data_spec
-        :param subvertex:
-        :param placement:
-        :param sub_graph:
-        :param graph:
-        :param routing_info:
-        :param hostname:
-        :param graph_sub_graph_mapper:
-        :param report_folder:
-        :param ip_tags:
-        :param reverse_ip_tags:
-        :param write_text_specs:
-        :param application_run_time_folder:
-        :return:
-        """
 
         return subvertex.generate_data_spec(
             placement, sub_graph, routing_info, hostname, report_folder,
@@ -126,46 +109,20 @@ class LivePacketGather(
 
     # inherited from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
-        """
-        implementing the AbstractPartitionableVertex.get_cpu_usage_for_atoms
-        :param vertex_slice:
-        :param graph:
-        :return:
-        """
         return LivePacketGatherPartitionedVertex.get_cpu_usage()
 
     # inherited from partitionable vertex
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        """
-        implementing the AbstractPartitionableVertex.get_sdram_usage_for_atoms
-        :param vertex_slice:
-        :param graph:
-        :return:
-        """
         return LivePacketGatherPartitionedVertex.get_sdram_usage()
 
     # inherited from partitionable vertex
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        """
-        implementing the AbstractPartitionableVertex.get_dtcm_usage_for_atoms
-        :param vertex_slice:
-        :param graph:
-        :return:
-        """
         return LivePacketGatherPartitionedVertex.get_dtcm_usage()
 
     # inherited from partitionable vertex
     def create_subvertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        """
-        implementing the AbstractPartitionableVertex.create_subvertex
-        :param vertex_slice:
-        :param resources_required:
-        :param label:
-        :param constraints:
-        :return:
-        """
         return LivePacketGatherPartitionedVertex(
             label, self._machine_time_step, self._timescale_factor,
             self._use_prefix, self._key_prefix, self._prefix_type,
@@ -176,31 +133,15 @@ class LivePacketGather(
 
     @property
     def model_name(self):
-        """
-        human readable form of the model.
-        :return:
+        """ Human readable form of the model name
         """
         return "live packet gather"
 
     def get_binary_file_name(self):
-        """
-        name of binary which is loaded onto a spinnaker machine to represent
-        this partitionable vertex's functionality.
-        :return:
-        """
         return 'live_packet_gather.aplx'
 
     def is_data_specable(self):
-        """
-        helper methods for isinstance
-        :return:
-        """
         return True
 
     def is_ip_tagable_vertex(self):
-        """
-        helper methods for isinstance
-        :return:
-        """
         return True
-

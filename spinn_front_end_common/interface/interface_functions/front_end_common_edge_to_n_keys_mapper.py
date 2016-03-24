@@ -20,9 +20,7 @@ from spinn_front_end_common.utilities import exceptions
 
 
 class FrontEndCommonEdgeToNKeysMapper(object):
-    """
-    FrontEndCommonEdgeToNKeysMapper: The front end common mapper from partition
-    to n_keys
+    """ Works out the number of keys needed for each edge
     """
 
     def __call__(self, partitioned_graph, partitionable_graph=None,
@@ -102,7 +100,8 @@ class FrontEndCommonEdgeToNKeysMapper(object):
             partitioned_edge)
 
         if not isinstance(edge.pre_vertex, AbstractProvidesNKeysForPartition):
-            n_keys_map.set_n_keys_for_partition(partition, vertex_slice.n_atoms)
+            n_keys_map.set_n_keys_for_partition(
+                partition, vertex_slice.n_atoms)
         else:
             n_keys_map.set_n_keys_for_partition(
                 partition,

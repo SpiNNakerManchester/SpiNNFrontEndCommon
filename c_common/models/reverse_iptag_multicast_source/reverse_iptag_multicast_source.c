@@ -430,7 +430,7 @@ static inline void process_16_bit_packets(
             " key_space=%d: %d", check, key, mask, key_space,
             (!check) || (check && ((key & mask) == key_space)));
 
-        if (!has_key){
+        if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug("mc packet 16-bit key=%d", key);
@@ -480,7 +480,7 @@ static inline void process_32_bit_packets(
         log_debug("check before send packet: %d",
                   (!check) || (check && ((key & mask) == key_space)));
 
-        if (!has_key){
+        if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug("mc packet 32-bit key=0x%08x", key);

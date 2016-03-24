@@ -520,18 +520,19 @@ class BufferManager(object):
             # This situation is identified by the sequence number of the last
             # packet sent to this core and the core internal state of the
             # output buffering finite state machine
-            seq_no_last_ack_packet = self._received_data.\
-                last_sequence_no_for_core(placement.x, placement.y, placement.p)
+            seq_no_last_ack_packet = \
+                self._received_data.last_sequence_no_for_core(
+                    placement.x, placement.y, placement.p)
             seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
             if seq_no_internal_fsm == seq_no_last_ack_packet:
 
                 # if the last ACK packet has not been processed on the chip,
                 # process it now
-                last_sent_ack_sdp_packet = self._received_data.\
-                    last_sent_packet_to_core(
+                last_sent_ack_sdp_packet = \
+                    self._received_data.last_sent_packet_to_core(
                         placement.x, placement.y, placement.p)
-                last_sent_ack_packet = create_eieio_command.\
-                    read_eieio_command_message(
+                last_sent_ack_packet = \
+                    create_eieio_command.read_eieio_command_message(
                         last_sent_ack_sdp_packet.data, 0)
                 if not isinstance(last_sent_ack_packet, HostDataRead):
                     raise Exception(
@@ -570,20 +571,23 @@ class BufferManager(object):
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
-                    placement.x, placement.y, placement.p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
             elif (read_ptr == write_ptr and
                     last_operation == spinn_front_end_constants.
@@ -592,20 +596,23 @@ class BufferManager(object):
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
-                    placement.x, placement.y, placement.p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
             elif (read_ptr == write_ptr and
                     last_operation == spinn_front_end_constants.
                     BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
         # data flush has been completed - return appropriate data
         # the two returns can be exchanged - one returns data and the other

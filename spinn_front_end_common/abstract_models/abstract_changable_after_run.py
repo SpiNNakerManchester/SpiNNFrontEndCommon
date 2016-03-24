@@ -5,9 +5,9 @@ from abc import abstractproperty
 
 
 @add_metaclass(ABCMeta)
-class AbstractMappableInterface(object):
-    """ An item that, changes to which might cause a need for mapping to be\
-        performed before and in between calls to the PyNN run function
+class AbstractChangableAfterRun(object):
+    """ An item that can be changed after a call to run, the changes to which\
+        might or might not require mapping
     """
 
     @abstractproperty

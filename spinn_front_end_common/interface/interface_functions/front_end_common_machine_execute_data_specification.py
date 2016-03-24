@@ -28,13 +28,13 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
     """
 
     def __call__(
-            self, write_memory_map_report, dsg_targets, transceiver, 
+            self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
         """
         :param write_memory_map_report:
         :param dsg_targets:
         :param transceiver:
-        :param dse_app_id: the app_id used by the dse on chip application
+        :param dse_app_id: the app_id used by the DSE on chip application
         :param app_id:
         :return:
         """
@@ -43,17 +43,16 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
             dse_app_id, app_id)
         return data
 
-
     def spinnaker_based_data_specification_execution(
             self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
         """
-        
-        :param write_memory_map_report: 
-        :param dsg_targets: 
-        :param transceiver: 
-        :param dse_app_id: 
-        :param app_id: 
+
+        :param write_memory_map_report:
+        :param dsg_targets:
+        :param transceiver:
+        :param dse_app_id:
+        :param app_id:
         :return:
         """
 
@@ -142,6 +141,5 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         logger.info("On-chip Data Specification Executor completed")
 
         return {
-            "LoadedApplicationDataToken": True,
-            "DSEOnHost": False,
-            "DSEOnChip": True}
+            "LoadedApplicationDataToken": True
+        }

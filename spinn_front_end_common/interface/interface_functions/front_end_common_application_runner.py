@@ -9,17 +9,17 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationRunner(object):
-    """ Ensures all cores are initialised correctly, ran, and competed\
+    """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
     """
 
-    def __call__(self, buffer_manager, wait_on_confirmation,
-                 send_start_notification, notification_interface,
-                 executable_targets, app_id, txrx, runtime, time_scale_factor,
-                 loaded_reverse_iptags_token, loaded_iptags_token,
-                 loaded_routing_tables_token, loaded_binaries_token,
-                 loaded_application_data_token, no_sync_changes,
-                 time_threshold):
+    def __call__(
+            self, buffer_manager, wait_on_confirmation,
+            send_start_notification, notification_interface,
+            executable_targets, app_id, txrx, runtime, time_scale_factor,
+            loaded_reverse_iptags_token, loaded_iptags_token,
+            loaded_routing_tables_token, loaded_binaries_token,
+            loaded_application_data_token, no_sync_changes, time_threshold):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or

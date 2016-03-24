@@ -8,9 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationDataLoader(object):
-    """
-    FrontEndCommonApplicationDataLoader
-    """
 
     def __call__(
             self, processor_to_app_data_base_address, transceiver,

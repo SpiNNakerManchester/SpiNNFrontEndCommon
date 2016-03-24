@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonLoadExecutableImages(object):
-    """
-    """
 
     def __call__(self, executable_targets, app_id, transceiver,
                  loaded_application_data_token):

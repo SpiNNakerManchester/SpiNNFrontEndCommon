@@ -185,11 +185,11 @@ void simulation_register_simulation_sdp_callback(
 }
 
 //! \brief handles the registration for storing provenance data (needs to be
-//! done at least with the provenance region id)
+//!        done at least with the provenance region id)
 //! \param[in] provenance_function: function to call for extra provenance data
-//!     can be NULL as well.
+//!            can be NULL as well.
 //! \param[in] provenance_data_region_id: the region id in dsg for where
-//!  provenance is to be stored
+//!            provenance is to be stored
 //! \return does not return anything
 void  simulation_register_provenance_callback(
         prov_callback_t provenance_function,

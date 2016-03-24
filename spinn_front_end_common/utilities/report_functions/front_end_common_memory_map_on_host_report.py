@@ -10,7 +10,8 @@ class FrontEndCommonMemoryMapOnHostReport(object):
     """
 
     def __call__(
-            self, report_default_directory, processor_to_app_data_base_address):
+            self, report_default_directory,
+            processor_to_app_data_base_address):
         """
 
         :param report_default_directory:

@@ -11,9 +11,7 @@ from spinn_front_end_common.abstract_models.\
 
 
 class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
-    """
-    FrontEndCommonPartitionedGraphDataSpecificationWriter: writer of dsg's for
-    partitioned graph based applciations.
+    """ Writes data specification for partitioned graphs
     """
 
     def __call__(

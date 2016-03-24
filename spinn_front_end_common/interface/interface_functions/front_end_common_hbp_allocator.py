@@ -3,7 +3,8 @@ import requests
 import logging
 import sys
 
-from spinn_front_end_common.abstract_models.abstract_machine_allocation_controller \
+from spinn_front_end_common.abstract_models\
+    .abstract_machine_allocation_controller \
     import AbstractMachineAllocationController
 
 logger = logging.getLogger(__name__)

@@ -64,12 +64,8 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type transceiver: spiNNMan.transciever.Transciever
     :return: None
     """
-    app_data_base_address = transceiver.get_user_0_register_address_from_core(
-        placement.x, placement.y, placement.p)
-    regions_base_address_encoded = buffer(transceiver.read_memory(
-        placement.x, placement.y, app_data_base_address, 4))
-    regions_base_address = \
-        struct.unpack_from("<I", regions_base_address_encoded)[0]
+    regions_base_address = transceiver.get_cpu_information_from_core(
+        placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
     region_offset_in_pointer_table = \

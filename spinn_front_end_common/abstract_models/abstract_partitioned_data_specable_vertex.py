@@ -2,7 +2,6 @@
 from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 # front end common imports
-from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import constants
 
 # general imports
@@ -23,7 +22,6 @@ class AbstractPartitionedDataSpecableVertex(object):
         self._machine_time_step = machine_time_step
         self._timescale_factor = timescale_factor
         self._no_machine_time_steps = None
-
 
     @abstractmethod
     def generate_data_spec(
@@ -48,7 +46,7 @@ class AbstractPartitionedDataSpecableVertex(object):
 
     @abstractmethod
     def get_binary_file_name(self):
-        """ Get the binary name for a given dataspecable vertex
+        """ Get the binary name for a given data-specable vertex
         """
 
     @property
