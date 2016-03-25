@@ -1,8 +1,8 @@
-# spinn storage handlers
-from spinn_storage_handlers.file_data_writer import FileDataWriter
-
 # front end common imports
 from spinn_front_end_common.utilities import constants
+
+# spinn storage handlers
+from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 # general imports
 from abc import ABCMeta

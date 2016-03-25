@@ -56,7 +56,8 @@ class SpinnakerMainInterface(object):
             database_socket_addresses=None,
             extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
-            extra_pre_run_algorithms=None, extra_post_run_algorithms=None):
+            extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
+            extra_provenance_algorithms=None):
 
         # global params
         global config
@@ -101,6 +102,8 @@ class SpinnakerMainInterface(object):
         self._extra_mapping_inputs = dict(extra_mapping_inputs)
         self._extra_pre_run_algorithms = list(extra_pre_run_algorithms)
         self._extra_post_run_algorithms = list(extra_post_run_algorithms)
+        self._extra_provenance_algorithms = list(extra_provenance_algorithms)
+
         self._dsg_algorithm = \
             "FrontEndCommonPartitionableGraphDataSpecificationWriter"
 
@@ -825,6 +828,10 @@ class SpinnakerMainInterface(object):
                 inputs = dict(self._last_run_outputs)
                 algorithms = list()
                 outputs = list()
+
+                # add extra algorithms as requested
+                if self._extra_provenance_algorithms is not None:
+                    algorithms.extend(self._extra_provenance_algorithms)
 
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
                 algorithms.append("FrontEndCommonRouterProvenanceGatherer")
