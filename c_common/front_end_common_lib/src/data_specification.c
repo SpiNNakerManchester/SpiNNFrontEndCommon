@@ -12,8 +12,8 @@
 #define VERSION_MASK 0xFFFF
 
 typedef enum region_elements{
-	dse_magic_number, dse_version,
-}region_elements;
+    dse_magic_number, dse_version,
+} region_elements;
 
 // The index of the start of the region table within the data
 #define REGION_START_INDEX 2
@@ -21,8 +21,9 @@ typedef enum region_elements{
 // The amount of shift to apply to the version number to get the major version
 #define VERSION_SHIFT 16
 
-//! \ method that locates the start address for a core in SDRAM. This value is
-//! loaded into the user0 register of the core during the tool chain loading.
+//! \brief Locates the start address for a core in SDRAM. This value is
+//!        loaded into the user0 register of the core during the tool chain
+//!        loading.
 //! \return the SDRAM start address for this core.
 address_t data_specification_get_data_address() {
 
@@ -32,21 +33,21 @@ address_t data_specification_get_data_address() {
     // Get the address this core's DTCM data starts at from the user data member
     // of the structure associated with this virtual processor
     address_t address =
-            (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
+        (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
 
     log_info("SDRAM data begins at address: %08x", address);
 
     return address;
 }
 
-//! \ reads the header written by a DSE and checks that the magic number
-//! which is written by every DSE is consistent. Inconsistent DSE magic numbers
-//! would reflect a model being used with an different DSE interface than the
-//! DSE used by the host machine.
+//! \brief Reads the header written by a DSE and checks that the magic number
+//!        which is written by every DSE is consistent. Inconsistent DSE magic
+//!        numbers would reflect a model being used with an different DSE
+//!        interface than the DSE used by the host machine.
 //! \param[in] address the absolute memory address in SDRAM to read the
-//! header from.
+//!            header from.
 //! \return boolean where True is when the header is correct and False if there
-//! is a conflict with the DSE magic number
+//!         is a conflict with the DSE magic number
 bool data_specification_read_header(uint32_t* address) {
 
     // Check for the magic number
@@ -56,8 +57,8 @@ bool data_specification_read_header(uint32_t* address) {
     }
 
     if (address[dse_version] != DATA_SPECIFICATION_VERSION) {
-    	log_error("Version number is incorrect: %08x", address[dse_version]);
-    	return (false);
+        log_error("Version number is incorrect: %08x", address[dse_version]);
+        return (false);
     }
 
     // Log what we have found
@@ -67,20 +68,15 @@ bool data_specification_read_header(uint32_t* address) {
     return (true);
 }
 
-//! method that returns the absolute SDRAM memory address for a given region
-//! value.
+//! \brief Returns the absolute SDRAM memory address for a given region value.
+//!
 //! \param[in] region The region id (between 0 and 15) to which the absolute
-//! memory address in SDRAM is to be located
+//!            memory address in SDRAM is to be located
 //! \param[in] data_address The absolute SDRAM address for the start of the
-//! app_pointer table as created by the host DSE.
+//!            app_pointer table as created by the host DSE.
 //! \return a address_t which represents the absolute SDRAM address for the
-//!start of the requested region.
-
+//!         start of the requested region.
 address_t data_specification_get_region(
         uint32_t region, address_t data_address) {
-
-    // As the address is a uint32_t array, we need to divide the byte address
-    // in the region table by 4 (hence down-shift by 2) to get the position in
-    // the "address array"
-    return (&data_address[data_address[REGION_START_INDEX + region] >> 2]);
+    return (address_t) (data_address[REGION_START_INDEX + region]);
 }

@@ -2,24 +2,19 @@ from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
-from spinnman.messages.scp.scp_signal import SCPSignal
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.model.cpu_state import CPUState
 
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 import struct
 
 
 class FrontEndCommonApplicationExiter(object):
-    """
-    FrontEndCommonApplicationExiter
-    """
 
-    def __call__(self, app_id, txrx, executable_targets, no_sync_changes,
-                 has_ran):
+    def __call__(self, app_id, txrx, executable_targets, has_ran):
 
         if not has_ran:
             raise exceptions.ConfigurationException(
@@ -28,28 +23,21 @@ class FrontEndCommonApplicationExiter(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        # reset the state to the old state so that it can be used by the
-        # application runner code
-        if no_sync_changes % 2 == 0:
-            sync_state = SCPSignal.SYNC0
-        else:
-            sync_state = SCPSignal.SYNC1
-
         progress_bar = ProgressBar(
             total_processors,
             "Turning off all the cores within the simulation")
 
         # check that the right number of processors are in sync0
-        processors_cpu_state13 = txrx.get_core_state_count(
-            app_id, CPUState.CPU_STATE_13)
-        finished_cores = processors_cpu_state13
+        processors_finished = txrx.get_core_state_count(
+            app_id, CPUState.FINISHED)
+        finished_cores = processors_finished
 
-        while processors_cpu_state13 != total_processors:
+        while processors_finished != total_processors:
 
-            if processors_cpu_state13 > finished_cores:
+            if processors_finished > finished_cores:
                 progress_bar.update(
-                    finished_cores - processors_cpu_state13)
-                finished_cores = processors_cpu_state13
+                    finished_cores - processors_finished)
+                finished_cores = processors_finished
 
             processors_rte = txrx.get_core_state_count(
                 app_id, CPUState.RUN_TIME_EXCEPTION)
@@ -57,29 +45,24 @@ class FrontEndCommonApplicationExiter(object):
                 app_id, CPUState.WATCHDOG)
 
             if processors_rte > 0 or processors_watchdogged > 0:
-                fail_message = ""
-                if processors_rte > 0:
-                    rte_cores = helpful_functions.get_cores_in_state(
-                        all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-                    fail_message += helpful_functions.get_core_status_string(
-                        rte_cores)
-                if processors_watchdogged > 0:
-                    watchdog_cores = helpful_functions.get_cores_in_state(
-                        all_core_subsets, CPUState.WATCHDOG, txrx)
-                    fail_message += helpful_functions.get_core_status_string(
-                        watchdog_cores)
+                error_cores = helpful_functions.get_cores_in_state(
+                    all_core_subsets,
+                    {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG}, txrx)
+                fail_message = helpful_functions.get_core_status_string(
+                    error_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} of {} processors went into an error state when"
                     " shutting down: {}".format(
                         processors_rte + processors_watchdogged,
-                        total_processors, fail_message))
+                        total_processors, fail_message),
+                    helpful_functions.get_core_subsets(error_cores), True)
 
-            successful_cores_cpu_state13 = set(
+            successful_cores_finished = set(
                 helpful_functions.get_cores_in_state(
-                    all_core_subsets, CPUState.CPU_STATE_13, txrx))
+                    all_core_subsets, CPUState.FINISHED, txrx))
 
             all_cores = set(all_core_subsets)
-            unsuccessful_cores = all_cores - successful_cores_cpu_state13
+            unsuccessful_cores = all_cores - successful_cores_finished
 
             for core_subset in unsuccessful_cores:
                 for processor in core_subset.processor_ids:
@@ -98,9 +81,7 @@ class FrontEndCommonApplicationExiter(object):
                             destination_chip_x=core_subset.x,
                             destination_chip_y=core_subset.y), data=byte_data))
 
-            processors_cpu_state13 = txrx.get_core_state_count(
-                app_id, CPUState.CPU_STATE_13)
-
-        txrx.send_signal(app_id, sync_state)
+            processors_finished = txrx.get_core_state_count(
+                app_id, CPUState.FINISHED)
 
         progress_bar.end()

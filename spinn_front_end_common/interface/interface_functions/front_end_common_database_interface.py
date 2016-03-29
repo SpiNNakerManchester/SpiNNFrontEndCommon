@@ -1,5 +1,5 @@
 # pacman imports
-from pacman.utilities.utility_objs.progress_bar import ProgressBar
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.utilities import helpful_functions
@@ -8,9 +8,6 @@ from spinn_front_end_common.utilities.database.database_writer import \
 
 
 class FrontEndCommonDatabaseInterface(object):
-    """
-    """
-
 
     def __init__(self):
         self._writer = None

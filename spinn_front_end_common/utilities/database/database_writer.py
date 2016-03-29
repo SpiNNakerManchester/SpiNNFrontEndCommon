@@ -1,8 +1,7 @@
 # general imports
-import os
 import logging
 import traceback
-
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +18,10 @@ class DatabaseWriter(object):
         self._database_directory = database_directory
         self._database_path = os.path.join(self._database_directory,
                                            "input_output_database.db")
+
+        # delete any old database
+        if os.path.isfile(self._database_path):
+            os.remove(self._database_path)
 
         # set up checks
         self._machine_id = 0
@@ -327,15 +330,18 @@ class DatabaseWriter(object):
                 "PRIMARY KEY (edge_id, key, mask), "
                 "FOREIGN KEY (edge_id) REFERENCES Partitioned_edges(edge_id))")
 
-            sub_edges = list(partitioned_graph.subedges)
-            for routing_info in routing_infos.all_subedge_info:
-                for key_mask in routing_info.keys_and_masks:
-                    cur.execute(
-                        "INSERT INTO Routing_info("
-                        "edge_id, key, mask) "
-                        "VALUES({}, {}, {})"
-                        .format(sub_edges.index(routing_info.subedge) + 1,
-                                key_mask.key, key_mask.mask))
+            for partition in partitioned_graph.partitions:
+                keys_and_masks = \
+                    routing_infos.get_keys_and_masks_from_partition(partition)
+                sub_edges = partition.edges
+                for sub_edge in sub_edges:
+                    for key_mask in keys_and_masks:
+                        cur.execute(
+                            "INSERT INTO Routing_info("
+                            "edge_id, key, mask) "
+                            "VALUES({}, {}, {})"
+                            .format(sub_edges.index(sub_edge) + 1,
+                                    key_mask.key, key_mask.mask))
             connection.commit()
             connection.close()
         except Exception:
@@ -467,20 +473,18 @@ class DatabaseWriter(object):
             # insert into table
             vertices = list(partitionable_graph.vertices)
             for partitioned_vertex in partitioned_graph.subvertices:
-                out_going_edges = (partitioned_graph
-                                   .outgoing_subedges_from_subvertex(
-                                       partitioned_vertex))
-                if len(out_going_edges) > 0:
-                    routing_info = (routing_infos
-                                    .get_subedge_information_from_subedge(
-                                        out_going_edges[0]))
+                partitions = partitioned_graph.\
+                    outgoing_edges_partitions_from_vertex(partitioned_vertex)
+                for partition in partitions.values():
+                    routing_info = routing_infos.\
+                        get_routing_info_from_partition(partition)
                     vertex = graph_mapper.get_vertex_from_subvertex(
                         partitioned_vertex)
                     vertex_id = vertices.index(vertex) + 1
                     vertex_slice = graph_mapper.get_subvertex_slice(
                         partitioned_vertex)
-                    event_ids = routing_info.get_keys(vertex_slice.n_atoms)
                     low_atom_id = vertex_slice.lo_atom
+                    event_ids = routing_info.get_keys(vertex_slice.n_atoms)
                     for key in event_ids:
                         cur.execute(
                             "INSERT INTO event_to_atom_mapping("

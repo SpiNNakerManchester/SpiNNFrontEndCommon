@@ -12,7 +12,7 @@ from spinn_front_end_common.utilities import exceptions
 import re
 
 
-class FrontEndCommonMachineInterfacer(object):
+class FrontEndCommonMachineGenerator(object):
     """ Interface to make a transceiver and a spinn_machine object
     """
 
@@ -20,7 +20,7 @@ class FrontEndCommonMachineInterfacer(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, number_of_boards, width, height, auto_detect_bmp,
             enable_reinjection, scamp_connection_data, boot_port_num,
-            reset_machine_on_start_up):
+            reset_machine_on_start_up, max_sdram_size=None):
 
         """
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -41,10 +41,13 @@ class FrontEndCommonMachineInterfacer(object):
         :param boot_port_num: the port num used for the boot connection
         :param scamp_connection_data: the list of scamp connection data or\
                None
+        :param max_sdram_size: the maximum SDRAM each chip can say it has
+               (mainly used in debugging purposes)
+        :type max_sdram_size: int or None
         :return: None
         """
 
-        # if the end user gives you scamp data, use it and dont discover them
+        # if the end user gives you scamp data, use it and don't discover them
         if scamp_connection_data is not None:
             scamp_connection_data = \
                 self._sort_out_scamp_connections(scamp_connection_data)
@@ -61,7 +64,8 @@ class FrontEndCommonMachineInterfacer(object):
             version=board_version, ignore_chips=ignored_chips,
             ignore_cores=ignored_cores, number_of_boards=number_of_boards,
             auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
-            scamp_connections=scamp_connection_data)
+            scamp_connections=scamp_connection_data,
+            max_sdram_size=max_sdram_size)
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()
@@ -144,7 +148,7 @@ class FrontEndCommonMachineInterfacer(object):
         :return: the BMP connection data
         """
         bmp_details = list()
-        if bmp_string == "None":
+        if bmp_string is None:
             return bmp_details
 
         for bmp_detail in bmp_string.split(":"):
