@@ -25,7 +25,7 @@ typedef enum eieio_prefix_types {
 
 //! The parameter positions
 typedef enum read_in_parameters{
-    SEND_KEYS, APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, KEY_SPACE, MASK,
+    APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
     BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
 } read_in_parameters;
 
@@ -77,6 +77,7 @@ static uint32_t infinite_run;
 static bool apply_prefix;
 static bool check;
 static uint32_t prefix;
+static bool has_key;
 static uint32_t key_space;
 static uint32_t mask;
 static uint32_t incorrect_keys;
@@ -430,20 +431,23 @@ static inline void process_16_bit_packets(
             " key_space=%d: %d", check, key, mask, key_space,
             (!check) || (check && ((key & mask) == key_space)));
 
-        if (send_keys && (!check || (check && ((key & mask) == key_space)))) {
-            if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                log_debug("mc packet 16-bit key=%d", key);
-                while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
-                    spin1_delay_us(1);
+        if (has_key) {
+            if (!check || (check && ((key & mask) == key_space))) {
+                if (pkt_has_payload && !pkt_payload_is_timestamp) {
+                    log_debug("mc packet 16-bit key=%d", key);
+                    while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                        spin1_delay_us(1);
+                    }
+                } else {
+                    log_debug(
+                        "mc packet 16-bit key=%d, payload=%d", key, payload);
+                    while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                        spin1_delay_us(1);
+                    }
                 }
             } else {
-                log_debug("mc packet 16-bit key=%d, payload=%d", key, payload);
-                while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
-                    spin1_delay_us(1);
-                }
+                incorrect_keys++;
             }
-        } else {
-            incorrect_keys++;
         }
     }
 }
@@ -476,22 +480,23 @@ static inline void process_32_bit_packets(
 
         log_debug("check before send packet: %d",
                   (!check) || (check && ((key & mask) == key_space)));
-
-        if (send_keys && (!check || (check && ((key & mask) == key_space)))) {
-            if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                log_debug("mc packet 32-bit key=0x%08x", key);
-                while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
-                    spin1_delay_us(1);
+        if (has_key){
+            if (!check || (check && ((key & mask) == key_space))) {
+                if (pkt_has_payload && !pkt_payload_is_timestamp) {
+                    log_debug("mc packet 32-bit key=0x%08x", key);
+                    while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                        spin1_delay_us(1);
+                    }
+                } else {
+                    log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
+                              key, payload);
+                    while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                        spin1_delay_us(1);
+                    }
                 }
             } else {
-                log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
-                          key, payload);
-                while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
-                    spin1_delay_us(1);
-                }
+                incorrect_keys++;
             }
-        } else {
-            incorrect_keys++;
         }
     }
 }
@@ -828,11 +833,11 @@ void send_buffer_request_pkt(void) {
 bool read_parameters(address_t region_address) {
 
     // Get the configuration data
-    send_keys = (bool) region_address[SEND_KEYS];
     apply_prefix = region_address[APPLY_PREFIX];
     prefix = region_address[PREFIX];
     prefix_type = (eieio_prefix_types) region_address[PREFIX_TYPE];
     check = region_address[CHECK_KEYS];
+    has_key = region_address[HAS_KEY];
     key_space = region_address[KEY_SPACE];
     mask = region_address[MASK];
     buffer_region_size = region_address[BUFFER_REGION_SIZE];

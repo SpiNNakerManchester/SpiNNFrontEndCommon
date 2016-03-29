@@ -226,6 +226,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
 
+
     @staticmethod
     def n_regions_to_allocate(send_buffering, recording):
         """ Get the number of regions that will be allocated
@@ -377,6 +378,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
+
+
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
             spec.write_value(data=0)
@@ -393,9 +396,16 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         else:
             spec.write_value(data=0)
 
-        # Write key and mask
-        spec.write_value(data=self._virtual_key)
-        spec.write_value(data=self._mask)
+        # Write if you have a key to transmit write it and the mask,
+        # otherwise write flags to fill in space
+        if self._virtual_key is None:
+            spec.write_value(data=0)
+            spec.write_value(data=0)
+            spec.write_value(data=0)
+        else:
+            spec.write_value(data=1)
+            spec.write_value(data=self._virtual_key)
+            spec.write_value(data=self._mask)
 
         # Write send buffer data
         if self._send_buffer_times is not None:
