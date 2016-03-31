@@ -18,8 +18,9 @@ class FrontEndCommonDatabaseInterface(object):
     def __call__(
             self, partitioned_graph, user_create_database, tags,
             runtime, machine, time_scale_factor, machine_time_step,
-            placements, routing_infos, router_tables, execute_mapping,
-            database_directory, partitionable_graph=None, graph_mapper=None):
+            placements, routing_infos, router_tables, database_directory,
+            create_atom_to_event_id_mapping=False, partitionable_graph=None,
+            graph_mapper=None):
 
         self._writer = DatabaseWriter(database_directory)
         self._user_create_database = user_create_database
@@ -57,7 +58,9 @@ class FrontEndCommonDatabaseInterface(object):
             database_progress.update()
             self._writer.add_tags(partitioned_graph, tags)
             database_progress.update()
-            if execute_mapping:
+            if (graph_mapper is not None and
+                    partitionable_graph is not None and
+                    create_atom_to_event_id_mapping):
                 self._writer.create_atom_to_event_id_mapping(
                     graph_mapper=graph_mapper,
                     partitionable_graph=partitionable_graph,

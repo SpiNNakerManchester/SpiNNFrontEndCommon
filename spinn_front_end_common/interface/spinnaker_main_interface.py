@@ -23,8 +23,6 @@ from spinn_front_end_common.interface.buffer_management\
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-from spinn_front_end_common.utilities.utility_objs.executable_finder\
-    import ExecutableFinder
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
 from spinn_front_end_common.abstract_models.abstract_changable_after_run \
@@ -43,31 +41,25 @@ import traceback
 
 logger = logging.getLogger(__name__)
 
-executable_finder = ExecutableFinder()
-
 
 class SpinnakerMainInterface(object):
     """ Main interface into the tools logic flow
     """
 
     def __init__(
-            self, this_config, version, this_executable_finder,
-            host_name=None, graph_label=None,
-            database_socket_addresses=None,
-            extra_algorithm_xml_paths=None,
+            self, config, executable_finder, graph_label=None,
+            database_socket_addresses=None, extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
             extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-            extra_provenance_algorithms=None):
+            n_chips_required=None):
 
         # global params
-        global config
-        config = this_config
+        self._config = config
 
-        global executable_finder
-        executable_finder = this_executable_finder
+        self._executable_finder = executable_finder
 
-        self._hostname = host_name
-        self._version = version
+        self._n_chips_required = None
+        self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
         self._machine_allocation_controller = None
@@ -90,6 +82,7 @@ class SpinnakerMainInterface(object):
         self._ip_address = None
 
         # pacman executor objects
+        self._machine_outputs = None
         self._mapping_outputs = None
         self._load_outputs = None
         self._last_run_outputs = None
@@ -98,11 +91,18 @@ class SpinnakerMainInterface(object):
 
         # extra algorithms and inputs for runs, should disappear in future
         #  releases
-        self._extra_mapping_algorithms = list(extra_mapping_algorithms)
-        self._extra_mapping_inputs = dict(extra_mapping_inputs)
-        self._extra_pre_run_algorithms = list(extra_pre_run_algorithms)
-        self._extra_post_run_algorithms = list(extra_post_run_algorithms)
-        self._extra_provenance_algorithms = list(extra_provenance_algorithms)
+        self._extra_mapping_algorithms = list()
+        if extra_mapping_algorithms is not None:
+            self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
+        self._extra_mapping_inputs = dict()
+        if extra_mapping_inputs is not None:
+            self._extra_mapping_inputs.update(extra_mapping_inputs)
+        self._extra_pre_run_algorithms = list()
+        if extra_pre_run_algorithms is not None:
+            self._extra_pre_run_algorithms.extend(extra_pre_run_algorithms)
+        self._extra_post_run_algorithms = list()
+        if extra_post_run_algorithms is not None:
+            self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
 
         self._dsg_algorithm = \
             "FrontEndCommonPartitionableGraphDataSpecificationWriter"
@@ -114,7 +114,7 @@ class SpinnakerMainInterface(object):
         # database objects
         self._database_socket_addresses = set()
         if database_socket_addresses is not None:
-            self._database_socket_addresses.union(database_socket_addresses)
+            self._database_socket_addresses.update(database_socket_addresses)
         self._database_interface = None
         self._create_database = None
         self._database_file_path = None
@@ -129,23 +129,23 @@ class SpinnakerMainInterface(object):
         self._machine_time_step = None
         self._time_scale_factor = None
 
-        self._app_id = config.getint("Machine", "appID")
+        self._app_id = self._config.getint("Machine", "appID")
 
         # set up reports default folder
         self._report_default_directory, this_run_time_string = \
             helpful_functions.set_up_report_specifics(
-                default_report_file_path=config.get(
+                default_report_file_path=self._config.get(
                     "Reports", "defaultReportFilePath"),
-                max_reports_kept=config.getint(
+                max_reports_kept=self._config.getint(
                     "Reports", "max_reports_kept"),
                 app_id=self._app_id)
 
         # set up application report folder
         self._app_data_runtime_folder = \
             helpful_functions.set_up_output_application_data_specifics(
-                max_application_binaries_kept=config.getint(
+                max_application_binaries_kept=self._config.getint(
                     "Reports", "max_application_binaries_kept"),
-                where_to_write_application_data_files=config.get(
+                where_to_write_application_data_files=self._config.get(
                     "Reports", "defaultApplicationDataFilePath"),
                 app_id=self._app_id,
                 this_run_time_string=this_run_time_string)
@@ -162,19 +162,21 @@ class SpinnakerMainInterface(object):
             os.makedirs(self._provenance_file_path)
 
         # timing provenance elements
-        self._do_timings = config.getboolean(
+        self._do_timings = self._config.getboolean(
             "Reports", "writeAlgorithmTimings")
-        self._print_timings = config.getboolean(
+        self._print_timings = self._config.getboolean(
             "Reports", "display_algorithm_timings")
-        self._provenance_format = config.get("Reports", "provenance_format")
+        self._provenance_format = self._config.get(
+            "Reports", "provenance_format")
         if self._provenance_format not in ["xml", "json"]:
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
-        self._exec_dse_on_host = config.getboolean(
+        self._exec_dse_on_host = self._config.getboolean(
             "SpecExecution", "specExecOnHost")
 
         # set up machine targeted data
-        self._use_virtual_board = config.getboolean("Machine", "virtual_board")
+        self._use_virtual_board = self._config.getboolean(
+            "Machine", "virtual_board")
 
         # log app id to end user
         logger.info("Setting appID to %d." % self._app_id)
@@ -188,7 +190,7 @@ class SpinnakerMainInterface(object):
         if hostname is not None:
             self._hostname = hostname
             logger.warn("The machine name from setup call is overriding the "
-                        "machine name defined in the spynnaker.cfg file")
+                        "machine name defined in the config file")
         else:
             self._hostname = self._read_config("Machine", "machineName")
             self._spalloc_server = self._read_config(
@@ -252,10 +254,17 @@ class SpinnakerMainInterface(object):
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
+
+            # Reset the partitioned graph if there is a partitionable graph
+            if len(self._partitionable_graph.vertices) > 0:
+                self._partitioned_graph = PartitionedGraph()
+                self._graph_mapper = None
+            if self._machine is None:
+                self._get_machine()
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Work out an array of timesteps to perform
-        if not config.getboolean("Buffers", "use_auto_pause_and_resume"):
+        if not self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
 
             # Not currently possible to run the second time for more than the
             # first time without auto pause and resume
@@ -388,6 +397,201 @@ class SpinnakerMainInterface(object):
                         "is not currently supported")
         return total_run_timesteps
 
+    def _run_machine_algorithms(self, inputs, algorithms, outputs):
+
+        # Execute the algorithms
+        executor = PACMANAlgorithmExecutor(
+            algorithms, [], inputs, self._xml_paths, outputs, self._do_timings,
+            self._print_timings)
+        executor.execute_mapping()
+        self._machine_outputs = executor.get_items()
+        self._pacman_provenance.extract_provenance(executor)
+        return executor
+
+    def _get_machine(self):
+        if self._machine is not None:
+            return self._machine
+
+        inputs = dict()
+        algorithms = list()
+        outputs = list()
+
+        # add reinjection flag
+        inputs["EnableReinjectionFlag"] = self._config.getboolean(
+            "Machine", "enable_reinjection")
+
+        # add max sdram size which we're going to allow (debug purposes)
+        inputs["MaxSDRAMSize"] = self._read_config_int(
+            "Machine", "max_sdram_allowed_per_chip")
+
+        # If we are using a directly connected machine, add the details to get
+        # the machine and transceiver
+        if self._hostname is not None:
+            inputs["IPAddress"] = self._hostname
+            inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
+            inputs["DownedChipsDetails"] = self._config.get(
+                "Machine", "down_chips")
+            inputs["DownedCoresDetails"] = self._config.get(
+                "Machine", "down_cores")
+            inputs["AutoDetectBMPFlag"] = self._config.getboolean(
+                "Machine", "auto_detect_bmp")
+            inputs["ScampConnectionData"] = self._read_config(
+                "Machine", "scamp_connections_data")
+            inputs["BootPortNum"] = self._read_config_int(
+                "Machine", "boot_connection_port_num")
+            inputs["BoardVersion"] = self._read_config_int(
+                "Machine", "version")
+            inputs["NumberOfBoards"] = self._read_config_int(
+                "Machine", "number_of_boards")
+            inputs["MachineWidth"] = self._read_config_int(
+                "Machine", "width")
+            inputs["MachineHeight"] = self._read_config_int(
+                "Machine", "height")
+            inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
+                "Machine", "reset_machine_on_startup")
+
+            algorithms.append("FrontEndCommonMachineGenerator")
+            algorithms.append("MallocBasedChipIDAllocator")
+
+            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryTransceiver")
+
+            executor = self._run_machine_algorithms(
+                inputs, algorithms, outputs)
+            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._txrx = executor.get_item("MemoryTransceiver")
+
+        if self._use_virtual_board:
+            inputs["IPAddress"] = "virtual"
+            inputs["BoardVersion"] = self._read_config_int(
+                "Machine", "version")
+            inputs["NumberOfBoards"] = self._read_config_int(
+                "Machine", "number_of_boards")
+            inputs["MachineWidth"] = self._read_config_int(
+                "Machine", "width")
+            inputs["MachineHeight"] = self._read_config_int(
+                "Machine", "height")
+            inputs["MemoryTransceiver"] = None
+            if self._config.getboolean("Machine", "enable_reinjection"):
+                inputs["CPUsPerVirtualChip"] = 15
+            else:
+                inputs["CPUsPerVirtualChip"] = 16
+
+            algorithms.append("FrontEndCommonVirtualMachineGenerator")
+            algorithms.append("MallocBasedChipIDAllocator")
+
+            outputs.append("MemoryExtendedMachine")
+
+            executor = self._run_machine_algorithms(
+                inputs, algorithms, outputs)
+            self._machine = executor.get_item("MemoryExtendedMachine")
+
+        if (self._spalloc_server is not None or
+                self._remote_spinnaker_url is not None):
+
+            need_virtual_board = False
+
+            # if using spalloc system
+            if self._spalloc_server is not None:
+                inputs["SpallocServer"] = self._spalloc_server
+                inputs["SpallocPort"] = self._read_config_int(
+                    "Machine", "spalloc_port")
+                inputs["SpallocUser"] = self._read_config(
+                    "Machine", "spalloc_user")
+                if self._n_chips_required is None:
+                    algorithms.append(
+                        "FrontEndCommonSpallocMaxMachineGenerator")
+                    need_virtual_board = True
+
+            # if using HBP server system
+            if self._remote_spinnaker_url is not None:
+                inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
+                if self._n_chips_required is None:
+                    algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
+                    need_virtual_board = True
+
+            if (len(self._partitionable_graph.vertices) == 0 and
+                    len(self._partitioned_graph.subvertices) == 0 and
+                    need_virtual_board):
+                raise common_exceptions.ConfigurationException(
+                    "A allocated machine has been requested but there are no"
+                    " partitioned or partitionable vertices to work out the"
+                    " size of the machine required and n_chips_required"
+                    " has not been set")
+
+            if self._config.getboolean("Machine", "enable_reinjection"):
+                inputs["CPUsPerVirtualChip"] = 15
+            else:
+                inputs["CPUsPerVirtualChip"] = 16
+
+            do_partitioning = False
+            if need_virtual_board:
+                algorithms.append("FrontEndCommonVirtualMachineGenerator")
+                algorithms.append("MallocBasedChipIDAllocator")
+
+                # If we are using an allocation server, and we need a virtual
+                # board, we need to use the virtual board to get the number of
+                # chips to be allocated either by partitioning, or by measuring
+                # the graph
+                if len(self._partitionable_graph.vertices) != 0:
+                    inputs["MemoryPartitionableGraph"] = \
+                        self._partitionable_graph
+                    algorithms.extend(self._config.get(
+                        "Mapping",
+                        "partitionable_to_partitioned_algorithms").split(","))
+                    outputs.append("MemoryPartitionedGraph")
+                    outputs.append("MemoryGraphMapper")
+                    do_partitioning = True
+                elif len(self._partitioned_graph.subvertices) != 0:
+                    inputs["MemoryPartitionedGraph"] = self._partitioned_graph
+                    algorithms.append("FrontEndCommonPartitionedGraphMeasurer")
+            else:
+
+                # If we are using an allocation server but have been told how
+                # many chips to use, just use that as an input
+                inputs["NChipsRequired"] = self._n_chips_required
+
+            if self._spalloc_server is not None:
+                algorithms.append("FrontEndCommonSpallocAllocator")
+            elif self._remote_spinnaker_url is not None:
+                algorithms.append("FrontEndCommonHBPAllocator")
+            algorithms.append("FrontEndCommonMachineGenerator")
+            algorithms.append("MallocBasedChipIDAllocator")
+
+            outputs.append("MemoryExtendedMachine")
+            outputs.append("IPAddress")
+            outputs.append("MemoryTransceiver")
+            outputs.append("MachineAllocationController")
+
+            executor = self._run_machine_algorithms(
+                inputs, algorithms, outputs)
+
+            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._ip_address = executor.get_item("IPAddress")
+            self._txrx = executor.get_item("MemoryTransceiver")
+            self._machine_allocation_controller = executor.get_item(
+                "MachineAllocationController")
+
+            if do_partitioning:
+                self._partitioned_graph = executor.get_item(
+                    "MemoryPartitionedGraph")
+                self._graph_mapper = executor.get_item(
+                    "MemoryGraphMapper")
+
+        return self._machine
+
+    def generate_file_machine(self):
+        inputs = {
+            "MemoryExtendedMachine": self.machine,
+            "FileMachineFilePath": os.path.join(
+                self._json_folder, "machine.json")
+        }
+        outputs = ["FileMachine"]
+        executor = PACMANAlgorithmExecutor(
+            [], [], inputs, self._xml_paths, outputs, self._do_timings,
+            self._print_timings)
+        executor.execute_mapping()
+
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
 
         # Set the initial n_machine_time_steps to all of them for mapping
@@ -397,46 +601,47 @@ class SpinnakerMainInterface(object):
         self._update_n_machine_time_steps(n_machine_time_steps)
 
         # update inputs with extra mapping inputs if required
+        inputs = dict(self._machine_outputs)
         if self._extra_mapping_inputs is not None:
-            inputs = dict(self._extra_mapping_inputs)
-        else:
-            inputs = dict()
+            inputs.update(self._extra_mapping_inputs)
 
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
-        inputs["PostSimulationOverrunBeforeError"] = config.getint(
+        inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if len(self.partitionable_graph.vertices) != 0:
+        if len(self._partitionable_graph.vertices) > 0:
             inputs["MemoryPartitionableGraph"] = self._partitionable_graph
-        elif len(self._partitioned_graph.subvertices) != 0:
+        elif len(self._partitioned_graph.subvertices) > 0:
             inputs['MemoryPartitionedGraph'] = self._partitioned_graph
+            if self._graph_mapper is not None:
+                inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
             raise common_exceptions.ConfigurationException(
                 "There needs to be a graph which contains at least one vertex"
-                " for the tool chain to map anything. ")
+                " for the tool chain to map anything.")
 
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["APPID"] = self._app_id
-        inputs["DSEAppID"] = config.getint("Machine", "DSEAppID")
+        inputs["DSEAppID"] = self._config.getint("Machine", "DSEAppID")
         inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
         inputs["TimeScaleFactor"] = self._time_scale_factor
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["DatabaseSocketAddresses"] = self._database_socket_addresses
-        inputs["DatabaseWaitOnConfirmationFlag"] = config.getboolean(
+        inputs["DatabaseWaitOnConfirmationFlag"] = self._config.getboolean(
             "Database", "wait_on_confirmation")
-        inputs["WriteCheckerFlag"] = config.getboolean(
+        inputs["WriteCheckerFlag"] = self._config.getboolean(
             "Mode", "verify_writes")
-        inputs["WriteTextSpecsFlag"] = config.getboolean(
+        inputs["WriteTextSpecsFlag"] = self._config.getboolean(
             "Reports", "writeTextSpecs")
-        inputs["ExecutableFinder"] = executable_finder
+        inputs["ExecutableFinder"] = self._executable_finder
         inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
             "Machine", "requires_wrap_arounds")
-        inputs["UserCreateDatabaseFlag"] = config.get(
+        inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
-        inputs["SendStartNotifications"] = config.getboolean(
+        inputs["SendStartNotifications"] = self._config.getboolean(
             "Database", "send_start_notification")
 
         # add paths for each file based version
@@ -461,80 +666,64 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
-        # handle algorithms and inputs for finding machine
-        self._generate_inputs_and_algorithms_for_getting_machine(
-            algorithms, inputs)
-
         # Add reports
-        if config.getboolean("Reports", "reportsEnabled"):
-            if config.getboolean("Reports", "writeTagAllocationReports"):
+        if self._config.getboolean("Reports", "reportsEnabled"):
+            if self._config.getboolean("Reports", "writeTagAllocationReports"):
                 algorithms.append("TagReport")
-            if config.getboolean("Reports", "writeRouterInfoReport"):
+            if self._config.getboolean("Reports", "writeRouterInfoReport"):
                 algorithms.append("routingInfoReports")
-            if config.getboolean("Reports", "writeRouterReports"):
+            if self._config.getboolean("Reports", "writeRouterReports"):
                 algorithms.append("RouterReports")
-            if config.getboolean("Reports", "writeRoutingTableReports"):
+            if self._config.getboolean("Reports", "writeRoutingTableReports"):
                 algorithms.append("unCompressedRoutingTableReports")
                 algorithms.append("compressedRoutingTableReports")
                 algorithms.append("comparisonOfRoutingTablesReport")
 
             # only add partitioner report if using a partitionable graph
-            if (config.getboolean("Reports", "writePartitionerReports") and
+            if (self._config.getboolean(
+                    "Reports", "writePartitionerReports") and
                     len(self._partitionable_graph.vertices) != 0):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with partitionable graph when
             # there's partitionable vertices
-            if (config.getboolean(
+            if (self._config.getboolean(
                     "Reports", "writePlacerReportWithPartitionable") and
                     len(self._partitionable_graph.vertices) != 0):
                 algorithms.append("PlacerReportWithPartitionableGraph")
 
-            if config.getboolean(
+            if self._config.getboolean(
                     "Reports", "writePlacerReportWithoutPartitionable"):
                 algorithms.append("PlacerReportWithoutPartitionableGraph")
 
             # only add network specification partitionable report if there's
             # partitionable vertices.
-            if (config.getboolean(
+            if (self._config.getboolean(
                     "Reports", "writeNetworkSpecificationReport") and
                     len(self._partitionable_graph.vertices) != 0):
                 algorithms.append(
                     "FrontEndCommonNetworkSpecificationPartitionableReport")
 
-        # only add the partitioner if there is a partitionable graph to use.
-        if len(self._partitionable_graph.vertices) != 0:
-            algorithms.extend(config.get(
+        # only add the partitioner if there isn't already a partitioned graph
+        if (len(self._partitionable_graph.vertices) > 0 and
+                len(self._partitioned_graph.subvertices) == 0):
+            algorithms.extend(self._config.get(
                 "Mapping",
                 "partitionable_to_partitioned_algorithms").split(","))
 
-        # If using an allocator, we will need to do chip allocation again
-        # after partitioning
-        if not self._use_virtual_board:
-            algorithms.append("MallocBasedChipIDAllocator")
-
-        algorithms.extend(config.get(
+        algorithms.extend(self._config.get(
             "Mapping", "partitioned_to_machine_algorithms").split(","))
 
         # decide upon the outputs depending upon if there is a
         # partitionable graph that has vertices added to it.
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
-            "MemoryTags", "MemoryPartitionedGraph", "MemoryMachine",
-            "MemoryRoutingInfos"
+            "MemoryTags", "MemoryRoutingInfos"
         ]
-        if len(self._partitionable_graph.vertices) != 0:
+        if len(self._partitionable_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
-
-        # if not using a virtual board, need the spinnman interface
-        # and ip-address
-        if not self._use_virtual_board:
-            outputs.append("MemoryTransceiver")
-            outputs.append("IPAddress")
-        if (self._machine_allocation_controller is None and (
-                self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None)):
-            outputs.append("MachineAllocationController")
+        if len(self._partitioned_graph.subvertices) == 0:
+            outputs.append("MemoryPartitionedGraph")
 
         # Execute the mapping algorithms
         executor = PACMANAlgorithmExecutor(
@@ -545,109 +734,17 @@ class SpinnakerMainInterface(object):
         self._pacman_provenance.extract_provenance(executor)
 
         # Get the outputs needed
-        if not self._use_virtual_board:
-            self._txrx = executor.get_item("MemoryTransceiver")
-            self._ip_address = executor.get_item("IPAddress")
         self._placements = executor.get_item("MemoryPlacements")
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
-        self._graph_mapper = executor.get_item("MemoryGraphMapper")
-        self._partitioned_graph = executor.get_item("MemoryPartitionedGraph")
-        self._machine = executor.get_item("MemoryMachine")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
 
-        if (self._machine_allocation_controller is None and (
-                self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None)):
-            self._machine_allocation_controller = executor.get_item(
-                "MachineAllocationController")
-
-    def _generate_inputs_and_algorithms_for_getting_machine(
-            self, algorithms, inputs):
-
-        # general machine inputs
-        inputs["ResetMachineOnStartupFlag"] = config.getboolean(
-            "Machine", "reset_machine_on_startup")
-
-        # add reinjection flag
-        inputs["EnableReinjectionFlag"] = config.getboolean(
-            "Machine", "enable_reinjection")
-
-        # add max sdram size which we're going to allow (debug purposes)
-        inputs["MaxSDRAMSize"] = self._read_config_int(
-            "Machine", "max_sdram_allowed_per_chip")
-
-        # if using spalloc system
-        if self._spalloc_server is not None:
-            inputs["SpallocServer"] = self._spalloc_server
-            inputs["SpallocPort"] = self._read_config_int(
-                "Machine", "spalloc_port")
-            inputs["SpallocUser"] = self._read_config(
-                "Machine", "spalloc_user")
-
-        # if using HBP server system
-        if self._remote_spinnaker_url is not None:
-            inputs["RemoteSpinnakerUrl"] = self._remote_spinnaker_url
-
-        # Handle virtual machine, which will also be needed if an allocation
-        # server is to be used
-        if (self._machine is None and self._txrx is None and (
-                self._use_virtual_board or self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None)):
-            if self._spalloc_server is not None:
-                algorithms.append("FrontEndCommonSpallocMaxMachineGenerator")
-            elif self._remote_spinnaker_url is not None:
-                algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
-            algorithms.append("FrontEndCommonVirtualMachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
-            if config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
-
-        # If we haven't run before, and we are using a directly connected
-        # machine, add the details to get the machine and transceiver
-        if (self._machine is None and self._txrx is None and
-                self._hostname is not None):
-            inputs["IPAddress"] = self._hostname
-            inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            inputs["DownedChipsDetails"] = config.get("Machine", "down_chips")
-            inputs["DownedCoresDetails"] = config.get("Machine", "down_cores")
-            inputs["AutoDetectBMPFlag"] = config.getboolean(
-                "Machine", "auto_detect_bmp")
-            inputs["ScampConnectionData"] = self._read_config(
-                "Machine", "scamp_connections_data")
-            inputs["BootPortNum"] = self._read_config_int(
-                "Machine", "boot_connection_port_num")
-            self._add_general_machine_inputs(inputs)
-
-        # Only do allocation or generate a machine if not virtual
-        if not self._use_virtual_board:
-            if self._machine is None and self._txrx is None:
-                if self._spalloc_server is not None:
-                    algorithms.append("FrontEndCommonSpallocAllocator")
-                elif self._remote_spinnaker_url is not None:
-                    algorithms.append("FrontEndCommonHBPAllocator")
-
-                algorithms.append("FrontEndCommonMachineGenerator")
-            else:
-                inputs["MemoryMachine"] = self._machine
-                inputs["MemoryTransceiver"] = self._txrx
-                inputs["IPAddress"] = self._ip_address
-        else:
-            inputs["IPAddress"] = "virtual"
-            self._add_general_machine_inputs(inputs)
-            inputs["MemoryTransceiver"] = None
-
-    def _add_general_machine_inputs(self, inputs):
-        inputs["BoardVersion"] = self._read_config_int(
-            "Machine", "version")
-        inputs["NumberOfBoards"] = self._read_config_int(
-            "Machine", "number_of_boards")
-        inputs["MachineWidth"] = self._read_config_int(
-            "Machine", "width")
-        inputs["MachineHeight"] = self._read_config_int(
-            "Machine", "height")
+        if (len(self._partitionable_graph.vertices) > 0 and
+                self._graph_mapper is None):
+            self._graph_mapper = executor.get_item("MemoryGraphMapper")
+        if len(self._partitioned_graph.subvertices) == 0:
+            self._partitioned_graph = executor.get_item(
+                "MemoryPartitionedGraph")
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -672,8 +769,8 @@ class SpinnakerMainInterface(object):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         inputs["WriteMemoryMapReportFlag"] = (
-            config.getboolean("Reports", "reportsEnabled") and
-            config.getboolean("Reports", "writeMemoryMapReport")
+            self._config.getboolean("Reports", "reportsEnabled") and
+            self._config.getboolean("Reports", "writeMemoryMapReport")
         )
 
         algorithms = list()
@@ -683,13 +780,13 @@ class SpinnakerMainInterface(object):
         if self._exec_dse_on_host:
             optional_algorithms.append(
                 "FrontEndCommonHostExecuteDataSpecification")
-            if config.getboolean("Reports", "writeMemoryMapReport"):
+            if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnHostReport")
         else:
             optional_algorithms.append(
                 "FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
-            if config.getboolean("Reports", "writeMemoryMapReport"):
+            if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
         optional_algorithms.append("FrontEndCommonLoadExecutableImages")
@@ -745,8 +842,8 @@ class SpinnakerMainInterface(object):
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
             inputs["WriteReloadFilesFlag"] = (
-                config.getboolean("Reports", "reportsEnabled") and
-                config.getboolean("Reports", "writeReloadSteps")
+                self._config.getboolean("Reports", "reportsEnabled") and
+                self._config.getboolean("Reports", "writeReloadSteps")
             )
             algorithms.append("FrontEndCommonBufferManagerCreator")
         else:
@@ -756,10 +853,11 @@ class SpinnakerMainInterface(object):
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
 
         # Add the database writer in case it is needed
+        algorithms.append("FrontEndCommonDatabaseInterface")
         algorithms.append("FrontEndCommonNotificationProtocol")
 
         # Sort out reload if needed
-        if config.getboolean("Reports", "writeReloadSteps"):
+        if self._config.getboolean("Reports", "writeReloadSteps"):
             if not self._has_ran:
                 algorithms.append("FrontEndCommonReloadScriptCreator")
                 if self._use_virtual_board:
@@ -819,8 +917,8 @@ class SpinnakerMainInterface(object):
         self._has_ran = True
 
     def _extract_provenance(self):
-        if (config.get("Reports", "reportsEnabled") and
-                config.get("Reports", "writeProvenanceData") and
+        if (self._config.get("Reports", "reportsEnabled") and
+                self._config.get("Reports", "writeProvenanceData") and
                 not self._use_virtual_board):
 
             if (self._last_run_outputs is not None and
@@ -829,10 +927,7 @@ class SpinnakerMainInterface(object):
                 algorithms = list()
                 outputs = list()
 
-                # add extra algorithms as requested
-                if self._extra_provenance_algorithms is not None:
-                    algorithms.extend(self._extra_provenance_algorithms)
-
+                algorithms.append("FrontEndCommonGraphProvenanceGatherer")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
                 algorithms.append("FrontEndCommonRouterProvenanceGatherer")
                 outputs.append("ProvenanceItems")
@@ -918,7 +1013,7 @@ class SpinnakerMainInterface(object):
                 executor.get_item("WarnMessages"))
 
     def _extract_iobuf(self):
-        if (config.getboolean("Reports", "extract_iobuf") and
+        if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._last_run_outputs is not None and
                 not self._use_virtual_board):
             inputs = self._last_run_outputs
@@ -981,11 +1076,10 @@ class SpinnakerMainInterface(object):
         # know to update the vertices which need to know a reset has occurred
         self._has_reset_last = True
 
-    @staticmethod
-    def _create_xml_paths(extra_algorithm_xml_paths):
+    def _create_xml_paths(self, extra_algorithm_xml_paths):
 
         # add the extra xml files from the config file
-        xml_paths = config.get("Mapping", "extra_xmls_paths")
+        xml_paths = self._config.get("Mapping", "extra_xmls_paths")
         if xml_paths == "None":
             xml_paths = list()
         else:
@@ -1054,7 +1148,7 @@ class SpinnakerMainInterface(object):
 
         :rtype: :py:class:`spinn_machine.machine.Machine`
         """
-        return self._machine
+        return self._get_machine()
 
     @property
     def no_machine_time_steps(self):
@@ -1195,7 +1289,8 @@ class SpinnakerMainInterface(object):
         :return: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if len(self._partitioned_graph.subvertices) > 0:
+        if (len(self._partitioned_graph.subvertices) > 0 and
+                self._graph_mapper is None):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the partitioned and partitionable"
                 " graphs")
@@ -1253,15 +1348,15 @@ class SpinnakerMainInterface(object):
         if not self._use_virtual_board:
 
             if turn_off_machine is None:
-                turn_off_machine = config.getboolean(
+                turn_off_machine = self._config.getboolean(
                     "Machine", "turn_off_machine")
 
             if clear_routing_tables is None:
-                clear_routing_tables = config.getboolean(
+                clear_routing_tables = self._config.getboolean(
                     "Machine", "clear_routing_tables")
 
             if clear_tags is None:
-                clear_tags = config.getboolean("Machine", "clear_tags")
+                clear_tags = self._config.getboolean("Machine", "clear_tags")
 
             if self._txrx is not None:
 
@@ -1341,9 +1436,8 @@ class SpinnakerMainInterface(object):
             if item.report:
                 logger.warn(item.message)
 
-    @staticmethod
-    def _read_config(section, item):
-        value = config.get(section, item)
+    def _read_config(self, section, item):
+        value = self._config.get(section, item)
         if value == "None":
             return None
         return value

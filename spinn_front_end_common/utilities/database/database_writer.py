@@ -446,6 +446,8 @@ class DatabaseWriter(object):
                 "PRIMARY KEY (edge_id, key, mask), "
                 "FOREIGN KEY (edge_id) REFERENCES Partitioned_edges(edge_id))")
 
+            all_subedges = list(partitioned_graph.subedges)
+
             for partition in partitioned_graph.partitions:
                 keys_and_masks = \
                     routing_infos.get_keys_and_masks_from_partition(partition)
@@ -456,7 +458,7 @@ class DatabaseWriter(object):
                             "INSERT INTO Routing_info("
                             "edge_id, key, mask) "
                             "VALUES({}, {}, {})"
-                            .format(sub_edges.index(sub_edge) + 1,
+                            .format(all_subedges.index(sub_edge) + 1,
                                     key_mask.key, key_mask.mask))
             connection.commit()
             connection.close()

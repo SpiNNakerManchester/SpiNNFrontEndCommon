@@ -129,7 +129,8 @@ class LivePacketGather(
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
-            self._number_of_packets_sent_per_time_step, constraints)
+            self._number_of_packets_sent_per_time_step,
+            constraints=constraints)
 
     @property
     def model_name(self):
