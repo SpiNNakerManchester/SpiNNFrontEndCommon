@@ -640,7 +640,8 @@ class SpinnakerMainInterface(object):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if len(self._partitionable_graph.vertices) > 0:
+        if (len(self._partitionable_graph.vertices) > 0 and
+                self._graph_mapper is None):
             inputs["MemoryPartitionableGraph"] = self._partitionable_graph
         elif len(self._partitioned_graph.subvertices) > 0:
             inputs['MemoryPartitionedGraph'] = self._partitioned_graph
@@ -747,12 +748,9 @@ class SpinnakerMainInterface(object):
         # partitionable graph that has vertices added to it.
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
-            "MemoryTags", "MemoryRoutingInfos"
+            "MemoryTags", "MemoryRoutingInfos", "MemoryGraphMapper",
+            "MemoryPartitionedGraph"
         ]
-        if len(self._partitionable_graph.vertices) > 0:
-            outputs.append("MemoryGraphMapper")
-        if len(self._partitioned_graph.subvertices) == 0:
-            outputs.append("MemoryPartitionedGraph")
 
         # Execute the mapping algorithms
         executor = PACMANAlgorithmExecutor(
@@ -767,13 +765,8 @@ class SpinnakerMainInterface(object):
         self._router_tables = executor.get_item("MemoryRoutingTables")
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
-
-        if (len(self._partitionable_graph.vertices) > 0 and
-                self._graph_mapper is None):
-            self._graph_mapper = executor.get_item("MemoryGraphMapper")
-        if len(self._partitioned_graph.subvertices) == 0:
-            self._partitioned_graph = executor.get_item(
-                "MemoryPartitionedGraph")
+        self._graph_mapper = executor.get_item("MemoryGraphMapper")
+        self._partitioned_graph = executor.get_item("MemoryPartitionedGraph")
 
     def _do_data_generation(self, n_machine_time_steps):
 
