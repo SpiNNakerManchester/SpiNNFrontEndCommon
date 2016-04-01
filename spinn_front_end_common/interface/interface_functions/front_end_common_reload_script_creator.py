@@ -27,7 +27,8 @@ class FrontEndCommonReloadScriptCreator(object):
 
             # Execute information
             executable_targets, app_id, runtime, time_scale_factor,
-            total_machine_timesteps, executable_finder, time_threshold):
+            total_machine_timesteps, executable_finder, time_threshold
+    ):
 
         reload_script = ReloadScript(
 

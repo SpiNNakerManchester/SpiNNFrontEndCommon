@@ -11,7 +11,7 @@ from spinn_front_end_common.utilities import exceptions
 import struct
 
 
-class FrontEndCommonRuntimeUpdater(object):
+class FrontEndCommonChipRuntimeUpdater(object):
     """ Updates the runtime of an application running on a spinnaker machine
     """
 

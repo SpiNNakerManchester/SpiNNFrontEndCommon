@@ -58,7 +58,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                ('RECORDING_BUFFER_STATE', 4),
                ('PROVENANCE_REGION', 5)])
 
-    _CONFIGURATION_REGION_SIZE = 36
+    _CONFIGURATION_REGION_SIZE = 40
 
     def __init__(
             self, n_keys, resources_required, machine_time_step,
@@ -173,6 +173,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         # Set up for recording (if requested)
         self._record_buffer_size = 0
         self._buffer_size_before_receive = 0
+
+        # set flag for checking if in injection mode
+        self._in_injection_mode = receive_port is not None
 
         # Sort out the keys to be used
         self._n_keys = n_keys
@@ -382,9 +385,16 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         else:
             spec.write_value(data=0)
 
-        # Write key and mask
-        spec.write_value(data=self._virtual_key)
-        spec.write_value(data=self._mask)
+        # Write if you have a key to transmit write it and the mask,
+        # otherwise write flags to fill in space
+        if self._virtual_key is None:
+            spec.write_value(data=0)
+            spec.write_value(data=0)
+            spec.write_value(data=0)
+        else:
+            spec.write_value(data=1)
+            spec.write_value(data=self._virtual_key)
+            spec.write_value(data=self._mask)
 
         # Write send buffer data
         if self._send_buffer_times is not None:
@@ -463,3 +473,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     @property
     def mask(self):
         return self._mask
+
+    @property
+    def is_in_injection_mode(self):
+        return self._in_injection_mode

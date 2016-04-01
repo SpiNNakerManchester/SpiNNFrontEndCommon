@@ -12,7 +12,7 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 import struct
 
 
-class FrontEndCommonApplicationExiter(object):
+class FrontEndCommonApplicationFinisher(object):
 
     def __call__(self, app_id, txrx, executable_targets, has_ran):
 

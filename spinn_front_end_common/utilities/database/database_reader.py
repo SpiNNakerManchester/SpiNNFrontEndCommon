@@ -57,12 +57,12 @@ class DatabaseReader(object):
         return atom_to_event_id_mapping
 
     def get_live_output_details(self, label, receiver_label):
-        """ Get the ip address, port and whether the sdp headers are to be\
+        """ Get the ip address, port and whether the SDP headers are to be\
             stripped from the output from a vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: tuple of (ip address, port, strip sdp)
+        :return: tuple of (ip address, port, strip SDP)
         :rtype: (str, int, bool)
         """
         self._cursor.execute(
@@ -100,6 +100,74 @@ class DatabaseReader(object):
             " WHERE partitionable.vertex_label=\"{}\"".format(label))
         row = self._cursor.fetchone()
         return row["board_address"], row["port"]
+
+    def get_partitioned_live_output_details(self, label, receiver_label):
+        """ Get the ip address, port and whether the SDP headers are to be\
+            stripped from the output from a partitioned vertex
+
+        :param label: The label of the vertex
+        :type label: str
+        :return: tuple of (ip address, port, strip SDP)
+        :rtype: (str, int, bool)
+        """
+        self._cursor.execute(
+            "SELECT * FROM IP_tags as tag"
+            " JOIN Partitioned_vertices as post_vertices"
+            " ON tag.vertex_id == post_vertices.vertex_id"
+            " JOIN Partitioned_edges as edges"
+            " ON post_vertices.vertex_id == edges.post_vertex"
+            " JOIN Partitioned_vertices as pre_vertices"
+            " ON edges.pre_vertex == pre_vertices.vertex_id"
+            " WHERE pre_vertices.label == \"{}\""
+            " AND post_vertices.label == \"{}\""
+            .format(label, receiver_label))
+        row = self._cursor.fetchone()
+        return (row["ip_address"], row["port"], row["strip_sdp"])
+
+    def get_partitioned_live_input_details(self, label):
+        """ Get the ip address and port where live input should be sent\
+            for a given partitioned vertex
+
+        :param label: The label of the vertex
+        :type label: str
+        :return: tuple of (ip address, port)
+        :rtype: (str, int)
+        """
+        self._cursor.execute(
+            "SELECT tag.board_address, tag.port as port"
+            " FROM Reverse_IP_tags as tag"
+            " JOIN Partitioned_vertices as post_vertices"
+            " ON tag.vertex_id = post_vertices.vertex_id"
+            " WHERE post_vertices.label=\"{}\"".format(label))
+        row = self._cursor.fetchone()
+        return row["board_address"], row["port"]
+
+    def get_partitioned_live_output_key(self, label, receiver_label):
+        self._cursor.execute(
+            "SELECT * FROM Routing_info as r_info"
+            " JOIN Partitioned_edges as edges"
+            " ON edges.edge_id == r_info.edge_id"
+            " JOIN Partitioned_vertices as post_vertices"
+            " ON post_vertices.vertex_id == edges.post_vertex"
+            " JOIN Partitioned_vertices as pre_vertices"
+            " ON pre_vertices.vertex_id == edges.pre_vertex"
+            " WHERE pre_vertices.label == \"{}\""
+            " AND post_vertices.label == \"{}\""
+            .format(label, receiver_label))
+        row = self._cursor.fetchone()
+        return (row["key"], row["mask"])
+
+    def get_partitioned_live_input_key(self, label):
+        self._cursor.execute(
+            "SELECT * FROM Routing_info as r_info"
+            " JOIN Partitioned_edges as edges"
+            " ON edges.edge_id == r_info.edge_id"
+            " JOIN Partitioned_vertices as pre_vertices"
+            " ON pre_vertices.vertex_id == edges.pre_vertex"
+            " WHERE pre_vertices.label == \"{}\""
+            .format(label))
+        row = self._cursor.fetchone()
+        return (row["key"], row["mask"])
 
     def get_n_atoms(self, label):
         """ Get the number of atoms in a given vertex

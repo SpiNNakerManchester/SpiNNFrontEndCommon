@@ -13,17 +13,17 @@ from spinnman.model.cpu_state import CPUState
 
 # front end common imports
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import helpful_functions
 
 import os
 import logging
 import struct
 import time
-from spinn_front_end_common.utilities import helpful_functions
 
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
+class FrontEndCommonMachineExecuteDataSpecification(object):
     """ Executes the machine based data specification
     """
 
@@ -31,20 +31,16 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
         """
-
-        :param hostname:
-        :param placements:
-        :param graph_mapper:
-        :param write_text_specs:
-        :param runtime_application_data_folder:
-        :param machine:
+        :param write_memory_map_report:
+        :param dsg_targets:
+        :param transceiver:
+        :param dse_app_id: the app_id used by the DSE on chip application
+        :param app_id:
         :return:
         """
-
         data = self.spinnaker_based_data_specification_execution(
             write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id)
-
         return data
 
     def spinnaker_based_data_specification_execution(
@@ -52,30 +48,28 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             dse_app_id, app_id):
         """
 
-        :param hostname:
-        :param placements:
-        :param graph_mapper:
-        :param write_text_specs:
-        :param application_data_runtime_folder:
-        :param machine:
+        :param write_memory_map_report:
+        :param dsg_targets:
+        :param transceiver:
+        :param dse_app_id:
+        :param app_id:
         :return:
         """
 
         # create a progress bar for end users
         progress_bar = ProgressBar(
-            len(list(dsg_targets)),
-            "Loading data specifications")
+            len(dsg_targets), "Loading data specifications")
 
         number_of_cores_used = 0
         core_subset = CoreSubsets()
-        for ((x, y, p), data_spec_file_path) in dsg_targets.iteritems():
+        for (x, y, p, label) in dsg_targets:
 
             core_subset.add_processor(x, y, p)
 
-            dse_data_struct_addr = transceiver.malloc_sdram(
+            dse_data_struct_address = transceiver.malloc_sdram(
                 x, y, constants.DSE_DATA_STRUCT_SIZE, dse_app_id)
 
-            data_spec_file_path = dsg_targets[x, y, p]
+            data_spec_file_path = dsg_targets[x, y, p, label]
             data_spec_file_size = os.path.getsize(data_spec_file_path)
 
             application_data_file_reader = FileDataReader(
@@ -85,11 +79,11 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                 x, y, data_spec_file_size, dse_app_id)
 
             dse_data_struct_data = struct.pack(
-                "<IIII", base_address, data_spec_file_size, app_id,
+                "<4I", base_address, data_spec_file_size, app_id,
                 write_memory_map_report)
 
             transceiver.write_memory(
-                x, y, dse_data_struct_addr, dse_data_struct_data,
+                x, y, dse_data_struct_address, dse_data_struct_data,
                 len(dse_data_struct_data))
 
             transceiver.write_memory(
@@ -108,13 +102,13 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                 get_user_0_register_address_from_core(x, y, p)
 
             transceiver.write_memory(
-                x, y, user_0_address, dse_data_struct_addr, 4)
+                x, y, user_0_address, dse_data_struct_address, 4)
 
             progress_bar.update()
         progress_bar.end()
 
         # Execute the DSE on all the cores
-        logger.info("Loading the Data Specification Executer")
+        logger.info("Loading the Data Specification Executor")
         dse_exec = os.path.join(
             os.path.dirname(spec_sender.__file__),
             'data_specification_executor.aplx')
@@ -124,7 +118,7 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
             core_subset, file_reader, app_id, size)
 
         logger.info(
-            "Waiting for On-chip Data Specification Executer to complete")
+            "Waiting for On-chip Data Specification Executor to complete")
         processors_exited = transceiver.get_core_state_count(
             dse_app_id, CPUState.FINISHED)
         while processors_exited < number_of_cores_used:
@@ -144,9 +138,8 @@ class FrontEndCommonPartitionableGraphMachineExecuteDataSpecification(object):
                 dse_app_id, CPUState.FINISHED)
 
         transceiver.stop_application(dse_app_id)
-        logger.info("On-chip Data Specification Executer completed")
+        logger.info("On-chip Data Specification Executor completed")
 
         return {
-            "LoadedApplicationDataToken": True,
-            "DSEOnHost": False,
-            "DSEOnChip": True}
+            "LoadedApplicationDataToken": True
+        }

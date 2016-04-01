@@ -31,9 +31,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonPartitionableGraphHostExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_host_execute_data_specification</python_module>
-        <python_class>FrontEndCommonPartitionableGraphHostExecuteDataSpecification</python_class>
+    <algorithm name="FrontEndCommonHostExecuteDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_host_execute_data_specification</python_module>
+        <python_class>FrontEndCommonHostExecuteDataSpecification</python_class>
         <required_inputs>
             <parameter>
                 <param_name>hostname</param_name>
@@ -77,19 +77,11 @@
                 <param_name>LoadedApplicationDataToken</param_name>
                 <param_type>LoadedApplicationDataToken</param_type>
             </parameter>
-            <parameter>
-                <param_name>DSEOnHost</param_name>
-                <param_type>DSEOnHost</param_type>
-            </parameter>
-            <parameter>
-                <param_name>DSEOnChip</param_name>
-                <param_type>DSEOnChip</param_type>
-            </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonPartitionableGraphMachineExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_machine_execute_data_specification</python_module>
-        <python_class>FrontEndCommonPartitionableGraphMachineExecuteDataSpecification</python_class>
+    <algorithm name="FrontEndCommonMachineExecuteDataSpecification">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_execute_data_specification</python_module>
+        <python_class>FrontEndCommonMachineExecuteDataSpecification</python_class>
         <required_inputs>
             <parameter>
                 <param_name>write_memory_map_report</param_name>
@@ -105,7 +97,7 @@
             </parameter>
             <parameter>
                 <param_name>dse_app_id</param_name>
-                <param_type>DSEAPPID</param_type>
+                <param_type>DSEAppID</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -116,14 +108,6 @@
             <parameter>
                 <param_name>LoadedApplicationDataToken</param_name>
                 <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>DSEOnHost</param_name>
-                <param_type>DSEOnHost</param_type>
-            </parameter>
-            <parameter>
-                <param_name>DSEOnChip</param_name>
-                <param_type>DSEOnChip</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -308,12 +292,12 @@
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>exec_dse_on_host</param_name>
-                <param_type>ExecDSEOnHostFlag</param_type>
+                <param_name>dse_app_id</param_name>
+                <param_type>DSEAppID</param_type>
             </parameter>
             <parameter>
-                <param_name>dse_app_id</param_name>
-                <param_type>DSEAPPID</param_type>
+                <param_name>exec_dse_on_host</param_name>
+                <param_type>ExecDSEOnHostFlag</param_type>
             </parameter>
             <parameter>
                 <param_name>buffer_manager</param_name>
@@ -435,7 +419,7 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonTagsLoaderSeperateLists">
+    <algorithm name="FrontEndCommonTagsLoaderSeparateLists">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_tags_loader</python_module>
         <python_class>FrontEndCommonTagsLoader</python_class>
         <required_inputs>
@@ -499,9 +483,61 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommomPartitionableGraphDataSpecificationWriter">
+    <algorithm name="FrontEndCommonPartitionedGraphDataSpecificationWriter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitioned_graph_data_specification_writer</python_module>
+        <python_class>FrontEndCommonPartitionedGraphDataSpecificationWriter</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>tags</param_name>
+                <param_type>MemoryTags</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>routing_infos</param_name>
+                <param_type>MemoryRoutingInfos</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_text_specs</param_name>
+                <param_type>WriteTextSpecsFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_data_runtime_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonPartitionableGraphDataSpecificationWriter">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_data_specification_writer</python_module>
-        <python_class>FrontEndCommomPartitionableGraphDataSpecificationWriter</python_class>
+        <python_class>FrontEndCommonPartitionableGraphDataSpecificationWriter</python_class>
         <required_inputs>
             <parameter>
                 <param_name>placements</param_name>
@@ -548,12 +584,6 @@
                 <param_type>ApplicationDataFolder</param_type>
             </parameter>
         </required_inputs>
-        <optional_inputs>
-            <parameter>
-                <param_name>do_write</param_name>
-                <param_type>DoWriteFlag</param_type>
-            </parameter>
-        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>executable_targets</param_name>
@@ -565,9 +595,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonBufferManagerCreater">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_buffer_manager_creater</python_module>
-        <python_class>FrontEndCommonBufferManagerCreater</python_class>
+    <algorithm name="FrontEndCommonBufferManagerCreator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_buffer_manager_creator</python_module>
+        <python_class>FrontEndCommonBufferManagerCreator</python_class>
         <required_inputs>
             <parameter>
                 <param_name>placements</param_name>
@@ -662,7 +692,7 @@
                 <param_type>NoSyncChanges</param_type>
             </parameter>
             <parameter>
-                <param_name>time_theshold</param_name>
+                <param_name>time_threshold</param_name>
                 <param_type>PostSimulationOverrunBeforeError</param_type>
             </parameter>
         </required_inputs>
@@ -699,6 +729,32 @@
                 <param_name>provenance_data_objects</param_name>
                 <param_type>ProvenanceItems</param_type>
                 <param_rank>1</param_rank>
+            </parameter>
+        </optional_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>prov_items</param_name>
+                <param_type>ProvenanceItems</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonGraphProvenanceGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_graph_provenance_gatherer</python_module>
+        <python_class>FrontEndCommonGraphProvenanceGatherer</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_data_objects</param_name>
+                <param_type>ProvenanceItems</param_type>
             </parameter>
         </optional_inputs>
         <produces_outputs>
@@ -775,7 +831,7 @@
         <produces_outputs>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonDatabaseWriter">
+    <algorithm name="FrontEndCommonDatabaseInterface">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_database_interface</python_module>
         <python_class>FrontEndCommonDatabaseInterface</python_class>
         <required_inputs>
@@ -812,24 +868,12 @@
                 <param_type>MachineTimeStep</param_type>
             </parameter>
             <parameter>
-                <param_name>partitionable_graph</param_name>
-                <param_type>MemoryPartitionableGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
                 <param_type>MemoryRoutingInfos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>execute_mapping</param_name>
-                <param_type>ExecuteMapping</param_type>
             </parameter>
         </required_inputs>
         <required_optional_inputs>
@@ -844,6 +888,20 @@
                 <param_rank>1</param_rank>
             </parameter>
         </required_optional_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>create_atom_to_event_id_mapping</param_name>
+                <param_type>CreateAtomToEventIdMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>database_interface</param_name>
@@ -881,9 +939,9 @@
             </parameter>
         </produces_outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonApplicationExiter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_exiter</python_module>
-        <python_class>FrontEndCommonApplicationExiter</python_class>
+    <algorithm name="FrontEndCommonApplicationFinisher">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_finisher</python_module>
+        <python_class>FrontEndCommonApplicationFinisher</python_class>
         <required_inputs>
             <parameter>
                 <param_name>app_id</param_name>
@@ -903,9 +961,9 @@
             </parameter>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonRuntimeUpdater">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_runtime_updater</python_module>
-        <python_class>FrontEndCommonRuntimeUpdater</python_class>
+    <algorithm name="FrontEndCommonChipRuntimeUpdater">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_runtime_updater</python_module>
+        <python_class>FrontEndCommonChipRuntimeUpdater</python_class>
         <required_inputs>
             <parameter>
                 <param_name>txrx</param_name>
@@ -1004,6 +1062,34 @@
             </parameter>
         </produces_outputs>
     </algorithm>
+    <algorithm name="FrontEndCommonEdgeToNKeysMapper">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_edge_to_n_keys_mapper</python_module>
+        <python_class>FrontEndCommonEdgeToNKeysMapper</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+        </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+        </optional_inputs>
+        <parameters>
+        </parameters>
+        <produces_outputs>
+            <parameter>
+                <param_name>n_keys_map</param_name>
+                <param_type>MemoryPartitionedPartitionNKeysMap</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
     <algorithm name="FrontEndCommonSpallocAllocator">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_spalloc_allocator</python_module>
         <python_class>FrontEndCommonSpallocAllocator</python_class>
@@ -1082,7 +1168,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_allocation_controller</param_name>
-                <param_type>MachineAllocationContoller</param_type>
+                <param_type>MachineAllocationController</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -1158,7 +1244,7 @@
             </parameter>
             <parameter>
                 <param_name>machine_allocation_controller</param_name>
-                <param_type>MachineAllocationContoller</param_type>
+                <param_type>MachineAllocationController</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>
@@ -1209,6 +1295,26 @@
             <parameter>
                 <param_name>max_height</param_name>
                 <param_type>MachineHeight</param_type>
+            </parameter>
+        </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonPartitionedGraphMeasurer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitioned_graph_measurer</python_module>
+        <python_class>FrontEndCommonPartitionedGraphMeasurer</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+        </required_inputs>
+        <produces_outputs>
+            <parameter>
+                <param_name>n_chips</param_name>
+                <param_type>NChipsRequired</param_type>
             </parameter>
         </produces_outputs>
     </algorithm>

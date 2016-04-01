@@ -1,19 +1,14 @@
+# dsg imports
+from data_specification import utility_calls
 
 # front end common imports
-from collections import OrderedDict
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
-from spinn_front_end_common.utility_models\
-    .live_packet_gather_partitioned_vertex import \
-    LivePacketGatherPartitionedVertex
-from spinn_front_end_common.utility_models\
-    .reverse_ip_tag_multicast_source_partitioned_vertex \
-    import ReverseIPTagMulticastSourcePartitionedVertex
 
-
-# dsg imports
-from data_specification import utility_calls
+# spinnman imports
+from spinnman.model.cpu_state import CPUState
+from spinnman.model.core_subsets import CoreSubsets
 
 # general imports
 import os
@@ -23,8 +18,7 @@ import logging
 import re
 import inspect
 import struct
-from spinnman.model.cpu_state import CPUState
-from spinnman.model.core_subsets import CoreSubsets
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -59,53 +53,28 @@ def read_data(x, y, address, length, data_format, transceiver):
     return result
 
 
-def locate_memory_region_for_vertex(placements, vertex, region, transceiver):
-        """ Get the address of a region for a vertex
+def locate_memory_region_for_placement(placement, region, transceiver):
+    """ Get the address of a region for a placement
 
-        :param region: the region to locate the base address of
-        :type region: int
-        :param vertex: the vertex to load a buffer for
-        :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host_partitioned_vertex.AbstractSendsBuffersFromHostPartitionedVertex`
-        :return: None
-        """
-        placement = placements.get_placement_of_subvertex(vertex)
-        memory_address = locate_memory_region_on_core(
-            placement.x, placement.y, placement.p, region, transceiver)
-        return memory_address
-
-
-def locate_memory_region_on_core(x, y, p, region, transceiver):
-    regions_base_address = get_app_data_base_address(x, y, p, transceiver)
+    :param region: the region to locate the base address of
+    :type region: int
+    :param placement: the placement object to get the region address of
+    :type placement: pacman.model.placements.placement.Placement
+    :param transceiver: the python interface to the spinnaker machine
+    :type transceiver: spiNNMan.transciever.Transciever
+    :return: None
+    """
+    regions_base_address = transceiver.get_cpu_information_from_core(
+        placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
     region_offset_in_pointer_table = \
         utility_calls.get_region_base_address_offset(
             regions_base_address, region)
     region_address = buffer(transceiver.read_memory(
-        x, y, region_offset_in_pointer_table, 4))
+        placement.x, placement.y, region_offset_in_pointer_table, 4))
     region_address_decoded = struct.unpack_from("<I", region_address)[0]
     return region_address_decoded
-
-
-def get_app_data_base_address(x, y, p, transceiver):
-    return transceiver.get_cpu_information_from_core(x, y, p).user[0]
-
-
-def auto_detect_database(partitioned_graph):
-    """ Auto detects if there is a need to activate the database system
-
-    :param partitioned_graph: the partitioned graph of the application\
-            problem space.
-    :return: a bool which represents if the database is needed
-    """
-    for vertex in partitioned_graph.subvertices:
-        if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
-                isinstance(
-                    vertex, ReverseIPTagMulticastSourcePartitionedVertex)):
-            return True
-    else:
-        return False
 
 
 def set_up_output_application_data_specifics(
@@ -291,7 +260,7 @@ def get_cores_in_state(all_core_subsets, states, txrx):
     """
 
     :param all_core_subsets:
-    :param state:
+    :param states:
     :param txrx:
     :return:
     """

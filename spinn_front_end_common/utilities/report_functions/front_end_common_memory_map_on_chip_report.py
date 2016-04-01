@@ -2,8 +2,6 @@ from data_specification import constants
 
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-
 import logging
 import os
 import struct
@@ -17,19 +15,13 @@ class FrontEndCommonMemoryMapOnChipReport(object):
     """ Report on memory usage
     """
 
-    def __call__(self, report_default_directory, dsg_targets, transceiver,
-                 dse_on_host, dse_on_chip):
+    def __call__(self, report_default_directory, dsg_targets, transceiver):
         """
 
         :param report_default_directory:
         :param processor_to_app_data_base_address:
         :return:
         """
-
-        if dse_on_host is True or dse_on_chip is False:
-            raise SpinnFrontEndException(
-                "This routine is only for on host data specification "
-                "executor. Something somewhere went terribly wrong")
 
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
