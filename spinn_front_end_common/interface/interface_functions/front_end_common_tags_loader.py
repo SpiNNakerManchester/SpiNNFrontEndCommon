@@ -1,3 +1,4 @@
+from spinn_machine.utilities.progress_bar import ProgressBar
 from spinnman import constants as spinnman_constants
 
 
@@ -19,20 +20,28 @@ class FrontEndCommonTagsLoader(object):
         # clear all the tags from the Ethernet connection, as nothing should
         # be allowed to use it (no two apps should use the same Ethernet
         # connection at the same time
+        progress_bar = ProgressBar(
+            len(list(tags.ip_tags)) + len(list(tags.reverse_ip_tags)) +
+            spinnman_constants.MAX_TAG_ID,
+            "Loading Tags.")
+
         for tag_id in range(spinnman_constants.MAX_TAG_ID):
             transceiver.clear_ip_tag(tag_id)
+            progress_bar.update()
 
         if tags is not None:
-            self.load_iptags(tags.ip_tags, transceiver)
-            self.load_reverse_iptags(tags.reverse_ip_tags, transceiver)
+            self.load_iptags(tags.ip_tags, transceiver, progress_bar)
+            self.load_reverse_iptags(
+                tags.reverse_ip_tags, transceiver, progress_bar)
         else:
-            self.load_iptags(iptags, transceiver)
-            self.load_reverse_iptags(reverse_iptags, transceiver)
+            self.load_iptags(iptags, transceiver, progress_bar)
+            self.load_reverse_iptags(reverse_iptags, transceiver, progress_bar)
+        progress_bar.end()
 
         return {"LoadedIPTagsToken": True, "LoadedReverseIPTagsToken": True}
 
     @staticmethod
-    def load_iptags(iptags, transceiver):
+    def load_iptags(iptags, transceiver, progress_bar):
         """ Loads all the iptags individually.
 
         :param iptags: the iptags to be loaded.
@@ -41,9 +50,10 @@ class FrontEndCommonTagsLoader(object):
         """
         for ip_tag in iptags:
             transceiver.set_ip_tag(ip_tag)
+            progress_bar.update()
 
     @staticmethod
-    def load_reverse_iptags(reverse_ip_tags, transceiver):
+    def load_reverse_iptags(reverse_ip_tags, transceiver, progress_bar):
         """ Loads all the reverse iptags individually.
 
         :param reverse_ip_tags: the reverse iptags to be loaded
@@ -52,3 +62,4 @@ class FrontEndCommonTagsLoader(object):
         """
         for reverse_ip_tag in reverse_ip_tags:
             transceiver.set_reverse_ip_tag(reverse_ip_tag)
+            progress_bar.update()
