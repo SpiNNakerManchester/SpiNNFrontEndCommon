@@ -9,7 +9,7 @@ SDRAM_BASE_ADDR = 0x70000000
 MAX_SAFE_BINARY_SIZE = 32 * 1024
 MAX_POSSIBLE_BINARY_SIZE = 33 * 1024
 
-# max size expected to be used by the reverse iptag multicast source
+# max size expected to be used by the reverse ip_tag multicast source
 # during buffered operations
 MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
 
@@ -25,13 +25,16 @@ SARK_PER_MALLOC_SDRAM_USAGE = 8
 # database cap file path
 MAX_DATABASE_PATH_LENGTH = 50000
 
+# size of the on-chip DSE data structure required in bytes
+DSE_DATA_STRUCT_SIZE = 16
+
 SDP_RUNNING_MESSAGE_CODES = Enum(
     value="SDP_RUNNING_MESSAGE_ID_CODES",
     names=[
         ("SDP_STOP_ID_CODE", 6),
         ("SDP_NEW_RUNTIME_ID_CODE", 7),
-        ("SDP_SWITCH_STATE", 8)]
-)
+        ("SDP_SWITCH_STATE", 8),
+        ("SDP_UPDATE_PROVENCE_REGION_AND_EXIT", 9)])
 
 
 # SDP port handling output buffering data streaming

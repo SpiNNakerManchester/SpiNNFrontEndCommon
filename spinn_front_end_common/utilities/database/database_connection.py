@@ -83,6 +83,7 @@ class DatabaseConnection(UDPConnection, Thread):
                     database_reader = DatabaseReader(database_path)
                     for database_callback in self._database_callback_functions:
                         database_callback(database_reader)
+                    database_reader.close()
 
                     # Send the response
                     logger.info(
