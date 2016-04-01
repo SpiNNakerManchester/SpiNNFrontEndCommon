@@ -4,6 +4,7 @@ from data_specification.data_specification_executor import \
     DataSpecificationExecutor
 from data_specification import exceptions
 
+# spinn front end imports
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 
@@ -21,9 +22,7 @@ import struct
 logger = logging.getLogger(__name__)
 
 
-# this class is currently not required and unused. IT is kept here only for
-# future reference - may be easily removed from the project
-class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
+class FrontEndCommonHostExecuteDataSpecification(object):
     """ Executes the host based data specification
     """
 
@@ -34,8 +33,6 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         """
 
         :param hostname:
-        :param placements:
-        :param graph_mapper:
         :param write_text_specs:
         :param runtime_application_data_folder:
         :param machine:
@@ -57,9 +54,7 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         """
 
         :param hostname:
-        :param placements:
         :param transceiver:
-        :param graph_mapper:
         :param write_text_specs:
         :param application_data_runtime_folder:
         :param machine:
@@ -71,8 +66,9 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(len(list(dsg_targets)),
-                                   "Executing data specifications")
+        progress_bar = ProgressBar(
+            len(list(dsg_targets)),
+            "Executing data specifications and loading data")
 
         for ((x, y, p), data_spec_file_path) in dsg_targets.iteritems():
 
@@ -168,10 +164,6 @@ class FrontEndCommonPartitionableGraphHostExecuteDataSpecification(object):
 
         # close the progress bar
         progress_bar.end()
-        return {
-            'processor_to_app_data_base_address':
+        return {'processor_to_app_data_base_address':
                 processor_to_app_data_base_address,
-            'LoadedApplicationDataToken': True,
-            "DSEOnHost": True,
-            "DSEOnChip": False
-        }
+                'LoadedApplicationDataToken': True}

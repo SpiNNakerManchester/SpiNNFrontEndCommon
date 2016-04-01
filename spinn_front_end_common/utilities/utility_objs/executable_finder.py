@@ -13,7 +13,7 @@ class ExecutableFinder(object):
 
         :param binary_search_paths: The initial set of folders to search for\
                     binaries.
-        :type binary_search_paths: array of str
+        :type binary_search_paths: iterable of str
         :param include_common_binaries_folder: If True (i.e. the default), \
                     the spinn_front_end_common.common_model_binaries folder \
                     is searched for binaries.  If you are not using the common\

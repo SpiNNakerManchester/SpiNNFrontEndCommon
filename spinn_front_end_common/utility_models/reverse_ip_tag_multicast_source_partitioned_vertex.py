@@ -178,6 +178,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self._buffer_size_before_receive = 0
         self._record_schedule = None
 
+        # set flag for checking if in injection mode
+        self._in_injection_mode = receive_port is not None
+
         # Sort out the keys to be used
         self._n_keys = n_keys
         self._virtual_key = virtual_key
@@ -225,7 +228,6 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 # If no prefix was generated, generate one
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
-
 
     @staticmethod
     def n_regions_to_allocate(send_buffering, recording):
@@ -378,8 +380,6 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
-
-
         # Write apply_prefix and prefix and prefix_type
         if self._prefix is None:
             spec.write_value(data=0)
@@ -484,3 +484,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     @property
     def mask(self):
         return self._mask
+
+    @property
+    def is_in_injection_mode(self):
+        return self._in_injection_mode

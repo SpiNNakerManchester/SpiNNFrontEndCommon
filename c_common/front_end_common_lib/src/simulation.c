@@ -166,6 +166,13 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     }
 }
 
+//! \brief handles the registration of the SDP callback
+//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
+//!            ticks, to allow this to be updated when requested via SDP
+//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
+//!            this to be updated when requested via SDP
+//! \param[in] sdp_packet_callback_priority The priority to use for the
+//!            SDP packet reception
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
         int sdp_packet_callback_priority) {
@@ -177,7 +184,14 @@ void simulation_register_simulation_sdp_callback(
         sdp_packet_callback_priority);
 }
 
-void simulation_register_provenance_callback(
+//! \brief handles the registration for storing provenance data (needs to be
+//!        done at least with the provenance region id)
+//! \param[in] provenance_function: function to call for extra provenance data
+//!            can be NULL as well.
+//! \param[in] provenance_data_region_id: the region id in dsg for where
+//!            provenance is to be stored
+//! \return does not return anything
+void  simulation_register_provenance_callback(
         prov_callback_t provenance_function,
         uint32_t provenance_data_region_id){
     stored_provenance_function = provenance_function;

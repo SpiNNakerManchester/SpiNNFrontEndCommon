@@ -59,4 +59,3 @@ class FrontEndCommonNotificationProtocol(object):
         """
         logger.debug("[data_base_thread] Stopping")
         self._notification_protocol.close()
-

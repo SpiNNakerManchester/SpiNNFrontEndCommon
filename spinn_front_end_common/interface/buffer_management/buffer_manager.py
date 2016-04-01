@@ -33,8 +33,7 @@ from spinnman.messages.eieio.command_messages.event_stop_request \
 from spinnman.messages.eieio import create_eieio_command
 
 # front end common imports
-from spinn_front_end_common.utilities.helpful_functions import \
-    locate_memory_region_for_vertex, locate_memory_region_on_core
+from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque import BuffersSentDeque
@@ -312,8 +311,10 @@ class BufferManager(object):
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        region_base_address = locate_memory_region_for_vertex(
-            self._placements, vertex, region, self._transceiver)
+        region_base_address = \
+            helpful_functions.locate_memory_region_for_placement(
+                self._placements.get_placement_of_subvertex(vertex), region,
+                self._transceiver)
         placement = self._placements.get_placement_of_subvertex(vertex)
 
         # Add packets until out of space
@@ -463,16 +464,12 @@ class BufferManager(object):
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
 
-    def get_data_for_vertex(self, x, y, p, region_to_read, state_region):
+    def get_data_for_vertex(self, placement, region_to_read, state_region):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: processor on the specified chip
-        :type p: int
+        :param placement: the placement to get the data from
+        :type placement: pacman.model.placements.placement.Placement
         :param region_to_read: desired data region
         :type region_to_read: int
         :param state_region: final state storage region
@@ -484,30 +481,31 @@ class BufferManager(object):
         """
         # flush data here
         if not self._received_data.is_data_from_region_flushed(
-                x, y, p, region_to_read):
+                placement.x, placement.y, placement.p, region_to_read):
             if not self._received_data.is_end_buffering_state_recovered(
-                    x, y, p):
+                    placement.x, placement.y, placement.p):
 
                 # Get the App Data for the core
                 state_region_base_address = \
-                    locate_memory_region_on_core(
-                        x, y, p, state_region, self._transceiver)
+                    helpful_functions.locate_memory_region_for_placement(
+                        placement, state_region, self._transceiver)
 
                 # retrieve channel state memory area
                 raw_number_of_channels = self._transceiver.read_memory(
-                    x, y, state_region_base_address, 4)
+                    placement.x, placement.y, state_region_base_address, 4)
                 number_of_channels = struct.unpack(
                     "<I", str(raw_number_of_channels))[0]
                 channel_state_data = str(self._transceiver.read_memory(
-                    x, y, state_region_base_address,
+                    placement.x, placement.y, state_region_base_address,
                     EndBufferingState.size_of_region(number_of_channels)))
                 end_buffering_state = EndBufferingState.create_from_bytearray(
                     channel_state_data)
                 self._received_data.store_end_buffering_state(
-                    x, y, p, end_buffering_state)
+                    placement.x, placement.y, placement.p, end_buffering_state)
             else:
                 end_buffering_state = self._received_data.\
-                    get_end_buffering_state(x, y, p)
+                    get_end_buffering_state(
+                        placement.x, placement.y, placement.p)
 
             end_state = end_buffering_state.get_state_for_region(
                 region_to_read)
@@ -523,16 +521,18 @@ class BufferManager(object):
             # packet sent to this core and the core internal state of the
             # output buffering finite state machine
             seq_no_last_ack_packet = \
-                self._received_data.last_sequence_no_for_core(x, y, p)
+                self._received_data.last_sequence_no_for_core(
+                    placement.x, placement.y, placement.p)
             seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
             if seq_no_internal_fsm == seq_no_last_ack_packet:
 
                 # if the last ACK packet has not been processed on the chip,
                 # process it now
                 last_sent_ack_sdp_packet = \
-                    self._received_data.last_sent_packet_to_core(x, y, p)
-                last_sent_ack_packet = create_eieio_command.\
-                    read_eieio_command_message(
+                    self._received_data.last_sent_packet_to_core(
+                        placement.x, placement.y, placement.p)
+                last_sent_ack_packet = \
+                    create_eieio_command.read_eieio_command_message(
                         last_sent_ack_sdp_packet.data, 0)
                 if not isinstance(last_sent_ack_packet, HostDataRead):
                     raise Exception(
@@ -568,46 +568,57 @@ class BufferManager(object):
             # now read_ptr is updated, check memory to read
             if read_ptr < write_ptr:
                 length = write_ptr - read_ptr
-                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                data = self._transceiver.read_memory(
+                    placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    x, y, p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
-                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                data = self._transceiver.read_memory(
+                    placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
-                    x, y, p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
-                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                data = self._transceiver.read_memory(
+                    placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    x, y, p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
             elif (read_ptr == write_ptr and
                     last_operation == spinn_front_end_constants.
                     BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
-                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                data = self._transceiver.read_memory(
+                    placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
-                    x, y, p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
-                data = self._transceiver.read_memory(x, y, read_ptr, length)
+                data = self._transceiver.read_memory(
+                    placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    x, y, p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
             elif (read_ptr == write_ptr and
                     last_operation == spinn_front_end_constants.
                     BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
                 self._received_data.flushing_data_from_region(
-                    x, y, p, region_to_read, data)
+                    placement.x, placement.y, placement.p, region_to_read,
+                    data)
 
         # data flush has been completed - return appropriate data
         # the two returns can be exchanged - one returns data and the other
         # returns a pointer to the structure holding the data
         return self._received_data.get_region_data_pointer(
-            x, y, p, region_to_read)
+            placement.x, placement.y, placement.p, region_to_read)
 
     def _retrieve_and_store_data(self, packet, vertex):
         """ Following a SpinnakerRequestReadData packet, the data stored\

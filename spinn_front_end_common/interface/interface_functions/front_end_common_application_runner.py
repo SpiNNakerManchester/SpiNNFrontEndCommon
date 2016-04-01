@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationRunner(object):
-    """ Ensures all cores are initialised correctly, ran, and competed\
+    """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
     """
 
@@ -19,7 +19,7 @@ class FrontEndCommonApplicationRunner(object):
             executable_targets, app_id, txrx, runtime, time_scale_factor,
             loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, loaded_binaries_token,
-            loaded_application_data_token, no_sync_changes, time_theshold):
+            loaded_application_data_token, no_sync_changes, time_threshold):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
@@ -59,7 +59,7 @@ class FrontEndCommonApplicationRunner(object):
         else:
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
-                time_theshold)
+                time_threshold)
 
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
 
@@ -164,14 +164,14 @@ class FrontEndCommonApplicationRunner(object):
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling, txrx,
-            time_theshold):
+            time_threshold):
         """
 
         :param executable_targets:
         :param app_id:
         :param runtime:
         :param time_scaling:
-        :param time_theshold:
+        :param time_threshold:
         :param txrx:
         :param no_sync_state_changes: the number of runs been done between\
                 setup and end
@@ -191,7 +191,7 @@ class FrontEndCommonApplicationRunner(object):
 
         retries = 0
         while (processors_not_finished != 0 and
-                not self._has_overrun(start_time, time_theshold)):
+                not self._has_overrun(start_time, time_threshold)):
             try:
                 processors_rte = txrx.get_core_state_count(
                     app_id, CPUState.RUN_TIME_EXCEPTION)
@@ -252,15 +252,15 @@ class FrontEndCommonApplicationRunner(object):
         logger.info("Application has run to completion")
 
     @staticmethod
-    def _has_overrun(start_time, time_theshold):
+    def _has_overrun(start_time, time_threshold):
         """ Checks if the time has overrun
 
-        :param time_theshold: How long before the time is considered to have\
+        :param time_threshold: How long before the time is considered to have\
                     overrun
         :return: bool
         """
         current_time = time.time()
-        if current_time - start_time > time_theshold:
+        if current_time - start_time > time_threshold:
             return True
         else:
             return False

@@ -1,14 +1,14 @@
-from spinn_front_end_common.utilities.utility_objs\
-    .abstract_machine_allocation_controller \
-    import AbstractMachineAllocationController
-
-from spalloc import Job
-from spalloc.states import JobState
-
 import math
 import logging
 import sys
 from threading import Thread
+
+from spalloc import Job
+from spalloc.states import JobState
+
+from spinn_front_end_common.abstract_models\
+    .abstract_machine_allocation_controller \
+    import AbstractMachineAllocationController
 
 
 logger = logging.getLogger(__name__)

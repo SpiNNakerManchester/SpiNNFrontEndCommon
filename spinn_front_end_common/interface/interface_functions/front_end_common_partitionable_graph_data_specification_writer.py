@@ -7,7 +7,7 @@ from spinn_front_end_common.utilities.utility_objs.executable_targets import \
 from spinn_front_end_common.utilities import exceptions
 
 
-class FrontEndCommomPartitionableGraphDataSpecificationWriter(object):
+class FrontEndCommonPartitionableGraphDataSpecificationWriter(object):
     """ Executes a partitionable graph data specification generation
     """
 
