@@ -8,6 +8,10 @@ from pacman.model.partitionable_graph.partitionable_graph \
 from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
+from pacman.model.abstract_classes.abstract_virtual_vertex \
+    import AbstractVirtualVertex
+from pacman.model.abstract_classes.virtual_partitioned_vertex \
+    import VirtualPartitionedVertex
 
 # common front end imports
 from spinn_front_end_common.abstract_models.\
@@ -58,7 +62,7 @@ class SpinnakerMainInterface(object):
 
         self._executable_finder = executable_finder
 
-        self._n_chips_required = None
+        self._n_chips_required = n_chips_required
         self._hostname = None
         self._spalloc_server = None
         self._remote_spinnaker_url = None
@@ -263,13 +267,27 @@ class SpinnakerMainInterface(object):
                 self._get_machine()
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
+        # Check if anything is recording and buffered
+        is_buffered_recording = False
+        for placement in self._placements.placements:
+            vertex = placement.subvertex
+            if (isinstance(vertex, AbstractReceiveBuffersToHost) and
+                    isinstance(vertex, AbstractRecordable)):
+                if vertex.is_recording():
+                    is_buffered_recording = True
+                    break
+
         # Work out an array of timesteps to perform
-        if not self._config.getboolean("Buffers", "use_auto_pause_and_resume"):
+        if (not self._config.getboolean(
+                "Buffers", "use_auto_pause_and_resume") or
+                not is_buffered_recording):
 
             # Not currently possible to run the second time for more than the
             # first time without auto pause and resume
-            if (self._minimum_step_generated is not None and
-                    self._minimum_step_generated < n_machine_time_steps):
+            if (is_buffered_recording and
+                    self._minimum_step_generated is not None and
+                    (self._minimum_step_generated < n_machine_time_steps or
+                        n_machine_time_steps is None)):
                 raise common_exceptions.ConfigurationException(
                     "Second and subsequent run time must be less than or equal"
                     " to the first run time")
@@ -277,6 +295,11 @@ class SpinnakerMainInterface(object):
             steps = [n_machine_time_steps]
             self._minimum_step_generated = steps[0]
         else:
+
+            if run_time is None:
+                raise Exception(
+                    "Cannot use automatic pause and resume with an infinite "
+                    "run time")
 
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
@@ -415,6 +438,12 @@ class SpinnakerMainInterface(object):
         inputs = dict()
         algorithms = list()
         outputs = list()
+
+        # add the partitionable and partitioned graphs as needed
+        if len(self._partitionable_graph.vertices) > 0:
+            inputs["MemoryPartitionableGraph"] = self._partitionable_graph
+        elif len(self._partitioned_graph.subvertices) > 0:
+            inputs["MemoryPartitionedGraph"] = self._partitioned_graph
 
         # add reinjection flag
         inputs["EnableReinjectionFlag"] = self._config.getboolean(
@@ -810,8 +839,12 @@ class SpinnakerMainInterface(object):
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
         self._update_n_machine_time_steps(total_run_timesteps)
-        run_time = (
-            n_machine_time_steps * (float(self._machine_time_step) / 1000.0))
+        run_time = None
+        if n_machine_time_steps is not None:
+            run_time = (
+                n_machine_time_steps *
+                (float(self._machine_time_step) / 1000.0)
+            )
 
         # Calculate the first machine time step to start from and set this
         # where necessary
@@ -1294,6 +1327,11 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the partitioned and partitionable"
                 " graphs")
+        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
+                self._machine is not None):
+            raise common_exceptions.ConfigurationException(
+                "A Virtual Vertex cannot be added after the machine has been"
+                " created")
         self._partitionable_graph.add_vertex(vertex_to_add)
 
     def add_partitioned_vertex(self, vertex):
@@ -1308,6 +1346,11 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the partitioned and partitionable"
                 " graphs")
+        if (isinstance(vertex, VirtualPartitionedVertex) and
+                self._machine is not None):
+            raise common_exceptions.ConfigurationException(
+                "A Virtual Vertex cannot be added after the machine has been"
+                " created")
         self._partitioned_graph.add_subvertex(vertex)
 
     def add_partitionable_edge(
