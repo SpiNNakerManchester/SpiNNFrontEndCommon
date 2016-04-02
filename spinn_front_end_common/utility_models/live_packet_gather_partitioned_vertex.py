@@ -1,12 +1,12 @@
 from data_specification.data_specification_generator \
     import DataSpecificationGenerator
+
 from pacman.model.constraints.placer_constraints\
     .placer_radial_placement_from_chip_constraint \
     import PlacerRadialPlacementFromChipConstraint
 from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint \
     import TagAllocatorRequireIptagConstraint
-
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
@@ -23,6 +23,7 @@ from spinn_front_end_common.abstract_models.\
     abstract_partitioned_data_specable_vertex \
     import AbstractPartitionedDataSpecableVertex
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.abstract_models.abstract_live import AbstractLive
 
 from enum import Enum
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -30,7 +31,7 @@ from spinnman.messages.eieio.eieio_type import EIEIOType
 
 class LivePacketGatherPartitionedVertex(
         PartitionedVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractPartitionedDataSpecableVertex):
+        AbstractPartitionedDataSpecableVertex, AbstractLive):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -310,3 +311,6 @@ class LivePacketGatherPartitionedVertex(
         :return:
         """
         return LivePacketGatherPartitionedVertex._CONFIG_SIZE
+
+    def is_active(self):
+        return True

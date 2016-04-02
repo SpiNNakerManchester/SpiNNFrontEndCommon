@@ -1,12 +1,7 @@
 # spinn front end common
 from spinn_front_end_common.abstract_models.abstract_recordable import \
     AbstractRecordable
-from spinn_front_end_common.utility_models.\
-    live_packet_gather_partitioned_vertex import \
-    LivePacketGatherPartitionedVertex
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multicast_source_partitioned_vertex import \
-    ReverseIPTagMulticastSourcePartitionedVertex
+from spinn_front_end_common.abstract_models.abstract_live import AbstractLive
 
 # general imports
 import logging
@@ -45,14 +40,9 @@ class DatabaseWriter(object):
         :return: a bool which represents if the database is needed
         """
         for vertex in partitioned_graph.subvertices:
-            if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
-                    (isinstance(
-                        vertex,
-                        ReverseIPTagMulticastSourcePartitionedVertex) and
-                     vertex.is_in_injection_mode)):
+            if isinstance(vertex, AbstractLive) and vertex.is_active():
                 return True
-        else:
-            return False
+        return False
 
     @property
     def database_path(self):
