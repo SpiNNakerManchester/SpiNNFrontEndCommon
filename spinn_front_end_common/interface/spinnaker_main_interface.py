@@ -919,11 +919,12 @@ class SpinnakerMainInterface(object):
         except PacmanAlgorithmFailedToCompleteException as e:
 
             logger.error(
-                "An error has occurred during simulation - "
-                "attempting to extract data")
+                "An error has occurred during simulation")
             for line in traceback.format_tb(e.traceback):
                 logger.error(line.strip())
             logger.error(e.exception)
+
+            logger.info("\n\nAttempting to extract data\n\n")
 
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
