@@ -931,7 +931,14 @@ class SpinnakerMainInterface(object):
             try:
                 self._recover_from_error(e, executor.get_items())
             except Exception:
-                self.stop(extract_iobuf=False, extract_provenance_data=False)
+
+                # if in debug mode, do not shut down machine
+                in_debug_mode = self._config.get("Mode", "mode") == "Debug"
+                if not in_debug_mode:
+                    self.stop(
+                        extract_iobuf=False, extract_provenance_data=False)
+
+                # raise exception
                 ex_type, ex_value, ex_traceback = sys.exc_info()
                 raise ex_type, ex_value, ex_traceback
 
@@ -1381,10 +1388,8 @@ class SpinnakerMainInterface(object):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
-        # if not a virtual machine, and not in debug mode
-        # then shut down stuff on the board
-        in_debug_mode = self._config.get("Mode", "mode") == "Debug"
-        if not self._use_virtual_board and not in_debug_mode:
+        # if not a virtual machine then shut down stuff on the board
+        if not self._use_virtual_board:
 
             if turn_off_machine is None:
                 turn_off_machine = self._config.getboolean(
@@ -1395,7 +1400,8 @@ class SpinnakerMainInterface(object):
                     "Machine", "clear_routing_tables")
 
             if clear_tags is None:
-                clear_tags = self._config.getboolean("Machine", "clear_tags")
+                clear_tags = self._config.getboolean(
+                    "Machine", "clear_tags")
 
             if self._txrx is not None:
 
@@ -1465,7 +1471,8 @@ class SpinnakerMainInterface(object):
         if extract_iobuf:
             self._extract_iobuf()
 
-        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown(
+            turn_off_machine, clear_routing_tables, clear_tags)
 
     def _add_socket_address(self, socket_address):
         """
