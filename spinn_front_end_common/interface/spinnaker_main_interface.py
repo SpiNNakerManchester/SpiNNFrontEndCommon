@@ -931,7 +931,7 @@ class SpinnakerMainInterface(object):
             try:
                 self._recover_from_error(e, executor.get_items())
             except Exception:
-                self.stop()
+                self.stop(extract_iobuf=False, extract_provenance_data=False)
                 ex_type, ex_value, ex_traceback = sys.exc_info()
                 raise ex_type, ex_value, ex_traceback
 
@@ -1381,8 +1381,10 @@ class SpinnakerMainInterface(object):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
-        # if not a virtual machine, then shut down stuff on the board
-        if not self._use_virtual_board:
+        # if not a virtual machine, and not in debug mode
+        # then shut down stuff on the board
+        in_debug_mode = self._config.get("Mode", "mode") == "Debug"
+        if not self._use_virtual_board and not in_debug_mode:
 
             if turn_off_machine is None:
                 turn_off_machine = self._config.getboolean(
@@ -1437,7 +1439,7 @@ class SpinnakerMainInterface(object):
                 self._machine_allocation_controller.close()
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None):
+             clear_tags=None, extract_provenance_data=True, extract_iobuf=True):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -1449,11 +1451,19 @@ class SpinnakerMainInterface(object):
         :param clear_tags: informs the tool chain if it should clear the tags\
             off the machine at stop
         :type clear_tags: boolean
+        :param extract_provenance_data: informs the tools if it should \
+        try to extract provenance data.
+        :type extract_provenance_data: bool
+        :param extract_iobuf: tells the tools if it should try to \
+        extract iobug
+        :type extract_iobuf: bool
         :return: None
         """
 
-        self._extract_provenance()
-        self._extract_iobuf()
+        if extract_provenance_data:
+            self._extract_provenance()
+        if extract_iobuf:
+            self._extract_iobuf()
 
         self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
 
