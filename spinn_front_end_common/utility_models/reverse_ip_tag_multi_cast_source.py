@@ -210,21 +210,34 @@ class ReverseIpTagMultiCastSource(
             (ReverseIPTagMulticastSourcePartitionedVertex.
                 get_provenance_data_size(0)))
 
-    @property
-    def model_name(self):
-        return "ReverseIpTagMultiCastSource"
-
-    def is_reverse_ip_tagable_vertex(self):
-        return True
+    def get_cpu_usage_for_atoms(self, vertex_slice, graph):
+        return 1
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         return 1
 
+    # @implements AbstractPartitionableVertex.get_multi_cast_payload_packets_per_tick_requirement
+    def get_multi_cast_payload_packets_per_tick_requirement(
+            self, vertex_slice, graph):
+        raise Exception
+
+    # @implements AbstractPartitionableVertex.get_multi_cast_no_payload_packets_per_tick_requirement
+    def get_multi_cast_no_payload_packets_per_tick_requirement(
+            self, vertex_slice, graph):
+        raise Exception
+
+    # @implements AbstractPartitionableVertex.get_fixed_route_packets_per_tick_requirement
+    def get_fixed_route_packets_per_tick_requirement(
+            self, vertex_slice, graph):
+        # standard models don't use fixed route packets at all.
+        return 0
+
+    @property
+    def model_name(self):
+        return "ReverseIpTagMultiCastSource"
+
     def get_binary_file_name(self):
         return 'reverse_iptag_multicast_source.aplx'
-
-    def get_cpu_usage_for_atoms(self, vertex_slice, graph):
-        return 1
 
     def generate_data_spec(
             self, subvertex, placement, sub_graph, graph, routing_info,
@@ -283,4 +296,7 @@ class ReverseIpTagMultiCastSource(
         return subvertex
 
     def is_data_specable(self):
+        return True
+
+    def is_reverse_ip_tagable_vertex(self):
         return True
