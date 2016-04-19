@@ -453,6 +453,10 @@ class SpinnakerMainInterface(object):
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
 
+        # informs the partitioner what the real timer tick is in milliseconds.
+        inputs["WallClockTimerTickInMilliseconds"] = \
+            (self._machine_time_step * self._time_scale_factor) / 1000
+
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
@@ -610,6 +614,10 @@ class SpinnakerMainInterface(object):
         return self._machine
 
     def generate_file_machine(self):
+        """
+        functionality to get the machine object
+        :return:
+        """
         inputs = {
             "MemoryExtendedMachine": self.machine,
             "FileMachineFilePath": os.path.join(
@@ -1045,6 +1053,10 @@ class SpinnakerMainInterface(object):
             self._print_iobuf(
                 executor.get_item("ErrorMessages"),
                 executor.get_item("WarnMessages"))
+            self.stop(turn_off_machine=False, clear_routing_tables=False,
+                      clear_tags=False, extract_provenance_data=False,
+                      extract_iobuf=False)
+            sys.exit(1)
 
     def _extract_iobuf(self):
         if (self._config.getboolean("Reports", "extract_iobuf") and
@@ -1461,7 +1473,7 @@ class SpinnakerMainInterface(object):
         try to extract provenance data.
         :type extract_provenance_data: bool
         :param extract_iobuf: tells the tools if it should try to \
-        extract iobug
+        extract iobuf
         :type extract_iobuf: bool
         :return: None
         """

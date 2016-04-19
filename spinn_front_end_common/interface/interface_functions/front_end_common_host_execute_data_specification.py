@@ -18,6 +18,7 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 import os
 import logging
 import struct
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +119,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
                 logger.error(
                     "Error executing data specification for {}, {}, {}".format(
                         x, y, p))
+                traceback.print_exc()
                 raise e
 
             bytes_used_by_spec = \
