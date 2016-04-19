@@ -109,11 +109,13 @@ class ProvidesProvenanceDataFromMachineImpl(
             transmission_event_overflow,
             report=transmission_event_overflow != 0,
             message=(
-                "The input buffer for {} on {}, {}, {} lost packets on {} "
-                "occasions. This is often a sign that the system is running "
-                "too quickly for the number of neurons per core.  Please "
-                "increase the machine time step or time_scale_factor or "
-                "decrease the number of neurons per core.".format(
+                "The transmission buffer for {} on {}, {}, {} was blocked "
+                "on {} occasions. This is often a sign that the system is "
+                "experiencing back pressure from the communication fabric. "
+                "Please either: "
+                "1. spread the load over more cores, "
+                "2. reduce your peak transmission load,"
+                "3. adjust your mapping algorithm.".format(
                     label, x, y, p, transmission_event_overflow))))
 
         data_items.append(ProvenanceDataItem(
