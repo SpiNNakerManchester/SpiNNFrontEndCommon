@@ -1045,6 +1045,10 @@ class SpinnakerMainInterface(object):
             self._print_iobuf(
                 executor.get_item("ErrorMessages"),
                 executor.get_item("WarnMessages"))
+            self.stop(turn_off_machine=False, clear_routing_tables=False,
+                      clear_tags=False, extract_provenance_data=False,
+                      extract_iobuf=False)
+            sys.exit(1)
 
     def _extract_iobuf(self):
         if (self._config.getboolean("Reports", "extract_iobuf") and
@@ -1461,7 +1465,7 @@ class SpinnakerMainInterface(object):
         try to extract provenance data.
         :type extract_provenance_data: bool
         :param extract_iobuf: tells the tools if it should try to \
-        extract iobug
+        extract iobuf
         :type extract_iobuf: bool
         :return: None
         """

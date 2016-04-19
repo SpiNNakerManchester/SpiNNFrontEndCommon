@@ -19,7 +19,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
-            app_id, CPUState.RUN_TIME_EXCEPTION)
+            app_id, CPUState.FINISHED)
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 
@@ -31,7 +31,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
         # the core has received the message and done provenance updating
         while processors_completed != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
+                all_core_subsets, CPUState.FINISHED, txrx)
 
             for (x, y, p) in unsuccessful_cores:
                 data = struct.pack(
@@ -46,7 +46,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
                     destination_chip_y=y), data=data))
 
             processors_completed = txrx.get_core_state_count(
-                app_id, CPUState.RUN_TIME_EXCEPTION)
+                app_id, CPUState.FINISHED)
 
             left_over_now = total_processors - processors_completed
             to_update = left_to_do_cores - left_over_now
