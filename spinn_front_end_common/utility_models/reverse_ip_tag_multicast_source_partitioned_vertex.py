@@ -22,6 +22,8 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models\
     .abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
+from spinn_front_end_common.abstract_models.abstract_recordable \
+    import AbstractRecordable
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
 from spinn_front_end_common.interface.provenance\
@@ -44,7 +46,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         AbstractDataSpecableVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
-        ReceiveBuffersToHostBasicImpl):
+        ReceiveBuffersToHostBasicImpl,
+        AbstractRecordable):
     """ A model which allows events to be injected into spinnaker and\
         converted in to multicast packets
     """
@@ -477,3 +480,6 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     @property
     def is_in_injection_mode(self):
         return self._in_injection_mode
+
+    def is_recording(self):
+        return self._record_buffer_size > 0

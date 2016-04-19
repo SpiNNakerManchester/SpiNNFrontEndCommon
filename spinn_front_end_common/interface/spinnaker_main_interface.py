@@ -1449,7 +1449,8 @@ class SpinnakerMainInterface(object):
                 self._machine_allocation_controller.close()
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None, extract_provenance_data=True, extract_iobuf=True):
+             clear_tags=None, extract_provenance_data=True,
+             extract_iobuf=True):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -1462,10 +1463,10 @@ class SpinnakerMainInterface(object):
             off the machine at stop
         :type clear_tags: boolean
         :param extract_provenance_data: informs the tools if it should \
-        try to extract provenance data.
+            try to extract provenance data.
         :type extract_provenance_data: bool
         :param extract_iobuf: tells the tools if it should try to \
-        extract iobuf
+            extract iobuf
         :type extract_iobuf: bool
         :return: None
         """
