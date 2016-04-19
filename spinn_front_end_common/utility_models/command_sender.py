@@ -376,6 +376,30 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         """
         return 0
 
+    # @implements AbstractPartitionableVertex.get_multi_cast_payload_packets_per_tick_requirement
+    def get_multi_cast_payload_packets_per_tick_requirement(
+            self, vertex_slice, graph):
+        max_packets = 0
+        for time in self._commands_with_payloads:
+            if max_packets < len(self._commands_with_payloads[time]):
+                max_packets = len(self._commands_with_payloads[time])
+        return max_packets
+
+    # @implements AbstractPartitionableVertex.get_multi_cast_no_payload_packets_per_tick_requirement
+    def get_multi_cast_no_payload_packets_per_tick_requirement(
+            self, vertex_slice, graph):
+        max_packets = 0
+        for time in self._commands_without_payloads:
+            if max_packets < len(self._commands_without_payloads[time]):
+                max_packets = len(self._commands_without_payloads[time])
+        return max_packets
+
+    # @implements AbstractPartitionableVertex.get_fixed_route_packets_per_tick_requirement
+    def get_fixed_route_packets_per_tick_requirement(
+            self, vertex_slice, graph):
+        # standard models don't use fixed route packets at all.
+        return 0
+
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 
