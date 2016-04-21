@@ -748,9 +748,12 @@ class SpinnakerMainInterface(object):
         # partitionable graph that has vertices added to it.
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
-            "MemoryTags", "MemoryRoutingInfos", "MemoryGraphMapper",
+            "MemoryTags", "MemoryRoutingInfos",
             "MemoryPartitionedGraph"
         ]
+
+        if len(self._partitionable_graph.vertices) > 0:
+            outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
         executor = PACMANAlgorithmExecutor(
