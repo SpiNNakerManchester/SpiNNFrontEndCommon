@@ -178,7 +178,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
 
 static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (data_hdr_value >> 14) && 0x03;
+    uint8_t pkt_type = (data_hdr_value >> 14) & 0x03;
 
     if (pkt_type == 0x01) {
         return calculate_eieio_packet_command_size(eieio_msg_ptr);
@@ -259,19 +259,19 @@ static inline bool is_eieio_packet_in_buffer(void) {
 
 static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    bool pkt_has_timestamp = (bool) (data_hdr_value >> 12 & 0x1);
-    bool pkt_apply_prefix = (bool) (data_hdr_value >> 15);
-    bool pkt_mode = data_hdr_value >> 14;
+    bool pkt_has_timestamp = (bool) ((data_hdr_value >> 12) & 0x1);
+    bool pkt_apply_prefix = (bool) ((data_hdr_value >> 15) & 0x1);
+    bool pkt_mode = (bool) ((data_hdr_value >> 14) & 0x1);
 
     // If the packet is actually a command packet, return the current time
-    if (pkt_apply_prefix == 0 && pkt_mode == 1) {
+    if (!pkt_apply_prefix && pkt_mode) {
         return time;
     }
 
     // If the packet indicates that payloads are timestamps
     if (pkt_has_timestamp) {
-        bool pkt_payload_prefix_apply = (bool) (data_hdr_value >> 13 & 0x1);
-        uint8_t pkt_type = (uint8_t) (data_hdr_value >> 10 & 0x3);
+        bool pkt_payload_prefix_apply = (bool) ((data_hdr_value >> 13) & 0x1);
+        uint8_t pkt_type = (uint8_t) ((data_hdr_value >> 10) & 0x3);
         uint32_t payload_time = 0;
         bool got_payload_time = false;
         uint16_t *event_ptr = &eieio_msg_ptr[1];
@@ -287,7 +287,7 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
             if (pkt_type & 0x2) {
 
                 // 32 bit packet
-                payload_time = event_ptr[1] << 16 | event_ptr[0];
+                payload_time = (event_ptr[1] << 16) | event_ptr[0];
                 event_ptr += 2;
             } else {
 
@@ -303,7 +303,7 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
             if (pkt_type & 0x2) {
 
                 // 32 bit packet
-                payload_time |= event_ptr[1] << 16 | event_ptr[0];
+                payload_time |= (event_ptr[1] << 16) | event_ptr[0];
             } else {
 
                 // 16 bit packet
@@ -466,12 +466,12 @@ static inline void process_32_bit_packets(
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = next_event[1] << 16 | next_event[0];
+        uint32_t key = (next_event[1] << 16) | next_event[0];
         log_debug("Packet key = 0x%08x", key);
         next_event += 2;
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = next_event[1] << 16 | next_event[0];
+            payload = (next_event[1] << 16) | next_event[0];
             next_event += 2;
         }
 
@@ -521,10 +521,10 @@ static inline bool eieio_data_parse_packet(
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     print_packet(eieio_msg_ptr);
 
-    bool pkt_apply_prefix = (bool) (data_hdr_value >> 15);
+    bool pkt_apply_prefix = (bool) ((data_hdr_value >> 15) & 0x1);
     bool pkt_prefix_upper = (bool) ((data_hdr_value >> 14) & 0x1);
-    bool pkt_payload_apply_prefix = (bool) (data_hdr_value >> 13 & 0x1);
-    uint8_t pkt_type = (uint8_t) (data_hdr_value >> 10 & 0x3);
+    bool pkt_payload_apply_prefix = (bool) ((data_hdr_value >> 13) & 0x1);
+    uint8_t pkt_type = (uint8_t) ((data_hdr_value >> 10) & 0x3);
     uint8_t pkt_count = (uint8_t) (data_hdr_value & 0xFF);
     bool pkt_has_payload = (bool) (pkt_type & 0x1);
 
@@ -576,7 +576,8 @@ static inline bool eieio_data_parse_packet(
 
             // If there is a payload prefix and the payload is 32-bit
             pkt_payload_prefix =
-                (uint32_t) hdr_pointer[1] << 16 | hdr_pointer[0];
+                (((uint32_t) hdr_pointer[1] << 16) |
+                 (uint32_t) hdr_pointer[0]);
             hdr_pointer += 2;
         }
     }
@@ -714,7 +715,7 @@ static inline bool packet_handler_selector(eieio_msg_t eieio_msg_ptr,
     log_debug("packet_handler_selector");
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (data_hdr_value >> 14) && 0x03;
+    uint8_t pkt_type = (data_hdr_value >> 14) & 0x03;
 
     if (pkt_type == 0x01) {
         log_debug("parsing a command packet");

@@ -748,9 +748,12 @@ class SpinnakerMainInterface(object):
         # partitionable graph that has vertices added to it.
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
-            "MemoryTags", "MemoryRoutingInfos", "MemoryGraphMapper",
+            "MemoryTags", "MemoryRoutingInfos",
             "MemoryPartitionedGraph"
         ]
+
+        if len(self._partitionable_graph.vertices) > 0:
+            outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
         executor = PACMANAlgorithmExecutor(
@@ -919,18 +922,26 @@ class SpinnakerMainInterface(object):
         except PacmanAlgorithmFailedToCompleteException as e:
 
             logger.error(
-                "An error has occurred during simulation - "
-                "attempting to extract data")
+                "An error has occurred during simulation")
             for line in traceback.format_tb(e.traceback):
                 logger.error(line.strip())
             logger.error(e.exception)
+
+            logger.info("\n\nAttempting to extract data\n\n")
 
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
             try:
                 self._recover_from_error(e, executor.get_items())
             except Exception:
-                self.stop()
+
+                # if in debug mode, do not shut down machine
+                in_debug_mode = self._config.get("Mode", "mode") == "Debug"
+                if not in_debug_mode:
+                    self.stop(
+                        extract_iobuf=False, extract_provenance_data=False)
+
+                # raise exception
                 ex_type, ex_value, ex_traceback = sys.exc_info()
                 raise ex_type, ex_value, ex_traceback
 
@@ -1037,6 +1048,10 @@ class SpinnakerMainInterface(object):
             self._print_iobuf(
                 executor.get_item("ErrorMessages"),
                 executor.get_item("WarnMessages"))
+            self.stop(turn_off_machine=False, clear_routing_tables=False,
+                      clear_tags=False, extract_provenance_data=False,
+                      extract_iobuf=False)
+            sys.exit(1)
 
     def _extract_iobuf(self):
         if (self._config.getboolean("Reports", "extract_iobuf") and
@@ -1380,7 +1395,7 @@ class SpinnakerMainInterface(object):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
-        # if not a virtual machine, then shut down stuff on the board
+        # if not a virtual machine then shut down stuff on the board
         if not self._use_virtual_board:
 
             if turn_off_machine is None:
@@ -1392,7 +1407,8 @@ class SpinnakerMainInterface(object):
                     "Machine", "clear_routing_tables")
 
             if clear_tags is None:
-                clear_tags = self._config.getboolean("Machine", "clear_tags")
+                clear_tags = self._config.getboolean(
+                    "Machine", "clear_tags")
 
             if self._txrx is not None:
 
@@ -1436,7 +1452,8 @@ class SpinnakerMainInterface(object):
                 self._machine_allocation_controller.close()
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None):
+             clear_tags=None, extract_provenance_data=True,
+             extract_iobuf=True):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -1448,13 +1465,22 @@ class SpinnakerMainInterface(object):
         :param clear_tags: informs the tool chain if it should clear the tags\
             off the machine at stop
         :type clear_tags: boolean
+        :param extract_provenance_data: informs the tools if it should \
+            try to extract provenance data.
+        :type extract_provenance_data: bool
+        :param extract_iobuf: tells the tools if it should try to \
+            extract iobuf
+        :type extract_iobuf: bool
         :return: None
         """
 
-        self._extract_provenance()
-        self._extract_iobuf()
+        if extract_provenance_data:
+            self._extract_provenance()
+        if extract_iobuf:
+            self._extract_iobuf()
 
-        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown(
+            turn_off_machine, clear_routing_tables, clear_tags)
 
     def _add_socket_address(self, socket_address):
         """

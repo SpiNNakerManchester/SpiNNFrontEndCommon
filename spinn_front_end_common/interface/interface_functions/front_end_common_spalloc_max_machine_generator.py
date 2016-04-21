@@ -17,7 +17,7 @@ class FrontEndCommonSpallocMaxMachineGenerator(object):
 
         for machine in machines:
             if ((max_width is None and max_height is None) or
-                    ((machine.width * machine.height) >
+                    ((machine["width"] * machine["height"]) >
                         (max_width * max_height))):
                 max_width = machine["width"]
                 max_height = machine["height"]
