@@ -868,6 +868,11 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
+        # If we have run before, make sure to extract the data before the next
+        # run
+        if self._has_ran and not self._has_reset_last:
+            algorithms.append("FrontEndCommonBufferExtractor")
+
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
             inputs["WriteReloadFilesFlag"] = (
