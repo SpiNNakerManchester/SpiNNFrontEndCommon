@@ -968,6 +968,11 @@ bool initialise(uint32_t *timer_period) {
 }
 
 void resume_callback() {
+
+    address_t address = data_specification_get_data_address();
+    setup_buffer_region(data_specification_get_region(
+        BUFFER_REGION, address));
+
     // set the code to start sending packet requests again
     send_packet_reqs = true;
 
@@ -1006,9 +1011,9 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Last time of stop notification request: %d",
                  last_stop_notification_request);
 
-        address_t address = data_specification_get_data_address();
-        setup_buffer_region(data_specification_get_region(
-            BUFFER_REGION, address));
+        // Subtract 1 from the time so this tick gets done again on the next
+        // run
+        time -= 1;
 
         return;
     }

@@ -180,6 +180,10 @@ void timer_callback(uint unused0, uint unused1) {
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
         simulation_handle_pause_resume(NULL);
+
+        // Subtract 1 from the time so this tick gets done again on the next
+        // run
+        time -= 1;
     }
 }
 

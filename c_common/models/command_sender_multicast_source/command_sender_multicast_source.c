@@ -31,6 +31,10 @@ void timer_callback(uint unused0, uint unused1) {
     if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
             (time >= simulation_ticks)) {
         simulation_handle_pause_resume(NULL);
+
+        // Subtract 1 from the time so this tick gets done again on the next
+        // run
+        time -= 1;
         return;
     }
 
