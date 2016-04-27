@@ -134,6 +134,19 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
             log_info("Resuming");
             spin1_resume(SYNC_WAIT);
 
+            // If we are told to send a response, send it now
+            if (msg->arg3 == 1) {
+                msg->cmd_rc = RC_OK;
+                msg->length = 12;
+                uint dest_port = msg->dest_port;
+                uint dest_addr = msg->dest_addr;
+                msg->dest_port = msg->srce_port;
+                msg->srce_port = dest_port;
+                msg->dest_addr = msg->srce_addr;
+                msg->srce_addr = dest_addr;
+                spin1_send_sdp_msg(msg, 10);
+            }
+
             // free the message to stop overload
             spin1_msg_free(msg);
             break;
