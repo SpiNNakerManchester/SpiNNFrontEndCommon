@@ -266,8 +266,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         """
 
         # Skip if the virtual key is not yet defined
+        key_to_send = self._virtual_key
         if self._virtual_key is None:
-            return
+            key_to_send = 0
 
         if self._send_buffer is not None:
             self._send_buffer.clear()
@@ -283,12 +284,12 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                             self._machine_time_step))
                         if self._is_in_range(time_stamp_in_ticks):
                             self._send_buffer.add_key(
-                                time_stamp_in_ticks, self._virtual_key + key)
+                                time_stamp_in_ticks, key_to_send + key)
             else:
 
                 # Work with a single list
                 key_list = [
-                    key + self._virtual_key for key in range(self._n_keys)]
+                    key + key_to_send for key in range(self._n_keys)]
                 for timeStamp in sorted(self._send_buffer_times):
                     time_stamp_in_ticks = int(math.ceil(
                         float(int(timeStamp * 1000.0)) /
