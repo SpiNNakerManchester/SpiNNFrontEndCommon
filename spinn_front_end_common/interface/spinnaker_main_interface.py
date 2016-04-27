@@ -500,6 +500,15 @@ class SpinnakerMainInterface(object):
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
+            inputs["BMPDetails"] = None
+            inputs["DownedChipsDetails"] = None
+            inputs["DownedCoresDetails"] = None
+            inputs["AutoDetectBMPFlag"] = False
+            inputs["ScampConnectionData"] = None
+            inputs["BootPortNum"] = self._read_config_int(
+                "Machine", "boot_connection_port_num")
+            inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
+                "Machine", "reset_machine_on_startup")
             inputs["MemoryTransceiver"] = None
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
@@ -888,7 +897,8 @@ class SpinnakerMainInterface(object):
 
         # Add the database writer in case it is needed
         algorithms.append("FrontEndCommonDatabaseInterface")
-        algorithms.append("FrontEndCommonNotificationProtocol")
+        if not self._use_virtual_board:
+            algorithms.append("FrontEndCommonNotificationProtocol")
 
         # Sort out reload if needed
         if self._config.getboolean("Reports", "writeReloadSteps"):
