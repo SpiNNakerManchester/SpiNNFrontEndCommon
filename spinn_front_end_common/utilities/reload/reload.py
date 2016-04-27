@@ -69,6 +69,7 @@ class Reload(object):
         inputs["WriteTextSpecsFlag"] = False
         inputs["WriteMemoryMapReportFlag"] = False
         inputs["DSEAPPID"] = dse_app_id
+        inputs["ReportFolder"] = None
 
         # Buffered inputs
         inputs["MemoryTags"] = buffered_tags
@@ -91,24 +92,24 @@ class Reload(object):
         inputs["PostSimulationOverrunBeforeError"] = time_threshold
 
         algorithms = list()
-        algorithms.append("FrontEndCommonMachineInterfacer")
+        algorithms.append("FrontEndCommonMachineGenerator")
         algorithms.append("MallocBasedChipIDAllocator")
 
         if loading:
             algorithms.append("FrontEndCommonRoutingTableLoader")
-            algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
+            algorithms.append("FrontEndCommonTagsLoaderSeparateLists")
             if exec_dse_on_host:
                 algorithms.append(
-                    "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                    "FrontEndCommonHostExecuteDataSpecification")
             else:
                 algorithms.append(
-                    "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+                    "FrontEndCommonMachineExecuteDataSpecification")
 
         if running:
-            algorithms.append("FrontEndCommonBufferManagerCreater")
+            algorithms.append("FrontEndCommonBufferManagerCreator")
             algorithms.append("FrontEndCommonLoadExecutableImages")
             algorithms.append("FrontEndCommonNotificationProtocol")
-            algorithms.append("FrontEndCommonRuntimeUpdater")
+            algorithms.append("FrontEndCommonChipRuntimeUpdater")
             algorithms.append("FrontEndCommonApplicationRunner")
 
         # run the pacman executor
