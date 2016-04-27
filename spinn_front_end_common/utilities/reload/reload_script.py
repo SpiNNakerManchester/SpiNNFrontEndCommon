@@ -124,7 +124,9 @@ class ReloadScript(object):
         self._println("iptags = list()")
         self._println("reverse_iptags = list()")
         self._println(
-            "app_data_runtime_folder = os.path.realpath(\"__file__\")")
+            "app_data_runtime_folder = os.path.abspath(")
+        self._println(
+            "    os.path.join(os.path.realpath(\"__file__\"), os.pardir))")
         self._println("dsg_targets = dict()")
         self._println("exec_dse_on_host = {}".format(exec_dse_on_host))
         self._println("dse_app_id = {}".format(dse_app_id))
@@ -139,7 +141,8 @@ class ReloadScript(object):
         self._println("wait_for_read_confirmation = {}".format(
             wait_for_read_confirmation))
         self._println("database_socket_addresses = list()")
-        self._println("database_file_path = \"{}\"".format(database_file_path))
+        self._println("database_file_path = r\"{}\"".format(
+            database_file_path))
         self._println("send_start_notification = {}".format(
             send_start_notification))
         self._println("")
