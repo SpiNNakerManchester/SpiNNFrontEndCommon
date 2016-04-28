@@ -87,7 +87,12 @@ class FrontEndCommonSpallocAllocator(object):
                 n_boards, hostname=spalloc_server, port=spalloc_port,
                 owner=spalloc_user)
 
-        job.wait_until_ready()
+        try:
+            job.wait_until_ready()
+        except:
+            job.destroy()
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            raise ex_type, ex_value, ex_traceback
 
         # get param from jobs before starting, so that hanging doesn't occur
         width = job.width
