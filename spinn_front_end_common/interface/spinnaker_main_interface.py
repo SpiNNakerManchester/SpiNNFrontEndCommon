@@ -1,7 +1,6 @@
 """
 main interface for the spinnaker tools
 """
-import atexit
 
 # pacman imports
 from pacman.model.partitionable_graph.partitionable_graph \
@@ -239,6 +238,10 @@ class SpinnakerMainInterface(object):
         logger.error("User has cancelled simulation")
         self._shutdown()
 
+    def exception_handler(self, exctype, value, traceback_obj):
+        self._shutdown()
+        return sys.__excepthook__(exctype, value, traceback_obj)
+
     def run(self, run_time):
         """
 
@@ -248,6 +251,7 @@ class SpinnakerMainInterface(object):
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
         self._raise_keyboard_interrupt = True
+        sys.excepthook = sys.__excepthook__
 
         logger.info("Starting execution process")
 
@@ -347,7 +351,7 @@ class SpinnakerMainInterface(object):
 
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
-        atexit.register(self._shutdown)
+        sys.excepthook = self.exception_handler
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
 
@@ -1443,7 +1447,6 @@ class SpinnakerMainInterface(object):
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
-        atexit._exithandlers.remove((self._shutdown, (), {}))
 
         # if not a virtual machine then shut down stuff on the board
         if not self._use_virtual_board:
