@@ -285,7 +285,7 @@ class SpinnakerMainInterface(object):
                 self._partitioned_graph = PartitionedGraph()
                 self._graph_mapper = None
             if self._machine is None:
-                self._get_machine()
+                self._get_machine(total_run_time)
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything is recording and buffered
@@ -469,7 +469,7 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self):
+    def _get_machine(self, total_run_time=None):
         if self._machine is not None:
             return self._machine
 
@@ -490,6 +490,9 @@ class SpinnakerMainInterface(object):
         # add max sdram size which we're going to allow (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
+
+        # Set the total run time
+        inputs["TotalRunTime"] = total_run_time
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
