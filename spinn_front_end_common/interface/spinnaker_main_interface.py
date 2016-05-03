@@ -266,7 +266,7 @@ class SpinnakerMainInterface(object):
                 total_run_timesteps *
                 (float(self._machine_time_step) / 1000.0) *
                 self._time_scale_factor)
-        if self._has_ran and self._machine_allocation_controller is not None:
+        if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
 
@@ -469,7 +469,7 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self, total_run_time=None):
+    def _get_machine(self, total_run_time=0):
         if self._machine is not None:
             return self._machine
 
