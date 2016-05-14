@@ -511,12 +511,6 @@ class SpinnakerMainInterface(object):
                 "Machine", "boot_connection_port_num")
             inputs["BoardVersion"] = self._read_config_int(
                 "Machine", "version")
-            inputs["NumberOfBoards"] = self._read_config_int(
-                "Machine", "number_of_boards")
-            inputs["MachineWidth"] = self._read_config_int(
-                "Machine", "width")
-            inputs["MachineHeight"] = self._read_config_int(
-                "Machine", "height")
             inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
                 "Machine", "reset_machine_on_startup")
 
