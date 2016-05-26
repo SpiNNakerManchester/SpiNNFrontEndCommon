@@ -10,7 +10,7 @@ ifndef PRINT_DEBUG
     PRINT_DEBUG = PRODUCTION_CODE
 endif
 
-CFLAGS += -Os -I include -D$(PRINT_DEBUG)
+CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects
