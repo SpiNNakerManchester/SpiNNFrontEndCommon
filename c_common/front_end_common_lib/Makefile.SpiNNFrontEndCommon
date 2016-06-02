@@ -8,7 +8,7 @@ ifndef SOURCE_DIRS
 endif
 
 ifndef APP_OUTPUT_DIR
-    $(error APP_OUTPUT_DIRS is not set.  Please define APP_OUTPUT_DIRS)
+    $(error APP_OUTPUT_DIR is not set.  Please define APP_OUTPUT_DIR)
 endif
 
 ifndef BUILD_DIR

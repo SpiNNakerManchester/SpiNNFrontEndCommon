@@ -6,7 +6,9 @@
 #include "simulation.h"
 #include "data_specification.h"
 
+#include <stdbool.h>
 #include <debug.h>
+#include <spin1_api_params.h>
 #include <spin1_api.h>
 
 //! the pointer to the simulation time used by application models
@@ -14,10 +16,6 @@ static uint32_t *pointer_to_simulation_time;
 
 //! the pointer to the flag for if it is a infinite run
 static uint32_t *pointer_to_infinite_run;
-
-//! the port used by the host machine for setting up the SDP port for
-//! receiving the exit, new runtime etc
-static int sdp_exit_run_command_port;
 
 //! the function call to run when extracting provenance data from the chip
 static prov_callback_t stored_provenance_function = NULL;
@@ -27,6 +25,10 @@ static resume_callback_t stored_resume_function = NULL;
 
 //! the region id for storing provenance data from the chip
 static uint32_t stored_provenance_data_region_id = NULL;
+
+//! the list of SDP callbacks for ports
+static callback_t sdp_callback[NUM_SDP_PORTS];
+
 
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
@@ -70,7 +72,7 @@ static void _execute_provenance_storage() {
 
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_app_magic_number,
-        uint32_t* timer_period) {
+        uint32_t* timer_period, uint32_t *simulation_control_sdp_port) {
 
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
         log_error(
@@ -83,7 +85,7 @@ bool simulation_read_timing_details(
 
     *timer_period = address[SIMULATION_TIMER_PERIOD];
 
-    sdp_exit_run_command_port = address[SDP_EXIT_RUNTIME_COMMAND_PORT];
+    *simulation_control_sdp_port = address[SIMULATION_CONTROL_SDP_PORT];
     return true;
 }
 
@@ -105,7 +107,13 @@ void simulation_handle_pause_resume(resume_callback_t callback){
     spin1_pause();
 }
 
-void simulation_sdp_packet_callback(uint mailbox, uint port) {
+//! \brief handles the new commands needed to resume the binary with a new
+//! runtime counter, as well as switching off the binary when it truly needs
+//! to be stopped.
+//! \param[in] mailbox The mailbox containing the SDP packet received
+//! \param[in] port The port on which the packet was received
+//! \return does not return anything
+void _simulation_control_scp_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
@@ -179,31 +187,41 @@ void simulation_sdp_packet_callback(uint mailbox, uint port) {
     }
 }
 
-//! \brief handles the registration of the SDP callback
-//! \param[in] simulation_ticks_pointer Pointer to the number of simulation
-//!            ticks, to allow this to be updated when requested via SDP
-//! \param[in] infinite_run_pointer Pointer to the infinite run flag, to allow
-//!            this to be updated when requested via SDP
-//! \param[in] sdp_packet_callback_priority The priority to use for the
-//!            SDP packet reception
-void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
-        int sdp_packet_callback_priority) {
-    pointer_to_simulation_time = simulation_ticks_pointer;
-    pointer_to_infinite_run = infinite_run_pointer;
-    log_info("port no is %d", sdp_exit_run_command_port);
-    spin1_sdp_callback_on(
-        sdp_exit_run_command_port, simulation_sdp_packet_callback,
-        sdp_packet_callback_priority);
+void _simulation_sdp_callback_handler(uint mailbox, uint port) {
+
+    if (sdp_callback[port] != NULL) {
+
+        // if a callback is associated with the port, process it
+        sdp_callback[port](mailbox, port);
+    } else {
+
+        // if no callback is associated, dump the received packet
+        sdp_msg_t *msg = (sdp_msg_t *) mailbox;
+        sark_msg_free(msg);
+    }
 }
 
-//! \brief handles the registration for storing provenance data (needs to be
-//!        done at least with the provenance region id)
-//! \param[in] provenance_function: function to call for extra provenance data
-//!            can be NULL as well.
-//! \param[in] provenance_data_region_id: the region id in dsg for where
-//!            provenance is to be stored
-//! \return does not return anything
+void simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
+    sdp_callback[sdp_port] = callback;
+}
+
+void simulation_sdp_callback_off(uint sdp_port) {
+    sdp_callback[sdp_port] = NULL;
+}
+
+void simulation_register_simulation_sdp_callback(
+        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
+        int sdp_packet_callback_priority,
+        uint32_t simulation_control_sdp_port) {
+    pointer_to_simulation_time = simulation_ticks_pointer;
+    pointer_to_infinite_run = infinite_run_pointer;
+    spin1_callback_on(
+        SDP_PACKET_RX, _simulation_sdp_callback_handler,
+        sdp_packet_callback_priority);
+    simulation_sdp_callback_on(
+        simulation_control_sdp_port, _simulation_control_scp_callback);
+}
+
 void  simulation_register_provenance_callback(
         prov_callback_t provenance_function,
         uint32_t provenance_data_region_id){
