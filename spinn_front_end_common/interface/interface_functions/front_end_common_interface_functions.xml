@@ -188,6 +188,12 @@
                 <param_type>MaxSDRAMSize</param_type>
             </parameter>
         </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>max_core_id</param_name>
+                <param_type>MaxCoreId</param_type>
+            </parameter>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>machine</param_name>

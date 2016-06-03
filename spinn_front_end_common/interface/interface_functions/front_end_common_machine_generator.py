@@ -20,7 +20,7 @@ class FrontEndCommonMachineGenerator(object):
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, auto_detect_bmp, enable_reinjection,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
-            max_sdram_size=None):
+            max_sdram_size=None, max_core_id=None):
 
         """
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -62,7 +62,7 @@ class FrontEndCommonMachineGenerator(object):
             ignore_cores=ignored_cores, auto_detect_bmp=auto_detect_bmp,
             boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            max_sdram_size=max_sdram_size)
+            max_sdram_size=max_sdram_size, max_core_id=max_core_id)
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()

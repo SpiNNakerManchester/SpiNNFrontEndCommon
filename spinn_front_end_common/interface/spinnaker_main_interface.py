@@ -513,6 +513,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "version")
             inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
                 "Machine", "reset_machine_on_startup")
+            inputs["MaxCoreId"] = self._read_config_int(
+                "Machine", "core_limit")
 
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
