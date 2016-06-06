@@ -10,18 +10,6 @@ class AbstractChangableAfterRun(object):
         might or might not require mapping
     """
 
-    @abstractmethod
-    def requires_remapping_for_change(self, parameter, old_value, new_value):
-        """
-        states if the vertex needs remapping given the given parameter is being
-        change from old value to new value
-        :param new_value:
-        :param old_value:
-        :param parameter:
-        :return:
-        """
-
-
     @abstractproperty
     def requires_mapping(self):
         """ True if changes that have been made require that mapping be\

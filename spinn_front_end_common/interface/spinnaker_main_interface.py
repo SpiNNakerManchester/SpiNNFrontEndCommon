@@ -274,11 +274,10 @@ class SpinnakerMainInterface(object):
         # start by performing mapping
         application_graph_changed = self._detect_if_graph_has_changed(True)
         if not self._has_ran or application_graph_changed:
-            if (application_graph_changed and self._has_ran and
-                    not self._has_reset_last):
+            if (application_graph_changed and self._has_ran):
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
-                    " resetting")
+                    " ending and starting again")
 
             # Reset the partitioned graph if there is a partitionable graph
             if len(self._partitionable_graph.vertices) > 0:
@@ -445,7 +444,7 @@ class SpinnakerMainInterface(object):
                         "is not currently supported")
         return total_run_timesteps
 
-    def _run_machine_algorithms(
+    def _run_algorithms(
             self, inputs, algorithms, outputs, optional_algorithms=None):
 
         optional = optional_algorithms
@@ -526,7 +525,7 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryExtendedMachine")
             outputs.append("MemoryTransceiver")
 
-            executor = self._run_machine_algorithms(
+            executor = self._run_algorithms(
                 inputs, algorithms, outputs)
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
@@ -561,7 +560,7 @@ class SpinnakerMainInterface(object):
 
             outputs.append("MemoryExtendedMachine")
 
-            executor = self._run_machine_algorithms(
+            executor = self._run_algorithms(
                 inputs, algorithms, outputs)
             self._machine = executor.get_item("MemoryExtendedMachine")
 
@@ -642,7 +641,7 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryTransceiver")
             outputs.append("MachineAllocationController")
 
-            executor = self._run_machine_algorithms(
+            executor = self._run_algorithms(
                 inputs, algorithms, outputs)
 
             self._machine = executor.get_item("MemoryExtendedMachine")
@@ -806,7 +805,7 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
-        executor = self._run_machine_algorithms(inputs, algorithms, outputs)
+        executor = self._run_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -829,7 +828,7 @@ class SpinnakerMainInterface(object):
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
 
-        executor = self._run_machine_algorithms(inputs, algorithms, [])
+        executor = self._run_algorithms(inputs, algorithms, [])
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -866,7 +865,7 @@ class SpinnakerMainInterface(object):
             "LoadedApplicationDataToken"
         ]
 
-        executor = self._run_machine_algorithms(
+        executor = self._run_algorithms(
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
