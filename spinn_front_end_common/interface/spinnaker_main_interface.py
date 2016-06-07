@@ -274,7 +274,7 @@ class SpinnakerMainInterface(object):
         # start by performing mapping
         application_graph_changed = self._detect_if_graph_has_changed(True)
         if not self._has_ran or application_graph_changed:
-            if (application_graph_changed and self._has_ran):
+            if application_graph_changed and self._has_ran:
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " ending and starting again")
