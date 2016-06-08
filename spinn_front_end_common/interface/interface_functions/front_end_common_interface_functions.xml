@@ -457,6 +457,14 @@
                 <param_name>with_monitors</param_name>
                 <param_type>VirtualChipsHaveMonitor</param_type>
             </parameter>
+            <parameter>
+                <param_name>down_chips</param_name>
+                <param_type>DownedChipsDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>down_cores</param_name>
+                <param_type>DownedCoresDetails</param_type>
+            </parameter>
         </optional_inputs>
         <produces_outputs>
             <parameter>
