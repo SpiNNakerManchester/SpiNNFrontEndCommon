@@ -8,18 +8,24 @@ from spinn_front_end_common.abstract_models.\
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex\
     import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_socket_addresses import \
+    AbstractProvidesSocketAddresses
 from spinn_front_end_common.utilities import constants
-
-# general imports
-import sys
+from spinn_front_end_common.utilities.notification_protocol.\
+    socket_address import SocketAddress
 from spinn_front_end_common.utility_models\
     .reverse_ip_tag_multicast_source_partitioned_vertex \
     import ReverseIPTagMulticastSourcePartitionedVertex
 
+# general imports
+import sys
+
 
 class ReverseIpTagMultiCastSource(
         AbstractPartitionableVertex, AbstractDataSpecableVertex,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractProvidesOutgoingPartitionConstraints,
+        AbstractProvidesSocketAddresses):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -48,6 +54,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
+            send_buffer_notification_ack_port=None,
             send_buffer_notification_tag=None):
         """
 
@@ -112,6 +119,8 @@ class ReverseIpTagMultiCastSource(
             send_buffer_notification_ip_address
         self._send_buffer_notification_port = send_buffer_notification_port
         self._send_buffer_notification_tag = send_buffer_notification_tag
+        self._send_buffer_notification_ack_port = \
+            send_buffer_notification_ack_port
 
         # Store recording parameters for later
         self._recording_enabled = False
@@ -127,6 +136,13 @@ class ReverseIpTagMultiCastSource(
         # Keep the subvertices for resuming runs
         self._subvertices = list()
         self._first_machine_time_step = 0
+
+    @property
+    def get_socket_addresses(self):
+        return SocketAddress(
+            listen_port=self._send_buffer_notification_ack_port,
+            notify_host_name=self._send_buffer_notification_ip_address,
+            notify_port_no=self._send_buffer_notification_port)
 
     @property
     def send_buffer_times(self):

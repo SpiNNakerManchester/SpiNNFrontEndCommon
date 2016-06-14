@@ -930,6 +930,9 @@ class SpinnakerMainInterface(object):
         # Add the database writer in case it is needed
         algorithms.append("FrontEndCommonDatabaseInterface")
         if not self._use_virtual_board:
+            # add socket gatherer for locating the addresses needed for the
+            # notification protocol.
+            algorithms.append("FrontEndCommonSocketAddressGatherer")
             algorithms.append("FrontEndCommonNotificationProtocol")
 
         # Sort out reload if needed
