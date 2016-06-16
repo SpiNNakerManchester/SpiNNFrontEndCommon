@@ -8,7 +8,8 @@ from spinn_front_end_common.utilities import report_functions as \
 
 # spinnman imports
 from spinnman.model.cpu_state import CPUState
-from spinnman.model.core_subsets import CoreSubsets
+from spinn_machine.core_subsets import CoreSubsets
+from spinn_machine.core_subset import CoreSubset
 
 # general imports
 import os
@@ -321,3 +322,31 @@ def get_core_subsets(core_infos):
     for (x, y, p) in core_infos:
         core_subsets.add_processor(x, y, p)
     return core_subsets
+
+
+def sort_out_downed_chips_cores(downed_chips, downed_cores):
+    """ Translate the down cores and down chips string into a form that \
+        spinnman can understand
+
+    :param downed_cores: string representing down cores
+    :type downed_cores: str
+    :param downed_chips: string representing down chips
+    :type: downed_chips: str
+    :return: a list of down cores and down chips in processor and \
+            core subset format
+    """
+    ignored_chips = None
+    ignored_cores = None
+    if downed_chips is not None and downed_chips != "None":
+        ignored_chips = CoreSubsets()
+        for downed_chip in downed_chips.split(":"):
+            x, y = downed_chip.split(",")
+            ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
+                                                     []))
+    if downed_cores is not None and downed_cores != "None":
+        ignored_cores = CoreSubsets()
+        for downed_core in downed_cores.split(":"):
+            x, y, processor_id = downed_core.split(",")
+            ignored_cores.add_processor(int(x), int(y),
+                                        int(processor_id))
+    return ignored_chips, ignored_cores

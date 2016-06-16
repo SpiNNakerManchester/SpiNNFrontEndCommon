@@ -513,6 +513,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "version")
             inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
                 "Machine", "reset_machine_on_startup")
+            inputs["MaxCoreId"] = self._read_config_int(
+                "Machine", "core_limit")
 
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
@@ -536,8 +538,10 @@ class SpinnakerMainInterface(object):
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
             inputs["BMPDetails"] = None
-            inputs["DownedChipsDetails"] = None
-            inputs["DownedCoresDetails"] = None
+            inputs["DownedChipsDetails"] = self._config.get(
+                "Machine", "down_chips")
+            inputs["DownedCoresDetails"] = self._config.get(
+                "Machine", "down_cores")
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
             inputs["BootPortNum"] = self._read_config_int(
