@@ -9,6 +9,12 @@ from pacman.model.constraints.key_allocator_constraints\
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources.cpu_cycles_per_tick_resource \
+    import CPUCyclesPerTickResource
+
 
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
@@ -64,7 +70,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     _CONFIGURATION_REGION_SIZE = 40
 
     def __init__(
-            self, n_keys, resources_required, machine_time_step,
+            self, n_keys, machine_time_step,
             timescale_factor, label, constraints=None,
 
             # General input and output parameters
@@ -133,7 +139,8 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Set up super types
         PartitionedVertex.__init__(
-            self, resources_required, label, constraints)
+            self, None,
+            label, constraints)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
         ProvidesProvenanceDataFromMachineImpl.__init__(
@@ -154,6 +161,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             SendsBuffersFromHostPreBufferedImpl.__init__(
                 self, None)
         else:
+            self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
 
@@ -227,6 +235,49 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 # If no prefix was generated, generate one
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
+
+    @property
+    def resources_required(self):
+        ResourceContainer(
+            DTCMResource(1),
+            SDRAMResource(self.get_sdram_usage(
+                self._send_buffer_times, self._send_buffer_max_space,
+                self._record_buffer_size > 0,
+                self._buffered_sdram_per_timestep > 0,
+                self._minimum_sdram_for_buffering, self._record_buffer_size)),
+            CPUCyclesPerTickResource(1)),
+
+    @staticmethod
+    def get_sdram_usage(
+            send_buffer_times, send_buffer_max_space, recording_enabled,
+            using_auto_pause_and_resume, minimum_sdram_for_buffering,
+            record_buffer_size):
+        send_buffer_size = 0
+        if send_buffer_times is not None:
+            send_buffer_size = send_buffer_max_space
+
+        recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
+                          .get_recording_data_size(1))
+        if recording_enabled:
+            if using_auto_pause_and_resume:
+                recording_size += minimum_sdram_for_buffering
+            else:
+                recording_size += record_buffer_size
+                recording_size += (
+                    ReverseIPTagMulticastSourcePartitionedVertex.
+                    get_buffer_state_region_size(1))
+        mallocs = \
+            ReverseIPTagMulticastSourcePartitionedVertex.n_regions_to_allocate(
+                send_buffer_times is not None, recording_enabled)
+        allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
+
+        return (
+            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
+            (ReverseIPTagMulticastSourcePartitionedVertex.
+                _CONFIGURATION_REGION_SIZE) +
+            send_buffer_size + recording_size + allocation_size +
+            (ReverseIPTagMulticastSourcePartitionedVertex.
+                get_provenance_data_size(0)))
 
     @staticmethod
     def n_regions_to_allocate(send_buffering, recording):
@@ -328,6 +379,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             notification_tag, minimum_sdram_for_buffering,
             buffered_sdram_per_timestep)
         self._record_buffer_size = record_buffer_size
+        self._recording_enabled = True
         self._buffer_size_before_receive = buffer_size_before_receive
 
     def _reserve_regions(self, spec):
