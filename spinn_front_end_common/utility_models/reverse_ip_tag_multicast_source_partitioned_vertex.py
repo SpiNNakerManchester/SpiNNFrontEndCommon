@@ -30,8 +30,9 @@ from spinn_front_end_common.abstract_models\
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
-    import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models\
+    .abstract_partitioned_data_specable_vertex \
+    import AbstractPartitionedDataSpecableVertex
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl import \
     ProvidesProvenanceDataFromMachineImpl
@@ -49,7 +50,8 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex,
-        AbstractDataSpecableVertex, ProvidesProvenanceDataFromMachineImpl,
+        AbstractPartitionedDataSpecableVertex,
+        ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
         ReceiveBuffersToHostBasicImpl,
@@ -141,7 +143,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         PartitionedVertex.__init__(
             self, None,
             label, constraints)
-        AbstractDataSpecableVertex.__init__(
+        AbstractPartitionedDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
@@ -238,14 +240,14 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
     @property
     def resources_required(self):
-        ResourceContainer(
+        return ResourceContainer(
             DTCMResource(1),
             SDRAMResource(self.get_sdram_usage(
                 self._send_buffer_times, self._send_buffer_max_space,
                 self._record_buffer_size > 0,
                 self._buffered_sdram_per_timestep > 0,
                 self._minimum_sdram_for_buffering, self._record_buffer_size)),
-            CPUCyclesPerTickResource(1)),
+            CPUCyclesPerTickResource(1))
 
     @staticmethod
     def get_sdram_usage(
@@ -476,9 +478,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             spec.write_value(data=0)
 
     def generate_data_spec(
-            self, subvertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_subgraph_mapper, report_folder, ip_tags,
-            reverse_ip_tags, write_text_specs, application_run_time_folder):
+            self, placement, sub_graph, routing_info,
+            hostname, report_folder, ip_tags, reverse_ip_tags,
+            write_text_specs, application_run_time_folder):
 
         # Create new DataSpec for this processor:
         data_writer, report_writer = \
@@ -519,7 +521,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])
         return list()
 
-    def is_data_specable(self):
+    def is_partitioned_data_specable(self):
         return True
 
     @property
