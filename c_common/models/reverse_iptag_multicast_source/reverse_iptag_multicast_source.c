@@ -108,6 +108,7 @@ static uint8_t return_tag_id;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
+static bool stopped = false;
 
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
@@ -433,12 +434,12 @@ static inline void process_16_bit_packets(
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 16-bit key=%d", key);
+                    log_info("mc packet 16-bit key=%d", key);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
                 } else {
-                    log_debug(
+                    log_info(
                         "mc packet 16-bit key=%d, payload=%d", key, payload);
                     while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                         spin1_delay_us(1);
@@ -483,12 +484,12 @@ static inline void process_32_bit_packets(
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 32-bit key=0x%08x", key);
+                    log_info("mc packet 32-bit key=0x%08x", key);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
                 } else {
-                    log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
+                    log_info("mc packet 32-bit key=0x%08x, payload=0x%08x",
                               key, payload);
                     while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                         spin1_delay_us(1);
@@ -696,7 +697,7 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
 
     case EVENT_STOP_COMMANDS:
         log_debug("command: EVENT_STOP");
-        time = simulation_ticks + 1;
+        stopped = true;
         write_pointer = read_pointer;
         break;
 
@@ -985,6 +986,8 @@ void resume_callback() {
     if(!initialise_recording()){
         log_error("Could not reset recording regions");
     }
+
+    stopped = false;
 }
 
 void timer_callback(uint unused0, uint unused1) {
@@ -992,11 +995,11 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    log_debug("timer_callback, final time: %d, current time: %d,"
+    log_info("timer_callback, final time: %d, current time: %d,"
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
-    if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
+    if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
 
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);

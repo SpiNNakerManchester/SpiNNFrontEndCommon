@@ -311,7 +311,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
     def _is_in_range(self, time_stamp_in_ticks):
         return (
             (self._no_machine_time_steps is None) or (
-                self._first_machine_time_step <= time_stamp_in_ticks <=
+                self._first_machine_time_step <= time_stamp_in_ticks <
                 self._no_machine_time_steps))
 
     def _fill_send_buffer(self):
