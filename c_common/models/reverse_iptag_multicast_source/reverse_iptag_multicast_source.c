@@ -434,13 +434,14 @@ static inline void process_16_bit_packets(
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_info("mc packet 16-bit key=%d", key);
+                    log_debug(
+                        "mc packet 16-bit key=%d, payload=%d", key, payload);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
                 } else {
-                    log_info(
-                        "mc packet 16-bit key=%d, payload=%d", key, payload);
+                    log_debug(
+                        "mc packet 16-bit key=%d", key);
                     while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
@@ -484,13 +485,14 @@ static inline void process_32_bit_packets(
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_info("mc packet 32-bit key=0x%08x", key);
+                    log_debug(
+                        "mc packet 32-bit key=0x%08x , payload=0x%08x",
+                        key, payload);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
                 } else {
-                    log_info("mc packet 32-bit key=0x%08x, payload=0x%08x",
-                              key, payload);
+                    log_debug("mc packet 32-bit key=0x%08x", key);
                     while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
@@ -995,7 +997,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    log_info("timer_callback, final time: %d, current time: %d,"
+    log_debug("timer_callback, final time: %d, current time: %d,"
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
