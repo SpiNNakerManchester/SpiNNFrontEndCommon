@@ -7,7 +7,7 @@ from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint \
     import TagAllocatorRequireIptagConstraint
 
-from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
+from pacman.model.graph.simple_partitioned_vertex import SimplePartitionedVertex
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
@@ -29,7 +29,7 @@ from spinnman.messages.eieio.eieio_type import EIEIOType
 
 
 class LivePacketGatherPartitionedVertex(
-        PartitionedVertex, ProvidesProvenanceDataFromMachineImpl,
+        SimplePartitionedVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractPartitionedDataSpecableVertex):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
@@ -62,7 +62,7 @@ class LivePacketGatherPartitionedVertex(
             constraints = self.get_constraints(
                 ip_address, port, strip_sdp, board_address, tag)
 
-        PartitionedVertex.__init__(
+        SimplePartitionedVertex.__init__(
             self, resources_required, label, constraints=constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,

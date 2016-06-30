@@ -1,5 +1,5 @@
 # pacman imports
-from pacman.model.partitionable_graph.abstract_partitionable_vertex \
+from pacman.model.graph.abstract_partitionable_vertex \
     import AbstractPartitionableVertex
 
 # spinn front end imports

@@ -8,7 +8,7 @@ from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.partitioned_graph.partitioned_vertex import PartitionedVertex
+from pacman.model.graph.simple_partitioned_vertex import SimplePartitionedVertex
 
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
@@ -42,7 +42,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 
 class ReverseIPTagMulticastSourcePartitionedVertex(
-        PartitionedVertex,
+        SimplePartitionedVertex,
         AbstractDataSpecableVertex, ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
@@ -132,7 +132,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         """
 
         # Set up super types
-        PartitionedVertex.__init__(
+        SimplePartitionedVertex.__init__(
             self, resources_required, label, constraints)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
