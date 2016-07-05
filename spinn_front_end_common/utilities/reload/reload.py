@@ -11,9 +11,8 @@ class Reload(object):
 
             # Machine information
             machine_name, version, bmp_details, down_chips, down_cores,
-            number_of_boards, height, width, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
-            reset_machine_on_start_up, max_sdram_per_chip,
+            auto_detect_bmp, enable_reinjection, scamp_connection_data,
+            boot_port_num, reset_machine_on_start_up, max_sdram_per_chip,
 
             # Load data information
             router_tables, iptags, reverse_iptags, app_data_runtime_folder,
@@ -50,9 +49,6 @@ class Reload(object):
         inputs["BMPDetails"] = bmp_details
         inputs["DownedChipsDetails"] = down_chips
         inputs["DownedCoresDetails"] = down_cores
-        inputs["NumberOfBoards"] = number_of_boards
-        inputs["MachineWidth"] = width
-        inputs["MachineHeight"] = height
         inputs["AutoDetectBMPFlag"] = auto_detect_bmp
         inputs["EnableReinjectionFlag"] = enable_reinjection
         inputs["ScampConnectionData"] = scamp_connection_data

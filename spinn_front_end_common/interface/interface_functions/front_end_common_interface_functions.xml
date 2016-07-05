@@ -168,18 +168,6 @@
                 <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
-                <param_name>number_of_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
-            </parameter>
-            <parameter>
-                <param_name>width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
                 <param_name>auto_detect_bmp</param_name>
                 <param_type>AutoDetectBMPFlag</param_type>
             </parameter>
@@ -238,18 +226,6 @@
             <parameter>
                 <param_name>down_cores</param_name>
                 <param_type>DownedCoresDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>number_of_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
-            </parameter>
-            <parameter>
-                <param_name>height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
-                <param_name>width</param_name>
-                <param_type>MachineWidth</param_type>
             </parameter>
             <parameter>
                 <param_name>auto_detect_bmp</param_name>
@@ -1123,18 +1099,6 @@
                 <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
-                <param_name>machine_width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_n_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine_down_chips</param_name>
                 <param_type>DownedChipsDetails</param_type>
             </parameter>
@@ -1197,18 +1161,6 @@
             <parameter>
                 <param_name>machine_version</param_name>
                 <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_n_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_down_chips</param_name>

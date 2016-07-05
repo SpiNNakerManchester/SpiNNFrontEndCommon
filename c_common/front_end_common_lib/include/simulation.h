@@ -18,7 +18,7 @@
 // containing the timing details.
 typedef enum region_elements{
     APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD,
-    SDP_EXIT_RUNTIME_COMMAND_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
+    SIMULATION_CONTROL_SDP_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
 } region_elements;
 
 //! elements that are always grabbed for provenance if possible when requested
@@ -46,14 +46,15 @@ typedef void (*resume_callback_t)();
 //!            uint32_t n_simulation_ticks;
 //! \param[in] address The address of the region
 //! \param[in] expected_application_magic_number The expected value of the magic
-//!                                          number that checks if the data was
-//!                                          meant for this code
-//! \param timer_period[out] a pointer to an int to receive the timer period,
-//!                          in microseconds
+//!            number that checks if the data was meant for this code
+//! \param[out] timer_period a pointer to an int to receive the timer period,
+//!             in microseconds
+//! \param[out] simulation_control_sdp_port The SDP port requested for
+//!             simulation control
 //! \return True if the data was found, false otherwise
 bool simulation_read_timing_details(
         address_t address, uint32_t expected_application_magic_number,
-        uint32_t* timer_period);
+        uint32_t* timer_period, uint32_t* simulation_control_sdp_port);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
@@ -64,13 +65,17 @@ void simulation_handle_pause_resume(resume_callback_t resume_function);
 //! \brief Starts the simulation running, returning when it is complete,
 void simulation_run();
 
-//! \brief handles the new commands needed to resume the binary with a new
-//! runtime counter, as well as switching off the binary when it truly needs
-//! to be stopped.
-//! \param[in] mailbox The mailbox containing the SDP packet received
-//! \param[in] port The port on which the packet was received
-//! \return does not return anything
-void simulation_sdp_packet_callback(uint mailbox, uint port);
+//! \brief Registers an additional SDP callback on a given SDP port.  This is
+//!        required when using simulation_register_sdp_callback, as this will
+//!        register its own SDP handler.
+//! \param[in] port The SDP port to use
+//! \param[in] sdp_callback The callback to call when a packet is received
+void simulation_sdp_callback_on(
+    uint sdp_port, callback_t sdp_callback);
+
+//! \brief disables SDP callbacks on the given port
+//| \param[in] sdp_port The SDP port to disable callbacks for
+void simulation_sdp_callback_off(uint sdp_port);
 
 //! \brief handles the registration of the SDP callback
 //! \param[in] simulation_ticks_pointer Pointer to the number of simulation
@@ -79,9 +84,11 @@ void simulation_sdp_packet_callback(uint mailbox, uint port);
 //!            this to be updated when requested via SDP
 //! \param[in] sdp_packet_callback_priority The priority to use for the
 //!            SDP packet reception
+//! \param[in] simulation_control_sdp_port The SDP port to listen on for
+//!            simulation control messages
 void simulation_register_simulation_sdp_callback(
         uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
-        int sdp_packet_callback_priority);
+        int sdp_packet_callback_priority, uint32_t simulation_control_sdp_port);
 
 //! \brief handles the registration for storing provenance data
 //! \param[in] provenance_function: function to call for extra provenance data

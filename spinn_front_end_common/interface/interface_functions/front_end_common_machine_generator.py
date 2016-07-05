@@ -18,9 +18,9 @@ class FrontEndCommonMachineGenerator(object):
 
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
-            board_version, number_of_boards, width, height, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
-            reset_machine_on_start_up, max_sdram_size=None):
+            board_version, auto_detect_bmp, enable_reinjection,
+            scamp_connection_data, boot_port_num, reset_machine_on_start_up,
+            max_sdram_size=None):
 
         """
         :param hostname: the hostname or ip address of the spinnaker machine
@@ -31,9 +31,6 @@ class FrontEndCommonMachineGenerator(object):
                 alive
         :param board_version: the version of the boards being used within the\
                 machine (1, 2, 3, 4 or 5)
-        :param number_of_boards: the number of boards within the machine
-        :param width: The width of the machine in chips
-        :param height: The height of the machine in chips
         :param auto_detect_bmp: boolean which determines if the BMP should
                be automatically determined
         :param enable_reinjection: True if dropped packet reinjection is to be\
@@ -62,17 +59,13 @@ class FrontEndCommonMachineGenerator(object):
         txrx = create_transceiver_from_hostname(
             hostname=hostname, bmp_connection_data=bmp_connection_data,
             version=board_version, ignore_chips=ignored_chips,
-            ignore_cores=ignored_cores, number_of_boards=number_of_boards,
-            auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
+            ignore_cores=ignored_cores, auto_detect_bmp=auto_detect_bmp,
+            boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
             max_sdram_size=max_sdram_size)
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()
-
-        # update number of boards from machine
-        if number_of_boards is None:
-            number_of_boards = txrx.number_of_boards_located
 
         # do auto boot if possible
         if board_version is None:
@@ -80,7 +73,6 @@ class FrontEndCommonMachineGenerator(object):
                 "Please set a machine version number in the configuration "
                 "file (spynnaker.cfg or pacman.cfg)")
         txrx.ensure_board_is_ready(
-            number_of_boards, width, height,
             enable_reinjector=enable_reinjection)
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()

@@ -95,8 +95,6 @@ class FrontEndCommonSpallocAllocator(object):
             raise ex_type, ex_value, ex_traceback
 
         # get param from jobs before starting, so that hanging doesn't occur
-        width = job.width
-        height = job.height
         hostname = job.hostname
 
         machine_allocation_controller = _SpallocJobController(job)
@@ -105,9 +103,6 @@ class FrontEndCommonSpallocAllocator(object):
         return {
             "machine_name": hostname,
             "machine_version": self._MACHINE_VERSION,
-            "machine_width": width,
-            "machine_height": height,
-            "machine_n_boards": None,
             "machine_down_chips": None,
             "machine_down_cores": None,
             "machine_bmp_details": None,

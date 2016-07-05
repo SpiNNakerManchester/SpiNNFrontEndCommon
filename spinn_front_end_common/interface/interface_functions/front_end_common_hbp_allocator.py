@@ -75,9 +75,6 @@ class FrontEndCommonHBPAllocator(object):
         return {
             "machine_name": machine["machineName"],
             "machine_version": int(machine["version"]),
-            "machine_width": int(machine["width"]),
-            "machine_height": int(machine["height"]),
-            "machine_n_boards": None,
             "machine_down_chips": None,
             "machine_down_cores": None,
             "machine_bmp_details": bmp_details,

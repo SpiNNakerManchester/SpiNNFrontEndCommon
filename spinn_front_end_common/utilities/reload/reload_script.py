@@ -35,9 +35,8 @@ class ReloadScript(object):
 
             # Machine information
             machine_name, version, bmp_details, down_chips, down_cores,
-            number_of_boards, height, width, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
-            reset_machine_on_start_up, max_sdram_per_chip,
+            auto_detect_bmp, enable_reinjection, scamp_connection_data,
+            boot_port_num, reset_machine_on_start_up, max_sdram_per_chip,
 
             # Load data information
             app_data_runtime_folder, exec_dse_on_host, dse_app_id,
@@ -106,9 +105,6 @@ class ReloadScript(object):
         self._println("bmp_details = \"{}\"".format(bmp_details))
         self._println("down_chips = \"{}\"".format(down_chips))
         self._println("down_cores = \"{}\"".format(down_cores))
-        self._println("number_of_boards = {}".format(number_of_boards))
-        self._println("height = {}".format(height))
-        self._println("width = {}".format(width))
         self._println("auto_detect_bmp = {}".format(auto_detect_bmp))
         self._println("enable_reinjection = {}".format(enable_reinjection))
         self._println("scamp_connection_data = \"{}\"".format(
@@ -291,8 +287,7 @@ class ReloadScript(object):
         self._println("")
         self._println("reloader = Reload(")
         self._println("    machine_name, version, bmp_details, down_chips,")
-        self._println("    down_cores, number_of_boards, height, width,")
-        self._println("    auto_detect_bmp, enable_reinjection,")
+        self._println("    down_cores, auto_detect_bmp, enable_reinjection,")
         self._println("    scamp_connection_data, boot_port_num,")
         self._println("    reset_machine_on_start_up, max_sdram_per_chip,")
         self._println("    router_tables, iptags, reverse_iptags,")
