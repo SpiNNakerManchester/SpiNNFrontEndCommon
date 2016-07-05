@@ -1,4 +1,4 @@
-#include "profiler.h"
+#include <stdint.h>
 #include <debug.h>
 
 //---------------------------------------

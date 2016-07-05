@@ -65,6 +65,9 @@ static inline void profiler_write_entry_disable_fiq(uint32_t tag) {
 }
 #else // PROFILER_ENABLED
 
+#ifndef skip
+    static inline void skip (void) { return; }
+#endif
 #define profiler_read_region(address) skip()
 #define profiler_finalise() skip()
 #define profiler_init() skip()
