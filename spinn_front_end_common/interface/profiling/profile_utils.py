@@ -7,6 +7,34 @@ from spinn_front_end_common.interface.profiling.profile_data import ProfileData
 logger = logging.getLogger(__name__)
 
 
+def get_profile_header_size():
+    """ Get the size of the header of the profiler
+    """
+    return 4
+
+
+def get_profile_region_size(n_samples):
+    """ Get the size of the region of the profile data
+    """
+    return (4 + (n_samples * 8))
+
+
+def reserve_profile_region(spec, region, n_samples):
+    """ Reserves the profile region for recording the profile data
+    """
+    if n_samples != 0:
+        size = get_profile_region_size(n_samples)
+        spec.reserve_memory_region(
+            region=region, size=size, label="profilerRegion", empty=True)
+
+
+def write_profile_region_data(spec, region, n_samples):
+    """ Writes the profile region data
+    """
+    spec.switch_write_focus(region)
+    spec.write_value(n_samples)
+
+
 def get_profiling_data(
         self, profile_region, tag_labels, machine_time_step, run_time_ms,
         txrx, placements, graph_mapper):
