@@ -1,3 +1,5 @@
+// Note: profiler.h is NOT imported here on purpose due to the optional nature
+// of the profiler
 #include <stdint.h>
 #include <debug.h>
 
