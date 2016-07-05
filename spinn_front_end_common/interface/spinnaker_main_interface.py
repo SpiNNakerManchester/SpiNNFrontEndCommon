@@ -562,6 +562,10 @@ class SpinnakerMainInterface(object):
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
+            # this is required for when auto pause and resume is not turned
+            # on and your needing to partition for a spalloc or remote system,
+            # as partitioning in this case needs to know how long to run to
+            # give complete SDRAM memory requriements for recording buffers.
             if n_machine_time_steps > 0:
                 self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
