@@ -31,11 +31,13 @@ LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
 ifndef DEBUG
     DEBUG = PRODUCTION_CODE
 endif
+PROFILER := PROFILER_DISABLED
+
 # Run md5sum on application name and extract first 8 bytes
 SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | md5sum | cut -c 1-8)
 
-CFLAGS += -Wall -Wextra -D$(DEBUG) -Ofast -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
+CFLAGS += -Wall -Wextra -D$(DEBUG) -D$(PROFILER_DISABLED) -Ofast -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
 include $(SPINN_DIRS)/Makefile.common
 
