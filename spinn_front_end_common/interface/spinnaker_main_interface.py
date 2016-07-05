@@ -573,6 +573,8 @@ class SpinnakerMainInterface(object):
                     "Machine", "spalloc_port")
                 inputs["SpallocUser"] = self._read_config(
                     "Machine", "spalloc_user")
+                inputs["SpallocMachine"] = self._read_config(
+                    "Machine", "spalloc_machine")
                 if self._n_chips_required is None:
                     algorithms.append(
                         "FrontEndCommonSpallocMaxMachineGenerator")
