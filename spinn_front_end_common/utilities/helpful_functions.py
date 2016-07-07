@@ -5,6 +5,7 @@ from data_specification import utility_calls
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
+from spinn_front_end_common.utilities import exceptions
 
 # spinnman imports
 from spinnman.model.cpu_state import CPUState
@@ -18,6 +19,7 @@ import logging
 import re
 import inspect
 import struct
+import time
 from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
@@ -321,3 +323,42 @@ def get_core_subsets(core_infos):
     for (x, y, p) in core_infos:
         core_subsets.add_processor(x, y, p)
     return core_subsets
+
+
+def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
+    """
+
+    :param executable_targets: the mapping between cores and binaries
+    :param app_id: the app id that being used by the simulation
+    :param txrx: the python interface to the spinnaker machine
+    :param sync_state: The expected state once the applications are ready
+    :return:
+    """
+
+    total_processors = executable_targets.total_processors
+    all_core_subsets = executable_targets.all_core_subsets
+
+    # check that everything has gone though c main
+    processor_c_main = txrx.get_core_state_count(app_id, CPUState.C_MAIN)
+    while processor_c_main != 0:
+        time.sleep(0.1)
+        processor_c_main = txrx.get_core_state_count(
+            app_id, CPUState.C_MAIN)
+
+    # check that the right number of processors are in sync state
+    processors_ready = txrx.get_core_state_count(
+        app_id, sync_state)
+    if processors_ready != total_processors:
+        unsuccessful_cores = get_cores_not_in_state(
+            all_core_subsets, sync_state, txrx)
+
+        # last chance to slip out of error check
+        if len(unsuccessful_cores) != 0:
+            break_down = get_core_status_string(
+                unsuccessful_cores)
+            raise exceptions.ExecutableFailedToStartException(
+                "Only {} processors out of {} have successfully reached "
+                "{}:{}".format(
+                    processors_ready, total_processors, sync_state.name,
+                    break_down),
+                get_core_subsets(unsuccessful_cores))

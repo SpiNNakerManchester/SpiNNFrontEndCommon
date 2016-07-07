@@ -285,7 +285,7 @@ class SpinnakerMainInterface(object):
                 self._partitioned_graph = PartitionedGraph()
                 self._graph_mapper = None
             if self._machine is None:
-                self._get_machine(total_run_time)
+                self._get_machine(total_run_time, n_machine_time_steps)
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything is recording and buffered
@@ -469,7 +469,7 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self, total_run_time=0):
+    def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
 
@@ -511,12 +511,6 @@ class SpinnakerMainInterface(object):
                 "Machine", "boot_connection_port_num")
             inputs["BoardVersion"] = self._read_config_int(
                 "Machine", "version")
-            inputs["NumberOfBoards"] = self._read_config_int(
-                "Machine", "number_of_boards")
-            inputs["MachineWidth"] = self._read_config_int(
-                "Machine", "width")
-            inputs["MachineHeight"] = self._read_config_int(
-                "Machine", "height")
             inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
                 "Machine", "reset_machine_on_startup")
 
@@ -568,6 +562,12 @@ class SpinnakerMainInterface(object):
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
+            # this is required for when auto pause and resume is not turned
+            # on and your needing to partition for a spalloc or remote system,
+            # as partitioning in this case needs to know how long to run to
+            # give complete SDRAM memory requriements for recording buffers.
+            if n_machine_time_steps > 0:
+                self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
 
             # if using spalloc system

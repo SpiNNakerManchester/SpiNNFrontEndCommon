@@ -70,15 +70,12 @@ void recording_finalise();
 //!                     uint32_t size_of_region[n_regions]}
 //! \param[in] state_region The region in which to store the end of recording
 //!            state information
-//! \param[in] buffering_priority The priority of the callback related to the
-//!            buffering of the recording
 //! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
         uint8_t n_regions, uint8_t *region_ids, uint32_t *recording_data,
-        uint8_t state_region, uint32_t buffering_priority,
-        uint32_t *recording_flags);
+        uint8_t state_region, uint32_t *recording_flags);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0

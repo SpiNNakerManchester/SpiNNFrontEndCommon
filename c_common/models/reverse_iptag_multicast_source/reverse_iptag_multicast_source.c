@@ -922,7 +922,7 @@ static bool initialise_recording(){
 
     bool success = recording_initialize(
         n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, state_region, 2,
+        recording_flags_from_system_conf, state_region,
         &recording_flags);
     log_info("Recording flags = 0x%08x", recording_flags);
     return success;
@@ -938,10 +938,11 @@ bool initialise(uint32_t *timer_period) {
         return false;
     }
 
-    // Get the timing details
-    address_t system_region = data_specification_get_region(SYSTEM, address);
-    if (!simulation_read_timing_details(
-            system_region, APPLICATION_NAME_HASH, timer_period)) {
+    // Get the timing details and set up the simulation interface
+    if (!simulation_initialise(
+            data_specification_get_region(SYSTEM, address),
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run, SDP_CALLBACK, NULL, PROVENANCE_REGION)) {
         return false;
     }
 
@@ -1065,11 +1066,7 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    simulation_register_simulation_sdp_callback(
-        &simulation_ticks, &infinite_run, SDP_CALLBACK);
-    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
-    spin1_sdp_callback_on(
-        BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
+    simulation_sdp_callback_on(BUFFERING_IN_SDP_PORT, sdp_packet_callback);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0

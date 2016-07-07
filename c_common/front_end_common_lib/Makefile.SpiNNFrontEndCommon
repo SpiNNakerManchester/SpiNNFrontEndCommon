@@ -8,7 +8,7 @@ ifndef SOURCE_DIRS
 endif
 
 ifndef APP_OUTPUT_DIR
-    $(error APP_OUTPUT_DIRS is not set.  Please define APP_OUTPUT_DIRS)
+    $(error APP_OUTPUT_DIR is not set.  Please define APP_OUTPUT_DIR)
 endif
 
 ifndef BUILD_DIR
@@ -28,16 +28,14 @@ $(foreach dir, $(SOURCE_DIRS), $(eval $(call define-build-code,$(dir))))
 OBJECTS += $(OBJS)
 
 LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
-ifndef DEBUG
-    DEBUG = PRODUCTION_CODE
-endif
+FEC_DEBUG := PRODUCTION_CODE
 # Run md5sum on application name and extract first 8 bytes
 SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | md5sum | cut -c 1-8)
 
-CFLAGS += -Wall -Wextra -D$(DEBUG) -Ofast -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
+CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) $(OTIME) -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
-include $(SPINN_DIRS)/Makefile.common
+include $(SPINN_DIRS)/make/Makefile.common
 
 all: $(APP_OUTPUT_DIR)$(APP).aplx
 
