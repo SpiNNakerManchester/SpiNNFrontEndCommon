@@ -931,7 +931,7 @@ static bool initialise_recording(){
     return success;
 }
 
-bool initialise(uint32_t *timer_period, uint32_t *simulation_sdp_port) {
+bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -941,11 +941,11 @@ bool initialise(uint32_t *timer_period, uint32_t *simulation_sdp_port) {
         return false;
     }
 
-    // Get the timing details
-    address_t system_region = data_specification_get_region(SYSTEM, address);
-    if (!simulation_read_timing_details(
-            system_region, APPLICATION_NAME_HASH, timer_period,
-            simulation_sdp_port)) {
+    // Get the timing details and set up the simulation interface
+    if (!simulation_initialise(
+            data_specification_get_region(SYSTEM, address),
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run, SDP_CALLBACK, NULL, PROVENANCE_REGION)) {
         return false;
     }
 
@@ -1062,8 +1062,7 @@ void c_main(void) {
 
     // Configure system
     uint32_t timer_period = 0;
-    uint32_t simulation_sdp_port = 0;
-    if (!initialise(&timer_period, &simulation_sdp_port)) {
+    if (!initialise(&timer_period)) {
         rt_error(RTE_SWERR);
         return;
     }
@@ -1072,9 +1071,6 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    simulation_register_simulation_sdp_callback(
-        &simulation_ticks, &infinite_run, SDP_CALLBACK, simulation_sdp_port);
-    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
     simulation_sdp_callback_on(BUFFERING_IN_SDP_PORT, sdp_packet_callback);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
