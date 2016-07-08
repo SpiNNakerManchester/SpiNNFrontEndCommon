@@ -1102,6 +1102,10 @@
                 <param_name>spalloc_port</param_name>
                 <param_type>SpallocPort</param_type>
             </parameter>
+            <parameter>
+                <param_name>spalloc_machine</param_name>
+                <param_type>SpallocMachine</param_type>
+            </parameter>
         </optional_inputs>
         <produces_outputs>
             <parameter>
