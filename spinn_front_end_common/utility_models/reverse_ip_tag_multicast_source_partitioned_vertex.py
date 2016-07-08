@@ -141,7 +141,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Set up super types
         PartitionedVertex.__init__(
-            self, None,
+            self, self.generate_resources_required(),
             label, constraints)
         AbstractPartitionedDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
@@ -239,7 +239,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._prefix = self._virtual_key
 
     @property
-    def resources_required(self):
+    def generate_resources_required(self):
         return ResourceContainer(
             DTCMResource(1),
             SDRAMResource(self.get_sdram_usage(
