@@ -44,6 +44,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 from enum import Enum
 import math
+import copy
 
 _DEFAULT_MALLOC_REGIONS = 2
 
@@ -99,7 +100,6 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
-        :param resources_required: The resources required by the vertex
         :param machine_time_step: The time step to be used on the machine
         :param timescale_factor: The time scaling to be used in the simulation
         :param label: The label of this vertex
@@ -139,10 +139,9 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 host about space in the buffer (default is to use any tag)
         """
 
-        # Set up super types
-        PartitionedVertex.__init__(
-            self, self.generate_resources_required(),
-            label, constraints)
+        constraints = copy.deepcopy(constraints)
+
+        # Set up first set of super types
         AbstractPartitionedDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
         ProvidesProvenanceDataFromMachineImpl.__init__(
@@ -152,7 +151,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
 
         # Set up for receiving live packets
         if receive_port is not None:
-            self.add_constraint(TagAllocatorRequireReverseIptagConstraint(
+            constraints.append(TagAllocatorRequireReverseIptagConstraint(
                 receive_port, receive_sdp_port, board_address, receive_tag))
 
         # Work out if buffers are being sent
@@ -160,6 +159,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
         self._send_buffer = None
         if send_buffer_times is None:
             self._send_buffer_times = None
+            self._send_buffer_max_space = send_buffer_max_space
             SendsBuffersFromHostPreBufferedImpl.__init__(
                 self, None)
         else:
@@ -167,7 +167,7 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
 
-            self.add_constraint(TagAllocatorRequireIptagConstraint(
+            constraints.append(TagAllocatorRequireIptagConstraint(
                 send_buffer_notification_ip_address,
                 send_buffer_notification_port, True, board_address,
                 send_buffer_notification_tag))
@@ -238,8 +238,12 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
 
-    @property
-    def generate_resources_required(self):
+        # create partitioned vertex super class  now that all objects
+        # required for resoruces have been calcualted
+        PartitionedVertex.__init__(
+                self, self._generate_resources_required(), label, constraints)
+
+    def _generate_resources_required(self):
         return ResourceContainer(
             DTCMResource(1),
             SDRAMResource(self.get_sdram_usage(
