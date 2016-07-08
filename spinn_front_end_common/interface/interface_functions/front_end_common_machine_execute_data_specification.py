@@ -4,11 +4,10 @@ from spinn_storage_handlers.file_data_reader import FileDataReader
 # data spec imports
 import data_specification.data_spec_sender.spec_sender as spec_sender
 
-# pacman imports
 from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_machine.core_subsets import CoreSubsets
 
 # spinnman imports
-from spinnman.model.core_subsets import CoreSubsets
 from spinnman.model.cpu_state import CPUState
 
 # front end common imports

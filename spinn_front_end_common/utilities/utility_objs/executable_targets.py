@@ -1,5 +1,5 @@
 from spinn_front_end_common.utilities import exceptions
-from spinnman.model.core_subsets import CoreSubsets
+from spinn_machine.core_subsets import CoreSubsets
 
 
 class ExecutableTargets(object):

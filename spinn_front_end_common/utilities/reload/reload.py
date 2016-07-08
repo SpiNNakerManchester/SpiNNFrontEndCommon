@@ -30,7 +30,7 @@ class Reload(object):
             total_machine_timesteps, time_threshold,
 
             # Flags that indicate what to actually do
-            loading=True, running=True):
+            running=True, loading=True):
 
         if machine_name == "None":
             raise Exception(
@@ -100,6 +100,11 @@ class Reload(object):
             else:
                 algorithms.append(
                     "FrontEndCommonMachineExecuteDataSpecification")
+        else:
+            inputs["LoadedApplicationDataToken"] = True
+            inputs["LoadedRoutingTablesToken"] = True
+            inputs["LoadedIPTagsToken"] = True
+            inputs["LoadedReverseIPTagsToken"] = True
 
         if running:
             algorithms.append("FrontEndCommonBufferManagerCreator")
