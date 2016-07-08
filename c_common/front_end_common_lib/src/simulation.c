@@ -70,26 +70,6 @@ static void _execute_provenance_storage() {
     }
 }
 
-bool simulation_read_timing_details(
-        address_t address, uint32_t expected_app_magic_number,
-        uint32_t* timer_period, uint32_t *simulation_control_sdp_port) {
-
-    if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
-        log_error(
-            "Unexpected magic number 0x%08x instead of 0x%08x at 0x%08x",
-            address[APPLICATION_MAGIC_NUMBER],
-            expected_app_magic_number,
-            (uint32_t) address + APPLICATION_MAGIC_NUMBER);
-        return false;
-    }
-
-    *timer_period = address[SIMULATION_TIMER_PERIOD];
-
-    *simulation_control_sdp_port = address[SIMULATION_CONTROL_SDP_PORT];
-    return true;
-}
-
-
 void simulation_run() {
 
     // go into spin1 API start, but paused (no SYNC yet)
@@ -209,22 +189,40 @@ void simulation_sdp_callback_off(uint sdp_port) {
     sdp_callback[sdp_port] = NULL;
 }
 
-void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
-        int sdp_packet_callback_priority,
-        uint32_t simulation_control_sdp_port) {
+bool simulation_initialise(
+        address_t address, uint32_t expected_app_magic_number,
+        uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
+        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
+        prov_callback_t provenance_function,
+        uint32_t provenance_data_region_id) {
+
+    // handle the timing reading
+    if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
+        log_error(
+            "Unexpected magic number 0x%08x instead of 0x%08x at 0x%08x",
+            address[APPLICATION_MAGIC_NUMBER],
+            expected_app_magic_number,
+            (uint32_t) address + APPLICATION_MAGIC_NUMBER);
+        return false;
+    }
+
+    // transfer data to pointers for end user usage
+    *timer_period = address[SIMULATION_TIMER_PERIOD];
+
+    // handle the sdp callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
     spin1_callback_on(
         SDP_PACKET_RX, _simulation_sdp_callback_handler,
         sdp_packet_callback_priority);
     simulation_sdp_callback_on(
-        simulation_control_sdp_port, _simulation_control_scp_callback);
-}
+        address[SIMULATION_CONTROL_SDP_PORT],
+        _simulation_control_scp_callback);
 
-void  simulation_register_provenance_callback(
-        prov_callback_t provenance_function,
-        uint32_t provenance_data_region_id){
+    // handle the provenance setting up
     stored_provenance_function = provenance_function;
     stored_provenance_data_region_id = provenance_data_region_id;
+
+    // if all simualtion initisiation complete return true,
+    return true;
 }

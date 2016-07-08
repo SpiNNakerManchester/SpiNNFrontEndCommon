@@ -31,15 +31,19 @@ class FrontEndCommonApplicationRunner(object):
 
         logger.info("*** Running simulation... *** ")
 
+        if no_sync_changes % 2 == 0:
+            sync_state = CPUState.SYNC0
+        else:
+            sync_state = CPUState.SYNC1
+        helpful_functions.wait_for_cores_to_be_ready(
+            executable_targets, app_id, txrx, sync_state)
+
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
         buffer_manager.resume()
 
         # every thing is in sync0 so load the initial buffers
         buffer_manager.load_initial_buffers()
-
-        self.wait_for_cores_to_be_ready(
-            executable_targets, app_id, txrx, no_sync_changes)
 
         # wait till external app is ready for us to start if required
         if notification_interface is not None and wait_on_confirmation:
@@ -62,55 +66,6 @@ class FrontEndCommonApplicationRunner(object):
                 time_threshold)
 
         return {'RanToken': True, "no_sync_changes": no_sync_changes}
-
-    @staticmethod
-    def wait_for_cores_to_be_ready(
-            executable_targets, app_id, txrx, no_sync_state_changes):
-        """
-
-        :param executable_targets: the mapping between cores and binaries
-        :param app_id: the app id that being used by the simulation
-        :param no_sync_state_changes:  the number of runs been done between\
-                setup and end
-        :param txrx: the python interface to the spinnaker machine
-        :return:
-        """
-
-        total_processors = executable_targets.total_processors
-        all_core_subsets = executable_targets.all_core_subsets
-
-        # check that everything has gone though c main to reach sync0 or
-        # failing for some unknown reason
-        processor_c_main = txrx.get_core_state_count(app_id, CPUState.C_MAIN)
-        while processor_c_main != 0:
-            time.sleep(0.1)
-            processor_c_main = txrx.get_core_state_count(
-                app_id, CPUState.C_MAIN)
-
-        # check that the right number of processors are in correct sync
-        if no_sync_state_changes % 2 == 0:
-            sync_state = CPUState.SYNC0
-        else:
-            sync_state = CPUState.SYNC1
-
-        # check that the right number of processors are in sync0
-        processors_ready = txrx.get_core_state_count(
-            app_id, sync_state)
-
-        if processors_ready != total_processors:
-            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, sync_state, txrx)
-
-            # last chance to slip out of error check
-            if len(unsuccessful_cores) != 0:
-                break_down = helpful_functions.get_core_status_string(
-                    unsuccessful_cores)
-                raise exceptions.ExecutableFailedToStartException(
-                    "Only {} processors out of {} have successfully reached "
-                    "{}:{}".format(
-                        processors_ready, total_processors, sync_state.name,
-                        break_down),
-                    helpful_functions.get_core_subsets(unsuccessful_cores))
 
     @staticmethod
     def start_all_cores(executable_targets, app_id, txrx, sync_state_changes):
