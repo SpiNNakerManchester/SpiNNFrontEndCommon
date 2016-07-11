@@ -289,8 +289,26 @@ class SpinnakerMainInterface(object):
             if len(self._partitionable_graph.vertices) > 0:
                 self._partitioned_graph = PartitionedGraph()
                 self._graph_mapper = None
+
+            # only take inputs and outputs that would have been generated
+            # from get_machine() as rest are protentially incorrect and need to
+            # be rebuilt
+            if application_graph_changed and self._machine_outputs is not None:
+                inputs, outputs, _, _ = \
+                    self._get_machine_work_flow_management_inputs(
+                        total_run_time, n_machine_time_steps)
+                for output in outputs:
+                    inputs[output] = self._machine_outputs[output]
+                self._machine_outputs = inputs
+
+            # if no machine, go get it
             if self._machine is None:
-                self._get_machine(total_run_time, n_machine_time_steps)
+                inputs, outputs, algorithms, do_partitioning = \
+                    self._get_machine_work_flow_management_inputs(
+                        total_run_time, n_machine_time_steps)
+                self._get_machine(inputs, outputs, algorithms, do_partitioning)
+
+            # do mapping
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything is recording and buffered
@@ -450,7 +468,7 @@ class SpinnakerMainInterface(object):
                         "is not currently supported")
         return total_run_timesteps
 
-    def _run_machine_algorithms(
+    def _run_work_flow_manager(
             self, inputs, algorithms, outputs, optional_algorithms=None):
 
         optional = optional_algorithms
@@ -474,13 +492,32 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
+    def _get_machine(self, inputs, outputs, algorithms, do_partitioning):
+
         if self._machine is not None:
             return self._machine
+        executor = self._run_work_flow_manager(inputs, algorithms, outputs)
+
+        self._machine = executor.get_item("MemoryExtendedMachine")
+        self._ip_address = executor.get_item("IPAddress")
+        self._txrx = executor.get_item("MemoryTransceiver")
+        self._machine_allocation_controller = executor.get_item(
+            "MachineAllocationController")
+
+        if do_partitioning:
+            self._partitioned_graph = executor.get_item(
+                "MemoryPartitionedGraph")
+            self._graph_mapper = executor.get_item(
+                "MemoryGraphMapper")
+        return self._machine
+
+    def _get_machine_work_flow_management_inputs(
+            self, total_run_time=0, n_machine_time_steps=None):
 
         inputs = dict()
         algorithms = list()
         outputs = list()
+        do_partitioning = False
 
         # add the partitionable and partitioned graphs as needed
         if len(self._partitionable_graph.vertices) > 0:
@@ -527,11 +564,6 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryExtendedMachine")
             outputs.append("MemoryTransceiver")
 
-            executor = self._run_machine_algorithms(
-                inputs, algorithms, outputs)
-            self._machine = executor.get_item("MemoryExtendedMachine")
-            self._txrx = executor.get_item("MemoryTransceiver")
-
         if self._use_virtual_board:
             inputs["IPAddress"] = "virtual"
             inputs["BoardVersion"] = self._read_config_int(
@@ -563,10 +595,6 @@ class SpinnakerMainInterface(object):
             algorithms.append("MallocBasedChipIDAllocator")
 
             outputs.append("MemoryExtendedMachine")
-
-            executor = self._run_machine_algorithms(
-                inputs, algorithms, outputs)
-            self._machine = executor.get_item("MemoryExtendedMachine")
 
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
@@ -614,7 +642,6 @@ class SpinnakerMainInterface(object):
             else:
                 inputs["CPUsPerVirtualChip"] = 16
 
-            do_partitioning = False
             if need_virtual_board:
                 algorithms.append("FrontEndCommonVirtualMachineGenerator")
                 algorithms.append("MallocBasedChipIDAllocator")
@@ -653,22 +680,7 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryTransceiver")
             outputs.append("MachineAllocationController")
 
-            executor = self._run_machine_algorithms(
-                inputs, algorithms, outputs)
-
-            self._machine = executor.get_item("MemoryExtendedMachine")
-            self._ip_address = executor.get_item("IPAddress")
-            self._txrx = executor.get_item("MemoryTransceiver")
-            self._machine_allocation_controller = executor.get_item(
-                "MachineAllocationController")
-
-            if do_partitioning:
-                self._partitioned_graph = executor.get_item(
-                    "MemoryPartitionedGraph")
-                self._graph_mapper = executor.get_item(
-                    "MemoryGraphMapper")
-
-        return self._machine
+        return inputs, outputs, algorithms, do_partitioning
 
     def generate_file_machine(self):
         inputs = {
@@ -691,7 +703,12 @@ class SpinnakerMainInterface(object):
         self._update_n_machine_time_steps(n_machine_time_steps)
 
         # update inputs with extra mapping inputs if required
-        inputs = dict(self._machine_outputs)
+        if self._machine_outputs is not None:
+            inputs = dict(self._machine_outputs)
+        else:
+            inputs = dict()
+
+        # add extra inputs
         if self._extra_mapping_inputs is not None:
             inputs.update(self._extra_mapping_inputs)
 
@@ -817,7 +834,7 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
-        executor = self._run_machine_algorithms(inputs, algorithms, outputs)
+        executor = self._run_work_flow_manager(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -840,7 +857,7 @@ class SpinnakerMainInterface(object):
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
 
-        executor = self._run_machine_algorithms(inputs, algorithms, [])
+        executor = self._run_work_flow_manager(inputs, algorithms, [])
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -877,7 +894,7 @@ class SpinnakerMainInterface(object):
             "LoadedApplicationDataToken"
         ]
 
-        executor = self._run_machine_algorithms(
+        executor = self._run_work_flow_manager(
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
@@ -1256,7 +1273,9 @@ class SpinnakerMainInterface(object):
 
         :rtype: :py:class:`spinn_machine.machine.Machine`
         """
-        return self._get_machine()
+        inputs, outputs, algorithms, do_partitioning = \
+                    self._get_machine_work_flow_management_inputs()
+        return self._get_machine(inputs, outputs, algorithms, do_partitioning)
 
     @property
     def no_machine_time_steps(self):
