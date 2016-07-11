@@ -285,6 +285,14 @@ class SpinnakerMainInterface(object):
                     "The network cannot be changed between runs without"
                     " resetting")
 
+            if ((self._spalloc_server is not None or
+                    self._remote_spinnaker_url is not None) and
+                    application_graph_changed):
+                raise NotImplementedError(
+                    "The network cannot be changed between runs even with "
+                    " resetting when operating in a spalloc mode. Please"
+                    " get access to a direct machine to carry on.")
+
             # Reset the partitioned graph if there is a partitionable graph
             if len(self._partitionable_graph.vertices) > 0:
                 self._partitioned_graph = PartitionedGraph()
