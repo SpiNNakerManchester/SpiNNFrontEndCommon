@@ -281,6 +281,7 @@ class SpinnakerMainInterface(object):
         if not self._has_ran or application_graph_changed:
             if (application_graph_changed and self._has_ran and
                     not self._has_reset_last):
+                self.stop()
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
@@ -289,6 +290,13 @@ class SpinnakerMainInterface(object):
             if len(self._partitionable_graph.vertices) > 0:
                 self._partitioned_graph = PartitionedGraph()
                 self._graph_mapper = None
+
+            # Reset the machine if the machine is a spalloc machine and the
+            # graph has changed
+            if (application_graph_changed and self._hostname is None and
+                    not self._use_virtual_board):
+                self._machine = None
+
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
@@ -463,7 +471,6 @@ class SpinnakerMainInterface(object):
             self._do_timings, self._print_timings)
         try:
             executor.execute_mapping()
-            self._machine_outputs = executor.get_items()
             self._pacman_provenance.extract_provenance(executor)
             return executor
         except:
@@ -531,6 +538,7 @@ class SpinnakerMainInterface(object):
                 inputs, algorithms, outputs)
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
+            self._machine_outputs = executor.get_items()
 
         if self._use_virtual_board:
             inputs["IPAddress"] = "virtual"
@@ -566,6 +574,7 @@ class SpinnakerMainInterface(object):
 
             executor = self._run_machine_algorithms(
                 inputs, algorithms, outputs)
+            self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
 
         if (self._spalloc_server is not None or
@@ -656,6 +665,7 @@ class SpinnakerMainInterface(object):
             executor = self._run_machine_algorithms(
                 inputs, algorithms, outputs)
 
+            self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._ip_address = executor.get_item("IPAddress")
             self._txrx = executor.get_item("MemoryTransceiver")
