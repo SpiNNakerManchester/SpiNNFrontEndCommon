@@ -1,4 +1,4 @@
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from spinn_front_end_common.utilities import helpful_functions
 
 

@@ -6,7 +6,7 @@ main interface for the spinnaker tools
 from pacman.model.partitionable_graph.partitionable_graph \
     import PartitionableGraph
 from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.model.abstract_classes.abstract_virtual_vertex \
     import AbstractVirtualVertex
 from pacman.model.abstract_classes.virtual_partitioned_vertex \
