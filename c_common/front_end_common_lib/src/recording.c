@@ -7,7 +7,6 @@
 #include <recording.h>
 #include <simulation.h>
 #include <buffered_eieio_defs.h>
-#include <data_specification.h>
 
 // Standard includes
 #include <string.h>
@@ -22,7 +21,7 @@ typedef struct recording_channel_t {
     uint8_t *current_write;
     uint8_t *current_read;
     uint8_t *end;
-    uint8_t region_id;
+    uint8_t region_address;
     uint8_t missing_info;
     buffered_operations last_buffer_operation;
 } recording_channel_t;
@@ -34,7 +33,7 @@ typedef struct recording_channel_t {
 static recording_channel_t *g_recording_channels;
 static uint32_t n_recording_regions = 0;
 static uint32_t buffering_out_fsm = 0;
-static uint8_t buffering_out_state_region = 0;
+static address_t buffering_out_state_address = NULL;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
 static uint32_t time_between_triggers = 0;
@@ -262,7 +261,7 @@ static void _create_buffer_message(
     data_ptr[n_requests].sequence = 0;
     data_ptr[n_requests].channel = channel;
     data_ptr[n_requests].region =
-        g_recording_channels[channel].region_id;
+        g_recording_channels[channel].region_address;
     data_ptr[n_requests].start_address = (uint32_t) read_pointer;
     data_ptr[n_requests].space_to_be_read = space_to_be_read;
 }
@@ -380,17 +379,11 @@ void recording_finalise() {
 
     log_info("Finalising recording channels");
 
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-
     // Get the region address store channel details
-    address_t buffering_out_control_reg = data_specification_get_region(
-        buffering_out_state_region, address);
-    address_t out_ptr = buffering_out_control_reg;
+    address_t out_ptr = buffering_out_state_address;
 
     log_info(
-        "Storing channel state info in region %d starting at 0x%08x",
-        buffering_out_state_region, out_ptr);
+        "Storing channel state info at address 0x%08x", out_ptr);
 
     // store number of recording regions
     spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
@@ -436,8 +429,9 @@ void recording_finalise() {
 }
 
 bool recording_initialize(
-        uint8_t n_regions, uint8_t *region_ids, uint32_t *recording_data,
-        uint8_t state_region, uint32_t *recording_flags) {
+        uint8_t n_regions, address_t *region_addresses, 
+        uint32_t *recording_data, uint8_t state_address, 
+        uint32_t *recording_flags) {
     uint32_t i;
 
     // if already initialised, don't re-initialise
@@ -450,7 +444,7 @@ bool recording_initialize(
     }
 
     n_recording_regions = n_regions;
-    buffering_out_state_region = state_region;
+    buffering_out_state_address = state_address;
     uint8_t buffering_output_tag = recording_data[0];
     buffer_size_before_trigger = recording_data[1];
     time_between_triggers = recording_data[2];
@@ -476,18 +470,18 @@ bool recording_initialize(
     for (i = 0; i < n_regions; i++) {
         uint32_t region_size = recording_data[i + 3];
         if (region_size > 0) {
-            address_t region_address = data_specification_get_region(
-                region_ids[i], address);
 
             // store pointers to the start, current position and end of this
-            g_recording_channels[i].start = (uint8_t*) region_address;
-            g_recording_channels[i].current_write = (uint8_t*) region_address;
-            g_recording_channels[i].current_read = (uint8_t*) region_address;
+            g_recording_channels[i].start = (uint8_t*) region_addresses[i];
+            g_recording_channels[i].current_write = 
+                (uint8_t*) region_addresses[i];
+            g_recording_channels[i].current_read = 
+                (uint8_t*) region_addresses[i];
             g_recording_channels[i].end =
                 g_recording_channels[i].start + region_size;
             g_recording_channels[i].last_buffer_operation =
                 BUFFER_OPERATION_READ;
-            g_recording_channels[i].region_id = region_ids[i];
+            g_recording_channels[i].region_address = region_addresses[i];
             g_recording_channels[i].missing_info = 0;
 
             *recording_flags = (*recording_flags | (1 << i));
@@ -509,7 +503,7 @@ bool recording_initialize(
             g_recording_channels[i].end = NULL;
             g_recording_channels[i].last_buffer_operation =
                 BUFFER_OPERATION_READ;
-            g_recording_channels[i].region_id = region_ids[i];
+            g_recording_channels[i].region_address = region_addresses[i];
             g_recording_channels[i].missing_info = 0;
 
             log_info("Recording channel %u left uninitialised", i);
