@@ -71,7 +71,7 @@ bool simulation_initialise(
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
         uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
         prov_callback_t provenance_function,
-        uint32_t provenance_data_region_id);
+        address_t provenance_data_address);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
