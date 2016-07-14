@@ -21,8 +21,12 @@ $$(BUILD_DIR)%.o: $1/%.c
 	$$(CC) $$(CFLAGS) -D__FILE__=\"$$(notdir $$*.c)\" -o $$@ $$<
 endef
 
+define source_dir
+$(firstword $(abspath $(strip $(foreach dir, $(sort $(SOURCE_DIRS)), $(findstring $(dir), $(1))))))
+endef
+
 define build_dir
-$(patsubst $(abspath $(strip $(firstword $(foreach dir, $(SOURCE_DIRS), $(findstring $(dir), $(1))))))/%.c,$(BUILD_DIR)%.o,$(1))
+$(patsubst $(call source_dir, $(1))/%.c,$(BUILD_DIR)%.o,$(1))
 endef
 
 # Convert the objs into the correct format to work here
