@@ -32,7 +32,18 @@ class BufferedSendingRegion(object):
 
     def __init__(self, max_buffer_size):
         self._max_size_of_buffer = max_buffer_size
-        self.clear()
+        # A dictionary of timestamp -> list of keys
+        self._buffer = dict()
+
+        # A list of timestamps
+        self._timestamps = list()
+
+        # The current position in the list of timestamps
+        self._current_timestamp_pos = 0
+
+        self._buffer_size = None
+
+        self._total_region_size = None
 
     @property
     def buffer_size(self):
