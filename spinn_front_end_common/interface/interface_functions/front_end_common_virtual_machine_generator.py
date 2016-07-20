@@ -31,4 +31,9 @@ class FrontEndCommonVirtualMachineGenerator(object):
             with_monitors=with_monitors, down_chips=ignored_chips,
             down_cores=ignored_cores)
 
+        # Work out and add the spinnaker links
+        spinnaker_links = machine.locate_spinnaker_links(version, machine)
+        for spinnaker_link in spinnaker_links:
+            machine.add_spinnaker_link(spinnaker_link)
+
         return {"machine": machine}
