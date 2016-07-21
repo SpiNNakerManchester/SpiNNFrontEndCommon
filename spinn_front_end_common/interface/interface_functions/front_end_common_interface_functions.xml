@@ -465,6 +465,10 @@
                 <param_name>down_cores</param_name>
                 <param_type>DownedCoresDetails</param_type>
             </parameter>
+            <parameter>
+                <param_name>down_links</param_name>
+                <param_type>DownedLinksDetails</param_type>
+            </parameter>
         </optional_inputs>
         <produces_outputs>
             <parameter>
