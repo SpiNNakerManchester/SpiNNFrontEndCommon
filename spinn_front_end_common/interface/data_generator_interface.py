@@ -10,16 +10,16 @@ class DataGeneratorInterface(object):
     DataGeneratorInterface: interface for parallelisation of dsg generation
     """
 
-    def __init__(self, associated_vertex, subvertex, placement,
-                 partitioned_graph, partitionable_graph, routing_infos,
+    def __init__(self, associated_vertex, vertex, placement,
+                 machine_graph, application_graph, routing_infos,
                  hostname, graph_mapper, report_default_directory, ip_tags,
                  reverse_ip_tags, write_text_specs,
                  application_run_time_folder, progress_bar):
         self._associated_vertex = associated_vertex
-        self._subvertex = subvertex
+        self._subvertex = vertex
         self._placement = placement
-        self._partitioned_graph = partitioned_graph
-        self._partitionable_graph = partitionable_graph
+        self._machine_graph = machine_graph
+        self._application_graph = application_graph
         self._routing_infos = routing_infos
         self._hostname = hostname
         self._graph_mapper = graph_mapper
@@ -41,8 +41,8 @@ class DataGeneratorInterface(object):
         """
         try:
             self._associated_vertex.generate_data_spec(
-                self._subvertex, self._placement, self._partitioned_graph,
-                self._partitionable_graph, self._routing_infos, self._hostname,
+                self._subvertex, self._placement, self._machine_graph,
+                self._application_graph, self._routing_infos, self._hostname,
                 self._graph_mapper, self._report_default_directory,
                 self._ip_tags, self._reverse_ip_tags, self._write_text_specs,
                 self._application_run_time_folder)

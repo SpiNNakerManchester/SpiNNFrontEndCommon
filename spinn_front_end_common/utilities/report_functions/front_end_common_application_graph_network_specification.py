@@ -5,7 +5,7 @@ import time
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonNetworkSpecificationPartitionableReport(object):
+class FrontEndCommonApplicationGraphNetworkSpecification(object):
     """ Generate report on the user's network specification.
     """
 
@@ -13,9 +13,9 @@ class FrontEndCommonNetworkSpecificationPartitionableReport(object):
         """
         :param report_folder: the directory to which reports are stored
         :type report_folder: str
-        :param graph: the partitionable graph generated from the tools
+        :param graph: the graph generated from the tools
         :type graph:\
-                    pacman.model.partitionable_graph.partitionable_graph.PartitionableGraph
+                    pacman.model.graph.application.application_graph.ApplicationGraph
         :param hostname: the machine name
         :type hostname:
         :return: None

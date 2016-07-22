@@ -7,13 +7,13 @@ from spinn_front_end_common.utilities.utility_objs.executable_targets import \
 from spinn_front_end_common.utilities import exceptions
 
 
-class FrontEndCommonPartitionableGraphDataSpecificationWriter(object):
-    """ Executes a partitionable graph data specification generation
+class FrontEndCommonApplicationGraphDataSpecificationWriter(object):
+    """ Executes data specification generation
     """
 
     def __call__(
             self, placements, graph_mapper, tags, executable_finder,
-            partitioned_graph, partitionable_graph, routing_infos, hostname,
+            machine_graph, application_graph, routing_infos, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder):
         """ generates the dsg for the graph.
@@ -21,7 +21,7 @@ class FrontEndCommonPartitionableGraphDataSpecificationWriter(object):
         :return:
         """
 
-        # iterate though subvertices and call generate_data_spec for each
+        # iterate though vertices and call generate_data_spec for each
         # vertex
         executable_targets = ExecutableTargets()
         dsg_targets = dict()
@@ -30,13 +30,13 @@ class FrontEndCommonPartitionableGraphDataSpecificationWriter(object):
         progress_bar = ProgressBar(len(list(placements.placements)),
                                    "Generating data specifications")
         for placement in placements.placements:
-            associated_vertex = graph_mapper.get_vertex_from_subvertex(
-                placement.subvertex)
+            associated_vertex = graph_mapper.get_application_vertex(
+                placement.vertex)
 
-            self._generate_data_spec_for_subvertices(
+            self._generate_data_spec_for_vertices(
                 placement, associated_vertex, executable_targets, dsg_targets,
-                graph_mapper, tags, executable_finder, partitioned_graph,
-                partitionable_graph, routing_infos, hostname,
+                graph_mapper, tags, executable_finder, machine_graph,
+                application_graph, routing_infos, hostname,
                 report_default_directory, write_text_specs,
                 app_data_runtime_folder)
 
@@ -48,10 +48,10 @@ class FrontEndCommonPartitionableGraphDataSpecificationWriter(object):
         return {'executable_targets': executable_targets,
                 'dsg_targets': dsg_targets}
 
-    def _generate_data_spec_for_subvertices(
+    def _generate_data_spec_for_vertices(
             self, placement, associated_vertex, executable_targets,
             dsg_targets, graph_mapper, tags, executable_finder,
-            partitioned_graph, partitionable_graph, routing_infos, hostname,
+            machine_graph, application_graph, routing_infos, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder):
 
@@ -59,16 +59,16 @@ class FrontEndCommonPartitionableGraphDataSpecificationWriter(object):
         if isinstance(associated_vertex, AbstractDataSpecableVertex):
 
             ip_tags = tags.get_ip_tags_for_vertex(
-                placement.subvertex)
+                placement.vertex)
             reverse_ip_tags = tags.get_reverse_ip_tags_for_vertex(
-                placement.subvertex)
+                placement.vertex)
             file_path = associated_vertex.generate_data_spec(
-                placement.subvertex, placement, partitioned_graph,
-                partitionable_graph, routing_infos, hostname, graph_mapper,
+                placement.vertex, placement, machine_graph,
+                application_graph, routing_infos, hostname, graph_mapper,
                 report_default_directory, ip_tags, reverse_ip_tags,
                 write_text_specs, app_data_runtime_folder)
 
-            # link dsg file to subvertex
+            # link dsg file to vertex
             dsg_targets[placement.x, placement.y, placement.p] = file_path
 
             # Get name of binary from vertex

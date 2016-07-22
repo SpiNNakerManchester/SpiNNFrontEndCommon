@@ -3,22 +3,22 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.model.partitionable_graph.partitionable_graph \
-    import PartitionableGraph
-from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
+from pacman.model.graph.application.application_graph \
+    import ApplicationGraph
+from pacman.model.graph.machine.machine_graph import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.abstract_classes.abstract_virtual_vertex \
-    import AbstractVirtualVertex
-from pacman.model.abstract_classes.virtual_partitioned_vertex \
-    import VirtualPartitionedVertex
+from pacman.model.graph.application.simple_virtual_application_vertex \
+    import SimpleVirtualApplicationVertex
+from pacman.model.graph.machine.simple_virtual_machine_vertex \
+    import SimpleVirtualMachineVertex
 
 # common front end imports
 from spinn_front_end_common.abstract_models.\
     abstract_has_first_machine_time_step \
     import AbstractHasFirstMachineTimeStep
 from spinn_front_end_common.abstract_models\
-    .abstract_partitioned_data_specable_vertex \
-    import AbstractPartitionedDataSpecableVertex
+    .abstract_machine_data_specable_vertex \
+    import AbstractMachineDataSpecableVertex
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management\
@@ -73,8 +73,8 @@ class SpinnakerMainInterface(object):
             graph_label = "Application_graph"
 
         # pacman objects
-        self._partitionable_graph = PartitionableGraph(label=graph_label)
-        self._partitioned_graph = PartitionedGraph(label=graph_label)
+        self._application_graph = ApplicationGraph(label=graph_label)
+        self._machine_graph = MachineGraph(label=graph_label)
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
@@ -109,7 +109,7 @@ class SpinnakerMainInterface(object):
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
 
         self._dsg_algorithm = \
-            "FrontEndCommonPartitionableGraphDataSpecificationWriter"
+            "FrontEndCommonApplicationGraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
         self._none_labelled_vertex_count = 0
@@ -280,9 +280,9 @@ class SpinnakerMainInterface(object):
                     "The network cannot be changed between runs without"
                     " resetting")
 
-            # Reset the partitioned graph if there is a partitionable graph
-            if len(self._partitionable_graph.vertices) > 0:
-                self._partitioned_graph = PartitionedGraph()
+            # Reset the machine graph if there is an application graph
+            if len(self._application_graph.vertices) > 0:
+                self._machine_graph = MachineGraph()
                 self._graph_mapper = None
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
@@ -291,7 +291,7 @@ class SpinnakerMainInterface(object):
         # Check if anything is recording and buffered
         is_buffered_recording = False
         for placement in self._placements.placements:
-            vertex = placement.subvertex
+            vertex = placement.vertex
             if (isinstance(vertex, AbstractReceiveBuffersToHost) and
                     isinstance(vertex, AbstractRecordable)):
                 if vertex.is_recording():
@@ -360,7 +360,7 @@ class SpinnakerMainInterface(object):
         sdram_tracker = dict()
         vertex_by_chip = defaultdict(list)
         for placement in self._placements.placements:
-            vertex = placement.subvertex
+            vertex = placement.vertex
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 resources = vertex.resources_required
                 if (placement.x, placement.y) not in sdram_tracker:
@@ -411,11 +411,11 @@ class SpinnakerMainInterface(object):
                     this iteration.
         :return: None
         """
-        for vertex in self._partitionable_graph.vertices:
+        for vertex in self._application_graph.vertices:
             if isinstance(vertex, AbstractDataSpecableVertex):
                 vertex.set_no_machine_time_steps(n_machine_time_steps)
-        for vertex in self._partitioned_graph.subvertices:
-            if isinstance(vertex, AbstractPartitionedDataSpecableVertex):
+        for vertex in self._machine_graph.vertices:
+            if isinstance(vertex, AbstractMachineDataSpecableVertex):
                 vertex.set_no_machine_time_steps(n_machine_time_steps)
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
@@ -431,13 +431,13 @@ class SpinnakerMainInterface(object):
             self._no_machine_time_steps = int(math.ceil(machine_time_steps))
         else:
             self._no_machine_time_steps = None
-            for vertex in self._partitionable_graph.vertices:
+            for vertex in self._application_graph.vertices:
                 if (isinstance(vertex, AbstractRecordable) and
                         vertex.is_recording()):
                     raise common_exceptions.ConfigurationException(
                         "recording a vertex when set to infinite runtime "
                         "is not currently supported")
-            for vertex in self._partitioned_graph.subvertices:
+            for vertex in self._machine_graph.vertices:
                 if (isinstance(vertex, AbstractRecordable) and
                         vertex.is_recording()):
                     raise common_exceptions.ConfigurationException(
@@ -477,11 +477,11 @@ class SpinnakerMainInterface(object):
         algorithms = list()
         outputs = list()
 
-        # add the partitionable and partitioned graphs as needed
-        if len(self._partitionable_graph.vertices) > 0:
-            inputs["MemoryPartitionableGraph"] = self._partitionable_graph
-        elif len(self._partitioned_graph.subvertices) > 0:
-            inputs["MemoryPartitionedGraph"] = self._partitioned_graph
+        # add the application and machine graphs as needed
+        if len(self._application_graph.vertices) > 0:
+            inputs["MemoryApplicationGraph"] = self._application_graph
+        elif len(self._machine_graph.vertices) > 0:
+            inputs["MemoryMachineGraph"] = self._machine_graph
 
         # add reinjection flag
         inputs["EnableReinjectionFlag"] = self._config.getboolean(
@@ -585,14 +585,13 @@ class SpinnakerMainInterface(object):
                     algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
                     need_virtual_board = True
 
-            if (len(self._partitionable_graph.vertices) == 0 and
-                    len(self._partitioned_graph.subvertices) == 0 and
+            if (len(self._application_graph.vertices) == 0 and
+                    len(self._machine_graph.vertices) == 0 and
                     need_virtual_board):
                 raise common_exceptions.ConfigurationException(
                     "A allocated machine has been requested but there are no"
-                    " partitioned or partitionable vertices to work out the"
-                    " size of the machine required and n_chips_required"
-                    " has not been set")
+                    " vertices to work out the size of the machine required"
+                    " and n_chips_required has not been set")
 
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
@@ -608,18 +607,18 @@ class SpinnakerMainInterface(object):
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
                 # the graph
-                if len(self._partitionable_graph.vertices) != 0:
-                    inputs["MemoryPartitionableGraph"] = \
-                        self._partitionable_graph
+                if len(self._application_graph.vertices) != 0:
+                    inputs["MemoryApplicationGraph"] = \
+                        self._application_graph
                     algorithms.extend(self._config.get(
                         "Mapping",
-                        "partitionable_to_partitioned_algorithms").split(","))
-                    outputs.append("MemoryPartitionedGraph")
+                        "application_to_machine_graph_algorithms").split(","))
+                    outputs.append("MemoryMachineGraph")
                     outputs.append("MemoryGraphMapper")
                     do_partitioning = True
-                elif len(self._partitioned_graph.subvertices) != 0:
-                    inputs["MemoryPartitionedGraph"] = self._partitioned_graph
-                    algorithms.append("FrontEndCommonPartitionedGraphMeasurer")
+                elif len(self._machine_graph.vertices) != 0:
+                    inputs["MemoryMachineGraph"] = self._machine_graph
+                    algorithms.append("FrontEndCommonGraphMeasurer")
             else:
 
                 # If we are using an allocation server but have been told how
@@ -648,8 +647,8 @@ class SpinnakerMainInterface(object):
                 "MachineAllocationController")
 
             if do_partitioning:
-                self._partitioned_graph = executor.get_item(
-                    "MemoryPartitionedGraph")
+                self._machine_graph = executor.get_item(
+                    "MemoryMachineGraph")
                 self._graph_mapper = executor.get_item(
                     "MemoryGraphMapper")
 
@@ -686,11 +685,11 @@ class SpinnakerMainInterface(object):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if (len(self._partitionable_graph.vertices) > 0 and
+        if (len(self._application_graph.vertices) > 0 and
                 self._graph_mapper is None):
-            inputs["MemoryPartitionableGraph"] = self._partitionable_graph
-        elif len(self._partitioned_graph.subvertices) > 0:
-            inputs['MemoryPartitionedGraph'] = self._partitioned_graph
+            inputs["MemoryApplicationGraph"] = self._application_graph
+        elif len(self._machine_graph.vertices) > 0:
+            inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
@@ -727,8 +726,8 @@ class SpinnakerMainInterface(object):
             self._json_folder, "sdram_allocations.json")
         inputs["FileMachineFilePath"] = os.path.join(
             self._json_folder, "machine.json")
-        inputs["FilePartitionedGraphFilePath"] = os.path.join(
-            self._json_folder, "partitioned_graph.json")
+        inputs["FileMachineGraphFilePath"] = os.path.join(
+            self._json_folder, "machine_graph.json")
         inputs["FilePlacementFilePath"] = os.path.join(
             self._json_folder, "placements.json")
         inputs["FileRoutingPathsFilePath"] = os.path.join(
@@ -755,50 +754,48 @@ class SpinnakerMainInterface(object):
                 algorithms.append("compressedRoutingTableReports")
                 algorithms.append("comparisonOfRoutingTablesReport")
 
-            # only add partitioner report if using a partitionable graph
+            # only add partitioner report if using an application graph
             if (self._config.getboolean(
                     "Reports", "writePartitionerReports") and
-                    len(self._partitionable_graph.vertices) != 0):
+                    len(self._application_graph.vertices) != 0):
                 algorithms.append("PartitionerReport")
 
-            # only add write placer report with partitionable graph when
-            # there's partitionable vertices
+            # only add write placer report with application graph when
+            # there's application vertices
             if (self._config.getboolean(
-                    "Reports", "writePlacerReportWithPartitionable") and
-                    len(self._partitionable_graph.vertices) != 0):
-                algorithms.append("PlacerReportWithPartitionableGraph")
+                    "Reports", "writeApplicationGraphPlacerReport") and
+                    len(self._application_graph.vertices) != 0):
+                algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
-                    "Reports", "writePlacerReportWithoutPartitionable"):
-                algorithms.append("PlacerReportWithoutPartitionableGraph")
+                    "Reports", "writeMachineGraphPlacerReport"):
+                algorithms.append("PlacerReportWithoutApplicationGraph")
 
-            # only add network specification partitionable report if there's
-            # partitionable vertices.
+            # only add network specification report if there's
+            # application vertices.
             if (self._config.getboolean(
                     "Reports", "writeNetworkSpecificationReport") and
-                    len(self._partitionable_graph.vertices) != 0):
+                    len(self._application_graph.vertices) != 0):
                 algorithms.append(
-                    "FrontEndCommonNetworkSpecificationPartitionableReport")
+                    "FrontEndCommonApplicationGraphNetworkSpecificationReport")
 
-        # only add the partitioner if there isn't already a partitioned graph
-        if (len(self._partitionable_graph.vertices) > 0 and
-                len(self._partitioned_graph.subvertices) == 0):
+        # only add the partitioner if there isn't already a machine graph
+        if (len(self._application_graph.vertices) > 0 and
+                len(self._machine_graph.vertices) == 0):
             algorithms.extend(self._config.get(
                 "Mapping",
-                "partitionable_to_partitioned_algorithms").split(","))
+                "application_to_machine_graph_algorithms").split(","))
 
         algorithms.extend(self._config.get(
-            "Mapping", "partitioned_to_machine_algorithms").split(","))
+            "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
-        # decide upon the outputs depending upon if there is a
-        # partitionable graph that has vertices added to it.
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryPartitionedGraph"
+            "MemoryMachineGraph"
         ]
 
-        if len(self._partitionable_graph.vertices) > 0:
+        if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
@@ -812,7 +809,7 @@ class SpinnakerMainInterface(object):
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
-        self._partitioned_graph = executor.get_item("MemoryPartitionedGraph")
+        self._machine_graph = executor.get_item("MemoryMachineGraph")
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -883,7 +880,7 @@ class SpinnakerMainInterface(object):
         # Calculate the first machine time step to start from and set this
         # where necessary
         first_machine_time_step = self._current_run_timesteps
-        for vertex in self._partitionable_graph.vertices:
+        for vertex in self._application_graph.vertices:
             if isinstance(vertex, AbstractHasFirstMachineTimeStep):
                 vertex.set_first_machine_time_step(first_machine_time_step)
 
@@ -1189,34 +1186,35 @@ class SpinnakerMainInterface(object):
         """
         changed = False
 
-        # if partitionable graph is filled, check their changes
-        if len(self._partitionable_graph.vertices) != 0:
-            for partitionable_vertex in self._partitionable_graph.vertices:
-                if isinstance(partitionable_vertex, AbstractChangableAfterRun):
-                    if partitionable_vertex.requires_mapping:
+        # if application graph is filled, check their changes
+        if len(self._application_graph.vertices) != 0:
+            for vertex in self._application_graph.vertices:
+                if isinstance(vertex, AbstractChangableAfterRun):
+                    if vertex.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitionable_vertex.mark_no_changes()
-            for partitionable_edge in self._partitionable_graph.edges:
-                if isinstance(partitionable_edge, AbstractChangableAfterRun):
-                    if partitionable_edge.requires_mapping:
+                        vertex.mark_no_changes()
+            for edge in self._application_graph.edges:
+                if isinstance(edge, AbstractChangableAfterRun):
+                    if edge.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitionable_edge.mark_no_changes()
-        # if no partitionable, but a partitioned graph, check for changes there
-        elif len(self._partitioned_graph.subvertices) != 0:
-            for partitioned_vertex in self._partitioned_graph.subvertices:
-                if isinstance(partitioned_vertex, AbstractChangableAfterRun):
-                    if partitioned_vertex.requires_mapping:
+                        edge.mark_no_changes()
+
+        # if no application, but a machine graph, check for changes there
+        elif len(self._machine_graph.vertices) != 0:
+            for machine_vertex in self._machine_graph.vertices:
+                if isinstance(machine_vertex, AbstractChangableAfterRun):
+                    if machine_vertex.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitioned_vertex.mark_no_changes()
-            for partitioned_edge in self._partitioned_graph.subedges:
-                if isinstance(partitioned_edge, AbstractChangableAfterRun):
-                    if partitioned_edge.requires_mapping:
+                        machine_vertex.mark_no_changes()
+            for machine_edge in self._machine_graph.edges:
+                if isinstance(machine_edge, AbstractChangableAfterRun):
+                    if machine_edge.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitioned_edge.mark_no_changes()
+                        machine_edge.mark_no_changes()
         return changed
 
     @property
@@ -1260,20 +1258,20 @@ class SpinnakerMainInterface(object):
         return self._time_scale_factor
 
     @property
-    def partitioned_graph(self):
+    def machine_graph(self):
         """
 
         :return:
         """
-        return self._partitioned_graph
+        return self._machine_graph
 
     @property
-    def partitionable_graph(self):
+    def application_graph(self):
         """
 
         :return:
         """
-        return self._partitionable_graph
+        return self._application_graph
 
     @property
     def routing_infos(self):
@@ -1375,73 +1373,65 @@ class SpinnakerMainInterface(object):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def add_partitionable_vertex(self, vertex_to_add):
+    def add_application_vertex(self, vertex_to_add):
         """
 
-        :param vertex_to_add: the partitionable vertex to add to the graph
+        :param vertex_to_add: the vertex to add to the graph
         :return: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if (len(self._partitioned_graph.subvertices) > 0 and
+        if (len(self._machine_graph.vertices) > 0 and
                 self._graph_mapper is None):
             raise common_exceptions.ConfigurationException(
-                "Cannot add vertices to both the partitioned and partitionable"
+                "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
+        if (isinstance(vertex_to_add, SimpleVirtualApplicationVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._partitionable_graph.add_vertex(vertex_to_add)
+        self._application_graph.add_vertex(vertex_to_add)
 
-    def add_partitioned_vertex(self, vertex):
+    def add_machine_vertex(self, vertex):
         """
 
-        :param vertex the partitioned vertex to add to the graph
+        :param vertex the vertex to add to the graph
         :return: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        # check that there's no partitioned vertices added so far
-        if len(self._partitionable_graph.vertices) > 0:
+        # check that there's no application vertices added so far
+        if len(self._application_graph.vertices) > 0:
             raise common_exceptions.ConfigurationException(
-                "Cannot add vertices to both the partitioned and partitionable"
+                "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex, VirtualPartitionedVertex) and
+        if (isinstance(vertex, SimpleVirtualMachineVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._partitioned_graph.add_subvertex(vertex)
+        self._machine_graph.add_vertex(vertex)
 
-    def add_partitionable_edge(
-            self, edge_to_add, partition_identifier=None,
-            partition_constraints=None):
+    def add_application_edge(self, edge_to_add, partition_identifier):
         """
 
         :param edge_to_add:
         :param partition_identifier: the partition identifier for the outgoing
                     edge partition
-        :param partition_constraints: the constraints of a partition
-        associated with this edge
         :return:
         """
 
-        self._partitionable_graph.add_edge(
-            edge_to_add, partition_identifier, partition_constraints)
+        self._application_graph.add_edge(
+            edge_to_add, partition_identifier)
 
-    def add_partitioned_edge(
-            self, edge, partition_id=None, partition_constraints=None):
+    def add_machine_edge(self, edge, partition_id):
         """
 
-        :param edge: the partitioned edge to add to the partitioned graph
-        :param partition_constraints:the constraints of a partition
-        associated with this edge
+        :param edge: the edge to add to the graph
         :param partition_id: the partition identifier for the outgoing
                     edge partition
         :return:
         """
-        self._partitioned_graph.add_subedge(
-            edge, partition_id, partition_constraints)
+        self._machine_graph.add_edge(edge, partition_id)
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,

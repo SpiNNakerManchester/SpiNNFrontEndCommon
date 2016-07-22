@@ -63,7 +63,7 @@ class FrontEndCommonReloadScriptCreator(object):
             buffer_manager.reload_buffer_files
         for buffered_vertex in buffer_manager.sender_vertices:
             tag = tags.get_ip_tags_for_vertex(buffered_vertex)[0]
-            placement = placements.get_placement_of_subvertex(buffered_vertex)
+            placement = placements.get_placement_of_vertex(buffered_vertex)
             reload_script.add_buffered_vertex(
                 buffered_vertex, tag, placement,
                 buffered_vertices_regions_file_paths[buffered_vertex])

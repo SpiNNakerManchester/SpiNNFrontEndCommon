@@ -6,8 +6,8 @@ from pacman.model.constraints.key_allocator_constraints.\
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.graph.abstract_partitionable_vertex\
-    import AbstractPartitionableVertex
+from pacman.model.graph.application.abstract_application_vertex\
+    import AbstractApplicationVertex
 
 # data spec imports
 from data_specification.data_specification_generator \
@@ -21,8 +21,8 @@ from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utility_models.command_sender_partitioned_vertex \
-    import CommandSenderPartitionedVertex
+from spinn_front_end_common.utility_models.command_sender_machine_vertex \
+    import CommandSenderMachineVertex
 
 
 _COMMAND_WITH_PAYLOAD_SIZE = 12
@@ -31,7 +31,7 @@ _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 
 
 class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
-                    AbstractPartitionableVertex,
+                    AbstractApplicationVertex,
                     AbstractDataSpecableVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
@@ -40,7 +40,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
     def __init__(self, machine_time_step, timescale_factor):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        AbstractPartitionableVertex.__init__(
+        AbstractApplicationVertex.__init__(
             self, 1, "Command Sender", 1)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
@@ -51,10 +51,10 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         self._commands_with_payloads = dict()
         self._commands_without_payloads = dict()
 
-    def create_subvertex(
+    def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        return CommandSenderPartitionedVertex(
+        return CommandSenderMachineVertex(
             resources_required, label, constraints)
 
     def add_commands(self, commands, edge):
@@ -65,7 +65,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
                     :py:class:`spynnaker.pyNN.utilities.multi_cast_command.MultiCastCommand`
         :param edge: The edge down which the commands will be sent
         :type edge:\
-                    :py:class:`pacman.model.partitionable_graph.partitionable_edge.PartitionableEdge`
+                    :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
         :raise SpynnakerException: If the edge already has commands or if all\
                     the commands masks are not 0xFFFFFFFF and there is no\
                     commonality between the command masks
@@ -136,13 +136,13 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
                      for (key, mask) in command_keys])])
 
     def generate_data_spec(
-            self, subvertex, placement, partitioned_graph, graph, routing_info,
+            self, vertex, placement, machine_graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder):
         """
-        :param subvertex:
+        :param vertex:
         :param placement:
-        :param partitioned_graph:
+        :param machine_graph:
         :param graph:
         :param routing_info:
         :param hostname:
@@ -164,12 +164,12 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
         # reserve region - add a word for the region size
         n_command_bytes = self._get_n_command_bytes()
-        self._reserve_memory_regions(spec, n_command_bytes + 4, subvertex)
+        self._reserve_memory_regions(spec, n_command_bytes + 4, vertex)
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
         self._write_basic_setup_info(
-            spec, CommandSenderPartitionedVertex.SYSTEM_REGION)
+            spec, CommandSenderMachineVertex.SYSTEM_REGION)
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -205,7 +205,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
                 new_times.add(time)
 
         # write commands
-        spec.switch_write_focus(region=CommandSenderPartitionedVertex.COMMANDS)
+        spec.switch_write_focus(region=CommandSenderMachineVertex.COMMANDS)
         spec.write_value(n_command_bytes)
         for time in sorted(new_times):
 
@@ -222,8 +222,8 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
             spec.write_value(len(with_payload))
             for command in with_payload:
                 spec.write_value(self._get_key(
-                    command, graph_mapper, routing_info, partitioned_graph))
-                payload = command.get_payload(routing_info, partitioned_graph,
+                    command, graph_mapper, routing_info, machine_graph))
+                payload = command.get_payload(routing_info, machine_graph,
                                               graph_mapper)
                 spec.write_value(payload)
                 spec.write_value(command.repeat << 16 |
@@ -232,7 +232,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
             spec.write_value(len(without_payload))
             for command in without_payload:
                 spec.write_value(self._get_key(
-                    command, graph_mapper, routing_info, partitioned_graph))
+                    command, graph_mapper, routing_info, machine_graph))
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
@@ -242,7 +242,7 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
         return data_writer.filename
 
-    def _get_key(self, command, graph_mapper, routing_info, partitioned_graph):
+    def _get_key(self, command, graph_mapper, routing_info, machine_graph):
         """ Return a key for a command
 
         :param command:
@@ -255,22 +255,14 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
             return command.key
 
         # Find the routing info for the edge.  Note that this assumes that
-        # all the partitioned edges have the same keys assigned
+        # all the edges have the same keys assigned
         edge_for_command = self._command_edge[command]
-        partitioned_edge_for_command = iter(
-            graph_mapper.get_partitioned_edges_from_partitionable_edge(
-                edge_for_command)).next()
-        partition = partitioned_graph.\
-            get_partition_of_subedge(partitioned_edge_for_command)
-        routing_info_for_edge = routing_info.get_keys_and_masks_from_partition(
-            partition)
-
-        # Assume there is only one key and mask
-        # TODO: Deal with multiple keys and masks
-        key_and_mask = routing_info_for_edge[0]
+        machine_edge_for_command = iter(
+            graph_mapper.get_machine_edges(edge_for_command)).next()
+        key = routing_info.get_first_key_for_edge(machine_edge_for_command)
 
         # Build the command by merging in the assigned key with the command
-        return key_and_mask.key | command.key
+        return key | command.key
 
     def _get_n_command_bytes(self):
         """
@@ -302,13 +294,13 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         :param graph_mapper:
         :return:
         """
-        edge = graph_mapper.get_partitionable_edge_from_partitioned_edge(
+        edge = graph_mapper.get_application_edge(
             partition.edges[0])
         if edge in self._edge_constraints:
             return self._edge_constraints[edge]
         return list()
 
-    def _reserve_memory_regions(self, spec, command_size, subvertex):
+    def _reserve_memory_regions(self, spec, command_size, vertex):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -319,14 +311,14 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=CommandSenderPartitionedVertex.SYSTEM_REGION,
+            region=CommandSenderMachineVertex.SYSTEM_REGION,
             size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
             label='setup')
         if command_size > 0:
             spec.reserve_memory_region(
-                region=CommandSenderPartitionedVertex.COMMANDS,
+                region=CommandSenderMachineVertex.COMMANDS,
                 size=command_size, label='commands')
-        subvertex.reserve_provenance_data_region(spec)
+        vertex.reserve_provenance_data_region(spec)
 
     @property
     def model_name(self):
@@ -334,14 +326,12 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         """
         return "command_sender_multi_cast_source"
 
-    # inherited from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
         """ Return how much cpu is used by the model for a given number of\
             atoms
 
-        :param vertex_slice: the slice from the partitionable vertex that this\
-                    model needs to deduce how many resources it will use
-        :param graph: the partitionable graph
+        :param vertex_slice: the slice of the vertex
+        :param graph: the graph
         :return: the size of cpu this model is expecting to use for the\
                     number of atoms.
         """
@@ -351,9 +341,8 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         """ Return how much SDRAM is used by the model for a given number of\
             atoms
 
-        :param vertex_slice: the slice from the partitionable vertex that this\
-                    model needs to deduce how many resources it will use
-        :param graph: the partitionable graph
+        :param vertex_slice: the slice from the vertex
+        :param graph: the graph
         :return: the size of SDRAM this model is expecting to use for the\
                     number of atoms.
         """
@@ -362,15 +351,14 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         # and the size of the system region
         return (
             self._get_n_command_bytes() + 4 + 12 +
-            CommandSenderPartitionedVertex.get_provenance_data_size(0))
+            CommandSenderMachineVertex.get_provenance_data_size(0))
 
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
         """ Return how much DTCM is used by the model for a given number of\
             atoms
 
-        :param vertex_slice: the slice from the partitionable vertex that this\
-                    model needs to deduce how many resources it will use
-        :param graph: the partitionable graph
+        :param vertex_slice: the slice of the vertex
+        :param graph: the graph
         :return: the size of DTCM this model is expecting to use for the\
                     number of atoms.
         """

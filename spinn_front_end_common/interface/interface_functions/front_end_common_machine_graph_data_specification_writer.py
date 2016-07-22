@@ -6,16 +6,16 @@ from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models.\
-    abstract_partitioned_data_specable_vertex import \
-    AbstractPartitionedDataSpecableVertex
+    abstract_machine_data_specable_vertex import \
+    AbstractMachineDataSpecableVertex
 
 
-class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
-    """ Writes data specification for partitioned graphs
+class FrontEndCommonMachineGraphDataSpecificationWriter(object):
+    """ Writes data specification for machine graphs
     """
 
     def __call__(
-            self, placements, tags, partitioned_graph, routing_infos, hostname,
+            self, placements, tags, machine_graph, routing_infos, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder, executable_finder):
 
@@ -24,7 +24,7 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
         :return:
         """
 
-        # iterate though subvertices and call generate_data_spec for each
+        # iterate though vertices and call generate_data_spec for each
         # vertex
         executable_targets = ExecutableTargets()
         dsg_targets = dict()
@@ -33,27 +33,27 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
         progress_bar = ProgressBar(len(list(placements.placements)),
                                    "Generating data specifications")
         for placement in placements.placements:
-            if isinstance(placement.subvertex,
-                          AbstractPartitionedDataSpecableVertex):
+            if isinstance(placement.vertex,
+                          AbstractMachineDataSpecableVertex):
                 ip_tags = tags.get_ip_tags_for_vertex(
-                    placement.subvertex)
+                    placement.vertex)
                 reverse_ip_tags = \
                     tags.get_reverse_ip_tags_for_vertex(
-                        placement.subvertex)
-                file_path = placement.subvertex.generate_data_spec(
-                    placement, partitioned_graph,
+                        placement.vertex)
+                file_path = placement.vertex.generate_data_spec(
+                    placement, machine_graph,
                     routing_infos, hostname,
                     report_default_directory, ip_tags,
                     reverse_ip_tags, write_text_specs,
                     app_data_runtime_folder)
 
-                # link dsg file to subvertex
+                # link dsg file to vertex
                 dsg_targets[placement.x, placement.y, placement.p] = file_path
 
                 progress_bar.update()
 
                 # Get name of binary from vertex
-                binary_name = placement.subvertex.get_binary_file_name()
+                binary_name = placement.vertex.get_binary_file_name()
 
                 # Attempt to find this within search paths
                 binary_path = executable_finder.get_executable_path(
@@ -66,28 +66,28 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                     executable_targets.add_binary(binary_path)
                 executable_targets.add_processor(
                     binary_path, placement.x, placement.y, placement.p)
-            elif isinstance(placement.subvertex, AbstractDataSpecableVertex):
-                ip_tags = tags.get_ip_tags_for_vertex(placement.subvertex)
+            elif isinstance(placement.vertex, AbstractDataSpecableVertex):
+                ip_tags = tags.get_ip_tags_for_vertex(placement.vertex)
                 reverse_ip_tags = \
                     tags.get_reverse_ip_tags_for_vertex(
-                        placement.subvertex)
-                file_path = placement.subvertex.generate_data_spec(
-                    placement.subvertex, placement, partitioned_graph,
+                        placement.vertex)
+                file_path = placement.vertex.generate_data_spec(
+                    placement.vertex, placement, machine_graph,
                     None, routing_infos, hostname, None,
                     report_default_directory, ip_tags,
                     reverse_ip_tags, write_text_specs,
                     app_data_runtime_folder)
 
-                # link dsg file to subvertex
+                # link dsg file to vertex
                 mapping_key = \
                     placement.x, placement.y, placement.p, \
-                    placement.subvertex.label
+                    placement.vertex.label
                 dsg_targets[mapping_key] = file_path
 
                 progress_bar.update()
 
                 # Get name of binary from vertex
-                binary_name = placement.subvertex.get_binary_file_name()
+                binary_name = placement.vertex.get_binary_file_name()
 
                 # Attempt to find this within search paths
                 binary_path = executable_finder.get_executable_path(
@@ -104,7 +104,7 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                 progress_bar.update()
 
                 # Get name of binary from vertex
-                binary_name = placement.subvertex.get_binary_file_name()
+                binary_name = placement.vertex.get_binary_file_name()
 
                 # Attempt to find this within search paths
                 binary_path = executable_finder.get_executable_path(

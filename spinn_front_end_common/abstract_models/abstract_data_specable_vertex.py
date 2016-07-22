@@ -44,22 +44,22 @@ class AbstractDataSpecableVertex(object):
 
     @abstractmethod
     def generate_data_spec(
-            self, subvertex, placement, sub_graph, graph, routing_info,
+            self, vertex, placement, sub_graph, graph, routing_info,
             hostname, graph_subgraph_mapper, report_folder, ip_tags,
             reverse_ip_tags, write_text_specs, application_run_time_folder):
         """ Generates the data specification of an application
 
-        :param subvertex: the subvertex to generate data for
-        :param placement: the placement of the subvertex
-        :param sub_graph: the partitioned graph
-        :param graph: the partitionable graph
-        :param routing_info: the keys for this partitioned vertex
+        :param vertex: the vertex to generate data for
+        :param placement: the placement of the vertex
+        :param sub_graph: the machine graph
+        :param graph: the application graph
+        :param routing_info: the keys for this vertex
         :param hostname: the hostname associated with this spinnaker machine
         :param graph_subgraph_mapper: the mapper between the two graphs
         :param report_folder: where reports are to be written
         :param ip_tags: the list of iptags allocated to the machine
         :param reverse_ip_tags: the list of reverse ip tags allocated to the\
-                    subvertex
+                    vertex
         :param write_text_specs: boolean to write text specs
         :param application_run_time_folder: location where application data is\
                     stored.
@@ -68,7 +68,7 @@ class AbstractDataSpecableVertex(object):
 
     @abstractmethod
     def get_binary_file_name(self):
-        """ Get the binary name to be run for subvertices of this vertex
+        """ Get the binary name to be run for vertices of this vertex
         """
 
     @property

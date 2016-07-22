@@ -1,6 +1,6 @@
 # pacman imports
-from pacman.model.graph.abstract_partitionable_vertex import \
-    AbstractPartitionableVertex
+from pacman.model.graph.application.abstract_application_vertex import \
+    AbstractApplicationVertex
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\
@@ -13,12 +13,12 @@ from spinn_front_end_common.utilities import constants
 # general imports
 import sys
 from spinn_front_end_common.utility_models\
-    .reverse_ip_tag_multicast_source_partitioned_vertex \
-    import ReverseIPTagMulticastSourcePartitionedVertex
+    .reverse_ip_tag_multicast_source_machine_vertex \
+    import ReverseIPTagMulticastSourceMachineVertex
 
 
 class ReverseIpTagMultiCastSource(
-        AbstractPartitionableVertex, AbstractDataSpecableVertex,
+        AbstractApplicationVertex, AbstractDataSpecableVertex,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
@@ -43,6 +43,7 @@ class ReverseIpTagMultiCastSource(
 
             # Send buffer parameters
             send_buffer_times=None,
+            send_buffer_partition_id=None,
             send_buffer_max_space=(
                 constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
             send_buffer_space_before_notify=640,
@@ -76,6 +77,8 @@ class ReverseIpTagMultiCastSource(
                 verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\
                 should be sent (one array for each key, default disabled)
+        :param send_buffer_partition_id: The id of the partition containing\
+                the edges down which the events are to be sent
         :param send_buffer_max_space: The maximum amount of space to use of\
                 the SDRAM on the machine (default is 1MB)
         :param send_buffer_space_before_notify: The amount of space free in\
@@ -93,7 +96,7 @@ class ReverseIpTagMultiCastSource(
 
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
-        AbstractPartitionableVertex.__init__(
+        AbstractApplicationVertex.__init__(
             self, n_keys, label, max_atoms_per_core, constraints)
 
         # Store the parameters
@@ -106,6 +109,7 @@ class ReverseIpTagMultiCastSource(
         self._prefix_type = prefix_type
         self._check_keys = check_keys
         self._send_buffer_times = send_buffer_times
+        self._send_buffer_partition_id = send_buffer_partition_id
         self._send_buffer_max_space = send_buffer_max_space
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
         self._send_buffer_notification_ip_address = \
@@ -124,8 +128,8 @@ class ReverseIpTagMultiCastSource(
         self._minimum_sdram_for_buffering = 0
         self._using_auto_pause_and_resume = False
 
-        # Keep the subvertices for resuming runs
-        self._subvertices = list()
+        # Keep the vertices for resuming runs
+        self._machine_vertices = list()
         self._first_machine_time_step = 0
 
     @property
@@ -135,14 +139,14 @@ class ReverseIpTagMultiCastSource(
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
-        for (vertex_slice, subvertex) in self._subvertices:
+        for (vertex_slice, vertex) in self._machine_vertices:
             send_buffer_times_to_set = self._send_buffer_times
             if (self._send_buffer_times is not None and
                     len(self._send_buffer_times) > 0):
                 if hasattr(self._send_buffer_times[0], "__len__"):
                     send_buffer_times_to_set = self._send_buffer_times[
                         vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-            subvertex.send_buffer_times = send_buffer_times_to_set
+            vertex.send_buffer_times = send_buffer_times_to_set
 
     @property
     def first_machine_time_step(self):
@@ -151,14 +155,14 @@ class ReverseIpTagMultiCastSource(
     @first_machine_time_step.setter
     def first_machine_time_step(self, first_machine_time_step):
         self._first_machine_time_step = first_machine_time_step
-        for (_, subvertex) in self._subvertices:
-            subvertex.first_machine_time_step = first_machine_time_step
+        for (_, vertex) in self._machine_vertices:
+            vertex.first_machine_time_step = first_machine_time_step
 
     def set_no_machine_time_steps(self, new_no_machine_time_steps):
         AbstractDataSpecableVertex.set_no_machine_time_steps(
             self, new_no_machine_time_steps)
-        for (_, subvertex) in self._subvertices:
-            subvertex.set_no_machine_time_steps(new_no_machine_time_steps)
+        for (_, vertex) in self._machine_vertices:
+            vertex.set_no_machine_time_steps(new_no_machine_time_steps)
 
     def enable_recording(
             self, buffering_ip_address, buffering_port,
@@ -179,7 +183,7 @@ class ReverseIpTagMultiCastSource(
         self._using_auto_pause_and_resume = using_auto_pause_and_resume
 
     def get_outgoing_partition_constraints(self, partition, graph_mapper):
-        return partition.edges[0].pre_subvertex.\
+        return partition.edges[0].pre_vertex.\
             get_outgoing_partition_constraints(partition, graph_mapper)
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
@@ -187,7 +191,7 @@ class ReverseIpTagMultiCastSource(
         if self._send_buffer_times is not None:
             send_buffer_size = self._send_buffer_max_space
 
-        recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
+        recording_size = (ReverseIPTagMulticastSourceMachineVertex
                           .get_recording_data_size(1))
         if self._recording_enabled:
             if self._using_auto_pause_and_resume:
@@ -195,19 +199,19 @@ class ReverseIpTagMultiCastSource(
             else:
                 recording_size += self._record_buffer_size
                 recording_size += (
-                    ReverseIPTagMulticastSourcePartitionedVertex.
+                    ReverseIPTagMulticastSourceMachineVertex.
                     get_buffer_state_region_size(1))
         mallocs = \
-            ReverseIPTagMulticastSourcePartitionedVertex.n_regions_to_allocate(
+            ReverseIPTagMulticastSourceMachineVertex.n_regions_to_allocate(
                 self._send_buffer_times is not None, self._recording_enabled)
         allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
 
         return (
             (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
-            (ReverseIPTagMulticastSourcePartitionedVertex.
+            (ReverseIPTagMulticastSourceMachineVertex.
                 _CONFIGURATION_REGION_SIZE) +
             send_buffer_size + recording_size + allocation_size +
-            (ReverseIPTagMulticastSourcePartitionedVertex.
+            (ReverseIPTagMulticastSourceMachineVertex.
                 get_provenance_data_size(0)))
 
     @property
@@ -227,24 +231,25 @@ class ReverseIpTagMultiCastSource(
         return 1
 
     def generate_data_spec(
-            self, subvertex, placement, sub_graph, graph, routing_info,
+            self, vertex, placement, sub_graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder):
 
-        return subvertex.generate_data_spec(
-            subvertex, placement, sub_graph, graph, routing_info,
+        return vertex.generate_data_spec(
+            vertex, placement, sub_graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder)
 
-    def create_subvertex(self, vertex_slice, resources_required, label=None,
-                         constraints=None):
+    def create_machine_vertex(
+            self, vertex_slice, resources_required, label=None,
+            constraints=None):
         send_buffer_times = self._send_buffer_times
         if (self._send_buffer_times is not None and
                 len(self._send_buffer_times) > 0):
             if hasattr(self._send_buffer_times[0], "__len__"):
                 send_buffer_times = self._send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
-        subvertex = ReverseIPTagMulticastSourcePartitionedVertex(
+        vertex = ReverseIPTagMulticastSourceMachineVertex(
             n_keys=vertex_slice.n_atoms, resources_required=resources_required,
             machine_time_step=self._machine_time_step,
             timescale_factor=self._timescale_factor, label=label,
@@ -256,6 +261,7 @@ class ReverseIpTagMultiCastSource(
             virtual_key=self._virtual_key, prefix=self._prefix,
             prefix_type=self._prefix_type, check_keys=self._check_keys,
             send_buffer_times=send_buffer_times,
+            send_buffer_partition_id=self._send_buffer_partition_id,
             send_buffer_max_space=self._send_buffer_max_space,
             send_buffer_space_before_notify=(
                 self._send_buffer_space_before_notify),
@@ -263,8 +269,8 @@ class ReverseIpTagMultiCastSource(
                 self._send_buffer_notification_ip_address),
             send_buffer_notification_port=self._send_buffer_notification_port,
             send_buffer_notification_tag=self._send_buffer_notification_tag)
-        subvertex.set_no_machine_time_steps(self._no_machine_time_steps)
-        subvertex.first_machine_time_step = self._first_machine_time_step
+        vertex.set_no_machine_time_steps(self._no_machine_time_steps)
+        vertex.first_machine_time_step = self._first_machine_time_step
         if self._record_buffer_size > 0:
             sdram_per_ts = 0
             if self._using_auto_pause_and_resume:
@@ -273,14 +279,14 @@ class ReverseIpTagMultiCastSource(
                 # timestep by this object, so we assume a minimum value here
                 sdram_per_ts = 8
 
-            subvertex.enable_recording(
+            vertex.enable_recording(
                 self._record_buffering_ip_address, self._record_buffering_port,
                 self._record_buffering_board_address,
                 self._record_buffering_tag, self._record_buffer_size,
                 self._record_buffer_size_before_receive,
                 self._minimum_sdram_for_buffering, sdram_per_ts)
-        self._subvertices.append((vertex_slice, subvertex))
-        return subvertex
+        self._machine_vertices.append((vertex_slice, vertex))
+        return vertex
 
     def is_data_specable(self):
         return True

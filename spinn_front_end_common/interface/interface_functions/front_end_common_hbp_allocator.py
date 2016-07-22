@@ -45,7 +45,7 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
 
 class FrontEndCommonHBPAllocator(object):
     """ Request a machine from the HBP remote access server that will fit\
-        a given partitioned graph
+        a number of chips
     """
 
     def __call__(

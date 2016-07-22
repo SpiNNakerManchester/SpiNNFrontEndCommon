@@ -16,10 +16,10 @@ class FrontEndCommonDatabaseInterface(object):
         self._needs_database = None
 
     def __call__(
-            self, partitioned_graph, user_create_database, tags,
+            self, machine_graph, user_create_database, tags,
             runtime, machine, time_scale_factor, machine_time_step,
             placements, routing_infos, router_tables, database_directory,
-            create_atom_to_event_id_mapping=False, partitionable_graph=None,
+            create_atom_to_event_id_mapping=False, application_graph=None,
             graph_mapper=None):
 
         self._writer = DatabaseWriter(database_directory)
@@ -27,12 +27,12 @@ class FrontEndCommonDatabaseInterface(object):
 
         # add database generation if requested
         self._needs_database = \
-            self._writer.auto_detect_database(partitioned_graph)
+            self._writer.auto_detect_database(machine_graph)
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
 
-            if (partitionable_graph is not None and
-                    len(partitionable_graph.vertices) != 0):
+            if (application_graph is not None and
+                    len(application_graph.vertices) != 0):
                 database_progress = ProgressBar(11, "Creating database")
             else:
                 database_progress = ProgressBar(10, "Creating database")
@@ -42,29 +42,29 @@ class FrontEndCommonDatabaseInterface(object):
             database_progress.update()
             self._writer.add_machine_objects(machine)
             database_progress.update()
-            if (partitionable_graph is not None and
-                    len(partitionable_graph.vertices) != 0):
-                self._writer.add_partitionable_vertices(partitionable_graph)
+            if (application_graph is not None and
+                    len(application_graph.vertices) != 0):
+                self._writer.add_application_vertices(application_graph)
                 database_progress.update()
-            self._writer.add_partitioned_vertices(
-                partitioned_graph, graph_mapper, partitionable_graph)
+            self._writer.add_vertices(
+                machine_graph, graph_mapper, application_graph)
             database_progress.update()
-            self._writer.add_placements(placements, partitioned_graph)
+            self._writer.add_placements(placements, machine_graph)
             database_progress.update()
             self._writer.add_routing_infos(
-                routing_infos, partitioned_graph)
+                routing_infos, machine_graph)
             database_progress.update()
             self._writer.add_routing_tables(router_tables)
             database_progress.update()
-            self._writer.add_tags(partitioned_graph, tags)
+            self._writer.add_tags(machine_graph, tags)
             database_progress.update()
             if (graph_mapper is not None and
-                    partitionable_graph is not None and
+                    application_graph is not None and
                     create_atom_to_event_id_mapping):
                 self._writer.create_atom_to_event_id_mapping(
                     graph_mapper=graph_mapper,
-                    partitionable_graph=partitionable_graph,
-                    partitioned_graph=partitioned_graph,
+                    application_graph=application_graph,
+                    machine_graph=machine_graph,
                     routing_infos=routing_infos)
             database_progress.update()
             database_progress.update()

@@ -2,11 +2,11 @@
 from spinn_front_end_common.abstract_models.abstract_recordable import \
     AbstractRecordable
 from spinn_front_end_common.utility_models.\
-    live_packet_gather_partitioned_vertex import \
-    LivePacketGatherPartitionedVertex
+    live_packet_gather_machine_vertex import \
+    LivePacketGatherMachineVertex
 from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multicast_source_partitioned_vertex import \
-    ReverseIPTagMulticastSourcePartitionedVertex
+    reverse_ip_tag_multicast_source_machine_vertex import \
+    ReverseIPTagMulticastSourceMachineVertex
 
 # general imports
 import logging
@@ -37,18 +37,18 @@ class DatabaseWriter(object):
         self._machine_id = 0
 
     @staticmethod
-    def auto_detect_database(partitioned_graph):
+    def auto_detect_database(machine_graph):
         """ Auto detects if there is a need to activate the database system
 
-        :param partitioned_graph: the partitioned graph of the application\
+        :param machine_graph: the ,achine graph of the application\
                 problem space.
         :return: a bool which represents if the database is needed
         """
-        for vertex in partitioned_graph.subvertices:
-            if (isinstance(vertex, LivePacketGatherPartitionedVertex) or
+        for vertex in machine_graph.vertices:
+            if (isinstance(vertex, LivePacketGatherMachineVertex) or
                     (isinstance(
                         vertex,
-                        ReverseIPTagMulticastSourcePartitionedVertex) and
+                        ReverseIPTagMulticastSourceMachineVertex) and
                      vertex.is_in_injection_mode)):
                 return True
         else:
@@ -121,10 +121,10 @@ class DatabaseWriter(object):
         except Exception:
             traceback.print_exc()
 
-    def add_partitionable_vertices(self, partitionable_graph):
+    def add_application_vertices(self, application_graph):
         """
 
-        :param partitionable_graph:
+        :param application_graph:
         :return:
         """
 
@@ -133,32 +133,32 @@ class DatabaseWriter(object):
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             cur.execute(
-                "CREATE TABLE Partitionable_vertices("
+                "CREATE TABLE Application_vertices("
                 "vertex_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 "vertex_label TEXT, no_atoms INT, max_atom_constrant INT,"
                 "recorded INT)")
             cur.execute(
-                "CREATE TABLE Partitionable_edges("
+                "CREATE TABLE Application_edges("
                 "edge_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 "pre_vertex INTEGER, post_vertex INTEGER, edge_label TEXT, "
                 "FOREIGN KEY (pre_vertex)"
-                " REFERENCES Partitionable_vertices(vertex_id), "
+                " REFERENCES Application_vertices(vertex_id), "
                 "FOREIGN KEY (post_vertex)"
-                " REFERENCES Partitionable_vertices(vertex_id))")
+                " REFERENCES Application_vertices(vertex_id))")
             cur.execute(
-                "CREATE TABLE Partitionable_graph("
+                "CREATE TABLE Application_graph("
                 "vertex_id INTEGER, edge_id INTEGER, "
                 "FOREIGN KEY (vertex_id) "
-                "REFERENCES Partitionable_vertices(vertex_id), "
+                "REFERENCES Application_vertices(vertex_id), "
                 "FOREIGN KEY (edge_id) "
-                "REFERENCES Partitionable_edges(edge_id), "
+                "REFERENCES Application_edges(edge_id), "
                 "PRIMARY KEY (vertex_id, edge_id))")
 
             # add vertices
-            for vertex in partitionable_graph.vertices:
+            for vertex in application_graph.vertices:
                 if isinstance(vertex, AbstractRecordable):
                     cur.execute(
-                        "INSERT INTO Partitionable_vertices("
+                        "INSERT INTO Application_vertices("
                         "vertex_label, no_atoms, max_atom_constrant, recorded)"
                         " VALUES('{}', {}, {}, {});"
                         .format(vertex.label, vertex.n_atoms,
@@ -166,19 +166,19 @@ class DatabaseWriter(object):
                                 int(vertex.is_recording_spikes())))
                 else:
                     cur.execute(
-                        "INSERT INTO Partitionable_vertices("
+                        "INSERT INTO Application_vertices("
                         "vertex_label, no_atoms, max_atom_constrant, recorded)"
                         " VALUES('{}', {}, {}, 0);"
                         .format(vertex.label, vertex.n_atoms,
                                 vertex.get_max_atoms_per_core()))
 
             # add edges
-            vertices = partitionable_graph.vertices
-            for vertex in partitionable_graph.vertices:
-                for edge in partitionable_graph.\
-                        outgoing_edges_from_vertex(vertex):
+            vertices = application_graph.vertices
+            for vertex in application_graph.vertices:
+                for edge in application_graph.\
+                        get_edges_starting_at_vertex(vertex):
                     cur.execute(
-                        "INSERT INTO Partitionable_edges ("
+                        "INSERT INTO Application_edges ("
                         "pre_vertex, post_vertex, edge_label) "
                         "VALUES({}, {}, '{}');"
                         .format(vertices.index(edge.pre_vertex) + 1,
@@ -187,12 +187,13 @@ class DatabaseWriter(object):
 
             # update graph
             edge_id_offset = 0
-            for vertex in partitionable_graph.vertices:
-                edges = partitionable_graph.outgoing_edges_from_vertex(vertex)
-                for edge in partitionable_graph.\
-                        outgoing_edges_from_vertex(vertex):
+            for vertex in application_graph.vertices:
+                edges = application_graph.get_edges_starting_at_vertex(
+                    vertex)
+                for edge in application_graph.\
+                        get_edges_starting_at_vertex(vertex):
                     cur.execute(
-                        "INSERT INTO Partitionable_graph ("
+                        "INSERT INTO Application_graph ("
                         "vertex_id, edge_id)"
                         " VALUES({}, {})"
                         .format(vertices.index(vertex) + 1,
@@ -257,14 +258,13 @@ class DatabaseWriter(object):
         except Exception:
             traceback.print_exc()
 
-    def add_partitioned_vertices(self, partitioned_graph, graph_mapper,
-                                 partitionable_graph):
-        """ Add the partitioned graph, graph mapper and partitionable graph \
+    def add_vertices(self, machine_graph, graph_mapper, application_graph):
+        """ Add the machine graph, graph mapper and application graph \
             into the database.
 
-        :param partitioned_graph: the partitioned graph object
+        :param machine_graph: the machine graph object
         :param graph_mapper: the graph mapper object
-        :param partitionable_graph: the partitionable graph object
+        :param application_graph: the application graph object
         :return: None
         """
 
@@ -274,30 +274,30 @@ class DatabaseWriter(object):
             connection = sqlite.connect(self._database_path)
             cur = connection.cursor()
             cur.execute(
-                "CREATE TABLE Partitioned_vertices("
+                "CREATE TABLE Machine_vertices("
                 "vertex_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, "
                 "cpu_used INT, sdram_used INT, dtcm_used INT)")
             cur.execute(
-                "CREATE TABLE Partitioned_edges("
+                "CREATE TABLE Machine_edges("
                 "edge_id INTEGER PRIMARY KEY AUTOINCREMENT, "
                 "pre_vertex INTEGER, post_vertex INTEGER, label TEXT, "
                 "FOREIGN KEY (pre_vertex)"
-                " REFERENCES Partitioned_vertices(vertex_id), "
+                " REFERENCES Machine_vertices(vertex_id), "
                 "FOREIGN KEY (post_vertex)"
-                " REFERENCES Partitioned_vertices(vertex_id))")
+                " REFERENCES Machine_vertices(vertex_id))")
             cur.execute(
-                "CREATE TABLE Partitioned_graph("
+                "CREATE TABLE Machine_graph("
                 "vertex_id INTEGER, edge_id INTEGER, "
                 "PRIMARY KEY(vertex_id, edge_id), "
                 "FOREIGN KEY (vertex_id)"
-                " REFERENCES Partitioned_vertices(vertex_id), "
+                " REFERENCES Machine_vertices(vertex_id), "
                 "FOREIGN KEY (edge_id)"
-                " REFERENCES Partitioned_edges(edge_id))")
+                " REFERENCES Machine_edges(edge_id))")
 
-            # add partitioned vertex
-            for subvert in partitioned_graph.subvertices:
+            # add machine vertices
+            for subvert in machine_graph.vertices:
                 cur.execute(
-                    "INSERT INTO Partitioned_vertices ("
+                    "INSERT INTO Machine_vertices ("
                     "label, cpu_used, sdram_used, dtcm_used) "
                     "VALUES('{}', {}, {}, {});"
                     .format(subvert.label,
@@ -305,65 +305,65 @@ class DatabaseWriter(object):
                             subvert.resources_required.sdram.get_value(),
                             subvert.resources_required.dtcm.get_value()))
 
-            # add partitioned_edges
-            subverts = list(partitioned_graph.subvertices)
-            for subedge in partitioned_graph.subedges:
+            # add machine edges
+            subverts = list(machine_graph.vertices)
+            for subedge in machine_graph.edges:
                 cur.execute(
-                    "INSERT INTO Partitioned_edges ("
+                    "INSERT INTO Machine_edges ("
                     "pre_vertex, post_vertex, label) "
                     "VALUES({}, {}, '{}');"
-                    .format(subverts.index(subedge.pre_subvertex) + 1,
-                            subverts.index(subedge.post_subvertex) + 1,
+                    .format(subverts.index(subedge.pre_vertex) + 1,
+                            subverts.index(subedge.post_vertex) + 1,
                             subedge.label))
 
-            # add to partitioned graph
+            # add to machine graph
             edge_id_offset = 0
-            subedges = list(partitioned_graph.subedges)
-            for vertex in partitioned_graph.subvertices:
-                edges = partitioned_graph.\
-                    outgoing_subedges_from_subvertex(vertex)
-                for edge in partitioned_graph.\
-                        outgoing_subedges_from_subvertex(vertex):
+            edges = list(machine_graph.edges)
+            for vertex in machine_graph.vertices:
+                edges = machine_graph.\
+                    get_edges_starting_at_vertex(vertex)
+                for edge in machine_graph.\
+                        get_edges_starting_at_vertex(vertex):
                     cur.execute(
-                        "INSERT INTO Partitioned_graph ("
+                        "INSERT INTO Machine_graph ("
                         "vertex_id, edge_id)"
                         " VALUES({}, {});"
                         .format(subverts.index(vertex) + 1,
-                                subedges.index(edge) + 1 + edge_id_offset))
+                                edges.index(edge) + 1 + edge_id_offset))
                 edge_id_offset += len(edges)
 
-            if partitionable_graph is not None:
+            if application_graph is not None:
 
                 # create mapper tables
                 cur.execute(
                     "CREATE TABLE graph_mapper_vertex("
-                    "partitionable_vertex_id INTEGER, "
-                    "partitioned_vertex_id INTEGER, lo_atom INT, hi_atom INT, "
-                    "PRIMARY KEY(partitionable_vertex_id, "
-                    "partitioned_vertex_id), "
-                    "FOREIGN KEY (partitioned_vertex_id)"
-                    " REFERENCES Partitioned_vertices(vertex_id), "
-                    "FOREIGN KEY (partitionable_vertex_id)"
-                    " REFERENCES Partitionable_vertices(vertex_id))")
+                    "application_vertex_id INTEGER, "
+                    "machine_vertex_id INTEGER, lo_atom INT, hi_atom INT, "
+                    "PRIMARY KEY(application_vertex_id, "
+                    "machine_vertex_id), "
+                    "FOREIGN KEY (machine_vertex_id)"
+                    " REFERENCES Machine_vertices(vertex_id), "
+                    "FOREIGN KEY (application_vertex_id)"
+                    " REFERENCES Application_vertices(vertex_id))")
                 cur.execute(
                     "CREATE TABLE graph_mapper_edges("
-                    "partitionable_edge_id INTEGER,"
-                    " partitioned_edge_id INTEGER, "
-                    "PRIMARY KEY(partitionable_edge_id, partitioned_edge_id), "
-                    "FOREIGN KEY (partitioned_edge_id)"
-                    " REFERENCES Partitioned_edges(edge_id), "
-                    "FOREIGN KEY (partitionable_edge_id)"
-                    " REFERENCES Partitionable_edges(edge_id))")
+                    "application_edge_id INTEGER,"
+                    " machine_edge_id INTEGER, "
+                    "PRIMARY KEY(application_edge_id, machine_edge_id), "
+                    "FOREIGN KEY (machine_edge_id)"
+                    " REFERENCES Machine_edges(edge_id), "
+                    "FOREIGN KEY (application_edge_id)"
+                    " REFERENCES Application_edges(edge_id))")
 
                 # add mapper for vertices
-                subverts = list(partitioned_graph.subvertices)
-                vertices = partitionable_graph.vertices
-                for subvert in partitioned_graph.subvertices:
-                    vertex = graph_mapper.get_vertex_from_subvertex(subvert)
-                    vertex_slice = graph_mapper.get_subvertex_slice(subvert)
+                subverts = list(machine_graph.vertices)
+                vertices = application_graph.vertices
+                for subvert in machine_graph.vertices:
+                    vertex = graph_mapper.get_application_vertex(subvert)
+                    vertex_slice = graph_mapper.get_slice(subvert)
                     cur.execute(
                         "INSERT INTO graph_mapper_vertex ("
-                        "partitionable_vertex_id, partitioned_vertex_id, "
+                        "application_vertex_id, machine_vertex_id, "
                         "lo_atom, hi_atom) "
                         "VALUES({}, {}, {}, {});"
                         .format(vertices.index(vertex) + 1,
@@ -371,27 +371,27 @@ class DatabaseWriter(object):
                                 vertex_slice.lo_atom, vertex_slice.hi_atom))
 
                 # add graph_mapper edges
-                edges = partitionable_graph.edges
-                for subedge in partitioned_graph.subedges:
+                edges = application_graph.edges
+                for subedge in machine_graph.edges:
                     edge = graph_mapper.\
-                        get_partitionable_edge_from_partitioned_edge(subedge)
+                        get_application_edge(subedge)
                     cur.execute(
                         "INSERT INTO graph_mapper_edges ("
-                        "partitionable_edge_id, partitioned_edge_id) "
+                        "application_edge_id, machine_edge_id) "
                         "VALUES({}, {})"
                         .format(edges.index(edge) + 1,
-                                subedges.index(subedge) + 1))
+                                edges.index(subedge) + 1))
 
             connection.commit()
             connection.close()
         except Exception:
             traceback.print_exc()
 
-    def add_placements(self, placements, partitioned_graph):
+    def add_placements(self, placements, machine_graph):
         """ Adds the placements objects into the database
 
         :param placements: the placements object
-        :param partitioned_graph: the partitioned graph object
+        :param machine_graph: the machine graph object
         :return: None
         """
 
@@ -407,19 +407,19 @@ class DatabaseWriter(object):
                 "vertex_id INTEGER PRIMARY KEY, machine_id INTEGER, "
                 "chip_x INT, chip_y INT, chip_p INT, "
                 "FOREIGN KEY (vertex_id) "
-                "REFERENCES Partitioned_vertices(vertex_id), "
+                "REFERENCES Machine_vertices(vertex_id), "
                 "FOREIGN KEY (chip_x, chip_y, chip_p, machine_id) "
                 "REFERENCES Processor(chip_x, chip_y, physical_id, "
                 "machine_id))")
 
             # add records
-            subverts = list(partitioned_graph.subvertices)
+            subverts = list(machine_graph.vertices)
             for placement in placements.placements:
                 cur.execute(
                     "INSERT INTO Placements("
                     "vertex_id, chip_x, chip_y, chip_p, machine_id) "
                     "VALUES({}, {}, {}, {}, {})"
-                    .format(subverts.index(placement.subvertex) + 1,
+                    .format(subverts.index(placement.vertex) + 1,
                             placement.x, placement.y, placement.p,
                             self._machine_id))
             connection.commit()
@@ -427,11 +427,11 @@ class DatabaseWriter(object):
         except Exception:
             traceback.print_exc()
 
-    def add_routing_infos(self, routing_infos, partitioned_graph):
+    def add_routing_infos(self, routing_infos, machine_graph):
         """ Adds the routing information (key masks etc) into the database
 
         :param routing_infos: the routing information object
-        :param partitioned_graph: the partitioned graph object
+        :param machine_graph: the machine graph object
         :return:
         """
 
@@ -444,21 +444,21 @@ class DatabaseWriter(object):
                 "CREATE TABLE Routing_info("
                 "edge_id INTEGER, key INT, mask INT, "
                 "PRIMARY KEY (edge_id, key, mask), "
-                "FOREIGN KEY (edge_id) REFERENCES Partitioned_edges(edge_id))")
+                "FOREIGN KEY (edge_id) REFERENCES Machine_edges(edge_id))")
 
-            all_subedges = list(partitioned_graph.subedges)
+            all_edges = list(machine_graph.edges)
 
-            for partition in partitioned_graph.partitions:
-                keys_and_masks = \
-                    routing_infos.get_keys_and_masks_from_partition(partition)
+            for partition in machine_graph.outgoing_edge_partitions:
+                rinfo = routing_infos.get_routing_info_from_partition(
+                    partition)
                 sub_edges = partition.edges
                 for sub_edge in sub_edges:
-                    for key_mask in keys_and_masks:
+                    for key_mask in rinfo.keys_and_masks:
                         cur.execute(
                             "INSERT INTO Routing_info("
                             "edge_id, key, mask) "
                             "VALUES({}, {}, {})"
-                            .format(all_subedges.index(sub_edge) + 1,
+                            .format(all_edges.index(sub_edge) + 1,
                                     key_mask.key, key_mask.mask))
             connection.commit()
             connection.close()
@@ -505,10 +505,10 @@ class DatabaseWriter(object):
         except Exception:
             traceback.print_exc()
 
-    def add_tags(self, partitioned_graph, tags):
+    def add_tags(self, machine_graph, tags):
         """ Adds the tags into the database
 
-        :param partitioned_graph: the partitioned graph object
+        :param machine_graph: the machine graph object
         :param tags: the tags object
         :return:
         """
@@ -526,18 +526,18 @@ class DatabaseWriter(object):
                 "PRIMARY KEY ("
                 "vertex_id, tag, board_address, ip_address, port, strip_sdp),"
                 "FOREIGN KEY (vertex_id) REFERENCES "
-                "Partitioned_vertices(vertex_id))")
+                "Machine_vertices(vertex_id))")
             cur.execute(
                 "CREATE TABLE Reverse_IP_tags("
                 "vertex_id INTEGER PRIMARY KEY, tag INTEGER, "
                 "board_address TEXT, port INTEGER, "
                 "FOREIGN KEY (vertex_id) REFERENCES "
-                "Partitioned_vertices(vertex_id))")
+                "Machine_vertices(vertex_id))")
 
-            vertices = list(partitioned_graph.subvertices)
-            for partitioned_vertex in partitioned_graph.subvertices:
-                ip_tags = tags.get_ip_tags_for_vertex(partitioned_vertex)
-                index = vertices.index(partitioned_vertex) + 1
+            vertices = list(machine_graph.vertices)
+            for vertex in machine_graph.vertices:
+                ip_tags = tags.get_ip_tags_for_vertex(vertex)
+                index = vertices.index(vertex) + 1
                 if ip_tags is not None:
                     for ip_tag in ip_tags:
                         cur.execute(
@@ -548,7 +548,7 @@ class DatabaseWriter(object):
                                     ip_tag.ip_address, ip_tag.port,
                                     "1" if ip_tag.strip_sdp else "0"))
                 reverse_ip_tags = tags.get_reverse_ip_tags_for_vertex(
-                    partitioned_vertex)
+                    vertex)
                 if reverse_ip_tags is not None:
                     for reverse_ip_tag in reverse_ip_tags:
                         cur.execute(
@@ -564,12 +564,12 @@ class DatabaseWriter(object):
             traceback.print_exc()
 
     def create_atom_to_event_id_mapping(
-            self, partitionable_graph, partitioned_graph, routing_infos,
+            self, application_graph, machine_graph, routing_infos,
             graph_mapper):
         """
 
-        :param partitionable_graph:
-        :param partitioned_graph:
+        :param application_graph:
+        :param machine_graph:
         :param routing_infos:
         :param graph_mapper:
         :return:
@@ -588,25 +588,25 @@ class DatabaseWriter(object):
                 "vertex_id INTEGER, atom_id INTEGER, "
                 "event_id INTEGER PRIMARY KEY, "
                 "FOREIGN KEY (vertex_id)"
-                " REFERENCES Partitioned_vertices(vertex_id))")
+                " REFERENCES Machine_vertices(vertex_id))")
 
-            if (partitionable_graph is not None and
-                    len(partitionable_graph.vertices) != 0):
+            if (application_graph is not None and
+                    len(application_graph.vertices) != 0):
 
                 # insert into table
-                vertices = list(partitionable_graph.vertices)
-                for partitioned_vertex in partitioned_graph.subvertices:
-                    partitions = partitioned_graph.\
-                        outgoing_edges_partitions_from_vertex(
-                            partitioned_vertex)
-                    for partition in partitions.values():
+                vertices = list(application_graph.vertices)
+                for vertex in machine_graph.vertices:
+                    partitions = machine_graph.\
+                        get_outgoing_edge_partitions_starting_at_vertex(
+                            vertex)
+                    for partition in partitions:
                         routing_info = routing_infos.\
                             get_routing_info_from_partition(partition)
-                        vertex = graph_mapper.get_vertex_from_subvertex(
-                            partitioned_vertex)
+                        vertex = graph_mapper.get_application_vertex(
+                            vertex)
                         vertex_id = vertices.index(vertex) + 1
-                        vertex_slice = graph_mapper.get_subvertex_slice(
-                            partitioned_vertex)
+                        vertex_slice = graph_mapper.get_slice(
+                            vertex)
                         low_atom_id = vertex_slice.lo_atom
                         event_ids = routing_info.get_keys(vertex_slice.n_atoms)
                         for key in event_ids:
@@ -618,15 +618,15 @@ class DatabaseWriter(object):
                             low_atom_id += 1
             else:
                 # insert into table
-                vertices = list(partitioned_graph.subvertices)
-                for partitioned_vertex in partitioned_graph.subvertices:
-                    out_going_partitions = partitioned_graph.\
-                        outgoing_edges_partitions_from_vertex(
-                            partitioned_vertex)
-                    for partition in out_going_partitions.values():
+                vertices = list(machine_graph.vertices)
+                for vertex in machine_graph.vertices:
+                    out_going_partitions = machine_graph.\
+                        get_outgoing_edge_partitions_starting_at_vertex(
+                            vertex)
+                    for partition in out_going_partitions:
                         routing_info = routing_infos.\
                             get_routing_info_from_partition(partition)
-                        vertex_id = vertices.index(partitioned_vertex) + 1
+                        vertex_id = vertices.index(vertex) + 1
                         event_ids = routing_info.get_keys()
                         for key in event_ids:
                             cur.execute(

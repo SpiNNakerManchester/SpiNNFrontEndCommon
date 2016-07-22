@@ -1,14 +1,14 @@
 # pacman imports
-from pacman.model.graph.abstract_partitionable_vertex \
-    import AbstractPartitionableVertex
+from pacman.model.graph.application.abstract_application_vertex \
+    import AbstractApplicationVertex
 
 # spinn front end imports
 from spinn_front_end_common.abstract_models.\
     abstract_data_specable_vertex import AbstractDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
-    .live_packet_gather_partitioned_vertex \
-    import LivePacketGatherPartitionedVertex
+    .live_packet_gather_machine_vertex \
+    import LivePacketGatherMachineVertex
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -16,7 +16,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 
 class LivePacketGather(
-        AbstractDataSpecableVertex, AbstractPartitionableVertex):
+        AbstractDataSpecableVertex, AbstractApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -57,13 +57,13 @@ class LivePacketGather(
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step=machine_time_step,
             timescale_factor=timescale_factor)
-        AbstractPartitionableVertex.__init__(
+        AbstractApplicationVertex.__init__(
             self, n_atoms=1, label=label, max_atoms_per_core=1,
             constraints=constraints)
 
-        # add constraints the partitioned vertex decides it needs
+        # add constraints the vertex decides it needs
         constraints_to_add = \
-            LivePacketGatherPartitionedVertex.get_constraints(
+            LivePacketGatherMachineVertex.get_constraints(
                 ip_address, port, strip_sdp, board_address, tag)
         for constraint in constraints_to_add:
             self.add_constraint(constraint)
@@ -97,33 +97,29 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = new_value
 
     # inherited from DataSpecable vertex
-    def generate_data_spec(self, subvertex, placement, sub_graph, graph,
+    def generate_data_spec(self, vertex, placement, sub_graph, graph,
                            routing_info, hostname, graph_sub_graph_mapper,
                            report_folder, ip_tags, reverse_ip_tags,
                            write_text_specs, application_run_time_folder):
 
-        return subvertex.generate_data_spec(
+        return vertex.generate_data_spec(
             placement, sub_graph, routing_info, hostname, report_folder,
             ip_tags, reverse_ip_tags, write_text_specs,
             application_run_time_folder)
 
-    # inherited from partitionable vertex
     def get_cpu_usage_for_atoms(self, vertex_slice, graph):
-        return LivePacketGatherPartitionedVertex.get_cpu_usage()
+        return LivePacketGatherMachineVertex.get_cpu_usage()
 
-    # inherited from partitionable vertex
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        return LivePacketGatherPartitionedVertex.get_sdram_usage()
+        return LivePacketGatherMachineVertex.get_sdram_usage()
 
-    # inherited from partitionable vertex
     def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        return LivePacketGatherPartitionedVertex.get_dtcm_usage()
+        return LivePacketGatherMachineVertex.get_dtcm_usage()
 
-    # inherited from partitionable vertex
-    def create_subvertex(
+    def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
-        return LivePacketGatherPartitionedVertex(
+        return LivePacketGatherMachineVertex(
             label, self._machine_time_step, self._timescale_factor,
             self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,

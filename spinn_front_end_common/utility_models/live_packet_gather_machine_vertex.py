@@ -1,15 +1,18 @@
 from data_specification.data_specification_generator \
     import DataSpecificationGenerator
+
+from pacman.model.constraints.placer_constraints.placer_board_constraint\
+    import PlacerBoardConstraint
 from pacman.model.constraints.placer_constraints\
     .placer_radial_placement_from_chip_constraint \
     import PlacerRadialPlacementFromChipConstraint
 from pacman.model.constraints.tag_allocator_constraints\
     .tag_allocator_require_iptag_constraint \
     import TagAllocatorRequireIptagConstraint
-
-from pacman.model.graph.simple_partitioned_vertex import SimplePartitionedVertex
-from pacman.model.resources.cpu_cycles_per_tick_resource \
-    import CPUCyclesPerTickResource
+from pacman.model.graph.machine.simple_machine_vertex \
+    import SimpleMachineVertex
+from pacman.model.resources.cpu_cycles_resource \
+    import CPUCyclesResource
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
@@ -20,17 +23,17 @@ from spinn_front_end_common.interface.provenance\
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.abstract_models.\
-    abstract_partitioned_data_specable_vertex \
-    import AbstractPartitionedDataSpecableVertex
+    abstract_machine_data_specable_vertex \
+    import AbstractMachineDataSpecableVertex
 from spinn_front_end_common.utilities import constants
 
 from enum import Enum
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
 
-class LivePacketGatherPartitionedVertex(
-        SimplePartitionedVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractPartitionedDataSpecableVertex):
+class LivePacketGatherMachineVertex(
+        SimpleMachineVertex, ProvidesProvenanceDataFromMachineImpl,
+        AbstractMachineDataSpecableVertex):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -54,7 +57,7 @@ class LivePacketGatherPartitionedVertex(
             constraints=None):
 
         resources_required = ResourceContainer(
-            cpu=CPUCyclesPerTickResource(self.get_cpu_usage()),
+            cpu=CPUCyclesResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()))
 
@@ -62,12 +65,12 @@ class LivePacketGatherPartitionedVertex(
             constraints = self.get_constraints(
                 ip_address, port, strip_sdp, board_address, tag)
 
-        SimplePartitionedVertex.__init__(
+        SimpleMachineVertex.__init__(
             self, resources_required, label, constraints=constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
-        AbstractPartitionedDataSpecableVertex.__init__(
+        AbstractMachineDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
 
         self._use_prefix = use_prefix
@@ -100,7 +103,9 @@ class LivePacketGatherPartitionedVertex(
 
         # Add the IP Tag requirement
         constraints.append(TagAllocatorRequireIptagConstraint(
-            ip_address, port, strip_sdp, board_address, tag))
+            ip_address, port, strip_sdp, tag))
+        if board_address is not None:
+            constraints.append(PlacerBoardConstraint(board_address))
         return constraints
 
     def get_provenance_data_from_machine(self, transceiver, placement):
@@ -144,14 +149,11 @@ class LivePacketGatherPartitionedVertex(
 
     def get_binary_file_name(self):
         """ Get the name of binary which is loaded onto a spinnaker machine to\
-            represent this partitionable vertex's functionality.
+            represent this vertex's functionality.
 
         :return:
         """
         return 'live_packet_gather.aplx'
-
-    def is_partitioned_data_specable(self):
-        return True
 
     def generate_data_spec(self, placement, sub_graph, routing_info, hostname,
                            report_folder, ip_tags, reverse_ip_tags,
@@ -186,13 +188,13 @@ class LivePacketGatherPartitionedVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=(
-                LivePacketGatherPartitionedVertex.
+                LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
             size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
             label='system')
         spec.reserve_memory_region(
             region=(
-                LivePacketGatherPartitionedVertex.
+                LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.CONFIG.value),
             size=self._CONFIG_SIZE, label='config')
         self.reserve_provenance_data_region(spec)
@@ -210,7 +212,7 @@ class LivePacketGatherPartitionedVertex(
         """
         spec.switch_write_focus(
             region=(
-                LivePacketGatherPartitionedVertex.
+                LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.CONFIG.value))
 
         # has prefix
@@ -275,11 +277,11 @@ class LivePacketGatherPartitionedVertex(
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
             region=(
-                LivePacketGatherPartitionedVertex.
+                LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
         self._write_basic_setup_info(
             spec,
-            LivePacketGatherPartitionedVertex.
+            LivePacketGatherMachineVertex.
             _LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
 
     @staticmethod
@@ -298,9 +300,9 @@ class LivePacketGatherPartitionedVertex(
         """
         return (
             constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
-            LivePacketGatherPartitionedVertex._CONFIG_SIZE +
-            LivePacketGatherPartitionedVertex.get_provenance_data_size(
-                LivePacketGatherPartitionedVertex
+            LivePacketGatherMachineVertex._CONFIG_SIZE +
+            LivePacketGatherMachineVertex.get_provenance_data_size(
+                LivePacketGatherMachineVertex
                 .N_ADDITIONAL_PROVENANCE_ITEMS))
 
     @staticmethod
@@ -309,4 +311,4 @@ class LivePacketGatherPartitionedVertex(
 
         :return:
         """
-        return LivePacketGatherPartitionedVertex._CONFIG_SIZE
+        return LivePacketGatherMachineVertex._CONFIG_SIZE

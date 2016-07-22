@@ -2,6 +2,8 @@
 from pacman.model.constraints.tag_allocator_constraints.\
     tag_allocator_require_iptag_constraint import \
     TagAllocatorRequireIptagConstraint
+from pacman.model.constraints.placer_constraints.placer_board_constraint \
+    import PlacerBoardConstraint
 
 # front end common imports
 from spinn_front_end_common.interface.buffer_management.buffer_models\
@@ -65,7 +67,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             self.add_constraint(
                 TagAllocatorRequireIptagConstraint(
                     buffering_ip_address, buffering_port,
-                    notification_strip_sdp, board_address, notification_tag))
+                    notification_strip_sdp, notification_tag))
+            if board_address is not None:
+                self.add_constraint(PlacerBoardConstraint(board_address))
             self._buffering_ip_address = buffering_ip_address
             self._buffering_port = buffering_port
         self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
@@ -131,7 +135,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """ Writes the recording data to the data specification
 
         :param spec: The data specification to write to
-        :param ip_tags: The list of tags assigned to the partitioned vertex
+        :param ip_tags: The list of tags assigned to the vertex
         :param region_sizes: An ordered list of the sizes of the regions in\
                 which buffered recording will take place
         :param buffer_size_before_receive: The amount of data that can be\

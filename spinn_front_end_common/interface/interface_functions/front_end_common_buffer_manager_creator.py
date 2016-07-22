@@ -22,14 +22,14 @@ class FrontEndCommonBufferManagerCreator(object):
 
         for placement in placements.placements:
             if isinstance(
-                    placement.subvertex,
+                    placement.vertex,
                     AbstractSendsBuffersFromHost):
-                if placement.subvertex.buffering_input():
-                    buffer_manager.add_sender_vertex(placement.subvertex)
+                if placement.vertex.buffering_input():
+                    buffer_manager.add_sender_vertex(placement.vertex)
 
-            if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
-                if placement.subvertex.buffering_output():
-                    buffer_manager.add_receiving_vertex(placement.subvertex)
+            if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+                if placement.vertex.buffering_output():
+                    buffer_manager.add_receiving_vertex(placement.vertex)
 
             progress_bar.update()
         progress_bar.end()

@@ -52,7 +52,7 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
 class FrontEndCommonSpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
-        partitioned graph
+        number of chips
     """
 
     # Use a worst case calculation
