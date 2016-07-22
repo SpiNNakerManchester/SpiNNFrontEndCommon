@@ -231,12 +231,12 @@ class ReverseIpTagMultiCastSource(
         return 1
 
     def generate_data_spec(
-            self, vertex, placement, sub_graph, graph, routing_info,
+            self, vertex, placement, graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder):
 
         return vertex.generate_data_spec(
-            vertex, placement, sub_graph, graph, routing_info,
+            vertex, placement, graph, graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder)
 

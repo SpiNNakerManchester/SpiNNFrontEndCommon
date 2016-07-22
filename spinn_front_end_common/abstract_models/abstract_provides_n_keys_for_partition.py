@@ -6,7 +6,7 @@ from abc import ABCMeta
 @add_metaclass(ABCMeta)
 class AbstractProvidesNKeysForPartition(object):
     """ Allows a vertex to provide the number of keys for a partition of edges,\
-        rather than relying on the number of atoms in the pre-subvertex
+        rather than relying on the number of atoms in the pre-vertex
     """
 
     @abstractmethod

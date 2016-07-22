@@ -40,7 +40,7 @@ class DatabaseWriter(object):
     def auto_detect_database(machine_graph):
         """ Auto detects if there is a need to activate the database system
 
-        :param machine_graph: the ,achine graph of the application\
+        :param machine_graph: the machine graph of the application\
                 problem space.
         :return: a bool which represents if the database is needed
         """
@@ -294,27 +294,27 @@ class DatabaseWriter(object):
                 "FOREIGN KEY (edge_id)"
                 " REFERENCES Machine_edges(edge_id))")
 
-            # add machine vertices
-            for subvert in machine_graph.vertices:
+            # add machine vertex
+            for vertex in machine_graph.vertices:
                 cur.execute(
                     "INSERT INTO Machine_vertices ("
                     "label, cpu_used, sdram_used, dtcm_used) "
                     "VALUES('{}', {}, {}, {});"
-                    .format(subvert.label,
-                            subvert.resources_required.cpu.get_value(),
-                            subvert.resources_required.sdram.get_value(),
-                            subvert.resources_required.dtcm.get_value()))
+                    .format(vertex.label,
+                            vertex.resources_required.cpu.get_value(),
+                            vertex.resources_required.sdram.get_value(),
+                            vertex.resources_required.dtcm.get_value()))
 
             # add machine edges
-            subverts = list(machine_graph.vertices)
-            for subedge in machine_graph.edges:
+            machine_vertices = list(machine_graph.vertices)
+            for edge in machine_graph.edges:
                 cur.execute(
                     "INSERT INTO Machine_edges ("
                     "pre_vertex, post_vertex, label) "
                     "VALUES({}, {}, '{}');"
-                    .format(subverts.index(subedge.pre_vertex) + 1,
-                            subverts.index(subedge.post_vertex) + 1,
-                            subedge.label))
+                    .format(machine_vertices.index(edge.pre_vertex) + 1,
+                            machine_vertices.index(edge.post_vertex) + 1,
+                            edge.label))
 
             # add to machine graph
             edge_id_offset = 0
@@ -328,7 +328,7 @@ class DatabaseWriter(object):
                         "INSERT INTO Machine_graph ("
                         "vertex_id, edge_id)"
                         " VALUES({}, {});"
-                        .format(subverts.index(vertex) + 1,
+                        .format(machine_vertices.index(vertex) + 1,
                                 edges.index(edge) + 1 + edge_id_offset))
                 edge_id_offset += len(edges)
 
@@ -355,32 +355,32 @@ class DatabaseWriter(object):
                     "FOREIGN KEY (application_edge_id)"
                     " REFERENCES Application_edges(edge_id))")
 
-                # add mapper for vertices
-                subverts = list(machine_graph.vertices)
-                vertices = application_graph.vertices
-                for subvert in machine_graph.vertices:
-                    vertex = graph_mapper.get_application_vertex(subvert)
-                    vertex_slice = graph_mapper.get_slice(subvert)
+                # add mapper for vertex
+                machine_vertices = list(machine_graph.vertices)
+                vertex = application_graph.vertices
+                for vertex in machine_graph.vertices:
+                    vertex = graph_mapper.get_application_vertex(vertex)
+                    vertex_slice = graph_mapper.get_slice(vertex)
                     cur.execute(
                         "INSERT INTO graph_mapper_vertex ("
                         "application_vertex_id, machine_vertex_id, "
                         "lo_atom, hi_atom) "
                         "VALUES({}, {}, {}, {});"
-                        .format(vertices.index(vertex) + 1,
-                                subverts.index(subvert) + 1,
+                        .format(vertex.index(vertex) + 1,
+                                machine_vertices.index(vertex) + 1,
                                 vertex_slice.lo_atom, vertex_slice.hi_atom))
 
                 # add graph_mapper edges
                 edges = application_graph.edges
-                for subedge in machine_graph.edges:
-                    edge = graph_mapper.\
-                        get_application_edge(subedge)
+                for edge in machine_graph.edges:
+                    app_edge = graph_mapper.\
+                        get_application_edge(edge)
                     cur.execute(
                         "INSERT INTO graph_mapper_edges ("
                         "application_edge_id, machine_edge_id) "
                         "VALUES({}, {})"
                         .format(edges.index(edge) + 1,
-                                edges.index(subedge) + 1))
+                                edges.index(app_edge) + 1))
 
             connection.commit()
             connection.close()
@@ -413,13 +413,13 @@ class DatabaseWriter(object):
                 "machine_id))")
 
             # add records
-            subverts = list(machine_graph.vertices)
+            machine_vertices = list(machine_graph.vertices)
             for placement in placements.placements:
                 cur.execute(
                     "INSERT INTO Placements("
                     "vertex_id, chip_x, chip_y, chip_p, machine_id) "
                     "VALUES({}, {}, {}, {}, {})"
-                    .format(subverts.index(placement.vertex) + 1,
+                    .format(machine_vertices.index(placement.vertex) + 1,
                             placement.x, placement.y, placement.p,
                             self._machine_id))
             connection.commit()
@@ -451,14 +451,13 @@ class DatabaseWriter(object):
             for partition in machine_graph.outgoing_edge_partitions:
                 rinfo = routing_infos.get_routing_info_from_partition(
                     partition)
-                sub_edges = partition.edges
-                for sub_edge in sub_edges:
+                for edge in partition.edges:
                     for key_mask in rinfo.keys_and_masks:
                         cur.execute(
                             "INSERT INTO Routing_info("
                             "edge_id, key, mask) "
                             "VALUES({}, {}, {})"
-                            .format(all_edges.index(sub_edge) + 1,
+                            .format(all_edges.index(edge) + 1,
                                     key_mask.key, key_mask.mask))
             connection.commit()
             connection.close()

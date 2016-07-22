@@ -387,7 +387,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec, routing_info, sub_graph, ip_tags):
+    def _write_configuration(self, spec, routing_info, graph, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
@@ -441,8 +441,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=0)
 
     def generate_data_spec(
-            self, vertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_subgraph_mapper, report_folder, ip_tags,
+            self, vertex, placement, graph, graph, routing_info,
+            hostname, graph_mapper, report_folder, ip_tags,
             reverse_ip_tags, write_text_specs, application_run_time_folder):
 
         # Create new DataSpec for this processor:
@@ -452,7 +452,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 write_text_specs, application_run_time_folder)
         spec = DataSpecificationGenerator(data_writer, report_writer)
 
-        self._update_virtual_key(routing_info, sub_graph)
+        self._update_virtual_key(routing_info, graph)
         self._fill_send_buffer()
 
         # Reserve regions
@@ -467,7 +467,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._buffer_size_before_receive)
 
         # Write the configuration information
-        self._write_configuration(spec, routing_info, sub_graph, ip_tags)
+        self._write_configuration(spec, routing_info, graph, ip_tags)
 
         # End spec
         spec.end_specification()

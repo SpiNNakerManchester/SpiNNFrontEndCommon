@@ -97,13 +97,13 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = new_value
 
     # inherited from DataSpecable vertex
-    def generate_data_spec(self, vertex, placement, sub_graph, graph,
-                           routing_info, hostname, graph_sub_graph_mapper,
+    def generate_data_spec(self, vertex, placement, graph, graph,
+                           routing_info, hostname, graph_mapper,
                            report_folder, ip_tags, reverse_ip_tags,
                            write_text_specs, application_run_time_folder):
 
         return vertex.generate_data_spec(
-            placement, sub_graph, routing_info, hostname, report_folder,
+            placement, graph, routing_info, hostname, report_folder,
             ip_tags, reverse_ip_tags, write_text_specs,
             application_run_time_folder)
 

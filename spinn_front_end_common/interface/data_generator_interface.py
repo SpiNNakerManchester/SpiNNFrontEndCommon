@@ -16,7 +16,7 @@ class DataGeneratorInterface(object):
                  reverse_ip_tags, write_text_specs,
                  application_run_time_folder, progress_bar):
         self._associated_vertex = associated_vertex
-        self._subvertex = vertex
+        self._vertex = vertex
         self._placement = placement
         self._machine_graph = machine_graph
         self._application_graph = application_graph
@@ -41,7 +41,7 @@ class DataGeneratorInterface(object):
         """
         try:
             self._associated_vertex.generate_data_spec(
-                self._subvertex, self._placement, self._machine_graph,
+                self._vertex, self._placement, self._machine_graph,
                 self._application_graph, self._routing_infos, self._hostname,
                 self._graph_mapper, self._report_default_directory,
                 self._ip_tags, self._reverse_ip_tags, self._write_text_specs,

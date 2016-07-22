@@ -87,7 +87,7 @@ class LivePacketGatherMachineVertex(
 
     @staticmethod
     def get_constraints(ip_address, port, strip_sdp, board_address, tag):
-        """ Get constraints for this subvertex
+        """ Get constraints for this vertex
 
         :param ip_address:
         :param port:
@@ -155,7 +155,7 @@ class LivePacketGatherMachineVertex(
         """
         return 'live_packet_gather.aplx'
 
-    def generate_data_spec(self, placement, sub_graph, routing_info, hostname,
+    def generate_data_spec(self, placement, graph, routing_info, hostname,
                            report_folder, ip_tags, reverse_ip_tags,
                            write_text_specs, application_run_time_folder):
 

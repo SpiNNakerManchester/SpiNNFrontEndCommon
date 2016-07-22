@@ -32,9 +32,9 @@ class FrontEndCommonGraphProvenanceGatherer(object):
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
                 prov_items.extend(vertex.get_local_provenance_data())
             progress.update()
-        for subedge in machine_graph.edges:
-            if isinstance(subedge, AbstractProvidesLocalProvenanceData):
-                prov_items.extend(subedge.get_local_provenance_data())
+        for edge in machine_graph.edges:
+            if isinstance(edge, AbstractProvidesLocalProvenanceData):
+                prov_items.extend(edge.get_local_provenance_data())
             progress.update()
         progress.end()
 

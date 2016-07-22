@@ -44,18 +44,18 @@ class AbstractDataSpecableVertex(object):
 
     @abstractmethod
     def generate_data_spec(
-            self, vertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_subgraph_mapper, report_folder, ip_tags,
+            self, vertex, placement, graph, graph, routing_info,
+            hostname, graph_mapper, report_folder, ip_tags,
             reverse_ip_tags, write_text_specs, application_run_time_folder):
         """ Generates the data specification of an application
 
         :param vertex: the vertex to generate data for
         :param placement: the placement of the vertex
-        :param sub_graph: the machine graph
+        :param graph: the machine graph
         :param graph: the application graph
         :param routing_info: the keys for this vertex
         :param hostname: the hostname associated with this spinnaker machine
-        :param graph_subgraph_mapper: the mapper between the two graphs
+        :param graph_mapper: the mapper between the two graphs
         :param report_folder: where reports are to be written
         :param ip_tags: the list of iptags allocated to the machine
         :param reverse_ip_tags: the list of reverse ip tags allocated to the\

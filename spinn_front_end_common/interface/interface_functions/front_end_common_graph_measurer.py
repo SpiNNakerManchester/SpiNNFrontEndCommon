@@ -26,15 +26,15 @@ class FrontEndCommonGraphMeasurer(object):
         # check that the algorithm can handle the constraints
         ResourceTracker.check_constraints(machine_graph.vertices)
 
-        ordered_subverts = \
+        ordered_vertices = \
             placer_algorithm_utilities.sort_vertices_by_known_constraints(
                 machine_graph.vertices)
 
         # Iterate over vertices and allocate
-        progress_bar = ProgressBar(len(ordered_subverts),
+        progress_bar = ProgressBar(len(ordered_vertices),
                                    "Measuring the graph")
         resource_tracker = ResourceTracker(machine)
-        for vertex in ordered_subverts:
+        for vertex in ordered_vertices:
             resource_tracker.allocate_constrained_resources(
                 vertex.resources_required, vertex.constraints)
             progress_bar.update()
