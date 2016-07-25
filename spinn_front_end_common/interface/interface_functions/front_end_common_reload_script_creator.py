@@ -10,8 +10,8 @@ class FrontEndCommonReloadScriptCreator(object):
 
             # Machine information
             machine, machine_name, version, bmp_details, down_chips,
-            down_cores, number_of_boards, height, width, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
+            down_cores, auto_detect_bmp, enable_reinjection,
+            scamp_connection_data, boot_port_num,
             reset_machine_on_start_up, max_sdram_per_chip,
 
             # Load data information
@@ -33,8 +33,8 @@ class FrontEndCommonReloadScriptCreator(object):
         reload_script = ReloadScript(
 
             machine_name, version, bmp_details, down_chips, down_cores,
-            number_of_boards, height, width, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
+            auto_detect_bmp, enable_reinjection, scamp_connection_data,
+            boot_port_num,
 
             reset_machine_on_start_up, max_sdram_per_chip,
             app_data_runtime_folder, exec_dse_on_host, dse_app_id,

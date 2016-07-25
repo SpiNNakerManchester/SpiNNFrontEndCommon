@@ -199,32 +199,10 @@ class ReverseIpTagMultiCastSource(
             get_outgoing_partition_constraints(partition, graph_mapper)
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        send_buffer_size = 0
-        if self._send_buffer_times is not None:
-            send_buffer_size = self._send_buffer_max_space
-
-        recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
-                          .get_recording_data_size(1))
-        if self._recording_enabled:
-            if self._using_auto_pause_and_resume:
-                recording_size += self._minimum_sdram_for_buffering
-            else:
-                recording_size += self._record_buffer_size
-                recording_size += (
-                    ReverseIPTagMulticastSourcePartitionedVertex.
-                    get_buffer_state_region_size(1))
-        mallocs = \
-            ReverseIPTagMulticastSourcePartitionedVertex.n_regions_to_allocate(
-                self._send_buffer_times is not None, self._recording_enabled)
-        allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
-
-        return (
-            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
-            (ReverseIPTagMulticastSourcePartitionedVertex.
-                _CONFIGURATION_REGION_SIZE) +
-            send_buffer_size + recording_size + allocation_size +
-            (ReverseIPTagMulticastSourcePartitionedVertex.
-                get_provenance_data_size(0)))
+        return ReverseIPTagMulticastSourcePartitionedVertex.get_sdram_usage(
+            self._send_buffer_times, self._send_buffer_max_space,
+            self._recording_enabled, self._using_auto_pause_and_resume,
+            self._minimum_sdram_for_buffering, self._record_buffer_size)
 
     @property
     def model_name(self):
@@ -248,8 +226,8 @@ class ReverseIpTagMultiCastSource(
             write_text_specs, application_run_time_folder):
 
         return subvertex.generate_data_spec(
-            subvertex, placement, sub_graph, graph, routing_info,
-            hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
+            placement, sub_graph, routing_info,
+            hostname, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder)
 
     def create_subvertex(self, vertex_slice, resources_required, label=None,
@@ -261,7 +239,7 @@ class ReverseIpTagMultiCastSource(
                 send_buffer_times = self._send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
         subvertex = ReverseIPTagMulticastSourcePartitionedVertex(
-            n_keys=vertex_slice.n_atoms, resources_required=resources_required,
+            n_keys=vertex_slice.n_atoms,
             machine_time_step=self._machine_time_step,
             timescale_factor=self._timescale_factor, label=label,
             constraints=constraints,

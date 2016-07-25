@@ -1,4 +1,7 @@
+from spinnman.model.cpu_state import CPUState
+
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.scp.update_runtime_process \
     import UpdateRuntimeProcess
 
@@ -15,6 +18,9 @@ class FrontEndCommonChipRuntimeUpdater(object):
             raise exceptions.ConfigurationException(
                 "The binaries must be loaded before the run time updater is"
                 " called")
+
+        helpful_functions.wait_for_cores_to_be_ready(
+            executable_targets, app_id, txrx, CPUState.PAUSED)
 
         infinite_run = 0
         if no_machine_timesteps is None:

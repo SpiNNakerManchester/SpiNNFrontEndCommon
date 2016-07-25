@@ -79,10 +79,7 @@ class FrontEndCommonPartitionedGraphDataSpecificationWriter(object):
                     app_data_runtime_folder)
 
                 # link dsg file to subvertex
-                mapping_key = \
-                    placement.x, placement.y, placement.p, \
-                    placement.subvertex.label
-                dsg_targets[mapping_key] = file_path
+                dsg_targets[placement.x, placement.y, placement.p] = file_path
 
                 progress_bar.update()
 
