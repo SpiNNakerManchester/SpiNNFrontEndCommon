@@ -8,6 +8,15 @@ from pacman.model.constraints.key_allocator_constraints.\
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.graph.application.abstract_application_vertex\
     import AbstractApplicationVertex
+from pacman.model.decorators.overrides import overrides
+from pacman.model.resources.range_resource import RangeResource
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.resource_type import ResourceType
+from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
+    import AbstractProvidesOutgoingPartitionConstraints
+from pacman.model.abstract_classes.simple_constrained_object \
+    import SimpleConstrainedObject
+from pacman.model.decorators.delegates_to import delegates_to
 
 # data spec imports
 from data_specification.data_specification_generator \
@@ -17,22 +26,14 @@ from data_specification.data_specification_generator \
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
     import AbstractDataSpecableVertex
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_partition_constraints \
-    import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
 
 
-_COMMAND_WITH_PAYLOAD_SIZE = 12
-
-_COMMAND_WITHOUT_PAYLOAD_SIZE = 8
-
-
-class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
-                    AbstractApplicationVertex,
-                    AbstractDataSpecableVertex):
+class CommandSender(
+        AbstractProvidesOutgoingPartitionConstraints,
+        AbstractApplicationVertex, AbstractDataSpecableVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
@@ -40,35 +41,38 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
     def __init__(self, machine_time_step, timescale_factor):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        AbstractApplicationVertex.__init__(
-            self, 1, "Command Sender", 1)
         AbstractDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
 
-        self._edge_constraints = dict()
-        self._command_edge = dict()
-        self._times_with_commands = set()
-        self._commands_with_payloads = dict()
-        self._commands_without_payloads = dict()
+        self._commands_by_edge = dict()
 
-    def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
-        return CommandSenderMachineVertex(
-            resources_required, label, constraints)
+        self._constraints = SimpleConstrainedObject()
+
+    @delegates_to("_constraints", SimpleConstrainedObject.add_constraint)
+    def add_constraint(self, constraint):
+        pass
+
+    @delegates_to("_constraints", SimpleConstrainedObject.add_constraints)
+    def add_constraints(self, constraints):
+        pass
+
+    @delegates_to("_constraints", SimpleConstrainedObject.constraints)
+    def constraints(self):
+        pass
 
     def add_commands(self, commands, edge):
         """ Add commands to be sent down a given edge
 
         :param commands: The commands to send
         :type commands: iterable of\
-                    :py:class:`spynnaker.pyNN.utilities.multi_cast_command.MultiCastCommand`
+                    :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
         :param edge: The edge down which the commands will be sent
         :type edge:\
                     :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
-        :raise SpynnakerException: If the edge already has commands or if all\
-                    the commands masks are not 0xFFFFFFFF and there is no\
-                    commonality between the command masks
+        :raise ConfigurationException:\
+            If the edge already has commands or if all the commands masks are\
+            not 0xFFFFFFFF and there is no commonality between the\
+            command masks
         """
 
         # Check if the edge already exists
@@ -264,29 +268,6 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         # Build the command by merging in the assigned key with the command
         return key | command.key
 
-    def _get_n_command_bytes(self):
-        """
-
-        :return:
-        """
-        n_bytes = 0
-
-        for time in self._times_with_commands:
-
-            # Add 3 words for count-with-command, count-without-command
-            # and time
-            n_bytes += 12
-
-            # Add the size of each command
-            if time in self._commands_with_payloads:
-                n_bytes += (len(self._commands_with_payloads[time]) *
-                            _COMMAND_WITH_PAYLOAD_SIZE)
-            if time in self._commands_without_payloads:
-                n_bytes += (len(self._commands_without_payloads[time]) *
-                            _COMMAND_WITHOUT_PAYLOAD_SIZE)
-
-        return n_bytes
-
     def get_outgoing_partition_constraints(self, partition, graph_mapper):
         """
 
@@ -326,43 +307,28 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         """
         return "command_sender_multi_cast_source"
 
-    def get_cpu_usage_for_atoms(self, vertex_slice, graph):
-        """ Return how much cpu is used by the model for a given number of\
-            atoms
+    @overrides(AbstractApplicationVertex.create_machine_vertex)
+    def create_machine_vertex(self, vertex_slice, constraints=None):
+        return CommandSenderMachineVertex(constraints)
 
-        :param vertex_slice: the slice of the vertex
-        :param graph: the graph
-        :return: the size of cpu this model is expecting to use for the\
-                    number of atoms.
-        """
-        return 0
+    @overrides(AbstractApplicationVertex.get_resources_used_by_atoms)
+    def get_resources_used_by_atoms(self, vertex_slice):
 
-    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        """ Return how much SDRAM is used by the model for a given number of\
-            atoms
-
-        :param vertex_slice: the slice from the vertex
-        :param graph: the graph
-        :return: the size of SDRAM this model is expecting to use for the\
-                    number of atoms.
-        """
-
-        # Add a word for the size of the command region,
-        # and the size of the system region
-        return (
+        sdram = (
             self._get_n_command_bytes() + 4 + 12 +
-            CommandSenderMachineVertex.get_provenance_data_size(0))
+            CommandSenderMachineVertex.get_provenance_data_size(0)
+        )
 
-    def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        """ Return how much DTCM is used by the model for a given number of\
-            atoms
+        # Return the SDRAM and 1 core
+        return ResourceContainer([
+            RangeResource(ResourceType.SDRAM, sdram),
+            RangeResource(ResourceType.N_CORES, 1)
+        ])
 
-        :param vertex_slice: the slice of the vertex
-        :param graph: the graph
-        :return: the size of DTCM this model is expecting to use for the\
-                    number of atoms.
-        """
-        return 0
+    @property
+    @overrides(AbstractApplicationVertex.n_atoms)
+    def n_atoms(self):
+        return 1
 
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
@@ -370,9 +336,3 @@ class CommandSender(AbstractProvidesOutgoingPartitionConstraints,
         :return:
         """
         return 'command_sender_multicast_source.aplx'
-
-    def is_data_specable(self):
-        """ Helper method for is instance
-        :return:
-        """
-        return True

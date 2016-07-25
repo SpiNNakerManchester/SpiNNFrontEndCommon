@@ -23,18 +23,19 @@ class FrontEndCommonEdgeToNKeysMapper(object):
     """ Works out the number of keys needed for each edge
     """
 
-    def __call__(self, machine_graph, application_graph=None,
+    def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
 
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
-        # generate progress bar
-        progress_bar = ProgressBar(
-            len(machine_graph.vertices),
-            "Deducing edge to number of keys map")
-
         if application_graph is not None and graph_mapper is not None:
+
+            # generate progress bar
+            progress_bar = ProgressBar(
+                len(application_graph.vertices),
+                "Getting the number of keys required by each edge using the"
+                "application graph")
 
             # iterate over each partition in the graph
             for vertex in application_graph.vertices:
@@ -53,7 +54,15 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                             constraints, partition.constraints)
                 progress_bar.update()
             progress_bar.end()
-        else:
+
+        if machine_graph is not None:
+
+            # generate progress bar
+            progress_bar = ProgressBar(
+                len(application_graph.vertices),
+                "Getting the number of keys required by each edge using the"
+                "machine graph")
+
             for vertex in machine_graph.vertices:
                 partitions = machine_graph.\
                     get_outgoing_edge_partitions_starting_at_vertex(
@@ -85,8 +94,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
             if constraint not in stored_constraints:
                 raise exceptions.ConfigurationException(
                     "Two edges within the same partition have different "
-                    "constraints. This is deemed an error. Please fix and "
-                    "try again")
+                    "constraints")
 
     @staticmethod
     def _process_application_partition(
