@@ -31,3 +31,19 @@ class AbstractReceiveBuffersToHost(object):
         :return: The number of time steps that can be stored in the buffer
         :rtype: int
         """
+
+    @abstractmethod
+    def get_buffered_regions(self):
+        """ Get the regions that have been recorded using buffering
+
+        :return: The region numbers that have active recording
+        :rtype: iterable of int
+        """
+
+    @abstractmethod
+    def get_buffered_state_region(self):
+        """ Get the state region for buffered recording
+
+        :return: The buffered state region
+        :rtype: int
+        """

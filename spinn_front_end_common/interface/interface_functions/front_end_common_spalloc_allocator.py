@@ -60,7 +60,8 @@ class FrontEndCommonSpallocAllocator(object):
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, spalloc_user, n_chips, spalloc_port=None):
+            self, spalloc_server, spalloc_user, n_chips, spalloc_port=None,
+            spalloc_machine=None):
         """
 
         :param spalloc_server: The server from which the machine should be\
@@ -68,6 +69,8 @@ class FrontEndCommonSpallocAllocator(object):
         :param spalloc_port: The port of the SPALLOC server
         :param spalloc_user: The user to allocate the machine to
         :param n_chips: The number of chips required
+        :param spalloc_port: The optional port number to speak to spalloc
+        :param spalloc_machine: The optional spalloc machine to use
         """
 
         # Work out how many boards are needed
@@ -79,19 +82,24 @@ class FrontEndCommonSpallocAllocator(object):
             n_boards += 1
         n_boards = int(math.ceil(n_boards))
 
-        job = None
-        if spalloc_port is None:
-            job = Job(n_boards, hostname=spalloc_server, owner=spalloc_user)
-        else:
-            job = Job(
-                n_boards, hostname=spalloc_server, port=spalloc_port,
-                owner=spalloc_user)
+        spalloc_kw_args = {
+            'hostname': spalloc_server,
+            'owner': spalloc_user
+        }
+        if spalloc_port is not None:
+            spalloc_kw_args['port'] = spalloc_port
+        if spalloc_machine is not None:
+            spalloc_kw_args['machine'] = spalloc_machine
+        job = Job(n_boards, **spalloc_kw_args)
 
-        job.wait_until_ready()
+        try:
+            job.wait_until_ready()
+        except:
+            job.destroy()
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            raise ex_type, ex_value, ex_traceback
 
         # get param from jobs before starting, so that hanging doesn't occur
-        width = job.width
-        height = job.height
         hostname = job.hostname
 
         machine_allocation_controller = _SpallocJobController(job)
@@ -100,9 +108,6 @@ class FrontEndCommonSpallocAllocator(object):
         return {
             "machine_name": hostname,
             "machine_version": self._MACHINE_VERSION,
-            "machine_width": width,
-            "machine_height": height,
-            "machine_n_boards": None,
             "machine_down_chips": None,
             "machine_down_cores": None,
             "machine_bmp_details": None,

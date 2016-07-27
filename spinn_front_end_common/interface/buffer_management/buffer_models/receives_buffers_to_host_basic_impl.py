@@ -30,6 +30,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffering_port = None
         self._minimum_sdram_for_buffering = 0
         self._buffered_sdram_per_timestep = 0
+        self._buffered_regions = list()
+        self._buffered_state_region = None
 
     def buffering_output(self):
         """ True if the output buffering mechanism is activated
@@ -108,6 +110,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         for (buffer_region, region_size) in zip(
                 buffer_regions, region_sizes):
             if region_size > 0:
+                self._buffered_regions.append(buffer_region)
                 spec.reserve_memory_region(
                     region=buffer_region, size=region_size,
                     label="RECORDING_REGION_{}".format(buffer_region),
@@ -116,6 +119,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             region=state_region,
             size=EndBufferingState.size_of_region(len(buffer_regions)),
             label='BUFFERED_OUT_STATE', empty=True)
+        self._buffered_state_region = state_region
 
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented
@@ -184,3 +188,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             return sys.maxint
         return int(math.floor(
             buffer_space / self._buffered_sdram_per_timestep))
+
+    def get_buffered_regions(self):
+        return self._buffered_regions
+
+    def get_buffered_state_region(self):
+        return self._buffered_state_region

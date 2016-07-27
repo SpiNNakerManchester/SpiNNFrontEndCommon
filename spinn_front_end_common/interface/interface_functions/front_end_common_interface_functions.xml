@@ -168,18 +168,6 @@
                 <param_type>BoardVersion</param_type>
             </parameter>
             <parameter>
-                <param_name>number_of_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
-            </parameter>
-            <parameter>
-                <param_name>width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
                 <param_name>auto_detect_bmp</param_name>
                 <param_type>AutoDetectBMPFlag</param_type>
             </parameter>
@@ -200,6 +188,12 @@
                 <param_type>MaxSDRAMSize</param_type>
             </parameter>
         </required_inputs>
+        <optional_inputs>
+            <parameter>
+                <param_name>max_core_id</param_name>
+                <param_type>MaxCoreId</param_type>
+            </parameter>
+        </optional_inputs>
         <produces_outputs>
             <parameter>
                 <param_name>machine</param_name>
@@ -238,18 +232,6 @@
             <parameter>
                 <param_name>down_cores</param_name>
                 <param_type>DownedCoresDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>number_of_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
-            </parameter>
-            <parameter>
-                <param_name>height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
-                <param_name>width</param_name>
-                <param_type>MachineWidth</param_type>
             </parameter>
             <parameter>
                 <param_name>auto_detect_bmp</param_name>
@@ -474,6 +456,14 @@
             <parameter>
                 <param_name>with_monitors</param_name>
                 <param_type>VirtualChipsHaveMonitor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>down_chips</param_name>
+                <param_type>DownedChipsDetails</param_type>
+            </parameter>
+            <parameter>
+                <param_name>down_cores</param_name>
+                <param_type>DownedCoresDetails</param_type>
             </parameter>
         </optional_inputs>
         <produces_outputs>
@@ -1112,6 +1102,10 @@
                 <param_name>spalloc_port</param_name>
                 <param_type>SpallocPort</param_type>
             </parameter>
+            <parameter>
+                <param_name>spalloc_machine</param_name>
+                <param_type>SpallocMachine</param_type>
+            </parameter>
         </optional_inputs>
         <produces_outputs>
             <parameter>
@@ -1121,18 +1115,6 @@
             <parameter>
                 <param_name>machine_version</param_name>
                 <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_n_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_down_chips</param_name>
@@ -1197,18 +1179,6 @@
             <parameter>
                 <param_name>machine_version</param_name>
                 <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_width</param_name>
-                <param_type>MachineWidth</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_height</param_name>
-                <param_type>MachineHeight</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_n_boards</param_name>
-                <param_type>NumberOfBoards</param_type>
             </parameter>
             <parameter>
                 <param_name>machine_down_chips</param_name>
@@ -1317,5 +1287,27 @@
                 <param_type>NChipsRequired</param_type>
             </parameter>
         </produces_outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonBufferExtractor">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_buffer_extractor</python_module>
+        <python_class>FrontEndCommonBufferExtractor</python_class>
+        <required_inputs>
+            <parameter>
+                <param_name>partitioned_graph</param_name>
+                <param_type>MemoryPartitionedGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>buffer_manager</param_name>
+                <param_type>BufferManager</param_type>
+            </parameter>
+            <parameter>
+                <param_name>ran_token</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+        </required_inputs>
     </algorithm>
 </algorithms>

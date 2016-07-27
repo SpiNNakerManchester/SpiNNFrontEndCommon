@@ -7,7 +7,6 @@ from pacman.model.partitionable_graph.partitionable_graph \
     import PartitionableGraph
 from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
 from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.abstract_classes.abstract_virtual_vertex \
     import AbstractVirtualVertex
 from pacman.model.abstract_classes.virtual_partitioned_vertex \
@@ -42,6 +41,7 @@ import math
 import os
 import sys
 import traceback
+import signal
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,11 @@ class SpinnakerMainInterface(object):
         self._config = config
 
         self._executable_finder = executable_finder
+
+        # output locations of binaries to be searched for end user info
+        logger.info(
+            "Will search these locations for binaries: {}"
+            .format(self._executable_finder.binary_paths))
 
         self._n_chips_required = n_chips_required
         self._hostname = None
@@ -185,6 +190,9 @@ class SpinnakerMainInterface(object):
         # log app id to end user
         logger.info("Setting appID to %d." % self._app_id)
 
+        # Setup for signal handling
+        self._raise_keyboard_interrupt = False
+
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
@@ -226,12 +234,30 @@ class SpinnakerMainInterface(object):
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
 
+    def signal_handler(self, signal, frame):
+
+        # If we are to raise the keyboard interrupt, do so
+        if self._raise_keyboard_interrupt:
+            raise KeyboardInterrupt
+
+        logger.error("User has cancelled simulation")
+        self._shutdown()
+
+    def exception_handler(self, exctype, value, traceback_obj):
+        self._shutdown()
+        return sys.__excepthook__(exctype, value, traceback_obj)
+
     def run(self, run_time):
         """
 
         :param run_time: the run duration in milliseconds.
         :return: None
         """
+        # Install the Control-C handler
+        signal.signal(signal.SIGINT, self.signal_handler)
+        self._raise_keyboard_interrupt = True
+        sys.excepthook = sys.__excepthook__
+
         logger.info("Starting execution process")
 
         n_machine_time_steps = None
@@ -245,7 +271,7 @@ class SpinnakerMainInterface(object):
                 total_run_timesteps *
                 (float(self._machine_time_step) / 1000.0) *
                 self._time_scale_factor)
-        if self._has_ran and self._machine_allocation_controller is not None:
+        if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
 
@@ -255,6 +281,7 @@ class SpinnakerMainInterface(object):
         if not self._has_ran or application_graph_changed:
             if (application_graph_changed and self._has_ran and
                     not self._has_reset_last):
+                self.stop()
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
@@ -263,8 +290,15 @@ class SpinnakerMainInterface(object):
             if len(self._partitionable_graph.vertices) > 0:
                 self._partitioned_graph = PartitionedGraph()
                 self._graph_mapper = None
+
+            # Reset the machine if the machine is a spalloc machine and the
+            # graph has changed
+            if (application_graph_changed and self._hostname is None and
+                    not self._use_virtual_board):
+                self._machine = None
+
             if self._machine is None:
-                self._get_machine()
+                self._get_machine(total_run_time, n_machine_time_steps)
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything is recording and buffered
@@ -327,6 +361,10 @@ class SpinnakerMainInterface(object):
         # Run for each of the given steps
         for step in steps:
             self._do_run(step)
+
+        # Indicate that the signal handler needs to act
+        self._raise_keyboard_interrupt = False
+        sys.excepthook = self.exception_handler
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
 
@@ -420,18 +458,30 @@ class SpinnakerMainInterface(object):
                         "is not currently supported")
         return total_run_timesteps
 
-    def _run_machine_algorithms(self, inputs, algorithms, outputs):
+    def _run_machine_algorithms(
+            self, inputs, algorithms, outputs, optional_algorithms=None):
+
+        optional = optional_algorithms
+        if optional is None:
+            optional = []
 
         # Execute the algorithms
         executor = PACMANAlgorithmExecutor(
-            algorithms, [], inputs, self._xml_paths, outputs, self._do_timings,
-            self._print_timings)
-        executor.execute_mapping()
-        self._machine_outputs = executor.get_items()
-        self._pacman_provenance.extract_provenance(executor)
-        return executor
+            algorithms, optional, inputs, self._xml_paths, outputs,
+            self._do_timings, self._print_timings)
+        try:
+            executor.execute_mapping()
+            self._pacman_provenance.extract_provenance(executor)
+            return executor
+        except:
+            self._txrx = executor.get_item("MemoryTransceiver")
+            self._machine_allocation_controller = executor.get_item(
+                "MachineAllocationController")
+            self._shutdown()
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self):
+    def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
 
@@ -453,6 +503,9 @@ class SpinnakerMainInterface(object):
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
 
+        # Set the total run time
+        inputs["TotalRunTime"] = total_run_time
+
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
@@ -470,14 +523,10 @@ class SpinnakerMainInterface(object):
                 "Machine", "boot_connection_port_num")
             inputs["BoardVersion"] = self._read_config_int(
                 "Machine", "version")
-            inputs["NumberOfBoards"] = self._read_config_int(
-                "Machine", "number_of_boards")
-            inputs["MachineWidth"] = self._read_config_int(
-                "Machine", "width")
-            inputs["MachineHeight"] = self._read_config_int(
-                "Machine", "height")
             inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
                 "Machine", "reset_machine_on_startup")
+            inputs["MaxCoreId"] = self._read_config_int(
+                "Machine", "core_limit")
 
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
@@ -489,6 +538,7 @@ class SpinnakerMainInterface(object):
                 inputs, algorithms, outputs)
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
+            self._machine_outputs = executor.get_items()
 
         if self._use_virtual_board:
             inputs["IPAddress"] = "virtual"
@@ -500,6 +550,17 @@ class SpinnakerMainInterface(object):
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
+            inputs["BMPDetails"] = None
+            inputs["DownedChipsDetails"] = self._config.get(
+                "Machine", "down_chips")
+            inputs["DownedCoresDetails"] = self._config.get(
+                "Machine", "down_cores")
+            inputs["AutoDetectBMPFlag"] = False
+            inputs["ScampConnectionData"] = None
+            inputs["BootPortNum"] = self._read_config_int(
+                "Machine", "boot_connection_port_num")
+            inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
+                "Machine", "reset_machine_on_startup")
             inputs["MemoryTransceiver"] = None
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
@@ -513,11 +574,18 @@ class SpinnakerMainInterface(object):
 
             executor = self._run_machine_algorithms(
                 inputs, algorithms, outputs)
+            self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
 
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
+            # this is required for when auto pause and resume is not turned
+            # on and your needing to partition for a spalloc or remote system,
+            # as partitioning in this case needs to know how long to run to
+            # give complete SDRAM memory requriements for recording buffers.
+            if n_machine_time_steps > 0:
+                self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
 
             # if using spalloc system
@@ -527,6 +595,8 @@ class SpinnakerMainInterface(object):
                     "Machine", "spalloc_port")
                 inputs["SpallocUser"] = self._read_config(
                     "Machine", "spalloc_user")
+                inputs["SpallocMachine"] = self._read_config(
+                    "Machine", "spalloc_machine")
                 if self._n_chips_required is None:
                     algorithms.append(
                         "FrontEndCommonSpallocMaxMachineGenerator")
@@ -595,6 +665,7 @@ class SpinnakerMainInterface(object):
             executor = self._run_machine_algorithms(
                 inputs, algorithms, outputs)
 
+            self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._ip_address = executor.get_item("IPAddress")
             self._txrx = executor.get_item("MemoryTransceiver")
@@ -756,10 +827,7 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
-        executor = PACMANAlgorithmExecutor(
-            algorithms, [], inputs, self._xml_paths, outputs, self._do_timings,
-            self._print_timings)
-        executor.execute_mapping()
+        executor = self._run_machine_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -782,10 +850,7 @@ class SpinnakerMainInterface(object):
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
 
-        executor = PACMANAlgorithmExecutor(
-            algorithms, [], inputs, self._xml_paths, [], self._do_timings,
-            self._print_timings)
-        executor.execute_mapping()
+        executor = self._run_machine_algorithms(inputs, algorithms, [])
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -822,10 +887,8 @@ class SpinnakerMainInterface(object):
             "LoadedApplicationDataToken"
         ]
 
-        executor = PACMANAlgorithmExecutor(
-            algorithms, optional_algorithms, inputs, self._xml_paths,
-            outputs, self._do_timings, self._print_timings)
-        executor.execute_mapping()
+        executor = self._run_machine_algorithms(
+            inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
@@ -868,6 +931,11 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
+        # If we have run before, make sure to extract the data before the next
+        # run
+        if self._has_ran and not self._has_reset_last:
+            algorithms.append("FrontEndCommonBufferExtractor")
+
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
             inputs["WriteReloadFilesFlag"] = (
@@ -883,7 +951,8 @@ class SpinnakerMainInterface(object):
 
         # Add the database writer in case it is needed
         algorithms.append("FrontEndCommonDatabaseInterface")
-        algorithms.append("FrontEndCommonNotificationProtocol")
+        if not self._use_virtual_board:
+            algorithms.append("FrontEndCommonNotificationProtocol")
 
         # Sort out reload if needed
         if self._config.getboolean("Reports", "writeReloadSteps"):
@@ -919,7 +988,11 @@ class SpinnakerMainInterface(object):
                 self._do_timings, self._print_timings)
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
-        except PacmanAlgorithmFailedToCompleteException as e:
+        except KeyboardInterrupt:
+            logger.error("User has aborted the simulation")
+            self._shutdown()
+            sys.exit(1)
+        except Exception as e:
 
             logger.error(
                 "An error has occurred during simulation")
@@ -934,16 +1007,20 @@ class SpinnakerMainInterface(object):
             try:
                 self._recover_from_error(e, executor.get_items())
             except Exception:
+                logger.error("Error when attempting to recover from error")
+                traceback.print_exc()
 
-                # if in debug mode, do not shut down machine
-                in_debug_mode = self._config.get("Mode", "mode") == "Debug"
-                if not in_debug_mode:
-                    self.stop(
-                        extract_iobuf=False, extract_provenance_data=False)
+            # if in debug mode, do not shut down machine
+            in_debug_mode = self._config.get("Mode", "mode") == "Debug"
+            if not in_debug_mode:
+                self.stop(
+                    turn_off_machine=False, clear_routing_tables=False,
+                    clear_tags=False, extract_provenance_data=False,
+                    extract_iobuf=False)
 
-                # raise exception
-                ex_type, ex_value, ex_traceback = sys.exc_info()
-                raise ex_type, ex_value, ex_traceback
+            # raise exception
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            raise ex_type, ex_value, ex_traceback
 
         self._last_run_outputs = executor.get_items()
         self._current_run_timesteps = total_run_timesteps

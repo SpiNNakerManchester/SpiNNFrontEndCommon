@@ -21,6 +21,7 @@ setup(
         'spinn_front_end_common.utilities.notification_protocol',
         'spinn_front_end_common.utilities.reload',
         'spinn_front_end_common.utilities.report_functions',
+        'spinn_front_end_common.utilities.scp',
         'spinn_front_end_common.utilities.utility_objs',
         'spinn_front_end_common.utility_models'],
     package_data={

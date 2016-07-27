@@ -5,6 +5,7 @@
  */
 
 #include <recording.h>
+#include <simulation.h>
 #include <buffered_eieio_defs.h>
 #include <data_specification.h>
 
@@ -480,8 +481,7 @@ void recording_finalise() {
 
 bool recording_initialize(
         uint8_t n_regions, uint8_t *region_ids, uint32_t *recording_data,
-        uint8_t state_region, uint32_t buffering_priority,
-        uint32_t *recording_flags) {
+        uint8_t state_region, uint32_t *recording_flags) {
     uint32_t i;
 
     // if already initialised, don't re-initialise
@@ -573,9 +573,8 @@ bool recording_initialize(
             // The priority of this callback should not allow this to interrupt
             // the timer interrupt, or vice-versa to avoid issues with
             // state
-            spin1_sdp_callback_on(
-                BUFFERING_OUT_SDP_PORT, _buffering_in_handler,
-                buffering_priority);
+            simulation_sdp_callback_on(
+                BUFFERING_OUT_SDP_PORT, _buffering_in_handler);
         } else {
             g_recording_channels[i].start = NULL;
             g_recording_channels[i].current_write = NULL;

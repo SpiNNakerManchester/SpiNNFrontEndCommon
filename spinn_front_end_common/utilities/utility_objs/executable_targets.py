@@ -1,5 +1,5 @@
 from spinn_front_end_common.utilities import exceptions
-from spinnman.model.core_subsets import CoreSubsets
+from spinn_machine.core_subsets import CoreSubsets
 
 
 class ExecutableTargets(object):
@@ -9,8 +9,7 @@ class ExecutableTargets(object):
     def __init__(self):
         self._targets = dict()
         self._total_processors = 0
-        self._need_to_create_subset_list = True
-        self._core_subsets = list()
+        self._all_core_subsets = CoreSubsets()
 
     def add_binary(self, binary):
         """ Add a binary to the list of things to execute
@@ -44,8 +43,9 @@ class ExecutableTargets(object):
         else:
             self._targets[binary] = subsets
         for subset in subsets.core_subsets:
-            for _ in subset.processor_ids:
+            for p in subset.processor_ids:
                 self._total_processors += 1
+                self._all_core_subsets.add_processor(subset.x, subset.y, p)
 
     def add_processor(self, binary, chip_x, chip_y, chip_p):
         """ Add a processor to the executable targets
@@ -56,13 +56,11 @@ class ExecutableTargets(object):
         :param chip_p: the processor id to place this executable on
         :return:
         """
-        if self.has_binary(binary):
-            self._targets[binary].add_processor(chip_x, chip_y, chip_p)
-        else:
+        if not self.has_binary(binary):
             self.add_binary(binary)
-            self._targets[binary].add_processor(chip_x, chip_y, chip_p)
+        self._targets[binary].add_processor(chip_x, chip_y, chip_p)
+        self._all_core_subsets.add_processor(chip_x, chip_y, chip_p)
         self._total_processors += 1
-        self._need_to_create_subset_list = True
 
     def get_cores_for_binary(self, binary):
         """ Get the cores that a binary is to run on
@@ -90,13 +88,4 @@ class ExecutableTargets(object):
     def all_core_subsets(self):
         """ All the core subsets for all the binaries
         """
-        if self._need_to_create_subset_list:
-
-            # clear the list in case others have been added since
-            del self._core_subsets[:]
-            for executable_target in self._targets:
-                core_subsets = self._targets[executable_target]
-                for core_subset in core_subsets:
-                    for _ in core_subset.processor_ids:
-                        self._core_subsets.append(core_subset)
-        return self._core_subsets
+        return self._all_core_subsets
