@@ -1,11 +1,9 @@
 # pacman imports
-from pacman.model.constraints.tag_allocator_constraints.\
-    tag_allocator_require_iptag_constraint import \
-    TagAllocatorRequireIptagConstraint
 from pacman.model.constraints.placer_constraints.placer_board_constraint \
     import PlacerBoardConstraint
 
 # front end common imports
+from pacman.model.resources.iptag_resource import IPtagResource
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
@@ -64,10 +62,15 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
                 buffering_port is not None):
             self._buffering_output = True
             notification_strip_sdp = True
-            self.add_constraint(
-                TagAllocatorRequireIptagConstraint(
-                    buffering_ip_address, buffering_port,
-                    notification_strip_sdp, notification_tag))
+
+            # updates reosurces to handle a new tag
+            resources = self.resource_required
+            resources.add_to_iptag_usage(
+                IPtagResource(buffering_ip_address, buffering_port,
+                              notification_strip_sdp, notification_tag))
+            self.set_resources_required(resources)
+
+            # add placement constraint if needed
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
             self._buffering_ip_address = buffering_ip_address
@@ -158,10 +161,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         spec.write_value(data=time_between_requests)
         for region_size in region_sizes:
             spec.write_value(data=region_size)
-
-    @abstractmethod
-    def add_constraint(self, constraint):
-        pass
 
     def get_minimum_buffer_sdram_usage(self):
         return self._minimum_sdram_for_buffering

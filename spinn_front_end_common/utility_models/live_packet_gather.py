@@ -1,10 +1,10 @@
 # pacman imports
-from pacman.model.graph.application.abstract_application_vertex \
+from pacman.model.graphs.application.abstract_application_vertex \
     import AbstractApplicationVertex
 
 # spinn front end imports
-from spinn_front_end_common.abstract_models.\
-    abstract_data_specable_vertex import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
+    DataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
     .live_packet_gather_machine_vertex \
@@ -16,7 +16,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 
 class LivePacketGather(
-        AbstractDataSpecableVertex, AbstractApplicationVertex):
+        DataSpecableVertex, AbstractApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -54,7 +54,7 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        AbstractDataSpecableVertex.__init__(
+        DataSpecableVertex.__init__(
             self, machine_time_step=machine_time_step,
             timescale_factor=timescale_factor)
         AbstractApplicationVertex.__init__(

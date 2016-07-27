@@ -1,8 +1,9 @@
 # pacman imports
-from pacman.model.graph.application.abstract_application_vertex import \
+from pacman.model.graphs.application.abstract_application_vertex import \
     AbstractApplicationVertex
 
 # front end common imports
+from pacman.executor.injection_decorator import inject
 from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
@@ -133,6 +134,27 @@ class ReverseIpTagMultiCastSource(
         self._first_machine_time_step = 0
 
     @property
+    def label(self):
+        pass
+
+    def add_constraints(self, constraints):
+        pass
+
+    @property
+    def constraints(self):
+        pass
+
+    def add_constraint(self, constraint):
+        pass
+
+    @property
+    def n_atoms(self):
+        pass
+
+    def get_resources_used_by_atoms(self, vertex_slice):
+        pass
+
+    @property
     def send_buffer_times(self):
         return self._send_buffer_times
 
@@ -152,7 +174,7 @@ class ReverseIpTagMultiCastSource(
     def first_machine_time_step(self):
         return self._first_machine_time_step
 
-    @first_machine_time_step.setter
+    @inject("FirstMachineTimeStep")
     def first_machine_time_step(self, first_machine_time_step):
         self._first_machine_time_step = first_machine_time_step
         for (_, vertex) in self._machine_vertices:
@@ -182,9 +204,9 @@ class ReverseIpTagMultiCastSource(
         self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
         self._using_auto_pause_and_resume = using_auto_pause_and_resume
 
-    def get_outgoing_partition_constraints(self, partition, graph_mapper):
+    def get_outgoing_partition_constraints(self, partition):
         return partition.edges[0].pre_vertex.\
-            get_outgoing_partition_constraints(partition, graph_mapper)
+            get_outgoing_partition_constraints(partition)
 
     def get_sdram_usage_for_atoms(self, vertex_slice, graph):
         send_buffer_size = 0
@@ -221,22 +243,22 @@ class ReverseIpTagMultiCastSource(
     def is_reverse_ip_tagable_vertex(self):
         return True
 
-    def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
+    def get_dtcm_usage_for_atoms(self, vertex_slice):
         return 1
 
     def get_binary_file_name(self):
         return 'reverse_iptag_multicast_source.aplx'
 
-    def get_cpu_usage_for_atoms(self, vertex_slice, graph):
+    def get_cpu_usage_for_atoms(self, vertex_slice):
         return 1
 
     def generate_data_spec(
-            self, vertex, placement, graph, graph, routing_info,
-            hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
-            write_text_specs, application_run_time_folder):
+            self, vertex, placement, machine_graph, application_graph,
+            routing_info, hostname, graph_mapper, report_folder, ip_tags,
+            reverse_ip_tags, write_text_specs, application_run_time_folder):
 
         return vertex.generate_data_spec(
-            vertex, placement, graph, graph, routing_info,
+            vertex, placement, machine_graph, application_graph, routing_info,
             hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
             write_text_specs, application_run_time_folder)
 

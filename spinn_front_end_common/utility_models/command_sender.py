@@ -1,62 +1,68 @@
 # pacman imports
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.constraints.key_allocator_constraints.\
-    key_allocator_fixed_mask_constraint \
-    import KeyAllocatorFixedMaskConstraint
+from pacman.model.decorators.overrides import overrides
+from pacman.executor.injection_decorator import \
+    supports_injection, requires_injection, inject
+from pacman.model.abstract_classes.impl.constrained_object import \
+    ConstrainedObject
+from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
+    import AbstractProvidesOutgoingPartitionConstraints
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.graph.application.abstract_application_vertex\
-    import AbstractApplicationVertex
-from pacman.model.decorators.overrides import overrides
-from pacman.model.resources.range_resource import RangeResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.resource_type import ResourceType
-from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
-    import AbstractProvidesOutgoingPartitionConstraints
-from pacman.model.abstract_classes.simple_constrained_object \
-    import SimpleConstrainedObject
+from pacman.model.constraints.key_allocator_constraints.\
+    key_allocator_fixed_mask_constraint \
+    import KeyAllocatorFixedMaskConstraint
 from pacman.model.decorators.delegates_to import delegates_to
-
-# data spec imports
-from data_specification.data_specification_generator \
-    import DataSpecificationGenerator
+from pacman.model.graphs.application.abstract_application_vertex import \
+    AbstractApplicationVertex
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 # spinn front end common imports
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
-    import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
+    DataSpecableVertex
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
 
 
+@supports_injection
 class CommandSender(
         AbstractProvidesOutgoingPartitionConstraints,
-        AbstractApplicationVertex, AbstractDataSpecableVertex):
+        AbstractApplicationVertex, DataSpecableVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
 
-    def __init__(self, machine_time_step, timescale_factor):
+    def __init__(self, machine_time_step, timescale_factor, label):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        AbstractDataSpecableVertex.__init__(
+        DataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
+        AbstractApplicationVertex.__init__(self)
 
         self._commands_by_edge = dict()
 
-        self._constraints = SimpleConstrainedObject()
+        # storage objects
+        self._graph_mapper = None
+        self._machine_graph = None
+        self._routing_info = None
+        self._label = label
 
-    @delegates_to("_constraints", SimpleConstrainedObject.add_constraint)
+        # impl for where constraints are stored
+        self._constraints = ConstrainedObject()
+
+    @delegates_to("_constraints", ConstrainedObject.add_constraint)
     def add_constraint(self, constraint):
         pass
 
-    @delegates_to("_constraints", SimpleConstrainedObject.add_constraints)
+    @delegates_to("_constraints", ConstrainedObject.add_constraints)
     def add_constraints(self, constraints):
         pass
 
-    @delegates_to("_constraints", SimpleConstrainedObject.constraints)
+    @delegates_to("_constraints", ConstrainedObject.constraints)
     def constraints(self):
         pass
 
@@ -139,36 +145,15 @@ class CommandSender(
                     [BaseKeyAndMask(key, mask)
                      for (key, mask) in command_keys])])
 
-    def generate_data_spec(
-            self, vertex, placement, machine_graph, graph, routing_info,
-            hostname, graph_mapper, report_folder, ip_tags, reverse_ip_tags,
-            write_text_specs, application_run_time_folder):
-        """
-        :param vertex:
-        :param placement:
-        :param machine_graph:
-        :param graph:
-        :param routing_info:
-        :param hostname:
-        :param graph_mapper:
-        :param report_folder:
-        :param ip_tags:
-        :param reverse_ip_tags:
-        :param write_text_specs:
-        :param application_run_time_folder:
-        :return:
-        """
-
-        data_writer, report_writer = \
-            self.get_data_spec_file_writers(
-                placement.x, placement.y, placement.p, hostname, report_folder,
-                write_text_specs, application_run_time_folder)
-
-        spec = DataSpecificationGenerator(data_writer, report_writer)
+    @overrides(DataSpecableVertex.generate_data_specification)
+    @requires_injection(
+        ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfo"])
+    def generate_data_specification(self, spec, placement):
 
         # reserve region - add a word for the region size
         n_command_bytes = self._get_n_command_bytes()
-        self._reserve_memory_regions(spec, n_command_bytes + 4, vertex)
+        self._reserve_memory_regions(
+            spec, n_command_bytes + 4, placement.vertex)
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
@@ -225,33 +210,26 @@ class CommandSender(
 
             spec.write_value(len(with_payload))
             for command in with_payload:
-                spec.write_value(self._get_key(
-                    command, graph_mapper, routing_info, machine_graph))
-                payload = command.get_payload(routing_info, machine_graph,
-                                              graph_mapper)
+                spec.write_value(self._get_key(command))
+                payload = command.get_payload(
+                    self._routing_info, self._machine_graph, self._graph_mapper)
                 spec.write_value(payload)
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
             spec.write_value(len(without_payload))
             for command in without_payload:
-                spec.write_value(self._get_key(
-                    command, graph_mapper, routing_info, machine_graph))
+                spec.write_value(self._get_key(command))
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
         # End-of-Spec:
         spec.end_specification()
-        data_writer.close()
 
-        return data_writer.filename
-
-    def _get_key(self, command, graph_mapper, routing_info, machine_graph):
+    def _get_key(self, command):
         """ Return a key for a command
 
         :param command:
-        :param graph_mapper:
-        :param routing_info:
         :return:
         """
 
@@ -262,26 +240,30 @@ class CommandSender(
         # all the edges have the same keys assigned
         edge_for_command = self._command_edge[command]
         machine_edge_for_command = iter(
-            graph_mapper.get_machine_edges(edge_for_command)).next()
-        key = routing_info.get_first_key_for_edge(machine_edge_for_command)
+            self._graph_mapper.get_machine_edges(edge_for_command)).next()
+        key = \
+            self._routing_info.get_first_key_for_edge(machine_edge_for_command)
 
         # Build the command by merging in the assigned key with the command
         return key | command.key
 
-    def get_outgoing_partition_constraints(self, partition, graph_mapper):
+    @requires_injection(["MemoryGraphMapper"])
+    @overrides(AbstractProvidesOutgoingPartitionConstraints.
+               get_outgoing_partition_constraints)
+    def get_outgoing_partition_constraints(self, partition):
         """
 
         :param partition:
-        :param graph_mapper:
         :return:
         """
-        edge = graph_mapper.get_application_edge(
+        edge = self._graph_mapper.get_application_edge(
             partition.edges[0])
         if edge in self._edge_constraints:
             return self._edge_constraints[edge]
         return list()
 
-    def _reserve_memory_regions(self, spec, command_size, vertex):
+    @staticmethod
+    def _reserve_memory_regions(spec, command_size, vertex):
         """
         Reserve SDRAM space for memory areas:
         1) Area for information on what data to record
@@ -308,8 +290,10 @@ class CommandSender(
         return "command_sender_multi_cast_source"
 
     @overrides(AbstractApplicationVertex.create_machine_vertex)
-    def create_machine_vertex(self, vertex_slice, constraints=None):
-        return CommandSenderMachineVertex(constraints)
+    def create_machine_vertex(
+            self, vertex_slice, resources_required, constraints=None):
+        return CommandSenderMachineVertex(
+            constraints, resources_required, self.label)
 
     @overrides(AbstractApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
@@ -320,19 +304,34 @@ class CommandSender(
         )
 
         # Return the SDRAM and 1 core
-        return ResourceContainer([
-            RangeResource(ResourceType.SDRAM, sdram),
-            RangeResource(ResourceType.N_CORES, 1)
-        ])
+        return ResourceContainer(sdram=SDRAMResource(sdram))
 
     @property
     @overrides(AbstractApplicationVertex.n_atoms)
     def n_atoms(self):
         return 1
 
+    @overrides(DataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 
         :return:
         """
         return 'command_sender_multicast_source.aplx'
+
+    @inject("MemoryGraphMapper")
+    def set_graph_mapper(self, graph_mapper):
+        self._graph_mapper = graph_mapper
+
+    @inject("MemoryMachineGraph")
+    def set_machine_graph(self, machine_graph):
+        self._machine_graph = machine_graph
+
+    @inject("MemoryRoutingInfo")
+    def set_routing_info(self, routing_info):
+        self._routing_info = routing_info
+
+    @property
+    @overrides(AbstractApplicationVertex.label)
+    def label(self):
+        return self._label

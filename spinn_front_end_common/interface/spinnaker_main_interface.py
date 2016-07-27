@@ -3,29 +3,22 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.model.graph.application.application_graph \
+from pacman.executor.injection_decorator import do_injection
+from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
-from pacman.model.graph.machine.machine_graph import MachineGraph
+from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graph.application.simple_virtual_application_vertex \
-    import SimpleVirtualApplicationVertex
-from pacman.model.graph.machine.simple_virtual_machine_vertex \
-    import SimpleVirtualMachineVertex
+from pacman.model.graphs.application.impl.application_virtual_vertex import  \
+    ApplicationVirtualVertex
+from pacman.model.graphs.machine.impl.machine_virtual_vertex import\
+    MachineVirtualVertex
 
 # common front end imports
-from spinn_front_end_common.abstract_models.\
-    abstract_has_first_machine_time_step \
-    import AbstractHasFirstMachineTimeStep
-from spinn_front_end_common.abstract_models\
-    .abstract_machine_data_specable_vertex \
-    import AbstractMachineDataSpecableVertex
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
-    import AbstractDataSpecableVertex
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
 from spinn_front_end_common.abstract_models.abstract_changable_after_run \
@@ -62,6 +55,11 @@ class SpinnakerMainInterface(object):
 
         self._executable_finder = executable_finder
 
+        # output locations of binaries to be searched for end user info
+        logger.info(
+            "Will search these locations for binaries: {}"
+            .format(self._executable_finder.binary_paths))
+
         self._n_chips_required = n_chips_required
         self._hostname = None
         self._spalloc_server = None
@@ -70,11 +68,13 @@ class SpinnakerMainInterface(object):
 
         # update graph label if needed
         if graph_label is None:
-            graph_label = "Application_graph"
+            self._graph_label = "Application_graph"
+        else:
+            self._graph_label = graph_label
 
         # pacman objects
-        self._application_graph = ApplicationGraph(label=graph_label)
-        self._machine_graph = MachineGraph(label=graph_label)
+        self._application_graph = ApplicationGraph(label=self._graph_label)
+        self._machine_graph = MachineGraph(label=self._graph_label)
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
@@ -282,7 +282,7 @@ class SpinnakerMainInterface(object):
 
             # Reset the machine graph if there is an application graph
             if len(self._application_graph.vertices) > 0:
-                self._machine_graph = MachineGraph()
+                self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
@@ -411,12 +411,7 @@ class SpinnakerMainInterface(object):
                     this iteration.
         :return: None
         """
-        for vertex in self._application_graph.vertices:
-            if isinstance(vertex, AbstractDataSpecableVertex):
-                vertex.set_no_machine_time_steps(n_machine_time_steps)
-        for vertex in self._machine_graph.vertices:
-            if isinstance(vertex, AbstractMachineDataSpecableVertex):
-                vertex.set_no_machine_time_steps(n_machine_time_steps)
+        do_injection({'MemoryNoMachineTimeSteps', n_machine_time_steps})
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         total_run_timesteps = next_run_timesteps
@@ -880,9 +875,7 @@ class SpinnakerMainInterface(object):
         # Calculate the first machine time step to start from and set this
         # where necessary
         first_machine_time_step = self._current_run_timesteps
-        for vertex in self._application_graph.vertices:
-            if isinstance(vertex, AbstractHasFirstMachineTimeStep):
-                vertex.set_first_machine_time_step(first_machine_time_step)
+        do_injection({'FirstMachineTimeStep', self._current_run_timesteps})
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1385,7 +1378,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, SimpleVirtualApplicationVertex) and
+        if (isinstance(vertex_to_add, ApplicationVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
@@ -1404,7 +1397,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex, SimpleVirtualMachineVertex) and
+        if (isinstance(vertex, MachineVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"

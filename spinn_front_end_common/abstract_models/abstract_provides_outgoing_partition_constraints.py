@@ -9,7 +9,7 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
     """
 
     @abstractmethod
-    def get_outgoing_partition_constraints(self, partition, graph_mapper):
+    def get_outgoing_partition_constraints(self, partition):
         """ Get constraints to be added to the given edge that comes out of\
             this vertex
 

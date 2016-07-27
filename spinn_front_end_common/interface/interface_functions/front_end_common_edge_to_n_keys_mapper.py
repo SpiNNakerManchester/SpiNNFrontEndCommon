@@ -45,8 +45,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                 for partition in partitions:
                     added_constraints = False
                     constraints = self._process_application_partition(
-                        partition, n_keys_map, partition.identifier,
-                        graph_mapper, application_graph)
+                        partition, n_keys_map, graph_mapper)
                     if not added_constraints:
                         partition.add_constraints(constraints)
                     else:
@@ -70,8 +69,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                 for partition in partitions:
                     added_constraints = False
                     constraints = self._process_machine_partition(
-                        partition, n_keys_map, partition.identifier,
-                        machine_graph)
+                        partition, n_keys_map)
                     if not added_constraints:
                         partition.add_constraints(constraints)
                     else:
@@ -97,9 +95,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                     "constraints")
 
     @staticmethod
-    def _process_application_partition(
-            partition, n_keys_map, partition_id, graph_mapper,
-            application_graph):
+    def _process_application_partition(partition, n_keys_map, graph_mapper):
         vertex_slice = graph_mapper.get_slice(
             partition.pre_vertex)
         vertex = graph_mapper.get_application_vertex(
@@ -118,21 +114,19 @@ class FrontEndCommonEdgeToNKeysMapper(object):
         if isinstance(vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             constraints.extend(
-                vertex.get_outgoing_partition_constraints(
-                    partition, graph_mapper))
+                vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
             app_edge = graph_mapper.get_application_edge(edge)
             if isinstance(app_edge.post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 constraints.extend(
                     app_edge.post_vertex.get_incoming_partition_constraints(
-                        partition, graph_mapper))
+                        partition))
         constraints.extend(partition.constraints)
         return constraints
 
     @staticmethod
-    def _process_machine_partition(
-            partition, n_keys_map, partition_id, machine_graph):
+    def _process_machine_partition(partition, n_keys_map):
 
         if not isinstance(partition.pre_vertex,
                           AbstractProvidesNKeysForPartition):
@@ -140,22 +134,21 @@ class FrontEndCommonEdgeToNKeysMapper(object):
         else:
             n_keys_map.set_n_keys_for_partition(
                 partition,
-                partition.pre_vertex.get_n_keys_for_partition(
-                    partition, None))
+                partition.pre_vertex.get_n_keys_for_partition(partition, None))
 
         constraints = list()
         if isinstance(partition.pre_vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             constraints.extend(
                 partition.pre_vertex.get_outgoing_partition_constraints(
-                    partition, None))
+                    partition))
 
         for edge in partition.edges:
             if isinstance(edge.post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
                 constraints.extend(
                     edge.post_vertex.get_incoming_partition_constraints(
-                        partition, None))
+                        partition))
         constraints.extend(partition.constraints)
 
         return constraints
