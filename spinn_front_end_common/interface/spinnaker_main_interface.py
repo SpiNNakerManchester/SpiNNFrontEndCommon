@@ -56,9 +56,9 @@ class SpinnakerMainInterface(object):
         self._executable_finder = executable_finder
 
         # output locations of binaries to be searched for end user info
-        #logger.info(
-         #   "Will search these locations for binaries: {}"
-          #  .format(self._executable_finder.binary_paths))
+        logger.info(
+            "Will search these locations for binaries: {}"
+            .format(self._executable_finder.binary_paths))
 
         self._n_chips_required = n_chips_required
         self._hostname = None
@@ -276,6 +276,7 @@ class SpinnakerMainInterface(object):
         if not self._has_ran or application_graph_changed:
             if (application_graph_changed and self._has_ran and
                     not self._has_reset_last):
+                self.stop()
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
@@ -284,6 +285,13 @@ class SpinnakerMainInterface(object):
             if len(self._application_graph.vertices) > 0:
                 self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
+
+            # Reset the machine if the machine is a spalloc machine and the
+            # graph has changed
+            if (application_graph_changed and self._hostname is None and
+                    not self._use_virtual_board):
+                self._machine = None
+
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
@@ -453,7 +461,6 @@ class SpinnakerMainInterface(object):
             self._do_timings, self._print_timings)
         try:
             executor.execute_mapping()
-            self._machine_outputs = executor.get_items()
             self._pacman_provenance.extract_provenance(executor)
             return executor
         except:
@@ -508,6 +515,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "version")
             inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
                 "Machine", "reset_machine_on_startup")
+            inputs["MaxCoreId"] = self._read_config_int(
+                "Machine", "core_limit")
 
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
@@ -519,6 +528,7 @@ class SpinnakerMainInterface(object):
                 inputs, algorithms, outputs)
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
+            self._machine_outputs = executor.get_items()
 
         if self._use_virtual_board:
             inputs["IPAddress"] = "virtual"
@@ -531,8 +541,10 @@ class SpinnakerMainInterface(object):
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
             inputs["BMPDetails"] = None
-            inputs["DownedChipsDetails"] = None
-            inputs["DownedCoresDetails"] = None
+            inputs["DownedChipsDetails"] = self._config.get(
+                "Machine", "down_chips")
+            inputs["DownedCoresDetails"] = self._config.get(
+                "Machine", "down_cores")
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
             inputs["BootPortNum"] = self._read_config_int(
@@ -552,11 +564,16 @@ class SpinnakerMainInterface(object):
 
             executor = self._run_machine_algorithms(
                 inputs, algorithms, outputs)
+            self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
 
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
+            # this is required for when auto pause and resume is not turned
+            # on and your needing to partition for a spalloc or remote system,
+            # as partitioning in this case needs to know how long to run to
+            # give complete SDRAM memory requriements for recording buffers.
             if n_machine_time_steps > 0:
                 self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
@@ -568,6 +585,8 @@ class SpinnakerMainInterface(object):
                     "Machine", "spalloc_port")
                 inputs["SpallocUser"] = self._read_config(
                     "Machine", "spalloc_user")
+                inputs["SpallocMachine"] = self._read_config(
+                    "Machine", "spalloc_machine")
                 if self._n_chips_required is None:
                     algorithms.append(
                         "FrontEndCommonSpallocMaxMachineGenerator")
@@ -635,6 +654,7 @@ class SpinnakerMainInterface(object):
             executor = self._run_machine_algorithms(
                 inputs, algorithms, outputs)
 
+            self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._ip_address = executor.get_item("IPAddress")
             self._txrx = executor.get_item("MemoryTransceiver")

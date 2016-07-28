@@ -37,6 +37,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 from enum import Enum
 import math
+import copy
 
 _DEFAULT_MALLOC_REGIONS = 2
 
@@ -134,6 +135,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 host about space in the buffer (default is to use any tag)
         """
 
+        constraints = copy.deepcopy(constraints)
         # Set up super types
         MachineVertex.__init__(
             self, resources_required, label, constraints)
@@ -166,9 +168,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer_partition_id = send_buffer_partition_id
         if send_buffer_times is None:
             self._send_buffer_times = None
+            self._send_buffer_max_space = send_buffer_max_space
             SendsBuffersFromHostPreBufferedImpl.__init__(
                 self, None)
         else:
+            self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
 
@@ -271,7 +275,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _is_in_range(self, time_stamp_in_ticks):
         return (
             (self._no_machine_time_steps is None) or (
-                self._first_machine_time_step <= time_stamp_in_ticks <=
+                self._first_machine_time_step <= time_stamp_in_ticks <
                 self._no_machine_time_steps))
 
     def _fill_send_buffer(self):
@@ -341,6 +345,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             notification_tag, minimum_sdram_for_buffering,
             buffered_sdram_per_timestep)
         self._record_buffer_size = record_buffer_size
+        self._recording_enabled = True
         self._buffer_size_before_receive = buffer_size_before_receive
 
     def _reserve_regions(self, spec):

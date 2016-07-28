@@ -172,7 +172,7 @@ class ReverseIpTagMultiCastSource(
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
-        for (vertex_slice, vertex) in self._machine_vertices:
+        for (vertex_slice, subvertex) in self._subvertices:
             send_buffer_times_to_set = self._send_buffer_times
             if (self._send_buffer_times is not None and
                     len(self._send_buffer_times) > 0):
