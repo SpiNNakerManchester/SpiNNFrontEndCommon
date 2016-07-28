@@ -1,8 +1,18 @@
 # pacman imports
+from pacman.executor.injection_decorator import requires_injection, inject
+from pacman.model.abstract_classes.impl.constrained_object import \
+    ConstrainedObject
+from pacman.model.decorators.delegates_to import delegates_to
+from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.application.abstract_application_vertex \
     import AbstractApplicationVertex
 
 # spinn front end imports
+from pacman.model.resources.cpu_cycles_per_tick_resource import \
+    CPUCyclesPerTickResource
+from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.sdram_resource import SDRAMResource
 from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
     DataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -52,14 +62,20 @@ class LivePacketGather(
                 "which can be located in :"
                 "SpinnMan.messages.eieio.eieio_prefix_type")
         if label is None:
-            label = "Live Packet Gatherer"
+            self._label = "Live Packet Gatherer"
+        else:
+            self._label = label
 
-        DataSpecableVertex.__init__(
-            self, machine_time_step=machine_time_step,
-            timescale_factor=timescale_factor)
-        AbstractApplicationVertex.__init__(
-            self, n_atoms=1, label=label, max_atoms_per_core=1,
-            constraints=constraints)
+        DataSpecableVertex.__init__(self)
+        AbstractApplicationVertex.__init__(self)
+
+        self._constraints = ConstrainedObject(constraints)
+        self._machine_time_step = machine_time_step
+        self._time_scale_factor = timescale_factor
+        self._label = label
+
+        # storage objects
+        self._iptags = None
 
         # add constraints the vertex decides it needs
         constraints_to_add = \
@@ -80,47 +96,11 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @property
-    def number_of_packets_sent_per_time_step(self):
-        """ How many full UDP packets this model can send per timer tick
-        :return:
-        """
-        return self._number_of_packets_sent_per_time_step
-
-    @number_of_packets_sent_per_time_step.setter
-    def number_of_packets_sent_per_time_step(self, new_value):
-        """
-
-        :param new_value:
-        :return:
-        """
-        self._number_of_packets_sent_per_time_step = new_value
-
-    # inherited from DataSpecable vertex
-    def generate_data_spec(self, vertex, placement, graph, graph,
-                           routing_info, hostname, graph_mapper,
-                           report_folder, ip_tags, reverse_ip_tags,
-                           write_text_specs, application_run_time_folder):
-
-        return vertex.generate_data_spec(
-            placement, graph, routing_info, hostname, report_folder,
-            ip_tags, reverse_ip_tags, write_text_specs,
-            application_run_time_folder)
-
-    def get_cpu_usage_for_atoms(self, vertex_slice, graph):
-        return LivePacketGatherMachineVertex.get_cpu_usage()
-
-    def get_sdram_usage_for_atoms(self, vertex_slice, graph):
-        return LivePacketGatherMachineVertex.get_sdram_usage()
-
-    def get_dtcm_usage_for_atoms(self, vertex_slice, graph):
-        return LivePacketGatherMachineVertex.get_dtcm_usage()
-
+    @overrides(AbstractApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
+            self, vertex_slice, resources_required, constraints=None):
         return LivePacketGatherMachineVertex(
-            label, self._machine_time_step, self._timescale_factor,
+            self._label, self._machine_time_step, self._timescale_factor,
             self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
@@ -129,16 +109,60 @@ class LivePacketGather(
             constraints=constraints)
 
     @property
+    @overrides(AbstractApplicationVertex.model_name)
     def model_name(self):
         """ Human readable form of the model name
         """
         return "live packet gather"
 
+    @overrides(DataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
 
-    def is_data_specable(self):
-        return True
+    @property
+    @overrides(AbstractApplicationVertex.label)
+    def label(self):
+        return self._label
 
-    def is_ip_tagable_vertex(self):
-        return True
+    @delegates_to("_constraints", ConstrainedObject.add_constraints)
+    def add_constraints(self, constraints):
+        pass
+
+    @property
+    @delegates_to("_constraints", ConstrainedObject.constraints)
+    def constraints(self):
+        pass
+
+    @delegates_to("_constraints", ConstrainedObject.add_constraint)
+    def add_constraint(self, constraint):
+        pass
+
+    @property
+    @overrides(AbstractApplicationVertex.n_atoms)
+    def n_atoms(self):
+        return 1
+
+    @overrides(AbstractApplicationVertex.get_resources_used_by_atoms)
+    def get_resources_used_by_atoms(self, vertex_slice):
+        return ResourceContainer(
+            sdram=SDRAMResource(
+                LivePacketGatherMachineVertex.get_sdram_usage()),
+            dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
+            cpu_cycles=CPUCyclesPerTickResource(
+                LivePacketGatherMachineVertex.get_cpu_usage()))
+
+    @overrides(DataSpecableVertex.generate_data_specification)
+    @requires_injection(["MemoryIptags"])
+    def generate_data_specification(self, spec, placement):
+
+        # needs to set it directly, as the machine vertex also impliemnts this
+        # interface, incase its being used in a machine graph without a
+        # application graph
+        placement.vertex.set_iptags(self._iptags)
+
+        # generate spec for the machine vertex
+        placement.vertex.generate_data_spec(spec, placement)
+
+    @inject("MemoryIptags")
+    def set_iptags(self, iptags):
+        self._iptags = iptags

@@ -59,3 +59,10 @@ class CommandSenderMachineVertex(
     @delegates_to("_constraints", ConstrainedObject.add_constraint)
     def add_constraint(self, constraint):
         pass
+
+    @property
+    @overrides(AbstractMachineVertex.model_name)
+    def model_name(self):
+        """ Return the name of the model as a string
+        """
+        return "machine_command_sender_multi_cast_source"

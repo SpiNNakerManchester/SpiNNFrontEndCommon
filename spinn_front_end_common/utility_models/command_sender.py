@@ -24,6 +24,9 @@ from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
     DataSpecableVertex
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.interface.simulation.impl.\
+    uses_simulation_impl import \
+    UsesSimulationImpl
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
 
@@ -31,7 +34,7 @@ from spinn_front_end_common.utility_models.command_sender_machine_vertex \
 @supports_injection
 class CommandSender(
         AbstractProvidesOutgoingPartitionConstraints,
-        AbstractApplicationVertex, DataSpecableVertex):
+        AbstractApplicationVertex, DataSpecableVertex, UsesSimulationImpl):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
@@ -39,9 +42,9 @@ class CommandSender(
     def __init__(self, machine_time_step, timescale_factor, label):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        DataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
+        DataSpecableVertex.__init__(self)
         AbstractApplicationVertex.__init__(self)
+        UsesSimulationImpl.__init__(self)
 
         self._commands_by_edge = dict()
 
@@ -50,6 +53,8 @@ class CommandSender(
         self._machine_graph = None
         self._routing_info = None
         self._label = label
+        self._machine_time_step = machine_time_step
+        self._time_scale_factor = timescale_factor
 
         # impl for where constraints are stored
         self._constraints = ConstrainedObject()
@@ -157,8 +162,9 @@ class CommandSender(
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
-        self._write_basic_setup_info(
-            spec, CommandSenderMachineVertex.SYSTEM_REGION)
+        spec.switch_write_focus(CommandSenderMachineVertex.SYSTEM_REGION.value)
+        spec.write_array(self.data_for_simulation_data(
+            self._machine_time_step, self._time_scale_factor))
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -284,6 +290,7 @@ class CommandSender(
         vertex.reserve_provenance_data_region(spec)
 
     @property
+    @overrides(AbstractApplicationVertex.model_name)
     def model_name(self):
         """ Return the name of the model as a string
         """

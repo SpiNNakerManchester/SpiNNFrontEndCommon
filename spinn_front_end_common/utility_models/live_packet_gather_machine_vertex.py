@@ -1,39 +1,40 @@
-from data_specification.data_specification_generator \
-    import DataSpecificationGenerator
-
+from pacman.executor.injection_decorator import requires_injection
+from pacman.model.abstract_classes.impl.constrained_object import \
+    ConstrainedObject
 from pacman.model.constraints.placer_constraints.placer_board_constraint\
     import PlacerBoardConstraint
 from pacman.model.constraints.placer_constraints\
     .placer_radial_placement_from_chip_constraint \
     import PlacerRadialPlacementFromChipConstraint
-from pacman.model.constraints.tag_allocator_constraints\
-    .tag_allocator_require_iptag_constraint \
-    import TagAllocatorRequireIptagConstraint
-from pacman.model.graph.machine.simple_machine_vertex \
-    import SimpleMachineVertex
-from pacman.model.resources.cpu_cycles_resource \
-    import CPUCyclesResource
+from pacman.model.decorators.overrides import overrides
+from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
+from pacman.model.resources.cpu_cycles_per_tick_resource import \
+    CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 
+from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
+    DataSpecableVertex
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl \
     import ProvidesProvenanceDataFromMachineImpl
+from spinn_front_end_common.interface.simulation.\
+    impl.uses_simulation_impl import \
+    UsesSimulationImpl
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
-from spinn_front_end_common.abstract_models.\
-    abstract_machine_data_specable_vertex \
-    import AbstractMachineDataSpecableVertex
 from spinn_front_end_common.utilities import constants
 
-from enum import Enum
 from spinnman.messages.eieio.eieio_type import EIEIOType
+
+from enum import Enum
 
 
 class LivePacketGatherMachineVertex(
-        SimpleMachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractMachineDataSpecableVertex):
+        MachineVertex, ProvidesProvenanceDataFromMachineImpl,
+        DataSpecableVertex, UsesSimulationImpl):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -56,23 +57,30 @@ class LivePacketGatherMachineVertex(
             tag=None,
             constraints=None):
 
-        resources_required = ResourceContainer(
-            cpu=CPUCyclesResource(self.get_cpu_usage()),
+        self._resources_required = ResourceContainer(
+            cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=SDRAMResource(self.get_sdram_usage()))
+            sdram=SDRAMResource(self.get_sdram_usage()),
+            iptags=[IPtagResource(ip_address, port, strip_sdp, tag)])
 
-        if constraints is None:
-            constraints = self.get_constraints(
-                ip_address, port, strip_sdp, board_address, tag)
+        # impl for where constraints are stored
+        self._constraints = ConstrainedObject()
+        self._add_constraints(board_address)
 
-        SimpleMachineVertex.__init__(
-            self, resources_required, label, constraints=constraints)
+        # sim data obhects
+        self._machine_time_step = machine_time_step
+        self._timescale_factor = timescale_factor
+
+        # inheirtance
+        MachineVertex.__init__(
+            self,  self._resources_required, label, constraints=constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
-        AbstractMachineDataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
+        DataSpecableVertex.__init__(self)
+        UsesSimulationImpl.__init__(self)
 
+        # app speific data items
         self._use_prefix = use_prefix
         self._key_prefix = key_prefix
         self._prefix_type = prefix_type
@@ -85,29 +93,16 @@ class LivePacketGatherMachineVertex(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @staticmethod
-    def get_constraints(ip_address, port, strip_sdp, board_address, tag):
-        """ Get constraints for this vertex
-
-        :param ip_address:
-        :param port:
-        :param strip_sdp:
-        :param board_address:
-        :param tag:
-        :return:
-        """
-        constraints = list()
-
+    def _add_constraints(self, board_address):
         # Try to place this near the Ethernet
-        constraints.append(PlacerRadialPlacementFromChipConstraint(0, 0))
-
-        # Add the IP Tag requirement
-        constraints.append(TagAllocatorRequireIptagConstraint(
-            ip_address, port, strip_sdp, tag))
+        self._constraints.add_constraint(
+            PlacerRadialPlacementFromChipConstraint(0, 0))
         if board_address is not None:
-            constraints.append(PlacerBoardConstraint(board_address))
-        return constraints
+            self._constraints.add_constraint(
+                PlacerBoardConstraint(board_address))
 
+    @overrides(ProvidesProvenanceDataFromMachineImpl.
+               get_provenance_data_from_machine)
     def get_provenance_data_from_machine(self, transceiver, placement):
         """ Get provenance from the machine
 
@@ -147,6 +142,7 @@ class LivePacketGatherMachineVertex(
 
         return provenance_items
 
+    @overrides(DataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         """ Get the name of binary which is loaded onto a spinnaker machine to\
             represent this vertex's functionality.
@@ -155,29 +151,24 @@ class LivePacketGatherMachineVertex(
         """
         return 'live_packet_gather.aplx'
 
-    def generate_data_spec(self, placement, graph, routing_info, hostname,
-                           report_folder, ip_tags, reverse_ip_tags,
-                           write_text_specs, application_run_time_folder):
-
-        data_writer, report_writer = \
-            self.get_data_spec_file_writers(
-                placement.x, placement.y, placement.p, hostname, report_folder,
-                write_text_specs, application_run_time_folder)
-
-        spec = DataSpecificationGenerator(data_writer, report_writer)
+    @overrides(DataSpecableVertex.generate_data_specification)
+    @requires_injection(["MemoryIptags"])
+    def generate_data_specification(self, spec, placement):
 
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(spec)
-        self._write_configuration_region(spec, ip_tags)
+        self._write_configuration_region(spec, self._ip_tags)
 
         # End-of-Spec:
         spec.end_specification()
-        data_writer.close()
 
-        return data_writer.filename
+    @property
+    @overrides(MachineVertex.model_name)
+    def model_name(self):
+        return "machine live packet gather"
 
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas
@@ -279,10 +270,8 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
-        self._write_basic_setup_info(
-            spec,
-            LivePacketGatherMachineVertex.
-            _LIVE_DATA_GATHER_REGIONS.SYSTEM.value)
+        spec.write_array(self.data_for_simulation_data(
+            self._machine_time_step, self._time_scale_factor))
 
     @staticmethod
     def get_cpu_usage():
