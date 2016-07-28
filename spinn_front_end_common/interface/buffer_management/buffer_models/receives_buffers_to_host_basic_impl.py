@@ -11,7 +11,6 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
 from spinn_front_end_common.utilities import exceptions
 
 # general imports
-from abc import abstractmethod
 import sys
 import math
 

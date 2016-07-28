@@ -133,9 +133,9 @@ class CommandSender(
                     [BaseKeyAndMask(key, mask)
                      for (key, mask) in command_keys])])
 
-    @overrides(DataSpecableVertex.generate_data_specification)
     @requires_injection(
         ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfo"])
+    @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         # reserve region - add a word for the region size
