@@ -444,9 +444,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=0)
             spec.write_value(data=0)
 
-    @overrides(DataSpecableVertex.generate_data_specification)
     @requires_injection([
         "MemoryIptags", "MemoryMachineGraph", "MemoryRoutingInfo"])
+    @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         self._update_virtual_key(self._routing_info, self._machine_graph)

@@ -250,9 +250,9 @@ class ReverseIpTagMultiCastSource(
     def get_cpu_usage_for_atoms():
         return 1
 
-    @overrides(DataSpecableVertex.generate_data_specification)
     @requires_injection([
         "MemoryIptags", "MemoryMachineGraph", "MemoryRoutingInfo"])
+    @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         placement.vertex.set_iptags(self._iptags)
         placement.vertex.set_machine_graph(self._machine_graph)

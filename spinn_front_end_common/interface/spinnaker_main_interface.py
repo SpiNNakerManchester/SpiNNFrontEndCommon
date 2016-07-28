@@ -56,9 +56,9 @@ class SpinnakerMainInterface(object):
         self._executable_finder = executable_finder
 
         # output locations of binaries to be searched for end user info
-        logger.info(
-            "Will search these locations for binaries: {}"
-            .format(self._executable_finder.binary_paths))
+        #logger.info(
+         #   "Will search these locations for binaries: {}"
+          #  .format(self._executable_finder.binary_paths))
 
         self._n_chips_required = n_chips_required
         self._hostname = None

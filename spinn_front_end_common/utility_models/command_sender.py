@@ -281,9 +281,10 @@ class CommandSender(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, constraints=None):
+            self, vertex_slice, resources_required, label=None,
+            constraints=None):
         return CommandSenderMachineVertex(
-            constraints, resources_required, self.label)
+            constraints, resources_required, label)
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
