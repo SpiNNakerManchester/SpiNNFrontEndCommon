@@ -40,7 +40,7 @@ class CommandSender(
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         DataSpecableVertex.__init__(self)
-        ApplicationVertex.__init__(self, label, constraints)
+        ApplicationVertex.__init__(self, label, constraints, 1)
         UsesSimulationImpl.__init__(self)
 
         self._commands_by_edge = dict()

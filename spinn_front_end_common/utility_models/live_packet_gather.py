@@ -65,7 +65,7 @@ class LivePacketGather(
             label = "Live Packet Gatherer"
 
         DataSpecableVertex.__init__(self)
-        ApplicationVertex.__init__(self, label, constraints)
+        ApplicationVertex.__init__(self, label, constraints, 1)
 
         # simulation objects
         self._machine_time_step = machine_time_step

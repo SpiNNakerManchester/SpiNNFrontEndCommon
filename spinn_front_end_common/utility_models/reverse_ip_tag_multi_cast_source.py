@@ -1,7 +1,4 @@
 # pacman imports
-from pacman.model.constraints.partitioner_constraints.\
-    partitioner_maximum_size_constraint import \
-    PartitionerMaximumSizeConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.executor.injection_decorator import inject, supports_injection, \
     requires_injection
@@ -107,7 +104,8 @@ class ReverseIpTagMultiCastSource(
         """
 
         DataSpecableVertex.__init__(self)
-        ApplicationVertex.__init__(self, label, constraints)
+        ApplicationVertex.__init__(
+            self, label, constraints, max_atoms_per_core)
 
         # basic items
         self._n_atoms = n_keys
@@ -120,10 +118,6 @@ class ReverseIpTagMultiCastSource(
         self._graph_mapper = None
         self._machine_graph = None
         self._routing_info = None
-
-        # impl for where constraints are stored
-        self._constrants.add_constraint(
-            PartitionerMaximumSizeConstraint(max_atoms_per_core))
 
         # Store the parameters for EIEIO
         self._board_address = board_address
