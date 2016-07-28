@@ -1,5 +1,6 @@
 from pacman.model.decorators.overrides import overrides
-from pacman.executor.injection_decorator import requires_injection, inject
+from pacman.executor.injection_decorator import requires_injection, inject, \
+    supports_injection
 
 from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
     DataSpecableVertex
@@ -7,6 +8,7 @@ from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
 from abc import abstractmethod
 
 
+@supports_injection
 class ApplicationDataSpecableVertex(DataSpecableVertex):
 
     def __init__(self):

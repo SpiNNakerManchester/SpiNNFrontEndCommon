@@ -26,11 +26,3 @@ class DataSpecableVertex(
         AbstractHasAssociatedBinary.__init__(self)
         self._no_machine_time_steps = None
 
-    @inject("MemoryNoMachineTimeSteps")
-    def set_no_machine_time_steps(self, new_no_machine_time_steps):
-        """
-
-        :param new_no_machine_time_steps:
-        :return:
-        """
-        self._no_machine_time_steps = new_no_machine_time_steps

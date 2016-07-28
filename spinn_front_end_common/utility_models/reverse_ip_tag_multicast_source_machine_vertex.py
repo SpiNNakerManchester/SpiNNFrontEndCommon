@@ -1,15 +1,12 @@
-from pacman.model.constraints.tag_allocator_constraints\
-    .tag_allocator_require_iptag_constraint \
-    import TagAllocatorRequireIptagConstraint
-from pacman.model.constraints.tag_allocator_constraints\
-    .tag_allocator_require_reverse_iptag_constraint \
-    import TagAllocatorRequireReverseIptagConstraint
+from pacman.executor.injection_decorator import inject, supports_injection, \
+    requires_injection
 from pacman.model.constraints.key_allocator_constraints\
     .key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
+from pacman.model.decorators.overrides import overrides
+from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.graph.machine.simple_machine_vertex \
-    import SimpleMachineVertex
+from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.constraints.placer_constraints\
     .placer_board_constraint import PlacerBoardConstraint
 
@@ -21,20 +18,20 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
+
+from spinn_front_end_common.interface.simulation.impl.\
+    uses_simulation_impl import UsesSimulationImpl
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models\
     .abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
-    import AbstractDataSpecableVertex
+from spinn_front_end_common.abstract_models.impl.data_specable_vertex \
+    import DataSpecableVertex
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl import \
     ProvidesProvenanceDataFromMachineImpl
-
-from data_specification.data_specification_generator \
-    import DataSpecificationGenerator
 
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
@@ -44,13 +41,14 @@ import math
 _DEFAULT_MALLOC_REGIONS = 2
 
 
+@supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        SimpleMachineVertex,
-        AbstractDataSpecableVertex, ProvidesProvenanceDataFromMachineImpl,
+        MachineVertex, DataSpecableVertex,
+        ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
         ReceiveBuffersToHostBasicImpl,
-        AbstractRecordable):
+        AbstractRecordable, UsesSimulationImpl):
     """ A model which allows events to be injected into spinnaker and\
         converted in to multicast packets
     """
@@ -96,6 +94,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         :param n_keys: The number of keys to be sent via this multicast source
         :param resources_required: The resources required by the vertex
+        :type resources_required: `pacman.model.resources.resource_container.ResourceContainer`
         :param machine_time_step: The time step to be used on the machine
         :param timescale_factor: The time scaling to be used in the simulation
         :param label: The label of this vertex
@@ -136,19 +135,28 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
 
         # Set up super types
-        SimpleMachineVertex.__init__(
+        MachineVertex.__init__(
             self, resources_required, label, constraints)
-        AbstractDataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
+        DataSpecableVertex.__init__(self)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         ReceiveBuffersToHostBasicImpl.__init__(self)
+        UsesSimulationImpl.__init__(self)
+
+        # storage objects
+        self._graph_mapper = None
+        self._machine_graph = None
+        self._routing_info = None
+
+        # simulation params
+        self._machine_time_step = machine_time_step
+        self._timescale_factor = timescale_factor
 
         # Set up for receiving live packets
         if receive_port is not None:
-            self.add_constraint(TagAllocatorRequireReverseIptagConstraint(
-                receive_port, receive_sdp_port, receive_tag))
+            resources_required.add_to_iptag_usage(
+                IPtagResource(receive_port, receive_sdp_port, receive_tag))
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
 
@@ -164,7 +172,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
 
-            self.add_constraint(TagAllocatorRequireIptagConstraint(
+            resources_required.add_to_iptag_usage(IPtagResource(
                 send_buffer_notification_ip_address,
                 send_buffer_notification_port, True,
                 send_buffer_notification_tag))
@@ -255,11 +263,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
 
-    @property
-    def first_machine_time_step(self):
-        return self._first_machine_time_step
-
-    @first_machine_time_step.setter
+    @inject("FirstMachineTimeStep")
     def first_machine_time_step(self, first_machine_time_step):
         self._first_machine_time_step = first_machine_time_step
         self._fill_send_buffer()
@@ -387,7 +391,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
             self._prefix = self._virtual_key
 
-    def _write_configuration(self, spec, routing_info, graph, ip_tags):
+    def _write_configuration(self, spec, ip_tags):
         spec.switch_write_focus(region=self._REGIONS.CONFIGURATION.value)
 
         # Write apply_prefix and prefix and prefix_type
@@ -440,52 +444,45 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=0)
             spec.write_value(data=0)
 
-    def generate_data_spec(
-            self, vertex, placement, graph, graph, routing_info,
-            hostname, graph_mapper, report_folder, ip_tags,
-            reverse_ip_tags, write_text_specs, application_run_time_folder):
+    @overrides(DataSpecableVertex.generate_data_specification)
+    @requires_injection([
+        "MemoryIptags", "MemoryMachineGraph", "MemoryRoutingInfo"])
+    def generate_data_specification(self, spec, placement):
 
-        # Create new DataSpec for this processor:
-        data_writer, report_writer = \
-            self.get_data_spec_file_writers(
-                placement.x, placement.y, placement.p, hostname, report_folder,
-                write_text_specs, application_run_time_folder)
-        spec = DataSpecificationGenerator(data_writer, report_writer)
-
-        self._update_virtual_key(routing_info, graph)
+        self._update_virtual_key(self._routing_info, self._machine_graph)
         self._fill_send_buffer()
 
         # Reserve regions
         self._reserve_regions(spec)
 
         # Write the system region
-        self._write_basic_setup_info(spec, self._REGIONS.SYSTEM.value)
+        spec.switch_write_focus(self._REGIONS.SYSTEM.value)
+        spec.write_array(self.data_for_simulation_data(
+            self._machine_time_step, self._timescale_factor))
+
 
         # Write the additional recording information
         self.write_recording_data(
-            spec, ip_tags, [self._record_buffer_size],
+            spec, self._ip_tags, [self._record_buffer_size],
             self._buffer_size_before_receive)
 
         # Write the configuration information
-        self._write_configuration(spec, routing_info, graph, ip_tags)
+        self._write_configuration(spec, self._ip_tags)
 
         # End spec
         spec.end_specification()
-        data_writer.close()
 
-        return data_writer.filename
-
+    @overrides(DataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
 
-    def get_outgoing_partition_constraints(self, partition, graph_mapper):
+    @overrides(AbstractProvidesOutgoingPartitionConstraints.
+               get_outgoing_partition_constraints)
+    def get_outgoing_partition_constraints(self, partition):
         if self._virtual_key is not None:
             return list([KeyAllocatorFixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])
         return list()
-
-    def is_data_specable(self):
-        return True
 
     @property
     def virtual_key(self):
@@ -501,3 +498,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def is_recording(self):
         return self._record_buffer_size > 0
+
+    @inject("MemoryGraphMapper")
+    def set_graph_mapper(self, graph_mapper):
+        self._graph_mapper = graph_mapper
+
+    @inject("MemoryMachineGraph")
+    def set_machine_graph(self, machine_graph):
+        self._machine_graph = machine_graph
+
+    @inject("MemoryRoutingInfo")
+    def set_routing_info(self, routing_info):
+        self._routing_info = routing_info

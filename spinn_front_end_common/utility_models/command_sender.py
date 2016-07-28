@@ -2,8 +2,6 @@
 from pacman.model.decorators.overrides import overrides
 from pacman.executor.injection_decorator import \
     supports_injection, requires_injection, inject
-from pacman.model.abstract_classes.impl.constrained_object import \
-    ConstrainedObject
 from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
     import AbstractProvidesOutgoingPartitionConstraints
 from pacman.model.constraints.key_allocator_constraints.\
@@ -12,9 +10,8 @@ from pacman.model.constraints.key_allocator_constraints.\
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_mask_constraint \
     import KeyAllocatorFixedMaskConstraint
-from pacman.model.decorators.delegates_to import delegates_to
-from pacman.model.graphs.application.abstract_application_vertex import \
-    AbstractApplicationVertex
+from pacman.model.graphs.application.impl.application_vertex import \
+    ApplicationVertex
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
@@ -34,16 +31,16 @@ from spinn_front_end_common.utility_models.command_sender_machine_vertex \
 @supports_injection
 class CommandSender(
         AbstractProvidesOutgoingPartitionConstraints,
-        AbstractApplicationVertex, DataSpecableVertex, UsesSimulationImpl):
+        ApplicationVertex, DataSpecableVertex, UsesSimulationImpl):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
 
-    def __init__(self, machine_time_step, timescale_factor, label):
+    def __init__(self, machine_time_step, timescale_factor, label, constraints):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         DataSpecableVertex.__init__(self)
-        AbstractApplicationVertex.__init__(self)
+        ApplicationVertex.__init__(self, label, constraints)
         UsesSimulationImpl.__init__(self)
 
         self._commands_by_edge = dict()
@@ -52,24 +49,10 @@ class CommandSender(
         self._graph_mapper = None
         self._machine_graph = None
         self._routing_info = None
-        self._label = label
+
+        # simulation objects
         self._machine_time_step = machine_time_step
         self._time_scale_factor = timescale_factor
-
-        # impl for where constraints are stored
-        self._constraints = ConstrainedObject()
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
 
     def add_commands(self, commands, edge):
         """ Add commands to be sent down a given edge
@@ -290,19 +273,19 @@ class CommandSender(
         vertex.reserve_provenance_data_region(spec)
 
     @property
-    @overrides(AbstractApplicationVertex.model_name)
+    @overrides(ApplicationVertex.model_name)
     def model_name(self):
         """ Return the name of the model as a string
         """
         return "command_sender_multi_cast_source"
 
-    @overrides(AbstractApplicationVertex.create_machine_vertex)
+    @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, constraints=None):
         return CommandSenderMachineVertex(
             constraints, resources_required, self.label)
 
-    @overrides(AbstractApplicationVertex.get_resources_used_by_atoms)
+    @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
 
         sdram = (
@@ -314,7 +297,7 @@ class CommandSender(
         return ResourceContainer(sdram=SDRAMResource(sdram))
 
     @property
-    @overrides(AbstractApplicationVertex.n_atoms)
+    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return 1
 
@@ -337,8 +320,3 @@ class CommandSender(
     @inject("MemoryRoutingInfo")
     def set_routing_info(self, routing_info):
         self._routing_info = routing_info
-
-    @property
-    @overrides(AbstractApplicationVertex.label)
-    def label(self):
-        return self._label

@@ -1,11 +1,9 @@
 # pacman imports
-from pacman.executor.injection_decorator import requires_injection, inject
-from pacman.model.abstract_classes.impl.constrained_object import \
-    ConstrainedObject
-from pacman.model.decorators.delegates_to import delegates_to
+from pacman.executor.injection_decorator import requires_injection, inject, \
+    supports_injection
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.abstract_application_vertex \
-    import AbstractApplicationVertex
+from pacman.model.graphs.application.impl.application_vertex import \
+    ApplicationVertex
 
 # spinn front end imports
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
@@ -25,8 +23,9 @@ from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 
+@supports_injection
 class LivePacketGather(
-        DataSpecableVertex, AbstractApplicationVertex):
+        DataSpecableVertex, ApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -61,18 +60,16 @@ class LivePacketGather(
                 "the type of a prefix type should be of a EIEIOPrefix, "
                 "which can be located in :"
                 "SpinnMan.messages.eieio.eieio_prefix_type")
+
         if label is None:
-            self._label = "Live Packet Gatherer"
-        else:
-            self._label = label
+            label = "Live Packet Gatherer"
 
         DataSpecableVertex.__init__(self)
-        AbstractApplicationVertex.__init__(self)
+        ApplicationVertex.__init__(self, label, constraints)
 
-        self._constraints = ConstrainedObject(constraints)
+        # simulation objects
         self._machine_time_step = machine_time_step
         self._time_scale_factor = timescale_factor
-        self._label = label
 
         # storage objects
         self._iptags = None
@@ -96,7 +93,7 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @overrides(AbstractApplicationVertex.create_machine_vertex)
+    @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, constraints=None):
         return LivePacketGatherMachineVertex(
@@ -109,7 +106,7 @@ class LivePacketGather(
             constraints=constraints)
 
     @property
-    @overrides(AbstractApplicationVertex.model_name)
+    @overrides(ApplicationVertex.model_name)
     def model_name(self):
         """ Human readable form of the model name
         """
@@ -120,29 +117,11 @@ class LivePacketGather(
         return 'live_packet_gather.aplx'
 
     @property
-    @overrides(AbstractApplicationVertex.label)
-    def label(self):
-        return self._label
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @property
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
-
-    @property
-    @overrides(AbstractApplicationVertex.n_atoms)
+    @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return 1
 
-    @overrides(AbstractApplicationVertex.get_resources_used_by_atoms)
+    @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return ResourceContainer(
             sdram=SDRAMResource(

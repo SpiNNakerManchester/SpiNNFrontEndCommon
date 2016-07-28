@@ -1,4 +1,5 @@
-from pacman.executor.injection_decorator import requires_injection
+from pacman.executor.injection_decorator import requires_injection, \
+    supports_injection, inject
 from pacman.model.abstract_classes.impl.constrained_object import \
     ConstrainedObject
 from pacman.model.constraints.placer_constraints.placer_board_constraint\
@@ -32,6 +33,7 @@ from spinnman.messages.eieio.eieio_type import EIEIOType
 from enum import Enum
 
 
+@supports_injection
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
         DataSpecableVertex, UsesSimulationImpl):
@@ -70,6 +72,9 @@ class LivePacketGatherMachineVertex(
         # sim data obhects
         self._machine_time_step = machine_time_step
         self._timescale_factor = timescale_factor
+
+        # storage objects
+        self._iptags = None
 
         # inheirtance
         MachineVertex.__init__(
@@ -301,3 +306,8 @@ class LivePacketGatherMachineVertex(
         :return:
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE
+
+    @inject("MemoryIptags")
+    def set_iptags(self, iptags):
+        self._iptags = iptags
+
