@@ -945,7 +945,8 @@ bool initialise(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK, NULL, PROVENANCE_REGION)) {
+            &infinite_run, SDP_CALLBACK, NULL,
+            data_specification_get_region(PROVENANCE_REGION, address))) {
         return false;
     }
 
