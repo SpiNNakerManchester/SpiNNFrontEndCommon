@@ -190,7 +190,8 @@ class ReverseIpTagMultiCastSource(
         return ReverseIPTagMulticastSourcePartitionedVertex.get_sdram_usage(
             self._send_buffer_times, self._send_buffer_max_space,
             self._recording_enabled, self._using_auto_pause_and_resume,
-            self._minimum_sdram_for_buffering, self._record_buffer_size)
+            self._minimum_sdram_for_buffering, self._record_buffer_size,
+            self._record_schedule)
 
     @property
     def model_name(self):
@@ -260,7 +261,7 @@ class ReverseIpTagMultiCastSource(
                 self._record_buffering_board_address,
                 self._record_buffering_tag, self._record_buffer_size,
                 self._record_buffer_size_before_receive,
-                self._minimum_sdram_for_buffering, sdram_per_ts, 
+                self._minimum_sdram_for_buffering, sdram_per_ts,
                 self._record_schedule)
         self._subvertices.append((vertex_slice, subvertex))
         return subvertex

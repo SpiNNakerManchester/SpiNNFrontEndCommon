@@ -253,20 +253,21 @@ class ReverseIPTagMulticastSourcePartitionedVertex(
                 self._send_buffer_times, self._send_buffer_max_space,
                 self._record_buffer_size > 0,
                 self._buffered_sdram_per_timestep > 0,
-                self._minimum_sdram_for_buffering, self._record_buffer_size)),
+                self._minimum_sdram_for_buffering, self._record_buffer_size,
+                self._record_schedule)),
             CPUCyclesPerTickResource(1))
 
     @staticmethod
     def get_sdram_usage(
             send_buffer_times, send_buffer_max_space, recording_enabled,
             using_auto_pause_and_resume, minimum_sdram_for_buffering,
-            record_buffer_size):
+            record_buffer_size, record_schedule):
         send_buffer_size = 0
         if send_buffer_times is not None:
             send_buffer_size = send_buffer_max_space
 
         recording_size = (ReverseIPTagMulticastSourcePartitionedVertex
-                          .get_recording_data_size(1))
+                          .get_recording_data_size(1, [record_schedule]))
         if recording_enabled:
             if using_auto_pause_and_resume:
                 recording_size += minimum_sdram_for_buffering
