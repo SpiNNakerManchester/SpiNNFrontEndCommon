@@ -154,6 +154,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # simulation params
         self._machine_time_step = machine_time_step
         self._timescale_factor = timescale_factor
+        self._no_machine_time_steps = None
 
         # Set up for receiving live packets
         if receive_port is not None:
@@ -277,6 +278,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             (self._no_machine_time_steps is None) or (
                 self._first_machine_time_step <= time_stamp_in_ticks <
                 self._no_machine_time_steps))
+
+    def set_no_machine_time_steps(self, new_value):
+        self._no_machine_time_steps = new_value
 
     def _fill_send_buffer(self):
         """ Fill the send buffer with keys to send
@@ -480,6 +484,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(DataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
+
+    @property
+    @overrides(MachineVertex.model_name)
+    def model_name(self):
+        return "ReverseIPTagMulticastSourceMachineVertex"
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
