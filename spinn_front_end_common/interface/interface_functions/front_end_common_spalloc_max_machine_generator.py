@@ -23,7 +23,5 @@ class FrontEndCommonSpallocMaxMachineGenerator(object):
                     max_width = machine["width"]
                     max_height = machine["height"]
 
-        return {
-            "max_width": max_width * 12,
-            "max_height": max_height * 12
-        }
+        return max_width * 12, max_height * 12
+

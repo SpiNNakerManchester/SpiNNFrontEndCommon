@@ -73,4 +73,4 @@ class FrontEndCommonApplicationDataLoader(object):
             progress_bar.update()
         progress_bar.end()
 
-        return {"LoadedApplicationDataToken": True}
+        return True

@@ -419,7 +419,7 @@ class SpinnakerMainInterface(object):
                     this iteration.
         :return: None
         """
-        do_injection({'MemoryNoMachineTimeSteps', n_machine_time_steps})
+        do_injection({'MemoryNoMachineTimeSteps': n_machine_time_steps})
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         total_run_timesteps = next_run_timesteps
@@ -897,7 +897,7 @@ class SpinnakerMainInterface(object):
         # Calculate the first machine time step to start from and set this
         # where necessary
         first_machine_time_step = self._current_run_timesteps
-        do_injection({'FirstMachineTimeStep', self._current_run_timesteps})
+        do_injection({'FirstMachineTimeStep': self._current_run_timesteps})
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:

@@ -46,4 +46,4 @@ class FrontEndCommonPlacementsProvenanceGatherer(object):
             progress.update()
         progress.end()
 
-        return {'prov_items': prov_items}
+        return prov_items

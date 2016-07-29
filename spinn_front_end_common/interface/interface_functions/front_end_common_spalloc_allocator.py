@@ -105,16 +105,5 @@ class FrontEndCommonSpallocAllocator(object):
         machine_allocation_controller = _SpallocJobController(job)
         machine_allocation_controller.start()
 
-        return {
-            "machine_name": hostname,
-            "machine_version": self._MACHINE_VERSION,
-            "machine_down_chips": None,
-            "machine_down_cores": None,
-            "machine_bmp_details": None,
-            "reset_machine_on_start_up": False,
-            "auto_detect_bmp": False,
-            "scamp_connection_data": None,
-            "boot_port_number": None,
-            "max_sdram_size": None,
-            "machine_allocation_controller": machine_allocation_controller
-        }
+        return hostname, self._MACHINE_VERSION, None, None, None, False, \
+               False, None, None, None, machine_allocation_controller

@@ -79,4 +79,4 @@ class FrontEndCommonReloadScriptCreator(object):
         # end reload script
         reload_script.close()
 
-        return {"ReloadToken": True}
+        return True

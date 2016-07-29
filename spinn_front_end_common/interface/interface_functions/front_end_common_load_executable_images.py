@@ -71,4 +71,4 @@ class FrontEndCommonLoadExecutableImages(object):
             progress_bar.update(amount_to_add=acutal_cores_loaded)
         progress_bar.end()
 
-        return {"LoadBinariesToken": True}
+        return True

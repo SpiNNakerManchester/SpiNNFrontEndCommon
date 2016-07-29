@@ -59,7 +59,7 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             ["router_provenance", "total_lost_dropped_packets"],
             self._total_lost_dropped_packets))
 
-        return {'prov_items': prov_items}
+        return prov_items
 
     def _write_router_provenance_data(self, router_tables, machine, txrx):
         """ Writes the provenance data of the router diagnostics

@@ -31,4 +31,4 @@ class FrontEndCommonVirtualMachineGenerator(object):
             with_monitors=with_monitors, down_chips=ignored_chips,
             down_cores=ignored_cores)
 
-        return {"machine": machine}
+        return machine

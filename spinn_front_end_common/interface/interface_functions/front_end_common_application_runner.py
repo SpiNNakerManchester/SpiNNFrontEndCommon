@@ -65,7 +65,7 @@ class FrontEndCommonApplicationRunner(object):
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
                 time_threshold)
 
-        return {'RanToken': True, "no_sync_changes": no_sync_changes}
+        return True, no_sync_changes
 
     @staticmethod
     def start_all_cores(executable_targets, app_id, txrx, sync_state_changes):

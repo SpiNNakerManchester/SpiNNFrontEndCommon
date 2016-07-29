@@ -34,4 +34,4 @@ class FrontEndCommonBufferManagerCreator(object):
             progress_bar.update()
         progress_bar.end()
 
-        return {"buffer_manager": buffer_manager}
+        return buffer_manager

@@ -78,7 +78,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                 progress_bar.update()
             progress_bar.end()
 
-        return {'n_keys_map': n_keys_map}
+        return n_keys_map
 
     @staticmethod
     def _check_constraints_equal(constraints, stored_constraints):

@@ -39,4 +39,4 @@ class FrontEndCommonGraphMeasurer(object):
                 vertex.resources_required, vertex.constraints)
             progress_bar.update()
         progress_bar.end()
-        return {'n_chips': len(resource_tracker.keys)}
+        return len(resource_tracker.keys)

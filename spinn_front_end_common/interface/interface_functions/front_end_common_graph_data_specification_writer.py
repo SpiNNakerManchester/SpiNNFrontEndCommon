@@ -64,8 +64,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 progress_bar.update()
             progress_bar.end()
 
-        return {'executable_targets': executable_targets,
-                'dsg_targets': dsg_targets}
+        return executable_targets, dsg_targets
 
     def _generate_data_spec_for_vertices(
             self, placement, associated_vertex, executable_targets,

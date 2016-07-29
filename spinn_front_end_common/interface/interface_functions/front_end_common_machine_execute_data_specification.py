@@ -139,6 +139,4 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         transceiver.stop_application(dse_app_id)
         logger.info("On-chip Data Specification Executor completed")
 
-        return {
-            "LoadedApplicationDataToken": True
-        }
+        return True

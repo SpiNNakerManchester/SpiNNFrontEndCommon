@@ -29,9 +29,7 @@ class FrontEndCommonIOBufExtractor(object):
                 "The FrontEndCommonIOBufExtractor requires either a placements"
                 " object or a core sets object to be able to execute")
 
-        return {'io_buffers': io_buffers,
-                'error_entries': error_entries,
-                'warn_entries': warn_entries}
+        return io_buffers, error_entries, warn_entries
 
     def _run_for_core_subsets(self, core_subsets, transceiver):
         progress_bar = ProgressBar(len(core_subsets), "Extracting IOBUF")

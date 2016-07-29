@@ -23,4 +23,4 @@ class FrontEndCommonRoutingTableLoader(object):
             progress_bar.update()
         progress_bar.end()
 
-        return {"LoadedRoutingTablesToken": True}
+        return True

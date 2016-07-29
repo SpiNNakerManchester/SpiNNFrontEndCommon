@@ -77,7 +77,7 @@ class FrontEndCommonMachineGenerator(object):
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()
 
-        return {"machine": machine, "txrx": txrx}
+        return machine, txrx
 
     @staticmethod
     def _sort_out_scamp_connections(scamp_connections_data):

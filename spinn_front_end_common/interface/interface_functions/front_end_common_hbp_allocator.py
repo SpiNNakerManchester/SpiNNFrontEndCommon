@@ -72,16 +72,6 @@ class FrontEndCommonHBPAllocator(object):
         if "bmp_details" in machine:
             bmp_details = machine["bmpDetails"]
 
-        return {
-            "machine_name": machine["machineName"],
-            "machine_version": int(machine["version"]),
-            "machine_down_chips": None,
-            "machine_down_cores": None,
-            "machine_bmp_details": bmp_details,
-            "reset_machine_on_start_up": False,
-            "auto_detect_bmp": False,
-            "scamp_connection_data": None,
-            "boot_port_number": None,
-            "max_sdram_size": None,
-            "machine_allocation_controller": machine_allocation_controller
-        }
+        return machine["machineName"], int(machine["version"]), None, None, \
+               bmp_details, False, False, None, None, None, \
+               machine_allocation_controller

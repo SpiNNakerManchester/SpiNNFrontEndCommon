@@ -52,4 +52,4 @@ class FrontEndCommonGraphProvenanceGatherer(object):
                     prov_items.extend(edge.get_local_provenance_data())
             progress.end()
 
-        return {'prov_items': prov_items}
+        return prov_items
