@@ -33,13 +33,13 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
             # generate progress bar
             progress_bar = ProgressBar(
-                len(application_graph.vertices),
+                len(machine_graph.vertices),
                 "Getting the number of keys required by each edge using the"
                 "application graph")
 
             # iterate over each partition in the graph
-            for vertex in application_graph.vertices:
-                partitions = application_graph.\
+            for vertex in machine_graph.vertices:
+                partitions = machine_graph.\
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
                 for partition in partitions:
@@ -58,7 +58,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
             # generate progress bar
             progress_bar = ProgressBar(
-                len(application_graph.vertices),
+                len(machine_graph.vertices),
                 "Getting the number of keys required by each edge using the"
                 "machine graph")
 
