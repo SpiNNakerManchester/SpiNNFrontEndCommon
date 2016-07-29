@@ -526,66 +526,9 @@
             <param_type>MemoryMachine</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonPartitionedGraphDataSpecificationWriter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitioned_graph_data_specification_writer</python_module>
-        <python_class>FrontEndCommonPartitionedGraphDataSpecificationWriter</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
-            </parameter>
-            <parameter>
-                <param_name>executable_finder</param_name>
-                <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>partitioned_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
-            </parameter>
-            <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>report_default_directory</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>write_text_specs</param_name>
-                <param_type>WriteTextSpecsFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>placements</param_name>
-            <param_name>tags</param_name>
-            <param_name>executable_finder</param_name>
-            <param_name>partitioned_graph</param_name>
-            <param_name>routing_infos</param_name>
-            <param_name>hostname</param_name>
-            <param_name>report_default_directory</param_name>
-            <param_name>write_text_specs</param_name>
-            <param_name>app_data_runtime_folder</param_name>
-        </required_inputs>
-        <outputs>
-            <param_type>ExecutableTargets</param_type>
-            <param_type>DataSpecificationTargets</param_type>
-        </outputs>
-    </algorithm>
-    <algorithm name="FrontEndCommonPartitionableGraphDataSpecificationWriter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitionable_graph_data_specification_writer</python_module>
-        <python_class>FrontEndCommonPartitionableGraphDataSpecificationWriter</python_class>
+    <algorithm name="FrontEndCommonGraphDataSpecificationWriter">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_graph_data_specification_writer</python_module>
+        <python_class>FrontEndCommonGraphDataSpecificationWriter</python_class>
         <input_definitions>
             <parameter>
                 <param_name>placements</param_name>
@@ -596,19 +539,12 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_finder</param_name>
                 <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
-                <param_name>partitioned_graph</param_name>
+                <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>partitionable_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
@@ -634,17 +570,17 @@
         </input_definitions>
         <required_inputs>
             <param_name>placements</param_name>
-            <param_name>graph_mapper</param_name>
-            <param_name>tags</param_name>
             <param_name>executable_finder</param_name>
-            <param_name>partitioned_graph</param_name>
-            <param_name>partitionable_graph</param_name>
+            <param_name>graph</param_name>
             <param_name>routing_infos</param_name>
             <param_name>hostname</param_name>
             <param_name>report_default_directory</param_name>
             <param_name>write_text_specs</param_name>
             <param_name>app_data_runtime_folder</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
         <outputs>
             <param_type>ExecutableTargets</param_type>
             <param_type>DataSpecificationTargets</param_type>
@@ -816,11 +752,11 @@
         <python_class>FrontEndCommonGraphProvenanceGatherer</python_class>
         <input_definitions>
             <parameter>
-                <param_name>partitioned_graph</param_name>
+                <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>partitionable_graph</param_name>
+                <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
@@ -829,11 +765,11 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>partitioned_graph</param_name>
+            <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
             <all_of>
-                <param_name>partitionable_graph</param_name>
+                <param_name>application_graph</param_name>
                 <param_name>provenance_data_objects</param_name>
             </all_of>
         </optional_inputs>
@@ -924,7 +860,7 @@
         <python_class>FrontEndCommonDatabaseInterface</python_class>
         <input_definitions>
             <parameter>
-                <param_name>partitioned_graph</param_name>
+                <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
@@ -973,7 +909,7 @@
                 <param_type>CreateAtomToEventIdMapping</param_type>
             </parameter>
             <parameter>
-                <param_name>partitionable_graph</param_name>
+                <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
@@ -984,12 +920,12 @@
         <optional_inputs>
             <all_of>
                 <param_name>create_atom_to_event_id_mapping</param_name>
-                <param_name>partitionable_graph</param_name>
+                <param_name>application_graph</param_name>
                 <param_name>graph_mapper</param_name>
             </all_of>
         </optional_inputs>
         <required_inputs>
-            <param_name>partitioned_graph</param_name>
+            <param_name>machine_graph</param_name>
             <param_name>user_create_database</param_name>
             <param_name>tags</param_name>
             <param_name>database_directory</param_name>
@@ -1171,7 +1107,7 @@
         <python_class>FrontEndCommonEdgeToNKeysMapper</python_class>
         <input_definitions>
             <parameter>
-                <param_name>partitioned_graph</param_name>
+                <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
@@ -1179,18 +1115,18 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>partitionable_graph</param_name>
+                <param_name>application_graph</param_name>
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <optional_inputs>
             <all_of>
                 <param_name>graph_mapper</param_name>
-                <param_name>partitionable_graph</param_name>
+                <param_name>application_graph</param_name>
             </all_of>
         </optional_inputs>
         <required_inputs>
-            <param_name>partitioned_graph</param_name>
+            <param_name>machine_graph</param_name>
         </required_inputs>
         <outputs>
             <param_type>MemoryMachinePartitionNKeysMap</param_type>
@@ -1329,11 +1265,11 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionedGraphMeasurer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_partitioned_graph_measurer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_graph_measurer</python_module>
         <python_class>FrontEndCommonPartitionedGraphMeasurer</python_class>
         <input_definitions>
             <parameter>
-                <param_name>partitioned_graph</param_name>
+                <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
@@ -1342,7 +1278,7 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>partitioned_graph</param_name>
+            <param_name>machine_graph</param_name>
             <param_name>machine</param_name>
         </required_inputs>
         <outputs>
@@ -1354,7 +1290,7 @@
         <python_class>FrontEndCommonBufferExtractor</python_class>
         <input_definitions>
             <parameter>
-                <param_name>partitioned_graph</param_name>
+                <param_name>machine_graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
@@ -1371,7 +1307,7 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>partitioned_graph</param_name>
+            <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>buffer_manager</param_name>
             <param_name>ran_token</param_name>

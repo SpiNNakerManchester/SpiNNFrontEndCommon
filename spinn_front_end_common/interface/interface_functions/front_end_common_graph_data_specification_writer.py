@@ -20,6 +20,7 @@ from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 _lock_condition = threading.Condition()
 
+
 class FrontEndCommonGraphDataSpecificationWriter(object):
     """ Executes data specification generation
     """
