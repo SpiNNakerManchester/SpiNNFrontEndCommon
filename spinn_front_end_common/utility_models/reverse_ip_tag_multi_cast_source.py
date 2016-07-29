@@ -113,6 +113,7 @@ class ReverseIpTagMultiCastSource(
         # simulation objects
         self._machine_time_step = machine_time_step
         self._timescale_factor = timescale_factor
+        self._no_machine_time_steps = None
 
         # storage objects
         self._graph_mapper = None
@@ -316,8 +317,7 @@ class ReverseIpTagMultiCastSource(
 
     @inject("MemoryNoMachineTimeSteps")
     def set_no_machine_time_steps(self, new_no_machine_time_steps):
-        DataSpecableVertex.set_no_machine_time_steps(
-            self, new_no_machine_time_steps)
+        self._no_machine_time_steps = new_no_machine_time_steps
         for (_, vertex) in self._machine_vertices:
             vertex.set_no_machine_time_steps(new_no_machine_time_steps)
 
