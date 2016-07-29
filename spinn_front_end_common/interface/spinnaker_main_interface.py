@@ -457,8 +457,10 @@ class SpinnakerMainInterface(object):
 
         # Execute the algorithms
         executor = PACMANAlgorithmExecutor(
-            algorithms, optional, inputs, self._xml_paths, outputs,
-            self._do_timings, self._print_timings)
+            algorithms=algorithms, optional_algorithms=optional,
+            inputs=inputs, xml_paths=self._xml_paths, required_outputs=outputs,
+            do_timings=self._do_timings, print_timings=self._print_timings)
+
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
