@@ -544,7 +544,7 @@
             </parameter>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -605,11 +605,11 @@
             </parameter>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>partitionable_graph</param_name>
-                <param_type>MemoryPartitionableGraph</param_type>
+                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>routing_infos</param_name>
@@ -817,11 +817,11 @@
         <input_definitions>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>partitionable_graph</param_name>
-                <param_type>MemoryPartitionableGraph</param_type>
+                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_data_objects</param_name>
@@ -925,7 +925,7 @@
         <input_definitions>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>user_create_database</param_name>
@@ -974,7 +974,7 @@
             </parameter>
             <parameter>
                 <param_name>partitionable_graph</param_name>
-                <param_type>MemoryPartitionableGraph</param_type>
+                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>graph_mapper</param_name>
@@ -1172,7 +1172,7 @@
         <input_definitions>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>graph_mapper</param_name>
@@ -1180,7 +1180,7 @@
             </parameter>
             <parameter>
                 <param_name>partitionable_graph</param_name>
-                <param_type>MemoryPartitionableGraph</param_type>
+                <param_type>MemoryApplicationGraph</param_type>
             </parameter>
         </input_definitions>
         <optional_inputs>
@@ -1193,7 +1193,7 @@
             <param_name>partitioned_graph</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MemoryPartitionedPartitionNKeysMap</param_type>
+            <param_type>MemoryMachinePartitionNKeysMap</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonSpallocAllocator">
@@ -1334,7 +1334,7 @@
         <input_definitions>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
@@ -1355,7 +1355,7 @@
         <input_definitions>
             <parameter>
                 <param_name>partitioned_graph</param_name>
-                <param_type>MemoryPartitionedGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
             </parameter>
             <parameter>
                 <param_name>placements</param_name>
