@@ -815,6 +815,10 @@ class SpinnakerMainInterface(object):
         if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
 
+        # inject the application graph to whom ever needs it
+        if len(self._application_graph.vertices) > 0:
+            do_injection({"MemoryApplicationGraph": self._application_graph})
+
         # Execute the mapping algorithms
         executor = self._run_machine_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
