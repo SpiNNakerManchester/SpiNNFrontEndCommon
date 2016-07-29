@@ -9,7 +9,7 @@ from abc import abstractmethod
 
 
 @supports_injection
-class ApplicationDataSpecableVertex(DataSpecableVertex):
+class MachineDataSpecableVertex(DataSpecableVertex):
 
     def __init__(self):
         DataSpecableVertex.__init__(self)
@@ -31,7 +31,7 @@ class ApplicationDataSpecableVertex(DataSpecableVertex):
             self._iptags, self._reverse_iptags)
 
     @abstractmethod
-    def generate_application_data_specification(
+    def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
             reverse_iptags):
         pass
