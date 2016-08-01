@@ -87,7 +87,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             spec = DataSpecificationGenerator(data_writer, report_writer)
 
             # generate the dsg file
-            associated_vertex.generate_data_spec(spec, placement)
+            associated_vertex.generate_data_specification(spec, placement)
             data_writer.close()
 
             # link dsg file to vertex

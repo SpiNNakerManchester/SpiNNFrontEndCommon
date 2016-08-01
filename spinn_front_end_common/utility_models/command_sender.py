@@ -134,7 +134,7 @@ class CommandSender(
                      for (key, mask) in command_keys])])
 
     @requires_injection(
-        ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfo"])
+        ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfos"])
     @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
@@ -318,6 +318,6 @@ class CommandSender(
     def set_machine_graph(self, machine_graph):
         self._machine_graph = machine_graph
 
-    @inject("MemoryRoutingInfo")
+    @inject("MemoryRoutingInfos")
     def set_routing_info(self, routing_info):
         self._routing_info = routing_info

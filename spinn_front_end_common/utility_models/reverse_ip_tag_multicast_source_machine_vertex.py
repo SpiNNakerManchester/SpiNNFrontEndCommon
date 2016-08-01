@@ -150,6 +150,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._graph_mapper = None
         self._machine_graph = None
         self._routing_info = None
+        self._iptags = None
 
         # simulation params
         self._machine_time_step = machine_time_step
@@ -454,7 +455,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=0)
 
     @requires_injection([
-        "MemoryIptags", "MemoryMachineGraph", "MemoryRoutingInfo"])
+        "MemoryIpTags", "MemoryMachineGraph", "MemoryRoutingInfos"])
     @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
@@ -472,11 +473,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write the additional recording information
         self.write_recording_data(
-            spec, self._ip_tags, [self._record_buffer_size],
+            spec, self._iptags, [self._record_buffer_size],
             self._buffer_size_before_receive)
 
         # Write the configuration information
-        self._write_configuration(spec, self._ip_tags)
+        self._write_configuration(spec, self._iptags)
 
         # End spec
         spec.end_specification()
@@ -521,6 +522,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def set_machine_graph(self, machine_graph):
         self._machine_graph = machine_graph
 
-    @inject("MemoryRoutingInfo")
+    @inject("MemoryRoutingInfos")
     def set_routing_info(self, routing_info):
         self._routing_info = routing_info
+
+    @inject("MemoryIpTags")
+    def set_iptags(self, iptags):
+        self._iptags = iptags

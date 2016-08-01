@@ -157,7 +157,7 @@ class LivePacketGatherMachineVertex(
         return 'live_packet_gather.aplx'
 
     @overrides(DataSpecableVertex.generate_data_specification)
-    @requires_injection(["MemoryIptags"])
+    @requires_injection(["MemoryIpTags"])
     def generate_data_specification(self, spec, placement):
 
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
@@ -307,7 +307,7 @@ class LivePacketGatherMachineVertex(
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE
 
-    @inject("MemoryIptags")
+    @inject("MemoryIpTags")
     def set_iptags(self, iptags):
         self._iptags = iptags
 

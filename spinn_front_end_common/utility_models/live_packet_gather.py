@@ -95,9 +95,10 @@ class LivePacketGather(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, constraints=None):
+            self, vertex_slice, resources_required, label=None,
+            constraints=None):
         return LivePacketGatherMachineVertex(
-            self._label, self._machine_time_step, self._timescale_factor,
+            label, self._machine_time_step, self._timescale_factor,
             self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
@@ -131,7 +132,7 @@ class LivePacketGather(
                 LivePacketGatherMachineVertex.get_cpu_usage()))
 
     @overrides(DataSpecableVertex.generate_data_specification)
-    @requires_injection(["MemoryIptags"])
+    @requires_injection(["MemoryIpTags"])
     def generate_data_specification(self, spec, placement):
 
         # needs to set it directly, as the machine vertex also impliemnts this
@@ -142,6 +143,6 @@ class LivePacketGather(
         # generate spec for the machine vertex
         placement.vertex.generate_data_spec(spec, placement)
 
-    @inject("MemoryIptags")
+    @inject("MemoryIpTags")
     def set_iptags(self, iptags):
         self._iptags = iptags

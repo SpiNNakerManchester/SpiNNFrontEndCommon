@@ -119,6 +119,7 @@ class ReverseIpTagMultiCastSource(
         self._graph_mapper = None
         self._machine_graph = None
         self._routing_info = None
+        self._iptags = None
 
         # Store the parameters for EIEIO
         self._board_address = board_address
@@ -173,7 +174,7 @@ class ReverseIpTagMultiCastSource(
     @send_buffer_times.setter
     def send_buffer_times(self, send_buffer_times):
         self._send_buffer_times = send_buffer_times
-        for (vertex_slice, subvertex) in self._subvertices:
+        for (vertex_slice, vertex) in self._machine_vertices:
             send_buffer_times_to_set = self._send_buffer_times
             if (self._send_buffer_times is not None and
                     len(self._send_buffer_times) > 0):
@@ -252,7 +253,7 @@ class ReverseIpTagMultiCastSource(
         return 1
 
     @requires_injection([
-        "MemoryIptags", "MemoryMachineGraph", "MemoryRoutingInfo"])
+        "MemoryIpTags", "MemoryMachineGraph", "MemoryRoutingInfos"])
     @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         placement.vertex.set_iptags(self._iptags)
@@ -329,6 +330,10 @@ class ReverseIpTagMultiCastSource(
     def set_machine_graph(self, machine_graph):
         self._machine_graph = machine_graph
 
-    @inject("MemoryRoutingInfo")
+    @inject("MemoryRoutingInfos")
     def set_routing_info(self, routing_info):
         self._routing_info = routing_info
+
+    @inject("MemoryIpTags")
+    def set_iptags(self, iptags):
+        self._iptags = iptags
