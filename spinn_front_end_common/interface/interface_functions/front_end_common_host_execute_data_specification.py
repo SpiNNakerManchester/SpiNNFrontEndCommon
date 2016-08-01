@@ -4,10 +4,6 @@ from data_specification.data_specification_executor import \
     DataSpecificationExecutor
 from data_specification import exceptions
 
-# spinn front end imports
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
-    import AbstractDataSpecableVertex
-
 # spinn_storage_handlers import
 from spinn_storage_handlers.file_data_reader import FileDataReader
 from spinn_storage_handlers.file_data_writer import FileDataWriter
@@ -18,6 +14,7 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 import os
 import logging
 import struct
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +43,8 @@ class FrontEndCommonHostExecuteDataSpecification(object):
 
         return data
 
-    @staticmethod
     def host_based_data_specification_execution(
-            hostname, transceiver, write_text_specs,
+            self, hostname, transceiver, write_text_specs,
             application_data_runtime_folder, machine, report_default_directory,
             app_id, dsg_targets):
         """
@@ -77,8 +73,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             data_spec_reader = FileDataReader(data_spec_file_path)
 
             # build application data writer
-            app_data_file_path = \
-                AbstractDataSpecableVertex.get_application_data_file_path(
+            app_data_file_path = self.get_application_data_file_path(
                     x, y, p, hostname, application_data_runtime_folder)
 
             data_writer = FileDataWriter(app_data_file_path)
@@ -165,3 +160,26 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         # close the progress bar
         progress_bar.end()
         return processor_to_app_data_base_address, True
+
+    @staticmethod
+    def get_application_data_file_path(
+            processor_chip_x, processor_chip_y, processor_id, hostname,
+            application_run_time_folder):
+        """
+
+        :param processor_chip_x:
+        :param processor_chip_y:
+        :param processor_id:
+        :param hostname:
+        :param application_run_time_folder:
+        :return:
+        """
+
+        if application_run_time_folder == "TEMP":
+            application_run_time_folder = tempfile.gettempdir()
+
+        application_data_file_name = \
+            application_run_time_folder + os.sep + \
+            "{}_appData_{}_{}_{}.dat".format(
+                hostname, processor_chip_x, processor_chip_y, processor_id)
+        return application_data_file_name

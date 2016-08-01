@@ -679,8 +679,9 @@ class SpinnakerMainInterface(object):
         }
         outputs = ["FileMachine"]
         executor = PACMANAlgorithmExecutor(
-            [], [], inputs, self._xml_paths, outputs, self._do_timings,
-            self._print_timings)
+            algorithms=[], optional_algorithms=[], inputs=inputs,
+            xml_paths=self._xml_paths, required_outputs=outputs,
+            do_timings=self._do_timings, print_timings=self._print_timings)
         executor.execute_mapping()
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
@@ -975,8 +976,9 @@ class SpinnakerMainInterface(object):
         executor = None
         try:
             executor = PACMANAlgorithmExecutor(
-                algorithms, [], inputs, self._xml_paths, outputs,
-                self._do_timings, self._print_timings)
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
         except KeyboardInterrupt:
@@ -985,21 +987,28 @@ class SpinnakerMainInterface(object):
             sys.exit(1)
         except Exception as e:
 
-            logger.error(
-                "An error has occurred during simulation")
-            for line in traceback.format_tb(e.traceback):
-                logger.error(line.strip())
-            logger.error(e.exception)
+            is_failed_to_start_exp = \
+                isinstance(e,
+                           common_exceptions.ExecutableFailedToStartException)
+            is_failed_to_stop_exp = \
+                isinstance(e,
+                           common_exceptions.ExecutableFailedToStopException)
+            if is_failed_to_start_exp or is_failed_to_stop_exp:
+                logger.error(
+                    "An error has occurred during simulation")
+                for line in traceback.format_tb(e.traceback):
+                    logger.error(line.strip())
+                logger.error(e.exception)
 
-            logger.info("\n\nAttempting to extract data\n\n")
+                logger.info("\n\nAttempting to extract data\n\n")
 
-            # If an exception occurs during a run, attempt to get
-            # information out of the simulation before shutting down
-            try:
-                self._recover_from_error(e, executor.get_items())
-            except Exception:
-                logger.error("Error when attempting to recover from error")
-                traceback.print_exc()
+                # If an exception occurs during a run, attempt to get
+                # information out of the simulation before shutting down
+                try:
+                    self._recover_from_error(e, executor.get_items())
+                except Exception:
+                    logger.error("Error when attempting to recover from error")
+                    traceback.print_exc()
 
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
@@ -1038,8 +1047,10 @@ class SpinnakerMainInterface(object):
                 outputs.append("ProvenanceItems")
 
                 executor = PACMANAlgorithmExecutor(
-                    algorithms, [], inputs, self._xml_paths, outputs,
-                    self._do_timings, self._print_timings)
+                    algorithms=algorithms, optional_algorithms=[],
+                    inputs=inputs, xml_paths=self._xml_paths,
+                    required_outputs=outputs, do_timings=self._do_timings,
+                    print_timings=self._print_timings)
                 executor.execute_mapping()
                 self._pacman_provenance.extract_provenance(executor)
                 provenance_outputs = executor.get_items()
@@ -1066,8 +1077,10 @@ class SpinnakerMainInterface(object):
         elif self._provenance_format == "json":
             writer_algorithms.append("FrontEndCommonProvenanceJSONWriter")
         executor = PACMANAlgorithmExecutor(
-            writer_algorithms, [], provenance_outputs, self._xml_paths,
-            [], self._do_timings, self._print_timings)
+            algorithms=writer_algorithms, optional_algorithms=[],
+            inputs=provenance_outputs, xml_paths=self._xml_paths,
+            required_outputs=[], do_timings=self._do_timings,
+            print_timings=self._print_timings)
         executor.execute_mapping()
 
     def _recover_from_error(self, e, error_outputs):
@@ -1106,8 +1119,9 @@ class SpinnakerMainInterface(object):
             outputs.append("WarnMessages")
 
             executor = PACMANAlgorithmExecutor(
-                algorithms, [], inputs, self._xml_paths, outputs,
-                self._do_timings, self._print_timings)
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
 
             self._write_provenance(executor.get_items())
@@ -1129,8 +1143,9 @@ class SpinnakerMainInterface(object):
             algorithms = ["FrontEndCommonIOBufExtractor"]
             outputs = ["IOBuffers"]
             executor = PACMANAlgorithmExecutor(
-                algorithms, [], inputs, self._xml_paths, outputs,
-                self._do_timings, self._print_timings)
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
             self._write_iobuf(executor.get_item("IOBuffers"))
 

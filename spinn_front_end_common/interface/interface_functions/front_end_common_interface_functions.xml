@@ -548,10 +548,6 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>routing_infos</param_name>
-                <param_type>MemoryRoutingInfos</param_type>
-            </parameter>
-            <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
             </parameter>
@@ -572,7 +568,6 @@
             <param_name>placements</param_name>
             <param_name>executable_finder</param_name>
             <param_name>graph</param_name>
-            <param_name>routing_infos</param_name>
             <param_name>hostname</param_name>
             <param_name>report_default_directory</param_name>
             <param_name>write_text_specs</param_name>
