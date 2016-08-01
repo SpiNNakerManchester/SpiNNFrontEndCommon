@@ -21,12 +21,12 @@ class MachineDataSpecableVertex(DataSpecableVertex):
         self._iptags = None
         self._reverse_iptags = None
 
-    @overrides(DataSpecableVertex.generate_data_specification)
     @requires_injection(
-        ["MemoryMachineGraph", "MemoryRoutingInfo", "MemoryPlacements",
-         "MemoryIptags", "MemoryReverseIptags"])
+        ["MemoryMachineGraph", "MemoryRoutingInfos", "MemoryPlacements",
+         "MemoryIpTags", "MemoryReverseIpTags"])
+    @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        self.generate_application_data_specification(
+        self.generate_machine_data_specification(
             spec, placement, self._machine_graph, self._routing_info,
             self._iptags, self._reverse_iptags)
 
@@ -40,7 +40,7 @@ class MachineDataSpecableVertex(DataSpecableVertex):
     def set_machine_graph(self, machine_graph):
         self._machine_graph = machine_graph
 
-    @inject("MemoryRoutingInfo")
+    @inject("MemoryRoutingInfos")
     def set_routing_info(self, routing_info):
         self._routing_info = routing_info
 
@@ -48,10 +48,10 @@ class MachineDataSpecableVertex(DataSpecableVertex):
     def set_placements(self, placements):
         self._placements = placements
 
-    @inject("MemoryIptags")
+    @inject("MemoryIpTags")
     def set_iptags(self, iptags):
         self._iptags = iptags
 
-    @inject("MemoryReverseIptags")
+    @inject("MemoryReverseIpTags")
     def set_reverse_iptags(self, reverse_iptags):
         self._reverse_iptags = reverse_iptags
