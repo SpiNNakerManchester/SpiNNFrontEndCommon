@@ -131,8 +131,8 @@ class LivePacketGather(
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()))
 
-    @overrides(DataSpecableVertex.generate_data_specification)
     @requires_injection(["MemoryIpTags"])
+    @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         # needs to set it directly, as the machine vertex also impliemnts this

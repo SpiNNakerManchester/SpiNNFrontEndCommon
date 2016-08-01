@@ -156,8 +156,8 @@ class LivePacketGatherMachineVertex(
         """
         return 'live_packet_gather.aplx'
 
-    @overrides(DataSpecableVertex.generate_data_specification)
     @requires_injection(["MemoryIpTags"])
+    @overrides(DataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
