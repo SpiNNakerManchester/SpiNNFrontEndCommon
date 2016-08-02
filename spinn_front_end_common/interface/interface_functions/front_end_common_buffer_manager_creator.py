@@ -21,9 +21,7 @@ class FrontEndCommonBufferManagerCreator(object):
             placements, tags, txrx, write_reload_files, app_data_folder)
 
         for placement in placements.placements:
-            if isinstance(
-                    placement.vertex,
-                    AbstractSendsBuffersFromHost):
+            if isinstance(placement.vertex, AbstractSendsBuffersFromHost):
                 if placement.vertex.buffering_input():
                     buffer_manager.add_sender_vertex(placement.vertex)
 
