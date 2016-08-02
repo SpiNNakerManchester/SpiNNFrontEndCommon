@@ -301,7 +301,7 @@ class DatabaseWriter(object):
                     "label, cpu_used, sdram_used, dtcm_used) "
                     "VALUES('{}', {}, {}, {});"
                     .format(vertex.label,
-                            vertex.resources_required.cpu.get_value(),
+                            vertex.resources_required.cpu_cycles.get_value(),
                             vertex.resources_required.sdram.get_value(),
                             vertex.resources_required.dtcm.get_value()))
 
