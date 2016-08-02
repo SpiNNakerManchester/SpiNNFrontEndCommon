@@ -994,6 +994,8 @@ class SpinnakerMainInterface(object):
                 isinstance(e,
                            common_exceptions.ExecutableFailedToStopException)
             if is_failed_to_start_exp or is_failed_to_stop_exp:
+
+                # print error message to end user
                 logger.error(
                     "An error has occurred during simulation")
                 for line in traceback.format_tb(e.traceback):
