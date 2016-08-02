@@ -11,8 +11,9 @@ from pacman.model.resources.cpu_cycles_per_tick_resource import \
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
-    DataSpecableVertex
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_data_specable_vertex import \
+    UsesSimulationDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
     .live_packet_gather_machine_vertex \
@@ -25,7 +26,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 @supports_injection
 class LivePacketGather(
-        DataSpecableVertex, ApplicationVertex):
+        UsesSimulationDataSpecableVertex, ApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -64,12 +65,9 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        DataSpecableVertex.__init__(self)
+        UsesSimulationDataSpecableVertex.__init__(
+            self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(self, label, constraints, 1)
-
-        # simulation objects
-        self._machine_time_step = machine_time_step
-        self._time_scale_factor = timescale_factor
 
         # storage objects
         self._iptags = None
@@ -113,7 +111,7 @@ class LivePacketGather(
         """
         return "live packet gather"
 
-    @overrides(DataSpecableVertex.get_binary_file_name)
+    @overrides(UsesSimulationDataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
 
@@ -132,7 +130,7 @@ class LivePacketGather(
                 LivePacketGatherMachineVertex.get_cpu_usage()))
 
     @requires_injection(["MemoryIpTags"])
-    @overrides(DataSpecableVertex.generate_data_specification)
+    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         # needs to set it directly, as the machine vertex also impliemnts this

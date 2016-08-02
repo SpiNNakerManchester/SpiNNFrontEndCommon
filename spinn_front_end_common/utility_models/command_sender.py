@@ -18,9 +18,11 @@ from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 
 # spinn front end common imports
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
-    DataSpecableVertex
 from spinn_front_end_common.utilities import exceptions
+
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_needs_total_runtime_data_specable_vertex import \
+    UsesSimulationNeedsTotalRuntimeDataSpecableVertex
 from spinn_front_end_common.interface.simulation.impl.\
     uses_simulation_impl import \
     UsesSimulationImpl
@@ -31,7 +33,7 @@ from spinn_front_end_common.utility_models.command_sender_machine_vertex \
 @supports_injection
 class CommandSender(
         AbstractProvidesOutgoingPartitionConstraints,
-        ApplicationVertex, DataSpecableVertex, UsesSimulationImpl):
+        ApplicationVertex, UsesSimulationNeedsTotalRuntimeDataSpecableVertex):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
@@ -39,9 +41,9 @@ class CommandSender(
     def __init__(self, machine_time_step, timescale_factor, label, constraints):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        DataSpecableVertex.__init__(self)
+        UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
+            self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(self, label, constraints, 1)
-        UsesSimulationImpl.__init__(self)
 
         self._commands_by_edge = dict()
 
@@ -135,7 +137,8 @@ class CommandSender(
 
     @requires_injection(
         ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfos"])
-    @overrides(DataSpecableVertex.generate_data_specification)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         # reserve region - add a word for the region size
@@ -146,8 +149,7 @@ class CommandSender(
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(CommandSenderMachineVertex.SYSTEM_REGION.value)
-        spec.write_array(self.data_for_simulation_data(
-            self._machine_time_step, self._time_scale_factor))
+        spec.write_array(self.data_for_simulation_data())
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
@@ -302,7 +304,8 @@ class CommandSender(
     def n_atoms(self):
         return 1
 
-    @overrides(DataSpecableVertex.get_binary_file_name)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               get_binary_file_name)
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 

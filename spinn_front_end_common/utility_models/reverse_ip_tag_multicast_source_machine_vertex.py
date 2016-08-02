@@ -10,6 +10,9 @@ from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.constraints.placer_constraints\
     .placer_board_constraint import PlacerBoardConstraint
 
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_needs_total_runtime_data_specable_vertex import \
+    UsesSimulationNeedsTotalRuntimeDataSpecableVertex
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
     import SendsBuffersFromHostPreBufferedImpl
@@ -19,16 +22,12 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
 
-from spinn_front_end_common.interface.simulation.impl.\
-    uses_simulation_impl import UsesSimulationImpl
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models\
     .abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
-from spinn_front_end_common.abstract_models.impl.data_specable_vertex \
-    import DataSpecableVertex
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl import \
     ProvidesProvenanceDataFromMachineImpl
@@ -44,12 +43,11 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        MachineVertex, DataSpecableVertex,
+        MachineVertex, UsesSimulationNeedsTotalRuntimeDataSpecableVertex,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
-        ReceiveBuffersToHostBasicImpl,
-        AbstractRecordable, UsesSimulationImpl):
+        ReceiveBuffersToHostBasicImpl, AbstractRecordable):
     """ A model which allows events to be injected into spinnaker and\
         converted in to multicast packets
     """
@@ -139,23 +137,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Set up super types
         MachineVertex.__init__(
             self, resources_required, label, constraints)
-        DataSpecableVertex.__init__(self)
+        UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
+            self, machine_time_step, timescale_factor)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         ReceiveBuffersToHostBasicImpl.__init__(self)
-        UsesSimulationImpl.__init__(self)
 
         # storage objects
         self._graph_mapper = None
         self._machine_graph = None
         self._routing_info = None
         self._iptags = None
-
-        # simulation params
-        self._machine_time_step = machine_time_step
-        self._timescale_factor = timescale_factor
-        self._no_machine_time_steps = None
 
         # Set up for receiving live packets
         if receive_port is not None:
@@ -456,7 +449,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @requires_injection([
         "MemoryIpTags", "MemoryMachineGraph", "MemoryRoutingInfos"])
-    @overrides(DataSpecableVertex.generate_data_specification)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         self._update_virtual_key(self._routing_info, self._machine_graph)
@@ -467,9 +461,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
-        spec.write_array(self.data_for_simulation_data(
-            self._machine_time_step, self._timescale_factor))
-
+        spec.write_array(self.data_for_simulation_data())
 
         # Write the additional recording information
         self.write_recording_data(
@@ -482,7 +474,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # End spec
         spec.end_specification()
 
-    @overrides(DataSpecableVertex.get_binary_file_name)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               get_binary_file_name)
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
 

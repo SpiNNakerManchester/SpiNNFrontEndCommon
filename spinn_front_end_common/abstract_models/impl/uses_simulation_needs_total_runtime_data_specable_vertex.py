@@ -8,21 +8,28 @@ from spinn_front_end_common.abstract_models.\
 from pacman.executor.injection_decorator import \
     supports_injection, inject
 
-import hashlib
-import tempfile
-import os
 import threading
 
 # used to stop file conflicts
+from spinn_front_end_common.interface.simulation.impl.\
+    uses_simulation_impl import UsesSimulationImpl
+
 _lock_condition = threading.Condition()
 
 
 @supports_injection
-class DataSpecableVertex(
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
+class UsesSimulationNeedsTotalRuntimeDataSpecableVertex(
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+        UsesSimulationImpl):
 
-    def __init__(self):
+    def __init__(self, machine_time_step, time_scale_factor):
         AbstractGeneratesDataSpecification.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
+        UsesSimulationImpl.__init__(self, machine_time_step, time_scale_factor)
         self._no_machine_time_steps = None
+
+    @inject("MemoryNoMachineTimeSteps")
+    def set_no_machine_time_steps(self, n_machine_time_steps):
+        self._no_machine_time_steps = n_machine_time_steps
+
 

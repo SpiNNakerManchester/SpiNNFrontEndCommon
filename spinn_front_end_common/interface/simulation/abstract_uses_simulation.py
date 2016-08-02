@@ -10,5 +10,5 @@ class AbstractUsesSimulation(object):
         pass
 
     @abstractmethod
-    def data_for_simulation_data(self, machine_time_step, timescale_factor):
+    def data_for_simulation_data(self):
         pass

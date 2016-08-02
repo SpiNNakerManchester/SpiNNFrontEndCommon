@@ -15,15 +15,13 @@ from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_data_specable_vertex import \
+    UsesSimulationDataSpecableVertex
 
-from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
-    DataSpecableVertex
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl \
     import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation.\
-    impl.uses_simulation_impl import \
-    UsesSimulationImpl
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
@@ -36,7 +34,7 @@ from enum import Enum
 @supports_injection
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        DataSpecableVertex, UsesSimulationImpl):
+        UsesSimulationDataSpecableVertex):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -69,10 +67,6 @@ class LivePacketGatherMachineVertex(
         self._constraints = ConstrainedObject()
         self._add_constraints(board_address)
 
-        # sim data obhects
-        self._machine_time_step = machine_time_step
-        self._time_scale_factor = timescale_factor
-
         # storage objects
         self._iptags = None
 
@@ -82,8 +76,8 @@ class LivePacketGatherMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
-        DataSpecableVertex.__init__(self)
-        UsesSimulationImpl.__init__(self)
+        UsesSimulationDataSpecableVertex.__init__(
+            self, machine_time_step, timescale_factor)
 
         # app speific data items
         self._use_prefix = use_prefix
@@ -147,7 +141,7 @@ class LivePacketGatherMachineVertex(
 
         return provenance_items
 
-    @overrides(DataSpecableVertex.get_binary_file_name)
+    @overrides(UsesSimulationDataSpecableVertex.get_binary_file_name)
     def get_binary_file_name(self):
         """ Get the name of binary which is loaded onto a spinnaker machine to\
             represent this vertex's functionality.
@@ -157,7 +151,7 @@ class LivePacketGatherMachineVertex(
         return 'live_packet_gather.aplx'
 
     @requires_injection(["MemoryIpTags"])
-    @overrides(DataSpecableVertex.generate_data_specification)
+    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
@@ -275,8 +269,7 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
-        spec.write_array(self.data_for_simulation_data(
-            self._machine_time_step, self._time_scale_factor))
+        spec.write_array(self.data_for_simulation_data())
 
     @staticmethod
     def get_cpu_usage():

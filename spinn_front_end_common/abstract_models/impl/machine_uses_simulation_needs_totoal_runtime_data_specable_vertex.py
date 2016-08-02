@@ -2,18 +2,20 @@ from pacman.model.decorators.overrides import overrides
 from pacman.executor.injection_decorator import requires_injection, inject, \
     supports_injection
 
-from spinn_front_end_common.abstract_models.\
-    abstract_generates_data_specification import\
-    AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_needs_total_runtime_data_specable_vertex import \
+    UsesSimulationNeedsTotalRuntimeDataSpecableVertex
 
 from abc import abstractmethod
 
 
 @supports_injection
-class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
+class MachineUsesSimulationDataNeedsTotalRuntimeSpecableVertex(
+        UsesSimulationNeedsTotalRuntimeDataSpecableVertex):
 
-    def __init__(self):
-        AbstractGeneratesDataSpecification.__init__(self)
+    def __init__(self, machine_time_step, time_scale_factor):
+        UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
+            self, machine_time_step, time_scale_factor)
 
         # data stores for basic generate dsg
         self._machine_graph = None
@@ -25,7 +27,8 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
     @requires_injection(
         ["MemoryMachineGraph", "MemoryRoutingInfos", "MemoryPlacements",
          "MemoryIpTags", "MemoryReverseIpTags"])
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               generate_data_specification)
     def generate_data_specification(self, spec, placement):
         self.generate_machine_data_specification(
             spec, placement, self._machine_graph, self._routing_info,
@@ -36,6 +39,10 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
             self, spec, placement, machine_graph, routing_info, iptags,
             reverse_iptags):
         pass
+
+    @inject("MemoryNoMachineTimeSteps")
+    def set_no_machine_time_steps(self, n_machine_time_steps):
+        self._no_machine_time_steps = n_machine_time_steps
 
     @inject("MemoryMachineGraph")
     def set_machine_graph(self, machine_graph):

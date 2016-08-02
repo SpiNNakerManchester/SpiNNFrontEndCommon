@@ -2,18 +2,20 @@ from pacman.model.decorators.overrides import overrides
 from pacman.executor.injection_decorator import requires_injection, inject, \
     supports_injection
 
-from spinn_front_end_common.abstract_models.\
-    abstract_generates_data_specification import\
-    AbstractGeneratesDataSpecification
-
 from abc import abstractmethod
+
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_data_specable_vertex import \
+    UsesSimulationDataSpecableVertex
 
 
 @supports_injection
-class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
+class ApplicationUsesSimulationDataSpecableVertex(
+        UsesSimulationDataSpecableVertex):
 
-    def __init__(self):
-        AbstractGeneratesDataSpecification.__init__(self)
+    def __init__(self, machine_time_step, time_scale_factor):
+        UsesSimulationDataSpecableVertex.__init__(
+            self, machine_time_step, time_scale_factor)
 
         # data stores for basic generate dsg
         self._graph_mapper=None
@@ -24,7 +26,7 @@ class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
         self._iptags = None
         self._reverse_iptags = None
 
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
     @requires_injection(
         ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfo",
          "MemoryApplicationGraph", "MemoryPlacements", "MemoryIptags",

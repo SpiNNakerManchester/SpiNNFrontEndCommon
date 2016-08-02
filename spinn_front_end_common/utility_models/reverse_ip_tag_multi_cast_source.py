@@ -14,9 +14,11 @@ from pacman.model.resources.sdram_resource import SDRAMResource
 from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.abstract_models.impl.data_specable_vertex import\
-    DataSpecableVertex
 from spinn_front_end_common.utilities import constants
+
+from spinn_front_end_common.abstract_models.impl.\
+    uses_simulation_needs_total_runtime_data_specable_vertex import \
+    UsesSimulationNeedsTotalRuntimeDataSpecableVertex
 from spinn_front_end_common.utility_models\
     .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
@@ -27,7 +29,7 @@ import sys
 
 @supports_injection
 class ReverseIpTagMultiCastSource(
-        ApplicationVertex, DataSpecableVertex,
+        ApplicationVertex, UsesSimulationNeedsTotalRuntimeDataSpecableVertex,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
@@ -103,17 +105,13 @@ class ReverseIpTagMultiCastSource(
                 host about space in the buffer (default is to use any tag)
         """
 
-        DataSpecableVertex.__init__(self)
+        UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
+            self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(
             self, label, constraints, max_atoms_per_core)
 
         # basic items
         self._n_atoms = n_keys
-
-        # simulation objects
-        self._machine_time_step = machine_time_step
-        self._timescale_factor = timescale_factor
-        self._no_machine_time_steps = None
 
         # storage objects
         self._graph_mapper = None
@@ -212,7 +210,8 @@ class ReverseIpTagMultiCastSource(
     def model_name(self):
         return "ReverseIpTagMultiCastSource"
 
-    @overrides(DataSpecableVertex.get_binary_file_name)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               get_binary_file_name)
     def get_binary_file_name(self):
         return 'reverse_iptag_multicast_source.aplx'
 
@@ -254,7 +253,8 @@ class ReverseIpTagMultiCastSource(
 
     @requires_injection([
         "MemoryIpTags", "MemoryMachineGraph", "MemoryRoutingInfos"])
-    @overrides(DataSpecableVertex.generate_data_specification)
+    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
+               generate_data_specification)
     def generate_data_specification(self, spec, placement):
         placement.vertex.set_iptags(self._iptags)
         placement.vertex.set_machine_graph(self._machine_graph)
@@ -274,7 +274,7 @@ class ReverseIpTagMultiCastSource(
         vertex = ReverseIPTagMulticastSourceMachineVertex(
             n_keys=vertex_slice.n_atoms, resources_required=resources_required,
             machine_time_step=self._machine_time_step,
-            timescale_factor=self._timescale_factor, label=label,
+            timescale_factor=self._time_scale_factor, label=label,
             constraints=constraints,
             board_address=self._board_address,
             receive_port=self._receive_port,
@@ -315,12 +315,6 @@ class ReverseIpTagMultiCastSource(
         self._first_machine_time_step = first_machine_time_step
         for (_, vertex) in self._machine_vertices:
             vertex.first_machine_time_step = first_machine_time_step
-
-    @inject("MemoryNoMachineTimeSteps")
-    def set_no_machine_time_steps(self, new_no_machine_time_steps):
-        self._no_machine_time_steps = new_no_machine_time_steps
-        for (_, vertex) in self._machine_vertices:
-            vertex.set_no_machine_time_steps(new_no_machine_time_steps)
 
     @inject("MemoryGraphMapper")
     def set_graph_mapper(self, graph_mapper):

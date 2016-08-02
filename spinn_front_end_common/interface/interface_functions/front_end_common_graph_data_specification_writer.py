@@ -5,8 +5,9 @@ from pacman.model.graphs.application.impl.application_graph import \
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-from spinn_front_end_common.abstract_models.impl.data_specable_vertex import \
-    DataSpecableVertex
+from spinn_front_end_common.abstract_models.\
+    abstract_generates_data_specification import \
+    AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
@@ -74,7 +75,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             app_data_runtime_folder):
 
         # if the vertex can generate a DSG, call it
-        if isinstance(associated_vertex, DataSpecableVertex):
+        if isinstance(associated_vertex, AbstractGeneratesDataSpecification):
 
             # build the writers for the reports and data
             data_writer, report_writer = \
