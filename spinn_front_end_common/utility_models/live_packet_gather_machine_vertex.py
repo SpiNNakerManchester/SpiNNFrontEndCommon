@@ -71,7 +71,7 @@ class LivePacketGatherMachineVertex(
 
         # sim data obhects
         self._machine_time_step = machine_time_step
-        self._timescale_factor = timescale_factor
+        self._time_scale_factor = timescale_factor
 
         # storage objects
         self._iptags = None
@@ -165,7 +165,7 @@ class LivePacketGatherMachineVertex(
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(spec)
-        self._write_configuration_region(spec, self._ip_tags)
+        self._write_configuration_region(spec, self._iptags)
 
         # End-of-Spec:
         spec.end_specification()
@@ -195,14 +195,14 @@ class LivePacketGatherMachineVertex(
             size=self._CONFIG_SIZE, label='config')
         self.reserve_provenance_data_region(spec)
 
-    def _write_configuration_region(self, spec, ip_tags):
+    def _write_configuration_region(self, spec, iptags):
         """ writes the configuration region to the spec
 
         :param spec: the spec object for the dsg
         :type spec: \
                     :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
-        :param ip_tags: The set of ip tags assigned to the object
-        :type ip_tags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
+        :param iptags: The set of ip tags assigned to the object
+        :type iptags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
         :raises DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """
@@ -257,8 +257,8 @@ class LivePacketGatherMachineVertex(
         spec.write_value(data=self._payload_right_shift)
 
         # SDP tag
-        ip_tag = iter(ip_tags).next()
-        spec.write_value(data=ip_tag.tag)
+        iptag = iter(iptags).next()
+        spec.write_value(data=iptag.tag)
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
