@@ -19,6 +19,9 @@ from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.impl.\
     uses_simulation_needs_total_runtime_data_specable_vertex import \
     UsesSimulationNeedsTotalRuntimeDataSpecableVertex
+from spinn_front_end_common.interface.buffer_management.\
+    buffer_models.receives_buffers_to_host_basic_impl import \
+    ReceiveBuffersToHostBasicImpl
 from spinn_front_end_common.utility_models\
     .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
@@ -30,7 +33,8 @@ import sys
 @supports_injection
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, UsesSimulationNeedsTotalRuntimeDataSpecableVertex,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractProvidesOutgoingPartitionConstraints,
+        ReceiveBuffersToHostBasicImpl):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -104,7 +108,7 @@ class ReverseIpTagMultiCastSource(
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
-
+        ReceiveBuffersToHostBasicImpl.__init__(self)
         UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(
@@ -159,11 +163,15 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
-        return ResourceContainer(
+        self._check_for_auto_pause_and_resume_functionality(self)
+        container = ResourceContainer(
             sdram=SDRAMResource(self.get_sdram_usage_for_atoms()),
             dtcm=DTCMResource(self.get_dtcm_usage_for_atoms()),
             cpu_cycles=CPUCyclesPerTickResource(
                 self.get_cpu_usage_for_atoms()))
+        container.extend(self.get_extra_resources(
+            self._record_buffering_ip_address, self._record_buffering_port))
+        return container
 
     @property
     def send_buffer_times(self):
@@ -261,6 +269,21 @@ class ReverseIpTagMultiCastSource(
         placement.vertex.set_routing_info(self._routing_info)
         placement.vertex.generate_data_specification(spec, placement)
 
+    def _check_for_auto_pause_and_resume_functionality(self, object_to_set):
+        if self._record_buffer_size > 0:
+            sdram_per_ts = 0
+            if self._using_auto_pause_and_resume:
+                # Currently not known how much SDRAM might be used per
+                # timestep by this object, so we assume a minimum value here
+                sdram_per_ts = 8
+
+            object_to_set.enable_recording(
+                self._record_buffering_ip_address, self._record_buffering_port,
+                self._record_buffering_board_address,
+                self._record_buffering_tag, self._record_buffer_size,
+                self._record_buffer_size_before_receive,
+                self._minimum_sdram_for_buffering, sdram_per_ts)
+
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
             self, vertex_slice, resources_required, label=None,
@@ -293,20 +316,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_notification_tag=self._send_buffer_notification_tag)
         vertex.set_no_machine_time_steps(self._no_machine_time_steps)
         vertex.first_machine_time_step = self._first_machine_time_step
-        if self._record_buffer_size > 0:
-            sdram_per_ts = 0
-            if self._using_auto_pause_and_resume:
-
-                # Currently not known how much SDRAM might be used per
-                # timestep by this object, so we assume a minimum value here
-                sdram_per_ts = 8
-
-            vertex.enable_recording(
-                self._record_buffering_ip_address, self._record_buffering_port,
-                self._record_buffering_board_address,
-                self._record_buffering_tag, self._record_buffer_size,
-                self._record_buffer_size_before_receive,
-                self._minimum_sdram_for_buffering, sdram_per_ts)
+        self._check_for_auto_pause_and_resume_functionality(vertex)
         self._machine_vertices.append((vertex_slice, vertex))
         return vertex
 

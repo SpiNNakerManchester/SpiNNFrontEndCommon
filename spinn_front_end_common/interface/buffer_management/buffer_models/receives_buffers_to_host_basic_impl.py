@@ -4,6 +4,7 @@ from pacman.model.constraints.placer_constraints.placer_board_constraint \
 
 # front end common imports
 from pacman.model.resources.iptag_resource import IPtagResource
+from pacman.model.resources.resource_container import ResourceContainer
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
@@ -43,8 +44,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
 
     def activate_buffering_output(
             self, buffering_ip_address=None, buffering_port=None,
-            board_address=None, notification_tag=None,
-            minimum_sdram_for_buffering=0, buffered_sdram_per_timestep=0):
+            board_address=None, minimum_sdram_for_buffering=0,
+            buffered_sdram_per_timestep=0):
         """ Activates the output buffering mechanism
 
         :param buffering_ip_address: IP address of the host which supports\
@@ -62,13 +63,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             self._buffering_output = True
             notification_strip_sdp = True
 
-            # updates reosurces to handle a new tag
-            resources = self.resource_required
-            resources.add_to_iptag_usage(
-                IPtagResource(buffering_ip_address, buffering_port,
-                              notification_strip_sdp, notification_tag))
-            self.set_resources_required(resources)
-
             # add placement constraint if needed
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
@@ -76,6 +70,27 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
             self._buffering_port = buffering_port
         self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
         self._buffered_sdram_per_timestep = buffered_sdram_per_timestep
+
+    def get_extra_resources(self, buffering_ip_address, buffering_port,
+                            notification_tag=None):
+        """ returns new resources that need to be applied to the model uses
+        this interface for it to work correctly.
+
+        :param buffering_ip_address: IP address of the host which supports\
+                the buffering output functionality
+        :param buffering_port: UDP port of the host which supports\
+                the buffering output functionality
+        :param notification_tag: ??????????????
+        :return: a resource container
+        """
+        resources = ResourceContainer()
+        if (not self._buffering_output and buffering_ip_address is not None and
+                buffering_port is not None):
+            # create new resources to handle a new tag
+            resources.add_to_iptag_usage(
+                IPtagResource(buffering_ip_address, buffering_port,
+                              True, notification_tag))
+        return resources
 
     @staticmethod
     def get_buffer_state_region_size(n_buffered_regions):

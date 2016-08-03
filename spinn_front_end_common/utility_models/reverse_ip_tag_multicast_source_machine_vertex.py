@@ -132,6 +132,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param send_buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
+        ReceiveBuffersToHostBasicImpl.__init__(self)
 
         constraints = copy.deepcopy(constraints)
         # Set up super types
@@ -142,7 +143,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        ReceiveBuffersToHostBasicImpl.__init__(self)
 
         # storage objects
         self._graph_mapper = None
@@ -340,8 +340,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         self.activate_buffering_output(
             buffering_ip_address, buffering_port, board_address,
-            notification_tag, minimum_sdram_for_buffering,
-            buffered_sdram_per_timestep)
+            minimum_sdram_for_buffering, buffered_sdram_per_timestep)
+
         self._record_buffer_size = record_buffer_size
         self._recording_enabled = True
         self._buffer_size_before_receive = buffer_size_before_receive
