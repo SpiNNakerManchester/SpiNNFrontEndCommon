@@ -3,6 +3,7 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
+from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.partitionable_graph.partitionable_graph \
     import PartitionableGraph
 from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
@@ -996,9 +997,15 @@ class SpinnakerMainInterface(object):
 
             logger.error(
                 "An error has occurred during simulation")
-            for line in traceback.format_tb(e.traceback):
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            for line in traceback.format_tb(ex_traceback):
                 logger.error(line.strip())
-            logger.error(e.exception)
+
+            # if exception has an exception, print to system
+            if isinstance(e, PacmanAlgorithmFailedToCompleteException):
+                logger.error(e.exception)
+            else:
+                logger.error(e)
 
             logger.info("\n\nAttempting to extract data\n\n")
 
