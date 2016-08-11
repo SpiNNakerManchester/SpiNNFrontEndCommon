@@ -1,4 +1,6 @@
 # spinn front end common
+from pacman.model.abstract_classes.abstract_has_global_max_atoms import \
+    AbstractHasGlobalMaxAtoms
 from spinn_front_end_common.abstract_models.abstract_recordable import \
     AbstractRecordable
 from spinn_front_end_common.utility_models.\
@@ -12,6 +14,7 @@ from spinn_front_end_common.utility_models.\
 import logging
 import traceback
 import os
+import sys
 
 logger = logging.getLogger(__name__)
 
@@ -165,12 +168,19 @@ class DatabaseWriter(object):
                                 vertex.get_max_atoms_per_core(),
                                 int(vertex.is_recording_spikes())))
                 else:
-                    cur.execute(
-                        "INSERT INTO Application_vertices("
-                        "vertex_label, no_atoms, max_atom_constrant, recorded)"
-                        " VALUES('{}', {}, {}, 0);"
-                        .format(vertex.label, vertex.n_atoms,
-                                vertex.get_max_atoms_per_core()))
+                    if isinstance(vertex, AbstractHasGlobalMaxAtoms):
+                        cur.execute(
+                            "INSERT INTO Application_vertices("
+                            "vertex_label, no_atoms, max_atom_constrant, "
+                            "recorded) VALUES('{}', {}, {}, 0);"
+                            .format(vertex.label, vertex.n_atoms,
+                                    vertex.get_max_atoms_per_core()))
+                    else:
+                        cur.execute(
+                            "INSERT INTO Application_vertices("
+                            "vertex_label, no_atoms, max_atom_constrant, "
+                            "recorded) VALUES('{}', {}, {}, 0);"
+                            .format(vertex.label, vertex.n_atoms, sys.maxint))
 
             # add edges
             vertices = application_graph.vertices
@@ -357,17 +367,18 @@ class DatabaseWriter(object):
 
                 # add mapper for vertex
                 machine_vertices = list(machine_graph.vertices)
-                vertex = application_graph.vertices
-                for vertex in machine_graph.vertices:
-                    vertex = graph_mapper.get_application_vertex(vertex)
-                    vertex_slice = graph_mapper.get_slice(vertex)
+                app_vertices = application_graph.vertices
+                for machine_vertex in machine_graph.vertices:
+                    app_vertex = \
+                        graph_mapper.get_application_vertex(machine_vertex)
+                    vertex_slice = graph_mapper.get_slice(machine_vertex)
                     cur.execute(
                         "INSERT INTO graph_mapper_vertex ("
                         "application_vertex_id, machine_vertex_id, "
                         "lo_atom, hi_atom) "
                         "VALUES({}, {}, {}, {});"
-                        .format(vertex.index(vertex) + 1,
-                                machine_vertices.index(vertex) + 1,
+                        .format(app_vertices.index(app_vertex) + 1,
+                                machine_vertices.index(machine_vertex) + 1,
                                 vertex_slice.lo_atom, vertex_slice.hi_atom))
 
                 # add graph_mapper edges
@@ -379,7 +390,7 @@ class DatabaseWriter(object):
                         "INSERT INTO graph_mapper_edges ("
                         "application_edge_id, machine_edge_id) "
                         "VALUES({}, {})"
-                        .format(edges.index(edge) + 1,
+                        .format(machine_graph.edges.index(edge) + 1,
                                 edges.index(app_edge) + 1))
 
             connection.commit()
@@ -601,11 +612,10 @@ class DatabaseWriter(object):
                     for partition in partitions:
                         routing_info = routing_infos.\
                             get_routing_info_from_partition(partition)
-                        vertex = graph_mapper.get_application_vertex(
+                        app_vertex = graph_mapper.get_application_vertex(
                             vertex)
-                        vertex_id = vertices.index(vertex) + 1
-                        vertex_slice = graph_mapper.get_slice(
-                            vertex)
+                        vertex_id = vertices.index(app_vertex) + 1
+                        vertex_slice = graph_mapper.get_slice(vertex)
                         low_atom_id = vertex_slice.lo_atom
                         event_ids = routing_info.get_keys(vertex_slice.n_atoms)
                         for key in event_ids:
