@@ -1115,13 +1115,18 @@
             </parameter>
         </input_definitions>
         <optional_inputs>
-            <all_of>
-                <param_name>graph_mapper</param_name>
-                <param_name>application_graph</param_name>
-            </all_of>
+            <one_of>
+                <all_of>
+                    <param_name>graph_mapper</param_name>
+                    <param_name>application_graph</param_name>
+                    <param_name>machine_graph</param_name>
+                </all_of>
+                <all_of>
+                    <param_name>machine_graph</param_name>
+                </all_of>
+            </one_of>
         </optional_inputs>
         <required_inputs>
-            <param_name>machine_graph</param_name>
         </required_inputs>
         <outputs>
             <param_type>MemoryMachinePartitionNKeysMap</param_type>

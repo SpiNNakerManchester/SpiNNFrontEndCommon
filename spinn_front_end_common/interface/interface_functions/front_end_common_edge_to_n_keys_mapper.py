@@ -29,7 +29,8 @@ class FrontEndCommonEdgeToNKeysMapper(object):
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
-        if application_graph is not None and graph_mapper is not None:
+        if (application_graph is not None and graph_mapper is not None and
+                machine_graph is not None):
 
             # generate progress bar
             progress_bar = ProgressBar(
@@ -54,7 +55,8 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                 progress_bar.update()
             progress_bar.end()
 
-        if machine_graph is not None:
+        elif (machine_graph is not None and application_graph is None and
+                graph_mapper is None):
 
             # generate progress bar
             progress_bar = ProgressBar(
@@ -77,6 +79,10 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                             constraints, partition.constraints)
                 progress_bar.update()
             progress_bar.end()
+        else:
+            raise exceptions.ConfigurationException(
+                "Can only do one graph. semantically doing 2 graphs makes no "
+                "sense. Please choose and try again")
 
         return n_keys_map
 
