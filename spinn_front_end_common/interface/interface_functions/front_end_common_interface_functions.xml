@@ -512,7 +512,7 @@
                 <param_type>DownedCoresDetails</param_type>
             </parameter>
         </input_definitions>
-        <required_inputs>
+        <optional_inputs>
             <param_name>width</param_name>
             <param_name>height</param_name>
             <param_name>virtual_has_wrap_arounds</param_name>
@@ -521,7 +521,7 @@
             <param_name>with_monitors</param_name>
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
-        </required_inputs>
+        </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
         </outputs>

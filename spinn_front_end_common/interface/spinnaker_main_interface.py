@@ -103,7 +103,8 @@ class SpinnakerMainInterface(object):
             self._extra_mapping_inputs.update(extra_mapping_inputs)
         self._extra_pre_run_algorithms = list()
         if extra_pre_run_algorithms is not None:
-            self._extra_pre_run_algorithms.extend(extra_pre_run_algorithms)
+            self._extra_pre_run_algorithms = \
+                extra_pre_run_algorithms + self._extra_pre_run_algorithms
         self._extra_post_run_algorithms = list()
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
@@ -575,7 +576,7 @@ class SpinnakerMainInterface(object):
             # this is required for when auto pause and resume is not turned
             # on and your needing to partition for a spalloc or remote system,
             # as partitioning in this case needs to know how long to run to
-            # give complete SDRAM memory requriements for recording buffers.
+            # give complete SDRAM memory requirements for recording buffers.
             if n_machine_time_steps > 0:
                 self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False

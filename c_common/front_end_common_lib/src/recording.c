@@ -31,7 +31,7 @@ typedef struct recording_channel_t {
 // Globals
 //---------------------------------------
 //! array containing all possible channels.
-static recording_channel_t *g_recording_channels;
+static recording_channel_t *g_recording_channels = NULL;
 static uint32_t n_recording_regions = 0;
 static uint32_t buffering_out_fsm = 0;
 static uint8_t buffering_out_state_region = 0;
@@ -463,8 +463,13 @@ bool recording_initialize(
         n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
         time_between_triggers);
 
-    g_recording_channels = (recording_channel_t*) spin1_malloc(
-        n_recording_regions * sizeof(recording_channel_t));
+    if (g_recording_channels != NULL){
+        log_info("Freeing allocated memory");
+        sark_free((void*) g_recording_channels);
+    }
+
+    g_recording_channels = (recording_channel_t*) sark_alloc(
+        1, n_recording_regions * sizeof(recording_channel_t));
     if (!g_recording_channels) {
         log_error("Not enough space to create recording channels");
         return false;
