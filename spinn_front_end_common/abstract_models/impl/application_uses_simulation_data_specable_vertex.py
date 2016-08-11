@@ -12,6 +12,9 @@ from spinn_front_end_common.abstract_models.impl.\
 @supports_injection
 class ApplicationUsesSimulationDataSpecableVertex(
         UsesSimulationDataSpecableVertex):
+    """
+
+    """
 
     def __init__(self, machine_time_step, time_scale_factor):
         UsesSimulationDataSpecableVertex.__init__(
@@ -26,11 +29,11 @@ class ApplicationUsesSimulationDataSpecableVertex(
         self._iptags = None
         self._reverse_iptags = None
 
-    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
     @requires_injection(
-        ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfo",
-         "MemoryApplicationGraph", "MemoryPlacements", "MemoryIptags",
-         "MemoryReverseIptags"])
+        ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfos",
+         "MemoryApplicationGraph", "MemoryPlacements", "MemoryIpTags",
+         "MemoryReverseIpTags"])
+    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         self.generate_application_data_specification(
             spec, placement, self._graph_mapper, self._application_graph,
@@ -51,7 +54,7 @@ class ApplicationUsesSimulationDataSpecableVertex(
     def set_machine_graph(self, machine_graph):
         self._machine_graph = machine_graph
 
-    @inject("MemoryRoutingInfo")
+    @inject("MemoryRoutingInfos")
     def set_routing_info(self, routing_info):
         self._routing_info = routing_info
 
@@ -63,10 +66,10 @@ class ApplicationUsesSimulationDataSpecableVertex(
     def set_placements(self, placements):
         self._placements = placements
 
-    @inject("MemoryIptags")
+    @inject("MemoryIpTags")
     def set_iptags(self, iptags):
         self._iptags = iptags
 
-    @inject("MemoryReverseIptags")
+    @inject("MemoryReverseIpTags")
     def set_reverse_iptags(self, reverse_iptags):
         self._reverse_iptags = reverse_iptags
