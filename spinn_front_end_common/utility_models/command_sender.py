@@ -23,11 +23,13 @@ from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models.impl.\
     uses_simulation_needs_total_runtime_data_specable_vertex import \
     UsesSimulationNeedsTotalRuntimeDataSpecableVertex
-from spinn_front_end_common.interface.simulation.impl.\
-    uses_simulation_impl import \
-    UsesSimulationImpl
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
+
+
+_COMMAND_WITH_PAYLOAD_SIZE = 12
+
+_COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 
 
 @supports_injection
@@ -46,6 +48,11 @@ class CommandSender(
         ApplicationVertex.__init__(self, label, constraints, 1)
 
         self._commands_by_edge = dict()
+        self._constraints_by_partition = dict()
+        self._commands_with_payloads = dict()
+        self._commands_without_payloads = dict()
+        self._times_with_commands = set()
+        self._command_edge = dict()
 
         # storage objects
         self._graph_mapper = None
@@ -56,12 +63,13 @@ class CommandSender(
         self._machine_time_step = machine_time_step
         self._time_scale_factor = timescale_factor
 
-    def add_commands(self, commands, edge):
+    def add_commands(self, commands, edge, partition):
         """ Add commands to be sent down a given edge
 
         :param commands: The commands to send
         :type commands: iterable of\
                     :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :param partition:
         :param edge: The edge down which the commands will be sent
         :type edge:\
                     :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
@@ -72,7 +80,7 @@ class CommandSender(
         """
 
         # Check if the edge already exists
-        if edge in self._edge_constraints:
+        if edge in self._commands_by_edge:
             raise exceptions.ConfigurationException(
                 "The edge has already got commands")
 
@@ -114,7 +122,7 @@ class CommandSender(
 
             # If the final command mask contains don't cares, use this as a
             # fixed mask
-            self._edge_constraints[edge] = list(
+            self._constraints_by_partition[partition] = list(
                 [KeyAllocatorFixedMaskConstraint(command_mask)])
         else:
 
@@ -130,7 +138,7 @@ class CommandSender(
                         " the mask 0xFFFFFFFF and providing exact keys")
 
             # If the keys are all fixed keys, keep them
-            self._edge_constraints[edge] = list([
+            self._constraints_by_partition[partition] = list([
                 KeyAllocatorFixedKeyAndMaskConstraint(
                     [BaseKeyAndMask(key, mask)
                      for (key, mask) in command_keys])])
@@ -148,7 +156,7 @@ class CommandSender(
 
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
-        spec.switch_write_focus(CommandSenderMachineVertex.SYSTEM_REGION.value)
+        spec.switch_write_focus(CommandSenderMachineVertex.SYSTEM_REGION)
         spec.write_array(self.data_for_simulation_data())
 
         # Go through the times and replace negative times with positive ones
@@ -238,7 +246,6 @@ class CommandSender(
         # Build the command by merging in the assigned key with the command
         return key | command.key
 
-    @requires_injection(["MemoryGraphMapper"])
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
@@ -247,10 +254,8 @@ class CommandSender(
         :param partition:
         :return:
         """
-        edge = self._graph_mapper.get_application_edge(
-            partition.edges[0])
-        if edge in self._edge_constraints:
-            return self._edge_constraints[edge]
+        if partition in self._constraints_by_partition:
+            return self._constraints_by_partition[partition]
         return list()
 
     @staticmethod
@@ -303,6 +308,29 @@ class CommandSender(
     @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
         return 1
+
+    def _get_n_command_bytes(self):
+        """
+        :return:
+        """
+        n_bytes = 0
+
+        for time in self._times_with_commands:
+
+            # Add 3 words for count-with-command, count-without-command
+            # and time
+            n_bytes += 12
+
+            # Add the size of each command
+            if time in self._commands_with_payloads:
+                n_bytes += (len(self._commands_with_payloads[time]) *
+                            _COMMAND_WITH_PAYLOAD_SIZE)
+            if time in self._commands_without_payloads:
+                n_bytes += (len(self._commands_without_payloads[time]) *
+                            _COMMAND_WITHOUT_PAYLOAD_SIZE)
+
+        return n_bytes
+
 
     @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
                get_binary_file_name)

@@ -1,6 +1,8 @@
 # pacman imports
 from pacman.executor.injection_decorator import requires_injection, inject, \
     supports_injection
+from pacman.model.constraints.placer_constraints.placer_radial_placement_from_chip_constraint import \
+    PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.application.impl.application_vertex import \
     ApplicationVertex
@@ -9,6 +11,7 @@ from pacman.model.graphs.application.impl.application_vertex import \
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
     CPUCyclesPerTickResource
 from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 from spinn_front_end_common.abstract_models.impl.\
@@ -69,16 +72,20 @@ class LivePacketGather(
             self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(self, label, constraints, 1)
 
+        # Try to place this near the Ethernet
+        self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
+
         # storage objects
         self._iptags = None
 
-        # add constraints the vertex decides it needs
-        constraints_to_add = \
-            LivePacketGatherMachineVertex.get_constraints(
-                ip_address, port, strip_sdp, board_address, tag)
-        for constraint in constraints_to_add:
-            self.add_constraint(constraint)
+        # tag info
+        self._ip_address = ip_address
+        self._port = port
+        self._board_address = board_address
+        self._tag = tag
+        self._strip_sdp = strip_sdp
 
+        # eieio info
         self._prefix_type = prefix_type
         self._use_prefix = use_prefix
         self._key_prefix = key_prefix
@@ -96,12 +103,14 @@ class LivePacketGather(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return LivePacketGatherMachineVertex(
-            label, self._machine_time_step, self._timescale_factor,
+            label, self._machine_time_step, self._time_scale_factor,
             self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
             self._number_of_packets_sent_per_time_step,
+            ip_address=self._ip_address, port=self._port,
+            strip_sdp=self._strip_sdp, board_address=self._board_address,
             constraints=constraints)
 
     @property
@@ -127,19 +136,21 @@ class LivePacketGather(
                 LivePacketGatherMachineVertex.get_sdram_usage()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
-                LivePacketGatherMachineVertex.get_cpu_usage()))
+                LivePacketGatherMachineVertex.get_cpu_usage()),
+            iptags=[IPtagResource(
+                self._ip_address, self._port, self._strip_sdp, self._tag)])
 
     @requires_injection(["MemoryIpTags"])
     @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
     def generate_data_specification(self, spec, placement):
 
-        # needs to set it directly, as the machine vertex also impliemnts this
-        # interface, incase its being used in a machine graph without a
+        # needs to set it directly, as the machine vertex also implements this
+        # interface, in case its being used in a machine graph without a
         # application graph
         placement.vertex.set_iptags(self._iptags)
 
         # generate spec for the machine vertex
-        placement.vertex.generate_data_spec(spec, placement)
+        placement.vertex.generate_data_specification(spec, placement)
 
     @inject("MemoryIpTags")
     def set_iptags(self, iptags):

@@ -70,16 +70,16 @@ class LivePacketGatherMachineVertex(
         # storage objects
         self._iptags = None
 
-        # inheirtance
+        # inheritance
         MachineVertex.__init__(
-            self,  self._resources_required, label, constraints=constraints)
+            self, self._resources_required, label, constraints=constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
         UsesSimulationDataSpecableVertex.__init__(
             self, machine_time_step, timescale_factor)
 
-        # app speific data items
+        # app specific data items
         self._use_prefix = use_prefix
         self._key_prefix = key_prefix
         self._prefix_type = prefix_type
