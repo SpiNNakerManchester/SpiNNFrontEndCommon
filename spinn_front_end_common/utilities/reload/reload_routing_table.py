@@ -9,7 +9,7 @@ class ReloadRoutingTable(object):
     @staticmethod
     def reload(routing_table_file_name):
         """ Reload a routing table via a pickled filename
-        :param routing_table_file_name: the file name for the pickled routeing\
+        :param routing_table_file_name: the file name for the pickled routing\
                     table
         :return: None
         """
@@ -30,6 +30,11 @@ class ReloadRoutingTable(object):
             routing_table.x, routing_table.y)
         pickle_file_path = os.path.join(binary_directory, pickle_file_name)
         pickle_file = open(pickle_file_path, "wb")
-        pickle.dump(routing_table, pickle_file)
+
+        # the protocol = -1 is used to allow pickle to pickle objects which
+        # have __slots__ but don't have __getstate__
+        # (as all of pacman objects do)
+
+        pickle.dump(routing_table, pickle_file, protocol=-1)
         pickle_file.close()
         return pickle_file_name
