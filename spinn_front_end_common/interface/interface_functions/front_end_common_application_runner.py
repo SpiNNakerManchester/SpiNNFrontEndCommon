@@ -19,12 +19,14 @@ class FrontEndCommonApplicationRunner(object):
             executable_targets, app_id, txrx, runtime, time_scale_factor,
             loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, loaded_binaries_token,
-            loaded_application_data_token, no_sync_changes, time_threshold):
+            loaded_application_data_token, no_sync_changes, time_threshold,
+            has_loaded_runtime_flag):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
                 not loaded_routing_tables_token or not loaded_binaries_token or
-                not loaded_application_data_token):
+                not loaded_application_data_token or
+                not has_loaded_runtime_flag):
             raise exceptions.ConfigurationException(
                 "Not all valid tokens have been given in the positive state. "
                 "please rerun and try again")

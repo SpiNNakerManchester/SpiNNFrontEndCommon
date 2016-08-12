@@ -999,7 +999,8 @@ class SpinnakerMainInterface(object):
                 # print error message to end user
                 logger.error(
                     "An error has occurred during simulation")
-                for line in traceback.format_tb(e.traceback):
+                ex_type, ex_value, ex_traceback = sys.exc_info()
+                for line in traceback.format_tb(ex_traceback):
                     logger.error(line.strip())
                 logger.error(e.exception)
 

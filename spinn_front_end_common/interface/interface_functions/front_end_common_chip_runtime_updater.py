@@ -34,4 +34,4 @@ class FrontEndCommonChipRuntimeUpdater(object):
             executable_targets.all_core_subsets,
             executable_targets.total_processors)
 
-        return no_sync_changes
+        return no_sync_changes, True

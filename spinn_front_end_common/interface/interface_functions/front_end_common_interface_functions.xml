@@ -685,6 +685,10 @@
                 <param_name>time_threshold</param_name>
                 <param_type>PostSimulationOverrunBeforeError</param_type>
             </parameter>
+            <parameter>
+                <param_name>has_loaded_runtime_flag</param_name>
+                <param_type>HasLoadedRuntimeToChips</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>buffer_manager</param_name>
@@ -703,6 +707,7 @@
             <param_name>loaded_application_data_token</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
+            <param_name>has_loaded_runtime_flag</param_name>
         </required_inputs>
         <outputs>
             <param_type>RanToken</param_type>
@@ -1030,6 +1035,7 @@
         </required_inputs>
         <outputs>
             <param_type>NoSyncChanges</param_type>
+            <param_type>HasLoadedRuntimeToChips</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipProvenanceUpdater">
