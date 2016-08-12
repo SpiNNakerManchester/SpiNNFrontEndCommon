@@ -33,7 +33,8 @@ class ReloadRoutingTable(object):
 
         # the protocol = -1 is used to allow pickle to pickle objects which
         # have __slots__ but don't have __getstate__
-        # (as all of pacman objects do)
+        # (as all of pacman objects do), as shown from link below
+        # http://stackoverflow.com/questions/2204155/why-am-i-getting-an-error-about-my-class-defining-slots-when-trying-to-pickl
 
         pickle.dump(routing_table, pickle_file, protocol=-1)
         pickle_file.close()
