@@ -5,6 +5,7 @@ from pacman.model.constraints.key_allocator_constraints\
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.model.resources.iptag_resource import IPtagResource
+from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.constraints.placer_constraints\
@@ -152,8 +153,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Set up for receiving live packets
         if receive_port is not None:
-            resources_required.add_to_iptag_usage(
-                IPtagResource(receive_port, receive_sdp_port, receive_tag))
+            resources_required.add_to_reverse_iptags(
+                ReverseIPtagResource(
+                    port=receive_port, sdp_port=receive_sdp_port,
+                    tag=receive_tag))
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
 
