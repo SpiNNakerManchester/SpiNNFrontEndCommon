@@ -13,6 +13,29 @@ from abc import abstractmethod
 class ApplicationUsesSimulationNeedsTotalRuntimeDataSpecableVertex(
         UsesSimulationNeedsTotalRuntimeDataSpecableVertex):
 
+    __slots__ = [
+        # the mapping between applciation and machine graphs
+        "_graph_mapper",
+
+        # the application graph
+        "_application_graph",
+
+        # the machine graph
+        "_machine_graph",
+
+        # the routing info object
+        "_routing_info",
+
+        # the placements object
+        "_placements",
+
+        # the iptags objects
+        "_iptags",
+
+        # the set of reverse iptags
+        "_reverse_iptags"
+    ]
+
     def __init__(self, machine_time_step, time_scale_factor):
         UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
             self, machine_time_step, time_scale_factor)
@@ -25,7 +48,6 @@ class ApplicationUsesSimulationNeedsTotalRuntimeDataSpecableVertex(
         self._placements = None
         self._iptags = None
         self._reverse_iptags = None
-        self._no_machine_time_steps = None
 
     @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
                generate_data_specification)
@@ -44,10 +66,6 @@ class ApplicationUsesSimulationNeedsTotalRuntimeDataSpecableVertex(
             self, spec, placement, graph_mapper, application_graph,
             machine_graph, routing_info, iptags, reverse_iptags):
         pass
-
-    @inject("MemoryNoMachineTimeSteps")
-    def set_no_machine_time_steps(self, n_machine_time_steps):
-        self._no_machine_time_steps = n_machine_time_steps
 
     @inject("MemoryGraphMapper")
     def set_graph_mapper(self, graph_mapper):

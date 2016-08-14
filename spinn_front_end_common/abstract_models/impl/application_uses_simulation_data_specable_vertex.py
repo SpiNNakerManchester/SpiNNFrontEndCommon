@@ -16,6 +16,29 @@ class ApplicationUsesSimulationDataSpecableVertex(
 
     """
 
+    __slots__ = [
+        # the mapping between applciation and machine graphs
+        "_graph_mapper",
+
+        # the application graph
+        "_application_graph",
+
+        # the machine graph
+        "_machine_graph",
+
+        # the routing info object
+        "_routing_info",
+
+        # the placements object
+        "_placements",
+
+        # the iptags objects
+        "_iptags",
+
+        # the set of reverse iptags
+        "_reverse_iptags"
+    ]
+
     def __init__(self, machine_time_step, time_scale_factor):
         UsesSimulationDataSpecableVertex.__init__(
             self, machine_time_step, time_scale_factor)

@@ -5,6 +5,14 @@ class DatabaseReader(object):
     """ A reader for the database
     """
 
+    __slots__ = [
+        # the database connection (is basically alock on the database)
+        "_connection",
+
+        # the location for writing
+        "_cursor"
+    ]
+
     def __init__(self, database_path):
         """
 

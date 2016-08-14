@@ -7,6 +7,8 @@ class FrontEndCommonHBPMaxMachineGenerator(object):
         HBP server can generate
     """
 
+    __slots__ = []
+
     def __call__(self, hbp_server_url, total_run_time):
         """
 

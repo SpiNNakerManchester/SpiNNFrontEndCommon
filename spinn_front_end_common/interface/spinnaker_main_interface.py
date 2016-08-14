@@ -43,6 +43,173 @@ class SpinnakerMainInterface(object):
     """ Main interface into the tools logic flow
     """
 
+    __slots__ = [
+        #
+        "_config",
+
+        #
+        "_executable_finder",
+
+        #
+        "_n_chips_required",
+
+        #
+        "_hostname",
+
+        #
+        "_spalloc_server",
+
+        #
+        "_remote_spinnaker_url",
+
+        #
+        "_machine_allocation_controller",
+
+        #
+        "_graph_label",
+
+        #
+        "_application_graph",
+
+        #
+        "_machine_graph",
+
+        #
+        "_graph_mapper",
+
+        #
+        "_placements",
+
+        #
+        "_router_tables",
+
+        #
+        "_routing_infos",
+
+        #
+        "_tags",
+
+        #
+        "_machine",
+
+        #
+        "_txrx",
+
+        #
+        "_buffer_manager",
+
+        #
+        "_ip_address",
+
+        #
+        "_machine_outputs",
+
+        #
+        "_mapping_outputs",
+
+        #
+        "_load_outputs",
+
+        #
+        "_last_run_outputs",
+
+        #
+        "_pacman_provenance",
+
+        #
+        "_xml_paths",
+
+        #
+        "_extra_mapping_algorithms",
+
+        #
+        "_extra_mapping_inputs",
+
+        #
+        "_extra_pre_run_algorithms",
+
+        #
+        "_extra_post_run_algorithms",
+
+        #
+        "_dsg_algorithm",
+
+        #
+        "_none_labelled_vertex_count",
+
+        #
+        "_none_labelled_edge_count",
+
+        #
+        "_database_socket_addresses",
+
+        #
+        "_database_interface",
+
+        #
+        "_create_database",
+
+        #
+        "_database_file_path",
+
+        #
+        "_has_ran",
+
+        #
+        "_has_reset_last",
+
+        #
+        "_current_run_timesteps",
+
+        #
+        "_no_sync_changes",
+
+        #
+        "_minimum_step_generated",
+
+        #
+        "_no_machine_time_steps",
+
+        #
+        "_machine_time_step",
+
+        #
+        "_time_scale_factor",
+
+        #
+        "_app_id",
+
+        #
+        "_report_default_directory",
+
+        #
+        "_app_data_runtime_folder",
+
+        #
+        "_json_folder",
+
+        #
+        "_provenance_file_path",
+
+        #
+        "_do_timings",
+
+        #
+        "_print_timings",
+
+        #
+        "_provenance_format",
+
+        #
+        "_exec_dse_on_host",
+
+        #
+        "_use_virtual_board",
+
+        #
+        "_raise_keyboard_interrupt"
+    ]
+
     def __init__(
             self, config, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,

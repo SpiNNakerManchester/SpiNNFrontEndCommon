@@ -23,6 +23,8 @@ class FrontEndCommonHostExecuteDataSpecification(object):
     """ Executes the host based data specification
     """
 
+    __slots__ = []
+
     def __call__(
             self, hostname, transceiver, report_default_directory,
             write_text_specs, runtime_application_data_folder, machine,

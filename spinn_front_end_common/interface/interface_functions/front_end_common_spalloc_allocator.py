@@ -16,6 +16,17 @@ logger = logging.getLogger(__name__)
 
 class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
+    __slots__ = [
+        # thread flag to allow it to be killed when the main thread dies
+        "daemon",
+
+        # the spalloc job object
+        "_job",
+
+        # boolean flag for telling this thread when the system has ended
+        "_exited"
+    ]
+
     def __init__(self, job):
         Thread.__init__(self, name="SpallocJobController")
         self.daemon = True

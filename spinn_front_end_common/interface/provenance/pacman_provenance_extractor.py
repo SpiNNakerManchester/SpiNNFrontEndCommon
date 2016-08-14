@@ -6,6 +6,11 @@ class PacmanProvenanceExtractor(object):
     """ Extracts Provenance data from a PACMANAlgorithmExecutor
     """
 
+    __slots__ = [
+        # data item list for containing provenance data items
+        "_data_items"
+    ]
+
     def __init__(self):
         self._data_items = list()
 

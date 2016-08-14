@@ -10,6 +10,63 @@ class DataGeneratorInterface(object):
     DataGeneratorInterface: interface for parallelisation of dsg generation
     """
 
+    __slots__ = [
+        # the application vertex of this vertex
+        "_associated_vertex",
+
+        # the vertex to be considered for dsg
+        "_vertex",
+
+        # the placement of the vertex to be considered for dsg
+        "_placement",
+
+        # the machine graph
+        "_machine_graph",
+
+        # the application graph
+        "_application_graph",
+
+        # the routing info objects
+        "_routing_infos",
+
+        # the string that represnets the ipaddress that these dsg's are aimed at
+        "_hostname",
+
+        # the graph mapper object
+        "_graph_mapper",
+
+        # report folder directory
+        "_report_default_directory",
+
+        # set of iptags
+        "_ip_tags",
+
+        # set of reverse iptags
+        "_reverse_ip_tags",
+
+        # the progress bar object
+        "_progress_bar",
+
+        # bool flag for writing human readable specs
+        "_write_text_specs",
+
+        # the folder to store app data
+        "_application_run_time_folder",
+
+        # boolean flag for when this has finished writing
+        "_done",
+
+        # the exception
+        "_exception",
+
+        # the stack trace for the exception
+        "_stack_trace",
+
+        # lock for wiriting file folder. To stop deleting it and losing data
+        "_wait_condition"
+
+    ]
+
     def __init__(self, associated_vertex, vertex, placement,
                  machine_graph, application_graph, routing_infos,
                  hostname, graph_mapper, report_default_directory, ip_tags,

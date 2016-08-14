@@ -19,6 +19,8 @@ class FrontEndCommonGraphProvenanceGatherer(object):
         :param provenance_data_objects: Any existing objects to append to
         """
 
+        __slots__ = []
+
         if provenance_data_objects is not None:
             prov_items = provenance_data_objects
         else:

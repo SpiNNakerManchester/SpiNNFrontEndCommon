@@ -6,6 +6,8 @@ class FrontEndCommonSpallocMaxMachineGenerator(object):
         allocation server can generate
     """
 
+    __slots__ = []
+
     def __call__(self, spalloc_server, spalloc_port=22244):
 
         client = ProtocolClient(spalloc_server, spalloc_port)

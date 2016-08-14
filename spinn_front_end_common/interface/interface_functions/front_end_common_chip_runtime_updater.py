@@ -10,6 +10,8 @@ class FrontEndCommonChipRuntimeUpdater(object):
     """ Updates the runtime of an application running on a spinnaker machine
     """
 
+    __slots__ = []
+
     def __call__(
             self, txrx, no_sync_changes, app_id,
             executable_targets, no_machine_timesteps, loaded_binaries_token):

@@ -8,6 +8,8 @@ class FrontEndCommonBufferExtractor(object):
     """ Extracts data in between runs
     """
 
+    __slots__ = []
+
     def __call__(
             self, machine_graph, placements, buffer_manager, ran_token):
 

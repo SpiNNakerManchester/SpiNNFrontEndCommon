@@ -13,6 +13,8 @@ class FrontEndCommonApplicationRunner(object):
         successfully.
     """
 
+    __slots__ = []
+
     def __call__(
             self, buffer_manager, wait_on_confirmation,
             send_start_notification, notification_interface,

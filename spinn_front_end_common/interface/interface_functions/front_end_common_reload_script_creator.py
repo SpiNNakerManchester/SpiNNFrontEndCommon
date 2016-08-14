@@ -5,6 +5,8 @@ class FrontEndCommonReloadScriptCreator(object):
     """ Create a reload script
     """
 
+    __slots__ = []
+
     def __call__(
             self,
 

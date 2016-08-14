@@ -13,6 +13,8 @@ class FrontEndCommonGraphMeasurer(object):
     """ Works out how many chips a machine graph needs
     """
 
+    __slots__ = []
+
     def __call__(self, machine_graph, machine):
         """
 

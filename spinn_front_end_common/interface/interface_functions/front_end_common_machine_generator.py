@@ -15,6 +15,8 @@ class FrontEndCommonMachineGenerator(object):
     """ Interface to make a transceiver and a spinn_machine object
     """
 
+    __slots__ = []
+
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, auto_detect_bmp, enable_reinjection,

@@ -25,6 +25,20 @@ class DatabaseWriter(object):
         by sub classes of this interface.
     """
 
+    __slots__ = [
+        # boolean flag for when the database writer has finsihed
+        "_done",
+
+        # the directory of where the database is to be written
+        "_database_directory",
+
+        # the path of the database
+        "_database_path",
+
+        # the identifier for the SpiNNaker machine
+        "_machine_id"
+    ]
+
     def __init__(self, database_directory):
 
         self._done = False

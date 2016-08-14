@@ -10,6 +10,17 @@ class FrontEndCommonDatabaseInterface(object):
     """ Writes a database of the graph(s) and other information
     """
 
+    __slots__ = [
+        # the database writer object
+        "_writer",
+
+        # boolean flag for if the end user has demanded the db to be written
+        "_user_create_database",
+
+        # boolean flag that is automatically calcualted to see if we need the db
+        "_needs_database"
+    ]
+
     def __init__(self):
         self._writer = None
         self._user_create_database = None

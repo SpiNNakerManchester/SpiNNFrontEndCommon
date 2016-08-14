@@ -6,6 +6,19 @@ import struct
 class EndBufferingState(object):
     """ Stores the buffering state at the end of a simulation
     """
+
+    __slots__ = [
+        # Number of buffering regions used
+        "_n_recording_regions",
+
+        # Final sequence number received
+        "_buffering_out_fsm_state",
+
+        #  a list of channel state, where each channel is stored in a
+        # ChannelBufferState object
+        "_list_channel_buffer_state"
+    ]
+
     def __init__(
             self, n_recording_regions,
             buffering_out_fsm_state,

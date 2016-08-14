@@ -8,6 +8,8 @@ class AbstractReceiveBuffersToHost(object):
     """ Indicates that this object can receive buffers
     """
 
+    __slots__ = []
+
     @abstractmethod
     def buffering_output(self):
         """ True if the output buffering mechanism is activated

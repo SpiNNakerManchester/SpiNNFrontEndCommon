@@ -23,6 +23,8 @@ class FrontEndCommonEdgeToNKeysMapper(object):
     """ Works out the number of keys needed for each edge
     """
 
+    __slots__ = []
+
     def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
 

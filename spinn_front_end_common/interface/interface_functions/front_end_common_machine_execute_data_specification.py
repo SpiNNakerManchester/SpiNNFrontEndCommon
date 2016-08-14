@@ -26,6 +26,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
     """ Executes the machine based data specification
     """
 
+    __slots__ = []
+
     def __call__(
             self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):

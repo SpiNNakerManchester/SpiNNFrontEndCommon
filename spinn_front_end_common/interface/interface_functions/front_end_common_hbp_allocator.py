@@ -12,6 +12,17 @@ logger = logging.getLogger(__name__)
 
 class _HBPJobController(Thread, AbstractMachineAllocationController):
 
+    __slots__ = [
+        # thread flag to allow it to be killed when the main thread dies
+        "daemon",
+
+        # the url to call the hbp system
+        "_url",
+
+        # boolean flag for telling this thread when the system has ended
+        "_exited"
+    ]
+
     _WAIT_TIME_MS = 10000
 
     def __init__(self, url):

@@ -8,6 +8,8 @@ class FrontEndCommonIOBufExtractor(object):
         their prefix
     """
 
+    __slots__ = []
+
     def __call__(
             self, transceiver, has_ran, placements=None, core_subsets=None):
 

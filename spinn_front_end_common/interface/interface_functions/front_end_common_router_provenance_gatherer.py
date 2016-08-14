@@ -14,6 +14,8 @@ class FrontEndCommonRouterProvenanceGatherer(object):
     routers.
     """
 
+    __slots__ = []
+
     def __call__(
             self, transceiver, machine, router_tables, has_ran,
             provenance_data_objects=None):

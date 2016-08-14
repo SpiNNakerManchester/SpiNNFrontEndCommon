@@ -26,6 +26,8 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     """ Executes data specification generation
     """
 
+    __slots__ = []
+
     def __call__(
             self, placements, graph, hostname, executable_finder,
             report_default_directory, write_text_specs,

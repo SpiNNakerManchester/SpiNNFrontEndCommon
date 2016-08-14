@@ -20,6 +20,30 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
+
+    __slots__ = [
+        # boolean flag that indicates if buffering output is active
+        "_buffering_output",
+
+        # the ipaddress that buffers are to be sent to
+        "_buffering_ip_address",
+
+        # the port number that the buffering packets are to be sent
+        "_buffering_port",
+
+        # the minimum size of a buffer
+        "_minimum_sdram_for_buffering",
+
+        # the expected sdram usage per timer tick
+        "_buffered_sdram_per_timestep",
+
+        # the dsg regions which are being buffered
+        "_buffered_regions",
+
+        # the region where buffered state exists
+        "_buffered_state_region"
+    ]
+
     def __init__(self):
         """
         :return: None

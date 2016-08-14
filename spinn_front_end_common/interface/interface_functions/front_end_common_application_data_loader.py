@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 class FrontEndCommonApplicationDataLoader(object):
 
+    __slots__ = []
+
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
             placement_to_app_data_files, app_id, verify=False):

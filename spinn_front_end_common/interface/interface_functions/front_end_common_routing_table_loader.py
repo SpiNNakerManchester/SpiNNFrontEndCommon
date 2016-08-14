@@ -3,6 +3,8 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 
 class FrontEndCommonRoutingTableLoader(object):
 
+    __slots__ = []
+
     def __call__(self, router_tables, app_id, transceiver, machine):
         progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
                                    "Loading routing data onto the machine")

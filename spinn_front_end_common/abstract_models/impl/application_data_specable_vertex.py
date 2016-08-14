@@ -12,6 +12,29 @@ from abc import abstractmethod
 @supports_injection
 class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
 
+    __slots__ = [
+        # the mapping between applciation and machine graphs
+        "_graph_mapper",
+
+        # the application graph
+        "_application_graph",
+
+        # the machine graph
+        "_machine_graph",
+
+        # the routing info object
+        "_routing_info",
+
+        # the placements object
+        "_placements",
+
+        # the iptags objects
+        "_iptags",
+
+        # the set of reverse iptags
+        "_reverse_iptags"
+    ]
+
     def __init__(self):
         AbstractGeneratesDataSpecification.__init__(self)
 

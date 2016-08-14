@@ -14,6 +14,11 @@ class SendsBuffersFromHostPreBufferedImpl(
         which uses an existing set of buffers for the details
     """
 
+    __slots__ = [
+        # dict [region id] -> buffer region
+        "_send_buffers"
+    ]
+
     def __init__(self, send_buffers):
         """
 

@@ -22,6 +22,29 @@ class BuffersSentDeque(object):
     """ A tracker of buffers sent / to send for a region
     """
 
+    __slots__ = [
+        # The region being managed
+        "_region",
+
+        # A queue of messages sent, ordered by sequence number
+        "_buffers_sent",
+
+        # The current sequence number of the region
+        "_sequence_number",
+
+        # A lock for the sequence number
+        "_sequence_lock",
+
+        # The last sequence number to be received on the machine
+        "_last_received_sequence_number",
+
+        # True if the stop message has been sent
+        "_sent_stop_message",
+
+        # The number of sequence numbers allowed in a single transmission
+        "_n_sequences_per_transmission"
+    ]
+
     def __init__(self, region, sent_stop_message=False,
                  n_sequences_per_tranmission=64):
         """

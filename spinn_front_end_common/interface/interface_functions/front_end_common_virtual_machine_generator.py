@@ -5,6 +5,8 @@ from spinn_front_end_common.utilities import helpful_functions
 
 class FrontEndCommonVirtualMachineGenerator(object):
 
+    __slots__ = []
+
     def __call__(
             self, width=None, height=None, virtual_has_wrap_arounds=False,
             version=None, n_cpus_per_chip=18, with_monitors=True,

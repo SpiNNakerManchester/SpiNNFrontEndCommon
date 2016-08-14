@@ -8,6 +8,8 @@ class AbstractRecordable(object):
     """ Indicates that an object might record some data in to SDRAM
     """
 
+    __slots__ = []
+
     @abstractmethod
     def is_recording(self):
         """ Deduce if the recorder is actually recording

@@ -10,6 +10,8 @@ from spinn_front_end_common.interface.provenance\
 
 class FrontEndCommonPlacementsProvenanceGatherer(object):
 
+    __slots__ = []
+
     def __call__(
             self, transceiver, placements, has_ran,
             provenance_data_objects=None):

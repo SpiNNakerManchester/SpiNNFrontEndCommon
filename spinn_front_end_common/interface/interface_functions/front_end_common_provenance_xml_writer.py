@@ -9,6 +9,8 @@ class FrontEndCommonProvenanceXMLWriter(object):
     """ Write provenance data into XML
     """
 
+    __slots__ = []
+
     VALID_CHARS = frozenset(
         "-_.() {}{}".format(string.ascii_letters, string.digits))
 

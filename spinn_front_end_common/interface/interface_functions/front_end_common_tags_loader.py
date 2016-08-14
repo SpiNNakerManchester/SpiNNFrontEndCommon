@@ -6,6 +6,8 @@ class FrontEndCommonTagsLoader(object):
     """ Loads tags onto the machine
     """
 
+    __slots__ = []
+
     def __call__(
             self, transceiver, tags=None, iptags=None, reverse_iptags=None):
         """

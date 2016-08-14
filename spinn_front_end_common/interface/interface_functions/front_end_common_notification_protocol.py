@@ -11,6 +11,8 @@ class FrontEndCommonNotificationProtocol(object):
     """ The notification protocol for external device interaction
     """
 
+    __slots__ = []
+
     def __call__(
             self, wait_for_read_confirmation,
             socket_addresses, database_file_path):
