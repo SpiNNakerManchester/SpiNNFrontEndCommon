@@ -37,7 +37,7 @@ class LiveEventConnection(DatabaseConnection):
                  machine_vertices=False):
         """
 
-        :param event_receiver_label: The label of the LivePacketGather\
+        :param live_packet_gather_label: The label of the LivePacketGather\
                     vertex to which received events are being sent
         :param receive_labels: Labels of vertices from which live events\
                     will be received.
