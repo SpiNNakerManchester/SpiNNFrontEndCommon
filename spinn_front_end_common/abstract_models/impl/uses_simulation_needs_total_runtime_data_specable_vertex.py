@@ -22,12 +22,6 @@ class UsesSimulationNeedsTotalRuntimeDataSpecableVertex(
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         UsesSimulationImpl):
 
-    __slots__ = [
-        # the number of machine time steps expected to be ran during
-        # this simulation (int)
-        "_no_machine_time_steps"
-    ]
-
     def __init__(self, machine_time_step, time_scale_factor):
         AbstractGeneratesDataSpecification.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)

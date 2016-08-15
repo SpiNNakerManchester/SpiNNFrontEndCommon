@@ -10,8 +10,6 @@ class AbstractChangableAfterRun(object):
         might or might not require mapping
     """
 
-    __slots__ = []
-
     @abstractproperty
     def requires_mapping(self):
         """ True if changes that have been made require that mapping be\

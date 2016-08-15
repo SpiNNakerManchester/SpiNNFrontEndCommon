@@ -9,8 +9,6 @@ class AbstractProvidesNKeysForPartition(object):
         rather than relying on the number of atoms in the pre-vertex
     """
 
-    __slots__ = []
-
     @abstractmethod
     def get_n_keys_for_partition(self, partition, graph_mapper):
         """ Get the number of keys required by the given partition of edges

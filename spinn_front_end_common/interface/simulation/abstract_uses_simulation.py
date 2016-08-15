@@ -6,8 +6,6 @@ from abc import abstractmethod
 @add_metaclass(ABCMeta)
 class AbstractUsesSimulation(object):
 
-    __slots__ = []
-
     def __init__(self):
         pass
 

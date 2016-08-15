@@ -13,23 +13,6 @@ from abc import abstractmethod
 class MachineUsesSimulationDataNeedsTotalRuntimeSpecableVertex(
         UsesSimulationNeedsTotalRuntimeDataSpecableVertex):
 
-    __slots__ = [
-        # machine graph
-        "_machine_graph",
-
-        # key and edge mapping
-        "_routing_info",
-
-        # placement mapping
-        "_placements",
-
-        # iptags
-        "_iptags",
-
-        # reverse iptags
-        "_reverse_iptags"
-    ]
-
     def __init__(self, machine_time_step, time_scale_factor):
         UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
             self, machine_time_step, time_scale_factor)

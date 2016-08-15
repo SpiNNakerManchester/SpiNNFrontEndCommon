@@ -8,15 +8,6 @@ import hashlib
 
 class UsesSimulationImpl(AbstractUsesSimulation):
 
-    __slots__ = [
-        # int that represents how often a timer tick should be executed
-        #  from the applications view point
-        "_machine_time_step",
-
-        # int that represents a multiplation factor to the machine_time_step
-        "_time_scale_factor"
-    ]
-
     def __init__(self, machine_time_step, time_scale_factor):
         AbstractUsesSimulation.__init__(self)
         self._machine_time_step = machine_time_step

@@ -18,8 +18,6 @@ class UsesSimulationDataSpecableVertex(
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
         UsesSimulationImpl):
 
-    __slots__ = []
-
     def __init__(self, machine_time_step, time_scale_factor):
         AbstractGeneratesDataSpecification.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)

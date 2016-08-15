@@ -8,8 +8,6 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
     """ A vertex that can provide constraints for its outgoing edge partitions
     """
 
-    __slots__ = []
-
     @abstractmethod
     def get_outgoing_partition_constraints(self, partition):
         """ Get constraints to be added to the given edge that comes out of\
