@@ -244,7 +244,7 @@ class ReverseIpTagMultiCastSource(
         allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
 
         return (
-            (constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
+            constants.SYSTEM_BYTES_REQUIREMENT +
             (ReverseIPTagMulticastSourceMachineVertex.
              _CONFIGURATION_REGION_SIZE) +
             send_buffer_size + recording_size + allocation_size +
