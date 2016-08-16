@@ -354,7 +354,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
-            size=((constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4) +
+            size=(constants.SYSTEM_BYTES_REQUIREMENT +
                   self.get_recording_data_size(1)), label='SYSTEM')
         spec.reserve_memory_region(
             region=self._REGIONS.CONFIGURATION.value,

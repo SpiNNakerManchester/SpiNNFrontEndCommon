@@ -17,7 +17,19 @@ MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
 DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * 1024
 
 # The number of words in the AbstractDataSpecable basic setup information
-DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS = 5
+# 4 for MAGIC NUMBER
+# 4 for DSG VERSION
+DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = 8
+
+# The number of words used by the simulation interface
+# 4 for machine_time_step,
+# 4 for sdp port
+# 4 for application hash
+SIMULATION_N_BYTES = 12
+
+# The number of bytes used by the dsg and simulation interfaces
+SYSTEM_BYTES_REQUIREMENT = \
+    (DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES)
 
 # The number of bytes used by SARK per memory allocation
 SARK_PER_MALLOC_SDRAM_USAGE = 8

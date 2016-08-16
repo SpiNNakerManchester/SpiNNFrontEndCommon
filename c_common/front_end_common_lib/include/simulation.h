@@ -39,7 +39,7 @@ typedef void (*prov_callback_t)(address_t);
 //! the definition of the callback used by pause and resume
 typedef void (*resume_callback_t)();
 
-//! \brief initialises the simualtion interface which involves:
+//! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
 //!        which is formatted as:
 //!            uint32_t magic_number;
@@ -78,6 +78,10 @@ bool simulation_initialise(
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t resume_function);
+
+//! \brief a helper method for people not using the auto pause and
+//! resume functionality
+void simulation_exit();
 
 //! \brief Starts the simulation running, returning when it is complete,
 void simulation_run();

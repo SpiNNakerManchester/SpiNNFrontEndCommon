@@ -180,7 +180,7 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
-            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
+            size=constants.SYSTEM_BYTES_REQUIREMENT,
             label='system')
         spec.reserve_memory_region(
             region=(
@@ -286,7 +286,7 @@ class LivePacketGatherMachineVertex(
         :return:
         """
         return (
-            constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS +
+            constants.SYSTEM_BYTES_REQUIREMENT +
             LivePacketGatherMachineVertex._CONFIG_SIZE +
             LivePacketGatherMachineVertex.get_provenance_data_size(
                 LivePacketGatherMachineVertex

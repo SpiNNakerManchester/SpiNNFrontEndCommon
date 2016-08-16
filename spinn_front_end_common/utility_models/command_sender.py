@@ -271,7 +271,7 @@ class CommandSender(
         # Reserve memory:
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.SYSTEM_REGION,
-            size=constants.DATA_SPECABLE_BASIC_SETUP_INFO_N_WORDS * 4,
+            size=constants.SYSTEM_BYTES_REQUIREMENT,
             label='setup')
         if command_size > 0:
             spec.reserve_memory_region(

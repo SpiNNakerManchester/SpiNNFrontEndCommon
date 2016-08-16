@@ -68,6 +68,10 @@ void simulation_run() {
     spin1_start_paused();
 }
 
+//! \brief cleans up the house keeping, falls into a sync state and handles
+//!        the resetting up of states as required to resume.
+//! \param[in] resume_function The function to call just before the simulation
+//!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback){
 
     stored_resume_function = callback;
@@ -77,6 +81,12 @@ void simulation_handle_pause_resume(resume_callback_t callback){
 
     // Pause the simulation
     spin1_pause();
+}
+
+//! \brief a helper method for people not using the auto pause and
+//! resume functionality
+void simulation_exit(){
+    simulation_handle_pause_resume(NULL);
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
