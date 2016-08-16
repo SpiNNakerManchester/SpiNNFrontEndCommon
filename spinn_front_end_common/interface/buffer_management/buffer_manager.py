@@ -506,7 +506,8 @@ class BufferManager(object):
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
 
-    def get_data_for_vertex(self, placement, region_to_read, state_region):
+    def get_data_for_vertex(self, placement, address_of_region_to_read,
+                            state_region):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
@@ -523,7 +524,8 @@ class BufferManager(object):
         """
         # flush data here
         if not self._received_data.is_data_from_region_flushed(
-                placement.x, placement.y, placement.p, region_to_read):
+                placement.x, placement.y, placement.p,
+                address_of_region_to_read):
             if not self._received_data.is_end_buffering_state_recovered(
                     placement.x, placement.y, placement.p):
 

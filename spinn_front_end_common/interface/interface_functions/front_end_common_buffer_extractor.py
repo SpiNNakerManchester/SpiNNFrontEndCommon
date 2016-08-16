@@ -3,6 +3,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_machine.utilities.progress_bar import ProgressBar
 
+from data_specification import utility_calls
 
 class FrontEndCommonBufferExtractor(object):
     """ Extracts data in between runs
@@ -11,7 +12,8 @@ class FrontEndCommonBufferExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, machine_graph, placements, buffer_manager, ran_token):
+            self, machine_graph, placements, buffer_manager, ran_token,
+            transceiver):
 
         if not ran_token:
             raise exceptions.ConfigurationException(
@@ -30,9 +32,16 @@ class FrontEndCommonBufferExtractor(object):
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 placement = placements.get_placement_of_vertex(vertex)
+
+                # get start of sdram pointer for this core
+                regions_base_address = \
+                    transceiver.get_cpu_information_from_core(
+                        placement.x, placement.y, placement.p).user[0]
                 state_region = vertex.get_buffered_state_region()
                 for region in vertex.get_buffered_regions():
+                    address = utility_calls.get_region_base_address_offset(
+                        regions_base_address, region)
                     buffer_manager.get_data_for_vertex(
-                        placement, region, state_region)
+                        placement, address, state_region)
                     progress_bar.update()
         progress_bar.end()

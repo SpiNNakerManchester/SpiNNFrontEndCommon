@@ -16,23 +16,28 @@ class EndBufferingState(object):
 
         #  a list of channel state, where each channel is stored in a
         # ChannelBufferState object
-        "_list_channel_buffer_state"
+        "_list_channel_buffer_state",
+
+        # iterable of ints which represent the memory addresses for where every
+        # recorded regions starts
+        "_region_addresses"
     ]
 
     def __init__(
-            self, n_recording_regions,
-            buffering_out_fsm_state,
-            list_channel_buffer_state):
+            self, n_recording_regions, buffering_out_fsm_state,
+            list_channel_buffer_state, region_addresses):
         """
 
         :param n_recording_regions: Number of buffering regions used
         :param buffering_out_fsm_state: Final sequence number received
         :param list_channel_buffer_state: a list of channel state, where each\
                 channel is stored in a ChannelBufferState object
+        :param region_addresses: the memory addresses for the recording regions
         """
         self._n_recording_regions = n_recording_regions
         self._buffering_out_fsm_state = buffering_out_fsm_state
         self._list_channel_buffer_state = list_channel_buffer_state
+        self._region_addresses = region_addresses
 
     @property
     def buffering_out_fsm_state(self):
@@ -61,10 +66,16 @@ class EndBufferingState(object):
     @staticmethod
     def create_from_bytearray(data):
         offset = 0
-        n_recording_regions, \
-            buffering_out_fsm_state = struct.unpack_from(
-                "<II", data, offset)
+
+        n_recording_regions, buffering_out_fsm_state = \
+            struct.unpack_from("<II", data, offset)
+
         offset += 8
+
+        region_data_addresses = list()
+        for _ in range(0, n_recording_regions):
+            region_data_addresses.append(struct.unpack_from("<I", data, offset))
+            offset += 4
 
         list_channel_buffer_state = list()
         for _ in xrange(n_recording_regions):
@@ -74,11 +85,13 @@ class EndBufferingState(object):
             list_channel_buffer_state.append(entry)
         final_state = EndBufferingState(
             n_recording_regions, buffering_out_fsm_state,
-            list_channel_buffer_state)
+            list_channel_buffer_state, region_data_addresses)
         return final_state
 
     @staticmethod
     def size_of_region(n_regions_to_record):
         size_of_header = 8 + 4 * n_regions_to_record
+        # add size needed for the data region addresses
+        size_of_header += 4 * n_regions_to_record
         size_of_channel_state = ChannelBufferState.size_of_channel_state()
         return size_of_header + n_regions_to_record * size_of_channel_state
