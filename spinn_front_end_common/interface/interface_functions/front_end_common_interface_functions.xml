@@ -1081,21 +1081,14 @@
                 <param_name>core_subsets</param_name>
                 <param_type>FailedCoresSubsets</param_type>
             </parameter>
-            <parameter>
-                <param_name>warning_messages</param_name>
-                <param_type>WarnMessages</param_type>
-            </parameter>
         </input_definitions>
-        <optional_inputs>
-            <all_of>
-                <param_name>placements</param_name>
-                <param_name>core_subsets</param_name>
-                <param_name>warning_messages</param_name>
-            </all_of>
-        </optional_inputs>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>has_ran</param_name>
+            <one_of>
+                <param_name>placements</param_name>
+                <param_name>core_subsets</param_name>
+            </one_of>
         </required_inputs>
         <outputs>
             <param_type>IOBuffers</param_type>
