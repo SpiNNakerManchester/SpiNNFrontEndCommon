@@ -98,7 +98,11 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @overrides(ApplicationVertex.create_machine_vertex)
+    @inject_items({"machine_time_step": "MachineTimeStep"})
+    @overrides(
+        ApplicationVertex.create_machine_vertex,
+        additional_arguments={"machine_time_step"}
+    )
     def create_machine_vertex(
             self, vertex_slice, resources_required, machine_time_step,
             label=None, constraints=None):

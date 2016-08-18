@@ -14,9 +14,9 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
 
     @inject_items({
         "machine_graph": "MemoryMachineGraph",
-        "routing_info": "MemoryRoutingInfo",
+        "routing_info": "MemoryRoutingInfos",
         "iptags": "MemoryIpTags",
-        "reverse_iptags": "MemoryReverseIptags",
+        "reverse_iptags": "MemoryReverseIpTags",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
     })
@@ -31,7 +31,7 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
             reverse_iptags, machine_time_step, time_scale_factor):
         self.generate_machine_data_specification(
             spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags)
+            reverse_iptags, machine_time_step, time_scale_factor)
 
     @abstractmethod
     def generate_machine_data_specification(
