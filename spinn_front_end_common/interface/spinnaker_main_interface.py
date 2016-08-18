@@ -3,7 +3,6 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.executor.injection_decorator import do_injection
 from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
@@ -579,16 +578,6 @@ class SpinnakerMainInterface(object):
             steps.append(int(left_over_time_steps))
         return steps
 
-    def _update_n_machine_time_steps(self, n_machine_time_steps):
-        """ Update all vertices with the n_machine_time_steps if they use\
-            DSG interface.
-
-        :param n_machine_time_steps: the number of machine time steps to run\
-                    this iteration.
-        :return: None
-        """
-        do_injection({'MemoryNoMachineTimeSteps': n_machine_time_steps})
-
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
@@ -665,6 +654,8 @@ class SpinnakerMainInterface(object):
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
+        inputs["MachineTimeStep"] = self._machine_time_step
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -740,12 +731,6 @@ class SpinnakerMainInterface(object):
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
-            # this is required for when auto pause and resume is not turned
-            # on and your needing to partition for a spalloc or remote system,
-            # as partitioning in this case needs to know how long to run to
-            # give complete SDRAM memory requirements for recording buffers.
-            if n_machine_time_steps > 0:
-                self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
 
             # if using spalloc system
@@ -854,12 +839,6 @@ class SpinnakerMainInterface(object):
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
 
-        # Set the initial n_machine_time_steps to all of them for mapping
-        # (note that the underlying vertices will know about
-        # auto-pause-and-resume and so they will work correctly here regardless
-        # of the setting)
-        self._update_n_machine_time_steps(n_machine_time_steps)
-
         # update inputs with extra mapping inputs if required
         inputs = dict(self._machine_outputs)
         if self._extra_mapping_inputs is not None:
@@ -867,6 +846,7 @@ class SpinnakerMainInterface(object):
 
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
@@ -984,10 +964,6 @@ class SpinnakerMainInterface(object):
         if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
 
-        # inject the application graph to whom ever needs it
-        if len(self._application_graph.vertices) > 0:
-            do_injection({"MemoryApplicationGraph": self._application_graph})
-
         # Execute the mapping algorithms
         executor = self._run_machine_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
@@ -1003,11 +979,9 @@ class SpinnakerMainInterface(object):
 
     def _do_data_generation(self, n_machine_time_steps):
 
-        # Update the machine timesteps again for the data generation
-        self._update_n_machine_time_steps(n_machine_time_steps)
-
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
@@ -1059,17 +1033,12 @@ class SpinnakerMainInterface(object):
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
-        self._update_n_machine_time_steps(total_run_timesteps)
         run_time = None
         if n_machine_time_steps is not None:
             run_time = (
                 n_machine_time_steps *
                 (float(self._machine_time_step) / 1000.0)
             )
-
-        # Calculate the first machine time step to start from and set this
-        # where necessary
-        do_injection({'FirstMachineTimeStep': self._current_run_timesteps})
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1083,6 +1052,7 @@ class SpinnakerMainInterface(object):
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:

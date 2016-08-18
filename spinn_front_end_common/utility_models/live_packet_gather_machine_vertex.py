@@ -1,5 +1,4 @@
-from pacman.executor.injection_decorator import requires_injection, \
-    supports_injection, inject
+from pacman.executor.injection_decorator import inject_items
 from pacman.model.abstract_classes.impl.constrained_object import \
     ConstrainedObject
 from pacman.model.constraints.placer_constraints.placer_board_constraint\
@@ -15,13 +14,16 @@ from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinn_front_end_common.abstract_models.impl.\
-    uses_simulation_data_specable_vertex import \
-    UsesSimulationDataSpecableVertex
 
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl \
     import ProvidesProvenanceDataFromMachineImpl
+from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinn_front_end_common.abstract_models\
+    .abstract_generates_data_specification \
+    import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
+    import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
@@ -31,10 +33,9 @@ from spinnman.messages.eieio.eieio_type import EIEIOType
 from enum import Enum
 
 
-@supports_injection
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        UsesSimulationDataSpecableVertex):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -47,8 +48,7 @@ class LivePacketGatherMachineVertex(
     _PROVENANCE_REGION_SIZE = 8
 
     def __init__(
-            self, label, machine_time_step, timescale_factor,
-            use_prefix=False, key_prefix=None, prefix_type=None,
+            self, label, use_prefix=False, key_prefix=None, prefix_type=None,
             message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
@@ -63,12 +63,9 @@ class LivePacketGatherMachineVertex(
             sdram=SDRAMResource(self.get_sdram_usage()),
             iptags=[IPtagResource(ip_address, port, strip_sdp, tag)])
 
-        # impl for where constraints are stored
+        # implementation for where constraints are stored
         self._constraints = ConstrainedObject()
         self._add_constraints(board_address)
-
-        # storage objects
-        self._iptags = None
 
         # inheritance
         MachineVertex.__init__(
@@ -76,8 +73,6 @@ class LivePacketGatherMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
-        UsesSimulationDataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
 
         # app specific data items
         self._use_prefix = use_prefix
@@ -141,33 +136,32 @@ class LivePacketGatherMachineVertex(
 
         return provenance_items
 
-    @overrides(UsesSimulationDataSpecableVertex.get_binary_file_name)
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """ Get the name of binary which is loaded onto a spinnaker machine to\
-            represent this vertex's functionality.
-
-        :return:
-        """
         return 'live_packet_gather.aplx'
 
-    @requires_injection(["MemoryIpTags"])
-    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    @inject_items({
+        "machine_time_step": "MachineTimeStep",
+        "time_scale_factor": "TimeScaleFactor",
+        "ip_tags": "MemoryIpTags"})
+    @overrides(
+        AbstractGeneratesDataSpecification.generate_data_specification,
+        additional_arguments={
+            "machine_time_step", "time_scale_factor", "ip_tags"
+        })
+    def generate_data_specification(
+            self, spec, placement, machine_time_step, time_scale_factor,
+            ip_tags):
 
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec)
-        self._write_configuration_region(spec, self._iptags)
+        self._write_setup_info(spec, machine_time_step, time_scale_factor)
+        self._write_configuration_region(spec, ip_tags)
 
         # End-of-Spec:
         spec.end_specification()
-
-    @property
-    @overrides(MachineVertex.model_name)
-    def model_name(self):
-        return "machine live packet gather"
 
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas
@@ -257,7 +251,7 @@ class LivePacketGatherMachineVertex(
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
 
-    def _write_setup_info(self, spec):
+    def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
 
         :param spec:
@@ -269,7 +263,8 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
-        spec.write_array(self.data_for_simulation_data())
+        spec.write_array(simulation_utilities.get_simulation_header_array(
+            self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
     @staticmethod
     def get_cpu_usage():
@@ -299,8 +294,3 @@ class LivePacketGatherMachineVertex(
         :return:
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE
-
-    @inject("MemoryIpTags")
-    def set_iptags(self, iptags):
-        self._iptags = iptags
-

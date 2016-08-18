@@ -40,7 +40,7 @@ class FrontEndCommonApplicationGraphNetworkSpecification(object):
         f_network_specification.write("*** Vertices:\n")
         for vertex in graph.vertices:
             label = vertex.label
-            model = vertex.model_name
+            model = vertex.__class__.__name__
             size = vertex.n_atoms
             constraints = vertex.constraints
             f_network_specification.write("Vertex {}, size: {}\n"

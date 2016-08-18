@@ -62,7 +62,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         if (not self._buffering_output and buffering_ip_address is not None and
                 buffering_port is not None):
             self._buffering_output = True
-            notification_strip_sdp = True
 
             # add placement constraint if needed
             if board_address is not None:

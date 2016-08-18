@@ -1,11 +1,11 @@
 # pacman imports
-from pacman.executor.injection_decorator import requires_injection, inject, \
-    supports_injection
-from pacman.model.constraints.placer_constraints.placer_radial_placement_from_chip_constraint import \
+from pacman.model.constraints.placer_constraints\
+    .placer_radial_placement_from_chip_constraint import \
     PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.application.impl.application_vertex import \
     ApplicationVertex
+from pacman.executor.injection_decorator import inject_items
 
 # spinn front end imports
 from pacman.model.resources.cpu_cycles_per_tick_resource import \
@@ -14,35 +14,37 @@ from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinn_front_end_common.abstract_models.impl.\
-    uses_simulation_data_specable_vertex import \
-    UsesSimulationDataSpecableVertex
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
     .live_packet_gather_machine_vertex \
     import LivePacketGatherMachineVertex
+from spinn_front_end_common.abstract_models\
+    .abstract_generates_data_specification \
+    import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
+    import AbstractHasAssociatedBinary
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 
-@supports_injection
 class LivePacketGather(
-        UsesSimulationDataSpecableVertex, ApplicationVertex):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+        ApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
     """
 
-    def __init__(self, machine_time_step, timescale_factor, ip_address,
-                 port, board_address=None, tag=None, strip_sdp=True,
-                 use_prefix=False, key_prefix=None, prefix_type=None,
-                 message_type=EIEIOType.KEY_32_BIT, right_shift=0,
-                 payload_as_time_stamps=True, use_payload_prefix=True,
-                 payload_prefix=None, payload_right_shift=0,
-                 number_of_packets_sent_per_time_step=0, constraints=None,
-                 label=None):
+    def __init__(
+            self, ip_address, port, board_address=None, tag=None,
+            strip_sdp=True, use_prefix=False, key_prefix=None,
+            prefix_type=None, message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+            payload_as_time_stamps=True, use_payload_prefix=True,
+            payload_prefix=None, payload_right_shift=0,
+            number_of_packets_sent_per_time_step=0, constraints=None,
+            label=None):
         """
         """
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
@@ -68,8 +70,6 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        UsesSimulationDataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(self, label, constraints, 1)
 
         # Try to place this near the Ethernet
@@ -100,11 +100,10 @@ class LivePacketGather(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
+            self, vertex_slice, resources_required, machine_time_step,
+            label=None, constraints=None):
         return LivePacketGatherMachineVertex(
-            label, self._machine_time_step, self._time_scale_factor,
-            self._use_prefix, self._key_prefix, self._prefix_type,
+            label, self._use_prefix, self._key_prefix, self._prefix_type,
             self._message_type, self._right_shift,
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
@@ -113,14 +112,7 @@ class LivePacketGather(
             strip_sdp=self._strip_sdp, board_address=self._board_address,
             constraints=constraints)
 
-    @property
-    @overrides(ApplicationVertex.model_name)
-    def model_name(self):
-        """ Human readable form of the model name
-        """
-        return "live packet gather"
-
-    @overrides(UsesSimulationDataSpecableVertex.get_binary_file_name)
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
 
@@ -140,18 +132,8 @@ class LivePacketGather(
             iptags=[IPtagResource(
                 self._ip_address, self._port, self._strip_sdp, self._tag)])
 
-    @requires_injection(["MemoryIpTags"])
-    @overrides(UsesSimulationDataSpecableVertex.generate_data_specification)
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-
-        # needs to set it directly, as the machine vertex also implements this
-        # interface, in case its being used in a machine graph without a
-        # application graph
-        placement.vertex.set_iptags(self._iptags)
 
         # generate spec for the machine vertex
         placement.vertex.generate_data_specification(spec, placement)
-
-    @inject("MemoryIpTags")
-    def set_iptags(self, iptags):
-        self._iptags = iptags

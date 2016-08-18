@@ -11,7 +11,7 @@ class AbstractGeneratesDataSpecification(object):
         """ Generate a data specification
 
         :param spec: The data specification to write to
-        :param placement: the placement object this spec is asosciated with
+        :param placement: the placement object this spec is associated with
         :type spec:\
             :py:class:`data_specification.data_specification_generator.DataSpecificationGenerator`
         :return: None
