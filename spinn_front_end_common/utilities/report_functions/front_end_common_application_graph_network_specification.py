@@ -47,9 +47,8 @@ class FrontEndCommonApplicationGraphNetworkSpecification(object):
                                           .format(label, size))
             f_network_specification.write("Model: {}\n".format(model))
             for constraint in constraints:
-                constraint_str = constraint.label
                 f_network_specification.write("constraint: {}\n"
-                                              .format(constraint_str))
+                                              .format(str(constraint)))
             f_network_specification.write("\n")
 
         # Print information on edges:

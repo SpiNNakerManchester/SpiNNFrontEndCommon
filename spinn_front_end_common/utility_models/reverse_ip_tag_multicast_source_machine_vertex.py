@@ -8,9 +8,18 @@ from pacman.model.decorators.overrides import overrides
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
 from pacman.model.constraints.placer_constraints\
     .placer_board_constraint import PlacerBoardConstraint
+from pacman.model.decorators.delegates_to import delegates_to
+from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.dtcm_resource import DTCMResource
+from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.abstract_classes.impl.constrained_object \
+    import ConstrainedObject
+from pacman.model.abstract_classes.abstract_has_constraints \
+    import AbstractHasConstraints
+from pacman.model.graphs.machine.abstract_machine_vertex \
+    import AbstractMachineVertex
 
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
@@ -41,14 +50,14 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 from enum import Enum
 import math
-import copy
 
 _DEFAULT_MALLOC_REGIONS = 2
 
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        MachineVertex, AbstractGeneratesDataSpecification,
+        AbstractMachineVertex, AbstractHasConstraints,
+        AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
@@ -70,7 +79,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     _CONFIGURATION_REGION_SIZE = 40
 
     def __init__(
-            self, n_keys, resources_required, label, constraints=None,
+            self, n_keys, label, constraints=None,
 
             # General input and output parameters
             board_address=None,
@@ -97,9 +106,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
-        :param resources_required: The resources required by the vertex
-        :type resources_required:\
-            :py:class:`pacman.model.resources.resource_container.ResourceContainer`
         :param machine_time_step: The time step to be used on the machine
         :param timescale_factor: The time scaling to be used in the simulation
         :param label: The label of this vertex
@@ -139,21 +145,20 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 host about space in the buffer (default is to use any tag)
         """
         ReceiveBuffersToHostBasicImpl.__init__(self)
-
-        constraints = copy.deepcopy(constraints)
-        # Set up super types
-        MachineVertex.__init__(
-            self, resources_required, label, constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
 
+        self._constraints = ConstrainedObject(constraints)
+        self._label = label
+        self._iptags = None
+        self._reverse_iptags = None
+
         # Set up for receiving live packets
         if receive_port is not None:
-            resources_required.add_to_reverse_iptags(
-                ReverseIPtagResource(
-                    port=receive_port, sdp_port=receive_sdp_port,
-                    tag=receive_tag))
+            self._reverse_iptags = [ReverseIPtagResource(
+                port=receive_port, sdp_port=receive_sdp_port,
+                tag=receive_tag)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
 
@@ -170,10 +175,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
 
-            resources_required.add_to_iptag_usage(IPtagResource(
+            self._iptags = [IPtagResource(
                 send_buffer_notification_ip_address,
                 send_buffer_notification_port, True,
-                send_buffer_notification_tag))
+                send_buffer_notification_tag)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
             SendsBuffersFromHostPreBufferedImpl.__init__(
@@ -243,6 +248,77 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 # If no prefix was generated, generate one
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
+
+    @delegates_to("_constraints", ConstrainedObject.add_constraint)
+    def add_constraint(self, constraint):
+        pass
+
+    @delegates_to("_constraints", ConstrainedObject.add_constraints)
+    def add_constraints(self, constraints):
+        pass
+
+    @delegates_to("_constraints", ConstrainedObject.constraints)
+    def constraints(self):
+        pass
+
+    @property
+    @overrides(AbstractMachineVertex.label)
+    def label(self):
+        return self._label
+
+    @property
+    @overrides(AbstractMachineVertex.resources_required)
+    def resources_required(self):
+        return ResourceContainer(
+            dtcm=DTCMResource(self.get_dtcm_usage()),
+            sdram=SDRAMResource(self.get_sdram_usage(
+                self._send_buffer_times, self._send_buffer_max_space,
+                self._record_buffer_size > 0,
+                self._buffered_sdram_per_timestep > 0,
+                self._minimum_sdram_for_buffering, self._record_buffer_size)),
+            cpu_cycles=self.get_cpu_usage(),
+            iptags=self._iptags,
+            reverse_iptags=self._reverse_iptags)
+
+    @staticmethod
+    def get_sdram_usage(
+            send_buffer_times, send_buffer_max_space, recording_enabled,
+            using_auto_pause_and_resume, minimum_sdram_for_buffering,
+            record_buffer_size):
+        send_buffer_size = 0
+        if send_buffer_times is not None:
+            send_buffer_size = send_buffer_max_space
+
+        recording_size = (ReverseIPTagMulticastSourceMachineVertex
+                          .get_recording_data_size(1))
+        if recording_enabled:
+            if using_auto_pause_and_resume:
+                recording_size += minimum_sdram_for_buffering
+            else:
+                recording_size += record_buffer_size
+                recording_size += (
+                    ReverseIPTagMulticastSourceMachineVertex.
+                    get_buffer_state_region_size(1))
+        mallocs = \
+            ReverseIPTagMulticastSourceMachineVertex.n_regions_to_allocate(
+                send_buffer_times is not None, recording_enabled)
+        allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
+
+        return (
+            constants.SYSTEM_BYTES_REQUIREMENT +
+            (ReverseIPTagMulticastSourceMachineVertex.
+                _CONFIGURATION_REGION_SIZE) +
+            send_buffer_size + recording_size + allocation_size +
+            (ReverseIPTagMulticastSourceMachineVertex.
+                get_provenance_data_size(0)))
+
+    @staticmethod
+    def get_dtcm_usage():
+        return 1
+
+    @staticmethod
+    def get_cpu_usage():
+        return 1
 
     @staticmethod
     def n_regions_to_allocate(send_buffering, recording):
@@ -348,7 +424,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             minimum_sdram_for_buffering, buffered_sdram_per_timestep)
 
         self._record_buffer_size = record_buffer_size
-        self._recording_enabled = True
         self._buffer_size_before_receive = buffer_size_before_receive
 
     def _reserve_regions(self, spec):

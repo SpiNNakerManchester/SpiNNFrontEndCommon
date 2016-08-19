@@ -73,8 +73,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
 
     def get_extra_resources(self, buffering_ip_address, buffering_port,
                             notification_tag=None):
-        """ returns new resources that need to be applied to the model uses
-        this interface for it to work correctly.
+        """ Get any additional resource required
 
         :param buffering_ip_address: IP address of the host which supports\
                 the buffering output functionality
@@ -83,14 +82,14 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         :param notification_tag: ??????????????
         :return: a resource container
         """
-        resources = ResourceContainer()
         if (not self._buffering_output and buffering_ip_address is not None and
                 buffering_port is not None):
+
             # create new resources to handle a new tag
-            resources.add_to_iptag_usage(
+            return ResourceContainer(iptags=[
                 IPtagResource(buffering_ip_address, buffering_port,
-                              True, notification_tag))
-        return resources
+                              True, notification_tag)])
+        return ResourceContainer()
 
     @staticmethod
     def get_buffer_state_region_size(n_buffered_regions):

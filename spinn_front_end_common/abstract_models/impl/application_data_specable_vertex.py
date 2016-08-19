@@ -15,10 +15,10 @@ class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
     @inject_items({
         "graph_mapper": "MemoryGraphMapper",
         "machine_graph": "MemoryMachineGraph",
-        "routing_info": "MemoryRoutingInfo",
+        "routing_info": "MemoryRoutingInfos",
         "application_graph": "MemoryApplicationGraph",
         "iptags": "MemoryIpTags",
-        "reverse_iptags": "MemoryReverseIptags",
+        "reverse_iptags": "MemoryReverseIpTags",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
     })
@@ -41,5 +41,6 @@ class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
     @abstractmethod
     def generate_application_data_specification(
             self, spec, placement, graph_mapper, application_graph,
-            machine_graph, routing_info, iptags, reverse_iptags):
+            machine_graph, routing_info, iptags, reverse_iptags,
+            machine_time_step, time_scale_factor):
         pass

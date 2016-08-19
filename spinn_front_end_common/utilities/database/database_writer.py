@@ -26,7 +26,7 @@ class DatabaseWriter(object):
     """
 
     __slots__ = [
-        # boolean flag for when the database writer has finsihed
+        # boolean flag for when the database writer has finished
         "_done",
 
         # the directory of where the database is to be written
