@@ -354,12 +354,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """ Fill the send buffer with keys to send
         """
 
-        # Don't regenerate if done already
-        if (self._current_first_timestep is not None and
-                (first_machine_time_step == self._current_first_timestep)):
-            return
-        self._current_first_timestep = first_machine_time_step
-
         key_to_send = self._virtual_key
         if self._virtual_key is None:
             key_to_send = 0
