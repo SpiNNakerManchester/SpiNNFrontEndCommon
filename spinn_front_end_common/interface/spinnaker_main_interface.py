@@ -11,6 +11,7 @@ from pacman.model.graphs.application.impl.application_virtual_vertex import  \
     ApplicationVirtualVertex
 from pacman.model.graphs.machine.impl.machine_virtual_vertex import\
     MachineVirtualVertex
+from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
 from spinn_front_end_common.utilities import exceptions as common_exceptions
@@ -521,7 +522,10 @@ class SpinnakerMainInterface(object):
                 self._do_load()
 
         # Run for each of the given steps
-        for step in steps:
+        logger.info("Running for {} steps for a total of {} ms".format(
+            len(steps), run_time))
+        for i, step in enumerate(steps):
+            logger.info("Run {} of {}".format(i + 1, len(steps)))
             self._do_run(step)
 
         # Indicate that the signal handler needs to act
@@ -1124,31 +1128,27 @@ class SpinnakerMainInterface(object):
             sys.exit(1)
         except Exception as e:
 
-            is_failed_to_start_exp = \
-                isinstance(e,
-                           common_exceptions.ExecutableFailedToStartException)
-            is_failed_to_stop_exp = \
-                isinstance(e,
-                           common_exceptions.ExecutableFailedToStopException)
-            if is_failed_to_start_exp or is_failed_to_stop_exp:
+            logger.error(
+                "An error has occurred during simulation")
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            for line in traceback.format_tb(ex_traceback):
+                logger.error(line.strip())
 
-                # print error message to end user
-                logger.error(
-                    "An error has occurred during simulation")
-                ex_type, ex_value, ex_traceback = sys.exc_info()
-                for line in traceback.format_tb(ex_traceback):
-                    logger.error(line.strip())
+            # if exception has an exception, print to system
+            if isinstance(e, PacmanAlgorithmFailedToCompleteException):
                 logger.error(e.exception)
+            else:
+                logger.error(e)
 
-                logger.info("\n\nAttempting to extract data\n\n")
+            logger.info("\n\nAttempting to extract data\n\n")
 
-                # If an exception occurs during a run, attempt to get
-                # information out of the simulation before shutting down
-                try:
-                    self._recover_from_error(e, executor.get_items())
-                except Exception:
-                    logger.error("Error when attempting to recover from error")
-                    traceback.print_exc()
+            # If an exception occurs during a run, attempt to get
+            # information out of the simulation before shutting down
+            try:
+                self._recover_from_error(e, executor.get_items())
+            except Exception:
+                logger.error("Error when attempting to recover from error")
+                traceback.print_exc()
 
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
@@ -1224,20 +1224,19 @@ class SpinnakerMainInterface(object):
         executor.execute_mapping()
 
     def _recover_from_error(self, e, error_outputs):
-        error = e.exception
         has_failed_to_start = isinstance(
-            error, common_exceptions.ExecutableFailedToStartException)
+            e, common_exceptions.ExecutableFailedToStartException)
         has_failed_to_end = isinstance(
-            error, common_exceptions.ExecutableFailedToStopException)
+            e, common_exceptions.ExecutableFailedToStopException)
 
         # If we have failed to start or end, get some extra data
         if has_failed_to_start or has_failed_to_end:
             is_rte = True
             if has_failed_to_end:
-                is_rte = error.is_rte
+                is_rte = e.is_rte
 
             inputs = dict(error_outputs)
-            inputs["FailedCoresSubsets"] = error.failed_core_subsets
+            inputs["FailedCoresSubsets"] = e.failed_core_subsets
             inputs["RanToken"] = True
             algorithms = list()
             outputs = list()

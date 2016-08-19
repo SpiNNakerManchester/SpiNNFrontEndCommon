@@ -14,6 +14,8 @@ from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources.cpu_cycles_per_tick_resource \
+    import CPUCyclesPerTickResource
 from pacman.model.abstract_classes.impl.constrained_object \
     import ConstrainedObject
 from pacman.model.abstract_classes.abstract_has_constraints \
@@ -276,7 +278,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 self._record_buffer_size > 0,
                 self._buffered_sdram_per_timestep > 0,
                 self._minimum_sdram_for_buffering, self._record_buffer_size)),
-            cpu_cycles=self.get_cpu_usage(),
+            cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             iptags=self._iptags,
             reverse_iptags=self._reverse_iptags)
 

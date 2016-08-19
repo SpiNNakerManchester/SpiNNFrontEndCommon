@@ -213,7 +213,8 @@ class CommandSender(
 
             spec.write_value(len(with_payload))
             for command in with_payload:
-                spec.write_value(self._get_key(command))
+                spec.write_value(
+                    self._get_key(command, graph_mapper, routing_infos))
                 payload = command.get_payload(
                     routing_infos, machine_graph, graph_mapper)
                 spec.write_value(payload)
@@ -222,14 +223,15 @@ class CommandSender(
 
             spec.write_value(len(without_payload))
             for command in without_payload:
-                spec.write_value(self._get_key(command))
+                spec.write_value(
+                    self._get_key(command, graph_mapper, routing_infos))
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
         # End-of-Spec:
         spec.end_specification()
 
-    def _get_key(self, command):
+    def _get_key(self, command, graph_mapper, routing_info):
         """ Return a key for a command
 
         :param command:
@@ -243,9 +245,8 @@ class CommandSender(
         # all the edges have the same keys assigned
         edge_for_command = self._command_edge[command]
         machine_edge_for_command = iter(
-            self._graph_mapper.get_machine_edges(edge_for_command)).next()
-        key = \
-            self._routing_info.get_first_key_for_edge(machine_edge_for_command)
+            graph_mapper.get_machine_edges(edge_for_command)).next()
+        key = routing_info.get_first_key_for_edge(machine_edge_for_command)
 
         # Build the command by merging in the assigned key with the command
         return key | command.key
