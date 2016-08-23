@@ -539,10 +539,6 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>executable_finder</param_name>
-                <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>graph</param_name>
                 <param_type>MemoryMachineGraph</param_type>
                 <param_type>MemoryApplicationGraph</param_type>
@@ -566,7 +562,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>placements</param_name>
-            <param_name>executable_finder</param_name>
             <param_name>graph</param_name>
             <param_name>hostname</param_name>
             <param_name>report_default_directory</param_name>
@@ -577,8 +572,41 @@
             <param_name>graph_mapper</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>ExecutableTargets</param_type>
             <param_type>DataSpecificationTargets</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonGraphBinaryGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_graph_binary_gatherer</python_module>
+        <python_class>FrontEndCommonGraphBinaryGatherer</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>placements</param_name>
+            <param_name>executable_finder</param_name>
+            <param_name>graph</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>ExecutableTargets</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonBufferManagerCreator">

@@ -988,7 +988,9 @@ class SpinnakerMainInterface(object):
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # Run the data generation algorithms
-        algorithms = [self._dsg_algorithm]
+        algorithms = [
+            self._dsg_algorithm,
+            "FrontEndCommonGraphBinaryGatherer"]
 
         executor = self._run_machine_algorithms(inputs, algorithms, [])
         self._mapping_outputs = executor.get_items()
