@@ -22,6 +22,8 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable \
+    import AbstractChipRuntimeUpdatable
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
@@ -36,7 +38,7 @@ _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 class CommandSender(
         AbstractProvidesOutgoingPartitionConstraints,
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary):
+        AbstractHasAssociatedBinary, AbstractChipRuntimeUpdatable):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """

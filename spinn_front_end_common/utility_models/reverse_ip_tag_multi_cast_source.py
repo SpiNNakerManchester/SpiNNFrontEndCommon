@@ -20,6 +20,8 @@ from spinn_front_end_common.utility_models\
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable\
+    import AbstractChipRuntimeUpdatable
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 
@@ -30,7 +32,8 @@ import sys
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractProvidesOutgoingPartitionConstraints,
+        AbstractChipRuntimeUpdatable):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """

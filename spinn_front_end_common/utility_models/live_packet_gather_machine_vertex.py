@@ -22,6 +22,8 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable\
+    import AbstractChipRuntimeUpdatable
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
@@ -35,7 +37,8 @@ from enum import Enum
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+        AbstractChipRuntimeUpdatable):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
