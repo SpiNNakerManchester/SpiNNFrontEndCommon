@@ -211,7 +211,7 @@ bool simulation_initialise(
     // transfer data to pointers for end user usage
     *timer_period = address[SIMULATION_TIMER_PERIOD];
 
-    // handle the sdp callback for the simulation
+    // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
     spin1_callback_on(
@@ -225,6 +225,6 @@ bool simulation_initialise(
     stored_provenance_function = provenance_function;
     stored_provenance_data_address = provenance_data_address;
 
-    // if all simualtion initisiation complete return true,
+    // if all simulation initialisation complete return true,
     return true;
 }

@@ -45,7 +45,7 @@ typedef void (*resume_callback_t)();
 //!            uint32_t magic_number;
 //!            uint32_t timer_period;
 //!            uint32_t n_simulation_ticks;
-//! 2. setting the simulation sdp port code that supports multiple runs of the
+//! 2. setting the simulation SDP port code that supports multiple runs of the
 //! executing code through front end calls.
 //! 3. setting up the registration for storing provenance data
 //! \param[in] address The address of the region

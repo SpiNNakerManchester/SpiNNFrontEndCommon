@@ -116,5 +116,7 @@ class Reload(object):
         # run the pacman executor
         xml_paths = helpful_functions.get_front_end_common_pacman_xml_paths()
         executer = PACMANAlgorithmExecutor(
-            algorithms, [], inputs, xml_paths, [], False, False)
+            algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+            required_outputs=[], xml_paths=xml_paths, packages=None,
+            do_timings=False, print_timings=False)
         executer.execute_mapping()
