@@ -133,6 +133,9 @@ class SpinnakerMainInterface(object):
         "_extra_post_run_algorithms",
 
         #
+        "_extra_load_algorithms",
+
+        #
         "_dsg_algorithm",
 
         #
@@ -216,7 +219,7 @@ class SpinnakerMainInterface(object):
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
             extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-            n_chips_required=None):
+            n_chips_required=None, extra_load_algorithms=None):
 
         # global params
         self._config = config
@@ -276,6 +279,9 @@ class SpinnakerMainInterface(object):
         self._extra_post_run_algorithms = list()
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
+        self._extra_load_algorithms = list()
+        if extra_load_algorithms is not None:
+            self._extra_load_algorithms.extend(extra_load_algorithms)
 
         self._dsg_algorithm = \
             "FrontEndCommonApplicationGraphDataSpecificationWriter"
@@ -1005,9 +1011,7 @@ class SpinnakerMainInterface(object):
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # Run the data generation algorithms
-        algorithms = [
-            self._dsg_algorithm,
-            "FrontEndCommonGraphBinaryGatherer"]
+        algorithms = [self._dsg_algorithm]
 
         executor = self._run_machine_algorithms(inputs, algorithms, [])
         self._mapping_outputs = executor.get_items()
@@ -1022,7 +1026,7 @@ class SpinnakerMainInterface(object):
             self._config.getboolean("Reports", "writeMemoryMapReport")
         )
 
-        algorithms = list()
+        algorithms = list(self._extra_load_algorithms)
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
         optional_algorithms.append("FrontEndCommonTagsLoader")
@@ -1038,8 +1042,12 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
+
+        # algorithms needed for loading the binaries to the SpiNNaker machine
+        optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
         optional_algorithms.append("FrontEndCommonLoadExecutableImages")
 
+        # expected outputs from this phase
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
             "LoadedRoutingTablesToken", "LoadBinariesToken",
