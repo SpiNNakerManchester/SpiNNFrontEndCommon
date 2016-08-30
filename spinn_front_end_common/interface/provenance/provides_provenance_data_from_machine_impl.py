@@ -89,6 +89,12 @@ class ProvidesProvenanceDataFromMachineImpl(
         new_names.append(name)
         return new_names
 
+    @staticmethod
+    def _add_names(names, extra_names):
+        new_names = list(names)
+        new_names.extend(extra_names)
+        return new_names
+
     def _read_basic_provenance_items(self, provenance_data, placement):
         transmission_event_overflow = provenance_data[
             self.PROVENANCE_DATA_ENTRIES.TRANSMISSION_EVENT_OVERFLOW.value]
