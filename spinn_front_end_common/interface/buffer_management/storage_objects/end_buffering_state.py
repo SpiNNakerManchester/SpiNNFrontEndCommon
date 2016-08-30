@@ -43,6 +43,9 @@ class EndBufferingState(object):
     def buffering_out_fsm_state(self):
         return self._buffering_out_fsm_state
 
+    def get_region_address(self, recording_region_id):
+        return self._region_addresses[recording_region_id]
+
     def channel_buffer_state(self, i):
         return self._list_channel_buffer_state[i]
 

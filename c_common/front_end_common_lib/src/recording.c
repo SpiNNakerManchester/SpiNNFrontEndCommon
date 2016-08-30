@@ -375,17 +375,14 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
 
 }
 
-void recording_finalise() {
-    uint8_t i;
-
-    log_info("Finalising recording channels");
+//! brief this writes data to the state region for helping the python
+address_t _recording_state_region_write(){
 
     // Get the region address store channel details
     address_t out_ptr = buffering_out_control_reg;
 
     log_info(
         "Storing channel state info starting at 0x%08x", out_ptr);
-
     // store number of recording regions
     spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
     out_ptr++;
@@ -398,9 +395,19 @@ void recording_finalise() {
     // store the address mapping
     spin1_memcpy(out_ptr, &region_addresses,
                  n_recording_regions * sizeof(region_addresses));
+    out_ptr++;
+    return out_ptr;
+}
+
+void recording_finalise() {
+    uint8_t i;
+
+    log_info("Finalising recording channels");
+
+    address_t out_ptr = _recording_state_region_write();
 
     // update for the amount of recording regions data
-    out_ptr = out_ptr + n_recording_regions
+    out_ptr = out_ptr + n_recording_regions;
 
     // store info on the channel status so that the host can flush the info
     // buffered in SDRAM
@@ -533,6 +540,9 @@ bool recording_initialize(
     msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
     msg.dest_addr = 0;
     msg.srce_addr = spin1_get_chip_id();
+
+    // write to the state region for letting python to find addresses
+    _recording_state_region_write();
     return true;
 }
 

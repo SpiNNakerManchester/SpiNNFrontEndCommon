@@ -38,6 +38,9 @@ class FrontEndCommonBufferExtractor(object):
                     transceiver.get_cpu_information_from_core(
                         placement.x, placement.y, placement.p).user[0]
                 state_region = vertex.get_buffered_state_region()
+
+
+
                 for region in vertex.get_buffered_regions():
                     address = utility_calls.get_region_base_address_offset(
                         regions_base_address, region)
