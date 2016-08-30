@@ -14,8 +14,8 @@ from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable\
-    import AbstractChipRuntimeUpdatable
+from spinn_front_end_common.abstract_models.abstract_binary_uses_simulation_run\
+    import AbstractBinaryUsesSimulationRun
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.abstract_classes.impl.constrained_object \
@@ -62,7 +62,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 class ReverseIPTagMulticastSourceMachineVertex(
         AbstractMachineVertex, AbstractHasConstraints,
         AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractChipRuntimeUpdatable,
+        AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,

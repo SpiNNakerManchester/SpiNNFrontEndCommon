@@ -2,8 +2,8 @@ from spinnman.model.cpu_state import CPUState
 
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable\
-    import AbstractChipRuntimeUpdatable
+from spinn_front_end_common.abstract_models.abstract_binary_uses_simulation_run\
+    import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.utilities.scp.update_runtime_process \
     import UpdateRuntimeProcess
 
@@ -27,7 +27,7 @@ class FrontEndCommonChipRuntimeUpdater(object):
         # Find placements whose run time can be updated
         updatable_binaries, _ = helpful_functions.get_executables_by_run_type(
             executable_targets, placements, graph_mapper,
-            AbstractChipRuntimeUpdatable)
+            AbstractBinaryUsesSimulationRun)
 
         if updatable_binaries.total_processors > 0:
             helpful_functions.wait_for_cores_to_be_ready(

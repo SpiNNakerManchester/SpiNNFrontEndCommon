@@ -21,8 +21,8 @@ from spinn_front_end_common.utility_models\
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable\
-    import AbstractChipRuntimeUpdatable
+from spinn_front_end_common.abstract_models.abstract_binary_uses_simulation_run\
+    import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 
@@ -33,7 +33,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 class LivePacketGather(
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        ApplicationVertex, AbstractChipRuntimeUpdatable):
+        ApplicationVertex, AbstractBinaryUsesSimulationRun):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.

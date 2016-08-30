@@ -25,8 +25,8 @@ from spinn_front_end_common.abstract_models.abstract_changable_after_run \
     import AbstractChangableAfterRun
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
-from spinn_front_end_common.abstract_models.abstract_chip_runtime_updatable\
-    import AbstractChipRuntimeUpdatable
+from spinn_front_end_common.abstract_models.abstract_binary_uses_simulation_run\
+    import AbstractBinaryUsesSimulationRun
 
 # general imports
 from collections import defaultdict
@@ -484,7 +484,7 @@ class SpinnakerMainInterface(object):
         # Check if everything can update the run time
         is_runtime_updatable = True
         for placement in self._placements.placements:
-            if not isinstance(placement.vertex, AbstractChipRuntimeUpdatable):
+            if not isinstance(placement.vertex, AbstractBinaryUsesSimulationRun):
                 if self._graph_mapper is None:
                     is_runtime_updatable = False
                     break
@@ -492,7 +492,7 @@ class SpinnakerMainInterface(object):
                     app_vertex = self._graph_mapper.get_application_vertex(
                         placement.vertex)
                     if not isinstance(
-                            app_vertex, AbstractChipRuntimeUpdatable):
+                            app_vertex, AbstractBinaryUsesSimulationRun):
                         is_runtime_updatable = False
         if not is_runtime_updatable:
             self._config.set("Buffers", "use_auto_pause_and_resume", "False")

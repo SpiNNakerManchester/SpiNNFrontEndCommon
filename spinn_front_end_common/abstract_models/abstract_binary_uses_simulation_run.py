@@ -6,6 +6,6 @@ from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
 
 
 @add_metaclass(ABCMeta)
-class AbstractChipRuntimeUpdatable(AbstractStartsSynchronized):
+class AbstractBinaryUsesSimulationRun(AbstractStartsSynchronized):
     """ Indicates that the binary run time can be updated
     """
