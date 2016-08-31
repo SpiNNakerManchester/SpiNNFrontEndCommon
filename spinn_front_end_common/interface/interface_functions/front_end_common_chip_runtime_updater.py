@@ -2,8 +2,8 @@ from spinnman.model.cpu_state import CPUState
 
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.abstract_models.abstract_binary_uses_simulation_run\
-    import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.utilities.scp.update_runtime_process \
     import UpdateRuntimeProcess
 

@@ -25,8 +25,8 @@ from spinn_front_end_common.abstract_models.abstract_changable_after_run \
     import AbstractChangableAfterRun
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
-from spinn_front_end_common.abstract_models.abstract_binary_uses_simulation_run\
-    import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 
 # general imports
 from collections import defaultdict
@@ -484,7 +484,8 @@ class SpinnakerMainInterface(object):
         # Check if everything can update the run time
         is_runtime_updatable = True
         for placement in self._placements.placements:
-            if not isinstance(placement.vertex, AbstractBinaryUsesSimulationRun):
+            if not isinstance(
+                    placement.vertex, AbstractBinaryUsesSimulationRun):
                 if self._graph_mapper is None:
                     is_runtime_updatable = False
                     break

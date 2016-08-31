@@ -28,7 +28,7 @@ class ChannelBufferState(object):
         # True if the region overflowed during the simulation (8 bits)
         "_missing_info",
 
-        #Last operation performed on the buffer - read or write (8 bits)
+        # Last operation performed on the buffer - read or write (8 bits)
         "_last_buffer_operation",
 
         #

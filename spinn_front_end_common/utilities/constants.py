@@ -23,7 +23,7 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = 8
 
 # The number of words used by the simulation interface
 # 4 for machine_time_step,
-# 4 for sdp port
+# 4 for SDP port
 # 4 for application hash
 SIMULATION_N_BYTES = 12
 

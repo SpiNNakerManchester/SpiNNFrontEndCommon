@@ -6,7 +6,7 @@ class DatabaseReader(object):
     """
 
     __slots__ = [
-        # the database connection (is basically alock on the database)
+        # the database connection (is basically a lock on the database)
         "_connection",
 
         # the location for writing
