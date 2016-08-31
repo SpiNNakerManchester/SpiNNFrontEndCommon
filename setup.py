@@ -8,6 +8,7 @@ setup(
     packages=[
         'spinn_front_end_common',
         'spinn_front_end_common.abstract_models',
+        'spinn_front_end_common.abstract_models.impl',
         'spinn_front_end_common.common_model_binaries',
         'spinn_front_end_common.interface',
         'spinn_front_end_common.interface.buffer_management',
@@ -15,6 +16,7 @@ setup(
         'spinn_front_end_common.interface.buffer_management.storage_objects',
         'spinn_front_end_common.interface.interface_functions',
         'spinn_front_end_common.interface.provenance',
+        'spinn_front_end_common.interface.simulation',
         'spinn_front_end_common.utilities',
         'spinn_front_end_common.utilities.connections',
         'spinn_front_end_common.utilities.database',
