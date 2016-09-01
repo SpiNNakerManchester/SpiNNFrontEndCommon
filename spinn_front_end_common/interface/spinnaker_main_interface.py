@@ -8,8 +8,6 @@ from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graphs.application.impl.application_virtual_vertex import  \
-    ApplicationVirtualVertex
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
@@ -1619,7 +1617,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, ApplicationVirtualVertex) and
+        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
