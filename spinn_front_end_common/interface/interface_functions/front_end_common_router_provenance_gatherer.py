@@ -14,6 +14,23 @@ class FrontEndCommonRouterProvenanceGatherer(object):
     routers.
     """
 
+    __slots__ = [
+        # int for how many packets were sent
+        '_total_sent_packets',
+
+        # how many new packets were received
+        '_total_new_packets',
+
+        # how many dropped packets
+        '_total_dropped_packets',
+
+        # total missed dropped packets
+        '_total_missed_dropped_packets',
+
+        # total lost dropped packets
+        '_total_lost_dropped_packets'
+    ]
+
     def __call__(
             self, transceiver, machine, router_tables, has_ran,
             provenance_data_objects=None):
@@ -59,7 +76,7 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             ["router_provenance", "total_lost_dropped_packets"],
             self._total_lost_dropped_packets))
 
-        return {'prov_items': prov_items}
+        return prov_items
 
     def _write_router_provenance_data(self, router_tables, machine, txrx):
         """ Writes the provenance data of the router diagnostics

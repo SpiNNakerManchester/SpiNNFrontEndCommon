@@ -68,6 +68,10 @@ void simulation_run() {
     spin1_start_paused();
 }
 
+//! \brief cleans up the house keeping, falls into a sync state and handles
+//!        the resetting up of states as required to resume.
+//! \param[in] resume_function The function to call just before the simulation
+//!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback){
 
     stored_resume_function = callback;
@@ -77,6 +81,12 @@ void simulation_handle_pause_resume(resume_callback_t callback){
 
     // Pause the simulation
     spin1_pause();
+}
+
+//! \brief a helper method for people not using the auto pause and
+//! resume functionality
+void simulation_exit(){
+    simulation_handle_pause_resume(NULL);
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
@@ -201,7 +211,7 @@ bool simulation_initialise(
     // transfer data to pointers for end user usage
     *timer_period = address[SIMULATION_TIMER_PERIOD];
 
-    // handle the sdp callback for the simulation
+    // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
     spin1_callback_on(
@@ -215,6 +225,6 @@ bool simulation_initialise(
     stored_provenance_function = provenance_function;
     stored_provenance_data_address = provenance_data_address;
 
-    // if all simualtion initisiation complete return true,
+    // if all simulation initialisation complete return true,
     return true;
 }

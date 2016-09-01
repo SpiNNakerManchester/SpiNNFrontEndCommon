@@ -15,6 +15,8 @@ class FrontEndCommonMachineGenerator(object):
     """ Interface to make a transceiver and a spinn_machine object
     """
 
+    __slots__ = []
+
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
             board_version, auto_detect_bmp, enable_reinjection,
@@ -77,7 +79,7 @@ class FrontEndCommonMachineGenerator(object):
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()
 
-        return {"machine": machine, "txrx": txrx}
+        return machine, txrx
 
     @staticmethod
     def _sort_out_scamp_connections(scamp_connections_data):

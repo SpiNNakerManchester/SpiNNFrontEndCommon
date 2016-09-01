@@ -5,18 +5,18 @@ import time
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonNetworkSpecificationReportPartitionedGraphReport(object):
+class FrontEndCommonMachineGraphNetworkSpecificationReport(object):
     """
     """
 
-    def __call__(self, report_folder, partitioned_graph, hostname):
+    def __call__(self, report_folder, machine_graph, hostname):
         """
         :param report_folder: the directory to which reports are stored
         :type report_folder: str
-        :param partitioned_graph: the partitioned graph generated from the \
+        :param machine_graph: the machine graph generated from the \
                     tools
-        :type partitioned_graph:\
-                    pacman.model.partitioned_graph.partitioned_graph.PartitionedGraph
+        :type machine_graph:\
+                    pacman.model.graph.machine.machine_graph.MachineGraph
         :param hostname: the machine name
         :type hostname:
         :return: None
@@ -39,27 +39,26 @@ class FrontEndCommonNetworkSpecificationReportPartitionedGraphReport(object):
 
         # Print information on vertices:
         f_network_specification.write("*** Vertices:\n")
-        for vertex in partitioned_graph.subvertices:
+        for vertex in machine_graph.vertices:
             label = vertex.label
-            model = vertex.model_name
+            model = vertex.__class__.__name__
             constraints = vertex.constraints
             f_network_specification.write("Vertex {}\n".format(label))
             f_network_specification.write("Model: {}\n".format(model))
             for constraint in constraints:
-                constraint_str = constraint.label
                 f_network_specification.write("constraint: {}\n"
-                                              .format(constraint_str))
+                                              .format(str(constraint)))
             f_network_specification.write("\n")
 
         # Print information on edges:
         f_network_specification.write("*** Edges:\n")
-        for edge in partitioned_graph.subedges:
+        for edge in machine_graph.edges:
             label = edge.label
             model = "No Model"
             if hasattr(edge, "connector"):
                 model = edge.connector.__class__.__name__
-            pre_v = edge.pre_subvertex
-            post_v = edge.post_subvertex
+            pre_v = edge.pre_vertex
+            post_v = edge.post_vertex
             pre_v_label = pre_v.label
             post_v_label = post_v.label
             edge_str = "Edge {} from vertex: '{}' to vertex: '{}' \n"\

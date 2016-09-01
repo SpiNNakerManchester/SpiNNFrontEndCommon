@@ -4,36 +4,28 @@ main interface for the spinnaker tools
 
 # pacman imports
 from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
-from pacman.model.partitionable_graph.partitionable_graph \
-    import PartitionableGraph
-from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.partitioned_graph.virtual_sata_partitioned_vertex import \
-    VirtualSataLinkPartitionedVertex
-from pacman.model.partitioned_graph.virtual_spinnaker_link_partitioned_vertex\
-    import VirtualSpinnakerLinkPartitionedVertex
+from pacman.model.graphs.application.impl.application_graph \
+    import ApplicationGraph
+from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
+from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.model.graphs.application.impl.application_virtual_vertex import  \
+    ApplicationVirtualVertex
+from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
-from spinn_front_end_common.abstract_models.\
-    abstract_has_first_machine_time_step \
-    import AbstractHasFirstMachineTimeStep
-from spinn_front_end_common.abstract_models\
-    .abstract_partitioned_data_specable_vertex \
-    import AbstractPartitionedDataSpecableVertex
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.abstract_models.abstract_data_specable_vertex \
-    import AbstractDataSpecableVertex
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
 from spinn_front_end_common.abstract_models.abstract_changable_after_run \
     import AbstractChangableAfterRun
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
-
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 
 # general imports
 from collections import defaultdict
@@ -51,12 +43,182 @@ class SpinnakerMainInterface(object):
     """ Main interface into the tools logic flow
     """
 
+    __slots__ = [
+        #
+        "_config",
+
+        #
+        "_executable_finder",
+
+        #
+        "_n_chips_required",
+
+        #
+        "_hostname",
+
+        #
+        "_spalloc_server",
+
+        #
+        "_remote_spinnaker_url",
+
+        #
+        "_machine_allocation_controller",
+
+        #
+        "_graph_label",
+
+        #
+        "_application_graph",
+
+        #
+        "_machine_graph",
+
+        #
+        "_graph_mapper",
+
+        #
+        "_placements",
+
+        #
+        "_router_tables",
+
+        #
+        "_routing_infos",
+
+        #
+        "_tags",
+
+        #
+        "_machine",
+
+        #
+        "_txrx",
+
+        #
+        "_buffer_manager",
+
+        #
+        "_ip_address",
+
+        #
+        "_machine_outputs",
+
+        #
+        "_mapping_outputs",
+
+        #
+        "_load_outputs",
+
+        #
+        "_last_run_outputs",
+
+        #
+        "_pacman_provenance",
+
+        #
+        "_xml_paths",
+
+        #
+        "_extra_mapping_algorithms",
+
+        #
+        "_extra_mapping_inputs",
+
+        #
+        "_extra_pre_run_algorithms",
+
+        #
+        "_extra_post_run_algorithms",
+
+        #
+        "_extra_load_algorithms",
+
+        #
+        "_dsg_algorithm",
+
+        #
+        "_none_labelled_vertex_count",
+
+        #
+        "_none_labelled_edge_count",
+
+        #
+        "_database_socket_addresses",
+
+        #
+        "_database_interface",
+
+        #
+        "_create_database",
+
+        #
+        "_database_file_path",
+
+        #
+        "_has_ran",
+
+        #
+        "_has_reset_last",
+
+        #
+        "_current_run_timesteps",
+
+        #
+        "_no_sync_changes",
+
+        #
+        "_minimum_step_generated",
+
+        #
+        "_no_machine_time_steps",
+
+        #
+        "_machine_time_step",
+
+        #
+        "_time_scale_factor",
+
+        #
+        "_app_id",
+
+        #
+        "_report_default_directory",
+
+        #
+        "_app_data_runtime_folder",
+
+        #
+        "_json_folder",
+
+        #
+        "_provenance_file_path",
+
+        #
+        "_do_timings",
+
+        #
+        "_print_timings",
+
+        #
+        "_provenance_format",
+
+        #
+        "_exec_dse_on_host",
+
+        #
+        "_use_virtual_board",
+
+        #
+        "_raise_keyboard_interrupt"
+    ]
+
     def __init__(
             self, config, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
             extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-            n_chips_required=None):
+            n_chips_required=None, extra_load_algorithms=None):
 
         # global params
         self._config = config
@@ -76,11 +238,13 @@ class SpinnakerMainInterface(object):
 
         # update graph label if needed
         if graph_label is None:
-            graph_label = "Application_graph"
+            self._graph_label = "Application_graph"
+        else:
+            self._graph_label = graph_label
 
         # pacman objects
-        self._partitionable_graph = PartitionableGraph(label=graph_label)
-        self._partitioned_graph = PartitionedGraph(label=graph_label)
+        self._application_graph = ApplicationGraph(label=self._graph_label)
+        self._machine_graph = MachineGraph(label=self._graph_label)
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
@@ -109,13 +273,17 @@ class SpinnakerMainInterface(object):
             self._extra_mapping_inputs.update(extra_mapping_inputs)
         self._extra_pre_run_algorithms = list()
         if extra_pre_run_algorithms is not None:
-            self._extra_pre_run_algorithms.extend(extra_pre_run_algorithms)
+            self._extra_pre_run_algorithms = \
+                extra_pre_run_algorithms + self._extra_pre_run_algorithms
         self._extra_post_run_algorithms = list()
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
+        self._extra_load_algorithms = list()
+        if extra_load_algorithms is not None:
+            self._extra_load_algorithms.extend(extra_load_algorithms)
 
         self._dsg_algorithm = \
-            "FrontEndCommonPartitionableGraphDataSpecificationWriter"
+            "FrontEndCommonApplicationGraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
         self._none_labelled_vertex_count = 0
@@ -287,9 +455,9 @@ class SpinnakerMainInterface(object):
                     "The network cannot be changed between runs without"
                     " resetting")
 
-            # Reset the partitioned graph if there is a partitionable graph
-            if len(self._partitionable_graph.vertices) > 0:
-                self._partitioned_graph = PartitionedGraph()
+            # Reset the machine graph if there is an application graph
+            if len(self._application_graph.vertices) > 0:
+                self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
 
             # Reset the machine if the machine is a spalloc machine and the
@@ -305,12 +473,29 @@ class SpinnakerMainInterface(object):
         # Check if anything is recording and buffered
         is_buffered_recording = False
         for placement in self._placements.placements:
-            vertex = placement.subvertex
+            vertex = placement.vertex
             if (isinstance(vertex, AbstractReceiveBuffersToHost) and
                     isinstance(vertex, AbstractRecordable)):
                 if vertex.is_recording():
                     is_buffered_recording = True
                     break
+
+        # Check if everything can update the run time
+        is_runtime_updatable = True
+        for placement in self._placements.placements:
+            if not isinstance(
+                    placement.vertex, AbstractBinaryUsesSimulationRun):
+                if self._graph_mapper is None:
+                    is_runtime_updatable = False
+                    break
+                else:
+                    app_vertex = self._graph_mapper.get_application_vertex(
+                        placement.vertex)
+                    if not isinstance(
+                            app_vertex, AbstractBinaryUsesSimulationRun):
+                        is_runtime_updatable = False
+        if not is_runtime_updatable:
+            self._config.set("Buffers", "use_auto_pause_and_resume", "False")
 
         # Work out an array of timesteps to perform
         if (not self._config.getboolean(
@@ -360,7 +545,10 @@ class SpinnakerMainInterface(object):
                 self._do_load()
 
         # Run for each of the given steps
-        for step in steps:
+        logger.info("Running for {} steps for a total of {} ms".format(
+            len(steps), run_time))
+        for i, step in enumerate(steps):
+            logger.info("Run {} of {}".format(i + 1, len(steps)))
             self._do_run(step)
 
         # Indicate that the signal handler needs to act
@@ -374,7 +562,7 @@ class SpinnakerMainInterface(object):
         sdram_tracker = dict()
         vertex_by_chip = defaultdict(list)
         for placement in self._placements.placements:
-            vertex = placement.subvertex
+            vertex = placement.vertex
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 resources = vertex.resources_required
                 if (placement.x, placement.y) not in sdram_tracker:
@@ -417,21 +605,6 @@ class SpinnakerMainInterface(object):
             steps.append(int(left_over_time_steps))
         return steps
 
-    def _update_n_machine_time_steps(self, n_machine_time_steps):
-        """ Update all vertices with the n_machine_time_steps if they use\
-            DSG interface.
-
-        :param n_machine_time_steps: the number of machine time steps to run\
-                    this iteration.
-        :return: None
-        """
-        for vertex in self._partitionable_graph.vertices:
-            if isinstance(vertex, AbstractDataSpecableVertex):
-                vertex.set_no_machine_time_steps(n_machine_time_steps)
-        for vertex in self._partitioned_graph.subvertices:
-            if isinstance(vertex, AbstractPartitionedDataSpecableVertex):
-                vertex.set_no_machine_time_steps(n_machine_time_steps)
-
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
@@ -445,13 +618,13 @@ class SpinnakerMainInterface(object):
             self._no_machine_time_steps = int(math.ceil(machine_time_steps))
         else:
             self._no_machine_time_steps = None
-            for vertex in self._partitionable_graph.vertices:
+            for vertex in self._application_graph.vertices:
                 if (isinstance(vertex, AbstractRecordable) and
                         vertex.is_recording()):
                     raise common_exceptions.ConfigurationException(
                         "recording a vertex when set to infinite runtime "
                         "is not currently supported")
-            for vertex in self._partitioned_graph.subvertices:
+            for vertex in self._machine_graph.vertices:
                 if (isinstance(vertex, AbstractRecordable) and
                         vertex.is_recording()):
                     raise common_exceptions.ConfigurationException(
@@ -468,8 +641,10 @@ class SpinnakerMainInterface(object):
 
         # Execute the algorithms
         executor = PACMANAlgorithmExecutor(
-            algorithms, optional, inputs, self._xml_paths, outputs,
-            self._do_timings, self._print_timings)
+            algorithms=algorithms, optional_algorithms=optional,
+            inputs=inputs, xml_paths=self._xml_paths, required_outputs=outputs,
+            do_timings=self._do_timings, print_timings=self._print_timings)
+
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -490,11 +665,11 @@ class SpinnakerMainInterface(object):
         algorithms = list()
         outputs = list()
 
-        # add the partitionable and partitioned graphs as needed
-        if len(self._partitionable_graph.vertices) > 0:
-            inputs["MemoryPartitionableGraph"] = self._partitionable_graph
-        elif len(self._partitioned_graph.subvertices) > 0:
-            inputs["MemoryPartitionedGraph"] = self._partitioned_graph
+        # add the application and machine graphs as needed
+        if len(self._application_graph.vertices) > 0:
+            inputs["MemoryApplicationGraph"] = self._application_graph
+        elif len(self._machine_graph.vertices) > 0:
+            inputs["MemoryMachineGraph"] = self._machine_graph
 
         # add reinjection flag
         inputs["EnableReinjectionFlag"] = self._config.getboolean(
@@ -506,6 +681,8 @@ class SpinnakerMainInterface(object):
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
+        inputs["MachineTimeStep"] = self._machine_time_step
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -585,12 +762,6 @@ class SpinnakerMainInterface(object):
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
-            # this is required for when auto pause and resume is not turned
-            # on and your needing to partition for a spalloc or remote system,
-            # as partitioning in this case needs to know how long to run to
-            # give complete SDRAM memory requriements for recording buffers.
-            if n_machine_time_steps > 0:
-                self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
 
             # if using spalloc system
@@ -614,14 +785,13 @@ class SpinnakerMainInterface(object):
                     algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
                     need_virtual_board = True
 
-            if (len(self._partitionable_graph.vertices) == 0 and
-                    len(self._partitioned_graph.subvertices) == 0 and
+            if (len(self._application_graph.vertices) == 0 and
+                    len(self._machine_graph.vertices) == 0 and
                     need_virtual_board):
                 raise common_exceptions.ConfigurationException(
                     "A allocated machine has been requested but there are no"
-                    " partitioned or partitionable vertices to work out the"
-                    " size of the machine required and n_chips_required"
-                    " has not been set")
+                    " vertices to work out the size of the machine required"
+                    " and n_chips_required has not been set")
 
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
@@ -637,18 +807,18 @@ class SpinnakerMainInterface(object):
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
                 # the graph
-                if len(self._partitionable_graph.vertices) != 0:
-                    inputs["MemoryPartitionableGraph"] = \
-                        self._partitionable_graph
+                if len(self._application_graph.vertices) != 0:
+                    inputs["MemoryApplicationGraph"] = \
+                        self._application_graph
                     algorithms.extend(self._config.get(
                         "Mapping",
-                        "partitionable_to_partitioned_algorithms").split(","))
-                    outputs.append("MemoryPartitionedGraph")
+                        "application_to_machine_graph_algorithms").split(","))
+                    outputs.append("MemoryMachineGraph")
                     outputs.append("MemoryGraphMapper")
                     do_partitioning = True
-                elif len(self._partitioned_graph.subvertices) != 0:
-                    inputs["MemoryPartitionedGraph"] = self._partitioned_graph
-                    algorithms.append("FrontEndCommonPartitionedGraphMeasurer")
+                elif len(self._machine_graph.vertices) != 0:
+                    inputs["MemoryMachineGraph"] = self._machine_graph
+                    algorithms.append("FrontEndCommonGraphMeasurer")
             else:
 
                 # If we are using an allocation server but have been told how
@@ -678,22 +848,22 @@ class SpinnakerMainInterface(object):
                 "MachineAllocationController")
 
             if do_partitioning:
-                self._partitioned_graph = executor.get_item(
-                    "MemoryPartitionedGraph")
+                self._machine_graph = executor.get_item(
+                    "MemoryMachineGraph")
                 self._graph_mapper = executor.get_item(
                     "MemoryGraphMapper")
 
         return self._machine
 
     def _convert_down_links(self, down_link_text):
-        """
-        converts the text from the config file into a form that the system
-        understands
+        """ Converts the text form to a list of down links
+
         :param down_link_text: the text from the config system
-        :return: array of (tuple(int, int), tuple(int, int), int) where the
-        first tuple is the source x and y for the chip the link is from,
-        the second is a destintion x and y for the chip the link goes to,
-        the third is the link id from the source chip.
+        :return:\
+            array of (tuple(int, int), tuple(int, int), int) where the\
+            first tuple is the source x and y for the chip the link is from,\
+            the second is a destination x and y for the chip the link goes to,\
+            the third is the link id from the source chip.
         """
         down_links = list()
         bits = down_link_text.split("]")
@@ -723,17 +893,12 @@ class SpinnakerMainInterface(object):
         }
         outputs = ["FileMachine"]
         executor = PACMANAlgorithmExecutor(
-            [], [], inputs, self._xml_paths, outputs, self._do_timings,
-            self._print_timings)
+            algorithms=[], optional_algorithms=[], inputs=inputs,
+            xml_paths=self._xml_paths, required_outputs=outputs,
+            do_timings=self._do_timings, print_timings=self._print_timings)
         executor.execute_mapping()
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
-
-        # Set the initial n_machine_time_steps to all of them for mapping
-        # (note that the underlying vertices will know about
-        # auto-pause-and-resume and so they will work correctly here regardless
-        # of the setting)
-        self._update_n_machine_time_steps(n_machine_time_steps)
 
         # update inputs with extra mapping inputs if required
         inputs = dict(self._machine_outputs)
@@ -742,15 +907,16 @@ class SpinnakerMainInterface(object):
 
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if (len(self._partitionable_graph.vertices) > 0 and
+        if (len(self._application_graph.vertices) > 0 and
                 self._graph_mapper is None):
-            inputs["MemoryPartitionableGraph"] = self._partitionable_graph
-        elif len(self._partitioned_graph.subvertices) > 0:
-            inputs['MemoryPartitionedGraph'] = self._partitioned_graph
+            inputs["MemoryApplicationGraph"] = self._application_graph
+        elif len(self._machine_graph.vertices) > 0:
+            inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
@@ -787,8 +953,8 @@ class SpinnakerMainInterface(object):
             self._json_folder, "sdram_allocations.json")
         inputs["FileMachineFilePath"] = os.path.join(
             self._json_folder, "machine.json")
-        inputs["FilePartitionedGraphFilePath"] = os.path.join(
-            self._json_folder, "partitioned_graph.json")
+        inputs["FileMachineGraphFilePath"] = os.path.join(
+            self._json_folder, "machine_graph.json")
         inputs["FilePlacementFilePath"] = os.path.join(
             self._json_folder, "placements.json")
         inputs["FileRoutingPathsFilePath"] = os.path.join(
@@ -815,50 +981,48 @@ class SpinnakerMainInterface(object):
                 algorithms.append("compressedRoutingTableReports")
                 algorithms.append("comparisonOfRoutingTablesReport")
 
-            # only add partitioner report if using a partitionable graph
+            # only add partitioner report if using an application graph
             if (self._config.getboolean(
                     "Reports", "writePartitionerReports") and
-                    len(self._partitionable_graph.vertices) != 0):
+                    len(self._application_graph.vertices) != 0):
                 algorithms.append("PartitionerReport")
 
-            # only add write placer report with partitionable graph when
-            # there's partitionable vertices
+            # only add write placer report with application graph when
+            # there's application vertices
             if (self._config.getboolean(
-                    "Reports", "writePlacerReportWithPartitionable") and
-                    len(self._partitionable_graph.vertices) != 0):
-                algorithms.append("PlacerReportWithPartitionableGraph")
+                    "Reports", "writeApplicationGraphPlacerReport") and
+                    len(self._application_graph.vertices) != 0):
+                algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
-                    "Reports", "writePlacerReportWithoutPartitionable"):
-                algorithms.append("PlacerReportWithoutPartitionableGraph")
+                    "Reports", "writeMachineGraphPlacerReport"):
+                algorithms.append("PlacerReportWithoutApplicationGraph")
 
-            # only add network specification partitionable report if there's
-            # partitionable vertices.
+            # only add network specification report if there's
+            # application vertices.
             if (self._config.getboolean(
                     "Reports", "writeNetworkSpecificationReport") and
-                    len(self._partitionable_graph.vertices) != 0):
+                    len(self._application_graph.vertices) != 0):
                 algorithms.append(
-                    "FrontEndCommonNetworkSpecificationPartitionableReport")
+                    "FrontEndCommonApplicationGraphNetworkSpecificationReport")
 
-        # only add the partitioner if there isn't already a partitioned graph
-        if (len(self._partitionable_graph.vertices) > 0 and
-                len(self._partitioned_graph.subvertices) == 0):
+        # only add the partitioner if there isn't already a machine graph
+        if (len(self._application_graph.vertices) > 0 and
+                len(self._machine_graph.vertices) == 0):
             algorithms.extend(self._config.get(
                 "Mapping",
-                "partitionable_to_partitioned_algorithms").split(","))
+                "application_to_machine_graph_algorithms").split(","))
 
         algorithms.extend(self._config.get(
-            "Mapping", "partitioned_to_machine_algorithms").split(","))
+            "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
-        # decide upon the outputs depending upon if there is a
-        # partitionable graph that has vertices added to it.
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryPartitionedGraph"
+            "MemoryMachineGraph"
         ]
 
-        if len(self._partitionable_graph.vertices) > 0:
+        if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
@@ -872,15 +1036,13 @@ class SpinnakerMainInterface(object):
         self._tags = executor.get_item("MemoryTags")
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
-        self._partitioned_graph = executor.get_item("MemoryPartitionedGraph")
+        self._machine_graph = executor.get_item("MemoryMachineGraph")
 
     def _do_data_generation(self, n_machine_time_steps):
 
-        # Update the machine timesteps again for the data generation
-        self._update_n_machine_time_steps(n_machine_time_steps)
-
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
@@ -898,7 +1060,7 @@ class SpinnakerMainInterface(object):
             self._config.getboolean("Reports", "writeMemoryMapReport")
         )
 
-        algorithms = list()
+        algorithms = list(self._extra_load_algorithms)
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
         optional_algorithms.append("FrontEndCommonTagsLoader")
@@ -914,8 +1076,12 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
+
+        # algorithms needed for loading the binaries to the SpiNNaker machine
+        optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
         optional_algorithms.append("FrontEndCommonLoadExecutableImages")
 
+        # expected outputs from this phase
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
             "LoadedRoutingTablesToken", "LoadBinariesToken",
@@ -932,20 +1098,12 @@ class SpinnakerMainInterface(object):
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
-        self._update_n_machine_time_steps(total_run_timesteps)
         run_time = None
         if n_machine_time_steps is not None:
             run_time = (
                 n_machine_time_steps *
                 (float(self._machine_time_step) / 1000.0)
             )
-
-        # Calculate the first machine time step to start from and set this
-        # where necessary
-        first_machine_time_step = self._current_run_timesteps
-        for vertex in self._partitionable_graph.vertices:
-            if isinstance(vertex, AbstractHasFirstMachineTimeStep):
-                vertex.set_first_machine_time_step(first_machine_time_step)
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -959,6 +1117,7 @@ class SpinnakerMainInterface(object):
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -1019,8 +1178,9 @@ class SpinnakerMainInterface(object):
         executor = None
         try:
             executor = PACMANAlgorithmExecutor(
-                algorithms, [], inputs, self._xml_paths, outputs,
-                self._do_timings, self._print_timings)
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
         except KeyboardInterrupt:
@@ -1031,9 +1191,15 @@ class SpinnakerMainInterface(object):
 
             logger.error(
                 "An error has occurred during simulation")
-            for line in traceback.format_tb(e.traceback):
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            for line in traceback.format_tb(ex_traceback):
                 logger.error(line.strip())
-            logger.error(e.exception)
+
+            # if exception has an exception, print to system
+            if isinstance(e, PacmanAlgorithmFailedToCompleteException):
+                logger.error(e.exception)
+            else:
+                logger.error(e)
 
             logger.info("\n\nAttempting to extract data\n\n")
 
@@ -1082,8 +1248,10 @@ class SpinnakerMainInterface(object):
                 outputs.append("ProvenanceItems")
 
                 executor = PACMANAlgorithmExecutor(
-                    algorithms, [], inputs, self._xml_paths, outputs,
-                    self._do_timings, self._print_timings)
+                    algorithms=algorithms, optional_algorithms=[],
+                    inputs=inputs, xml_paths=self._xml_paths,
+                    required_outputs=outputs, do_timings=self._do_timings,
+                    print_timings=self._print_timings)
                 executor.execute_mapping()
                 self._pacman_provenance.extract_provenance(executor)
                 provenance_outputs = executor.get_items()
@@ -1110,25 +1278,26 @@ class SpinnakerMainInterface(object):
         elif self._provenance_format == "json":
             writer_algorithms.append("FrontEndCommonProvenanceJSONWriter")
         executor = PACMANAlgorithmExecutor(
-            writer_algorithms, [], provenance_outputs, self._xml_paths,
-            [], self._do_timings, self._print_timings)
+            algorithms=writer_algorithms, optional_algorithms=[],
+            inputs=provenance_outputs, xml_paths=self._xml_paths,
+            required_outputs=[], do_timings=self._do_timings,
+            print_timings=self._print_timings)
         executor.execute_mapping()
 
     def _recover_from_error(self, e, error_outputs):
-        error = e.exception
         has_failed_to_start = isinstance(
-            error, common_exceptions.ExecutableFailedToStartException)
+            e, common_exceptions.ExecutableFailedToStartException)
         has_failed_to_end = isinstance(
-            error, common_exceptions.ExecutableFailedToStopException)
+            e, common_exceptions.ExecutableFailedToStopException)
 
         # If we have failed to start or end, get some extra data
         if has_failed_to_start or has_failed_to_end:
             is_rte = True
             if has_failed_to_end:
-                is_rte = error.is_rte
+                is_rte = e.is_rte
 
             inputs = dict(error_outputs)
-            inputs["FailedCoresSubsets"] = error.failed_core_subsets
+            inputs["FailedCoresSubsets"] = e.failed_core_subsets
             inputs["RanToken"] = True
             algorithms = list()
             outputs = list()
@@ -1150,8 +1319,9 @@ class SpinnakerMainInterface(object):
             outputs.append("WarnMessages")
 
             executor = PACMANAlgorithmExecutor(
-                algorithms, [], inputs, self._xml_paths, outputs,
-                self._do_timings, self._print_timings)
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
 
             self._write_provenance(executor.get_items())
@@ -1173,8 +1343,9 @@ class SpinnakerMainInterface(object):
             algorithms = ["FrontEndCommonIOBufExtractor"]
             outputs = ["IOBuffers"]
             executor = PACMANAlgorithmExecutor(
-                algorithms, [], inputs, self._xml_paths, outputs,
-                self._do_timings, self._print_timings)
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
             self._write_iobuf(executor.get_item("IOBuffers"))
 
@@ -1249,34 +1420,35 @@ class SpinnakerMainInterface(object):
         """
         changed = False
 
-        # if partitionable graph is filled, check their changes
-        if len(self._partitionable_graph.vertices) != 0:
-            for partitionable_vertex in self._partitionable_graph.vertices:
-                if isinstance(partitionable_vertex, AbstractChangableAfterRun):
-                    if partitionable_vertex.requires_mapping:
+        # if application graph is filled, check their changes
+        if len(self._application_graph.vertices) != 0:
+            for vertex in self._application_graph.vertices:
+                if isinstance(vertex, AbstractChangableAfterRun):
+                    if vertex.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitionable_vertex.mark_no_changes()
-            for partitionable_edge in self._partitionable_graph.edges:
-                if isinstance(partitionable_edge, AbstractChangableAfterRun):
-                    if partitionable_edge.requires_mapping:
+                        vertex.mark_no_changes()
+            for edge in self._application_graph.edges:
+                if isinstance(edge, AbstractChangableAfterRun):
+                    if edge.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitionable_edge.mark_no_changes()
-        # if no partitionable, but a partitioned graph, check for changes there
-        elif len(self._partitioned_graph.subvertices) != 0:
-            for partitioned_vertex in self._partitioned_graph.subvertices:
-                if isinstance(partitioned_vertex, AbstractChangableAfterRun):
-                    if partitioned_vertex.requires_mapping:
+                        edge.mark_no_changes()
+
+        # if no application, but a machine graph, check for changes there
+        elif len(self._machine_graph.vertices) != 0:
+            for machine_vertex in self._machine_graph.vertices:
+                if isinstance(machine_vertex, AbstractChangableAfterRun):
+                    if machine_vertex.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitioned_vertex.mark_no_changes()
-            for partitioned_edge in self._partitioned_graph.subedges:
-                if isinstance(partitioned_edge, AbstractChangableAfterRun):
-                    if partitioned_edge.requires_mapping:
+                        machine_vertex.mark_no_changes()
+            for machine_edge in self._machine_graph.edges:
+                if isinstance(machine_edge, AbstractChangableAfterRun):
+                    if machine_edge.requires_mapping:
                         changed = True
                     if reset_flags:
-                        partitioned_edge.mark_no_changes()
+                        machine_edge.mark_no_changes()
         return changed
 
     @property
@@ -1320,20 +1492,20 @@ class SpinnakerMainInterface(object):
         return self._time_scale_factor
 
     @property
-    def partitioned_graph(self):
+    def machine_graph(self):
         """
 
         :return:
         """
-        return self._partitioned_graph
+        return self._machine_graph
 
     @property
-    def partitionable_graph(self):
+    def application_graph(self):
         """
 
         :return:
         """
-        return self._partitionable_graph
+        return self._application_graph
 
     @property
     def routing_infos(self):
@@ -1435,73 +1607,65 @@ class SpinnakerMainInterface(object):
         return "general front end instance for machine {}"\
             .format(self._hostname)
 
-    def add_partitionable_vertex(self, vertex_to_add):
+    def add_application_vertex(self, vertex_to_add):
         """
 
-        :param vertex_to_add: the partitionable vertex to add to the graph
+        :param vertex_to_add: the vertex to add to the graph
         :return: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if (len(self._partitioned_graph.subvertices) > 0 and
+        if (len(self._machine_graph.vertices) > 0 and
                 self._graph_mapper is None):
             raise common_exceptions.ConfigurationException(
-                "Cannot add vertices to both the partitioned and partitionable"
+                "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
+        if (isinstance(vertex_to_add, ApplicationVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._partitionable_graph.add_vertex(vertex_to_add)
+        self._application_graph.add_vertex(vertex_to_add)
 
-    def add_partitioned_vertex(self, vertex):
+    def add_machine_vertex(self, vertex):
         """
 
-        :param vertex the partitioned vertex to add to the graph
+        :param vertex the vertex to add to the graph
         :return: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        # check that there's no partitioned vertices added so far
-        if len(self._partitionable_graph.vertices) > 0:
+        # check that there's no application vertices added so far
+        if len(self._application_graph.vertices) > 0:
             raise common_exceptions.ConfigurationException(
-                "Cannot add vertices to both the partitioned and partitionable"
+                "Cannot add vertices to both the machine and application"
                 " graphs")
         if (isinstance(vertex, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._partitioned_graph.add_subvertex(vertex)
+        self._machine_graph.add_vertex(vertex)
 
-    def add_partitionable_edge(
-            self, edge_to_add, partition_identifier=None,
-            partition_constraints=None):
+    def add_application_edge(self, edge_to_add, partition_identifier):
         """
 
         :param edge_to_add:
         :param partition_identifier: the partition identifier for the outgoing
                     edge partition
-        :param partition_constraints: the constraints of a partition
-        associated with this edge
         :return:
         """
 
-        self._partitionable_graph.add_edge(
-            edge_to_add, partition_identifier, partition_constraints)
+        self._application_graph.add_edge(
+            edge_to_add, partition_identifier)
 
-    def add_partitioned_edge(
-            self, edge, partition_id=None, partition_constraints=None):
+    def add_machine_edge(self, edge, partition_id):
         """
 
-        :param edge: the partitioned edge to add to the partitioned graph
-        :param partition_constraints:the constraints of a partition
-        associated with this edge
+        :param edge: the edge to add to the graph
         :param partition_id: the partition identifier for the outgoing
                     edge partition
         :return:
         """
-        self._partitioned_graph.add_subedge(
-            edge, partition_id, partition_constraints)
+        self._machine_graph.add_edge(edge, partition_id)
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,

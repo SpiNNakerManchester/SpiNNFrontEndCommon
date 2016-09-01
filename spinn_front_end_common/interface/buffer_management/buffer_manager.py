@@ -67,6 +67,50 @@ class BufferManager(object):
     """ Manager of send buffers
     """
 
+    __slots__ = [
+        # placements object
+        "_placements",
+
+        # list of tags
+        "_tags",
+
+        # SpiNNMan instance
+        "_transceiver",
+
+        # params used for reload purposes
+        "_write_reload_files",
+
+        # params used for reload purposes
+        "_application_folder_path",
+
+        # params used for reload purposes
+        "_reload_buffer_file",
+
+        # params used for reload purposes
+        "_reload_buffer_file_paths",
+
+        # Set of (ip_address, port) that are being listened to for the tags
+        "_seen_tags",
+
+        # Set of vertices with buffers to be sent
+        "_sender_vertices",
+
+        # Dictionary of sender vertex -> buffers sent
+        "_sent_messages",
+
+        # storage area for received data from cores
+        "_received_data",
+
+        # Lock to avoid multiple messages being processed at the same time
+        "_thread_lock_buffer_out",
+
+        # Lock to avoid multiple messages being processed at the same time
+        "_thread_lock_buffer_in",
+
+        # bool flag
+        "_finished"
+    ]
+
     def __init__(self, placements, tags, transceiver, write_reload_files,
                  application_folder_path):
         """
@@ -74,8 +118,6 @@ class BufferManager(object):
         :param placements: The placements of the vertices
         :type placements:\
                     :py:class:`pacman.model.placements.placements.Placements`
-        :param report_states: the booleans saying what reports are needed
-        :type report_states: XXXXXXXXXXX
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.tags.Tags`
         :param transceiver: The transceiver to use for sending and receiving\
@@ -122,7 +164,7 @@ class BufferManager(object):
             if not self._finished:
                 if isinstance(packet, SpinnakerRequestBuffers):
                     with self._thread_lock_buffer_in:
-                        vertex = self._placements.get_subvertex_on_processor(
+                        vertex = self._placements.get_vertex_on_processor(
                             packet.x, packet.y, packet.p)
 
                         if vertex in self._sender_vertices:
@@ -148,7 +190,7 @@ class BufferManager(object):
                         #     " from chip ({},{}, core {}".format(
                         #         packet.n_requests, packet.sequence_no,
                         #         packet.x, packet.y, packet.p))
-                        vertex = self._placements.get_subvertex_on_processor(
+                        vertex = self._placements.get_vertex_on_processor(
                             packet.x, packet.y, packet.p)
                         try:
                             self._retrieve_and_store_data(packet, vertex)
@@ -167,7 +209,7 @@ class BufferManager(object):
             traceback.print_exc()
 
     def add_receiving_vertex(self, vertex):
-        """ Add a partitioned vertex into the managed list for vertices\
+        """ Add a vertex into the managed list for vertices\
             which require buffers to be received from them during runtime
         """
         tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
@@ -181,7 +223,7 @@ class BufferManager(object):
                     local_port=tag.port, local_host=tag.ip_address)
 
     def add_sender_vertex(self, vertex):
-        """ Add a partitioned vertex into the managed list for vertices
+        """ Add a vertex into the managed list for vertices
             which require buffers to be sent to them during runtime
 
         :param vertex: the vertex to be managed
@@ -313,9 +355,9 @@ class BufferManager(object):
         # region_base_address = self._locate_region_address(region, vertex)
         region_base_address = \
             helpful_functions.locate_memory_region_for_placement(
-                self._placements.get_placement_of_subvertex(vertex), region,
+                self._placements.get_placement_of_vertex(vertex), region,
                 self._transceiver)
-        placement = self._placements.get_placement_of_subvertex(vertex)
+        placement = self._placements.get_placement_of_vertex(vertex)
 
         # Add packets until out of space
         sent_message = False
@@ -444,7 +486,7 @@ class BufferManager(object):
         :param message: The message to send
         """
 
-        placement = self._placements.get_placement_of_subvertex(vertex)
+        placement = self._placements.get_placement_of_vertex(vertex)
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
@@ -632,7 +674,7 @@ class BufferManager(object):
                 :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         :param vertex: Vertex associated with the read request
         :type vertex:\
-                :py:class:`pacman.model.subgraph.subvertex.PartitionedVertex`
+                :py:class:`pacman.model.graph.machine.machine_vertex.MachineVertex`
         :return: None
         """
         x = packet.x
