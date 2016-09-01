@@ -146,22 +146,23 @@ class LivePacketGatherMachineVertex(
     @inject_items({
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor",
-        "ip_tags": "MemoryIpTags"})
+        "tags": "MemoryTags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
-            "machine_time_step", "time_scale_factor", "ip_tags"
+            "machine_time_step", "time_scale_factor", "tags"
         })
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            ip_tags):
+            tags):
 
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(spec, machine_time_step, time_scale_factor)
-        self._write_configuration_region(spec, ip_tags)
+        self._write_configuration_region(
+            spec, tags.get_ip_tags_for_vertex(self))
 
         # End-of-Spec:
         spec.end_specification()
