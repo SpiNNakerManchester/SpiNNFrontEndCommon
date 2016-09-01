@@ -17,8 +17,7 @@ class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "application_graph": "MemoryApplicationGraph",
-        "iptags": "MemoryIpTags",
-        "reverse_iptags": "MemoryReverseIpTags",
+        "tags": "MemoryTags",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
     })
@@ -26,13 +25,15 @@ class ApplicationDataSpecableVertex(AbstractGeneratesDataSpecification):
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "graph_mapper", "application_graph", "machine_graph",
-            "routing_info", "iptags", "reverse_iptags", "machine_time_step",
+            "routing_info", "tags", "machine_time_step",
             "time_scale_factor"
         })
     def generate_data_specification(
             self, spec, placement, graph_mapper, application_graph,
-            machine_graph, routing_info, iptags, reverse_iptags,
+            machine_graph, routing_info, tags,
             machine_time_step, time_scale_factor):
+        iptags = tags.get_ip_tags_for_vertex(placement.vertex)
+        reverse_iptags = tags.get_reverse_ip_tags_for_vertex(placement.vertex)
         self.generate_application_data_specification(
             spec, placement, graph_mapper, application_graph, machine_graph,
             routing_info, iptags, reverse_iptags, machine_time_step,

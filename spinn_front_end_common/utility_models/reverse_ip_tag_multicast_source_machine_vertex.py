@@ -530,7 +530,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         "time_scale_factor": "TimeScaleFactor",
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
-        "iptags": "MemoryIpTags",
+        "tags": "MemoryTags",
         "first_machine_time_step": "FirstMachineTimeStep",
         "n_machine_time_steps": "TotalMachineTimeSteps"
     })
@@ -538,12 +538,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractGeneratesDataSpecification.generate_data_specification,
         additional_arguments={
             "machine_time_step", "time_scale_factor", "machine_graph",
-            "routing_info", "iptags", "first_machine_time_step",
+            "routing_info", "tags", "first_machine_time_step",
             "n_machine_time_steps"
         })
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            machine_graph, routing_info, iptags, first_machine_time_step,
+            machine_graph, routing_info, tags, first_machine_time_step,
             n_machine_time_steps):
 
         self._update_virtual_key(routing_info, machine_graph)
@@ -560,6 +560,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             time_scale_factor))
 
         # Write the additional recording information
+        iptags = tags.get_ip_tags_for_vertex(self)
         self.write_recording_data(
             spec, iptags, [self._record_buffer_size],
             self._buffer_size_before_receive)
