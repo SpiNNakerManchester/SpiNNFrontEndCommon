@@ -16,7 +16,6 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",
         "tags": "MemoryTags",
-        "reverse_iptags": "MemoryReverseIpTags",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
     })
