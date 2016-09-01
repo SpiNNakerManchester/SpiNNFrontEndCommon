@@ -3,14 +3,11 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
+from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graphs.application.impl.application_virtual_vertex import  \
-    ApplicationVirtualVertex
-from pacman.model.graphs.machine.impl.machine_virtual_vertex import\
-    MachineVirtualVertex
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
@@ -694,6 +691,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "down_chips")
             inputs["DownedCoresDetails"] = self._config.get(
                 "Machine", "down_cores")
+            inputs["DownedLinksDetails"] = self._convert_down_links(
+                self._config.get("Machine", "down_links"))
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
@@ -734,6 +733,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "down_chips")
             inputs["DownedCoresDetails"] = self._config.get(
                 "Machine", "down_cores")
+            inputs["DownedLinksDetails"] = self._convert_down_links(
+                self._config.get("Machine", "down_links"))
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
             inputs["BootPortNum"] = self._read_config_int(
@@ -851,6 +852,39 @@ class SpinnakerMainInterface(object):
                     "MemoryGraphMapper")
 
         return self._machine
+
+    def _convert_down_links(self, down_link_text):
+        """ Converts the text form to a list of down links
+
+        :param down_link_text: the text from the config system
+        :return:\
+            array of (tuple(int, int), tuple(int, int), int) where the\
+            first tuple is the source x and y for the chip the link is from,\
+            the second is a destination x and y for the chip the link goes to,\
+            the third is the link id from the source chip.
+        """
+        down_links = list()
+        if down_link_text == "None":
+            return down_links
+
+        bits = down_link_text.split("]")
+        for bit in bits:
+            if len(bit) > 0:
+                removed_first_bracket = bit.split("[")
+                coords_bits = removed_first_bracket[1].split(":")
+                source_bits = coords_bits[0].split(",")
+                removed_bracket_sx = source_bits[0].split("(")[1]
+                removed_bracket_sy = source_bits[1].split(")")[0]
+                source_tuple = (int(removed_bracket_sx),
+                                int(removed_bracket_sy))
+                dest_bits = coords_bits[1].split(",")
+                removed_bracket_dx = dest_bits[0].split("(")[1]
+                removed_bracket_dy = dest_bits[1].split(")")[0]
+                dest_tuple = (int(removed_bracket_dx), int(removed_bracket_dy))
+                link_id = int(coords_bits[2])
+                down_links.append((source_tuple, dest_tuple, link_id))
+        print bits
+        return down_links
 
     def generate_file_machine(self):
         inputs = {
@@ -1572,7 +1606,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, ApplicationVirtualVertex) and
+        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
@@ -1591,7 +1625,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex, MachineVirtualVertex) and
+        if (isinstance(vertex, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"

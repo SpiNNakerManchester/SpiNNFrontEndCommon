@@ -511,6 +511,10 @@
                 <param_name>down_cores</param_name>
                 <param_type>DownedCoresDetails</param_type>
             </parameter>
+            <parameter>
+                <param_name>down_links</param_name>
+                <param_type>DownedLinksDetails</param_type>
+            </parameter>
         </input_definitions>
         <optional_inputs>
             <param_name>width</param_name>
@@ -521,6 +525,7 @@
             <param_name>with_monitors</param_name>
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
+            <param_name>down_links</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
