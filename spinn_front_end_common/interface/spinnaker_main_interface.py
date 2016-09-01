@@ -1133,10 +1133,7 @@ class SpinnakerMainInterface(object):
 
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
-            inputs["WriteReloadFilesFlag"] = (
-                self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "writeReloadSteps")
-            )
+            inputs["WriteReloadFilesFlag"] = False
             algorithms.append("FrontEndCommonBufferManagerCreator")
         else:
             inputs["BufferManager"] = self._buffer_manager
@@ -1151,18 +1148,7 @@ class SpinnakerMainInterface(object):
 
         # Sort out reload if needed
         if self._config.getboolean("Reports", "writeReloadSteps"):
-            if not self._has_ran:
-                algorithms.append("FrontEndCommonReloadScriptCreator")
-                if self._use_virtual_board:
-                    logger.warn(
-                        "A reload script will be created, but as you are using"
-                        " a virtual board, you will need to edit the "
-                        " machine_name before you use it")
-            else:
-                logger.warn(
-                    "The reload script cannot handle multi-runs, nor can"
-                    "it handle resets, therefore it will only contain the "
-                    "initial run")
+            logger.warn("Reload script is not supported in this version")
 
         outputs = [
             "NoSyncChanges",
