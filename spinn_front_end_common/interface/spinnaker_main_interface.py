@@ -864,6 +864,9 @@ class SpinnakerMainInterface(object):
             the third is the link id from the source chip.
         """
         down_links = list()
+        if down_link_text == "None":
+            return down_links
+
         bits = down_link_text.split("]")
         for bit in bits:
             if len(bit) > 0:
