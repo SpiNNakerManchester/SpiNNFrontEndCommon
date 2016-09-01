@@ -13,6 +13,30 @@ class BufferedReceivingData(object):
         core has been flushed and the final state of the buffering output\
         state machine
     """
+
+    __slots__ = [
+        # boolean flag for if data is to be stored in memory or a file on disk
+        "_store_to_file",
+
+        # the data to store
+        "_data",
+
+        # dict of booleans indicating if a region on a core has been flushed
+        "_is_flushed",
+
+        # dict of last sequence number received by core
+        "_sequence_no",
+
+        # dict of last packet received by core
+        "_last_packet_received",
+
+        # dict of last packet sent by core
+        "_last_packet_sent",
+
+        # dict of end state by core
+        "_end_buffering_state"
+    ]
+
     def __init__(self, store_to_file=False):
         """
 

@@ -6,6 +6,8 @@ class FrontEndCommonTagsLoader(object):
     """ Loads tags onto the machine
     """
 
+    __slots__ = []
+
     def __call__(
             self, transceiver, tags=None, iptags=None, reverse_iptags=None):
         """
@@ -45,7 +47,7 @@ class FrontEndCommonTagsLoader(object):
             self.load_reverse_iptags(reverse_iptags, transceiver, progress_bar)
         progress_bar.end()
 
-        return {"LoadedIPTagsToken": True, "LoadedReverseIPTagsToken": True}
+        return True, True
 
     @staticmethod
     def load_iptags(iptags, transceiver, progress_bar):

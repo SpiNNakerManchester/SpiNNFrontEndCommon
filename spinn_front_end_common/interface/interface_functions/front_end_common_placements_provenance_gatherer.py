@@ -10,6 +10,8 @@ from spinn_front_end_common.interface.provenance\
 
 class FrontEndCommonPlacementsProvenanceGatherer(object):
 
+    __slots__ = []
+
     def __call__(
             self, transceiver, placements, has_ran,
             provenance_data_objects=None):
@@ -35,15 +37,15 @@ class FrontEndCommonPlacementsProvenanceGatherer(object):
         # retrieve provenance data from any cores that provide data
         for placement in placements.placements:
             if isinstance(
-                    placement.subvertex,
+                    placement.vertex,
                     AbstractProvidesProvenanceDataFromMachine):
 
                 # get data
                 prov_items.extend(
-                    placement.subvertex.get_provenance_data_from_machine(
+                    placement.vertex.get_provenance_data_from_machine(
                         transceiver, placement))
 
             progress.update()
         progress.end()
 
-        return {'prov_items': prov_items}
+        return prov_items

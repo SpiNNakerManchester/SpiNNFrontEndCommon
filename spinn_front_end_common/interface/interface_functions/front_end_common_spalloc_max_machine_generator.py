@@ -6,6 +6,8 @@ class FrontEndCommonSpallocMaxMachineGenerator(object):
         allocation server can generate
     """
 
+    __slots__ = []
+
     def __call__(self, spalloc_server, spalloc_port=22244):
 
         client = ProtocolClient(spalloc_server, spalloc_port)
@@ -23,7 +25,4 @@ class FrontEndCommonSpallocMaxMachineGenerator(object):
                     max_width = machine["width"]
                     max_height = machine["height"]
 
-        return {
-            "max_width": max_width * 12,
-            "max_height": max_height * 12
-        }
+        return max_width * 12, max_height * 12

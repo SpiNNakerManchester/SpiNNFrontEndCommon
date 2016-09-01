@@ -7,6 +7,8 @@ class FrontEndCommonHBPMaxMachineGenerator(object):
         HBP server can generate
     """
 
+    __slots__ = []
+
     def __call__(self, hbp_server_url, total_run_time):
         """
 
@@ -24,7 +26,4 @@ class FrontEndCommonHBPMaxMachineGenerator(object):
             params={'runTime': total_run_time})
         max_machine = max_machine_request.json()
 
-        return {
-            "max_width": max_machine["width"],
-            "max_height": max_machine["height"]
-        }
+        return max_machine["width"], max_machine["height"]

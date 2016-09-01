@@ -1,9 +1,10 @@
 # pacman imports
-from pacman.model.constraints.tag_allocator_constraints.\
-    tag_allocator_require_iptag_constraint import \
-    TagAllocatorRequireIptagConstraint
+from pacman.model.constraints.placer_constraints.placer_board_constraint \
+    import PlacerBoardConstraint
 
 # front end common imports
+from pacman.model.resources.iptag_resource import IPtagResource
+from pacman.model.resources.resource_container import ResourceContainer
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
@@ -11,7 +12,6 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
 from spinn_front_end_common.utilities import exceptions
 
 # general imports
-from abc import abstractmethod
 import sys
 import math
 
@@ -20,6 +20,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
+
     def __init__(self):
         """
         :return: None
@@ -44,8 +45,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
 
     def activate_buffering_output(
             self, buffering_ip_address=None, buffering_port=None,
-            board_address=None, notification_tag=None,
-            minimum_sdram_for_buffering=0, buffered_sdram_per_timestep=0):
+            board_address=None, minimum_sdram_for_buffering=0,
+            buffered_sdram_per_timestep=0):
         """ Activates the output buffering mechanism
 
         :param buffering_ip_address: IP address of the host which supports\
@@ -61,15 +62,34 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         if (not self._buffering_output and buffering_ip_address is not None and
                 buffering_port is not None):
             self._buffering_output = True
-            notification_strip_sdp = True
-            self.add_constraint(
-                TagAllocatorRequireIptagConstraint(
-                    buffering_ip_address, buffering_port,
-                    notification_strip_sdp, board_address, notification_tag))
+
+            # add placement constraint if needed
+            if board_address is not None:
+                self.add_constraint(PlacerBoardConstraint(board_address))
             self._buffering_ip_address = buffering_ip_address
             self._buffering_port = buffering_port
         self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
         self._buffered_sdram_per_timestep = buffered_sdram_per_timestep
+
+    def get_extra_resources(self, buffering_ip_address, buffering_port,
+                            notification_tag=None):
+        """ Get any additional resource required
+
+        :param buffering_ip_address: IP address of the host which supports\
+                the buffering output functionality
+        :param buffering_port: UDP port of the host which supports\
+                the buffering output functionality
+        :param notification_tag: ??????????????
+        :return: a resource container
+        """
+        if (not self._buffering_output and buffering_ip_address is not None and
+                buffering_port is not None):
+
+            # create new resources to handle a new tag
+            return ResourceContainer(iptags=[
+                IPtagResource(buffering_ip_address, buffering_port,
+                              True, notification_tag)])
+        return ResourceContainer()
 
     @staticmethod
     def get_buffer_state_region_size(n_buffered_regions):
@@ -131,7 +151,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """ Writes the recording data to the data specification
 
         :param spec: The data specification to write to
-        :param ip_tags: The list of tags assigned to the partitioned vertex
+        :param ip_tags: The list of tags assigned to the vertex
         :param region_sizes: An ordered list of the sizes of the regions in\
                 which buffered recording will take place
         :param buffer_size_before_receive: The amount of data that can be\
@@ -154,10 +174,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         spec.write_value(data=time_between_requests)
         for region_size in region_sizes:
             spec.write_value(data=region_size)
-
-    @abstractmethod
-    def add_constraint(self, constraint):
-        pass
 
     def get_minimum_buffer_sdram_usage(self):
         return self._minimum_sdram_for_buffering

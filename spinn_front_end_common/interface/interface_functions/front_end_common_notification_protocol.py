@@ -11,6 +11,11 @@ class FrontEndCommonNotificationProtocol(object):
     """ The notification protocol for external device interaction
     """
 
+    __slots__ = [
+        # the notification protocol for talking to external devices
+        "_notification_protocol"
+    ]
+
     def __call__(
             self, wait_for_read_confirmation,
             socket_addresses, database_file_path):
@@ -27,7 +32,7 @@ class FrontEndCommonNotificationProtocol(object):
             NotificationProtocol(socket_addresses, wait_for_read_confirmation)
         self.send_read_notification(database_file_path)
 
-        return {"notification_interface": self}
+        return self
 
     def wait_for_confirmation(self):
         """ Waits for devices to confirm they have read the database via the\

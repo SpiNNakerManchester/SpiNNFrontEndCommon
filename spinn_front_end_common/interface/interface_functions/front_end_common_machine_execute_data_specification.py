@@ -26,6 +26,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
     """ Executes the machine based data specification
     """
 
+    __slots__ = []
+
     def __call__(
             self, write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id):
@@ -139,6 +141,4 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         transceiver.stop_application(dse_app_id)
         logger.info("On-chip Data Specification Executor completed")
 
-        return {
-            "LoadedApplicationDataToken": True
-        }
+        return True

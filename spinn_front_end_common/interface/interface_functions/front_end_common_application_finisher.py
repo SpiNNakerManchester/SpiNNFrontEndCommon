@@ -14,6 +14,8 @@ import struct
 
 class FrontEndCommonApplicationFinisher(object):
 
+    __slots__ = []
+
     def __call__(self, app_id, txrx, executable_targets, has_ran):
 
         if not has_ran:
