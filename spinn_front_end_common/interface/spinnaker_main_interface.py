@@ -3,8 +3,7 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.model.abstract_classes.abstract_virtual_vertex \
-    import AbstractVirtualVertex
+from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from pacman.model.partitionable_graph.partitionable_graph \
     import PartitionableGraph
 from pacman.model.partitioned_graph.partitioned_graph import PartitionedGraph
@@ -1467,8 +1466,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the partitioned and partitionable"
                 " graphs")
-        if ((isinstance(vertex, VirtualSpinnakerLinkPartitionedVertex) or
-                isinstance(vertex, VirtualSataLinkPartitionedVertex)) and
+        if (isinstance(vertex, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
