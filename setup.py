@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="SpiNNFrontEndCommon",
-    version="2016.001",
+    version="3.0.0",
     description="Common Spinnaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     packages=[
@@ -30,12 +30,12 @@ setup(
         'spinn_front_end_common.common_model_binaries': ['*.aplx'],
         'spinn_front_end_common.interface.interface_functions': ['*.xml'],
         'spinn_front_end_common.utilities.report_functions': ['*.xml']},
-    install_requires=['SpiNNMachine == 2016.001',
-                      'SpiNNMan == 2016.001',
-                      'SpiNNaker_PACMAN == 2016.001',
-                      'SpiNNaker_DataSpecification == 2016.001',
-                      'SpiNNStorageHandlers == 2016.001',
-                      'spalloc >= v0.2.2',
+    install_requires=['SpiNNMachine >= 3.0.0, < 4.0.0',
+                      'SpiNNMan >= 3.0.0, < 4.0.0',
+                      'SpiNNaker_PACMAN >= 3.0.0, < 4.0.0',
+                      'SpiNNaker_DataSpecification >= 3.0.0, < 4.0.0',
+                      'SpiNNStorageHandlers >= 3.0.0, < 4.0.0',
+                      'spalloc >= v0.2.2, < v1.0.0',
                       'requests >= 2.4.1',
                       'numpy', 'six']
 )
