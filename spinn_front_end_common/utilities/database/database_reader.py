@@ -5,6 +5,14 @@ class DatabaseReader(object):
     """ A reader for the database
     """
 
+    __slots__ = [
+        # the database connection (is basically a lock on the database)
+        "_connection",
+
+        # the location for writing
+        "_cursor"
+    ]
+
     def __init__(self, database_path):
         """
 
@@ -35,7 +43,7 @@ class DatabaseReader(object):
         for row in self._cursor.execute(
             "SELECT n.atom_id as a_id, n.event_id as event"
             " FROM event_to_atom_mapping as n"
-            " JOIN Partitionable_vertices as p ON n.vertex_id = p.vertex_id"
+            " JOIN Application_vertices as p ON n.vertex_id = p.vertex_id"
                 " WHERE p.vertex_label=\"{}\"".format(label)):
             event_id_to_atom_id_mapping[row["event"]] = row["a_id"]
         return event_id_to_atom_id_mapping
@@ -51,7 +59,7 @@ class DatabaseReader(object):
         for row in self._cursor.execute(
             "SELECT n.atom_id as a_id, n.event_id as event"
             " FROM event_to_atom_mapping as n"
-            " JOIN Partitionable_vertices as p ON n.vertex_id = p.vertex_id"
+            " JOIN Application_vertices as p ON n.vertex_id = p.vertex_id"
                 " WHERE p.vertex_label=\"{}\"".format(label)):
             atom_to_event_id_mapping[row["a_id"]] = row["event"]
         return atom_to_event_id_mapping
@@ -68,12 +76,12 @@ class DatabaseReader(object):
         self._cursor.execute(
             "SELECT * FROM IP_tags as tag"
             " JOIN graph_mapper_vertex as mapper"
-            " ON tag.vertex_id = mapper.partitioned_vertex_id"
-            " JOIN Partitionable_vertices as post_vertices"
-            " ON mapper.partitionable_vertex_id = post_vertices.vertex_id"
-            " JOIN Partitionable_edges as edges"
-            " ON mapper.partitionable_vertex_id == edges.post_vertex"
-            " JOIN Partitionable_vertices as pre_vertices"
+            " ON tag.vertex_id = mapper.machine_vertex_id"
+            " JOIN Application_vertices as post_vertices"
+            " ON mapper.application_vertex_id = post_vertices.vertex_id"
+            " JOIN Application_edges as edges"
+            " ON mapper.application_vertex_id == edges.post_vertex"
+            " JOIN Application_vertices as pre_vertices"
             " ON edges.pre_vertex == pre_vertices.vertex_id"
             " WHERE pre_vertices.vertex_label == \"{}\""
             " AND post_vertices.vertex_label == \"{}\""
@@ -94,16 +102,16 @@ class DatabaseReader(object):
             "SELECT tag.board_address, tag.port as port"
             " FROM Reverse_IP_tags as tag"
             " JOIN graph_mapper_vertex as mapper"
-            " ON tag.vertex_id = mapper.partitioned_vertex_id"
-            " JOIN Partitionable_vertices as partitionable"
-            " ON mapper.partitionable_vertex_id = partitionable.vertex_id"
-            " WHERE partitionable.vertex_label=\"{}\"".format(label))
+            " ON tag.vertex_id = mapper.machine_vertex_id"
+            " JOIN Application_vertices as application"
+            " ON mapper.application_vertex_id = application.vertex_id"
+            " WHERE application.vertex_label=\"{}\"".format(label))
         row = self._cursor.fetchone()
         return row["board_address"], row["port"]
 
-    def get_partitioned_live_output_details(self, label, receiver_label):
+    def get_machine_live_output_details(self, label, receiver_label):
         """ Get the ip address, port and whether the SDP headers are to be\
-            stripped from the output from a partitioned vertex
+            stripped from the output from a machine vertex
 
         :param label: The label of the vertex
         :type label: str
@@ -112,11 +120,11 @@ class DatabaseReader(object):
         """
         self._cursor.execute(
             "SELECT * FROM IP_tags as tag"
-            " JOIN Partitioned_vertices as post_vertices"
+            " JOIN Machine_vertices as post_vertices"
             " ON tag.vertex_id == post_vertices.vertex_id"
-            " JOIN Partitioned_edges as edges"
+            " JOIN Machine_edges as edges"
             " ON post_vertices.vertex_id == edges.post_vertex"
-            " JOIN Partitioned_vertices as pre_vertices"
+            " JOIN Machine_vertices as pre_vertices"
             " ON edges.pre_vertex == pre_vertices.vertex_id"
             " WHERE pre_vertices.label == \"{}\""
             " AND post_vertices.label == \"{}\""
@@ -124,9 +132,9 @@ class DatabaseReader(object):
         row = self._cursor.fetchone()
         return (row["ip_address"], row["port"], row["strip_sdp"])
 
-    def get_partitioned_live_input_details(self, label):
+    def get_machine_live_input_details(self, label):
         """ Get the ip address and port where live input should be sent\
-            for a given partitioned vertex
+            for a given machine vertex
 
         :param label: The label of the vertex
         :type label: str
@@ -136,20 +144,20 @@ class DatabaseReader(object):
         self._cursor.execute(
             "SELECT tag.board_address, tag.port as port"
             " FROM Reverse_IP_tags as tag"
-            " JOIN Partitioned_vertices as post_vertices"
+            " JOIN Machine_vertices as post_vertices"
             " ON tag.vertex_id = post_vertices.vertex_id"
             " WHERE post_vertices.label=\"{}\"".format(label))
         row = self._cursor.fetchone()
         return row["board_address"], row["port"]
 
-    def get_partitioned_live_output_key(self, label, receiver_label):
+    def get_machine_live_output_key(self, label, receiver_label):
         self._cursor.execute(
             "SELECT * FROM Routing_info as r_info"
-            " JOIN Partitioned_edges as edges"
+            " JOIN Machine_edges as edges"
             " ON edges.edge_id == r_info.edge_id"
-            " JOIN Partitioned_vertices as post_vertices"
+            " JOIN Machine_vertices as post_vertices"
             " ON post_vertices.vertex_id == edges.post_vertex"
-            " JOIN Partitioned_vertices as pre_vertices"
+            " JOIN Machine_vertices as pre_vertices"
             " ON pre_vertices.vertex_id == edges.pre_vertex"
             " WHERE pre_vertices.label == \"{}\""
             " AND post_vertices.label == \"{}\""
@@ -157,12 +165,12 @@ class DatabaseReader(object):
         row = self._cursor.fetchone()
         return (row["key"], row["mask"])
 
-    def get_partitioned_live_input_key(self, label):
+    def get_machine_live_input_key(self, label):
         self._cursor.execute(
             "SELECT * FROM Routing_info as r_info"
-            " JOIN Partitioned_edges as edges"
+            " JOIN Machine_edges as edges"
             " ON edges.edge_id == r_info.edge_id"
-            " JOIN Partitioned_vertices as pre_vertices"
+            " JOIN Machine_vertices as pre_vertices"
             " ON pre_vertices.vertex_id == edges.pre_vertex"
             " WHERE pre_vertices.label == \"{}\""
             .format(label))
@@ -178,7 +186,7 @@ class DatabaseReader(object):
         :rtype: int
         """
         self._cursor.execute(
-            "SELECT no_atoms FROM Partitionable_vertices "
+            "SELECT no_atoms FROM Application_vertices "
             "WHERE vertex_label = \"{}\"".format(label))
         return self._cursor.fetchone()["no_atoms"]
 

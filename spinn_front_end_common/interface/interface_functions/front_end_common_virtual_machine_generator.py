@@ -5,10 +5,12 @@ from spinn_front_end_common.utilities import helpful_functions
 
 class FrontEndCommonVirtualMachineGenerator(object):
 
+    __slots__ = []
+
     def __call__(
             self, width=None, height=None, virtual_has_wrap_arounds=False,
             version=None, n_cpus_per_chip=18, with_monitors=True,
-            down_chips=None, down_cores=None):
+            down_chips=None, down_cores=None, down_links=None):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
@@ -29,6 +31,10 @@ class FrontEndCommonVirtualMachineGenerator(object):
             with_wrap_arounds=virtual_has_wrap_arounds,
             version=version, n_cpus_per_chip=n_cpus_per_chip,
             with_monitors=with_monitors, down_chips=ignored_chips,
-            down_cores=ignored_cores)
+            down_cores=ignored_cores, down_links=down_links)
 
-        return {"machine": machine}
+        # Work out and add the spinnaker links and FPGA links
+        machine.add_spinnaker_links(version)
+        machine.add_fpga_links(version)
+
+        return machine

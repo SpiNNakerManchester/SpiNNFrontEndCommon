@@ -5,7 +5,7 @@ import time
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonNetworkSpecificationPartitionableReport(object):
+class FrontEndCommonApplicationGraphNetworkSpecification(object):
     """ Generate report on the user's network specification.
     """
 
@@ -13,9 +13,9 @@ class FrontEndCommonNetworkSpecificationPartitionableReport(object):
         """
         :param report_folder: the directory to which reports are stored
         :type report_folder: str
-        :param graph: the partitionable graph generated from the tools
+        :param graph: the graph generated from the tools
         :type graph:\
-                    pacman.model.partitionable_graph.partitionable_graph.PartitionableGraph
+                    pacman.model.graph.application.application_graph.ApplicationGraph
         :param hostname: the machine name
         :type hostname:
         :return: None
@@ -40,16 +40,15 @@ class FrontEndCommonNetworkSpecificationPartitionableReport(object):
         f_network_specification.write("*** Vertices:\n")
         for vertex in graph.vertices:
             label = vertex.label
-            model = vertex.model_name
+            model = vertex.__class__.__name__
             size = vertex.n_atoms
             constraints = vertex.constraints
             f_network_specification.write("Vertex {}, size: {}\n"
                                           .format(label, size))
             f_network_specification.write("Model: {}\n".format(model))
             for constraint in constraints:
-                constraint_str = constraint.label
                 f_network_specification.write("constraint: {}\n"
-                                              .format(constraint_str))
+                                              .format(str(constraint)))
             f_network_specification.write("\n")
 
         # Print information on edges:

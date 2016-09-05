@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 class FrontEndCommonLoadExecutableImages(object):
 
+    __slots__ = []
+
     def __call__(self, executable_targets, app_id, transceiver,
                  loaded_application_data_token):
         """ Go through the executable targets and load each binary to \
@@ -71,4 +73,4 @@ class FrontEndCommonLoadExecutableImages(object):
             progress_bar.update(amount_to_add=acutal_cores_loaded)
         progress_bar.end()
 
-        return {"LoadBinariesToken": True}
+        return True

@@ -6,6 +6,8 @@ from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.utility_objs.executable_targets\
+    import ExecutableTargets
 
 # spinnman imports
 from spinnman.model.cpu_state import CPUState
@@ -391,3 +393,34 @@ def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
                     processors_ready, total_processors, sync_state.name,
                     break_down),
                 get_core_subsets(unsuccessful_cores))
+
+
+def get_executables_by_run_type(
+        executable_targets, placements, graph_mapper, type_to_find):
+    """ Get executables by the type of the vertices
+    """
+
+    # Divide executables by type
+    matching_executables = ExecutableTargets()
+    other_executables = ExecutableTargets()
+    for binary in executable_targets.binaries:
+        core_subsets = executable_targets.get_cores_for_binary(binary)
+        for core_subset in core_subsets:
+            for p in core_subset.processor_ids:
+                vertex = placements.get_vertex_on_processor(
+                    core_subset.x, core_subset.y, p)
+                is_of_type = False
+                if isinstance(vertex, type_to_find):
+                    matching_executables.add_processor(
+                        binary, core_subset.x, core_subset.y, p)
+                    is_of_type = True
+                elif graph_mapper is not None:
+                    assoc_vertex = graph_mapper.get_application_vertex(vertex)
+                    if isinstance(assoc_vertex, type_to_find):
+                        matching_executables.add_processor(
+                            binary, core_subset.x, core_subset.y, p)
+                        is_of_type = True
+                if not is_of_type:
+                    other_executables.add_processor(
+                        binary, core_subset.x, core_subset.y, p)
+    return matching_executables, other_executables

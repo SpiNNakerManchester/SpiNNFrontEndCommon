@@ -16,6 +16,17 @@ logger = logging.getLogger(__name__)
 
 class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
+    __slots__ = [
+        # thread flag to allow it to be killed when the main thread dies
+        "daemon",
+
+        # the spalloc job object
+        "_job",
+
+        # boolean flag for telling this thread when the system has ended
+        "_exited"
+    ]
+
     def __init__(self, job):
         Thread.__init__(self, name="SpallocJobController")
         self.daemon = True
@@ -52,7 +63,7 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
 class FrontEndCommonSpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
-        partitioned graph
+        number of chips
     """
 
     # Use a worst case calculation
@@ -105,16 +116,7 @@ class FrontEndCommonSpallocAllocator(object):
         machine_allocation_controller = _SpallocJobController(job)
         machine_allocation_controller.start()
 
-        return {
-            "machine_name": hostname,
-            "machine_version": self._MACHINE_VERSION,
-            "machine_down_chips": None,
-            "machine_down_cores": None,
-            "machine_bmp_details": None,
-            "reset_machine_on_start_up": False,
-            "auto_detect_bmp": False,
-            "scamp_connection_data": None,
-            "boot_port_number": None,
-            "max_sdram_size": None,
-            "machine_allocation_controller": machine_allocation_controller
-        }
+        return (
+            hostname, self._MACHINE_VERSION, None, None, None, False,
+            False, None, None, None, machine_allocation_controller
+        )

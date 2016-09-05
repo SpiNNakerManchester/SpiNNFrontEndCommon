@@ -15,6 +15,8 @@ class FrontEndCommonChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit
     """
 
+    __slots__ = []
+
     def __call__(self, txrx, app_id, all_core_subsets):
 
         # check that the right number of processors are in sync

@@ -5,22 +5,18 @@ from abc import abstractmethod
 
 @add_metaclass(ABCMeta)
 class AbstractProvidesOutgoingPartitionConstraints(object):
-    """ A vertex that can provide constraints for its outgoing partitioned\
-        edges
+    """ A vertex that can provide constraints for its outgoing edge partitions
     """
 
     @abstractmethod
-    def get_outgoing_partition_constraints(self, partition, graph_mapper):
+    def get_outgoing_partition_constraints(self, partition):
         """ Get constraints to be added to the given edge that comes out of\
             this vertex
 
         :param partition: An edge that comes out of this vertex
-        :type partitioned_edge:\
-                    :py:class:`pacman.model.partitioned_graph.partitioned_edge.PartitionedEdge`
-        :param graph_mapper: A mapper between the partitioned edge and the \
-                    associated partitionable edge
+        :param graph_mapper: A mapper between the graphs
         :type graph_mapper:\
-                    :py:class:`pacman.model.graph_mapper.graph_mapper.GraphMapper`
+                    :py:class:`pacman.model.graph.graph_mapper.GraphMapper`
         :return: A list of constraints
         :rtype: list of\
                     :py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`

@@ -6,7 +6,7 @@ from abc import ABCMeta
 @add_metaclass(ABCMeta)
 class AbstractProvidesNKeysForPartition(object):
     """ Allows a vertex to provide the number of keys for a partition of edges,\
-        rather than relying on the number of atoms in the pre-subvertex
+        rather than relying on the number of atoms in the pre-vertex
     """
 
     @abstractmethod
@@ -16,10 +16,9 @@ class AbstractProvidesNKeysForPartition(object):
         :param partition: An partition that comes out of this vertex
         :type partition:\
                     :py:class:`pacman.utilities.utility_objs.outgoing_partition.OutgoingPartition`
-        :param graph_mapper: A mapper between the partitioned edges and the \
-                    associated partitionable edges
+        :param graph_mapper: A mapper between the graphs
         :type graph_mapper:\
-                    :py:class:`pacman.model.graph_mapper.graph_mapper.GraphMapper`
+                    :py:class:`pacman.model.graph.graph_mapper.GraphMapper`
         :return: A list of constraints
         :rtype: list of\
                     :py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`
