@@ -187,5 +187,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     def get_buffered_regions(self):
         return self._buffered_regions
 
-    def get_buffered_state_region(self):
+    def get_buffered_state_dsg_region_id(self):
         return self._buffered_state_region
+
+    def get_recording_region_id_for_dsg_region(self, dsg_region_id):
+        return self._buffered_regions.index(dsg_region_id)

@@ -917,7 +917,7 @@ static bool initialise_recording(){
         data_specification_get_region(SYSTEM, address);
     address_t regions_to_record[] = {
         data_specification_get_region(
-            BUFFERING_OUT_SPIKE_RECORDING_REGION, address),
+            BUFFERING_OUT_SPIKE_RECORDING_REGION, address)
     };
     uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
     uint32_t *recording_flags_from_system_conf =
@@ -1026,6 +1026,8 @@ void timer_callback(uint unused0, uint unused1) {
 
         return;
     }
+
+    spin1_exit(1);
 
     if (send_packet_reqs &&
             ((time - last_request_tick) >= TICKS_BETWEEN_REQUESTS)) {

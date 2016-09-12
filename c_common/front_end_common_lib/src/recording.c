@@ -372,7 +372,7 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     } else {
         return false;
     }
-
+    spin1_exit(1);
 }
 
 //! brief this writes data to the state region for helping the python

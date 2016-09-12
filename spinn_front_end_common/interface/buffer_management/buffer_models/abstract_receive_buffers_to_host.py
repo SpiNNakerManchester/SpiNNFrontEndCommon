@@ -39,11 +39,3 @@ class AbstractReceiveBuffersToHost(object):
         :return: The region numbers that have active recording
         :rtype: iterable of int
         """
-
-    @abstractmethod
-    def get_buffered_state_region(self):
-        """ Get the state region for buffered recording
-
-        :return: The buffered state region
-        :rtype: int
-        """

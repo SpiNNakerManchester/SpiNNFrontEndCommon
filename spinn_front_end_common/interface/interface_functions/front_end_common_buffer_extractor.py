@@ -1,9 +1,9 @@
+from spinn_front_end_common.interface.buffer_management.buffer_models.\
+    receives_buffers_to_host_basic_impl import \
+    ReceiveBuffersToHostBasicImpl
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-from data_specification import utility_calls
 
 class FrontEndCommonBufferExtractor(object):
     """ Extracts data in between runs
@@ -22,7 +22,7 @@ class FrontEndCommonBufferExtractor(object):
         # Count the regions to be read
         n_regions_to_read = 0
         for vertex in machine_graph.vertices:
-            if isinstance(vertex, AbstractReceiveBuffersToHost):
+            if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
                 n_regions_to_read += len(vertex.get_buffered_regions())
 
         progress_bar = ProgressBar(
@@ -30,21 +30,13 @@ class FrontEndCommonBufferExtractor(object):
 
         # Read back the regions
         for vertex in machine_graph.vertices:
-            if isinstance(vertex, AbstractReceiveBuffersToHost):
+            if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
                 placement = placements.get_placement_of_vertex(vertex)
 
-                # get start of sdram pointer for this core
-                regions_base_address = \
-                    transceiver.get_cpu_information_from_core(
-                        placement.x, placement.y, placement.p).user[0]
-                state_region = vertex.get_buffered_state_region()
-
-
-
-                for region in vertex.get_buffered_regions():
-                    address = utility_calls.get_region_base_address_offset(
-                        regions_base_address, region)
+                for dsg_region_id in vertex.get_buffered_regions():
+                    recording_region_id = vertex.\
+                        get_recording_region_id_for_dsg_region(dsg_region_id)
                     buffer_manager.get_data_for_vertex(
-                        placement, address, state_region)
+                        placement, recording_region_id)
                     progress_bar.update()
         progress_bar.end()
