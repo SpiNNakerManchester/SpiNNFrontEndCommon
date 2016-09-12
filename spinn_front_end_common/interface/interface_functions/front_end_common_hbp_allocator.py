@@ -16,7 +16,7 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
         # thread flag to allow it to be killed when the main thread dies
         "daemon",
 
-        # the url to call the hbp system
+        # the URL to call the HBP system
         "_url",
 
         # boolean flag for telling this thread when the system has ended
@@ -83,6 +83,8 @@ class FrontEndCommonHBPAllocator(object):
         if "bmp_details" in machine:
             bmp_details = machine["bmpDetails"]
 
-        return machine["machineName"], int(machine["version"]), None, None, \
-               bmp_details, False, False, None, None, None, \
-               machine_allocation_controller
+        return (
+            machine["machineName"], int(machine["version"]), None, None,
+            bmp_details, False, False, None, None, None,
+            machine_allocation_controller
+        )

@@ -8,9 +8,6 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 from spinn_front_end_common.abstract_models.\
     abstract_generates_data_specification import \
     AbstractGeneratesDataSpecification
-from spinn_front_end_common.utilities.utility_objs.executable_targets import \
-    ExecutableTargets
-from spinn_front_end_common.utilities import exceptions
 
 import tempfile
 import os
@@ -29,7 +26,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     __slots__ = []
 
     def __call__(
-            self, placements, graph, hostname, executable_finder,
+            self, placements, graph, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder, graph_mapper=None):
         """ generates the dsg for the graph.
@@ -39,7 +36,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        executable_targets = ExecutableTargets()
         dsg_targets = dict()
 
         if isinstance(graph, ApplicationGraph):
@@ -49,8 +45,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
                 self._generate_data_spec_for_vertices(
-                    placement, associated_vertex, executable_targets,
-                    dsg_targets, executable_finder, hostname,
+                    placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder)
                 progress_bar.update()
@@ -61,18 +56,16 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             for vertex in graph.vertices:
                 placement = placements.get_placement_of_vertex(vertex)
                 self._generate_data_spec_for_vertices(
-                    placement, vertex, executable_targets,
-                    dsg_targets, executable_finder, hostname,
+                    placement, vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder)
                 progress_bar.update()
             progress_bar.end()
 
-        return executable_targets, dsg_targets
+        return dsg_targets
 
     def _generate_data_spec_for_vertices(
-            self, placement, associated_vertex, executable_targets,
-            dsg_targets, executable_finder, hostname,
+            self, placement, associated_vertex, dsg_targets, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder):
 
@@ -96,19 +89,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             # link dsg file to vertex
             dsg_targets[placement.x, placement.y, placement.p] = \
                 data_writer.filename
-
-            # Get name of binary from vertex
-            binary_name = associated_vertex.get_binary_file_name()
-
-            # Attempt to find this within search paths
-            binary_path = executable_finder.get_executable_path(binary_name)
-            if binary_path is None:
-                raise exceptions.ExecutableNotFoundException(binary_name)
-
-            if not executable_targets.has_binary(binary_path):
-                executable_targets.add_binary(binary_path)
-            executable_targets.add_processor(
-                binary_path, placement.x, placement.y, placement.p)
 
     def get_data_spec_file_writers(
             self, processor_chip_x, processor_chip_y, processor_id,
@@ -171,10 +151,10 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
 
-        binary_file_path = \
-            application_run_time_folder + os.sep + "{}_dataSpec_{}_{}_{}.dat" \
-                .format(hostname, processor_chip_x, processor_chip_y,
-                        processor_id)
+        binary_file_path = (
+            application_run_time_folder + os.sep +
+            "{}_dataSpec_{}_{}_{}.dat".format(
+                hostname, processor_chip_x, processor_chip_y, processor_id))
         return binary_file_path
 
     @staticmethod
@@ -199,4 +179,3 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             "{}_appData_{}_{}_{}.dat".format(
                 hostname, processor_chip_x, processor_chip_y, processor_id)
         return application_data_file_name
-

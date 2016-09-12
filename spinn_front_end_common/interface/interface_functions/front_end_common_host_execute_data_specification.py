@@ -76,7 +76,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
 
             # build application data writer
             app_data_file_path = self.get_application_data_file_path(
-                    x, y, p, hostname, application_data_runtime_folder)
+                x, y, p, hostname, application_data_runtime_folder)
 
             data_writer = FileDataWriter(app_data_file_path)
 

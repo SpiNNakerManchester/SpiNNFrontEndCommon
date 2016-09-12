@@ -8,6 +8,7 @@ class EndBufferingState(object):
     """
 
     __slots__ = [
+
         # Number of buffering regions used
         "_n_recording_regions",
 

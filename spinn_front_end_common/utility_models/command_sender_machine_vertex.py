@@ -1,5 +1,3 @@
-from pacman.model.decorators.overrides import overrides
-
 from pacman.model.abstract_classes.impl.constrained_object import \
     ConstrainedObject
 from pacman.model.decorators.delegates_to import delegates_to
@@ -43,10 +41,3 @@ class CommandSenderMachineVertex(
     @delegates_to("_constraints", ConstrainedObject.add_constraint)
     def add_constraint(self, constraint):
         pass
-
-    @property
-    @overrides(MachineVertex.model_name)
-    def model_name(self):
-        """ Return the name of the model as a string
-        """
-        return "machine_command_sender_multi_cast_source"

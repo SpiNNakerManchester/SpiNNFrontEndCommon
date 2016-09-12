@@ -14,10 +14,10 @@ class FrontEndCommonDatabaseInterface(object):
         # the database writer object
         "_writer",
 
-        # boolean flag for if the end user has demanded the db to be written
+        # True if the end user has asked for the database to be written
         "_user_create_database",
 
-        # boolean flag that is automatically calcualted to see if we need the db
+        # True if the network is computed to need the database to be written
         "_needs_database"
     ]
 

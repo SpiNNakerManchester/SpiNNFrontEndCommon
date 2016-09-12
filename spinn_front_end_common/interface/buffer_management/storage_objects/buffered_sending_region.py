@@ -19,7 +19,8 @@ class BufferedSendingRegion(object):
     """
 
     __slots__ = [
-        #
+
+        # The maximum size of any buffer
         "_max_size_of_buffer",
 
         # A dictionary of timestamp -> list of keys

@@ -21,19 +21,19 @@ class BufferedReceivingData(object):
         # the data to store
         "_data",
 
-        # ?????????
+        # dict of booleans indicating if a region on a core has been flushed
         "_is_flushed",
 
-        # ????????
+        # dict of last sequence number received by core
         "_sequence_no",
 
-        # ??????????
+        # dict of last packet received by core
         "_last_packet_received",
 
-        # ?????????
+        # dict of last packet sent by core
         "_last_packet_sent",
 
-        # ???????????
+        # dict of end state by core
         "_end_buffering_state"
     ]
 

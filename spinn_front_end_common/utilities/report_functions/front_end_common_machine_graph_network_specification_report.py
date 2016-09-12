@@ -41,14 +41,13 @@ class FrontEndCommonMachineGraphNetworkSpecificationReport(object):
         f_network_specification.write("*** Vertices:\n")
         for vertex in machine_graph.vertices:
             label = vertex.label
-            model = vertex.model_name
+            model = vertex.__class__.__name__
             constraints = vertex.constraints
             f_network_specification.write("Vertex {}\n".format(label))
             f_network_specification.write("Model: {}\n".format(model))
             for constraint in constraints:
-                constraint_str = constraint.label
                 f_network_specification.write("constraint: {}\n"
-                                              .format(constraint_str))
+                                              .format(str(constraint)))
             f_network_specification.write("\n")
 
         # Print information on edges:

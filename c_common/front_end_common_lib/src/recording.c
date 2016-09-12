@@ -116,7 +116,7 @@ static inline void _recording_eieio_packet_handler(
     uint8_t pkt_type = (data_hdr_value >> 14) && 0x03;
     uint16_t pkt_command = data_hdr_value & (~0xC000);
 
-    log_debug("recevied packet of type %d", pkt_type);
+    log_debug("received packet of type %d", pkt_type);
 
     if (pkt_type == 0x01) {
         log_debug("recording - parsing a command packet");
@@ -154,11 +154,11 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
         return (uint32_t) read_pointer - (uint32_t) write_pointer;
     } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
 
-        // If pointers are equal, buffer is full if last op is write
+        // If pointers are equal, buffer is full if last operation is write
         return 0;
     } else {
 
-        // If pointers are equal, buffer is empty if last op is read
+        // If pointers are equal, buffer is empty if last operation is read
         return (end_of_buffer_region - buffer_region);
     }
 }
@@ -173,8 +173,8 @@ static inline bool _recording_write_memory(
     buffered_operations last_buffer_operation =
         g_recording_channels[channel].last_buffer_operation;
 
-    log_debug("t = %u, ch = %u, start = 0x%08x, read = 0x%08x,"
-              "write = 0x%08x, end = 0x%08x, op == read = %u, len = %u",
+    log_debug("t = %u, channel = %u, start = 0x%08x, read = 0x%08x,"
+              "write = 0x%08x, end = 0x%08x, operation == read = %u, len = %u",
               spin1_get_simulation_time(), channel, buffer_region,
               read_pointer, write_pointer, end_of_buffer_region,
               last_buffer_operation == BUFFER_OPERATION_READ, length);
@@ -344,9 +344,9 @@ static void _buffering_in_handler(uint mailbox, uint port) {
 
     _recording_eieio_packet_handler(eieio_msg_ptr, length - 8);
 
-    log_debug("Freeing msg");
+    log_debug("Freeing message");
     spin1_msg_free(msg);
-    log_debug("Done freeing msg");
+    log_debug("Done freeing message");
 }
 
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {

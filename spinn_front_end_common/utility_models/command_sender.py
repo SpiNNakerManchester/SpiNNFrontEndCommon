@@ -1,7 +1,5 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.executor.injection_decorator import \
-    supports_injection, requires_injection, inject
 from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
     import AbstractProvidesOutgoingPartitionConstraints
 from pacman.model.constraints.key_allocator_constraints.\
@@ -15,14 +13,19 @@ from pacman.model.graphs.application.impl.application_vertex import \
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.sdram_resource import SDRAMResource
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.executor.injection_decorator import inject_items
 
 # spinn front end common imports
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
-
-from spinn_front_end_common.abstract_models.impl.\
-    uses_simulation_needs_total_runtime_data_specable_vertex import \
-    UsesSimulationNeedsTotalRuntimeDataSpecableVertex
+from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinn_front_end_common.abstract_models\
+    .abstract_generates_data_specification \
+    import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
+    import AbstractHasAssociatedBinary
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
 
@@ -32,19 +35,17 @@ _COMMAND_WITH_PAYLOAD_SIZE = 12
 _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
 
 
-@supports_injection
 class CommandSender(
         AbstractProvidesOutgoingPartitionConstraints,
-        ApplicationVertex, UsesSimulationNeedsTotalRuntimeDataSpecableVertex):
+        ApplicationVertex, AbstractGeneratesDataSpecification,
+        AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
 
-    def __init__(self, machine_time_step, timescale_factor, label, constraints):
+    def __init__(self, label, constraints):
 
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
-        UsesSimulationNeedsTotalRuntimeDataSpecableVertex.__init__(
-            self, machine_time_step, timescale_factor)
         ApplicationVertex.__init__(self, label, constraints, 1)
 
         self._commands_by_edge = dict()
@@ -53,15 +54,6 @@ class CommandSender(
         self._commands_without_payloads = dict()
         self._times_with_commands = set()
         self._command_edge = dict()
-
-        # storage objects
-        self._graph_mapper = None
-        self._machine_graph = None
-        self._routing_info = None
-
-        # simulation objects
-        self._machine_time_step = machine_time_step
-        self._time_scale_factor = timescale_factor
 
     def add_commands(self, commands, edge, partition):
         """ Add commands to be sent down a given edge
@@ -143,11 +135,23 @@ class CommandSender(
                     [BaseKeyAndMask(key, mask)
                      for (key, mask) in command_keys])])
 
-    @requires_injection(
-        ["MemoryGraphMapper", "MemoryMachineGraph", "MemoryRoutingInfos"])
-    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
-               generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    @inject_items({
+        "machine_time_step": "MachineTimeStep",
+        "time_scale_factor": "TimeScaleFactor",
+        "machine_graph": "MemoryMachineGraph",
+        "graph_mapper": "MemoryGraphMapper",
+        "routing_infos": "MemoryRoutingInfos",
+        "n_machine_time_steps": "TotalMachineTimeSteps"
+    })
+    @overrides(
+        AbstractGeneratesDataSpecification.generate_data_specification,
+        additional_arguments={
+            "machine_time_step", "time_scale_factor", "machine_graph",
+            "graph_mapper", "routing_infos", "n_machine_time_steps"
+        })
+    def generate_data_specification(
+            self, spec, placement, machine_time_step, time_scale_factor,
+            machine_graph, graph_mapper, routing_infos, n_machine_time_steps):
 
         # reserve region - add a word for the region size
         n_command_bytes = self._get_n_command_bytes()
@@ -157,13 +161,15 @@ class CommandSender(
         # Write system region
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(CommandSenderMachineVertex.SYSTEM_REGION)
-        spec.write_array(self.data_for_simulation_data())
+        spec.write_array(simulation_utilities.get_simulation_header_array(
+            self.get_binary_file_name(), machine_time_step,
+            time_scale_factor))
 
         # Go through the times and replace negative times with positive ones
         new_times = set()
         for time in self._times_with_commands:
-            if time < 0 and self._no_machine_time_steps is not None:
-                real_time = self._no_machine_time_steps + (time + 1)
+            if time < 0 and n_machine_time_steps is not None:
+                real_time = n_machine_time_steps + (time + 1)
                 if time in self._commands_with_payloads:
                     if real_time in self._commands_with_payloads:
                         self._commands_with_payloads[real_time].extend(
@@ -184,7 +190,7 @@ class CommandSender(
 
             # if runtime is infinite, then there's no point storing end of
             # simulation events, as they will never occur
-            elif time < 0 and self._no_machine_time_steps is None:
+            elif time < 0 and n_machine_time_steps is None:
                 if time in self._commands_with_payloads:
                     del self._commands_with_payloads[time]
                 if time in self._commands_without_payloads:
@@ -209,23 +215,25 @@ class CommandSender(
 
             spec.write_value(len(with_payload))
             for command in with_payload:
-                spec.write_value(self._get_key(command))
+                spec.write_value(
+                    self._get_key(command, graph_mapper, routing_infos))
                 payload = command.get_payload(
-                    self._routing_info, self._machine_graph, self._graph_mapper)
+                    routing_infos, machine_graph, graph_mapper)
                 spec.write_value(payload)
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
             spec.write_value(len(without_payload))
             for command in without_payload:
-                spec.write_value(self._get_key(command))
+                spec.write_value(
+                    self._get_key(command, graph_mapper, routing_infos))
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
         # End-of-Spec:
         spec.end_specification()
 
-    def _get_key(self, command):
+    def _get_key(self, command, graph_mapper, routing_info):
         """ Return a key for a command
 
         :param command:
@@ -239,9 +247,8 @@ class CommandSender(
         # all the edges have the same keys assigned
         edge_for_command = self._command_edge[command]
         machine_edge_for_command = iter(
-            self._graph_mapper.get_machine_edges(edge_for_command)).next()
-        key = \
-            self._routing_info.get_first_key_for_edge(machine_edge_for_command)
+            graph_mapper.get_machine_edges(edge_for_command)).next()
+        key = routing_info.get_first_key_for_edge(machine_edge_for_command)
 
         # Build the command by merging in the assigned key with the command
         return key | command.key
@@ -278,13 +285,6 @@ class CommandSender(
                 region=CommandSenderMachineVertex.COMMANDS,
                 size=command_size, label='commands')
         vertex.reserve_provenance_data_region(spec)
-
-    @property
-    @overrides(ApplicationVertex.model_name)
-    def model_name(self):
-        """ Return the name of the model as a string
-        """
-        return "command_sender_multi_cast_source"
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
@@ -331,24 +331,10 @@ class CommandSender(
 
         return n_bytes
 
-
-    @overrides(UsesSimulationNeedsTotalRuntimeDataSpecableVertex.
-               get_binary_file_name)
+    @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 
         :return:
         """
         return 'command_sender_multicast_source.aplx'
-
-    @inject("MemoryGraphMapper")
-    def set_graph_mapper(self, graph_mapper):
-        self._graph_mapper = graph_mapper
-
-    @inject("MemoryMachineGraph")
-    def set_machine_graph(self, machine_graph):
-        self._machine_graph = machine_graph
-
-    @inject("MemoryRoutingInfos")
-    def set_routing_info(self, routing_info):
-        self._routing_info = routing_info

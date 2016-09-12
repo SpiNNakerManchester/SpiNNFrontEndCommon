@@ -3,15 +3,12 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.executor.injection_decorator import do_injection
+from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graphs.application.impl.application_virtual_vertex import  \
-    ApplicationVirtualVertex
-from pacman.model.graphs.machine.impl.machine_virtual_vertex import\
-    MachineVirtualVertex
+from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
 from spinn_front_end_common.utilities import exceptions as common_exceptions
@@ -25,7 +22,8 @@ from spinn_front_end_common.abstract_models.abstract_changable_after_run \
     import AbstractChangableAfterRun
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
-
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 
 # general imports
 from collections import defaultdict
@@ -132,6 +130,9 @@ class SpinnakerMainInterface(object):
         "_extra_post_run_algorithms",
 
         #
+        "_extra_load_algorithms",
+
+        #
         "_dsg_algorithm",
 
         #
@@ -215,7 +216,7 @@ class SpinnakerMainInterface(object):
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
             extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-            n_chips_required=None):
+            n_chips_required=None, extra_load_algorithms=None):
 
         # global params
         self._config = config
@@ -275,6 +276,9 @@ class SpinnakerMainInterface(object):
         self._extra_post_run_algorithms = list()
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
+        self._extra_load_algorithms = list()
+        if extra_load_algorithms is not None:
+            self._extra_load_algorithms.extend(extra_load_algorithms)
 
         self._dsg_algorithm = \
             "FrontEndCommonApplicationGraphDataSpecificationWriter"
@@ -474,6 +478,23 @@ class SpinnakerMainInterface(object):
                     is_buffered_recording = True
                     break
 
+        # Check if everything can update the run time
+        is_runtime_updatable = True
+        for placement in self._placements.placements:
+            if not isinstance(
+                    placement.vertex, AbstractBinaryUsesSimulationRun):
+                if self._graph_mapper is None:
+                    is_runtime_updatable = False
+                    break
+                else:
+                    app_vertex = self._graph_mapper.get_application_vertex(
+                        placement.vertex)
+                    if not isinstance(
+                            app_vertex, AbstractBinaryUsesSimulationRun):
+                        is_runtime_updatable = False
+        if not is_runtime_updatable:
+            self._config.set("Buffers", "use_auto_pause_and_resume", "False")
+
         # Work out an array of timesteps to perform
         if (not self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume") or
@@ -522,7 +543,10 @@ class SpinnakerMainInterface(object):
                 self._do_load()
 
         # Run for each of the given steps
-        for step in steps:
+        logger.info("Running for {} steps for a total of {} ms".format(
+            len(steps), run_time))
+        for i, step in enumerate(steps):
+            logger.info("Run {} of {}".format(i + 1, len(steps)))
             self._do_run(step)
 
         # Indicate that the signal handler needs to act
@@ -578,16 +602,6 @@ class SpinnakerMainInterface(object):
         if left_over_time_steps != 0:
             steps.append(int(left_over_time_steps))
         return steps
-
-    def _update_n_machine_time_steps(self, n_machine_time_steps):
-        """ Update all vertices with the n_machine_time_steps if they use\
-            DSG interface.
-
-        :param n_machine_time_steps: the number of machine time steps to run\
-                    this iteration.
-        :return: None
-        """
-        do_injection({'MemoryNoMachineTimeSteps': n_machine_time_steps})
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         total_run_timesteps = next_run_timesteps
@@ -665,6 +679,8 @@ class SpinnakerMainInterface(object):
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
+        inputs["MachineTimeStep"] = self._machine_time_step
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -675,6 +691,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "down_chips")
             inputs["DownedCoresDetails"] = self._config.get(
                 "Machine", "down_cores")
+            inputs["DownedLinksDetails"] = self._convert_down_links(
+                self._config.get("Machine", "down_links"))
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
@@ -715,6 +733,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "down_chips")
             inputs["DownedCoresDetails"] = self._config.get(
                 "Machine", "down_cores")
+            inputs["DownedLinksDetails"] = self._convert_down_links(
+                self._config.get("Machine", "down_links"))
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
             inputs["BootPortNum"] = self._read_config_int(
@@ -740,12 +760,6 @@ class SpinnakerMainInterface(object):
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
 
-            # this is required for when auto pause and resume is not turned
-            # on and your needing to partition for a spalloc or remote system,
-            # as partitioning in this case needs to know how long to run to
-            # give complete SDRAM memory requirements for recording buffers.
-            if n_machine_time_steps > 0:
-                self._update_n_machine_time_steps(n_machine_time_steps)
             need_virtual_board = False
 
             # if using spalloc system
@@ -839,6 +853,39 @@ class SpinnakerMainInterface(object):
 
         return self._machine
 
+    def _convert_down_links(self, down_link_text):
+        """ Converts the text form to a list of down links
+
+        :param down_link_text: the text from the config system
+        :return:\
+            array of (tuple(int, int), tuple(int, int), int) where the\
+            first tuple is the source x and y for the chip the link is from,\
+            the second is a destination x and y for the chip the link goes to,\
+            the third is the link id from the source chip.
+        """
+        down_links = list()
+        if down_link_text == "None":
+            return down_links
+
+        bits = down_link_text.split("]")
+        for bit in bits:
+            if len(bit) > 0:
+                removed_first_bracket = bit.split("[")
+                coords_bits = removed_first_bracket[1].split(":")
+                source_bits = coords_bits[0].split(",")
+                removed_bracket_sx = source_bits[0].split("(")[1]
+                removed_bracket_sy = source_bits[1].split(")")[0]
+                source_tuple = (int(removed_bracket_sx),
+                                int(removed_bracket_sy))
+                dest_bits = coords_bits[1].split(",")
+                removed_bracket_dx = dest_bits[0].split("(")[1]
+                removed_bracket_dy = dest_bits[1].split(")")[0]
+                dest_tuple = (int(removed_bracket_dx), int(removed_bracket_dy))
+                link_id = int(coords_bits[2])
+                down_links.append((source_tuple, dest_tuple, link_id))
+        print bits
+        return down_links
+
     def generate_file_machine(self):
         inputs = {
             "MemoryExtendedMachine": self.machine,
@@ -854,12 +901,6 @@ class SpinnakerMainInterface(object):
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
 
-        # Set the initial n_machine_time_steps to all of them for mapping
-        # (note that the underlying vertices will know about
-        # auto-pause-and-resume and so they will work correctly here regardless
-        # of the setting)
-        self._update_n_machine_time_steps(n_machine_time_steps)
-
         # update inputs with extra mapping inputs if required
         inputs = dict(self._machine_outputs)
         if self._extra_mapping_inputs is not None:
@@ -867,6 +908,7 @@ class SpinnakerMainInterface(object):
 
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
@@ -984,10 +1026,6 @@ class SpinnakerMainInterface(object):
         if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
 
-        # inject the application graph to whom ever needs it
-        if len(self._application_graph.vertices) > 0:
-            do_injection({"MemoryApplicationGraph": self._application_graph})
-
         # Execute the mapping algorithms
         executor = self._run_machine_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
@@ -1003,11 +1041,9 @@ class SpinnakerMainInterface(object):
 
     def _do_data_generation(self, n_machine_time_steps):
 
-        # Update the machine timesteps again for the data generation
-        self._update_n_machine_time_steps(n_machine_time_steps)
-
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
@@ -1025,7 +1061,7 @@ class SpinnakerMainInterface(object):
             self._config.getboolean("Reports", "writeMemoryMapReport")
         )
 
-        algorithms = list()
+        algorithms = list(self._extra_load_algorithms)
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
         optional_algorithms.append("FrontEndCommonTagsLoader")
@@ -1041,8 +1077,12 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
+
+        # algorithms needed for loading the binaries to the SpiNNaker machine
+        optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
         optional_algorithms.append("FrontEndCommonLoadExecutableImages")
 
+        # expected outputs from this phase
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
             "LoadedRoutingTablesToken", "LoadBinariesToken",
@@ -1059,18 +1099,12 @@ class SpinnakerMainInterface(object):
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
-        self._update_n_machine_time_steps(total_run_timesteps)
         run_time = None
         if n_machine_time_steps is not None:
             run_time = (
                 n_machine_time_steps *
                 (float(self._machine_time_step) / 1000.0)
             )
-
-        # Calculate the first machine time step to start from and set this
-        # where necessary
-        first_machine_time_step = self._current_run_timesteps
-        do_injection({'FirstMachineTimeStep': self._current_run_timesteps})
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1084,6 +1118,7 @@ class SpinnakerMainInterface(object):
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -1098,10 +1133,7 @@ class SpinnakerMainInterface(object):
 
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
-            inputs["WriteReloadFilesFlag"] = (
-                self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "writeReloadSteps")
-            )
+            inputs["WriteReloadFilesFlag"] = False
             algorithms.append("FrontEndCommonBufferManagerCreator")
         else:
             inputs["BufferManager"] = self._buffer_manager
@@ -1116,18 +1148,7 @@ class SpinnakerMainInterface(object):
 
         # Sort out reload if needed
         if self._config.getboolean("Reports", "writeReloadSteps"):
-            if not self._has_ran:
-                algorithms.append("FrontEndCommonReloadScriptCreator")
-                if self._use_virtual_board:
-                    logger.warn(
-                        "A reload script will be created, but as you are using"
-                        " a virtual board, you will need to edit the "
-                        " machine_name before you use it")
-            else:
-                logger.warn(
-                    "The reload script cannot handle multi-runs, nor can"
-                    "it handle resets, therefore it will only contain the "
-                    "initial run")
+            logger.warn("Reload script is not supported in this version")
 
         outputs = [
             "NoSyncChanges",
@@ -1155,31 +1176,27 @@ class SpinnakerMainInterface(object):
             sys.exit(1)
         except Exception as e:
 
-            is_failed_to_start_exp = \
-                isinstance(e,
-                           common_exceptions.ExecutableFailedToStartException)
-            is_failed_to_stop_exp = \
-                isinstance(e,
-                           common_exceptions.ExecutableFailedToStopException)
-            if is_failed_to_start_exp or is_failed_to_stop_exp:
+            logger.error(
+                "An error has occurred during simulation")
+            ex_type, ex_value, ex_traceback = sys.exc_info()
+            for line in traceback.format_tb(ex_traceback):
+                logger.error(line.strip())
 
-                # print error message to end user
-                logger.error(
-                    "An error has occurred during simulation")
-                ex_type, ex_value, ex_traceback = sys.exc_info()
-                for line in traceback.format_tb(ex_traceback):
-                    logger.error(line.strip())
+            # if exception has an exception, print to system
+            if isinstance(e, PacmanAlgorithmFailedToCompleteException):
                 logger.error(e.exception)
+            else:
+                logger.error(e)
 
-                logger.info("\n\nAttempting to extract data\n\n")
+            logger.info("\n\nAttempting to extract data\n\n")
 
-                # If an exception occurs during a run, attempt to get
-                # information out of the simulation before shutting down
-                try:
-                    self._recover_from_error(e, executor.get_items())
-                except Exception:
-                    logger.error("Error when attempting to recover from error")
-                    traceback.print_exc()
+            # If an exception occurs during a run, attempt to get
+            # information out of the simulation before shutting down
+            try:
+                self._recover_from_error(e, executor.get_items())
+            except Exception:
+                logger.error("Error when attempting to recover from error")
+                traceback.print_exc()
 
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
@@ -1255,20 +1272,19 @@ class SpinnakerMainInterface(object):
         executor.execute_mapping()
 
     def _recover_from_error(self, e, error_outputs):
-        error = e.exception
         has_failed_to_start = isinstance(
-            error, common_exceptions.ExecutableFailedToStartException)
+            e, common_exceptions.ExecutableFailedToStartException)
         has_failed_to_end = isinstance(
-            error, common_exceptions.ExecutableFailedToStopException)
+            e, common_exceptions.ExecutableFailedToStopException)
 
         # If we have failed to start or end, get some extra data
         if has_failed_to_start or has_failed_to_end:
             is_rte = True
             if has_failed_to_end:
-                is_rte = error.is_rte
+                is_rte = e.is_rte
 
             inputs = dict(error_outputs)
-            inputs["FailedCoresSubsets"] = error.failed_core_subsets
+            inputs["FailedCoresSubsets"] = e.failed_core_subsets
             inputs["RanToken"] = True
             algorithms = list()
             outputs = list()
@@ -1590,7 +1606,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, ApplicationVirtualVertex) and
+        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
@@ -1609,7 +1625,7 @@ class SpinnakerMainInterface(object):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex, MachineVirtualVertex) and
+        if (isinstance(vertex, AbstractVirtualVertex) and
                 self._machine is not None):
             raise common_exceptions.ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
