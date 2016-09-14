@@ -227,16 +227,17 @@ class BufferManager(object):
         # add to tracker
         self._receiver_vertices.add(vertex)
 
-        # sort out tags and connection for listening for the packets
-        tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
-        if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.debug("Listening for receive packets using tag {} on"
-                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-            self._seen_tags.add((tag.ip_address, tag.port))
-            if self._transceiver is not None:
-                self._transceiver.register_udp_listener(
-                    self.receive_buffer_command_message, UDPEIEIOConnection,
-                    local_port=tag.port, local_host=tag.ip_address)
+        if self._tags.get_ip_tags_for_vertex(vertex) is not None:
+            # sort out tags and connection for listening for the packets
+            tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
+            if (tag.ip_address, tag.port) not in self._seen_tags:
+                logger.debug("Listening for receive packets using tag {} on"
+                             " {}:{}".format(tag.tag, tag.ip_address, tag.port))
+                self._seen_tags.add((tag.ip_address, tag.port))
+                if self._transceiver is not None:
+                    self._transceiver.register_udp_listener(
+                        self.receive_buffer_command_message, UDPEIEIOConnection,
+                        local_port=tag.port, local_host=tag.ip_address)
 
     def add_sender_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices
@@ -331,13 +332,13 @@ class BufferManager(object):
         for vertex in self._receiver_vertices:
             if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
 
-                state_dsg_region_id = vertex.get_buffered_state_address(
+                state_region_address = vertex.get_buffered_state_address(
                     self._transceiver,
                     placements.get_placement_of_vertex(vertex))
 
                 end_state = self._generate_end_buffering_state_from_machine(
                     placements.get_placement_of_vertex(vertex),
-                    state_dsg_region_id)
+                    state_region_address)
                 self._recording_region_to_address_map[vertex] = \
                     end_state.region_addresses
 

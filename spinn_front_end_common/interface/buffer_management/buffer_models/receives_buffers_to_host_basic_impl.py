@@ -36,6 +36,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffered_sdram_per_timestep = 0
         self._buffered_state_region = None
         self._recording_region_ids = list()
+        self._dsg_regions_to_recording_region_map = dict()
 
     def buffering_output(self):
         """ True if the output buffering mechanism is activated
@@ -142,10 +143,21 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffered_state_region = state_region
 
         if recording_region_ids is None:
-            for recording_id in range(0, len(buffer_regions)):
-                self._recording_region_ids.append(recording_id)
+            recording_region_ids = range(0, len(buffer_regions))
+
+        for (recording_id, dsg_region_id) in zip(
+                recording_region_ids, buffer_regions):
+            self._recording_region_ids.append(recording_id)
+            self._dsg_regions_to_recording_region_map[dsg_region_id] = \
+                recording_id
+
+    def recording_region_id_from_dsg_region(self, dsg_region_id):
+        if dsg_region_id in self._dsg_regions_to_recording_region_map:
+            return self._dsg_regions_to_recording_region_map[dsg_region_id]
         else:
-            self._recording_region_ids = recording_region_ids
+            raise exceptions.ConfigurationException(
+                "The dsg region {} is not a recorded region id."
+                .format(dsg_region_id))
 
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented

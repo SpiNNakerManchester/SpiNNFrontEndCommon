@@ -442,7 +442,7 @@ void recording_finalise() {
 
 bool recording_initialize(
         uint8_t n_regions, address_t *region_addresses_external,
-        uint32_t *recording_data, address_t state_region,
+        uint32_t *recording_data, address_t state_region_address,
         uint32_t *recording_flags) {
     uint32_t i;
 
@@ -462,7 +462,7 @@ bool recording_initialize(
     }
 
     n_recording_regions = n_regions;
-    buffering_out_control_reg = state_region;
+    buffering_out_control_reg = state_region_address;
     uint8_t buffering_output_tag = recording_data[0];
     buffer_size_before_trigger = recording_data[1];
     time_between_triggers = recording_data[2];
