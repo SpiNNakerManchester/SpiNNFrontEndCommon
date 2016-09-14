@@ -80,6 +80,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('RECORDING_BUFFER_STATE', 4),
                ('PROVENANCE_REGION', 5)])
 
+    _RECORDED_REGIONS = Enum(
+        value="_RECORDED_REGIONS",
+        names=[('RECORDING_BUFFER', 0)])
+
     _CONFIGURATION_REGION_SIZE = 40
 
     def __init__(
@@ -110,8 +114,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
-        :param machine_time_step: The time step to be used on the machine
-        :param timescale_factor: The time scaling to be used in the simulation
         :param label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
         :param board_address: The IP address of the board on which to place\

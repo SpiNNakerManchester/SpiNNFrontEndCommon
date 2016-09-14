@@ -44,6 +44,14 @@ class EndBufferingState(object):
     def buffering_out_fsm_state(self):
         return self._buffering_out_fsm_state
 
+    @property
+    def region_addresses(self):
+        """
+        property for the addresses for recording regions.
+        :return: list of ints
+        """
+        return self._region_addresses
+
     def get_region_address(self, recording_region_id):
         return self._region_addresses[recording_region_id]
 

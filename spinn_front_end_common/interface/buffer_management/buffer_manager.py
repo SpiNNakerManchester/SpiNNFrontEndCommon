@@ -330,7 +330,11 @@ class BufferManager(object):
         """
         for vertex in self._receiver_vertices:
             if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
-                state_dsg_region_id = vertex.get_buffered_state_dsg_region_id
+
+                state_dsg_region_id = vertex.get_buffered_state_address(
+                    self._transceiver,
+                    placements.get_placement_of_vertex(vertex))
+
                 end_state = self._generate_end_buffering_state_from_machine(
                     placements.get_placement_of_vertex(vertex),
                     state_dsg_region_id)
@@ -338,12 +342,7 @@ class BufferManager(object):
                     end_state.region_addresses
 
     def _generate_end_buffering_state_from_machine(
-            self, placement, state_dsg_region_id):
-        # Get the App Data for the core
-        state_region_base_address = \
-            helpful_functions.locate_memory_region_for_placement(
-                placement, state_dsg_region_id, self._transceiver)
-
+            self, placement, state_region_base_address):
         # retrieve channel state memory area
         raw_number_of_channels = self._transceiver.read_memory(
             placement.x, placement.y, state_region_base_address, 4)
@@ -563,8 +562,7 @@ class BufferManager(object):
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
 
-    def get_data_for_vertex(self, placement, recording_region_id,
-                            state_region):
+    def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
@@ -572,8 +570,6 @@ class BufferManager(object):
         :type placement: pacman.model.placements.placement.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
-        :param state_region: final state storage region
-        :type state_region: int
         :return: pointer to a class which inherits from\
                 AbstractBufferedDataStorage
         :rtype:\
@@ -591,9 +587,12 @@ class BufferManager(object):
             if not self._received_data.is_end_buffering_state_recovered(
                     placement.x, placement.y, placement.p):
 
+                state_address = placement.vertex.get_buffered_state_address(
+                    self._transceiver, placement)
+
                 end_buffering_state = \
                     self._generate_end_buffering_state_from_machine(
-                        placement, state_region)
+                        placement, state_address)
 
                 self._received_data.store_end_buffering_state(
                     placement.x, placement.y, placement.p, end_buffering_state)

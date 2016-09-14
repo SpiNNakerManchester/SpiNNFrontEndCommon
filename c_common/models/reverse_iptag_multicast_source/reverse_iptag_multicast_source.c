@@ -1027,8 +1027,6 @@ void timer_callback(uint unused0, uint unused1) {
         return;
     }
 
-    spin1_exit(1);
-
     if (send_packet_reqs &&
             ((time - last_request_tick) >= TICKS_BETWEEN_REQUESTS)) {
         send_buffer_request_pkt();

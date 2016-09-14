@@ -32,11 +32,10 @@ class FrontEndCommonBufferExtractor(object):
         for vertex in machine_graph.vertices:
             if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
                 placement = placements.get_placement_of_vertex(vertex)
-
-                for dsg_region_id in vertex.get_buffered_regions():
-                    recording_region_id = vertex.\
-                        get_recording_region_id_for_dsg_region(dsg_region_id)
+                state_address = \
+                    vertex.get_buffered_state_address(placement, transceiver)
+                for recording_region_id in vertex.get_recorded_region_ids():
                     buffer_manager.get_data_for_vertex(
-                        placement, recording_region_id)
+                        placement, recording_region_id, state_address)
                     progress_bar.update()
         progress_bar.end()

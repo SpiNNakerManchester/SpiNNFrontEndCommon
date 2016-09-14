@@ -1,4 +1,5 @@
 # pacman imports
+
 from pacman.model.constraints.placer_constraints.placer_board_constraint \
     import PlacerBoardConstraint
 
@@ -14,6 +15,8 @@ from spinn_front_end_common.utilities import exceptions
 # general imports
 import sys
 import math
+
+from spinn_front_end_common.utilities import helpful_functions
 
 
 class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
@@ -31,8 +34,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffering_port = None
         self._minimum_sdram_for_buffering = 0
         self._buffered_sdram_per_timestep = 0
-        self._buffered_regions = list()
         self._buffered_state_region = None
+        self._recording_region_ids = list()
 
     def buffering_output(self):
         """ True if the output buffering mechanism is activated
@@ -106,7 +109,8 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         return 12 + (n_buffered_regions * 4)
 
     def reserve_buffer_regions(
-            self, spec, state_region, buffer_regions, region_sizes):
+            self, spec, state_region, buffer_regions, region_sizes,
+            recording_region_ids=None):
         """ Reserves the region for recording and the region for storing the\
             end state of the buffering
 
@@ -115,6 +119,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
                 region
         :param buffer_regions: The regions ids to reserve for buffering
         :param region_sizes: The sizes of the regions to reserve
+        :param recording_region_ids: the order of which regions are going into
+                recording interface in c. if none assume same order as the
+                buffer regions
         """
         if len(buffer_regions) != len(region_sizes):
             raise exceptions.ConfigurationException(
@@ -123,16 +130,22 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         for (buffer_region, region_size) in zip(
                 buffer_regions, region_sizes):
             if region_size > 0:
-                self._buffered_regions.append(buffer_region)
                 spec.reserve_memory_region(
                     region=buffer_region, size=region_size,
                     label="RECORDING_REGION_{}".format(buffer_region),
                     empty=True)
         spec.reserve_memory_region(
             region=state_region,
-            size=EndBufferingState.size_of_region(len(buffer_regions)),
+            size=EndBufferingState.size_of_region(
+                (len(buffer_regions) * 4) + 8),
             label='BUFFERED_OUT_STATE', empty=True)
         self._buffered_state_region = state_region
+
+        if recording_region_ids is None:
+            for recording_id in range(0, len(buffer_regions)):
+                self._recording_region_ids.append(recording_id)
+        else:
+            self._recording_region_ids = recording_region_ids
 
     def get_tag(self, ip_tags):
         """ Finds the tag for buffering from the set of tags presented
@@ -184,11 +197,12 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         return int(math.floor(
             buffer_space / self._buffered_sdram_per_timestep))
 
-    def get_buffered_regions(self):
-        return self._buffered_regions
+    def get_recorded_region_ids(self):
+        return self._recording_region_ids
 
-    def get_buffered_state_dsg_region_id(self):
-        return self._buffered_state_region
-
-    def get_recording_region_id_for_dsg_region(self, dsg_region_id):
-        return self._buffered_regions.index(dsg_region_id)
+    def get_buffered_state_address(self, txrx, placement):
+        # Get the App Data for the core
+        state_region_base_address = \
+            helpful_functions.locate_memory_region_for_placement(
+                placement, self._buffered_state_region, txrx)
+        return state_region_base_address

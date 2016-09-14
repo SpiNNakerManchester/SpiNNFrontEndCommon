@@ -187,7 +187,6 @@ static inline bool _recording_write_memory(
 
         if (final_space >= length) {
             log_debug("Packet fits in final space of %u", final_space);
-
             spin1_memcpy(write_pointer, data, length);
             write_pointer += length;
             if (write_pointer >= end_of_buffer_region) {
@@ -249,6 +248,7 @@ static inline bool _recording_write_memory(
             return true;
         }
     }
+    log_debug("reached end");
 
     log_debug("Buffer already full");
     return false;
@@ -350,9 +350,9 @@ static void _buffering_in_handler(uint mailbox, uint port) {
 }
 
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+
     if (_has_been_initialsed(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
-
         uint32_t space_available = compute_available_space_in_channel(channel);
 
         // If there's space to record
@@ -364,7 +364,7 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
             return true;
         } else {
             if (!g_recording_channels[channel].missing_info) {
-                log_info("WARNING: recording channel %u out of space", channel);
+                log_debug("WARNING: recording channel %u out of space", channel);
                 g_recording_channels[channel].missing_info = 1;
             }
             return false;
@@ -372,7 +372,6 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     } else {
         return false;
     }
-    spin1_exit(1);
 }
 
 //! brief this writes data to the state region for helping the python
@@ -381,7 +380,7 @@ address_t _recording_state_region_write(){
     // Get the region address store channel details
     address_t out_ptr = buffering_out_control_reg;
 
-    log_info(
+    log_debug(
         "Storing channel state info starting at 0x%08x", out_ptr);
     // store number of recording regions
     spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
@@ -395,19 +394,17 @@ address_t _recording_state_region_write(){
     // store the address mapping
     spin1_memcpy(out_ptr, &region_addresses,
                  n_recording_regions * sizeof(region_addresses));
-    out_ptr++;
+
+    out_ptr = out_ptr + n_recording_regions;
     return out_ptr;
 }
 
 void recording_finalise() {
     uint8_t i;
 
-    log_info("Finalising recording channels");
+    log_debug("Finalising recording channels");
 
     address_t out_ptr = _recording_state_region_write();
-
-    // update for the amount of recording regions data
-    out_ptr = out_ptr + n_recording_regions;
 
     // store info on the channel status so that the host can flush the info
     // buffered in SDRAM
@@ -426,32 +423,34 @@ void recording_finalise() {
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
             if (g_recording_channels[channel].missing_info)
-                log_info(
+                log_debug(
                     "\tFinalising channel %u - dropped information while"
                     "buffering - state info stored in SDRAM", channel);
             else
-                log_info(
+                log_debug(
                     "\tFinalising channel %u - state info stored in SDRAM",
                     channel);
 
             if (!_close_channel(channel)) {
                 log_error("could not close channel %u.", channel);
             } else {
-                log_info("closed channel %u.", channel);
+                log_debug("closed channel %u.", channel);
             }
         }
     }
 }
 
 bool recording_initialize(
-        uint8_t n_regions, address_t *region_addresses,
+        uint8_t n_regions, address_t *region_addresses_external,
         uint32_t *recording_data, address_t state_region,
         uint32_t *recording_flags) {
     uint32_t i;
 
     region_addresses = (address_t*) sark_alloc(
-        1, n_recording_regions * sizeof(address_t));
-    region_addresses = region_addresses;
+        1, n_regions * sizeof(address_t));
+    for (uint32_t counter =0; counter < n_regions; counter++){
+        region_addresses[counter] = region_addresses_external[counter];
+    }
 
     // if already initialised, don't re-initialise
     if (!n_recording_regions && n_regions <= 0) {
@@ -470,14 +469,14 @@ bool recording_initialize(
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
         time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
     }
-    log_info(
+    log_debug(
         "Recording %d regions, using output tag %d, size before trigger %d, "
         "time between triggers %d",
         n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
         time_between_triggers);
 
     if (g_recording_channels != NULL){
-        log_info("Freeing allocated memory");
+        log_debug("Freeing allocated memory");
         sark_free((void*) g_recording_channels);
     }
 
@@ -487,10 +486,11 @@ bool recording_initialize(
         log_error("Not enough space to create recording channels");
         return false;
     }
-    log_info("Allocated recording channels to 0x%08x", g_recording_channels);
+    log_debug("Allocated recording channels to 0x%08x", g_recording_channels);
 
     for (i = 0; i < n_regions; i++) {
         uint32_t region_size = recording_data[i + 3];
+        log_debug("region size %d", region_size);
         if (region_size > 0) {
             address_t region_address = region_addresses[i];
 
@@ -507,7 +507,7 @@ bool recording_initialize(
 
             *recording_flags = (*recording_flags | (1 << i));
 
-            log_info(
+            log_debug(
                 "Recording channel %u configured to use %u byte memory block"
                 " starting at 0x%08x", i, region_size,
                 g_recording_channels[i].start);
@@ -527,7 +527,7 @@ bool recording_initialize(
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            log_info("Recording channel %u left uninitialised", i);
+            log_debug("Recording channel %u left uninitialised", i);
         }
     }
 
