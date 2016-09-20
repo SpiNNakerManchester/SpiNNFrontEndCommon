@@ -52,7 +52,7 @@ void timer_callback(uint unused0, uint unused1) {
             if (delay_and_repeat_data != 0) {
                 uint32_t repeat = delay_and_repeat_data >> 16;
                 uint32_t delay = delay_and_repeat_data & 0x0000ffff;
-                log_debug(
+                log_info(
                     "Sending %08x, %08x at time %u with %u repeats and "
                     "%u delay ", key, payload, time, repeat, delay);
 
@@ -66,7 +66,7 @@ void timer_callback(uint unused0, uint unused1) {
                     }
                 }
             } else {
-                log_debug("Sending %08x, %08x at time %u", key, payload, time);
+                log_info("Sending %08x, %08x at time %u", key, payload, time);
 
                 //if no repeats, then just send the message
                 spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
@@ -74,7 +74,7 @@ void timer_callback(uint unused0, uint unused1) {
         }
 
         uint32_t without_payload_count = schedule[++next_pos];
-        log_debug(
+        log_info(
             "Sending %u packets without payloads at time %u",
             without_payload_count, time);
         for (uint32_t i = 0; i < without_payload_count; i++) {
@@ -96,7 +96,7 @@ void timer_callback(uint unused0, uint unused1) {
                     }
                 }
             } else {
-                log_debug("Sending %08x at time %u", key, time);
+                log_info("Sending %08x at time %u", key, time);
 
                 //if no repeats, then just send the message
                 spin1_send_mc_packet(key, 0, NO_PAYLOAD);
@@ -106,9 +106,9 @@ void timer_callback(uint unused0, uint unused1) {
         ++next_pos;
 
         if (next_pos < schedule_size) {
-            log_debug("Next packets will be sent at %u", schedule[next_pos]);
+            log_info("Next packets will be sent at %u", schedule[next_pos]);
         } else {
-            log_debug("End of Schedule");
+            log_info("End of Schedule");
         }
     }
 }

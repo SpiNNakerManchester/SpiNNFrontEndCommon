@@ -1,7 +1,5 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
-    import AbstractProvidesOutgoingPartitionConstraints
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
@@ -19,6 +17,9 @@ from pacman.executor.injection_decorator import inject_items
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_outgoing_partition_constraints \
+    import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification

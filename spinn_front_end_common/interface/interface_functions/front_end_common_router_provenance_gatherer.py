@@ -29,6 +29,8 @@ class FrontEndCommonRouterProvenanceGatherer(object):
 
         # total lost dropped packets
         '_total_lost_dropped_packets'
+
+        # total
     ]
 
     def __call__(
@@ -187,6 +189,18 @@ class FrontEndCommonRouterProvenanceGatherer(object):
                 "Try increasing the machine_time_step and/or the time scale "
                 "factor or reducing the number of atoms per core."
                 .format(x, y, router_diagnostic.n_dropped_multicast_packets))))
+        items.append(ProvenanceDataItem(
+            self._add_name(
+                names, "Dropped_Multicast_Packets_via_local_transmission"),
+            str(router_diagnostic.user_3),
+            report=(router_diagnostic.user_3 > 0),
+            message=(
+                "The router on {}, {} has dropped {} multicast packets that had"
+                " been transmitted by local cores. This occurs where the "
+                "router has no entry associated with the multi-cast key. "
+                "Try investigating the keys allocated to the vertices and "
+                "whats placed in the router table entries.".format(
+                    x, y, router_diagnostic.user_3))))
         items.append(ProvenanceDataItem(
             self._add_name(names, "Local_P2P_Packets"),
             str(router_diagnostic.n_local_peer_to_peer_packets)))
