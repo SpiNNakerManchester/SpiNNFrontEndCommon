@@ -302,9 +302,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 recording_size += minimum_sdram_for_buffering
             else:
                 recording_size += record_buffer_size
-                recording_size += (
-                    ReverseIPTagMulticastSourceMachineVertex.
-                    get_buffer_state_region_size(1))
+
         mallocs = \
             ReverseIPTagMulticastSourceMachineVertex.n_regions_to_allocate(
                 send_buffer_times is not None, recording_enabled)
@@ -447,8 +445,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Reserve recording buffer regions if required
         self.reserve_buffer_regions(
-            spec, self._REGIONS.RECORDING_BUFFER_STATE.value,
-            [self._REGIONS.RECORDING_BUFFER.value], [self._record_buffer_size])
+            spec, [self._REGIONS.RECORDING_BUFFER.value],
+            [self._record_buffer_size])
 
         self.reserve_provenance_data_region(spec)
 

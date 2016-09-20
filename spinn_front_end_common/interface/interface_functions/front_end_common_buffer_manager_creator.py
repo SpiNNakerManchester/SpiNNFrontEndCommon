@@ -15,6 +15,7 @@ class FrontEndCommonBufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx, write_reload_files, app_data_folder):
+
         progress_bar = ProgressBar(
             len(list(placements.placements)), "Initialising buffers")
 

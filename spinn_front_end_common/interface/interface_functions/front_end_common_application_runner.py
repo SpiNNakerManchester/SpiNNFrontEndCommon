@@ -58,7 +58,7 @@ class FrontEndCommonApplicationRunner(object):
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
-        buffer_manager.resume(placements)
+        buffer_manager.resume()
 
         # every thing is in sync0 so load the initial buffers
         buffer_manager.load_initial_buffers()

@@ -69,15 +69,12 @@ void recording_finalise();
 //! \param[in] recording_data The start of the data about the recording.
 //!            Data is {uint32_t tag; uint32_t buffer_size_before_request;
 //!                     uint32_t size_of_region[n_regions]}
-//! \param[in] state_region The region in which to store the end of recording
-//!            state information
 //! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
         uint8_t n_regions, address_t *region_addresses,
-        uint32_t *recording_data, address_t state_region,
-        uint32_t *recording_flags);
+        uint32_t *recording_data, uint32_t *recording_flags);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0

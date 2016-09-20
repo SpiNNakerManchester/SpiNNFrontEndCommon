@@ -215,8 +215,7 @@ class BufferedReceivingData(object):
         :rtype: (bytearray, bool)
         """
         missing = None
-        if self._end_buffering_state[x, y, p].get_missing_info_for_region(
-                region):
+        if (x, y, p, region) not in self._end_buffering_state:
             missing = (x, y, p, region)
         data = self._data[x, y, p, region].read_all()
         return data, missing
@@ -239,13 +238,12 @@ class BufferedReceivingData(object):
              bool)
         """
         missing = False
-        if self._end_buffering_state[x, y, p].get_missing_info_for_region(
-                region):
+        if (x, y, p, region) not in self._end_buffering_state:
             missing = True
         data_pointer = self._data[x, y, p, region]
         return data_pointer, missing
 
-    def store_end_buffering_state(self, x, y, p, state):
+    def store_end_buffering_state(self, x, y, p, region, state):
         """ Store the end state of buffering
 
         :param x: x coordinate of the chip
@@ -256,9 +254,9 @@ class BufferedReceivingData(object):
         :type p: int
         :param state: The end state
         """
-        self._end_buffering_state[x, y, p] = state
+        self._end_buffering_state[x, y, p, region] = state
 
-    def is_end_buffering_state_recovered(self, x, y, p):
+    def is_end_buffering_state_recovered(self, x, y, p, region):
         """ Determine if the end state has been stored
 
         :param x: x coordinate of the chip
@@ -269,9 +267,9 @@ class BufferedReceivingData(object):
         :type p: int
         :return: True if the state has been stored
         """
-        return (x, y, p) in self._end_buffering_state
+        return (x, y, p, region) in self._end_buffering_state
 
-    def get_end_buffering_state(self, x, y, p):
+    def get_end_buffering_state(self, x, y, p, region):
         """ Get the end state of the buffering
 
         :param x: x coordinate of the chip
@@ -282,7 +280,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: The end state
         """
-        return self._end_buffering_state[x, y, p]
+        return self._end_buffering_state[x, y, p, region]
 
     def resume(self):
         """ Resets states so that it can behave in a resumed mode

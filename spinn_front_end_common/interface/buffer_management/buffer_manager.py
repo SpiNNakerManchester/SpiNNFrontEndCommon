@@ -532,16 +532,12 @@ class BufferManager(object):
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
 
-    def get_data_for_vertex(self, placement, recording_region_base_address,
-                            recording_region_id):
+    def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
         :param placement: the placement to get the data from
         :type placement: pacman.model.placements.placement.Placement
-        :param recording_region_base_address: the base address of the
-        recording region
-        :type recording_region_base_address: int
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: pointer to a class which inherits from\
@@ -549,6 +545,10 @@ class BufferManager(object):
         :rtype:\
                 py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
         """
+
+        recording_region_base_address = \
+            placement.vertex.get_recording_region_base_address(
+                recording_region_id, self._transceiver, placement)
 
         # flush data here
         if not self._received_data.is_data_from_region_flushed(

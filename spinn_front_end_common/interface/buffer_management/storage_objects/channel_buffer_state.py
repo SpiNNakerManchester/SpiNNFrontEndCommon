@@ -102,10 +102,10 @@ class ChannelBufferState(object):
         self._update_completed = True
 
     @staticmethod
-    def create_from_bytearray(data, offset):
+    def create_from_bytearray(data):
         (start_address, current_write, current_read, end_address,
          region_id, missing_info, last_buffer_operation) = struct.unpack_from(
-            "<IIIIBBBx", data, offset)
+            "<IIIIBBBx", data)
         if last_buffer_operation == 0:
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_READ.value

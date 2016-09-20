@@ -41,10 +41,13 @@ class AbstractReceiveBuffersToHost(object):
         """
 
     @abstractmethod
-    def get_buffered_state_address(self, txrx, placement):
-        """
-        returns the address where the buffer state data is stored
+    def get_recording_region_base_address(
+            self, recording_region_id, txrx, placement):
+        """ get the recording base address from the recording region id.
+
+        :param recording_region_id:  the recording region id to find the
+        base address of
         :param txrx: the SpiNNMan instance
-        :param placement: the placement to find the state address for
-        :return: int which is the memory address
+        :param placement: the placement object of the core to find the address of
+        :return: the base address as a int of that recording region
         """

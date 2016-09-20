@@ -2,27 +2,35 @@
 
 from pacman.model.constraints.placer_constraints.placer_board_constraint \
     import PlacerBoardConstraint
-
-# front end common imports
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
+
+# front end common imports
+from pacman.model.resources.sdram_resource import SDRAMResource
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .end_buffering_state import EndBufferingState
+from spinn_front_end_common.interface.buffer_management.storage_objects.\
+    channel_buffer_state import \
+    ChannelBufferState
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import helpful_functions
 
 # general imports
 import sys
 import math
-
-from spinn_front_end_common.utilities import helpful_functions
 
 
 class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
+
+    # 4 for the the IPTag value (or 0), 4 for the size of a buffer before a
+    # request should be made, 4 for the time between requests
+    SIZE_OF_RECORDING_REQUIREMENTS = 12
+
+    # 4 for the int representation
+    SIZE_OF_BUFFER_REGION_ADDRESS = 4
 
     def __init__(self):
         """
@@ -34,9 +42,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         self._buffering_port = None
         self._minimum_sdram_for_buffering = 0
         self._buffered_sdram_per_timestep = 0
-        self._buffered_state_region = None
         self._recording_region_ids = list()
         self._dsg_regions_to_recording_region_map = dict()
+        self._recording_region_to_dsg_region_map = dict()
 
     def buffering_output(self):
         """ True if the output buffering mechanism is activated
@@ -86,70 +94,65 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         :param notification_tag: ??????????????
         :return: a resource container
         """
-        if (not self._buffering_output and buffering_ip_address is not None and
+        if (self._buffering_output and buffering_ip_address is not None and
                 buffering_port is not None):
 
             # create new resources to handle a new tag
             return ResourceContainer(iptags=[
                 IPtagResource(buffering_ip_address, buffering_port,
-                              True, notification_tag)])
+                              True, notification_tag)],
+                sdram=SDRAMResource(
+                    len(self._recording_region_ids) *
+                    ChannelBufferState.size_of_channel_state()))
         return ResourceContainer()
-
-    @staticmethod
-    def get_buffer_state_region_size(n_buffered_regions):
-        """ Get the size of the buffer state region for the given number of\
-            buffered regions
-        """
-        return EndBufferingState.size_of_region(n_buffered_regions)
 
     @staticmethod
     def get_recording_data_size(n_buffered_regions):
         """ Get the size of the recording data for the given number of\
             buffered regions
         """
-        return 12 + (n_buffered_regions * 4)
+        return ReceiveBuffersToHostBasicImpl.SIZE_OF_RECORDING_REQUIREMENTS + \
+               (n_buffered_regions *
+                ReceiveBuffersToHostBasicImpl.SIZE_OF_BUFFER_REGION_ADDRESS)
 
     def reserve_buffer_regions(
-            self, spec, state_region, buffer_regions, region_sizes,
+            self, spec, dsg_buffer_region_ids, region_sizes,
             recording_region_ids=None):
         """ Reserves the region for recording and the region for storing the\
             end state of the buffering
 
         :param spec: The data specification to reserve the region in
-        :param state_region: The id of the region to use as the end state\
-                region
-        :param buffer_regions: The regions ids to reserve for buffering
+        :param dsg_buffer_region_ids: The regions ids to reserve for buffering
         :param region_sizes: The sizes of the regions to reserve
         :param recording_region_ids: the order of which regions are going into
                 recording interface in c. if none assume same order as the
                 buffer regions
         """
-        if len(buffer_regions) != len(region_sizes):
+        if len(dsg_buffer_region_ids) != len(region_sizes):
             raise exceptions.ConfigurationException(
                 "The number of buffer regions must match the number of"
                 " regions sizes")
-        for (buffer_region, region_size) in zip(
-                buffer_regions, region_sizes):
+        for (dsg_buffer_region_id, region_size) in zip(
+                dsg_buffer_region_ids, region_sizes):
             if region_size > 0:
+                region_size = \
+                    region_size + ChannelBufferState.size_of_channel_state()
                 spec.reserve_memory_region(
-                    region=buffer_region, size=region_size,
-                    label="RECORDING_REGION_{}".format(buffer_region),
+                    region=dsg_buffer_region_id,
+                    size=region_size,
+                    label="RECORDING_REGION_{}".format(dsg_buffer_region_id),
                     empty=True)
-        spec.reserve_memory_region(
-            region=state_region,
-            size=EndBufferingState.size_of_region(
-                (len(buffer_regions) * 4) + 8),
-            label='BUFFERED_OUT_STATE', empty=True)
-        self._buffered_state_region = state_region
 
         if recording_region_ids is None:
-            recording_region_ids = range(0, len(buffer_regions))
+            recording_region_ids = range(0, len(dsg_buffer_region_ids))
 
         for (recording_id, dsg_region_id) in zip(
-                recording_region_ids, buffer_regions):
+                recording_region_ids, dsg_buffer_region_ids):
             self._recording_region_ids.append(recording_id)
             self._dsg_regions_to_recording_region_map[dsg_region_id] = \
                 recording_id
+            self._recording_region_to_dsg_region_map[recording_id] = \
+                dsg_region_id
 
     def recording_region_id_from_dsg_region(self, dsg_region_id):
         if dsg_region_id in self._dsg_regions_to_recording_region_map:
@@ -164,10 +167,11 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
 
         :param ip_tags: A list of ip tags in which to find the tag
         """
-        for tag in ip_tags:
-            if (tag.ip_address == self._buffering_ip_address and
-                    tag.port == self._buffering_port):
-                return tag
+        if ip_tags is not None:
+            for tag in ip_tags:
+                if (tag.ip_address == self._buffering_ip_address and
+                        tag.port == self._buffering_port):
+                    return tag
         return None
 
     def write_recording_data(
@@ -212,9 +216,20 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     def get_recorded_region_ids(self):
         return self._recording_region_ids
 
-    def get_buffered_state_address(self, txrx, placement):
-        # Get the App Data for the core
-        state_region_base_address = \
+    def get_recording_region_base_address(
+            self, recording_region_id, txrx, placement):
+        """
+        provides a interface between addresses and recording regions
+        :param recording_region_id: the recording region id to find the
+        address for
+        :param txrx: the SpiNNMan instance
+        :param placement: the placement of the vertex to which to find the
+        recording region base address of.
+        :return: the recording region base address in the sdram of the chip.
+        """
+        dsg_region_id = \
+            self._recording_region_to_dsg_region_map[recording_region_id]
+        recording_data_region_base_address = \
             helpful_functions.locate_memory_region_for_placement(
-                placement, self._buffered_state_region, txrx)
-        return state_region_base_address
+                placement, dsg_region_id, txrx)
+        return recording_data_region_base_address

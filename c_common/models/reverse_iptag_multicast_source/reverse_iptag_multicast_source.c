@@ -927,8 +927,7 @@ static bool initialise_recording(){
 
     bool success = recording_initialize(
         n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, state_region_address,
-        &recording_flags);
+        recording_flags_from_system_conf, &recording_flags);
     log_info("Recording flags = 0x%08x", recording_flags);
     return success;
 }

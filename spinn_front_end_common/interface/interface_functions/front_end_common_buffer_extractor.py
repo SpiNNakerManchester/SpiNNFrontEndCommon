@@ -23,7 +23,7 @@ class FrontEndCommonBufferExtractor(object):
         n_regions_to_read = 0
         for vertex in machine_graph.vertices:
             if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
-                n_regions_to_read += len(vertex.get_buffered_regions())
+                n_regions_to_read += len(vertex.get_recorded_region_ids())
 
         progress_bar = ProgressBar(
             n_regions_to_read, "Extracting buffers from the last run")
@@ -32,10 +32,8 @@ class FrontEndCommonBufferExtractor(object):
         for vertex in machine_graph.vertices:
             if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
                 placement = placements.get_placement_of_vertex(vertex)
-                state_address = \
-                    vertex.get_buffered_state_address(placement, transceiver)
                 for recording_region_id in vertex.get_recorded_region_ids():
                     buffer_manager.get_data_for_vertex(
-                        placement, recording_region_id, state_address)
+                        placement, recording_region_id)
                     progress_bar.update()
         progress_bar.end()

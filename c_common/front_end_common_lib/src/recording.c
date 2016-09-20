@@ -8,6 +8,7 @@
 #include <simulation.h>
 #include <buffered_eieio_defs.h>
 
+#include <sark.h>
 // Standard includes
 #include <string.h>
 #include <debug.h>
@@ -34,7 +35,6 @@ static recording_channel_t *g_recording_channels = NULL;
 static address_t *region_addresses = NULL;
 static uint32_t n_recording_regions = 0;
 static uint32_t buffering_out_fsm = 0;
-static address_t buffering_out_control_reg = NULL;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
 static uint32_t time_between_triggers = 0;
@@ -375,28 +375,25 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
 }
 
 //! brief this writes data to the state region for helping the python
-address_t _recording_state_region_write(){
+void _recording_buffer_state_data_write(){
+    for (uint32_t recording_region_id =0;
+             recording_region_id < n_recording_regions; recording_region_id++){
+        address_t recording_region_address =
+            region_addresses[recording_region_id];
+        spin1_memcpy(recording_region_address,
+                     &g_recording_channels[recording_region_id],
+                     sizeof(recording_channel_t));
+        log_debug("Storing channel state info starting at 0x%08x",
+                  recording_region_address);
+    }
 
-    // Get the region address store channel details
-    address_t out_ptr = buffering_out_control_reg;
-
-    log_debug(
-        "Storing channel state info starting at 0x%08x", out_ptr);
-    // store number of recording regions
-    spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
-    out_ptr++;
+    // Get pointer to 1st virtual processor info struct in SRAM
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
 
     // store info related to the state of the transmission to avoid possible
-    // duplication of info on the host side
-    spin1_memcpy(out_ptr, &buffering_out_fsm, sizeof(buffering_out_fsm));
-    out_ptr++;
+    // duplication of info on the host side, inside user1 for the time being
+    sark_virtual_processor_info[spin1_get_core_id()].user1 = buffering_out_fsm;
 
-    // store the address mapping
-    spin1_memcpy(out_ptr, &region_addresses,
-                 n_recording_regions * sizeof(region_addresses));
-
-    out_ptr = out_ptr + n_recording_regions;
-    return out_ptr;
 }
 
 void recording_finalise() {
@@ -404,13 +401,7 @@ void recording_finalise() {
 
     log_debug("Finalising recording channels");
 
-    address_t out_ptr = _recording_state_region_write();
-
-    // store info on the channel status so that the host can flush the info
-    // buffered in SDRAM
-    spin1_memcpy(
-        out_ptr, g_recording_channels,
-        sizeof(recording_channel_t) * n_recording_regions);
+    _recording_buffer_state_data_write();
 
     // Loop through channels
     for (uint32_t channel = 0; channel < n_recording_regions; channel++) {
@@ -442,8 +433,7 @@ void recording_finalise() {
 
 bool recording_initialize(
         uint8_t n_regions, address_t *region_addresses_external,
-        uint32_t *recording_data, address_t state_region_address,
-        uint32_t *recording_flags) {
+        uint32_t *recording_data, uint32_t *recording_flags) {
     uint32_t i;
 
     region_addresses = (address_t*) sark_alloc(
@@ -462,14 +452,13 @@ bool recording_initialize(
     }
 
     n_recording_regions = n_regions;
-    buffering_out_control_reg = state_region_address;
     uint8_t buffering_output_tag = recording_data[0];
     buffer_size_before_trigger = recording_data[1];
     time_between_triggers = recording_data[2];
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
         time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
     }
-    log_debug(
+    log_info(
         "Recording %d regions, using output tag %d, size before trigger %d, "
         "time between triggers %d",
         n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
@@ -494,10 +483,19 @@ bool recording_initialize(
         if (region_size > 0) {
             address_t region_address = region_addresses[i];
 
+            log_debug("%d is size of buffer state in words",
+                sizeof(recording_channel_t) / sizeof(address_t));
+
+            address_t region_address_offset = &region_address[
+                sizeof(recording_channel_t) / sizeof(address_t)];
+
             // store pointers to the start, current position and end of this
-            g_recording_channels[i].start = (uint8_t*) region_address;
-            g_recording_channels[i].current_write = (uint8_t*) region_address;
-            g_recording_channels[i].current_read = (uint8_t*) region_address;
+            g_recording_channels[i].start =
+                (uint8_t*) region_address_offset;
+            g_recording_channels[i].current_write =
+                (uint8_t*) region_address_offset;
+            g_recording_channels[i].current_read =
+                (uint8_t*) region_address_offset;
             g_recording_channels[i].end =
                 g_recording_channels[i].start + region_size;
             g_recording_channels[i].last_buffer_operation =
@@ -507,7 +505,7 @@ bool recording_initialize(
 
             *recording_flags = (*recording_flags | (1 << i));
 
-            log_debug(
+            log_info(
                 "Recording channel %u configured to use %u byte memory block"
                 " starting at 0x%08x", i, region_size,
                 g_recording_channels[i].start);
@@ -527,7 +525,7 @@ bool recording_initialize(
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            log_debug("Recording channel %u left uninitialised", i);
+            log_info("Recording channel %u left uninitialised", i);
         }
     }
 
@@ -542,7 +540,7 @@ bool recording_initialize(
     msg.srce_addr = spin1_get_chip_id();
 
     // write to the state region for letting python to find addresses
-    _recording_state_region_write();
+    _recording_buffer_state_data_write();
     return true;
 }
 
