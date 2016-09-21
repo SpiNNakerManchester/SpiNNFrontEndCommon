@@ -1738,6 +1738,13 @@ class SpinnakerMainInterface(object):
         """
 
         if extract_provenance_data:
+            # turn off reinjector before extracting provenance data, otherwise
+            # its highly possible when things are going wrong, that the data
+            # extracted from the reinjector is changing.
+            #if self._txrx is not None:
+            #    self._txrx.enable_reinjection(multicast=False)
+
+            # extract provenance data
             self._extract_provenance()
         if extract_iobuf:
             self._extract_iobuf()

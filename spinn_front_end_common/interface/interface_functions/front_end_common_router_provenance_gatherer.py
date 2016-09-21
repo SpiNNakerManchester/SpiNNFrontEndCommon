@@ -268,5 +268,26 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Reinjected"),
                 reinjector_status.n_reinjected_packets))
-
+            items.append(ProvenanceDataItem(
+                self._add_name(names, "Dumped_from_a_Link"),
+                str(reinjector_status.n_link_dumps),
+                report=reinjector_status.n_link_dumps > 0,
+                message=(
+                    "The reinjector on {}, {} has detected that {} packets "
+                    "were dumped from a outgoing link of this chip's router."
+                    " This often occurs when external devices are used in the "
+                    "script but not connected to the communication fabric "
+                    "correctly".format(
+                        x, y, reinjector_status.n_link_dumps))))
+            items.append(ProvenanceDataItem(
+                self._add_name(names, "Dumped_from_a_processor"),
+                str(reinjector_status.n_processor_dumps),
+                report=reinjector_status.n_processor_dumps > 0,
+                message=(
+                    "The reinjector on {}, {} has detected that {} packets "
+                    "were dumped from a core failing to take the packet."
+                    " This often occurs when the core has crashed / is broken,"
+                    " yet not detected from the tools. Recommend adding the"
+                    " failed core to the dead_cores list of the .cfg".format(
+                        x, y, reinjector_status.n_link_dumps))))
         return items
