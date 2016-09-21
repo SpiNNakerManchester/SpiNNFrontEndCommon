@@ -1020,7 +1020,7 @@ void timer_callback(uint unused0, uint unused1) {
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
-        time -= 1;
+        time = simulation_ticks - 1;
 
         return;
     }
