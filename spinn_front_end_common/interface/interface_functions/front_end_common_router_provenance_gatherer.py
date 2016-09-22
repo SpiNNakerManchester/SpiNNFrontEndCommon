@@ -277,8 +277,9 @@ class FrontEndCommonRouterProvenanceGatherer(object):
                     "were dumped from a outgoing link of this chip's router."
                     " This often occurs when external devices are used in the "
                     "script but not connected to the communication fabric "
-                    "correctly".format(
-                        x, y, reinjector_status.n_link_dumps))))
+                    "correctly. These packets can have been reinjected "
+                    "multiple times and so this number may be a overestimate."
+                    .format(x, y, reinjector_status.n_link_dumps))))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Dumped_from_a_processor"),
                 str(reinjector_status.n_processor_dumps),
@@ -286,8 +287,10 @@ class FrontEndCommonRouterProvenanceGatherer(object):
                 message=(
                     "The reinjector on {}, {} has detected that {} packets "
                     "were dumped from a core failing to take the packet."
-                    " This often occurs when the core has crashed / is broken,"
-                    " yet not detected from the tools. Recommend adding the"
-                    " failed core to the dead_cores list of the .cfg".format(
-                        x, y, reinjector_status.n_link_dumps))))
+                    " This often occurs when the executable has crashed or"
+                    " has not been given a multicast packet callback. It can "
+                    "also be produced from the core taking too long to process "
+                    "each packet. These packets were reinjected and so this"
+                    " number is likely a overestimate.".format(
+                        x, y, reinjector_status.n_processor_dumps))))
         return items
