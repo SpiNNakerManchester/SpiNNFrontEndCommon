@@ -1,0 +1,70 @@
+from spinn_front_end_common.utilities import exceptions
+
+
+class MultiCastCommandWithoutPayload(object):
+    """ A command to be sent to a vertex
+    """
+
+    def __init__(self, time, key, repeat=0, delay_between_repeats=0):
+        """
+
+        :param time: The time within the simulation at which to send the\
+                    command.  0 or a positive value indicates the number of\
+                    timesteps after the start of the simulation at which\
+                    the command is to be sent.  A negative value indicates the\
+                    (number of timesteps - 1) before the end of simulation at\
+                    which the command is to be sent (thus -1 means the last\
+                    timestep of the simulation).
+        :type time: int
+        :param key: The key of the command
+        :type key: int
+        :param payload: The payload of the command
+        :type payload: int
+        :param repeat: The number of times that the command should be\
+                    repeated after sending it once.  This could be used to\
+                    ensure that the command is sent despite lost packets.\
+                    Must be between 0 and 65535
+        :type repeat: int
+        :param delay_between_repeats: The amount of time in micro seconds to\
+                    wait between sending repeats of the same command.\
+                    Must be between 0 and 65535, and must be 0 if repeat is 0
+        :type delay_between_repeats: int
+        :raise SpynnakerException: If the repeat or delay are out of range
+        """
+
+        if repeat < 0 or repeat > 0xFFFF:
+            raise exceptions.ConfigurationException(
+                "repeat must be between 0 and 65535")
+        if delay_between_repeats < 0 or delay_between_repeats > 0xFFFF:
+            raise exceptions.ConfigurationException(
+                "delay_between_repeats must be between 0 and 65535")
+        if delay_between_repeats > 0 and repeat == 0:
+            raise exceptions.ConfigurationException(
+                "If repeat is 0, delay_betweeen_repeats must be 0")
+
+        self._time = time
+        self._key = key
+        self._repeat = repeat
+        self._delay_between_repeats = delay_between_repeats
+
+    @property
+    def time(self):
+        return self._time
+
+    @property
+    def key(self):
+        return self._key
+
+    @property
+    def repeat(self):
+        return self._repeat
+
+    @property
+    def delay_between_repeats(self):
+        return self._delay_between_repeats
+
+    def __repr__(self):
+        return "time:{}: key:{}: time_between_repeat:{}: " \
+               "repeats:{}".format(self._time, self._key,
+                                   self._delay_between_repeats, self._repeat)
+

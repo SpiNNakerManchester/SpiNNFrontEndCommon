@@ -1,11 +1,11 @@
 from spinn_front_end_common.utilities import exceptions
 
 
-class MultiCastCommand(object):
+class MultiCastCommandWithPayload(object):
     """ A command to be sent to a vertex
     """
 
-    def __init__(self, time, key, payload=None, repeat=0,
+    def __init__(self, time, key, payload, repeat=0,
                  delay_between_repeats=0):
         """
 
@@ -75,18 +75,19 @@ class MultiCastCommand(object):
         """
         return self._payload
 
-    def is_payload(self):
-        """ Determine if this command has a payload.  By default, this returns\
-            True if the payload passed in to the constructor is not None, but\
-            this can be overridden to indicate that a payload will be\
-            generated, despite None being passed to the constructor
-
-        :return: True if there is a payload, False otherwise
-        :rtype: bool
+    @payload.setter
+    def payload(self, new_value):
         """
-        return self._payload is not None
+        helper method for setting the payload (used when the payload is only
+        known at a later date to building the command).
+        :param new_value: new value for the payload.
+        :return:
+        """
+        self._payload = new_value
 
     def __repr__(self):
         return "time:{}: key:{}: payload:{}: time_between_repeat:{}: " \
                "repeats:{}".format(self._time, self._key, self._payload,
                                    self._delay_between_repeats, self._repeat)
+
+
