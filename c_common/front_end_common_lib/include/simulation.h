@@ -39,6 +39,10 @@ typedef void (*prov_callback_t)(address_t);
 //! the definition of the callback used by pause and resume
 typedef void (*resume_callback_t)();
 
+//! the definition of the callback used by pause and resume when exit command
+//! is sent and models want to do cleaning up
+typedef void (*exit_callback_t)();
+
 //! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
 //!        which is formatted as:
@@ -61,6 +65,8 @@ typedef void (*resume_callback_t)();
 //!            (can be NULL if no additional provenance data is to be stored)
 //! \param[in] provenance_data_region_id: the id of the region where
 //!            provenance is to be stored
+//! \param[in] exit_function: function to call when the host tells the
+//!            simulation to exit. Executed before api exit.
 //! \param[out] timer_period a pointer to an int to receive the timer period,
 //!             in microseconds
 //! \param[out] simulation_control_sdp_port The SDP port requested for
@@ -71,7 +77,7 @@ bool simulation_initialise(
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
         uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
         prov_callback_t provenance_function,
-        address_t provenance_data_address);
+        address_t provenance_data_address, exit_callback_t exit_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.

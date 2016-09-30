@@ -19,6 +19,9 @@ static uint32_t *pointer_to_infinite_run;
 //! the function call to run when extracting provenance data from the chip
 static prov_callback_t stored_provenance_function = NULL;
 
+//! the function call to run when received a exit command.
+static exit_callback_t stored_exit_function = NULL;
+
 //! the function call to run just before resuming a simulation
 static resume_callback_t stored_resume_function = NULL;
 
@@ -106,11 +109,20 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // free the message to stop overload
             spin1_msg_free(msg);
+
+            // call any stored exit callbacks
+            if (stored_exit_function != NULL){
+                log_info("Calling pre-exit function");
+                stored_exit_function();
+            }
+            log_info("Exiting");
             spin1_exit(0);
             break;
 
         case CMD_RUNTIME:
             log_info("Setting the runtime of this model to %d", msg->arg1);
+            log_info("Setting the flag of infinite run for this model to %d",
+                     msg->arg2);
 
             // resetting the simulation time pointer
             *pointer_to_simulation_time = msg->arg1;
@@ -196,7 +208,7 @@ bool simulation_initialise(
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
         uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
         prov_callback_t provenance_function,
-        address_t provenance_data_address) {
+        address_t provenance_data_address, exit_callback_t exit_function) {
 
     // handle the timing reading
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
@@ -224,6 +236,9 @@ bool simulation_initialise(
     // handle the provenance setting up
     stored_provenance_function = provenance_function;
     stored_provenance_data_address = provenance_data_address;
+
+    // handle the exit callback set up
+    stored_exit_function = exit_function;
 
     // if all simulation initialisation complete return true,
     return true;

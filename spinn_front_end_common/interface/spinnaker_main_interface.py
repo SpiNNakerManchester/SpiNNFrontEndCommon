@@ -3,6 +3,8 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
+import struct
+
 from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
@@ -11,8 +13,11 @@ from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
+from spinn_front_end_common.abstract_models.abstract_requires_stop_command import \
+    AbstractRequiresStopCommand
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
@@ -33,6 +38,10 @@ import os
 import sys
 import traceback
 import signal
+
+from spinnman.messages.sdp.sdp_flag import SDPFlag
+from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.messages.sdp.sdp_message import SDPMessage
 
 logger = logging.getLogger(__name__)
 
@@ -1756,11 +1765,36 @@ class SpinnakerMainInterface(object):
 
             # extract provenance data
             self._extract_provenance()
+
+        # set off the stop command to cores that registered their demand of
+        # needing such a behaviour
+        self._send_stop_command_to_request_stop_command_cores()
+
+        # if the end user wants iobuf extract it from the cores now
         if extract_iobuf:
             self._extract_iobuf()
 
+        # shut down the machine properly
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
+
+    def _send_stop_command_to_request_stop_command_cores(self):
+        # locate cores that need this command sent to it
+        for vertex in self._machine_graph.vertices:
+            if isinstance(vertex, AbstractRequiresStopCommand):
+                placement = self._placements.get_placement_of_vertex(vertex)
+
+                data = struct.pack(
+                    "<I",
+                    constants.SDP_RUNNING_MESSAGE_CODES.SDP_STOP_ID_CODE.value)
+
+                self._txrx.send_sdp_message(SDPMessage(SDPHeader(
+                    flags=SDPFlag.REPLY_NOT_EXPECTED,
+                    destination_cpu=placement.p,
+                    destination_chip_x=placement.x,
+                    destination_port=(
+                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
+                    destination_chip_y=placement.y), data=data))
 
     def _add_socket_address(self, socket_address):
         """
