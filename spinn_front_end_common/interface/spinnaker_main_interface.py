@@ -6,6 +6,8 @@ main interface for the spinnaker tools
 import struct
 
 from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
+from pacman.model.graphs.application.impl.application_edge import \
+    ApplicationEdge
 from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
@@ -13,8 +15,15 @@ from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
-from spinn_front_end_common.abstract_models.abstract_requires_stop_command import \
+from spinn_front_end_common.abstract_models.\
+    abstract_requires_stop_command import \
     AbstractRequiresStopCommand
+from spinn_front_end_common.abstract_models.\
+    abstract_send_me_multicast_commands_vertex import \
+    AbstractSendMeMulticastCommandsVertex
+from spinn_front_end_common.abstract_models.\
+    abstract_vertex_with_dependent_vertices import \
+    AbstractVertexWithEdgeToDependentVertices
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
@@ -29,6 +38,8 @@ from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.abstract_models\
     .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.utility_models.command_sender import CommandSender
+
 
 # general imports
 from collections import defaultdict
@@ -42,6 +53,7 @@ import signal
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
+
 
 logger = logging.getLogger(__name__)
 
@@ -217,7 +229,10 @@ class SpinnakerMainInterface(object):
         "_use_virtual_board",
 
         #
-        "_raise_keyboard_interrupt"
+        "_raise_keyboard_interrupt",
+
+        #
+        "_multi_cast_vertex"
     ]
 
     def __init__(
@@ -242,6 +257,9 @@ class SpinnakerMainInterface(object):
         self._spalloc_server = None
         self._remote_spinnaker_url = None
         self._machine_allocation_controller = None
+
+        # global verts
+        self._multi_cast_vertex = None
 
         # update graph label if needed
         if graph_label is None:
@@ -462,6 +480,10 @@ class SpinnakerMainInterface(object):
                     "The network cannot be changed between runs without"
                     " resetting")
 
+            if not self._has_ran:
+                self._add_commands_to_command_sender()
+                self._add_dependent_verts_and_edges_for_application_graph()
+
             # Reset the machine graph if there is an application graph
             if len(self._application_graph.vertices) > 0:
                 self._machine_graph = MachineGraph(self._graph_label)
@@ -561,6 +583,37 @@ class SpinnakerMainInterface(object):
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
         sys.excepthook = self.exception_handler
+
+    def _add_commands_to_command_sender(self):
+        for vertex in self._application_graph.vertices:
+            if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
+                # if there's no command sender yet, build one
+                if self._multi_cast_vertex is None:
+                    self._multi_cast_vertex = CommandSender(
+                        "auto_added_command_sender", None)
+                    self.add_application_vertex(self._multi_cast_vertex)
+
+                # allow the command sender to create key to partition map
+                self._multi_cast_vertex.add_commands(
+                    vertex.start_resume_commands,
+                    vertex.pause_stop_commands,
+                    vertex.timed_commands, vertex)
+
+    def _add_dependent_verts_and_edges_for_application_graph(self):
+        for vertex in self._application_graph.vertices:
+            # add any dependent edges and vertices if needed
+            if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
+                for dependant_vertex in vertex.dependent_vertices():
+                    self.add_application_vertex(dependant_vertex)
+                    edge_partition_identifiers = vertex.\
+                        edge_partition_identifiers_for_dependent_vertex(
+                            dependant_vertex)
+                    for edge_identifier in edge_partition_identifiers:
+                        dependant_edge = ApplicationEdge(
+                            pre_vertex=vertex,
+                            post_vertex=dependant_vertex)
+                        self.add_application_edge(
+                            dependant_edge, edge_identifier)
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
 
