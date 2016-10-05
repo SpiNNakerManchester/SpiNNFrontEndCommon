@@ -1000,6 +1000,7 @@ class SpinnakerMainInterface(object):
                 logger.error(line.strip())
             logger.error(e.exception)
 
+
             logger.info("\n\nAttempting to extract data\n\n")
 
             # If an exception occurs during a run, attempt to get
@@ -1100,9 +1101,9 @@ class SpinnakerMainInterface(object):
 
             # If there is not an RTE, ask the chips with an error to update
             # and get the provenance data
-            if not is_rte:
-                algorithms.append("FrontEndCommonChipProvenanceUpdater")
-                algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
+            #if not is_rte:
+            #algorithms.append("FrontEndCommonChipProvenanceUpdater")
+            algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
 
             # Get the other data
             algorithms.append("FrontEndCommonIOBufExtractor")

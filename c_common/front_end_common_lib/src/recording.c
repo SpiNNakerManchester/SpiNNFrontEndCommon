@@ -44,8 +44,8 @@ typedef struct recording_channel_t {
 // Globals
 //---------------------------------------
 //! array containing all possible channels.
-static recording_channel_t *g_recording_channels;
-static recording_schedule_t *recording_schedules;
+static recording_channel_t *g_recording_channels = NULL;
+static recording_schedule_t *recording_schedules = NULL;
 static uint32_t n_recording_regions = 0;
 static uint32_t buffering_out_fsm = 0;
 static uint8_t buffering_out_state_region = 0;
@@ -476,7 +476,9 @@ void recording_finalise() {
                 log_info("closed channel %u.", channel);
             }
         }
+        log_info("finished channel %u.", channel);
     }
+    log_info("finished all channels");
 }
 
 bool recording_initialize(
@@ -507,9 +509,16 @@ bool recording_initialize(
         n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
         time_between_triggers);
 
-    g_recording_channels = (recording_channel_t*) spin1_malloc(
+    if (g_recording_channels != NULL) {
+        sark_free((void *) g_recording_channels);
+    }
+    if (recording_schedules != NULL) {
+        sark_free((void *) recording_schedules);
+    }
+    
+    g_recording_channels = (recording_channel_t*) sark_alloc(1,
         n_recording_regions * sizeof(recording_channel_t));
-    recording_schedules = (recording_schedule_t*) spin1_malloc(
+    recording_schedules = (recording_schedule_t*) sark_alloc(1,
         n_recording_regions * sizeof(recording_schedule_t));
     if (!g_recording_channels || !recording_schedules) {
         log_error("Not enough space to create recording channels");
@@ -610,3 +619,4 @@ void recording_do_timestep_update(uint32_t time) {
         last_time_buffering_trigger = time;
     }
 }
+
