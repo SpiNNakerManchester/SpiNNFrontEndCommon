@@ -66,8 +66,7 @@ class CommandSenderMachineVertex(
                  times_with_commands, commands_at_start_resume,
                  commands_at_pause_stop):
         ProvidesProvenanceDataFromMachineImpl.__init__(
-            self,
-            CommandSenderMachineVertex.DATA_REGIONS.PROVENANCE_REGION.value,
+            self, self.DATA_REGIONS.PROVENANCE_REGION.value,
             n_additional_data_items=0)
         AbstractRequiresStopCommand.__init__(self)
         MachineVertex.__init__(self, resources_required, label, constraints)
