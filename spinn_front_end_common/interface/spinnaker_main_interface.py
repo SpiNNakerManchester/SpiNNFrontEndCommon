@@ -1062,6 +1062,7 @@ class SpinnakerMainInterface(object):
         )
 
         algorithms = list(self._extra_load_algorithms)
+        algorithms.append("FrontEndCommonWriteMemoryIOData")
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
         optional_algorithms.append("FrontEndCommonTagsLoader")
