@@ -261,6 +261,15 @@ def get_front_end_common_pacman_xml_paths():
     ]
 
 
+def get_front_end_common_pacman_packages():
+    """ Get the packages for the front end common interface functions
+    """
+    return [
+        interface_functions,
+        front_end_common_report_functions
+    ]
+
+
 def get_cores_in_state(all_core_subsets, states, txrx):
     """
 
