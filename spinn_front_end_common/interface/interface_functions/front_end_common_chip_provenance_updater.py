@@ -7,6 +7,7 @@ from spinnman.model.cpu_state import CPUState
 
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import exceptions
 
 import struct
 
@@ -28,6 +29,22 @@ class FrontEndCommonChipProvenanceUpdater(object):
         progress_bar = ProgressBar(
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
+
+        buggered_cores = helpful_functions.get_cores_in_state(
+            all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
+        watched_dogged_cores = helpful_functions.get_cores_in_state(
+            all_core_subsets, CPUState.WATCHDOG, txrx)
+        disappeared_cores = helpful_functions.get_cores_in_state(
+            all_core_subsets, CPUState.IDLE, txrx)
+
+        if (len(buggered_cores) != 0 or len(watched_dogged_cores) != 0 or
+                len(disappeared_cores) != 0):
+            raise exceptions.ConfigurationException(
+                "Some cores have crashed. RTE cores {}, watch-dogged cores {}, "
+                "idle cores {}".format(
+                    buggered_cores.values(), watched_dogged_cores.values(),
+                    disappeared_cores.values()))
+
 
         # check that all cores are in the state CPU_STATE_12 which shows that
         # the core has received the message and done provenance updating

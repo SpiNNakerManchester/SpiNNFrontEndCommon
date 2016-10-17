@@ -481,8 +481,9 @@ class SpinnakerMainInterface(object):
                     " resetting")
 
             if not self._has_ran:
-                self._add_commands_to_command_sender()
+                #self._add_commands_to_command_sender()
                 self._add_dependent_verts_and_edges_for_application_graph()
+                self._add_commands_to_command_sender()
 
             # Reset the machine graph if there is an application graph
             if len(self._application_graph.vertices) > 0:
@@ -598,6 +599,10 @@ class SpinnakerMainInterface(object):
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
+        # add the edges from the command sender to the dependent verts
+        edges, partition_ids = self._multi_cast_vertex.edges_and_partitions()
+        for edge, partition_id in zip(edges, partition_ids):
+            self.add_application_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
@@ -1816,8 +1821,12 @@ class SpinnakerMainInterface(object):
                     "Machine", "enable_reinjection"):
                 self._txrx.enable_reinjection(multicast=False)
 
-            # extract provenance data
-            self._extract_provenance()
+            try:
+                # extract provenance data
+                self._extract_provenance()
+            except Exception:
+                logger.error("Error when attempting to shut down")
+                traceback.print_exc()
 
         # set off the stop command to cores that registered their demand of
         # needing such a behaviour

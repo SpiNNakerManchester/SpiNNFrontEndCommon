@@ -3,6 +3,8 @@ from pacman.model.decorators.overrides import overrides
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
+from pacman.model.graphs.application.impl.application_edge import \
+    ApplicationEdge
 from pacman.model.graphs.application.impl.application_vertex import \
     ApplicationVertex
 from pacman.model.resources.resource_container import ResourceContainer
@@ -32,7 +34,6 @@ from spinn_front_end_common.utility_models.command_sender_machine_vertex \
 class CommandSender(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
-        AbstractVertexWithEdgeToDependentVertices,
         AbstractProvidesOutgoingPartitionConstraints):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
@@ -83,9 +84,7 @@ class CommandSender(
         self._vertex_to_key_map[vertex_to_add] = set()
 
         # update holders
-        self._commands_at_start_resume = list()
         self._commands_at_start_resume.extend(start_resume_commands)
-        self._commands_at_pause_stop = list()
         self._commands_at_pause_stop.extend(pause_stop_commands)
 
         # Go through the timed commands and record their times and track keys
@@ -114,6 +113,7 @@ class CommandSender(
 
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
+
             partition_id = "COMMANDS{}".format(self._edge_partition_id_counter)
             self._keys_to_partition_id[key] = partition_id
             self._partition_id_to_keys[partition_id] = key
@@ -179,13 +179,21 @@ class CommandSender(
     def dependent_vertices(self):
         return self._vertex_to_key_map.keys()
 
-    @overrides(AbstractVertexWithEdgeToDependentVertices.
-               edge_partition_identifiers_for_dependent_vertex)
-    def edge_partition_identifiers_for_dependent_vertex(self, vertex):
-        edge_identifiers = list()
-        for key in self._vertex_to_key_map[vertex]:
-            edge_identifiers.append(self._keys_to_partition_id[key])
-        return edge_identifiers
+    def edges_and_partitions(self):
+        edges = list()
+        partition_ids = list()
+        keys_added = set()
+        for vertex in self._vertex_to_key_map:
+            for key in self._vertex_to_key_map[vertex]:
+                if key not in keys_added:
+                    keys_added.add(key)
+                    app_edge = ApplicationEdge(self, vertex)
+                    edges.append(app_edge)
+                    partition_ids.append(self._keys_to_partition_id[key])
+                else:
+                    print "cloned key for key {} and partition id {}".format(key, self._keys_to_partition_id[key])
+        print keys_added
+        return edges, partition_ids
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
