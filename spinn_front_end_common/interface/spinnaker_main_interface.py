@@ -600,9 +600,10 @@ class SpinnakerMainInterface(object):
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
         # add the edges from the command sender to the dependent verts
-        edges, partition_ids = self._multi_cast_vertex.edges_and_partitions()
-        for edge, partition_id in zip(edges, partition_ids):
-            self.add_application_edge(edge, partition_id)
+        if self._multi_cast_vertex is not None:
+            edges, partition_ids = self._multi_cast_vertex.edges_and_partitions()
+            for edge, partition_id in zip(edges, partition_ids):
+                self.add_application_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:

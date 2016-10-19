@@ -190,8 +190,6 @@ class CommandSender(
                     app_edge = ApplicationEdge(self, vertex)
                     edges.append(app_edge)
                     partition_ids.append(self._keys_to_partition_id[key])
-                else:
-                    print "cloned key for key {} and partition id {}".format(key, self._keys_to_partition_id[key])
         print keys_added
         return edges, partition_ids
 
