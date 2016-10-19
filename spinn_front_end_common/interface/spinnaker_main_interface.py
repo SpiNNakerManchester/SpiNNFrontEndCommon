@@ -133,6 +133,9 @@ class SpinnakerMainInterface(object):
         "_extra_load_algorithms",
 
         #
+        "_extra_input_parameters",
+
+        #
         "_dsg_algorithm",
 
         #
@@ -216,7 +219,8 @@ class SpinnakerMainInterface(object):
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
             extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-            n_chips_required=None, extra_load_algorithms=None):
+            n_chips_required=None, extra_load_algorithms=None,
+            extra_input_parameters=None):
 
         # global params
         self._config = config
@@ -279,6 +283,9 @@ class SpinnakerMainInterface(object):
         self._extra_load_algorithms = list()
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
+        self._extra_input_parameters = dict()
+        if extra_input_parameters is not None:
+            self._extra_input_parameters.update(extra_input_parameters)
 
         self._dsg_algorithm = \
             "FrontEndCommonApplicationGraphDataSpecificationWriter"
@@ -662,6 +669,9 @@ class SpinnakerMainInterface(object):
         inputs = dict()
         algorithms = list()
         outputs = list()
+
+        # add any inputs the end user wanted to put in
+        inputs.update(self._extra_input_parameters)
 
         # add the application and machine graphs as needed
         if len(self._application_graph.vertices) > 0:
@@ -1779,3 +1789,12 @@ class SpinnakerMainInterface(object):
         if value is None:
             return value
         return bool(value)
+
+    def set_initial_input_parameter(self, parameter_name, value):
+        if self._machine_outputs is not None:
+            self._extra_input_parameters[parameter_name] = value
+        else:
+            raise common_exceptions.ConfigurationException(
+                "You cannot add a parameter part way through a run, you must "
+                "reset the network and add it before a run command has been "
+                "called.")
