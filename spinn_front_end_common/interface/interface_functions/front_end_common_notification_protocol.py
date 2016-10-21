@@ -23,7 +23,7 @@ class FrontEndCommonNotificationProtocol(object):
 
         :param wait_for_read_confirmation:
         :param socket_addresses:
-        :param database_interface:
+        :param database_file_path:
         :return:
         """
 
