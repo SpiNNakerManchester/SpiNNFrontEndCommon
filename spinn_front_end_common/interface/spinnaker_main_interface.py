@@ -1044,6 +1044,7 @@ class SpinnakerMainInterface(object):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
 
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
