@@ -50,12 +50,19 @@ class FrontEndCommonNotificationProtocol(object):
         """
         self._notification_protocol.send_read_notification(database_directory)
 
-    def send_start_notification(self):
+    def send_start_resume_notification(self):
         """ Send the start notifications via the notification protocol
 
         :return:
         """
-        self._notification_protocol.send_start_notification()
+        self._notification_protocol.send_start_resume_notification()
+
+    def send_stop_pause_notification(self):
+        """ Send the stop or pause notifications via the notification protocol
+
+        :return:
+        """
+        self._notification_protocol.send_stop_pause_notification()
 
     def stop(self):
         """ Ends the notification protocol

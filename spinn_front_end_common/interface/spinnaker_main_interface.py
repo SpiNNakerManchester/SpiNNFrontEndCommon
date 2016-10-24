@@ -1014,6 +1014,8 @@ class SpinnakerMainInterface(object):
             "Database", "create_database")
         inputs["SendStartNotifications"] = self._config.getboolean(
             "Database", "send_start_notification")
+        inputs["SendStopPauseNotifications"] = self._config.getboolean(
+            "Database", "send_stop_resume_notification")
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(

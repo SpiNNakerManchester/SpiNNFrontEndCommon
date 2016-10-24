@@ -20,6 +20,7 @@ class FrontEndCommonApplicationRunner(object):
 
     def __call__(
             self, buffer_manager, wait_on_confirmation,
+            send_stop_pause_notification,
             send_start_notification, notification_interface,
             executable_targets, app_id, txrx, runtime, time_scale_factor,
             loaded_reverse_iptags_token, loaded_iptags_token,
@@ -70,7 +71,7 @@ class FrontEndCommonApplicationRunner(object):
         no_sync_changes += 1
 
         if notification_interface is not None and send_start_notification:
-            notification_interface.send_start_notification()
+            notification_interface.send_start_resume_notification()
 
         if runtime is None:
             logger.info("Application is set to run forever - exiting")
@@ -78,6 +79,9 @@ class FrontEndCommonApplicationRunner(object):
             self.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
                 time_threshold)
+
+        if notification_interface is not None and send_stop_pause_notification:
+            notification_interface.send_stop_pause_notification()
 
         return True, no_sync_changes
 

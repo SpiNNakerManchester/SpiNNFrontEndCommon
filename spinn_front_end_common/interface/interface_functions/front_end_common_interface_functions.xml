@@ -667,6 +667,10 @@
                 <param_type>SendStartNotifications</param_type>
             </parameter>
             <parameter>
+                <param_name>send_stop_pause_notification</param_name>
+                <param_type>SendStopPauseNotifications</param_type>
+            </parameter>
+            <parameter>
                 <param_name>notification_interface</param_name>
                 <param_type>NotificationInterface</param_type>
             </parameter>
@@ -735,6 +739,7 @@
             <param_name>buffer_manager</param_name>
             <param_name>wait_on_confirmation</param_name>
             <param_name>send_start_notification</param_name>
+            <param_name>send_stop_pause_notification</param_name>
             <param_name>notification_interface</param_name>
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>

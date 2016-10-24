@@ -12,12 +12,16 @@ from spinn_front_end_common.utilities import exceptions
 import logging
 import traceback
 
+from spinnman.messages.eieio.command_messages.\
+    notification_protocol_pause_stop import NotificationProtocolPauseStop
+from spinnman.messages.eieio.command_messages.\
+    notification_protocol_start_resume import NotificationProtocolStartResume
 
 logger = logging.getLogger(__name__)
 
 
 class NotificationProtocol(object):
-    """ The protocol which hand shakes with external devices about the\
+    """ The protocol which hand shakes with external devices about the \
         database and starting execution
     """
 
@@ -46,16 +50,30 @@ class NotificationProtocol(object):
         self._wait_pool.close()
         self._wait_pool.join()
 
-    def send_start_notification(self):
+    def send_start_resume_notification(self):
         """ either waits till all sources have confirmed read the database and\
             are configured, and/or just sends the start notification\
             (when the system is executing)
 
         :return:
         """
+        logger.info("*** Sending start / resume message to external sources "
+                    "to state the simulation has started or resumed. ***")
         if self._wait_for_read_confirmation:
             self.wait_for_confirmation()
-        eieio_command_message = DatabaseConfirmation()
+        eieio_command_message = NotificationProtocolStartResume()
+        for connection in self._data_base_message_connections:
+            connection.send_eieio_message(eieio_command_message)
+
+    def send_stop_pause_notification(self):
+        """ sends the pause / stop notifications when the script hs either
+        finished or paused
+
+        :return:
+        """
+        logger.info("*** Sending pause / stop message to external sources "
+                    "to state the simulation has been paused or stopped. ***")
+        eieio_command_message = NotificationProtocolPauseStop()
         for connection in self._data_base_message_connections:
             connection.send_eieio_message(eieio_command_message)
 
@@ -114,7 +132,6 @@ class NotificationProtocol(object):
                 except Exception:
                     logger.warning("*** Failed to notify external application"
                                    " about the database - continuing ***")
-
             except Exception:
                 traceback.print_exc()
 
