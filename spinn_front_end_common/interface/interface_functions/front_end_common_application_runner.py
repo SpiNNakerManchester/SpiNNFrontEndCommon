@@ -80,7 +80,8 @@ class FrontEndCommonApplicationRunner(object):
                 executable_targets, app_id, runtime, time_scale_factor, txrx,
                 time_threshold)
 
-        if notification_interface is not None and send_stop_pause_notification:
+        if (notification_interface is not None and
+                send_stop_pause_notification and runtime is not None):
             notification_interface.send_stop_pause_notification()
 
         return True, no_sync_changes
