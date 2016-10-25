@@ -114,11 +114,12 @@ void flush_events(void) {
             g_event_message.length = sizeof(sdp_hdr_t) + header_len
                                      + event_count * event_size;
 
-            log_debug("===========Packet============\n");
-            uint8_t *print_ptr1 = (uint8_t *) &g_event_message;
-            for (uint8_t i = 0; i < g_event_message.length + 8; i++) {
-                log_debug("%02x ", print_ptr1[i]);
-            }
+            // this code is unreliable and causes bangs
+            //log_debug("===========Packet============\n");
+            //uint8_t *print_ptr1 = (uint8_t *) &g_event_message;
+            //for (uint8_t i = 0; i < g_event_message.length + 8; i++) {
+            //    log_debug("%02x ", print_ptr1[i]);
+            //}
 
             if (payload_apply_prefix && payload_timestamp) {
                 uint16_t *temp = (uint16_t *) sdp_msg_aer_payload_prefix;
@@ -131,11 +132,12 @@ void flush_events(void) {
                 }
             }
 
-            log_debug("===========Packet============\n");
-            uint8_t *print_ptr2 = (uint8_t *) &sdp_msg_aer_data;
-            for (uint8_t i = 0; i < buffer_index * event_size; i++) {
-                log_debug("%02x ", print_ptr2[i]);
-            }
+            // this code is unreliable and causes bangs
+            //log_debug("===========Packet============\n");
+            //uint8_t *print_ptr2 = (uint8_t *) &sdp_msg_aer_data;
+            //for (uint8_t i = 0; i < buffer_index * event_size; i++) {
+            //   log_debug("%02x ", print_ptr2[i]);
+            //}
 
             spin1_send_sdp_msg(&g_event_message, 1);
             packets_sent++;
