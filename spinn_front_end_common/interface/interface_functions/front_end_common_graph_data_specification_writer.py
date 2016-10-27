@@ -112,6 +112,9 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             if (self._sdram_usage[placement.x, placement.y] >
                     machine.get_chip_at(placement.x, placement.y).sdram.size):
 
+                # creating the error message which contains the memory uage of
+                #  what each core within the chip uses and its original
+                # estimate.
                 memory_usage = "\n".join([
                     "    {}: {} (total={}, estimated={})".format(
                         vertex, self._region_sizes[vertex],
