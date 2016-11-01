@@ -83,7 +83,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('PROVENANCE_REGION', 5)])
 
     _CONFIGURATION_REGION_SIZE = 40
-    TRANSMISSION_IDENTIFIER = "BUFFERED_IN_STREAM"
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -109,7 +108,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
-            send_buffer_notification_tag=None):
+            send_buffer_notification_tag=None,
+            buffered_out_ip_address=None):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -150,6 +150,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 host about space in the buffer (default is to use any tag)
         """
         ReceiveBuffersToHostBasicImpl.__init__(self)
+        self._buffering_ip_address = buffered_out_ip_address
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
@@ -184,7 +185,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 ip_address=send_buffer_notification_ip_address,
                 port=send_buffer_notification_port, strip_sdp=True,
                 tag=send_buffer_notification_tag,
-                traffic_identifier=self.TRANSMISSION_IDENTIFIER,
+                traffic_identifier=
+                SendsBuffersFromHostPreBufferedImpl.TRANSMISSION_IDENTIFIER,
                 connection_type=UDPEIEIOConnection)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
@@ -275,7 +277,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(AbstractMachineVertex.resources_required)
     def resources_required(self):
-        return ResourceContainer(
+        resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage(
                 self._send_buffer_times, self._send_buffer_max_space,
@@ -285,6 +287,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             iptags=self._iptags,
             reverse_iptags=self._reverse_iptags)
+        resources.extend(self.get_extra_resources())
+        return resources
 
     @staticmethod
     def get_sdram_usage(
@@ -507,8 +511,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._send_buffer_times is not None:
 
             this_tag = None
+            buffered_in_identifier  = \
+                SendsBuffersFromHostPreBufferedImpl.TRANSMISSION_IDENTIFIER
             for tag in ip_tags:
-                if tag.traffic_identifier == self.TRANSMISSION_IDENTIFIER:
+                if tag.traffic_identifier == buffered_in_identifier:
                     this_tag = tag
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
@@ -519,6 +525,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
+
         else:
             spec.write_value(data=0)
             spec.write_value(data=0)

@@ -113,3 +113,11 @@ class AbstractSendsBuffersFromHost(object):
         :type region: int
         :return:
         """
+
+    @abstractmethod
+    def get_buffered_in_tag_identifier(self):
+        """ returns the iptags's transmission identifier for the buffered in
+        functionality.
+
+        :return:
+        """

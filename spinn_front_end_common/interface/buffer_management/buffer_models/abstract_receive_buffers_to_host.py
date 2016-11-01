@@ -47,3 +47,10 @@ class AbstractReceiveBuffersToHost(object):
         :return: The buffered state region
         :rtype: int
         """
+
+    @abstractmethod
+    def get_buffered_out_tag_identifier(self):
+        """ get the transmission identifier for the buffered out functionality
+
+        :return:
+        """

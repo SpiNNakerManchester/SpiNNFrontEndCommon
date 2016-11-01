@@ -63,7 +63,8 @@ class ReverseIpTagMultiCastSource(
             send_buffer_space_before_notify=640,
             send_buffer_notification_ip_address=None,
             send_buffer_notification_port=None,
-            send_buffer_notification_tag=None):
+            send_buffer_notification_tag=None,
+            buffered_out_ip_address=None):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -128,6 +129,7 @@ class ReverseIpTagMultiCastSource(
             send_buffer_notification_ip_address
         self._send_buffer_notification_port = send_buffer_notification_port
         self._send_buffer_notification_tag = send_buffer_notification_tag
+        self._buffered_out_ip_address = buffered_out_ip_address
 
         # Store recording parameters for later
         self._recording_enabled = False
@@ -237,7 +239,8 @@ class ReverseIpTagMultiCastSource(
             send_buffer_notification_ip_address=(
                 self._send_buffer_notification_ip_address),
             send_buffer_notification_port=self._send_buffer_notification_port,
-            send_buffer_notification_tag=self._send_buffer_notification_tag)
+            send_buffer_notification_tag=self._send_buffer_notification_tag,
+            buffered_out_ip_address=self._buffered_out_ip_address)
         if self._record_buffer_size > 0:
             sdram_per_ts = 0
             if self._using_auto_pause_and_resume:

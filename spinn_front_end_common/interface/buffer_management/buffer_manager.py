@@ -240,10 +240,11 @@ class BufferManager(object):
                     :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
-        tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
+        tag = self._tags.get_iptag_with_transmission_id_for_vertex(
+            vertex, vertex.get_buffered_in_tag_identifier())
         if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.debug("Listening for send packets using tag {} on"
-                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
+            logger.info("Listening for send packets using tag {} on "
+                         "{}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
             if self._transceiver is not None:
                 self._transceiver.register_udp_listener(
