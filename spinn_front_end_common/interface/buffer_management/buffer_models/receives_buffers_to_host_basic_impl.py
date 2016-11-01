@@ -15,20 +15,25 @@ from spinn_front_end_common.utilities import exceptions
 import sys
 import math
 
+from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
+    UDPEIEIOConnection
+
 
 class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
     """ This class stores the information required to activate the buffering \
         output functionality for a vertex
     """
+    TRAFFIC_IDENTIFIER = "BUFFERED_OUT_DATA_STREAM"
 
     def __init__(self):
         """
+        :param buffered_ip_address: the ip_address of the buffered out interface
+        :type buffered_ip_address: str
         :return: None
         :rtype: None
         """
         self._buffering_output = False
         self._buffering_ip_address = None
-        self._buffering_port = None
         self._minimum_sdram_for_buffering = 0
         self._buffered_sdram_per_timestep = 0
         self._buffered_regions = list()
@@ -43,52 +48,48 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """
         return self._buffering_output
 
+    @property
+    def buffering_ip_address(self):
+        return self._buffering_ip_address
+
+    @buffering_ip_address.setter
+    def buffering_ip_address(self, new_value):
+        self._buffering_ip_address = new_value
+
     def activate_buffering_output(
-            self, buffering_ip_address=None, buffering_port=None,
-            board_address=None, minimum_sdram_for_buffering=0,
+            self, board_address=None, minimum_sdram_for_buffering=0,
             buffered_sdram_per_timestep=0):
         """ Activates the output buffering mechanism
 
-        :param buffering_ip_address: IP address of the host which supports\
-                the buffering output functionality
-        :type buffering_ip_address: string
-        :param buffering_port: UDP port of the host which supports\
-                the buffering output functionality
-        :type buffering_port: int
-
+        :param board_address: the board address
+        :param minimum_sdram_for_buffering:
+        :param buffered_sdram_per_timestep:
         :return: None
         :rtype: None
         """
-        if (not self._buffering_output and buffering_ip_address is not None and
-                buffering_port is not None):
+        if not self._buffering_output:
             self._buffering_output = True
 
             # add placement constraint if needed
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
-            self._buffering_ip_address = buffering_ip_address
-            self._buffering_port = buffering_port
         self._minimum_sdram_for_buffering = minimum_sdram_for_buffering
         self._buffered_sdram_per_timestep = buffered_sdram_per_timestep
 
-    def get_extra_resources(self, buffering_ip_address, buffering_port,
-                            notification_tag=None):
+    def get_extra_resources(self, notification_tag=None):
         """ Get any additional resource required
-
-        :param buffering_ip_address: IP address of the host which supports\
-                the buffering output functionality
-        :param buffering_port: UDP port of the host which supports\
-                the buffering output functionality
-        :param notification_tag: ??????????????
+        :param notification_tag: the id of the tag (position in the tag table)
+         or None if any position will do
         :return: a resource container
         """
-        if (not self._buffering_output and buffering_ip_address is not None and
-                buffering_port is not None):
+        if self._buffering_output:
 
             # create new resources to handle a new tag
             return ResourceContainer(iptags=[
-                IPtagResource(buffering_ip_address, buffering_port,
-                              True, notification_tag)])
+                IPtagResource(ip_address=self._buffering_ip_address,
+                              port=None, strip_sdp=True, tag=notification_tag,
+                              traffic_identifier=self.TRAFFIC_IDENTIFIER,
+                              connection_type=UDPEIEIOConnection)])
         return ResourceContainer()
 
     @staticmethod
@@ -103,7 +104,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """ Get the size of the recording data for the given number of\
             buffered regions
         """
-        return 12 + (n_buffered_regions * 4)
+        return 16 + (n_buffered_regions * 4)
 
     def reserve_buffer_regions(
             self, spec, state_region, buffer_regions, region_sizes):
@@ -141,7 +142,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """
         for tag in ip_tags:
             if (tag.ip_address == self._buffering_ip_address and
-                    tag.port == self._buffering_port):
+                    tag.traffic_identifier == self.TRAFFIC_IDENTIFIER):
                 return tag
         return None
 
@@ -168,7 +169,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
                 raise Exception(
                     "No tag for output buffering was assigned to this vertex")
             spec.write_value(data=ip_tag.tag)
+            spec.write_value(data=ip_tag.port)
         else:
+            spec.write_value(data=0)
             spec.write_value(data=0)
         spec.write_value(data=buffer_size_before_receive)
         spec.write_value(data=time_between_requests)
@@ -189,3 +192,6 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
 
     def get_buffered_state_region(self):
         return self._buffered_state_region
+
+    def get_buffered_out_tag_identifier(self):
+        return self.TRAFFIC_IDENTIFIER

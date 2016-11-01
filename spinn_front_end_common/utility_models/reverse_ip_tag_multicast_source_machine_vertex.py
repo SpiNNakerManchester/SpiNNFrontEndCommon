@@ -49,6 +49,8 @@ from spinn_front_end_common.abstract_models.abstract_recordable \
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl import \
     ProvidesProvenanceDataFromMachineImpl
+from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
+    UDPEIEIOConnection
 
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
@@ -81,6 +83,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('PROVENANCE_REGION', 5)])
 
     _CONFIGURATION_REGION_SIZE = 40
+    TRANSMISSION_IDENTIFIER = "BUFFERED_IN_STREAM"
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -110,8 +113,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
-        :param machine_time_step: The time step to be used on the machine
-        :param timescale_factor: The time scaling to be used in the simulation
         :param label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
         :param board_address: The IP address of the board on which to place\
@@ -180,9 +181,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_times = send_buffer_times
 
             self._iptags = [IPtagResource(
-                send_buffer_notification_ip_address,
-                send_buffer_notification_port, True,
-                send_buffer_notification_tag)]
+                ip_address=send_buffer_notification_ip_address,
+                port=send_buffer_notification_port, strip_sdp=True,
+                tag=send_buffer_notification_tag,
+                traffic_identifier=self.TRANSMISSION_IDENTIFIER,
+                connection_type=UDPEIEIOConnection)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
             SendsBuffersFromHostPreBufferedImpl.__init__(
@@ -193,7 +196,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
         self._send_buffer_notification_ip_address = \
             send_buffer_notification_ip_address
-        self._send_buffer_notification_port = send_buffer_notification_port
         self._send_buffer_notification_tag = send_buffer_notification_tag
         if self._send_buffer_space_before_notify > send_buffer_max_space:
             self._send_buffer_space_before_notify = send_buffer_max_space
@@ -410,16 +412,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return mask, max_key
 
     def enable_recording(
-            self, buffering_ip_address, buffering_port,
-            board_address=None, notification_tag=None,
+            self, board_address=None,
             record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             buffer_size_before_receive=(constants.
                                         DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
             minimum_sdram_for_buffering=0, buffered_sdram_per_timestep=0):
 
         self.activate_buffering_output(
-            buffering_ip_address, buffering_port, board_address,
-            minimum_sdram_for_buffering, buffered_sdram_per_timestep)
+            board_address, minimum_sdram_for_buffering,
+            buffered_sdram_per_timestep)
 
         self._record_buffer_size = record_buffer_size
         self._buffer_size_before_receive = buffer_size_before_receive
@@ -507,9 +508,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             this_tag = None
             for tag in ip_tags:
-                if (tag.ip_address ==
-                        self._send_buffer_notification_ip_address and
-                        tag.port == self._send_buffer_notification_port):
+                if tag.traffic_identifier == self.TRANSMISSION_IDENTIFIER:
                     this_tag = tag
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")

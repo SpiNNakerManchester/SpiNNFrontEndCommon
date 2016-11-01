@@ -33,6 +33,7 @@ typedef struct recording_channel_t {
 //! array containing all possible channels.
 static recording_channel_t *g_recording_channels = NULL;
 static uint32_t n_recording_regions = 0;
+static uint32_t buffered_out_port_num = NULL;
 static uint32_t buffering_out_fsm = 0;
 static uint8_t buffering_out_state_region = 0;
 static uint32_t last_time_buffering_trigger = 0;
@@ -43,6 +44,13 @@ static uint32_t time_between_triggers = 0;
 static sdp_msg_t msg;
 static read_request_packet_header *req_hdr;
 static read_request_packet_data *data_ptr;
+
+//! values for the priority for each callback
+typedef enum data_regions_elements{
+    BUFFERED_OUT_TAG = 0, BUFFERED_OUT_PORT = 1,
+    BUFFER_SIZE_BEFORE_TRIGGER = 2, TIME_BETWEEN_TRIGGERS = 3,
+    START_OF_RECORDING_REGION_SIZES = 4
+} callback_priorities;
 
 //! The time between buffer read messages
 #define MIN_TIME_BETWEEN_TRIGGERS 50
@@ -451,9 +459,10 @@ bool recording_initialize(
 
     n_recording_regions = n_regions;
     buffering_out_state_region = state_region;
-    uint8_t buffering_output_tag = recording_data[0];
-    buffer_size_before_trigger = recording_data[1];
-    time_between_triggers = recording_data[2];
+    uint8_t buffering_output_tag = recording_data[BUFFERED_OUT_TAG];
+    buffered_out_port_num = recording_data[BUFFERED_OUT_PORT];
+    buffer_size_before_trigger = recording_data[BUFFER_SIZE_BEFORE_TRIGGER];
+    time_between_triggers = recording_data[TIME_BETWEEN_TRIGGERS];
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
         time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
     }
@@ -479,7 +488,8 @@ bool recording_initialize(
     address_t address = data_specification_get_data_address();
 
     for (i = 0; i < n_regions; i++) {
-        uint32_t region_size = recording_data[i + 3];
+        uint32_t region_size =
+            recording_data[i + START_OF_RECORDING_REGION_SIZES];
         if (region_size > 0) {
             address_t region_address = data_specification_get_region(
                 region_ids[i], address);
@@ -506,7 +516,7 @@ bool recording_initialize(
             // the timer interrupt, or vice-versa to avoid issues with
             // state
             simulation_sdp_callback_on(
-                BUFFERING_OUT_SDP_PORT, _buffering_in_handler);
+                buffered_out_port_num, _buffering_in_handler);
         } else {
             g_recording_channels[i].start = NULL;
             g_recording_channels[i].current_write = NULL;
@@ -527,7 +537,7 @@ bool recording_initialize(
     msg.flags = 0x7;
     msg.tag = buffering_output_tag;
     msg.dest_port = 0xFF;
-    msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
+    msg.srce_port = (buffered_out_port_num << 5) | spin1_get_core_id();
     msg.dest_addr = 0;
     msg.srce_addr = spin1_get_chip_id();
     return true;

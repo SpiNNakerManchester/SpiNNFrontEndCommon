@@ -681,6 +681,8 @@ class SpinnakerMainInterface(object):
         inputs["TotalRunTime"] = total_run_time
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["MachineTimeStep"] = self._machine_time_step
+        inputs["BufferIpAddress"] = self._config.get(
+            "Buffers", "receive_buffer_host")
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -708,6 +710,9 @@ class SpinnakerMainInterface(object):
 
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
+
+            # allows dynamic port allocation
+            algorithms.append("FrontEndCommonPortConnectionAllocator")
 
             outputs.append("MemoryExtendedMachine")
             outputs.append("MemoryTransceiver")
@@ -829,6 +834,9 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonHBPAllocator")
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
+
+            # allows dynamic port allocation
+            algorithms.append("FrontEndCommonPortConnectionAllocator")
 
             outputs.append("MemoryExtendedMachine")
             outputs.append("IPAddress")

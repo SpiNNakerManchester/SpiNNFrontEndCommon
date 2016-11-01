@@ -108,7 +108,11 @@ class BufferManager(object):
         "_thread_lock_buffer_in",
 
         # bool flag
-        "_finished"
+        "_finished",
+
+        # the port number used by the sdp messages in the buffering out
+        # functionality
+        "_output_buffering_port_num"
     ]
 
     def __init__(self, placements, tags, transceiver, write_reload_files,
@@ -128,6 +132,9 @@ class BufferManager(object):
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
+
+        # sdp port used by the buffering out sdp messages
+        self._output_buffering_port_num = None
 
         # params used for reload purposes
         self._write_reload_files = write_reload_files
@@ -212,11 +219,13 @@ class BufferManager(object):
         """ Add a vertex into the managed list for vertices\
             which require buffers to be received from them during runtime
         """
-        tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
+        tag = self._tags.get_iptag_with_transmission_id_for_vertex(
+            vertex, vertex.get_buffered_out_tag_identifier())
         if (tag.ip_address, tag.port) not in self._seen_tags:
             logger.debug("Listening for receive packets using tag {} on"
                          " {}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
+            self._output_buffering_port_num = tag.port
             if self._transceiver is not None:
                 self._transceiver.register_udp_listener(
                     self.receive_buffer_command_message, UDPEIEIOConnection,
@@ -731,8 +740,7 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=spinn_front_end_constants.SDP_PORTS.
-            OUTPUT_BUFFERING_SDP_PORT.value,
+            destination_port=self._output_buffering_port_num,
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)

@@ -247,9 +247,7 @@ class ReverseIpTagMultiCastSource(
                 sdram_per_ts = 8
 
             vertex.enable_recording(
-                self._record_buffering_ip_address, self._record_buffering_port,
-                self._record_buffering_board_address,
-                self._record_buffering_tag, self._record_buffer_size,
+                self._record_buffering_board_address, self._record_buffer_size,
                 self._record_buffer_size_before_receive,
                 self._minimum_sdram_for_buffering, sdram_per_ts)
         self._machine_vertices.append((vertex_slice, vertex))
