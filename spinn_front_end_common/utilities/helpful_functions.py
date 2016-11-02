@@ -26,7 +26,7 @@ import time
 from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
-
+FINISHED_FILENAME = "finished"
 
 def get_valid_components(module, terminator):
     """ Get possible components
@@ -93,7 +93,6 @@ def set_up_output_application_data_specifics(
     :param this_run_time_string:
     :return:
     """
-    created_folder = False
     this_run_time_folder = None
     if where_to_write_application_data_files == "DEFAULT":
         directory = os.getcwd()
@@ -101,12 +100,10 @@ def set_up_output_application_data_specifics(
             os.path.join(directory, 'application_generated_data_files')
         if not os.path.exists(application_generated_data_file_folder):
             os.makedirs(application_generated_data_file_folder)
-            created_folder = True
 
-        if not created_folder:
-            _remove_excess_folders(
-                max_application_binaries_kept,
-                application_generated_data_file_folder)
+        _remove_excess_folders(
+            max_application_binaries_kept,
+            application_generated_data_file_folder)
 
         # add time stamped folder for this run
         this_run_time_folder = \
@@ -137,10 +134,11 @@ def set_up_output_application_data_specifics(
                          this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
-        else:
-            _remove_excess_folders(
-                max_application_binaries_kept,
-                where_to_write_application_data_files)
+
+        # remove folders that are old and above the limit
+        _remove_excess_folders(
+            max_application_binaries_kept,
+            where_to_write_application_data_files)
 
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(this_run_time_folder,
@@ -214,22 +212,47 @@ def set_up_report_specifics(
     return app_folder_name, this_run_time_string
 
 
-def _remove_excess_folders(max_to_keep, starting_directory):
-    app_folder_name = os.path.join(starting_directory, "latest")
-    app_name_file = os.path.join(app_folder_name, "time_stamp")
-    if os.path.isfile(app_name_file):
-        files_in_report_folder = os.listdir(starting_directory)
+def write_finished_file(app_data_runtime_folder, report_default_directory):
+    # write a finished file that allows file removal to only remove folders
+    # that are finished
+    app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
+    writer = open(app_file_name, "w")
+    writer.writelines("finished")
+    writer.flush()
+    writer.close()
 
-        # while there's more than the valid max, remove the oldest one
-        while len(files_in_report_folder) > max_to_keep:
-            files_in_report_folder.sort(
-                cmp, key=lambda temp_file:
-                os.path.getmtime(os.path.join(starting_directory,
-                                              temp_file)))
-            oldest_file = files_in_report_folder[0]
-            shutil.rmtree(os.path.join(starting_directory, oldest_file),
-                          ignore_errors=True)
-            files_in_report_folder.remove(oldest_file)
+    app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
+    writer = open(app_file_name, "w")
+    writer.writelines("finished")
+    writer.flush()
+    writer.close()
+
+
+def _remove_excess_folders(max_to_keep, starting_directory):
+    files_in_report_folder = os.listdir(starting_directory)
+
+    # while there's more than the valid max, remove the oldest one
+    if len(files_in_report_folder) > max_to_keep:
+
+        # sort files into time frame
+        files_in_report_folder.sort(
+            cmp, key=lambda temp_file:
+            os.path.getmtime(os.path.join(starting_directory,
+                                          temp_file)))
+
+        # remove only the number of files required, and only if they have
+        # the finished flag file created
+        num_files_to_remove = len(files_in_report_folder) - max_to_keep
+        files_removed = 0
+        for current_oldest_file in files_in_report_folder:
+            finished_flag = os.path.join(os.path.join(
+                starting_directory, current_oldest_file), FINISHED_FILENAME)
+            if (os.path.exists(finished_flag) and
+                    files_removed < num_files_to_remove):
+                shutil.rmtree(os.path.join(starting_directory,
+                                           current_oldest_file),
+                              ignore_errors=True)
+                files_removed += 1
 
 
 def get_front_end_common_pacman_xml_paths():

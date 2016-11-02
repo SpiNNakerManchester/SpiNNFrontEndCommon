@@ -1754,6 +1754,9 @@ class SpinnakerMainInterface(object):
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
 
+        helpful_functions.write_finished_file(
+            self._app_data_runtime_folder, self._report_default_directory)
+
     def _add_socket_address(self, socket_address):
         """
 
