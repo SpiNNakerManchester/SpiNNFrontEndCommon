@@ -176,11 +176,11 @@ class BufferManager(object):
 
                         if vertex in self._sender_vertices:
 
-                            # logger.debug(
-                            #     "received send request with sequence: {1:d},"
-                            #     " space available: {0:d}".format(
-                            #         packet.space_available,
-                            #         packet.sequence_no))
+                            logger.info(
+                                "received send request with sequence: {1:d},"
+                                " space available: {0:d}".format(
+                                    packet.space_available,
+                                    packet.sequence_no))
 
                             # noinspection PyBroadException
                             try:
@@ -192,11 +192,11 @@ class BufferManager(object):
                 elif isinstance(packet, SpinnakerRequestReadData):
                     with self._thread_lock_buffer_out:
 
-                        # logger.debug(
-                        #     "received {} read request(s) with sequence: {},"
-                        #     " from chip ({},{}, core {}".format(
-                        #         packet.n_requests, packet.sequence_no,
-                        #         packet.x, packet.y, packet.p))
+                        logger.info(
+                             "received {} read request(s) with sequence: {},"
+                             " from chip ({},{}, core {}".format(
+                                 packet.n_requests, packet.sequence_no,
+                                 packet.x, packet.y, packet.p))
                         vertex = self._placements.get_vertex_on_processor(
                             packet.x, packet.y, packet.p)
                         try:
@@ -408,10 +408,10 @@ class BufferManager(object):
         if (not vertex.is_next_timestamp(region) and
                 bytes_to_go >= EventStopRequest.get_min_packet_length()):
             data = EventStopRequest().bytestring
-            # logger.debug(
-            #    "Writing stop message of {} bytes to {} on {}, {}, {}".format(
-            #         len(data), hex(region_base_address),
-            #         placement.x, placement.y, placement.p))
+            logger.info(
+                "Writing stop message of {} bytes to {} on {}, {}, {}".format(
+                     len(data), hex(region_base_address),
+                     placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
             progress_bar.update(len(data))
@@ -460,17 +460,17 @@ class BufferManager(object):
                 bytes_to_go,
                 constants.UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
-            # logger.debug(
-            #     "Bytes to go {}, space available {}".format(
-            #         bytes_to_go, space_available))
+            logger.info(
+                 "Bytes to go {}, space available {}".format(
+                     bytes_to_go, space_available))
             next_message = self._create_message_to_send(
                 space_available, vertex, region)
             if next_message is None:
                 break
             sent_messages.add_message_to_send(next_message)
             bytes_to_go -= next_message.size
-            # logger.debug("Adding additional buffer of {} bytes".format(
-            #     next_message.size))
+            logger.info("Adding additional buffer of {} bytes"
+                .format(next_message.size))
 
         # If the vertex is empty, send the stop messages if there is space
         if (not sent_messages.is_full and
@@ -480,13 +480,13 @@ class BufferManager(object):
 
         # If there are no more messages, turn off requests for more messages
         if not vertex.is_next_timestamp(region) and sent_messages.is_empty():
-            # logger.debug("Sending stop")
+            logger.info("Sending stop")
             self._send_request(vertex, StopRequests())
 
         # Send the messages
         for message in sent_messages.messages:
-            # logger.debug("Sending message with sequence {}".format(
-            #     message.sequence_no))
+            logger.info("Sending message with sequence {}".format(
+                message.sequence_no))
             self._send_request(vertex, message)
 
     def _send_request(self, vertex, message):

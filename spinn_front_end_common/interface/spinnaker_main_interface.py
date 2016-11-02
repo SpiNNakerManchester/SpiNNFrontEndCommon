@@ -463,9 +463,6 @@ class SpinnakerMainInterface(object):
         self._raise_keyboard_interrupt = True
         sys.excepthook = sys.__excepthook__
 
-        # update counter for runs (used by reports and app data)
-        self._n_calls_to_run += 1
-
         logger.info("Starting execution process")
 
         n_machine_time_steps = None
@@ -604,6 +601,9 @@ class SpinnakerMainInterface(object):
         self._raise_keyboard_interrupt = False
         sys.excepthook = self.exception_handler
 
+        # update counter for runs (used by reports and app data)
+        self._n_calls_to_run += 1
+
     def _deduce_number_of_iterations(self, n_machine_time_steps):
 
         # Go through the placements and find how much SDRAM is available
@@ -709,6 +709,12 @@ class SpinnakerMainInterface(object):
     def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
+        if self._buffer_manager is not None:
+            self._buffer_manager.stop()
+            self._buffer_manager = None
+        if self._txrx is not None:
+            self._txrx.close()
+
 
         inputs = dict()
         algorithms = list()
