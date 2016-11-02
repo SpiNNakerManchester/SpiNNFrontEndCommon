@@ -104,13 +104,14 @@ def set_up_output_application_data_specifics(
             created_folder = True
 
         if not created_folder:
-            _move_report_and_binary_files(
+            _remove_excess_folders(
                 max_application_binaries_kept,
                 application_generated_data_file_folder)
 
         # add time stamped folder for this run
         this_run_time_folder = \
-            os.path.join(application_generated_data_file_folder, "latest")
+            os.path.join(
+                application_generated_data_file_folder, this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
 
@@ -132,11 +133,12 @@ def set_up_output_application_data_specifics(
 
         # add time stamped folder for this run
         this_run_time_folder = \
-            os.path.join(where_to_write_application_data_files, "latest")
+            os.path.join(where_to_write_application_data_files,
+                         this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
         else:
-            _move_report_and_binary_files(
+            _remove_excess_folders(
                 max_application_binaries_kept,
                 where_to_write_application_data_files)
 
@@ -186,54 +188,36 @@ def set_up_report_specifics(
     # clear and clean out folders considered not useful anymore
     if not created_folder \
             and len(os.listdir(report_default_directory)) > 0:
-        _move_report_and_binary_files(max_reports_kept,
-                                      report_default_directory)
-
-    # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = os.path.join(report_default_directory, "latest")
-    if not os.path.exists(app_folder_name):
-            os.makedirs(app_folder_name)
-
-    # store timestamp in latest/time_stamp
-    time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
-    writer = open(time_of_run_file_name, "w")
+        _remove_excess_folders(max_reports_kept, report_default_directory)
 
     # determine the time slot for later
     this_run_time = datetime.datetime.now()
     this_run_time_string = (
-        "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+        "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
             this_run_time.year, this_run_time.month, this_run_time.day,
             this_run_time.hour, this_run_time.minute,
-            this_run_time.second))
-    writer.writelines("app_{}_{}".format(app_id,
-                                         this_run_time_string))
+            this_run_time.second, this_run_time.microsecond))
+
+    # handle timing app folder and cleaning of report folder from last run
+    app_folder_name = os.path.join(
+        report_default_directory, this_run_time_string)
+
+    if not os.path.exists(app_folder_name):
+            os.makedirs(app_folder_name)
+
+    # store timestamp in latest/time_stamp for provenance reasons
+    time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
+    writer = open(time_of_run_file_name, "w")
+    writer.writelines("app_{}_{}".format(app_id, this_run_time_string))
     writer.flush()
     writer.close()
     return app_folder_name, this_run_time_string
 
 
-def _move_report_and_binary_files(max_to_keep, starting_directory):
+def _remove_excess_folders(max_to_keep, starting_directory):
     app_folder_name = os.path.join(starting_directory, "latest")
     app_name_file = os.path.join(app_folder_name, "time_stamp")
     if os.path.isfile(app_name_file):
-        time_stamp_in = open(app_name_file, "r")
-        time_stamp_in_string = time_stamp_in.readline()
-        time_stamp_in.close()
-        os.remove(app_name_file)
-        new_app_folder = os.path.join(starting_directory,
-                                      time_stamp_in_string)
-        extra = 2
-        while os.path.exists(new_app_folder):
-            new_app_folder = os.path.join(
-                starting_directory,
-                time_stamp_in_string + "_" + str(extra))
-            extra += 1
-
-        os.makedirs(new_app_folder)
-        list_of_files = os.listdir(app_folder_name)
-        for file_to_move in list_of_files:
-            file_path = os.path.join(app_folder_name, file_to_move)
-            shutil.move(file_path, new_app_folder)
         files_in_report_folder = os.listdir(starting_directory)
 
         # while there's more than the valid max, remove the oldest one
