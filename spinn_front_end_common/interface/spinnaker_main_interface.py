@@ -509,7 +509,16 @@ class SpinnakerMainInterface(object):
             # graph has changed
             if (application_graph_changed and self._hostname is None and
                     not self._use_virtual_board):
+                # wipe out stuff associated with a given machine, as these need
+                # to be rebuilt.
                 self._machine = None
+                if self._buffer_manager is not None:
+                    self._buffer_manager.stop()
+                    self._buffer_manager = None
+                if self._txrx is not None:
+                    self._txrx.close()
+                if self._machine_allocation_controller is not None:
+                    self._machine_allocation_controller.close()
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
@@ -709,12 +718,6 @@ class SpinnakerMainInterface(object):
     def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
-        if self._buffer_manager is not None:
-            self._buffer_manager.stop()
-            self._buffer_manager = None
-        if self._txrx is not None:
-            self._txrx.close()
-
 
         inputs = dict()
         algorithms = list()
