@@ -243,7 +243,7 @@ class BufferManager(object):
         tag = self._tags.get_iptag_with_transmission_id_for_vertex(
             vertex, vertex.get_buffered_in_tag_identifier())
         if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.info("Listening for send packets using tag {} on "
+            logger.debug("Listening for send packets using tag {} on "
                          "{}:{}".format(tag.tag, tag.ip_address, tag.port))
             self._seen_tags.add((tag.ip_address, tag.port))
             if self._transceiver is not None:
