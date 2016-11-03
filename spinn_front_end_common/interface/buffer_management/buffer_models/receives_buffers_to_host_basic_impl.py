@@ -2,21 +2,20 @@
 
 from pacman.model.constraints.placer_constraints.placer_board_constraint \
     import PlacerBoardConstraint
-
-# front end common imports
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
+
+# front end common imports
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .end_buffering_state import EndBufferingState
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import helpful_functions
 
 # general imports
 import sys
 import math
-
-from spinn_front_end_common.utilities import helpful_functions
 
 
 class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):

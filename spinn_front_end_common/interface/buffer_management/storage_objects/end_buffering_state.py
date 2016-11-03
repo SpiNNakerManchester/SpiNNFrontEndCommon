@@ -86,7 +86,8 @@ class EndBufferingState(object):
 
         region_data_addresses = list()
         for _ in range(0, n_recording_regions):
-            region_data_addresses.append(struct.unpack_from("<I", data, offset))
+            region_data_addresses.append(
+                struct.unpack_from("<I", data, offset))
             offset += 4
 
         list_channel_buffer_state = list()
@@ -103,6 +104,7 @@ class EndBufferingState(object):
     @staticmethod
     def size_of_region(n_regions_to_record):
         size_of_header = 8 + 4 * n_regions_to_record
+
         # add size needed for the data region addresses
         size_of_header += 4 * n_regions_to_record
         size_of_channel_state = ChannelBufferState.size_of_channel_state()

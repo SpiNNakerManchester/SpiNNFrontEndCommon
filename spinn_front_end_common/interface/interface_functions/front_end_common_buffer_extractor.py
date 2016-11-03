@@ -1,7 +1,6 @@
-from spinn_front_end_common.interface.buffer_management.buffer_models.\
-    receives_buffers_to_host_basic_impl import \
-    ReceiveBuffersToHostBasicImpl
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.interface.buffer_management.buffer_models\
+    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_machine.utilities.progress_bar import ProgressBar
 
 
@@ -22,7 +21,7 @@ class FrontEndCommonBufferExtractor(object):
         # Count the regions to be read
         n_regions_to_read = 0
         for vertex in machine_graph.vertices:
-            if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
                 n_regions_to_read += len(vertex.get_buffered_regions())
 
         progress_bar = ProgressBar(
@@ -30,7 +29,7 @@ class FrontEndCommonBufferExtractor(object):
 
         # Read back the regions
         for vertex in machine_graph.vertices:
-            if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
                 placement = placements.get_placement_of_vertex(vertex)
                 state_address = \
                     vertex.get_buffered_state_address(placement, transceiver)

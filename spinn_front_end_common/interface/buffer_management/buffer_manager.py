@@ -2,14 +2,14 @@
 from spinn_machine.utilities.progress_bar import ProgressBar
 
 # spinnman imports
-from spinn_front_end_common.interface.buffer_management.buffer_models.receives_buffers_to_host_basic_impl import \
-    ReceiveBuffersToHostBasicImpl
 from spinnman import constants
 from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
     UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
 from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinn_front_end_common.interface.buffer_management.buffer_models\
+    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -231,13 +231,15 @@ class BufferManager(object):
             # sort out tags and connection for listening for the packets
             tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
             if (tag.ip_address, tag.port) not in self._seen_tags:
-                logger.debug("Listening for receive packets using tag {} on"
-                             " {}:{}".format(tag.tag, tag.ip_address, tag.port))
+                logger.debug(
+                    "Listening for receive packets using tag {} on"
+                    " {}:{}".format(tag.tag, tag.ip_address, tag.port))
                 self._seen_tags.add((tag.ip_address, tag.port))
                 if self._transceiver is not None:
                     self._transceiver.register_udp_listener(
-                        self.receive_buffer_command_message, UDPEIEIOConnection,
-                        local_port=tag.port, local_host=tag.ip_address)
+                        self.receive_buffer_command_message,
+                        UDPEIEIOConnection, local_port=tag.port,
+                        local_host=tag.ip_address)
 
     def add_sender_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices
@@ -330,7 +332,7 @@ class BufferManager(object):
         :return: None
         """
         for vertex in self._receiver_vertices:
-            if isinstance(vertex, ReceiveBuffersToHostBasicImpl):
+            if isinstance(vertex, AbstractReceiveBuffersToHost):
 
                 state_region_address = vertex.get_buffered_state_address(
                     self._transceiver,
@@ -344,6 +346,7 @@ class BufferManager(object):
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):
+
         # retrieve channel state memory area
         raw_number_of_channels = self._transceiver.read_memory(
             placement.x, placement.y, state_region_base_address, 4)
@@ -638,7 +641,8 @@ class BufferManager(object):
                 for i in xrange(last_sent_ack_packet.n_requests):
 
                     last_ack_packet_is_of_this_region = \
-                        recording_region_id == last_sent_ack_packet.region_id(i)
+                        recording_region_id == \
+                        last_sent_ack_packet.region_id(i)
 
                     if (last_ack_packet_is_of_this_region and
                             not end_state.is_state_updated):

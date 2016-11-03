@@ -42,8 +42,8 @@ class AbstractReceiveBuffersToHost(object):
 
     @abstractmethod
     def get_buffered_state_address(self, txrx, placement):
-        """
-        returns the address where the buffer state data is stored
+        """ Get the address where the buffer state data is stored
+
         :param txrx: the SpiNNMan instance
         :param placement: the placement to find the state address for
         :return: int which is the memory address

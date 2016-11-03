@@ -364,7 +364,7 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
             return true;
         } else {
             if (!g_recording_channels[channel].missing_info) {
-                log_debug("WARNING: recording channel %u out of space", channel);
+                log_info("WARNING: recording channel %u out of space", channel);
                 g_recording_channels[channel].missing_info = 1;
             }
             return false;
@@ -380,7 +380,7 @@ address_t _recording_state_region_write(){
     // Get the region address store channel details
     address_t out_ptr = buffering_out_control_reg;
 
-    log_debug(
+    log_info(
         "Storing channel state info starting at 0x%08x", out_ptr);
     // store number of recording regions
     spin1_memcpy(out_ptr, &n_recording_regions, sizeof(n_recording_regions));
@@ -454,7 +454,7 @@ bool recording_initialize(
 
     // if already initialised, don't re-initialise
     if (!n_recording_regions && n_regions <= 0) {
-        return false;// TODO: Update with the recording region id
+        return false;
     }
 
     if (recording_flags) {
@@ -469,7 +469,7 @@ bool recording_initialize(
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
         time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
     }
-    log_debug(
+    log_info(
         "Recording %d regions, using output tag %d, size before trigger %d, "
         "time between triggers %d",
         n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
@@ -507,7 +507,7 @@ bool recording_initialize(
 
             *recording_flags = (*recording_flags | (1 << i));
 
-            log_debug(
+            log_info(
                 "Recording channel %u configured to use %u byte memory block"
                 " starting at 0x%08x", i, region_size,
                 g_recording_channels[i].start);
