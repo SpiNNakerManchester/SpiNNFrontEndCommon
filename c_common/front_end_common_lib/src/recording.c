@@ -364,7 +364,7 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
             return true;
         } else {
             if (!g_recording_channels[channel].missing_info) {
-                log_debug("WARNING: recording channel %u out of space", channel);
+                log_info("WARNING: recording channel %u out of space", channel);
                 g_recording_channels[channel].missing_info = 1;
             }
             return false;
@@ -414,18 +414,18 @@ void recording_finalise() {
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
             if (g_recording_channels[channel].missing_info)
-                log_debug(
+                log_info(
                     "\tFinalising channel %u - dropped information while"
                     "buffering - state info stored in SDRAM", channel);
             else
-                log_debug(
+                log_info(
                     "\tFinalising channel %u - state info stored in SDRAM",
                     channel);
 
             if (!_close_channel(channel)) {
                 log_error("could not close channel %u.", channel);
             } else {
-                log_debug("closed channel %u.", channel);
+                log_info("closed channel %u.", channel);
             }
         }
     }
@@ -438,13 +438,13 @@ bool recording_initialize(
 
     region_addresses = (address_t*) sark_alloc(
         1, n_regions * sizeof(address_t));
-    for (uint32_t counter =0; counter < n_regions; counter++){
+    for (uint32_t counter = 0; counter < n_regions; counter++){
         region_addresses[counter] = region_addresses_external[counter];
     }
 
     // if already initialised, don't re-initialise
     if (!n_recording_regions && n_regions <= 0) {
-        return false;// TODO: Update with the recording region id
+        return false;
     }
 
     if (recording_flags) {

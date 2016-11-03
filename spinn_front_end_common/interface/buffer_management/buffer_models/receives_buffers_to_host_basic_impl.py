@@ -1,12 +1,11 @@
 # pacman imports
-
 from pacman.model.constraints.placer_constraints.placer_board_constraint \
     import PlacerBoardConstraint
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.resources.sdram_resource import SDRAMResource
 
 # front end common imports
-from pacman.model.resources.sdram_resource import SDRAMResource
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
@@ -98,9 +97,10 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
                 buffering_port is not None):
 
             # create new resources to handle a new tag
-            return ResourceContainer(iptags=[
-                IPtagResource(buffering_ip_address, buffering_port,
-                              True, notification_tag)],
+            return ResourceContainer(
+                iptags=[IPtagResource(
+                    buffering_ip_address, buffering_port, True,
+                    notification_tag)],
                 sdram=SDRAMResource(
                     len(self._recording_region_ids) *
                     ChannelBufferState.size_of_channel_state()))
@@ -111,9 +111,10 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         """ Get the size of the recording data for the given number of\
             buffered regions
         """
-        return ReceiveBuffersToHostBasicImpl.SIZE_OF_RECORDING_REQUIREMENTS + \
-               (n_buffered_regions *
-                ReceiveBuffersToHostBasicImpl.SIZE_OF_BUFFER_REGION_ADDRESS)
+        return (
+            ReceiveBuffersToHostBasicImpl.SIZE_OF_RECORDING_REQUIREMENTS +
+            (n_buffered_regions *
+                ReceiveBuffersToHostBasicImpl.SIZE_OF_BUFFER_REGION_ADDRESS))
 
     def reserve_buffer_regions(
             self, spec, dsg_buffer_region_ids, region_sizes,
@@ -124,9 +125,9 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
         :param spec: The data specification to reserve the region in
         :param dsg_buffer_region_ids: The regions ids to reserve for buffering
         :param region_sizes: The sizes of the regions to reserve
-        :param recording_region_ids: the order of which regions are going into
-                recording interface in c. if none assume same order as the
-                buffer regions
+        :param recording_region_ids:\
+            the order of which regions are going into recording interface in\
+            C code. If None assume same order as the buffer regions
         """
         if len(dsg_buffer_region_ids) != len(region_sizes):
             raise exceptions.ConfigurationException(

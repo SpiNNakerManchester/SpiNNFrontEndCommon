@@ -42,11 +42,9 @@ from spinn_front_end_common.interface.buffer_management.\
 from spinn_front_end_common.utilities import constants as \
     spinn_front_end_constants
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    channel_buffer_state import \
-    ChannelBufferState
+    channel_buffer_state import ChannelBufferState
 
 # general imports
-import struct
 import threading
 import logging
 import traceback
@@ -197,8 +195,6 @@ class BufferManager(object):
                         #     " from chip ({},{}, core {}".format(
                         #         packet.n_requests, packet.sequence_no,
                         #         packet.x, packet.y, packet.p))
-                        vertex = self._placements.get_vertex_on_processor(
-                            packet.x, packet.y, packet.p)
                         try:
                             self._retrieve_and_store_data(packet)
                         except Exception:
@@ -223,16 +219,19 @@ class BufferManager(object):
         self._receiver_vertices.add(vertex)
 
         if self._tags.get_ip_tags_for_vertex(vertex) is not None:
+
             # sort out tags and connection for listening for the packets
             tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
             if (tag.ip_address, tag.port) not in self._seen_tags:
-                logger.debug("Listening for receive packets using tag {} on"
-                             " {}:{}".format(tag.tag, tag.ip_address, tag.port))
+                logger.debug(
+                    "Listening for receive packets using tag {} on"
+                    " {}:{}".format(tag.tag, tag.ip_address, tag.port))
                 self._seen_tags.add((tag.ip_address, tag.port))
                 if self._transceiver is not None:
                     self._transceiver.register_udp_listener(
-                        self.receive_buffer_command_message, UDPEIEIOConnection,
-                        local_port=tag.port, local_host=tag.ip_address)
+                        self.receive_buffer_command_message,
+                        UDPEIEIOConnection, local_port=tag.port,
+                        local_host=tag.ip_address)
 
     def add_sender_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices
@@ -306,10 +305,6 @@ class BufferManager(object):
 
     def resume(self):
         """ Resets any data structures needed before starting running again
-
-        Also includes rebuilding the dsg to recoding region ids for interface
-
-        :param placements: the placements of vertices on machine
         """
 
         # update the received data items
@@ -317,6 +312,7 @@ class BufferManager(object):
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):
+
         # retrieve channel state memory area
         channel_state_data = str(self._transceiver.read_memory(
             placement.x, placement.y, state_region_base_address,
@@ -559,7 +555,7 @@ class BufferManager(object):
                     recording_region_id):
 
                 end_state = self._generate_end_buffering_state_from_machine(
-                        placement, recording_region_base_address)
+                    placement, recording_region_base_address)
 
                 self._received_data.store_end_buffering_state(
                     placement.x, placement.y, placement.p, recording_region_id,
@@ -610,7 +606,8 @@ class BufferManager(object):
                 for i in xrange(last_sent_ack_packet.n_requests):
 
                     last_ack_packet_is_of_this_region = \
-                        recording_region_id == last_sent_ack_packet.region_id(i)
+                        recording_region_id == \
+                        last_sent_ack_packet.region_id(i)
 
                     if (last_ack_packet_is_of_this_region and
                             not end_state.is_state_updated):

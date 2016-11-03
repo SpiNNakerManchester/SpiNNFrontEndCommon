@@ -1,6 +1,5 @@
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.channel_buffer_state import ChannelBufferState
-import struct
 
 
 class EndBufferingState(object):
@@ -48,6 +47,7 @@ class EndBufferingState(object):
     @staticmethod
     def size_of_region(n_regions_to_record):
         size_of_header = 8 + 4 * n_regions_to_record
+
         # add size needed for the data region addresses
         size_of_header += 4 * n_regions_to_record
         size_of_channel_state = ChannelBufferState.size_of_channel_state()
