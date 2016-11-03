@@ -33,17 +33,18 @@ class AbstractReceiveBuffersToHost(object):
         """
 
     @abstractmethod
-    def get_buffered_regions(self):
-        """ Get the regions that have been recorded using buffering
+    def get_recorded_region_ids(self):
+        """ Get the recording region ids that have been recorded using buffering
 
         :return: The region numbers that have active recording
         :rtype: iterable of int
         """
 
     @abstractmethod
-    def get_buffered_state_region(self):
-        """ Get the state region for buffered recording
+    def get_buffered_state_address(self, txrx, placement):
+        """ Get the address where the buffer state data is stored
 
-        :return: The buffered state region
-        :rtype: int
+        :param txrx: the SpiNNMan instance
+        :param placement: the placement to find the state address for
+        :return: int which is the memory address
         """

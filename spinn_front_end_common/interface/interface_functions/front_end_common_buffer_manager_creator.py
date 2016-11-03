@@ -28,8 +28,7 @@ class FrontEndCommonBufferManagerCreator(object):
                     buffer_manager.add_sender_vertex(placement.vertex)
 
             if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
-                if placement.vertex.buffering_output():
-                    buffer_manager.add_receiving_vertex(placement.vertex)
+                buffer_manager.add_receiving_vertex(placement.vertex)
 
             progress_bar.update()
         progress_bar.end()

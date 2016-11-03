@@ -64,7 +64,8 @@ void recording_finalise();
 //! \brief initialises the recording of data
 //! \param[in] n_regions the number of regions to be recorded, one per type of
 //!            data
-//! \param[in] region_ids the ids of the regions to be recorded to
+//! \param[in] region_addresses the memory addresses of the regions to be
+//!            recorded to
 //! \param[in] recording_data The start of the data about the recording.
 //!            Data is {uint32_t tag; uint32_t buffer_size_before_request;
 //!                     uint32_t size_of_region[n_regions]}
@@ -74,8 +75,9 @@ void recording_finalise();
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
-        uint8_t n_regions, uint8_t *region_ids, uint32_t *recording_data,
-        uint8_t state_region, uint32_t *recording_flags);
+        uint8_t n_regions, address_t *region_addresses,
+        uint32_t *recording_data, address_t state_region,
+        uint32_t *recording_flags);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0
