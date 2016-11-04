@@ -712,6 +712,10 @@ class SpinnakerMainInterface(object):
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
             self._shutdown()
+            helpful_functions.write_finished_file(
+                self._app_data_top_simulation_folder,
+                self._report_simulation_top_directory)
+
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 

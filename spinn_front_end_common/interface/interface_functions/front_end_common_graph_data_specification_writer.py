@@ -75,7 +75,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 self._generate_data_spec_for_vertices(
                     placement, vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
-                    app_data_runtime_folder, machine, graph_mapper)
+                    app_data_runtime_folder, machine)
                 progress_bar.update()
             progress_bar.end()
 
