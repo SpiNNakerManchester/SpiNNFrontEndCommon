@@ -845,7 +845,6 @@ bool read_parameters(address_t region_address) {
     buffer_region_size = region_address[BUFFER_REGION_SIZE];
     space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
     return_tag_id = region_address[RETURN_TAG_ID];
-    buffered_in_sdp_port = region_address[]
 
     // There is no point in sending requests until there is space for
     // at least one packet
