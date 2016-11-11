@@ -169,9 +169,7 @@ class ReceiveBuffersToHostBasicImpl(AbstractReceiveBuffersToHost):
                 raise Exception(
                     "No tag for output buffering was assigned to this vertex")
             spec.write_value(data=ip_tag.tag)
-            spec.write_value(data=ip_tag.port)
         else:
-            spec.write_value(data=0)
             spec.write_value(data=0)
         spec.write_value(data=buffer_size_before_receive)
         spec.write_value(data=time_between_requests)
