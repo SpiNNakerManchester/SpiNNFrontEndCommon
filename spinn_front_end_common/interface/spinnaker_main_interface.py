@@ -582,7 +582,7 @@ class SpinnakerMainInterface(object):
             sdram_per_vertex = int(sdram / len(vertices_on_chip))
             for vertex in vertices_on_chip:
                 n_time_steps = vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex)
+                    sdram_per_vertex, self._machine_time_step)
                 if min_time_steps is None or n_time_steps < min_time_steps:
                     min_time_steps = n_time_steps
         if min_time_steps is None:
