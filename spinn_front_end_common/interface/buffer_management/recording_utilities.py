@@ -48,6 +48,39 @@ def get_recording_data_size(recorded_region_sizes):
     )
 
 
+def get_minimum_buffer_sdram(
+        buffered_sdram_per_timestep, n_machine_time_steps=None,
+        minimum_sdram_for_buffering=(1024 * 1024)):
+    """ Get the minimum buffer SDRAM
+
+    :param buffered_sdram_per_timestep:\
+        The maximum number of bytes to use per timestep of recording,\
+        per recorded region.  Disabled regions can specify 0.
+    :type buffered_sdram_per_timestep: list of int
+    :param n_machine_time_steps:\
+        The number of machine time steps for the simulation.  Can be None if\
+        use_auto_pause_and_resume is True
+    :type n_machine_time_steps: int
+    :param minimum_sdram_for_buffering:\
+        The minimum SDRAM to reserve per recorded region for buffering
+    :type minimum_sdram_for_buffering: int
+    :rtype: list of int
+    """
+
+    # The minimum SDRAM for each region is:
+    # - If the buffered_sdram_per_timestep for the region is > 0 and
+    #   n_machine_time_steps is defined then the minimum of the actual region
+    #   size and the minimum_sdram_for_buffering
+    # - If the sdram is 0 then 0
+    # - If n_machine_time_steps is None then minimum_sdram_for_buffering
+    return [
+        min(sdram * n_machine_time_steps, minimum_sdram_for_buffering)
+        if sdram > 0 and n_machine_time_steps is not None
+        else 0 if sdram == 0 else minimum_sdram_for_buffering
+        for sdram in buffered_sdram_per_timestep
+    ]
+
+
 def get_recording_region_sizes(
         buffered_sdram_per_timestep, n_machine_time_steps=None,
         minimum_sdram_for_buffering=(1024 * 1024),
@@ -76,13 +109,10 @@ def get_recording_region_sizes(
     """
     if use_auto_pause_and_resume:
 
-        # If auto pause and resume is enabled, the resource size is the
-        # minimum to reserve for buffering so long as the region is enabled,
-        # otherwise it is 0
-        return [
-            minimum_sdram_for_buffering if sdram > 0 else 0
-            for sdram in buffered_sdram_per_timestep
-        ]
+        # If auto pause and resume is enabled, find the minimum sizes
+        return get_minimum_buffer_sdram(
+            buffered_sdram_per_timestep, n_machine_time_steps,
+            minimum_sdram_for_buffering)
     else:
 
         # If auto pause and resume is disabled, use the actual region size
