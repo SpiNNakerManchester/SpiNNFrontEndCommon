@@ -43,6 +43,8 @@ from spinn_front_end_common.utilities import constants as \
     spinn_front_end_constants
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
     channel_buffer_state import ChannelBufferState
+from spinn_front_end_common.interface.buffer_management \
+    import recording_utilities
 
 # general imports
 import threading
@@ -542,21 +544,33 @@ class BufferManager(object):
                 py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
         """
 
-        recording_region_base_address = \
+        recording_data_address = \
             placement.vertex.get_recording_region_base_address(
-                recording_region_id, self._transceiver, placement)
+                self._transceiver, placement)
 
-        # flush data here
+        # Ensure the last sequence number sent has been retrieved
+        if not self._received_data.is_end_buffering_sequence_number_stored(
+                placement.x, placement.y, placement.p):
+            self._received_data.store_end_buffering_sequence_number(
+                placement.x, placement.y, placement.p,
+                recording_utilities.get_last_sequence_number(
+                    placement, self._transceiver, recording_data_address))
+
+        # Read the data if not already received
         if not self._received_data.is_data_from_region_flushed(
                 placement.x, placement.y, placement.p,
-                recording_region_base_address):
+                recording_region_id):
+
+            # Read the end state of the recording for this region
             if not self._received_data.is_end_buffering_state_recovered(
                     placement.x, placement.y, placement.p,
                     recording_region_id):
 
+                end_state_address = recording_utilities.get_region_pointer(
+                    placement, self._transceiver, recording_data_address,
+                    recording_region_id)
                 end_state = self._generate_end_buffering_state_from_machine(
-                    placement, recording_region_base_address)
-
+                    placement, end_state_address)
                 self._received_data.store_end_buffering_state(
                     placement.x, placement.y, placement.p, recording_region_id,
                     end_state)
@@ -581,14 +595,12 @@ class BufferManager(object):
                 self._received_data.last_sequence_no_for_core(
                     placement.x, placement.y, placement.p)
 
-            # get the last sequence number from the user 1 data address.
-            # TODO In the future, this should be replaced by a sequence per
-            # TODO region and stored in the channel buffer state instead.
-            seq_no_internal_fsm = \
-                self._transceiver.get_cpu_information_from_core(
-                    placement.x, placement.y, placement.p).user[1]
+            # get the last sequence number
+            last_sequence_number = \
+                self._received_data.get_end_buffering_sequence_number(
+                    placement.x, placement.y, placement.p)
 
-            if seq_no_internal_fsm == seq_no_last_ack_packet:
+            if last_sequence_number == seq_no_last_ack_packet:
 
                 # if the last ACK packet has not been processed on the chip,
                 # process it now

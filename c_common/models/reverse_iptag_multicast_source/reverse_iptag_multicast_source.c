@@ -7,6 +7,11 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
+#ifndef APPLICATION_NAME_HASH
+#define APPLICATION_NAME_HASH 0
+#error APPLICATION_NAME_HASH must be defined
+#endif
+
 //! The EIEIO message types
 
 //! \brief human readable versions of the different priorities and usages.
@@ -33,8 +38,8 @@ typedef enum read_in_parameters{
 typedef enum memory_regions{
     SYSTEM,
     CONFIGURATION,
+    RECORDING_REGION,
     BUFFER_REGION,
-    BUFFERING_OUT_SPIKE_RECORDING_REGION,
     PROVENANCE_REGION,
 } memory_regions;
 
@@ -912,19 +917,12 @@ bool setup_buffer_region(address_t region_address) {
 //! \return True if recording initialisation is successful, false otherwise
 static bool initialise_recording(){
     address_t address = data_specification_get_data_address();
-    address_t system_region =
-        data_specification_get_region(SYSTEM, address);
-    address_t regions_to_record[] = {
-        data_specification_get_region(
-            BUFFERING_OUT_SPIKE_RECORDING_REGION, address)
-    };
-    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
-    uint32_t *recording_flags_from_system_conf =
-        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
+    address_t recording_region = data_specification_get_region(
+            RECORDING_REGION, address);
 
-    bool success = recording_initialize(
-        n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, &recording_flags);
+    log_info("Recording starts at 0x%08x", recording_region);
+
+    bool success = recording_initialize(recording_region, &recording_flags);
     log_info("Recording flags = 0x%08x", recording_flags);
     return success;
 }

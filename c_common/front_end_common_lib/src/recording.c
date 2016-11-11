@@ -9,9 +9,19 @@
 #include <buffered_eieio_defs.h>
 
 #include <sark.h>
+
 // Standard includes
 #include <string.h>
 #include <debug.h>
+
+enum recording_data_e {
+    N_REGIONS,
+    TAG,
+    BUFFER_SIZE_BEFORE_REQUEST,
+    TIME_BETWEEN_TRIGGERS,
+    LAST_SEQUENCE_NUMBER,
+    REGION_POINTERS_START
+};
 
 //---------------------------------------
 // Structures
@@ -33,11 +43,15 @@ typedef struct recording_channel_t {
 //! array containing all possible channels.
 static recording_channel_t *g_recording_channels = NULL;
 static address_t *region_addresses = NULL;
+static uint32_t *region_sizes = NULL;
 static uint32_t n_recording_regions = 0;
-static uint32_t buffering_out_fsm = 0;
+static uint32_t sequence_number = 0;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
 static uint32_t time_between_triggers = 0;
+
+// A pointer to the last sequence number to write once recording is complete
+static uint32_t *last_sequence_number;
 
 //! An SDP Message and parts
 static sdp_msg_t msg;
@@ -80,11 +94,11 @@ static inline void _recording_host_data_read(eieio_msg_t msg, uint length) {
 
     uint32_t i;
 
-    if (sequence != buffering_out_fsm) {
+    if (sequence != sequence_number) {
         log_debug("dropping packet with sequence no: %d", sequence);
         return;
     }
-    buffering_out_fsm = (buffering_out_fsm + 1) & MAX_SEQUENCE_NO;
+    sequence_number = (sequence_number + 1) & MAX_SEQUENCE_NO;
 
     for (i = 0; i < n_requests; i++) {
         uint8_t channel = ptr_data[i].channel;
@@ -328,7 +342,7 @@ static inline void _recording_send_buffering_out_trigger_message(
         req_hdr->chip_id = spin1_get_chip_id();
         data_ptr[0].processor_and_request =
             (spin1_get_core_id() << 3) | n_requests;
-        data_ptr[0].sequence = buffering_out_fsm;
+        data_ptr[0].sequence = sequence_number;
         msg_size += (n_requests * sizeof(read_request_packet_data));
         msg.length = msg_size;
 
@@ -374,25 +388,25 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     }
 }
 
-//! brief this writes data to the state region for helping the python
+//! brief this writes the state data to the regions
 void _recording_buffer_state_data_write(){
-    for (uint32_t recording_region_id =0;
-             recording_region_id < n_recording_regions; recording_region_id++){
+    for (uint32_t recording_region_id = 0;
+             recording_region_id < n_recording_regions;
+             recording_region_id++) {
         address_t recording_region_address =
             region_addresses[recording_region_id];
-        spin1_memcpy(recording_region_address,
-                     &g_recording_channels[recording_region_id],
-                     sizeof(recording_channel_t));
-        log_debug("Storing channel state info starting at 0x%08x",
-                  recording_region_address);
+        spin1_memcpy(
+             recording_region_address,
+             &g_recording_channels[recording_region_id],
+             sizeof(recording_channel_t));
+        log_debug(
+             "Storing channel state info starting at 0x%08x",
+             recording_region_address);
     }
 
-    // Get pointer to 1st virtual processor info struct in SRAM
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-
     // store info related to the state of the transmission to avoid possible
-    // duplication of info on the host side, inside user1 for the time being
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = buffering_out_fsm;
+    // duplication of info on the host side
+    *last_sequence_number = sequence_number;
 
 }
 
@@ -432,43 +446,70 @@ void recording_finalise() {
 }
 
 bool recording_initialize(
-        uint8_t n_regions, address_t *region_addresses_external,
-        uint32_t *recording_data, uint32_t *recording_flags) {
-    uint32_t i;
+        address_t recording_data_address, uint32_t *recording_flags) {
 
-    region_addresses = (address_t*) sark_alloc(
-        1, n_regions * sizeof(address_t));
-    for (uint32_t counter = 0; counter < n_regions; counter++){
-        region_addresses[counter] = region_addresses_external[counter];
-    }
-
-    // if already initialised, don't re-initialise
-    if (!n_recording_regions && n_regions <= 0) {
-        return false;
-    }
-
-    if (recording_flags) {
-        *recording_flags = 0;
-    }
-
-    n_recording_regions = n_regions;
-    uint8_t buffering_output_tag = recording_data[0];
-    buffer_size_before_trigger = recording_data[1];
-    time_between_triggers = recording_data[2];
+    // Read in the parameters
+    n_recording_regions = recording_data_address[N_REGIONS];
+    uint8_t buffering_output_tag = recording_data_address[TAG];
+    buffer_size_before_trigger =
+        recording_data_address[BUFFER_SIZE_BEFORE_REQUEST];
+    time_between_triggers = recording_data_address[TIME_BETWEEN_TRIGGERS];
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
         time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
     }
+    last_sequence_number = &(recording_data_address[LAST_SEQUENCE_NUMBER]);
+
     log_info(
         "Recording %d regions, using output tag %d, size before trigger %d, "
         "time between triggers %d",
         n_recording_regions, buffering_output_tag, buffer_size_before_trigger,
         time_between_triggers);
 
-    if (g_recording_channels != NULL){
-        log_debug("Freeing allocated memory");
-        sark_free((void*) g_recording_channels);
+    // Set up the space for holding recording pointers and sizes
+    region_addresses = (address_t*) spin1_malloc(
+        n_recording_regions * sizeof(address_t));
+    if (region_addresses == NULL) {
+        log_error("Not enough space to allocate recording addresses");
+        return false;
+    }
+    region_sizes = (uint32_t *) spin1_malloc(
+        n_recording_regions * sizeof(uint32_t));
+    if (region_sizes == NULL) {
+        log_error("Not enough space to allocate region sizes");
+        return false;
     }
 
+    // Set up the recording flags
+    if (recording_flags != NULL) {
+        *recording_flags = 0;
+    }
+
+    // Reserve the actual recording regions.
+    // An extra sizeof(recording_channel_t) bytes are reserved per channel
+    // to store the data after recording
+    for (uint32_t counter = 0; counter < n_recording_regions; counter++) {
+        uint32_t size = recording_data_address[
+            REGION_POINTERS_START + n_recording_regions + counter];
+        if (size > 0) {
+            region_sizes[counter] = size;
+            region_addresses[counter] = sark_xalloc(
+                sv->sdram_heap, size + sizeof(recording_channel_t), 0,
+                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+            if (region_addresses[counter] == NULL) {
+                log_error(
+                    "Could not allocate recording region %u of %u bytes",
+                    counter, size);
+                return false;
+            }
+            recording_data_address[REGION_POINTERS_START + counter] =
+                (uint32_t) region_addresses[counter];
+            *recording_flags = (*recording_flags | (1 << counter));
+        } else {
+            recording_data_address[REGION_POINTERS_START + counter] = 0;
+            region_addresses[counter] = 0;
+            region_sizes[counter] = 0;
+        }
+    }
     g_recording_channels = (recording_channel_t*) sark_alloc(
         1, n_recording_regions * sizeof(recording_channel_t));
     if (!g_recording_channels) {
@@ -477,8 +518,27 @@ bool recording_initialize(
     }
     log_debug("Allocated recording channels to 0x%08x", g_recording_channels);
 
-    for (i = 0; i < n_regions; i++) {
-        uint32_t region_size = recording_data[i + 3];
+    // Set up the channels and write the initial state data
+    recording_reset();
+
+    // Set up the buffer message
+    req_hdr = (read_request_packet_header *) &(msg.cmd_rc);
+    data_ptr = (read_request_packet_data *) &(req_hdr[1]);
+    msg.flags = 0x7;
+    msg.tag = buffering_output_tag;
+    msg.dest_port = 0xFF;
+    msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
+    msg.dest_addr = 0;
+    msg.srce_addr = spin1_get_chip_id();
+
+    return true;
+}
+
+void recording_reset() {
+
+    // Go through the regions and set up the data
+    for (uint32_t i = 0; i < n_recording_regions; i++) {
+        uint32_t region_size = region_sizes[i];
         log_debug("region size %d", region_size);
         if (region_size > 0) {
             address_t region_address = region_addresses[i];
@@ -503,8 +563,6 @@ bool recording_initialize(
             g_recording_channels[i].region_id = i;
             g_recording_channels[i].missing_info = 0;
 
-            *recording_flags = (*recording_flags | (1 << i));
-
             log_info(
                 "Recording channel %u configured to use %u byte memory block"
                 " starting at 0x%08x", i, region_size,
@@ -528,20 +586,7 @@ bool recording_initialize(
             log_info("Recording channel %u left uninitialised", i);
         }
     }
-
-    // Set up the buffer message
-    req_hdr = (read_request_packet_header *) &(msg.cmd_rc);
-    data_ptr = (read_request_packet_data *) &(req_hdr[1]);
-    msg.flags = 0x7;
-    msg.tag = buffering_output_tag;
-    msg.dest_port = 0xFF;
-    msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
-    msg.dest_addr = 0;
-    msg.srce_addr = spin1_get_chip_id();
-
-    // write to the state region for letting python to find addresses
     _recording_buffer_state_data_write();
-    return true;
 }
 
 void recording_do_timestep_update(uint32_t time) {
