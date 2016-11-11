@@ -227,7 +227,10 @@ class SpinnakerMainInterface(object):
         "_report_simulation_top_directory",
 
         #
-        "_app_data_top_simulation_folder"
+        "_app_data_top_simulation_folder",
+
+        # flag for when to add the port allocator
+        "_has_allocated_port"
     ]
 
     def __init__(
@@ -317,6 +320,7 @@ class SpinnakerMainInterface(object):
         # holder for timing related values
         self._has_ran = False
         self._has_reset_last = False
+        self._has_allocated_port = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
@@ -897,7 +901,11 @@ class SpinnakerMainInterface(object):
             algorithms.append("MallocBasedChipIDAllocator")
 
             # allows dynamic port allocation
-            algorithms.append("FrontEndCommonPortConnectionAllocator")
+            # add the application and machine graphs as needed
+            if (len(self._application_graph.vertices) > 0 or
+                    len(self._machine_graph.vertices) > 0):
+                algorithms.append("FrontEndCommonPortConnectionAllocator")
+                self._has_allocated_port = True
 
             outputs.append("MemoryExtendedMachine")
             outputs.append("IPAddress")
@@ -1038,7 +1046,7 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
-        if self._hostname is not None:
+        if not self._has_allocated_port:
             # allows dynamic port allocation
             algorithms.append("FrontEndCommonPortConnectionAllocator")
 
