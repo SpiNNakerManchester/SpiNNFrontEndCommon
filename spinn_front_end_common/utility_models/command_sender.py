@@ -71,8 +71,7 @@ class CommandSender(
         for partition in partitions:
             if partition in self._commands_by_partition:
                 raise exceptions.ConfigurationException(
-                    "The partition {} has already got commands. New "
-                    "commands are allocated new partitions. Please fix")
+                    "The partition {} has already got commands")
 
         # container for keys for partition mapping
         command_keys = list()
@@ -97,6 +96,7 @@ class CommandSender(
             self._times_with_commands.add(command.time)
 
             if command.key not in command_keys:
+
                 # If this command has not been seen before, add it
                 command_keys.append(command.key)
 
