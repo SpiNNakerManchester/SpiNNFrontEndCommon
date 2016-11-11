@@ -15,6 +15,7 @@ class FrontEndCommonBufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx, write_reload_files, app_data_folder):
+
         progress_bar = ProgressBar(
             len(list(placements.placements)), "Initialising buffers")
 
@@ -28,8 +29,7 @@ class FrontEndCommonBufferManagerCreator(object):
                     buffer_manager.add_sender_vertex(placement.vertex)
 
             if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
-                if placement.vertex.buffering_output():
-                    buffer_manager.add_receiving_vertex(placement.vertex)
+                buffer_manager.add_receiving_vertex(placement.vertex)
 
             progress_bar.update()
         progress_bar.end()
