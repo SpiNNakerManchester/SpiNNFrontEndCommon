@@ -1231,7 +1231,7 @@ class SpinnakerMainInterface(object):
                 algorithms = list()
                 outputs = list()
 
-                # check if running forever 9at which point, force cores to
+                # check if running forever at which point, force cores to
                 # gather provenance before extracting
                 if self._last_run_outputs["RunTime"] is None:
                     algorithms.append("FrontEndCommonChipProvenanceUpdater")
@@ -1748,6 +1748,7 @@ class SpinnakerMainInterface(object):
         """
 
         if extract_provenance_data:
+            
             # turn off reinjector before extracting provenance data, otherwise
             # its highly possible when things are going wrong, that the data
             # extracted from the reinjector is changing.
