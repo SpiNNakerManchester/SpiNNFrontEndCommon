@@ -1,13 +1,8 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.model.constraints.abstract_provides_outgoing_partition_constraints\
-    import AbstractProvidesOutgoingPartitionConstraints
 from pacman.model.constraints.key_allocator_constraints.\
     key_allocator_fixed_key_and_mask_constraint \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.constraints.key_allocator_constraints.\
-    key_allocator_fixed_mask_constraint \
-    import KeyAllocatorFixedMaskConstraint
 from pacman.model.graphs.application.impl.application_vertex import \
     ApplicationVertex
 from pacman.model.resources.resource_container import ResourceContainer
@@ -30,32 +25,33 @@ from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
 
 
-_COMMAND_WITH_PAYLOAD_SIZE = 12
-
-_COMMAND_WITHOUT_PAYLOAD_SIZE = 8
-
-
 class CommandSender(
-        AbstractProvidesOutgoingPartitionConstraints,
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
 
+    # 4 for key, 4 for payload 2 for repeats, 2 for delays
+    _COMMAND_WITH_PAYLOAD_SIZE = 12
+
+    # 4 for key, 2 for repeats, 2 for delays
+    _COMMAND_WITHOUT_PAYLOAD_SIZE = 8
+
+    # all commands will use this mask
+    _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
+
     def __init__(self, label, constraints):
 
-        AbstractProvidesOutgoingPartitionConstraints.__init__(self)
         ApplicationVertex.__init__(self, label, constraints, 1)
 
-        self._commands_by_edge = dict()
+        self._commands_by_partition = dict()
         self._constraints_by_partition = dict()
         self._commands_with_payloads = dict()
         self._commands_without_payloads = dict()
         self._times_with_commands = set()
-        self._command_edge = dict()
 
-    def add_commands(self, commands, edge, partition):
+    def add_commands(self, commands, partitions):
         """ Add commands to be sent down a given edge
 
         :param commands: The commands to send
@@ -72,68 +68,42 @@ class CommandSender(
         """
 
         # Check if the edge already exists
-        if edge in self._commands_by_edge:
-            raise exceptions.ConfigurationException(
-                "The edge has already got commands")
+        for partition in partitions:
+            if partition in self._commands_by_partition:
+                raise exceptions.ConfigurationException(
+                    "The partition {} has already got commands")
+
+        # container for keys for partition mapping
+        command_keys = list()
 
         # Go through the commands
-        command_keys = dict()
-        command_mask = 0
         for command in commands:
 
-            # Add the command to the appropriate dictionary
-            dictionary = None
+            # figure which command container to store this command in
             if command.is_payload:
-                dictionary = self._commands_with_payloads
+                command_container = self._commands_with_payloads
             else:
-                dictionary = self._commands_without_payloads
-            if command.time not in dictionary:
-                dictionary[command.time] = list()
-            dictionary[command.time].append(command)
+                command_container = self._commands_without_payloads
 
-            # Add that there is a command at this time
+            # check if the command time is already allocated
+            if command.time not in command_container:
+                command_container[command.time] = list()
+
+            # Add the command to the appropriate dictionary
+            command_container[command.time].append(command)
+
+            # Add that there is a command at this time (set removes duplicates)
             self._times_with_commands.add(command.time)
-
-            # Add the edge associated with the command
-            self._command_edge[command] = edge
 
             if command.key not in command_keys:
 
                 # If this command has not been seen before, add it
-                command_keys[command.key] = command.mask
-            else:
+                command_keys.append(command.key)
 
-                # Otherwise merge the current key mask with the current mask
-                command_keys[command.key] = (command_keys[command.key] |
-                                             command.mask)
-
-            # Keep track of the masks on all the commands
-            command_mask |= command.mask
-
-        if command_mask != 0xFFFFFFFF:
-
-            # If the final command mask contains don't cares, use this as a
-            # fixed mask
-            self._constraints_by_partition[partition] = list(
-                [KeyAllocatorFixedMaskConstraint(command_mask)])
-        else:
-
-            # If there is no mask consensus, check that all the masks are
-            # actually 0xFFFFFFFF, as otherwise it will not be possible
-            # to assign keys to the edge
-            for (key, mask) in command_keys:
-                if mask != 0xFFFFFFFF:
-                    raise exceptions.ConfigurationException(
-                        "Command masks are too different to make a mask"
-                        " consistent with all the keys.  This can be resolved"
-                        " by either specifying a consistent mask, or by using"
-                        " the mask 0xFFFFFFFF and providing exact keys")
-
-            # If the keys are all fixed keys, keep them
-            self._constraints_by_partition[partition] = list([
-                KeyAllocatorFixedKeyAndMaskConstraint(
-                    [BaseKeyAndMask(key, mask)
-                     for (key, mask) in command_keys])])
+        # create mapping between keys and partitions via partition constraint
+        for key, partition in zip(command_keys, partitions):
+            partition.add_constraint(KeyAllocatorFixedKeyAndMaskConstraint(
+                [BaseKeyAndMask(key, self._DEFAULT_COMMAND_MASK)]))
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
@@ -215,55 +185,19 @@ class CommandSender(
 
             spec.write_value(len(with_payload))
             for command in with_payload:
-                spec.write_value(
-                    self._get_key(command, graph_mapper, routing_infos))
-                payload = command.get_payload(
-                    routing_infos, machine_graph, graph_mapper)
-                spec.write_value(payload)
+                spec.write_value(command.key)
+                spec.write_value(command.payload)
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
             spec.write_value(len(without_payload))
             for command in without_payload:
-                spec.write_value(
-                    self._get_key(command, graph_mapper, routing_infos))
+                spec.write_value(command.key)
                 spec.write_value(command.repeat << 16 |
                                  command.delay_between_repeats)
 
         # End-of-Spec:
         spec.end_specification()
-
-    def _get_key(self, command, graph_mapper, routing_info):
-        """ Return a key for a command
-
-        :param command:
-        :return:
-        """
-
-        if command.mask == 0xFFFFFFFF:
-            return command.key
-
-        # Find the routing info for the edge.  Note that this assumes that
-        # all the edges have the same keys assigned
-        edge_for_command = self._command_edge[command]
-        machine_edge_for_command = iter(
-            graph_mapper.get_machine_edges(edge_for_command)).next()
-        key = routing_info.get_first_key_for_edge(machine_edge_for_command)
-
-        # Build the command by merging in the assigned key with the command
-        return key | command.key
-
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
-        """
-
-        :param partition:
-        :return:
-        """
-        if partition in self._constraints_by_partition:
-            return self._constraints_by_partition[partition]
-        return list()
 
     @staticmethod
     def _reserve_memory_regions(spec, command_size, vertex):
@@ -324,10 +258,10 @@ class CommandSender(
             # Add the size of each command
             if time in self._commands_with_payloads:
                 n_bytes += (len(self._commands_with_payloads[time]) *
-                            _COMMAND_WITH_PAYLOAD_SIZE)
+                            self._COMMAND_WITH_PAYLOAD_SIZE)
             if time in self._commands_without_payloads:
                 n_bytes += (len(self._commands_without_payloads[time]) *
-                            _COMMAND_WITHOUT_PAYLOAD_SIZE)
+                            self._COMMAND_WITHOUT_PAYLOAD_SIZE)
 
         return n_bytes
 
