@@ -22,24 +22,14 @@ typedef enum region_identifiers{
     SYSTEM_REGION = 0, COMMANDS = 1, PROVENANCE_REGION = 2
 } region_identifiers;
 
-//! address data
-typedef enum address_data{
-    SCHEDULE_SIZE = 0, START_OF_SCHEDULE = 1
-} address_data;
-
-//! time ID
-typedef enum time_id{
-    FIRST_TIME = 0
-} time_id;
-
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time++;
 
-    if ((next_pos * 4 >= schedule_size) || ((infinite_run != TRUE) &&
-        (time >= simulation_ticks))) {
+    if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
+            (time >= simulation_ticks)) {
         simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
@@ -49,51 +39,26 @@ void timer_callback(uint unused0, uint unused1) {
     }
 
     if ((next_pos < schedule_size) && schedule[next_pos] == time) {
-        next_pos = next_pos + 1;
-        uint32_t command_count = schedule[next_pos];
-        log_info("Sending %u packets at time %u", command_count, time);
-
-        for (uint32_t i = 0; i < command_count; i++) {
-            log_info("next pos before key = %u", next_pos);
-            next_pos = next_pos + 1;
-            uint32_t key = schedule[next_pos];
-            log_info("next pos before has payload = %u", next_pos);
-            next_pos = next_pos + 1;
-            uint32_t has_payload = schedule[next_pos];
-            uint32_t payload = 0;
-
-            // read payload if needed
-            if (has_payload == 0){
-                log_info("next pos before payload= %u", next_pos);
-                next_pos = next_pos + 1;
-                payload = schedule[next_pos];
-            }
-            else{
-                use(payload);
-            }
+        uint32_t with_payload_count = schedule[++next_pos];
+        log_debug(
+            "Sending %u packets with payloads at time %u",
+            with_payload_count, time);
+        for (uint32_t i = 0; i < with_payload_count; i++) {
+            uint32_t key = schedule[++next_pos];
+            uint32_t payload = schedule[++next_pos];
 
             //check for delays and repeats
-            log_info("next pos before delay and repeat = %u", next_pos);
-            next_pos = next_pos + 1;
-            uint32_t delay_and_repeat_data = schedule[next_pos];
+            uint32_t delay_and_repeat_data = schedule[++next_pos];
             if (delay_and_repeat_data != 0) {
                 uint32_t repeat = delay_and_repeat_data >> 16;
                 uint32_t delay = delay_and_repeat_data & 0x0000ffff;
+                log_debug(
+                    "Sending %08x, %08x at time %u with %u repeats and "
+                    "%u delay ", key, payload, time, repeat, delay);
 
                 for (uint32_t repeat_count = 0; repeat_count < repeat;
                         repeat_count++) {
-                    if (has_payload == 0){
-                        log_info(
-                            "Sending %08x, %08x at time %u with %u repeats and "
-                            "%u delay ", key, payload, time, repeat, delay);
-                        spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
-                    }
-                    else{
-                        log_info(
-                            "Sending %08x at time %u with %u repeats and "
-                            "%u delay ", key, time, repeat, delay);
-                        spin1_send_mc_packet(key, 0, NO_PAYLOAD);
-                    }
+                    spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
 
                     // if the delay is 0, don't call delay
                     if (delay > 0) {
@@ -101,34 +66,55 @@ void timer_callback(uint unused0, uint unused1) {
                     }
                 }
             } else {
-                if (has_payload == 0){
-                    log_info("Sending %08x, %08x at time %u",
-                             key, payload, time);
-                    //if no repeats, then just send the message
-                    spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
-                }
-                else{
-                    log_info("Sending %08x at time %u", key, time);
-                    spin1_send_mc_packet(key, 0, NO_PAYLOAD);
-                }
+                log_debug("Sending %08x, %08x at time %u", key, payload, time);
+
+                //if no repeats, then just send the message
+                spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
             }
         }
 
-        next_pos = next_pos + 1;
-        log_info("next pos before scheudle check = %u", next_pos);
+        uint32_t without_payload_count = schedule[++next_pos];
+        log_debug(
+            "Sending %u packets without payloads at time %u",
+            without_payload_count, time);
+        for (uint32_t i = 0; i < without_payload_count; i++) {
+            uint32_t key = schedule[++next_pos];
+            log_debug("Sending %08x", key);
 
-        if ((next_pos * 4) < schedule_size) {
-            log_info("Next packets will be sent at %u", schedule[next_pos]);
-            log_info("next pos = %u, schedule_size = %u", next_pos, schedule_size);
+            //check for delays and repeats
+            uint32_t delay_and_repeat_data = schedule[++next_pos];
+            if (delay_and_repeat_data != 0) {
+                uint32_t repeat = delay_and_repeat_data >> 16;
+                uint32_t delay = delay_and_repeat_data & 0x0000ffff;
+                for (uint32_t repeat_count = 0; repeat_count < repeat;
+                        repeat_count++) {
+                    spin1_send_mc_packet(key, 0, NO_PAYLOAD);
+
+                    // if the delay is 0, don't call delay
+                    if (delay > 0) {
+                        spin1_delay_us(delay);
+                    }
+                }
+            } else {
+                log_debug("Sending %08x at time %u", key, time);
+
+                //if no repeats, then just send the message
+                spin1_send_mc_packet(key, 0, NO_PAYLOAD);
+            }
+
+        }
+        ++next_pos;
+
+        if (next_pos < schedule_size) {
+            log_debug("Next packets will be sent at %u", schedule[next_pos]);
         } else {
-            log_info("End of Schedule");
+            log_debug("End of Schedule");
         }
     }
 }
 
 bool read_parameters(address_t address) {
-    schedule_size = address[SCHEDULE_SIZE];
-    log_info("schedule size = %u", schedule_size);
+    schedule_size = address[0] >> 2;
 
     // Allocate the space for the schedule
     schedule = (uint32_t*) spin1_malloc(schedule_size * sizeof(uint32_t));
@@ -136,13 +122,10 @@ bool read_parameters(address_t address) {
         log_error("Could not allocate the schedule");
         return false;
     }
-    memcpy(schedule, &address[START_OF_SCHEDULE],
-           schedule_size * sizeof(uint32_t));
-
-    log_info("schedule stored in dtcm at %u", *schedule);
+    memcpy(schedule, &address[1], schedule_size * sizeof(uint32_t));
 
     next_pos = 0;
-    log_info("Schedule starts at time %u", schedule[FIRST_TIME]);
+    log_info("Schedule starts at time %d", schedule[0]);
 
     return (true);
 }
