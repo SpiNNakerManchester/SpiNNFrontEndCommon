@@ -198,26 +198,26 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             str(router_diagnostic.user_3),
             report=(router_diagnostic.user_3 > 0),
             message=(
-                "The router on {}, {} has dropped {} multicast packets that had"
-                " been transmitted by local cores. This occurs where the "
+                "The router on {}, {} has dropped {} multicast packets that"
+                " were transmitted by local cores. This occurs where the "
                 "router has no entry associated with the multi-cast key. "
                 "Try investigating the keys allocated to the vertices and "
-                "whats placed in the router table entries.".format(
+                "the router table entries for this chip.".format(
                     x, y, router_diagnostic.user_3))))
         items.append(ProvenanceDataItem(
             self._add_name(names, "default_routed_external_multicast_packets"),
             str(router_diagnostic.user_2),
-            report=(router_diagnostic.user_2 > 0
-                    and (((router_table is not None)
-                          and router_table.number_of_defaultable_entries == 0)
-                         or (router_table is None))),
+            report=(router_diagnostic.user_2 > 0 and
+                    ((router_table is not None and
+                      router_table.number_of_defaultable_entries == 0) or
+                     router_table is None)),
             message=(
                 "The router on {}, {} has default routed {} multicast packets,"
                 " but the router table did not expect any default routed "
-                "packets. This occurs where the "
-                "router has no entry associated with the multi-cast key. "
+                "packets. This occurs where the router has no entry"
+                " associated with the multi-cast key. "
                 "Try investigating the keys allocated to the vertices and "
-                "whats placed in the router table entries.".format(
+                "the router table entries for this chip.".format(
                     x, y, router_diagnostic.user_2))))
 
         items.append(ProvenanceDataItem(
@@ -268,5 +268,29 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Reinjected"),
                 reinjector_status.n_reinjected_packets))
-
+            items.append(ProvenanceDataItem(
+                self._add_name(names, "Dumped_from_a_Link"),
+                str(reinjector_status.n_link_dumps),
+                report=reinjector_status.n_link_dumps > 0,
+                message=(
+                    "The reinjector on {}, {} has detected that {} packets "
+                    "were dumped from a outgoing link of this chip's router."
+                    " This often occurs when external devices are used in the "
+                    "script but not connected to the communication fabric "
+                    "correctly. These packets may have been reinjected "
+                    "multiple times and so this number may be a overestimate."
+                    .format(x, y, reinjector_status.n_link_dumps))))
+            items.append(ProvenanceDataItem(
+                self._add_name(names, "Dumped_from_a_processor"),
+                str(reinjector_status.n_processor_dumps),
+                report=reinjector_status.n_processor_dumps > 0,
+                message=(
+                    "The reinjector on {}, {} has detected that {} packets "
+                    "were dumped from a core failing to take the packet."
+                    " This often occurs when the executable has crashed or"
+                    " has not been given a multicast packet callback. It can"
+                    " also result from the core taking too long to process"
+                    " each packet. These packets were reinjected and so this"
+                    " number is likely a overestimate.".format(
+                        x, y, reinjector_status.n_processor_dumps))))
         return items
