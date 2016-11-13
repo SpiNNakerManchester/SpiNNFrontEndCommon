@@ -62,20 +62,40 @@ bool recording_record(
 void recording_finalise();
 
 //! \brief initialises the recording of data
-//! \param[in] n_regions the number of regions to be recorded, one per type of
-//!            data
-//! \param[in] region_ids the ids of the regions to be recorded to
-//! \param[in] recording_data The start of the data about the recording.
-//!            Data is {uint32_t tag; uint32_t buffer_size_before_request;
-//!                     uint32_t size_of_region[n_regions]}
-//! \param[in] state_region The region in which to store the end of recording
-//!            state information
+//! \param[in] recording_data_address The start of the data about the recording
+//!            Data is {
+//!                // number of potential recording regions
+//!                uint32_t n_regions;
+//!
+//!                // tag for live buffer control messages
+//!                uint32_t buffering_output_tag;
+//!
+//!                // size of buffer before a read request is sent
+//!                uint32_t buffer_size_before_request;
+//!
+//!                // minimum time between sending read requests
+//!                uint32_t time_between_triggers;
+//!
+//!                // space that will hold the last sequence number once
+//!                // recording is complete
+//!                uint32_t last_sequence_number
+//!
+//!                // pointer to each region to be filled in (can be read
+//!                // after recording is complete)
+//!                uint32_t* pointer_to_address_of_region[n_regions]
+//!
+//!                // size of each region to be recorded
+//!                uint32_t size_of_region[n_regions];
+//!
+//!            }
 //! \param[out] recording_flags Output of flags which can be used to check if
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
-        uint8_t n_regions, uint8_t *region_ids, uint32_t *recording_data,
-        uint8_t state_region, uint32_t *recording_flags);
+        address_t recording_data_address, uint32_t *recording_flags);
+
+//! \brief resets recording to the state just after initialisation
+void recording_reset();
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0

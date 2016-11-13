@@ -582,7 +582,7 @@ class SpinnakerMainInterface(object):
             sdram_per_vertex = int(sdram / len(vertices_on_chip))
             for vertex in vertices_on_chip:
                 n_time_steps = vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex)
+                    sdram_per_vertex, self._machine_time_step)
                 if min_time_steps is None or n_time_steps < min_time_steps:
                     min_time_steps = n_time_steps
         if min_time_steps is None:
@@ -1043,6 +1043,7 @@ class SpinnakerMainInterface(object):
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
+        inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
 
@@ -1747,6 +1748,7 @@ class SpinnakerMainInterface(object):
         """
 
         if extract_provenance_data:
+            
             # turn off reinjector before extracting provenance data, otherwise
             # its highly possible when things are going wrong, that the data
             # extracted from the reinjector is changing.
