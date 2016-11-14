@@ -1,5 +1,6 @@
 from spinn_machine.utilities.progress_bar import ProgressBar
 
+from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from spinn_front_end_common.utilities import exceptions
 
 
@@ -50,10 +51,14 @@ class FrontEndCommonIOBufExtractor(object):
         warn_entries = list()
         progress_bar = ProgressBar(len(placements), "Extracting IOBUF")
         for placement in placements:
-            iobuf = transceiver.get_iobuf_from_core(
-                placement.x, placement.y, placement.p)
-            io_buffers.append(iobuf)
-            self._check_iobuf_for_error(iobuf, error_entries, warn_entries)
+            
+            # only read from vertices which reside on real chips.
+            # virtual chips have no iobuf
+            if not isinstance(placement.vertex, AbstractVirtualVertex):
+                iobuf = transceiver.get_iobuf_from_core(
+                    placement.x, placement.y, placement.p)
+                io_buffers.append(iobuf)
+                self._check_iobuf_for_error(iobuf, error_entries, warn_entries)
             progress_bar.update()
         progress_bar.end()
         return io_buffers, error_entries, warn_entries
