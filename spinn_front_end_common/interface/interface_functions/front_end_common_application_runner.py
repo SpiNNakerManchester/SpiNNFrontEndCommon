@@ -46,8 +46,13 @@ class FrontEndCommonApplicationRunner(object):
             helpful_functions.get_executables_by_run_type(
                 executable_targets, placements, graph_mapper,
                 AbstractStartsSynchronized)
+
+        # wait for all cores that are in a barrier to reach the barrier
         helpful_functions.wait_for_cores_to_be_ready(
             synchronized_binaries, app_id, txrx, sync_state)
+
+        # wait for the other cores (which should not be at a barrier)
+        # to be in running state
         helpful_functions.wait_for_cores_to_be_ready(
             other_binaries, app_id, txrx, CPUState.RUNNING)
 
