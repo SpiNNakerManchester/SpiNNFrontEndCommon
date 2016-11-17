@@ -77,8 +77,7 @@ class LivePacketGatherMachineVertex(
         self._add_constraints(board_address)
 
         # inheritance
-        MachineVertex.__init__(
-            self, self._resources_required, label, constraints=constraints)
+        MachineVertex.__init__(self, label, constraints=constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
@@ -95,6 +94,11 @@ class LivePacketGatherMachineVertex(
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
+
+    @property
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return self._resources_required
 
     def _add_constraints(self, board_address):
         # Try to place this near the Ethernet

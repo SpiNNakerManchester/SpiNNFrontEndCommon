@@ -11,7 +11,8 @@ class FrontEndCommonBufferExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, machine_graph, placements, buffer_manager, ran_token):
+            self, machine_graph, placements, buffer_manager, ran_token,
+            transceiver):
 
         if not ran_token:
             raise exceptions.ConfigurationException(
@@ -21,7 +22,7 @@ class FrontEndCommonBufferExtractor(object):
         n_regions_to_read = 0
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
-                n_regions_to_read += len(vertex.get_buffered_regions())
+                n_regions_to_read += len(vertex.get_recorded_region_ids())
 
         progress_bar = ProgressBar(
             n_regions_to_read, "Extracting buffers from the last run")
@@ -30,9 +31,8 @@ class FrontEndCommonBufferExtractor(object):
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 placement = placements.get_placement_of_vertex(vertex)
-                state_region = vertex.get_buffered_state_region()
-                for region in vertex.get_buffered_regions():
+                for recording_region_id in vertex.get_recorded_region_ids():
                     buffer_manager.get_data_for_vertex(
-                        placement, region, state_region)
+                        placement, recording_region_id)
                     progress_bar.update()
         progress_bar.end()

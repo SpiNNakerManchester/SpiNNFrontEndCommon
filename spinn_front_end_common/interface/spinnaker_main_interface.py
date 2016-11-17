@@ -582,7 +582,7 @@ class SpinnakerMainInterface(object):
             sdram_per_vertex = int(sdram / len(vertices_on_chip))
             for vertex in vertices_on_chip:
                 n_time_steps = vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex)
+                    sdram_per_vertex, self._machine_time_step)
                 if min_time_steps is None or n_time_steps < min_time_steps:
                     min_time_steps = n_time_steps
         if min_time_steps is None:
@@ -1053,6 +1053,7 @@ class SpinnakerMainInterface(object):
         inputs = dict(self._mapping_outputs)
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
 
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
@@ -1237,6 +1238,13 @@ class SpinnakerMainInterface(object):
                 inputs = dict(self._last_run_outputs)
                 algorithms = list()
                 outputs = list()
+
+                # check if running forever at which point, force cores to
+                # gather provenance before extracting
+                if self._last_run_outputs["RunTime"] is None:
+                    algorithms.append("FrontEndCommonChipProvenanceUpdater")
+                    inputs["FailedCoresSubsets"] = \
+                        inputs["ExecutableTargets"].all_core_subsets
 
                 algorithms.append("FrontEndCommonGraphProvenanceGatherer")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
@@ -1684,7 +1692,8 @@ class SpinnakerMainInterface(object):
 
             if self._txrx is not None:
 
-                self._txrx.enable_reinjection(multicast=False)
+                if self._config.getboolean("Machine", "enable_reinjection"):
+                    self._txrx.enable_reinjection(multicast=False)
 
                 # if stopping on machine, clear iptags and
                 if clear_tags:
@@ -1747,6 +1756,15 @@ class SpinnakerMainInterface(object):
         """
 
         if extract_provenance_data:
+            
+            # turn off reinjector before extracting provenance data, otherwise
+            # its highly possible when things are going wrong, that the data
+            # extracted from the reinjector is changing.
+            if self._txrx is not None and self._config.getboolean(
+                    "Machine", "enable_reinjection"):
+                self._txrx.enable_reinjection(multicast=False)
+
+            # extract provenance data
             self._extract_provenance()
         if extract_iobuf:
             self._extract_iobuf()
