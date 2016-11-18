@@ -208,7 +208,10 @@ class SpinnakerMainInterface(object):
         "_use_virtual_board",
 
         #
-        "_raise_keyboard_interrupt"
+        "_raise_keyboard_interrupt",
+
+        # iobuf cores
+        "_cores_to_read_iobuf"
     ]
 
     def __init__(
@@ -687,10 +690,12 @@ class SpinnakerMainInterface(object):
         if self._hostname is not None:
             inputs["IPAddress"] = self._hostname
             inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            inputs["DownedChipsDetails"] = self._config.get(
-                "Machine", "down_chips")
-            inputs["DownedCoresDetails"] = self._config.get(
-                "Machine", "down_cores")
+            down_chips, down_cores = \
+                helpful_functions.convert_string_info_chip_and_core_subsets(
+                    self._config.get("Machine", "down_chips"),
+                    self._config.get("Machine", "down_cores"))
+            inputs["DownedChipsDetails"] = down_chips
+            inputs["DownedCoresDetails"] = down_cores
             inputs["DownedLinksDetails"] = self._convert_down_links(
                 self._config.get("Machine", "down_links"))
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
@@ -1122,6 +1127,12 @@ class SpinnakerMainInterface(object):
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
+        inputs["CoresToExtractIOBufFrom"] = \
+            helpful_functions.translate_iobuf_extraction_elements(
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_model_types"),
+                self._mapping_outputs["ExecutableTargets"])
+
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
             algorithms = list(self._extra_pre_run_algorithms)
@@ -1130,8 +1141,13 @@ class SpinnakerMainInterface(object):
 
         # If we have run before, make sure to extract the data before the next
         # run
-        if self._has_ran and not self._has_reset_last:
+        if (self._has_ran and not self._has_reset_last and
+                self._config.getboolean("Reports", "extract_iobuf_during_run")):
             algorithms.append("FrontEndCommonBufferExtractor")
+
+        # check if we need to clear the iobuf during runs
+        if self._config.getboolean("Reports", "clear_iobuf_during_run"):
+            algorithms.append("FrontEndCommonChipIOBUFClearer")
 
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
@@ -1337,6 +1353,7 @@ class SpinnakerMainInterface(object):
                 not self._use_virtual_board):
             inputs = self._last_run_outputs
             algorithms = ["FrontEndCommonIOBufExtractor"]
+            algorithms = ["FrontEndCommonIOBufClearer"]
             outputs = ["IOBuffers"]
             executor = PACMANAlgorithmExecutor(
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,

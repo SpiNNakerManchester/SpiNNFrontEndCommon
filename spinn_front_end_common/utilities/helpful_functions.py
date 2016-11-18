@@ -328,14 +328,14 @@ def get_core_subsets(core_infos):
     return core_subsets
 
 
-def sort_out_downed_chips_cores(downed_chips, downed_cores):
+def convert_string_info_chip_and_core_subsets(downed_chips, downed_cores):
     """ Translate the down cores and down chips string into a form that \
         spinnman can understand
 
     :param downed_cores: string representing down cores
-    :type downed_cores: str
+    :type downed_cores: str or None
     :param downed_chips: string representing down chips
-    :type: downed_chips: str
+    :type: downed_chips: str or None
     :return: a list of down cores and down chips in processor and \
             core subset format
     """
@@ -354,6 +354,37 @@ def sort_out_downed_chips_cores(downed_chips, downed_cores):
             ignored_cores.add_processor(int(x), int(y),
                                         int(processor_id))
     return ignored_chips, ignored_cores
+
+
+def translate_iobuf_extraction_elements(
+        hard_coded_cores, hard_coded_model_binary, executable_targets):
+    """
+
+    :param hard_coded_cores:
+    :param hard_coded_model_binary:
+    :param executable_targets:
+    :return:
+    """
+    if hard_coded_cores == "ALL" and hard_coded_model_binary == "None":
+        return executable_targets.all_core_subsets
+    if hard_coded_cores != "None" and hard_coded_model_binary == "None":
+        _, ignored_cores = convert_string_info_chip_and_core_subsets(
+            None, hard_coded_cores)
+        return ignored_cores
+    if hard_coded_cores == "None" and hard_coded_model_binary != "None":
+        model_binaries = hard_coded_model_binary.split(",")
+        cores = CoreSubsets()
+        for model_binary in model_binaries:
+            core_subsets = \
+                executable_targets.get_cores_for_binary(model_binary)
+            cores.add_core_subset(core_subsets)
+        return cores
+    else:
+        raise exceptions.ConfigurationException(
+            "The tools only support either:\n 1. a set of cores to extract "
+            "iobuf from\n or \n2. a set of binary names to extract iobuf "
+            "from. It does not support both currently.")
+
 
 
 def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
