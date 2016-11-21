@@ -1,6 +1,5 @@
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from spinn_front_end_common.utilities import exceptions
 
 
@@ -11,8 +10,7 @@ class FrontEndCommonIOBufExtractor(object):
 
     __slots__ = []
 
-    def __call__(
-            self, transceiver, has_ran, placements=None, core_subsets=None):
+    def __call__(self, transceiver, has_ran, core_subsets=None):
 
         if not has_ran:
             raise exceptions.ConfigurationException(
@@ -21,16 +19,11 @@ class FrontEndCommonIOBufExtractor(object):
 
         if core_subsets is not None:
             io_buffers, error_entries, warn_entries =\
-                self._run_for_core_subsets(
-                    core_subsets, transceiver)
-        elif placements is not None:
-            io_buffers, error_entries, warn_entries =\
-                self._run_for_placements(
-                    placements, transceiver)
+                self._run_for_core_subsets(core_subsets, transceiver)
         else:
             raise exceptions.ConfigurationException(
-                "The FrontEndCommonIOBufExtractor requires either a placements"
-                " object or a core sets object to be able to execute")
+                "The FrontEndCommonIOBufExtractor requires a core sets "
+                "object to be able to execute")
 
         return io_buffers, error_entries, warn_entries
 
@@ -38,27 +31,13 @@ class FrontEndCommonIOBufExtractor(object):
         progress_bar = ProgressBar(len(core_subsets), "Extracting IOBUF")
         error_entries = list()
         warn_entries = list()
+
+        # extract iobufs
         io_buffers = list(transceiver.get_iobuf(core_subsets))
+
+        # check iobuf for errors
         for io_buffer in io_buffers:
             self._check_iobuf_for_error(io_buffer, error_entries, warn_entries)
-            progress_bar.update()
-        progress_bar.end()
-        return io_buffers, error_entries, warn_entries
-
-    def _run_for_placements(self, placements, transceiver):
-        io_buffers = list()
-        error_entries = list()
-        warn_entries = list()
-        progress_bar = ProgressBar(len(placements), "Extracting IOBUF")
-        for placement in placements:
-            
-            # only read from vertices which reside on real chips.
-            # virtual chips have no iobuf
-            if not isinstance(placement.vertex, AbstractVirtualVertex):
-                iobuf = transceiver.get_iobuf_from_core(
-                    placement.x, placement.y, placement.p)
-                io_buffers.append(iobuf)
-                self._check_iobuf_for_error(iobuf, error_entries, warn_entries)
             progress_bar.update()
         progress_bar.end()
         return io_buffers, error_entries, warn_entries

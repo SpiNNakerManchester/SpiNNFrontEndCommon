@@ -1130,8 +1130,8 @@ class SpinnakerMainInterface(object):
         inputs["CoresToExtractIOBufFrom"] = \
             helpful_functions.translate_iobuf_extraction_elements(
                 self._config.get("Reports", "extract_iobuf_from_cores"),
-                self._config.get("Reports", "extract_iobuf_from_model_types"),
-                self._mapping_outputs["ExecutableTargets"])
+                self._config.get("Reports", "extract_iobuf_from_binary_types"),
+                self._load_outputs["ExecutableTargets"])
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -1144,10 +1144,6 @@ class SpinnakerMainInterface(object):
         if (self._has_ran and not self._has_reset_last and
                 self._config.getboolean("Reports", "extract_iobuf_during_run")):
             algorithms.append("FrontEndCommonBufferExtractor")
-
-        # check if we need to clear the iobuf during runs
-        if self._config.getboolean("Reports", "clear_iobuf_during_run"):
-            algorithms.append("FrontEndCommonChipIOBUFClearer")
 
         # Create a buffer manager if there isn't one already
         if self._buffer_manager is None:
@@ -1179,6 +1175,9 @@ class SpinnakerMainInterface(object):
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
             algorithms += self._extra_post_run_algorithms
+            # check if we need to clear the iobuf during runs
+            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
+                algorithms.append("FrontEndCommonChipIOBufClearer")
 
         executor = None
         try:
@@ -1320,6 +1319,8 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonChipProvenanceUpdater")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
 
+            inputs["CoresToExtractIOBufFrom"] = e.failed_core_subsets
+
             # Get the other data
             algorithms.append("FrontEndCommonIOBufExtractor")
             algorithms.append("FrontEndCommonRouterProvenanceGatherer")
@@ -1351,9 +1352,17 @@ class SpinnakerMainInterface(object):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._last_run_outputs is not None and
                 not self._use_virtual_board):
+
             inputs = self._last_run_outputs
-            algorithms = ["FrontEndCommonIOBufExtractor"]
-            algorithms = ["FrontEndCommonIOBufClearer"]
+            inputs["CoresToExtractIOBufFrom"] = \
+                helpful_functions.translate_iobuf_extraction_elements(
+                    self._config.get("Reports", "extract_iobuf_from_cores"),
+                    self._config.get(
+                        "Reports", "extract_iobuf_from_binary_types"),
+                    self._last_run_outputs["ExecutableTargets"])
+
+            algorithms = ["FrontEndCommonIOBufExtractor",
+                          "FrontEndCommonIOBufClearer"]
             outputs = ["IOBuffers"]
             executor = PACMANAlgorithmExecutor(
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,
