@@ -133,12 +133,11 @@ def set_up_output_application_data_specifics(
         # add time stamped folder for this run
         this_run_time_folder = \
             os.path.join(where_to_write_application_data_files, "latest")
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
-        else:
+        if os.path.exists(this_run_time_folder):
             _move_report_and_binary_files(
                 max_application_binaries_kept,
                 where_to_write_application_data_files)
+        os.makedirs(this_run_time_folder)
 
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(this_run_time_folder,
