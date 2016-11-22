@@ -83,6 +83,21 @@ void simulation_handle_pause_resume(resume_callback_t callback){
     spin1_pause();
 }
 
+//! \brief cleans up the iobuf, leaving space for the future iobufs to fill in
+//! the same memory space.
+//! \return bool true if succeeded or false otherwise
+bool _execute_iobuf_clear(){
+
+    // locate first iobuf entry
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    address_t iobuf_initial_location = (address_t)
+       sark_virtual_processor_info[spin1_get_core_id()].iobuf;
+    iobuf_t *iobuf_struct = (iobuf_t*) iobuf_initial_location;
+    return true;
+
+
+}
+
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
 void simulation_exit(){
@@ -159,6 +174,35 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             _execute_provenance_storage();
             spin1_msg_free(msg);
             spin1_exit(1);
+            break;
+
+        case IOBUF_CLEAR:
+            // If we are told to send a response, send it now
+            if (msg->arg3 == 1) {
+                msg->cmd_rc = RC_OK;
+                msg->length = 12;
+                uint dest_port = msg->dest_port;
+                uint dest_addr = msg->dest_addr;
+                msg->dest_port = msg->srce_port;
+                msg->srce_port = dest_port;
+                msg->dest_addr = msg->srce_addr;
+                msg->srce_addr = dest_addr;
+                spin1_send_sdp_msg(msg, 10);
+            }
+
+            // free the message to stop overload
+            spin1_msg_free(msg);
+
+            // run clear iobuf code
+            log_info("attempting to clear iobuf");
+            bool success = _execute_iobuf_clear();
+            if (!success){
+                log_error("Failed to clear iobuf");
+                spin1_exit(1);
+            }
+            else{
+                log_info("cleared iobuf");
+            }
             break;
 
         default:

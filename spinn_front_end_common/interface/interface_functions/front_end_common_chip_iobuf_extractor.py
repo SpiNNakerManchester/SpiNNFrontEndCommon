@@ -3,7 +3,7 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import exceptions
 
 
-class FrontEndCommonIOBufExtractor(object):
+class FrontEndCommonChipIOBufExtractor(object):
     """ Extract iobuf buffers from the machine, and separates lines based on\
         their prefix
     """
@@ -28,7 +28,8 @@ class FrontEndCommonIOBufExtractor(object):
         return io_buffers, error_entries, warn_entries
 
     def _run_for_core_subsets(self, core_subsets, transceiver):
-        progress_bar = ProgressBar(len(core_subsets), "Extracting IOBUF")
+        progress_bar = ProgressBar(
+            len(core_subsets), "Extracting IOBUF from the machine")
         error_entries = list()
         warn_entries = list()
 

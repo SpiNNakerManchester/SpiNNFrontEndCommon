@@ -1173,9 +1173,9 @@
             <param_type>ClearedIOBufToken</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonIOBufExtractor">
+    <algorithm name="FrontEndCommonChipIOBufExtractor">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_iobuf_extractor</python_module>
-        <python_class>FrontEndCommonIOBufExtractor</python_class>
+        <python_class>FrontEndCommonChipIOBufExtractor</python_class>
         <input_definitions>
             <parameter>
                 <param_name>transceiver</param_name>

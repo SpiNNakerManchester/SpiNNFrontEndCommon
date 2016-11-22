@@ -18,7 +18,8 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
             self._progress_bar.update()
 
     def clear_iobuf(self, core_subsets, n_cores):
-        self._progress_bar = ProgressBar(n_cores, "clearing iobuf")
+        self._progress_bar = ProgressBar(
+            n_cores, "clearing IOBUF from the machine")
         for core_subset in core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(
