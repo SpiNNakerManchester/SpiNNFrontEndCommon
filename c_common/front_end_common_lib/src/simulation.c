@@ -83,6 +83,19 @@ void simulation_handle_pause_resume(resume_callback_t callback){
     spin1_pause();
 }
 
+//! \brief recursive cycle of iobuf entries till there are no more.
+//! clears them after reaching the end in a backwards fashion.
+//! \return bool true if finished, false otherwise.
+void _iterate_and_clear_iobufs(iobuf_t *iobuf_struct){
+    if(iobuf_struct->next != 0){
+        log_info("other address is %d", iobuf_struct);
+        // locate any other iobufs
+        _iterate_and_clear_iobufs((iobuf_t*) iobuf_struct->next);
+        // free the next one. leaving this one for the last iteration
+        sark_free(iobuf_struct->next);
+    }
+}
+
 //! \brief cleans up the iobuf, leaving space for the future iobufs to fill in
 //! the same memory space.
 //! \return bool true if succeeded or false otherwise
@@ -92,10 +105,18 @@ bool _execute_iobuf_clear(){
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     address_t iobuf_initial_location = (address_t)
        sark_virtual_processor_info[spin1_get_core_id()].iobuf;
-    iobuf_t *iobuf_struct = (iobuf_t*) iobuf_initial_location;
+
+    // get the first iobuf struct
+    iobuf_t *initial_iobuf_struct = (iobuf_t*) iobuf_initial_location;
+    log_info("initial address is %d", iobuf_initial_location);
+
+    // clear all other entries if there are any
+    _iterate_and_clear_iobufs(initial_iobuf_struct);
+
+    // set initial entry to 0 size used
+    log_info("reset the pointer to say size is again 0");
+    initial_iobuf_struct->ptr = 0;
     return true;
-
-
 }
 
 //! \brief a helper method for people not using the auto pause and
