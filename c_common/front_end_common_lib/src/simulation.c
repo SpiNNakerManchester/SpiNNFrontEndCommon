@@ -83,46 +83,25 @@ void simulation_handle_pause_resume(resume_callback_t callback){
     spin1_pause();
 }
 
-//! \brief recursive cycle of iobuf entries till there are no more.
-//! clears them after reaching the end in a backwards fashion.
-//! \return bool true if finished, false otherwise.
-void _iterate_and_clear_iobufs(iobuf_t *iobuf_struct){
-    if(iobuf_struct->next != 0){
-        log_info("other address is %d", iobuf_struct);
-        // locate any other iobufs
-        _iterate_and_clear_iobufs((iobuf_t*) iobuf_struct->next);
-        // free the next one. leaving this one for the last iteration
-        sark_free(iobuf_struct->next);
-    }
-}
-
-//! \brief cleans up the iobuf, leaving space for the future iobufs to fill in
-//! the same memory space.
-//! \return bool true if succeeded or false otherwise
-bool _execute_iobuf_clear(){
-
-    // locate first iobuf entry
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t iobuf_initial_location = (address_t)
-       sark_virtual_processor_info[spin1_get_core_id()].iobuf;
-
-    // get the first iobuf struct
-    iobuf_t *initial_iobuf_struct = (iobuf_t*) iobuf_initial_location;
-    log_info("initial address is %d", iobuf_initial_location);
-
-    // clear all other entries if there are any
-    _iterate_and_clear_iobufs(initial_iobuf_struct);
-
-    // set initial entry to 0 size used
-    log_info("reset the pointer to say size is again 0");
-    initial_iobuf_struct->ptr = 0;
-    return true;
-}
-
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
 void simulation_exit(){
     simulation_handle_pause_resume(NULL);
+}
+
+//! \brief method for sending ok response to the host when a command message
+//! is received.
+//! \param[in] msg: the message object to send to the host.
+void _send_response(sdp_msg_t *msg){
+    msg->cmd_rc = RC_OK;
+    msg->length = 12;
+    uint dest_port = msg->dest_port;
+    uint dest_addr = msg->dest_addr;
+    msg->dest_port = msg->srce_port;
+    msg->srce_port = dest_port;
+    msg->dest_addr = msg->srce_addr;
+    msg->srce_addr = dest_addr;
+    spin1_send_sdp_msg(msg, 10);
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
@@ -162,15 +141,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
-                msg->cmd_rc = RC_OK;
-                msg->length = 12;
-                uint dest_port = msg->dest_port;
-                uint dest_addr = msg->dest_addr;
-                msg->dest_port = msg->srce_port;
-                msg->srce_port = dest_port;
-                msg->dest_addr = msg->srce_addr;
-                msg->srce_addr = dest_addr;
-                spin1_send_sdp_msg(msg, 10);
+                _send_response(msg);
             }
 
             // free the message to stop overload
@@ -198,17 +169,10 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             break;
 
         case IOBUF_CLEAR:
+
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
-                msg->cmd_rc = RC_OK;
-                msg->length = 12;
-                uint dest_port = msg->dest_port;
-                uint dest_addr = msg->dest_addr;
-                msg->dest_port = msg->srce_port;
-                msg->srce_port = dest_port;
-                msg->dest_addr = msg->srce_addr;
-                msg->srce_addr = dest_addr;
-                spin1_send_sdp_msg(msg, 10);
+                _send_response(msg);
             }
 
             // free the message to stop overload
@@ -216,14 +180,8 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // run clear iobuf code
             log_info("attempting to clear iobuf");
-            bool success = _execute_iobuf_clear();
-            if (!success){
-                log_error("Failed to clear iobuf");
-                spin1_exit(1);
-            }
-            else{
-                log_info("cleared iobuf");
-            }
+            sark_reset_iobuf();
+            log_info("cleared iobuf");
             break;
 
         default:
