@@ -1131,7 +1131,8 @@ class SpinnakerMainInterface(object):
             helpful_functions.translate_iobuf_extraction_elements(
                 self._config.get("Reports", "extract_iobuf_from_cores"),
                 self._config.get("Reports", "extract_iobuf_from_binary_types"),
-                self._load_outputs["ExecutableTargets"])
+                self._load_outputs["ExecutableTargets"],
+                self._executable_finder)
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
