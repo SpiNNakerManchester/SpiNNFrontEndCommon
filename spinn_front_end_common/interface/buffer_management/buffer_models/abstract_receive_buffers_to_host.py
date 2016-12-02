@@ -41,10 +41,3 @@ class AbstractReceiveBuffersToHost(object):
             the placement object of the core to find the address of
         :return: the base address of the recording region
         """
-
-    @abstractmethod
-    def get_buffered_out_tag_identifier(self):
-        """ get the transmission identifier for the buffered out functionality
-
-        :return:
-        """

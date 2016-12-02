@@ -1,32 +1,4 @@
 <algorithms>
-    <algorithm name="FrontEndCommonPortConnectionAllocator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_port_connection_allocator</python_module>
-        <python_class>FrontEndCommonPortConnectionAllocator</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
-            </parameter>
-            <parameter>
-                <param_name>buffer_ip_address</param_name>
-                <param_type>BufferIpAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>transceiver</param_name>
-            <param_name>buffer_ip_address</param_name>
-            <param_name>machine_graph</param_name>
-        </required_inputs>
-        <optional_inputs>
-        </optional_inputs>
-        <outputs>
-            <param_type>TrafficIdentifierToPortNumMap</param_type>
-        </outputs>
-    </algorithm>
     <algorithm name="FrontEndCommonApplicationDataLoader">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_data_loader</python_module>
         <python_class>FrontEndCommonApplicationDataLoader</python_class>

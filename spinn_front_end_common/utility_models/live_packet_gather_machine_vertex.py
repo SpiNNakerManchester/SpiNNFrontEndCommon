@@ -29,8 +29,6 @@ from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
-from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
-    UDPEIEIOConnection
 
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
@@ -67,10 +65,9 @@ class LivePacketGatherMachineVertex(
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
             iptags=[IPtagResource(
-                ip_address=self._ip_address, port=self._port,
-                strip_sdp=self._strip_sdp, tag=self._tag,
-                traffic_identifier="LPG_EVENT_STREAM",
-                connection_type=UDPEIEIOConnection)])
+                ip_address=ip_address, port=port,
+                strip_sdp=strip_sdp, tag=tag,
+                traffic_identifier="LPG_EVENT_STREAM")])
 
         # implementation for where constraints are stored
         self._constraints = ConstrainedObject()

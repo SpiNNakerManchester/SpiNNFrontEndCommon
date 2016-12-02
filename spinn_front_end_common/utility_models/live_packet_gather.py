@@ -27,8 +27,6 @@ from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 
 # spinnman imports
-from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
-    UDPEIEIOConnection
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
@@ -140,8 +138,7 @@ class LivePacketGather(
             iptags=[IPtagResource(
                 ip_address=self._ip_address, port=self._port,
                 strip_sdp=self._strip_sdp, tag=self._tag,
-                traffic_identifier="LPG_EVENT_STREAM",
-                connection_type=UDPEIEIOConnection)])
+                traffic_identifier="LPG_EVENT_STREAM")])
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):

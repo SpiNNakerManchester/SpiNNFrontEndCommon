@@ -68,6 +68,9 @@ class BufferManager(object):
     """ Manager of send buffers
     """
 
+    # Buffer manager traffic type
+    TRAFFIC_TYPE = recording_utilities.TRAFFIC_TYPE
+
     __slots__ = [
         # placements object
         "_placements",
@@ -109,11 +112,7 @@ class BufferManager(object):
         "_thread_lock_buffer_in",
 
         # bool flag
-        "_finished",
-
-        # the port number used by the SDP messages in the buffering out
-        # functionality
-        "_output_buffering_port_num"
+        "_finished"
     ]
 
     def __init__(self, placements, tags, transceiver, write_reload_files,
@@ -133,9 +132,6 @@ class BufferManager(object):
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
-
-        # SDP port used by the buffering out SDP messages
-        self._output_buffering_port_num = None
 
         # params used for reload purposes
         self._write_reload_files = write_reload_files
@@ -214,22 +210,53 @@ class BufferManager(object):
         except Exception:
             traceback.print_exc()
 
+    def _add_buffer_listeners(self, vertex):
+        """ Add listeners for buffered data for the given vertex
+        """
+
+        # Find a tag for receiving buffer data
+        tags = self._tags.get_ip_tags_for_vertex(vertex)
+
+        if tags is not None:
+            tag = None
+            for tag in tags:
+                if tag.traffic_identifier == self.TRAFFIC_TYPE:
+                    tag = tag
+                    break
+
+            # Only continue if there is a tag
+            if tag is not None:
+
+                # If the tag port is not assigned, create a connection and
+                # assign the port.  Note that this *should* update the port
+                # number in any tags being shared
+                if tag.port is None:
+                    local_port = self._transceiver.register_udp_listener(
+                        self.receive_buffer_command_message,
+                        UDPEIEIOConnection, local_port=None,
+                        local_host=tag.ip_address)
+                    tag.port = local_port
+                    self._seen_tags.add((tag.ip_address, tag.port))
+
+                # In case we have tags with different specified ports, also
+                # allow the tag to be created here
+                if (tag.ip_address, tag.port) not in self._seen_tags:
+                    logger.debug(
+                        "Listening for packets using tag {} on"
+                        " {}:{}".format(tag.tag, tag.ip_address, tag.port))
+                    self._seen_tags.add((tag.ip_address, tag.port))
+                    self._output_buffering_port_num = tag.port
+                    if self._transceiver is not None:
+                        self._transceiver.register_udp_listener(
+                            self.receive_buffer_command_message,
+                            UDPEIEIOConnection, local_port=tag.port,
+                            local_host=tag.ip_address)
+
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices\
             which require buffers to be received from them during runtime
         """
-        tag = self._tags.get_iptag_with_transmission_id_for_vertex(
-            vertex, vertex.get_buffered_out_tag_identifier())
-        if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.debug(
-                "Listening for receive packets using tag {} on"
-                " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-            self._seen_tags.add((tag.ip_address, tag.port))
-            self._output_buffering_port_num = tag.port
-            if self._transceiver is not None:
-                self._transceiver.register_udp_listener(
-                    self.receive_buffer_command_message, UDPEIEIOConnection,
-                    local_port=tag.port, local_host=tag.ip_address)
+        self._add_buffer_listeners(vertex)
 
     def add_sender_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices
@@ -240,16 +267,7 @@ class BufferManager(object):
                     :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
-        tag = self._tags.get_iptag_with_transmission_id_for_vertex(
-            vertex, vertex.get_buffered_in_tag_identifier())
-        if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.info("Listening for send packets using tag {} on"
-                        " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-            self._seen_tags.add((tag.ip_address, tag.port))
-            if self._transceiver is not None:
-                self._transceiver.register_udp_listener(
-                    self.receive_buffer_command_message, UDPEIEIOConnection,
-                    local_port=tag.port, local_host=tag.ip_address)
+        self._add_buffer_listeners(vertex)
 
         # if reload script is set up, store the buffers for future usage
         if self._write_reload_files:

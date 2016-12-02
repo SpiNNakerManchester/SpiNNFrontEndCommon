@@ -681,8 +681,6 @@ class SpinnakerMainInterface(object):
         inputs["TotalRunTime"] = total_run_time
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["MachineTimeStep"] = self._machine_time_step
-        inputs["BufferIpAddress"] = self._config.get(
-            "Buffers", "receive_buffer_host")
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -710,9 +708,6 @@ class SpinnakerMainInterface(object):
 
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
-
-            # allows dynamic port allocation
-            algorithms.append("FrontEndCommonPortConnectionAllocator")
 
             outputs.append("MemoryExtendedMachine")
             outputs.append("MemoryTransceiver")
@@ -834,9 +829,6 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonHBPAllocator")
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
-
-            # allows dynamic port allocation
-            algorithms.append("FrontEndCommonPortConnectionAllocator")
 
             outputs.append("MemoryExtendedMachine")
             outputs.append("IPAddress")
@@ -1028,11 +1020,17 @@ class SpinnakerMainInterface(object):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MemoryMachineGraph", "BufferManager"
         ]
-
         if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
+
+        # Create a buffer manager if there isn't one already
+        if self._buffer_manager is None:
+            inputs["WriteReloadFilesFlag"] = False
+            algorithms.append("FrontEndCommonBufferManagerCreator")
+        else:
+            inputs["BufferManager"] = self._buffer_manager
 
         # Execute the mapping algorithms
         executor = self._run_machine_algorithms(inputs, algorithms, outputs)
@@ -1046,6 +1044,7 @@ class SpinnakerMainInterface(object):
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
+        self._buffer_manager = executor.get_item("BufferManager")
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1141,13 +1140,6 @@ class SpinnakerMainInterface(object):
         if self._has_ran and not self._has_reset_last:
             algorithms.append("FrontEndCommonBufferExtractor")
 
-        # Create a buffer manager if there isn't one already
-        if self._buffer_manager is None:
-            inputs["WriteReloadFilesFlag"] = False
-            algorithms.append("FrontEndCommonBufferManagerCreator")
-        else:
-            inputs["BufferManager"] = self._buffer_manager
-
         if not self._use_virtual_board:
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
 
@@ -1224,7 +1216,6 @@ class SpinnakerMainInterface(object):
         self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
         self._no_sync_changes = executor.get_item("NoSyncChanges")
-        self._buffer_manager = executor.get_item("BufferManager")
         self._has_reset_last = False
         self._has_ran = True
 
@@ -1756,7 +1747,7 @@ class SpinnakerMainInterface(object):
         """
 
         if extract_provenance_data:
-            
+
             # turn off reinjector before extracting provenance data, otherwise
             # its highly possible when things are going wrong, that the data
             # extracted from the reinjector is changing.
@@ -1789,19 +1780,11 @@ class SpinnakerMainInterface(object):
                 logger.warn(item.message)
 
     def _read_config(self, section, item):
-        value = self._config.get(section, item)
-        if value == "None":
-            return None
-        return value
+        return helpful_functions.read_config(self._config, section, item)
 
     def _read_config_int(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return int(value)
+        return helpful_functions.read_config_int(self._config, section, item)
 
     def _read_config_boolean(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return bool(value)
+        return helpful_functions.read_config_boolean(
+            self._config, section, item)
