@@ -424,3 +424,33 @@ def get_executables_by_run_type(
                     other_executables.add_processor(
                         binary, core_subset.x, core_subset.y, p)
     return matching_executables, other_executables
+
+
+def read_config(config, section, item):
+    """ Get the string value of a config item, returning None if the value\
+        is "None"
+    """
+    value = config.get(section, item)
+    if value == "None":
+        return None
+    return value
+
+
+def read_config_int(config, section, item):
+    """ Get the integer value of a config item, returning None if the value\
+        is "None"
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return int(value)
+
+
+def read_config_boolean(config, section, item):
+    """ Get the boolean value of a config item, returning None if the value\
+        is "None"
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return bool(value)

@@ -38,12 +38,6 @@ typedef enum buffered_operations{
     BUFFER_OPERATION_WRITE
 }buffered_operations;
 
-//! The different SDP ports used for buffer streaming
-typedef enum buffering_sdp_port{
-    BUFFERING_IN_SDP_PORT = 1,
-    BUFFERING_OUT_SDP_PORT
-}buffering_sdp_port;
-
 //! pointer to an EIEIO message
 typedef uint16_t* eieio_msg_t;
 
