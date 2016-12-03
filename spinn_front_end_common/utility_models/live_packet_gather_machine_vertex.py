@@ -64,7 +64,10 @@ class LivePacketGatherMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
-            iptags=[IPtagResource(ip_address, port, strip_sdp, tag)])
+            iptags=[IPtagResource(
+                ip_address=ip_address, port=port,
+                strip_sdp=strip_sdp, tag=tag,
+                traffic_identifier="LPG_EVENT_STREAM")])
 
         # implementation for where constraints are stored
         self._constraints = ConstrainedObject()

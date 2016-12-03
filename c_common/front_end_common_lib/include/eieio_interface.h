@@ -20,7 +20,7 @@ typedef struct eieio_header_struct {
     uint32_t prefix_type; //! prefix type if data header (F bit)
     uint32_t packet_type; //! type of packet 16bit, payload, 32 bit payload. (type bits)
     uint32_t key_right_shift;
-    uint32_t payload_as_timestamp; //! t bit, verifyies if payloads are timestamps
+    uint32_t payload_as_timestamp; //! t bit, verifies if payloads are timestamps
     uint32_t payload_apply_prefix; //! D bit
     uint32_t payload_prefix; //! payload prefix
     uint32_t count; //! the number of elements in the header
