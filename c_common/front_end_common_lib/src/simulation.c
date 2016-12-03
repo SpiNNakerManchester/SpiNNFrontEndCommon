@@ -208,9 +208,9 @@ bool simulation_initialise(
         return false;
     }
 
-    if (sdp_packet_callback_priority < -1){
+    if (sdp_packet_callback_priority < -1) {
         log_error(
-            "The sdp callback priority should be set to a number greater "
+            "The SDP callback priority should be set to a number greater "
             "than or equal to -1. NULL is also not allowed. "
             "It is currently set to %d", sdp_packet_callback_priority);
         return false;

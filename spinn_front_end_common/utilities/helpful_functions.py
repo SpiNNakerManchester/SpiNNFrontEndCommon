@@ -28,6 +28,7 @@ from collections import OrderedDict
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
 
+
 def get_valid_components(module, terminator):
     """ Get possible components
 
@@ -88,12 +89,12 @@ def set_up_output_application_data_specifics(
         this_run_time_string):
     """
 
-    :param where_to_write_application_data_files: the location where all
-    app data is by default written to
-    :param max_application_binaries_kept: The max number of report folders to
-    keep active at any one time
-    :param app_id: the id used for identifying the simulation on the
-    SpiNNaker machine
+    :param where_to_write_application_data_files:\
+        the location where all app data is by default written to
+    :param max_application_binaries_kept:\
+        The max number of report folders to keep active at any one time
+    :param app_id:\
+        the id used for identifying the simulation on the SpiNNaker machine
     :param n_calls_to_run: the counter of how many times run has been called.
     :param this_run_time_string: the time stamp string for this run
     :return: the run folder for this simulation to hold app data
@@ -172,10 +173,10 @@ def set_up_report_specifics(
     """
 
     :param default_report_file_path: The location where all reports reside
-    :param max_reports_kept: The max number of report folders to keep active
-    at any one time
-    :param app_id: the id used for identifying the simulation on the
-    SpiNNaker machine
+    :param max_reports_kept:\
+        The max number of report folders to keep active at any one time
+    :param app_id:\
+        the id used for identifying the simulation on the SpiNNaker machine
     :param n_calls_to_run: the counter of how many times run has been called.
     :param this_run_time_string: holder for the timestamp for future runs
     :return: The folder for this run, the time_stamp
