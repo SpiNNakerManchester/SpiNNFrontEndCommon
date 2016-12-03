@@ -14,8 +14,6 @@ class SendsBuffersFromHostPreBufferedImpl(
         which uses an existing set of buffers for the details
     """
 
-    TRANSMISSION_IDENTIFIER = "BUFFERED_IN_STREAM"
-
     def __init__(self, send_buffers):
         """
 
@@ -109,6 +107,3 @@ class SendsBuffersFromHostPreBufferedImpl(
         :return:
         """
         self._send_buffers[region].rewind()
-
-    def get_buffered_in_tag_identifier(self):
-        return self.TRANSMISSION_IDENTIFIER

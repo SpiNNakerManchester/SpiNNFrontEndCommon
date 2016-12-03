@@ -56,10 +56,10 @@ class SpinnakerMainInterface(object):
         # The ip-address of the SpiNNaker machine
         "_hostname",
 
-        # the ip_address of the spalloc server (used for spalloc-ing machines)
+        # the ip_address of the spalloc server
         "_spalloc_server",
 
-        # the url for the HBP platform interface
+        # the URL for the HBP platform interface
         "_remote_spinnaker_url",
 
         # the algorithm used for allocating machines from the HBP platform
@@ -86,7 +86,8 @@ class SpinnakerMainInterface(object):
         # simulation
         "_router_tables",
 
-        # the holder for the keys used by the machine vertices for communication
+        # the holder for the keys used by the machine vertices for
+        # communication
         "_routing_infos",
 
         # The holder for the ip and reverse iptags used by the simulation
@@ -228,9 +229,6 @@ class SpinnakerMainInterface(object):
 
         #
         "_app_data_top_simulation_folder",
-
-        # flag for when to add the port allocator
-        "_has_allocated_port"
     ]
 
     def __init__(
@@ -320,7 +318,6 @@ class SpinnakerMainInterface(object):
         # holder for timing related values
         self._has_ran = False
         self._has_reset_last = False
-        self._has_allocated_port = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
@@ -375,15 +372,16 @@ class SpinnakerMainInterface(object):
         self._raise_keyboard_interrupt = False
 
     def _set_up_output_folders(self):
-        """ Sets up the outgoing folders (reports and app data) by creating
-        a new timestamped folder for each and clearing
+        """ Sets up the outgoing folders (reports and app data) by creating\
+            a new timestamp folder for each and clearing
 
         :return:
         """
 
         # set up reports default folder
         self._report_default_directory, \
-        self._report_simulation_top_directory, self._this_run_time_string = \
+            self._report_simulation_top_directory, \
+            self._this_run_time_string = \
             helpful_functions.set_up_report_specifics(
                 default_report_file_path=self._config.get(
                     "Reports", "defaultReportFilePath"),
@@ -513,6 +511,7 @@ class SpinnakerMainInterface(object):
             # graph has changed
             if (application_graph_changed and self._hostname is None and
                     not self._use_virtual_board):
+
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._machine = None
@@ -646,7 +645,7 @@ class SpinnakerMainInterface(object):
             sdram_per_vertex = int(sdram / len(vertices_on_chip))
             for vertex in vertices_on_chip:
                 n_time_steps = vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex)
+                    sdram_per_vertex, self._machine_time_step)
                 if min_time_steps is None or n_time_steps < min_time_steps:
                     min_time_steps = n_time_steps
         if min_time_steps is None:
@@ -749,8 +748,6 @@ class SpinnakerMainInterface(object):
         inputs["TotalRunTime"] = total_run_time
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["MachineTimeStep"] = self._machine_time_step
-        inputs["BufferIpAddress"] = self._config.get(
-            "Buffers", "receive_buffer_host")
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -900,13 +897,6 @@ class SpinnakerMainInterface(object):
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
 
-            # allows dynamic port allocation
-            # add the application and machine graphs as needed
-            if (len(self._application_graph.vertices) > 0 or
-                    len(self._machine_graph.vertices) > 0):
-                algorithms.append("FrontEndCommonPortConnectionAllocator")
-                self._has_allocated_port = True
-
             outputs.append("MemoryExtendedMachine")
             outputs.append("IPAddress")
             outputs.append("MemoryTransceiver")
@@ -1046,10 +1036,6 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
-        if not self._has_allocated_port:
-            # allows dynamic port allocation
-            algorithms.append("FrontEndCommonPortConnectionAllocator")
-
         # Add reports
         if self._config.getboolean("Reports", "reportsEnabled"):
             if self._config.getboolean("Reports", "writeTagAllocationReports"):
@@ -1101,11 +1087,17 @@ class SpinnakerMainInterface(object):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MemoryMachineGraph", "BufferManager"
         ]
-
         if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
+
+        # Create a buffer manager if there isn't one already
+        if self._buffer_manager is None:
+            inputs["WriteReloadFilesFlag"] = False
+            algorithms.append("FrontEndCommonBufferManagerCreator")
+        else:
+            inputs["BufferManager"] = self._buffer_manager
 
         # Execute the mapping algorithms
         executor = self._run_machine_algorithms(inputs, algorithms, outputs)
@@ -1119,6 +1111,7 @@ class SpinnakerMainInterface(object):
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
+        self._buffer_manager = executor.get_item("BufferManager")
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1126,6 +1119,7 @@ class SpinnakerMainInterface(object):
         inputs = dict(self._mapping_outputs)
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
 
         # Run the data generation algorithms
         algorithms = [self._dsg_algorithm]
@@ -1213,13 +1207,6 @@ class SpinnakerMainInterface(object):
         if self._has_ran and not self._has_reset_last:
             algorithms.append("FrontEndCommonBufferExtractor")
 
-        # Create a buffer manager if there isn't one already
-        if self._buffer_manager is None:
-            inputs["WriteReloadFilesFlag"] = False
-            algorithms.append("FrontEndCommonBufferManagerCreator")
-        else:
-            inputs["BufferManager"] = self._buffer_manager
-
         if not self._use_virtual_board:
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
 
@@ -1296,7 +1283,6 @@ class SpinnakerMainInterface(object):
         self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
         self._no_sync_changes = executor.get_item("NoSyncChanges")
-        self._buffer_manager = executor.get_item("BufferManager")
         self._has_reset_last = False
         self._has_ran = True
 
@@ -1310,6 +1296,13 @@ class SpinnakerMainInterface(object):
                 inputs = dict(self._last_run_outputs)
                 algorithms = list()
                 outputs = list()
+
+                # check if running forever at which point, force cores to
+                # gather provenance before extracting
+                if self._last_run_outputs["RunTime"] is None:
+                    algorithms.append("FrontEndCommonChipProvenanceUpdater")
+                    inputs["FailedCoresSubsets"] = \
+                        inputs["ExecutableTargets"].all_core_subsets
 
                 algorithms.append("FrontEndCommonGraphProvenanceGatherer")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
@@ -1757,7 +1750,8 @@ class SpinnakerMainInterface(object):
 
             if self._txrx is not None:
 
-                self._txrx.enable_reinjection(multicast=False)
+                if self._config.getboolean("Machine", "enable_reinjection"):
+                    self._txrx.enable_reinjection(multicast=False)
 
                 # if stopping on machine, clear iptags and
                 if clear_tags:
@@ -1820,6 +1814,15 @@ class SpinnakerMainInterface(object):
         """
 
         if extract_provenance_data:
+
+            # turn off reinjector before extracting provenance data, otherwise
+            # its highly possible when things are going wrong, that the data
+            # extracted from the reinjector is changing.
+            if self._txrx is not None and self._config.getboolean(
+                    "Machine", "enable_reinjection"):
+                self._txrx.enable_reinjection(multicast=False)
+
+            # extract provenance data
             self._extract_provenance()
         if extract_iobuf:
             self._extract_iobuf()
@@ -1848,19 +1851,11 @@ class SpinnakerMainInterface(object):
                 logger.warn(item.message)
 
     def _read_config(self, section, item):
-        value = self._config.get(section, item)
-        if value == "None":
-            return None
-        return value
+        return helpful_functions.read_config(self._config, section, item)
 
     def _read_config_int(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return int(value)
+        return helpful_functions.read_config_int(self._config, section, item)
 
     def _read_config_boolean(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return bool(value)
+        return helpful_functions.read_config_boolean(
+            self._config, section, item)
