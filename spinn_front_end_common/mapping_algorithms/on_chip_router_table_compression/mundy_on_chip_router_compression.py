@@ -4,12 +4,15 @@ from spinn_front_end_common.interface.interface_functions.\
     FrontEndCommonLoadExecutableImages
 from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
+from spinn_front_end_common.mapping_algorithms \
+    import on_chip_router_table_compression
+
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router
-from spinn_storage_handlers.buffered_bytearray_data_storage import \
-    BufferedBytearrayDataStorage
 
 import os
+import struct
+from spinn_machine.utilities.progress_bar import ProgressBar
 
 
 class MundyOnChipRouterCompression(object):
@@ -46,37 +49,53 @@ class MundyOnChipRouterCompression(object):
         if over_run_threshold is not None:
             runtime_threshold_before_error = over_run_threshold
 
+        # build progress bar
+        progress_bar = ProgressBar(
+            len(routing_tables.routing_tables) + 2,
+            "Running routing table compression on chip")
+
         # figure size of sdram needed for each chip for storing the routing
         # table
         for routing_table in routing_tables:
-            size_for_each_chip = \
-                ((routing_table.number_of_entries *
-                  self.SIZE_OF_A_SDRAM_ENTRY) + self.SURPLUS_DATA_ENTRIES)
-            chip = machine.get_chip(routing_table.x, routing_table.y)
-            if size_for_each_chip > chip.sdram:
+
+            data = self._build_data(routing_table, app_app_id, store_on_sdram)
+            chip = machine.get_chip_at(routing_table.x, routing_table.y)
+
+            if len(data) > chip.sdram:
                 raise exceptions.ConfigurationException(
                     "There is not enough memory on the chip to write the "
                     "routing tables into.")
 
             # go to spinnman and ask for a memory region of that size per chip.
             base_address = transceiver.malloc_sdram(
-                routing_table.x, routing_table.y, size_for_each_chip,
+                routing_table.x, routing_table.y, len(data),
                 compressor_app_id, sdram_tag)
-
-            data = self._build_data(routing_table, app_app_id, store_on_sdram)
 
             # write sdram requirements per chip
             transceiver.write_memory(
                  routing_table.x, routing_table.y, base_address, data)
 
+            # update progress bar
+            progress_bar.update()
+
         # load the router compressor executable
         executable_targets = self._load_executables(
             routing_tables, compressor_app_id, transceiver, machine)
+        # update progress bar
+        progress_bar.update()
 
         # verify when the executable has finished
         transceiver.wait_for_execution_to_complete(
             executable_targets, compressor_app_id, expected_run_time,
             runtime_threshold_before_error)
+        # update progress bar
+        progress_bar.update()
+
+        # stop anything that's associated with the compressor binary
+        transceiver.stop_application(compressor_app_id)
+
+        # update the progress bar
+        progress_bar.end()
 
         # return loaded routing tables flag
         return True
@@ -95,7 +114,9 @@ class MundyOnChipRouterCompression(object):
         core_subsets = self._build_core_subsets(routing_tables, machine)
 
         # build binary path
-        binary_path = os.path.join(self.__file__, "rt_minimise.aplx")
+        binary_path = os.path.join(
+            os.path.dirname(on_chip_router_table_compression.__file__),
+            "rt_minimise.aplx")
 
         # build executable targets
         executable_targets = ExecutableTargets()
@@ -103,7 +124,7 @@ class MundyOnChipRouterCompression(object):
 
         executable_loader = FrontEndCommonLoadExecutableImages()
         success = executable_loader(
-            executable_targets, compressor_app_id, transceiver, True)
+            executable_targets, compressor_app_id, transceiver, True, False)
         if not success:
             raise exceptions.ConfigurationException(
                 "The app loader failed to load the executable for router "
@@ -117,27 +138,25 @@ class MundyOnChipRouterCompression(object):
         :param routing_table: the pacman router table instance
         :param app_id: the app-id to load the entries in by
         :param store_on_sdram: flag that says store the results in sdram
-        :return: The buffer byte array writer needed for spinnman
+        :return: The byte array needed for spinnman
         """
 
         # write header data of the appid to load the data, if to store
         # results in sdram and the router table entries
-        data = bytearray()
-        data.append(app_id)
-        data.append(store_on_sdram)
-        data.append(routing_table.number_of_entries)
+
+        data = b''
+        data += struct.pack("<I", app_id)
+        data += struct.pack("<I", store_on_sdram)
+        data += struct.pack("<I", routing_table.number_of_entries)
 
         for entry in routing_table.multicast_routing_entries:
-            data.append(entry.routing_entry_key)
-            data.append(entry.mask)
-            data.append(
+            data += struct.pack("<I", entry.routing_entry_key)
+            data += struct.pack("<I", entry.mask)
+            data += struct.pack(
+                "<I",
                 Router.convert_routing_table_entry_to_spinnaker_route(entry))
-            data.append(self._make_source_hack(entry))
-
-        # write data into a object usable by the spinnman interface
-        writer = BufferedBytearrayDataStorage()
-        writer.write(data)
-        return writer
+            data += struct.pack("<I", self._make_source_hack(entry))
+        return bytearray(data)
 
     @staticmethod
     def _make_source_hack(entry):
@@ -148,9 +167,11 @@ class MundyOnChipRouterCompression(object):
         :return: return the source value
         """
         if entry.defaultable:
-            return entry.links[0] + 3 % 6
+            return list(entry.link_ids)[0] + 3 % 6
+        elif len(entry.link_ids) > 0:
+            return list(entry.link_ids)[0]
         else:
-            return entry.links[0]
+            return 0
 
     @staticmethod
     def _build_core_subsets(routing_tables, machine):
@@ -162,7 +183,7 @@ class MundyOnChipRouterCompression(object):
         core_sets = CoreSubsets()
         for routing_table in routing_tables:
             # get the first none monitor core
-            chip = machine.get_chip(routing_table.x, routing_table.y)
+            chip = machine.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()
 
             # add to the core subsets

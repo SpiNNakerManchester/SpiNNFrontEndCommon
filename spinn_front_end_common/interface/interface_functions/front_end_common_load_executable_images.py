@@ -21,7 +21,7 @@ class FrontEndCommonLoadExecutableImages(object):
     __slots__ = []
 
     def __call__(self, executable_targets, app_id, transceiver,
-                 loaded_application_data_token):
+                 loaded_application_data_token, use_progress_bar=True):
         """ Go through the executable targets and load each binary to \
             everywhere and then send a start request to the cores that \
             actually use it
@@ -33,8 +33,11 @@ class FrontEndCommonLoadExecutableImages(object):
                 " to false and therefore I cannot run. Please fix and try "
                 "again")
 
-        progress_bar = ProgressBar(executable_targets.total_processors,
-                                   "Loading executables onto the machine")
+        progress_bar = None
+        if use_progress_bar:
+            progress_bar = ProgressBar(executable_targets.total_processors,
+                                       "Loading executables onto the machine")
+
         for executable_target_key in executable_targets.binaries:
             file_reader = FileDataReader(executable_target_key)
             core_subset = executable_targets.get_cores_for_binary(
@@ -70,7 +73,9 @@ class FrontEndCommonLoadExecutableImages(object):
             for chip_based in core_subset.core_subsets:
                 for _ in chip_based.processor_ids:
                     acutal_cores_loaded += 1
-            progress_bar.update(amount_to_add=acutal_cores_loaded)
-        progress_bar.end()
+            if use_progress_bar:
+                progress_bar.update(amount_to_add=acutal_cores_loaded)
+        if use_progress_bar:
+            progress_bar.end()
 
         return True

@@ -5,6 +5,7 @@ from data_specification import utility_calls
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
+from spinn_front_end_common import mapping_algorithms
 from spinn_front_end_common.utilities.utility_objs.executable_targets\
     import ExecutableTargets
 
@@ -129,12 +130,11 @@ def set_up_output_application_data_specifics(
         # add time stamped folder for this run
         this_run_time_folder = \
             os.path.join(where_to_write_application_data_files, "latest")
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
-        else:
+        if os.path.exists(this_run_time_folder):
             _move_report_and_binary_files(
                 max_application_binaries_kept,
                 where_to_write_application_data_files)
+        os.makedirs(this_run_time_folder)
 
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(this_run_time_folder,
@@ -253,7 +253,11 @@ def get_front_end_common_pacman_xml_paths():
             "front_end_common_interface_functions.xml"),
         os.path.join(
             os.path.dirname(front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml")
+            "front_end_common_reports.xml"),
+        os.path.join(
+            os.path.dirname(mapping_algorithms.__file__),
+            "front_end_common_mapping_algorithms.xml"
+        )
     ]
 
 
