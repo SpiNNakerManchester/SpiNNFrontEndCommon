@@ -928,6 +928,8 @@ class SpinnakerMainInterface(object):
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
         inputs["APPID"] = self._app_id
+        inputs["MemoryRouterCompressorAppID"] = self._config.getint(
+            "Machine", "RouterCompressionAppID")
         inputs["DSEAppID"] = self._config.getint("Machine", "DSEAppID")
         inputs["ExecDSEOnHostFlag"] = self._exec_dse_on_host
         inputs["TimeScaleFactor"] = self._time_scale_factor
@@ -969,6 +971,8 @@ class SpinnakerMainInterface(object):
         else:
             algorithms = list()
 
+        optional_algorithms = list()
+
         # Add reports
         if self._config.getboolean("Reports", "reportsEnabled"):
             if self._config.getboolean("Reports", "writeTagAllocationReports"):
@@ -978,9 +982,9 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "writeRouterReports"):
                 algorithms.append("RouterReports")
             if self._config.getboolean("Reports", "writeRoutingTableReports"):
-                algorithms.append("unCompressedRoutingTableReports")
-                algorithms.append("compressedRoutingTableReports")
-                algorithms.append("comparisonOfRoutingTablesReport")
+                optional_algorithms.append("unCompressedRoutingTableReports")
+                optional_algorithms.append("compressedRoutingTableReports")
+                optional_algorithms.append("comparisonOfRoutingTablesReport")
 
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
@@ -1027,7 +1031,10 @@ class SpinnakerMainInterface(object):
             outputs.append("MemoryGraphMapper")
 
         # Execute the mapping algorithms
-        executor = self._run_machine_algorithms(inputs, algorithms, outputs)
+        executor = self._run_machine_algorithms(
+            inputs, algorithms, outputs, optional_algorithms)
+
+        # get result objects from the pacman executor
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 

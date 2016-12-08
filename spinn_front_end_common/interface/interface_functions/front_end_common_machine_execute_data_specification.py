@@ -126,11 +126,10 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
             processors_errored = transceiver.get_core_state_count(
                 dse_app_id, CPUState.RUN_TIME_EXCEPTION)
             if processors_errored > 0:
-                error_cores = helpful_functions.get_cores_in_state(
-                    core_subset, CPUState, transceiver)
+                error_cores = transceiver.get_cores_in_state(
+                    core_subset, CPUState)
                 if len(error_cores) > 0:
-                    error = helpful_functions.get_core_status_string(
-                        error_cores)
+                    error = transceiver.get_core_status_string(error_cores)
                     raise Exception(
                         "Data Specification Execution has failed: {}".format(
                             error))

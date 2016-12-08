@@ -30,8 +30,8 @@ class FrontEndCommonChipRuntimeUpdater(object):
             AbstractBinaryUsesSimulationRun)
 
         if updatable_binaries.total_processors > 0:
-            helpful_functions.wait_for_cores_to_be_ready(
-                updatable_binaries, app_id, txrx, CPUState.PAUSED)
+            txrx.wait_for_cores_to_be_ready(
+                updatable_binaries, app_id, CPUState.PAUSED)
 
             infinite_run = 0
             if no_machine_timesteps is None:

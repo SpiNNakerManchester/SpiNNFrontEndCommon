@@ -5,12 +5,10 @@ from data_specification import utility_calls
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
-from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utilities.utility_objs.executable_targets\
     import ExecutableTargets
 
 # spinnman imports
-from spinnman.model.cpu_state import CPUState
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.core_subset import CoreSubset
 
@@ -22,8 +20,6 @@ import logging
 import re
 import inspect
 import struct
-import time
-from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -261,73 +257,6 @@ def get_front_end_common_pacman_xml_paths():
     ]
 
 
-def get_cores_in_state(all_core_subsets, states, txrx):
-    """
-
-    :param all_core_subsets:
-    :param states:
-    :param txrx:
-    :return:
-    """
-    core_infos = txrx.get_cpu_information(all_core_subsets)
-    cores_in_state = OrderedDict()
-    for core_info in core_infos:
-        if hasattr(states, "__iter__"):
-            if core_info.state in states:
-                cores_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        elif core_info.state == states:
-            cores_in_state[
-                (core_info.x, core_info.y, core_info.p)] = core_info
-
-    return cores_in_state
-
-
-def get_cores_not_in_state(all_core_subsets, states, txrx):
-    """
-
-    :param all_core_subsets:
-    :param states:
-    :param txrx:
-    :return:
-    """
-    core_infos = txrx.get_cpu_information(all_core_subsets)
-    cores_not_in_state = OrderedDict()
-    for core_info in core_infos:
-        if hasattr(states, "__iter__"):
-            if core_info.state not in states:
-                cores_not_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        elif core_info.state != states:
-            cores_not_in_state[
-                (core_info.x, core_info.y, core_info.p)] = core_info
-    return cores_not_in_state
-
-
-def get_core_status_string(core_infos):
-    """ Get a string indicating the status of the given cores
-    """
-    break_down = "\n"
-    for ((x, y, p), core_info) in core_infos.iteritems():
-        if core_info.state == CPUState.RUN_TIME_EXCEPTION:
-            break_down += "    {}:{}:{} in state {}:{}\n".format(
-                x, y, p, core_info.state.name,
-                core_info.run_time_error.name)
-        else:
-            break_down += "    {}:{}:{} in state {}\n".format(
-                x, y, p, core_info.state.name)
-    return break_down
-
-
-def get_core_subsets(core_infos):
-    """ Convert core information from get_cores_in_state to core_subset objects
-    """
-    core_subsets = CoreSubsets()
-    for (x, y, p) in core_infos:
-        core_subsets.add_processor(x, y, p)
-    return core_subsets
-
-
 def sort_out_downed_chips_cores(downed_chips, downed_cores):
     """ Translate the down cores and down chips string into a form that \
         spinnman can understand
@@ -354,46 +283,6 @@ def sort_out_downed_chips_cores(downed_chips, downed_cores):
             ignored_cores.add_processor(int(x), int(y),
                                         int(processor_id))
     return ignored_chips, ignored_cores
-
-
-def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
-    """
-
-    :param executable_targets: the mapping between cores and binaries
-    :param app_id: the app id that being used by the simulation
-    :param txrx: the python interface to the spinnaker machine
-    :param sync_state: The expected state once the applications are ready
-    :return:
-    """
-
-    total_processors = executable_targets.total_processors
-    all_core_subsets = executable_targets.all_core_subsets
-
-    # check that everything has gone though c main
-    processor_c_main = txrx.get_core_state_count(app_id, CPUState.C_MAIN)
-    while processor_c_main != 0:
-        time.sleep(0.1)
-        processor_c_main = txrx.get_core_state_count(
-            app_id, CPUState.C_MAIN)
-
-    # check that the right number of processors are in sync state
-    processors_ready = txrx.get_core_state_count(
-        app_id, sync_state)
-    if processors_ready != total_processors:
-        unsuccessful_cores = get_cores_not_in_state(
-            all_core_subsets, sync_state, txrx)
-
-        # last chance to slip out of error check
-        if len(unsuccessful_cores) != 0:
-            break_down = get_core_status_string(
-                unsuccessful_cores)
-            raise exceptions.ExecutableFailedToStartException(
-                "Only {} processors out of {} have successfully reached "
-                "{}:{}".format(
-                    processors_ready, total_processors, sync_state.name,
-                    break_down),
-                get_core_subsets(unsuccessful_cores))
-
 
 def get_executables_by_run_type(
         executable_targets, placements, graph_mapper, type_to_find):

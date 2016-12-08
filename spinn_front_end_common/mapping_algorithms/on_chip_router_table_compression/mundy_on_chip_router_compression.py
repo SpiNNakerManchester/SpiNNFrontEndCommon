@@ -5,6 +5,7 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.utilities.utility_objs.executable_targets import \
     ExecutableTargets
 from spinn_machine.core_subsets import CoreSubsets
+from spinn_machine.router import Router
 from spinn_storage_handlers.buffered_bytearray_data_storage import \
     BufferedBytearrayDataStorage
 
@@ -18,9 +19,13 @@ class MundyOnChipRouterCompression(object):
 
     SIZE_OF_A_SDRAM_ENTRY = 4 * 4
     SURPLUS_DATA_ENTRIES = 3 * 4
+    TIME_EXPECTED_TO_RUN = 1000
+    OVER_RUN_THRESHOLD_BEFORE_ERROR = 1000
 
-    def __call__(self, routing_tables, transceiver, compressor_app_id, machine,
-                 app_app_id, store_on_sdram=False, sdram_tag=1):
+    def __call__(
+            self, routing_tables, transceiver,  machine, app_app_id,
+            compressor_app_id, store_on_sdram=False, sdram_tag=1,
+            time_expected_to_run=None, over_run_threshold=None):
         """
 
         :param routing_tables: the memory routing tables to be compressed
@@ -31,6 +36,15 @@ class MundyOnChipRouterCompression(object):
         :param transceiver: the spinnman interface
         :return: flag stating routing compression and loading hath been done
         """
+
+        # process args
+        expected_run_time = self.TIME_EXPECTED_TO_RUN
+        if time_expected_to_run is not None:
+            expected_run_time = time_expected_to_run
+
+        runtime_threshold_before_error = self.OVER_RUN_THRESHOLD_BEFORE_ERROR
+        if over_run_threshold is not None:
+            runtime_threshold_before_error = over_run_threshold
 
         # figure size of sdram needed for each chip for storing the routing
         # table
@@ -56,25 +70,25 @@ class MundyOnChipRouterCompression(object):
                  routing_table.x, routing_table.y, base_address, data)
 
         # load the router compressor executable
-        self._load_executables(
+        executable_targets = self._load_executables(
             routing_tables, compressor_app_id, transceiver, machine)
 
         # verify when the executable has finished
-        self._poll_till_complete_or_error()
+        transceiver.wait_for_execution_to_complete(
+            executable_targets, compressor_app_id, expected_run_time,
+            runtime_threshold_before_error)
 
         # return loaded routing tables flag
         return True
-
-    def _poll_till_complete_or_error(self):
-        pass
 
     def _load_executables(
             self, routing_tables, compressor_app_id, transceiver, machine):
         """
 
-        :param routing_tables:
-        :param compressor_app_id:
-        :return:
+        :param routing_tables: the router tables needed to be compressed
+        :param compressor_app_id: the app id of the compressor compressor
+        :return: the executable targets that represent all cores/chips which
+        have active routing tables
         """
 
         # build core subsets
@@ -84,7 +98,6 @@ class MundyOnChipRouterCompression(object):
         binary_path = os.path.join(self.__file__, "rt_minimise.aplx")
 
         # build executable targets
-
         executable_targets = ExecutableTargets()
         executable_targets.add_subsets(binary_path, core_subsets)
 
@@ -95,43 +108,52 @@ class MundyOnChipRouterCompression(object):
             raise exceptions.ConfigurationException(
                 "The app loader failed to load the executable for router "
                 "compression.")
-
+        return executable_targets
 
     def _build_data(self, routing_table, app_id, store_on_sdram):
+        """ converts the router table into the data needed by the router
+        compressor c code.
+
+        :param routing_table: the pacman router table instance
+        :param app_id: the app-id to load the entries in by
+        :param store_on_sdram: flag that says store the results in sdram
+        :return: The buffer byte array writer needed for spinnman
         """
 
-        :param routing_table:
-        :param app_id:
-        :param store_on_sdram:
-        :return:
-        """
-
-        size_for_router_entries = \
-            (routing_table.number_of_entries * self.SIZE_OF_A_SDRAM_ENTRY)
+        # write header data of the appid to load the data, if to store
+        # results in sdram and the router table entries
         data = bytearray()
         data.append(app_id)
         data.append(store_on_sdram)
-        data.append(size_for_router_entries)
+        data.append(routing_table.number_of_entries)
 
         for entry in routing_table.multicast_routing_entries:
             data.append(entry.routing_entry_key)
             data.append(entry.mask)
-            data.append(self._make_route(entry))
+            data.append(
+                Router.convert_routing_table_entry_to_spinnaker_route(entry))
             data.append(self._make_source_hack(entry))
 
+        # write data into a object usable by the spinnman interface
         writer = BufferedBytearrayDataStorage()
         writer.write(data)
         return writer
 
     @staticmethod
-    def _make_route(entry):
-
+    def _make_source_hack(entry):
+        """
+        hack to support the source requirement for the router compressor on
+        chip.
+        :param entry: the multicast router table entry.
+        :return: return the source value
+        """
+        if entry.defaultable:
+            return entry.links[0] + 3 % 6
+        else:
+            return entry.links[0]
 
     @staticmethod
-    def _make_source_hack(entry):
-
-
-    def _build_core_subsets(self, routing_tables, machine):
+    def _build_core_subsets(routing_tables, machine):
         """
 
         :param routing_tables: the routing tables to be loaded for compression

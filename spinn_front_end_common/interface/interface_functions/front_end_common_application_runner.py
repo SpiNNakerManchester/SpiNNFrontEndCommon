@@ -7,7 +7,6 @@ from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
     import AbstractStartsSynchronized
 
 import logging
-import time
 logger = logging.getLogger(__name__)
 
 
@@ -48,13 +47,13 @@ class FrontEndCommonApplicationRunner(object):
                 AbstractStartsSynchronized)
 
         # wait for all cores that are in a barrier to reach the barrier
-        helpful_functions.wait_for_cores_to_be_ready(
-            synchronized_binaries, app_id, txrx, sync_state)
+        txrx.wait_for_cores_to_be_ready(
+            synchronized_binaries, app_id, sync_state)
 
         # wait for the other cores (which should not be at a barrier)
         # to be in running state
-        helpful_functions.wait_for_cores_to_be_ready(
-            other_binaries, app_id, txrx, CPUState.RUNNING)
+        txrx.wait_for_cores_to_be_ready(
+            other_binaries, app_id, CPUState.RUNNING)
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
@@ -80,8 +79,8 @@ class FrontEndCommonApplicationRunner(object):
         if runtime is None:
             logger.info("Application is set to run forever - exiting")
         else:
-            self.wait_for_execution_to_complete(
-                executable_targets, app_id, runtime, time_scale_factor, txrx,
+            txrx.wait_for_execution_to_complete(
+                executable_targets, app_id, runtime * time_scale_factor,
                 time_threshold)
 
         return True, no_sync_changes
@@ -125,18 +124,17 @@ class FrontEndCommonApplicationRunner(object):
                 logger.warn("some processors finished between signal "
                             "transmissions. Could be a sign of an error")
             else:
-                unsuccessful_cores = helpful_functions.get_cores_not_in_state(
+                unsuccessful_cores = txrx.get_cores_not_in_state(
                     all_core_subsets,
-                    {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED},
-                    txrx)
+                    {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED})
 
                 # Last chance to get out of error state
                 if len(unsuccessful_cores) > 0:
-                    break_down = helpful_functions.get_core_status_string(
+                    break_down = txrx.get_core_status_string(
                         unsuccessful_cores)
                     raise exceptions.ExecutableFailedToStartException(
                         "Only {} of {} processors started:{}".format(
                             processors_running, total_processors, break_down),
-                        helpful_functions.get_core_subsets(unsuccessful_cores))
+                        unsuccessful_cores.core_subsets)
 
 
