@@ -24,7 +24,8 @@ class FrontEndCommonApplicationRunner(object):
             loaded_reverse_iptags_token, loaded_iptags_token,
             loaded_routing_tables_token, loaded_binaries_token,
             loaded_application_data_token, no_sync_changes, time_threshold,
-            has_loaded_runtime_flag, placements, graph_mapper=None):
+            has_loaded_runtime_flag, placements, graph_mapper=None,
+            generate_logging_output=True):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
@@ -35,7 +36,8 @@ class FrontEndCommonApplicationRunner(object):
                 "Not all valid tokens have been given in the positive state. "
                 "please rerun and try again")
 
-        logger.info("*** Running simulation... *** ")
+        if generate_logging_output:
+            logger.info("*** Running simulation... *** ")
 
         if no_sync_changes % 2 == 0:
             sync_state = CPUState.SYNC0
@@ -77,7 +79,8 @@ class FrontEndCommonApplicationRunner(object):
             notification_interface.send_start_notification()
 
         if runtime is None:
-            logger.info("Application is set to run forever - exiting")
+            if generate_logging_output:
+                logger.info("Application is set to run forever - exiting")
         else:
             txrx.wait_for_execution_to_complete(
                 executable_targets, app_id, runtime * time_scale_factor,

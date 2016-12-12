@@ -1,3 +1,4 @@
+import logging
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_load_executable_images import \
@@ -9,10 +10,12 @@ from spinn_front_end_common.mapping_algorithms \
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router
+from spinn_machine.utilities.progress_bar import ProgressBar
+
+from spinnman import transceiver as tx
 
 import os
 import struct
-from spinn_machine.utilities.progress_bar import ProgressBar
 
 
 class MundyOnChipRouterCompression(object):
@@ -84,10 +87,15 @@ class MundyOnChipRouterCompression(object):
         # update progress bar
         progress_bar.update()
 
+        # get logger for spinnman and turn off
+        logger = tx.logger
+        logger_level = logger.level
+        logger.setLevel(logging.ERROR)
         # verify when the executable has finished
         transceiver.wait_for_execution_to_complete(
             executable_targets, compressor_app_id, expected_run_time,
             runtime_threshold_before_error)
+        logger.setLevel(logger_level)
         # update progress bar
         progress_bar.update()
 

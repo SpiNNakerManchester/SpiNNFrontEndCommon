@@ -880,7 +880,8 @@ class SpinnakerMainInterface(object):
                 dest_bits = coords_bits[1].split(",")
                 removed_bracket_dx = dest_bits[0].split("(")[1]
                 removed_bracket_dy = dest_bits[1].split(")")[0]
-                dest_tuple = (int(removed_bracket_dx), int(removed_bracket_dy))
+                dest_tuple = (int(removed_bracket_dx),
+                              int(removed_bracket_dy))
                 link_id = int(coords_bits[2])
                 down_links.append((source_tuple, dest_tuple, link_id))
         print bits
