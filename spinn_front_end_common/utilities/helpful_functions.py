@@ -159,7 +159,7 @@ def set_up_output_application_data_specifics(
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
     this_run_time_sub_folder = os.path.join(
-        this_run_time_folder, "run:{}".format(n_calls_to_run))
+        this_run_time_folder, "run_{}".format(n_calls_to_run))
 
     if not os.path.exists(this_run_time_sub_folder):
         os.makedirs(this_run_time_sub_folder)
@@ -226,10 +226,10 @@ def set_up_report_specifics(
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
     app_sub_folder_name = os.path.join(
-        app_folder_name, "run:{}".format(n_calls_to_run))
+        app_folder_name, "run_{}".format(n_calls_to_run))
 
     if not os.path.exists(app_sub_folder_name):
-            os.makedirs(app_sub_folder_name)
+        os.makedirs(app_sub_folder_name)
 
     # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
