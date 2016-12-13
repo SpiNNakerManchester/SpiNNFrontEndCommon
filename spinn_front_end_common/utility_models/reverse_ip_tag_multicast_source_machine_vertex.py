@@ -84,7 +84,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('SEND_BUFFER', 3),
                ('PROVENANCE_REGION', 4)])
 
-    _CONFIGURATION_REGION_SIZE = 44
+    # 11 ints (1, has prefix, 2, prefix, 3, prefix type, 4, check key flag,
+    #          5, has key, 6, key, 7, mask, 8, buffer space,
+    #          9, send buffer flag before notify, 10, tag,
+    #          11. receive sdp port)
+    _CONFIGURATION_REGION_SIZE = 11 * 4
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -147,13 +151,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param send_buffer_space_before_notify: The amount of space free in\
                 the sending buffer before the machine will ask the host for\
                 more data (default setting is optimised for most cases)
-        :param send_buffer_notification_ip_address: The IP address of the host\
+        :param buffer_notification_ip_address: The IP address of the host\
                 that will send new buffers (must be specified if a send buffer\
                 is specified)
-        :param send_buffer_notification_port: The port that the host that will\
+        :param buffer_notification_port: The port that the host that will\
                 send new buffers is listening on (must be specified if a\
                 send buffer is specified)
-        :param send_buffer_notification_tag: The IP tag to use to notify the\
+        :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
         AbstractReceiveBuffersToHost.__init__(self)
@@ -193,7 +197,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 ip_address=buffer_notification_ip_address,
                 port=buffer_notification_port, strip_sdp=True,
                 tag=buffer_notification_tag,
-                traffic_identifier=BufferManager.TRAFFIC_TYPE)]
+                traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
             SendsBuffersFromHostPreBufferedImpl.__init__(
@@ -535,8 +539,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             this_tag = None
 
             for tag in ip_tags:
-                if (tag.traffic_identifier ==
-                        BufferManager.TRAFFIC_TYPE):
+                if tag.traffic_identifier == BufferManager.TRAFFIC_IDENTIFIER:
                     this_tag = tag
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
@@ -551,6 +554,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=0)
             spec.write_value(data=0)
             spec.write_value(data=0)
+
+        # write sdp port to which sdp packets will be received
         spec.write_value(data=self._receive_sdp_port)
 
     @inject_items({

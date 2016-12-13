@@ -197,7 +197,7 @@ class ReverseIpTagMultiCastSource(
                 self._buffer_notification_port, self._buffer_notification_tag))
         else:
             container.extend(recording_utilities.get_recording_resources(
-                [self._record_buffer_size], ))
+                [self._record_buffer_size]))
         return container
 
     @property

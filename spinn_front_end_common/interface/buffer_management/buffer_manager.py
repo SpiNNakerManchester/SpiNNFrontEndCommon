@@ -69,7 +69,7 @@ class BufferManager(object):
     """
 
     # Buffer manager traffic type
-    TRAFFIC_TYPE = recording_utilities.TRAFFIC_TYPE
+    TRAFFIC_IDENTIFIER = recording_utilities.TRAFFIC_IDENTIFIER
 
     __slots__ = [
         # placements object
@@ -219,8 +219,11 @@ class BufferManager(object):
 
         if tags is not None:
             tag = None
+
+            # locate tthe tag that is associated with the buffer manager
+            # traffic
             for tag in tags:
-                if tag.traffic_identifier == self.TRAFFIC_TYPE:
+                if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
                     tag = tag
                     break
 

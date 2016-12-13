@@ -17,7 +17,7 @@ _LAST_SEQUENCE_NUMBER_OFFSET = 4 * 5
 _FIRST_REGION_ADDRESS_OFFSET = 4 * 6
 
 # The Buffer traffic type
-TRAFFIC_TYPE = "BufferTraffic"
+TRAFFIC_IDENTIFIER = "BufferTraffic"
 
 
 def get_recording_header_size(n_recorded_regions):
@@ -153,7 +153,7 @@ def get_recording_resources(
     if buffering_ip_address is not None:
         ip_tags.append(IPtagResource(
             buffering_ip_address, buffering_port, True, notification_tag,
-            TRAFFIC_TYPE
+            TRAFFIC_IDENTIFIER
         ))
 
     # return the resources including the SDRAM requirements
@@ -220,7 +220,7 @@ def get_recording_header_array(
     elif ip_tags is not None and len(ip_tags) > 0:
         buffering_output_tag = None
         for tag in ip_tags:
-            if tag.traffic_identifier == TRAFFIC_TYPE:
+            if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                 buffering_output_tag = tag.tag
         if buffering_output_tag is None:
             raise Exception("Buffering tag not found")
