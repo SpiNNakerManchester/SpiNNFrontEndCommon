@@ -220,7 +220,7 @@ class BufferManager(object):
         if tags is not None:
             tag = None
 
-            # locate tthe tag that is associated with the buffer manager
+            # locate the tag that is associated with the buffer manager
             # traffic
             for tag in tags:
                 if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
