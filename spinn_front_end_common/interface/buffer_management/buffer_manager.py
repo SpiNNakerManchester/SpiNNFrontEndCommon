@@ -45,6 +45,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects.\
     channel_buffer_state import ChannelBufferState
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
+from spinn_front_end_common.utilities import constants as fec_constants
 
 # general imports
 import threading
@@ -242,7 +243,6 @@ class BufferManager(object):
                             "Listening for packets using tag {} on"
                             " {}:{}".format(tag.tag, tag.ip_address, tag.port))
                         self._seen_tags.add((tag.ip_address, tag.port))
-                        self._output_buffering_port_num = tag.port
                         if self._transceiver is not None:
                             self._transceiver.register_udp_listener(
                                 self.receive_buffer_command_message,
@@ -779,7 +779,8 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=self._output_buffering_port_num,
+            destination_port=(
+                fec_constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value),
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
