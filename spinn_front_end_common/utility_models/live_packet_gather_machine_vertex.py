@@ -33,6 +33,7 @@ from spinn_front_end_common.utilities import constants
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
 from enum import Enum
+from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 
 class LivePacketGatherMachineVertex(
@@ -146,6 +147,10 @@ class LivePacketGatherMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
+    def get_binary_start_mode_enum(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",

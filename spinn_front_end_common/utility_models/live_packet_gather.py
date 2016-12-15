@@ -29,6 +29,7 @@ from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
+from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 
 class LivePacketGather(
@@ -121,6 +122,10 @@ class LivePacketGather(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
+    def get_binary_start_mode_enum(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @property
     @overrides(ApplicationVertex.n_atoms)

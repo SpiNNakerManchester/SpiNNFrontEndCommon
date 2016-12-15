@@ -1081,14 +1081,6 @@
                 <param_name>loaded_binaries_token</param_name>
                 <param_type>LoadBinariesToken</param_type>
             </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
@@ -1097,11 +1089,7 @@
             <param_name>executable_targets</param_name>
             <param_name>no_machine_timesteps</param_name>
             <param_name>loaded_binaries_token</param_name>
-            <param_name>placements</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>NoSyncChanges</param_type>
             <param_type>HasLoadedRuntimeToChips</param_type>

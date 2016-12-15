@@ -1,12 +1,12 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
-
 from spinnman import constants
+
+from spinn_machine.utilities.progress_bar import ProgressBar
 from spinnman.model.diagnostic_filter import DiagnosticFilter
-from spinnman.model.diagnostic_filter_default_routing_status import \
+from spinnman.model.enums.diagnostic_filter_default_routing_status import \
     DiagnosticFilterDefaultRoutingStatus
-from spinnman.model.diagnostic_filter_packet_type import \
+from spinnman.model.enums.diagnostic_filter_packet_type import \
     DiagnosticFilterPacketType
-from spinnman.model.diagnostic_filter_source import DiagnosticFilterSource
+from spinnman.model.enums.diagnostic_filter_source import DiagnosticFilterSource
 
 
 class FrontEndCommonRoutingTableLoader(object):

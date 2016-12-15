@@ -1,19 +1,20 @@
-import logging
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.mapping_algorithms \
+    import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_load_executable_images import \
     FrontEndCommonLoadExecutableImages
-from spinn_front_end_common.utilities.utility_objs.executable_targets import \
+from spinnman.model.enums.executable_start_type import ExecutableStartType
+
+from spinnman.model.executable_targets import \
     ExecutableTargets
-from spinn_front_end_common.mapping_algorithms \
-    import on_chip_router_table_compression
+from spinnman import transceiver as tx
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-from spinnman import transceiver as tx
-
+import logging
 import os
 import struct
 
@@ -93,8 +94,8 @@ class MundyOnChipRouterCompression(object):
         logger.setLevel(logging.ERROR)
         # verify when the executable has finished
         transceiver.wait_for_execution_to_complete(
-            executable_targets, compressor_app_id, expected_run_time,
-            runtime_threshold_before_error)
+            executable_targets.all_core_subsets, compressor_app_id,
+            expected_run_time, runtime_threshold_before_error)
         logger.setLevel(logger_level)
         # update progress bar
         progress_bar.update()
@@ -128,7 +129,8 @@ class MundyOnChipRouterCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(binary_path, core_subsets)
+        executable_targets.add_subsets(
+            binary_path, core_subsets, ExecutableStartType.RUNNING)
 
         executable_loader = FrontEndCommonLoadExecutableImages()
         success = executable_loader(

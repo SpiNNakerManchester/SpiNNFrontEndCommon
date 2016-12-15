@@ -33,6 +33,7 @@ from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
 
 # general imports
 import sys
+from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 
 class ReverseIpTagMultiCastSource(
@@ -231,6 +232,10 @@ class ReverseIpTagMultiCastSource(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'reverse_iptag_multicast_source.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
+    def get_binary_start_mode_enum(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(spec, placement)

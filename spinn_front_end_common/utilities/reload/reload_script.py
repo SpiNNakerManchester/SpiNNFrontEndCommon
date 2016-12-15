@@ -18,7 +18,9 @@ from spinn_front_end_common.utilities.reload.reload_buffered_vertex \
 from spinn_front_end_common.utilities.notification_protocol.socket_address \
     import SocketAddress
 from spinn_front_end_common.utilities.reload.reload import Reload
-from spinn_front_end_common.utilities.utility_objs.executable_targets \
+
+# spinnman imports
+from spinnman.model.executable_targets \
     import ExecutableTargets
 
 # general imports

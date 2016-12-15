@@ -6,10 +6,12 @@ from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
 from spinn_front_end_common import mapping_algorithms
-from spinn_front_end_common.utilities.utility_objs.executable_targets\
-    import ExecutableTargets
 
 # spinnman imports
+from spinnman.model.executable_targets \
+    import ExecutableTargets
+
+# SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.core_subset import CoreSubset
 

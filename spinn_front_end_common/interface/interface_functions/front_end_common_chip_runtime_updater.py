@@ -1,11 +1,9 @@
-from spinnman.model.cpu_state import CPUState
-
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+
+from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.utilities.scp.update_runtime_process \
     import UpdateRuntimeProcess
+from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 
 class FrontEndCommonChipRuntimeUpdater(object):
@@ -15,9 +13,8 @@ class FrontEndCommonChipRuntimeUpdater(object):
     __slots__ = []
 
     def __call__(
-            self, txrx, no_sync_changes, app_id, placements,
-            executable_targets, no_machine_timesteps, loaded_binaries_token,
-            graph_mapper=None):
+            self, txrx, no_sync_changes, app_id, executable_targets,
+            no_machine_timesteps, loaded_binaries_token):
 
         if not loaded_binaries_token:
             raise exceptions.ConfigurationException(
@@ -25,13 +22,12 @@ class FrontEndCommonChipRuntimeUpdater(object):
                 " called")
 
         # Find placements whose run time can be updated
-        updatable_binaries, _ = helpful_functions.get_executables_by_run_type(
-            executable_targets, placements, graph_mapper,
-            AbstractBinaryUsesSimulationRun)
+        updatable_binaries = executable_targets.get_start_core_subsets(
+            ExecutableStartType.USES_SIMULATION_INTERFACE)
 
-        if updatable_binaries.total_processors > 0:
+        if len(updatable_binaries) > 0:
             txrx.wait_for_cores_to_be_ready(
-                updatable_binaries, app_id, CPUState.PAUSED)
+                updatable_binaries, app_id, [CPUState.PAUSED])
 
             infinite_run = 0
             if no_machine_timesteps is None:

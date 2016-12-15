@@ -23,6 +23,7 @@ from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
+from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 
 class CommandSender(
@@ -272,3 +273,7 @@ class CommandSender(
         :return:
         """
         return 'command_sender_multicast_source.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
+    def get_binary_start_mode_enum(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE

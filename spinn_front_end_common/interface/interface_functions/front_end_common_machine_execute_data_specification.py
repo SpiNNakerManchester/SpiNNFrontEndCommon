@@ -8,11 +8,10 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 
 # spinnman imports
-from spinnman.model.cpu_state import CPUState
+from spinnman.model.enums.cpu_state import CPUState
 
 # front end common imports
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import helpful_functions
 
 import os
 import logging

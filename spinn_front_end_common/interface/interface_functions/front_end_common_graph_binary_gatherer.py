@@ -1,10 +1,11 @@
 from spinn_machine.utilities.progress_bar import ProgressBar
 
+from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary\
     import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs.executable_targets import \
+
+from spinnman.model.executable_targets import \
     ExecutableTargets
-from spinn_front_end_common.utilities import exceptions
 
 
 class FrontEndCommonGraphBinaryGatherer(object):
@@ -51,6 +52,7 @@ class FrontEndCommonGraphBinaryGatherer(object):
             if not executable_targets.has_binary(binary_path):
                 executable_targets.add_binary(binary_path)
             executable_targets.add_processor(
-                binary_path, placement.x, placement.y, placement.p)
+                binary_path, placement.x, placement.y, placement.p,
+                associated_vertex.get_binary_start_mode_enum())
             return True
         return False
