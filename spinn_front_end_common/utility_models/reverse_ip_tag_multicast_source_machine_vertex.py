@@ -87,7 +87,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     # 11 ints (1, has prefix, 2, prefix, 3, prefix type, 4, check key flag,
     #          5, has key, 6, key, 7, mask, 8, buffer space,
     #          9, send buffer flag before notify, 10, tag,
-    #          11. receive sdp port)
+    #          11. receive SDP port)
     _CONFIGURATION_REGION_SIZE = 11 * 4
 
     def __init__(
@@ -541,6 +541,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             for tag in ip_tags:
                 if tag.traffic_identifier == BufferManager.TRAFFIC_IDENTIFIER:
                     this_tag = tag
+                    break
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
 
@@ -555,7 +556,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=0)
             spec.write_value(data=0)
 
-        # write sdp port to which sdp packets will be received
+        # write SDP port to which SDP packets will be received
         spec.write_value(data=self._receive_sdp_port)
 
     @inject_items({

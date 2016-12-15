@@ -30,13 +30,13 @@ typedef enum eieio_command_messages {
 
     // Host confirming data being read form SpiNNaker memory
     HOST_DATA_READ
-}eieio_command_messages;
+} eieio_command_messages;
 
 //! The different buffer operations
-typedef enum buffered_operations{
+typedef enum buffered_operations {
     BUFFER_OPERATION_READ,
     BUFFER_OPERATION_WRITE
-}buffered_operations;
+} buffered_operations;
 
 //! pointer to an EIEIO message
 typedef uint16_t* eieio_msg_t;

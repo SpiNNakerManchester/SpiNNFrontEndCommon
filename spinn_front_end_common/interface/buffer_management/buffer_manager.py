@@ -218,42 +218,36 @@ class BufferManager(object):
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
-            tag = None
 
             # locate the tag that is associated with the buffer manager
             # traffic
             for tag in tags:
                 if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
-                    tag = tag
-                    break
 
-            # Only continue if there is a tag
-            if tag is not None:
-
-                # If the tag port is not assigned, create a connection and
-                # assign the port.  Note that this *should* update the port
-                # number in any tags being shared
-                if tag.port is None:
-                    local_port = self._transceiver.register_udp_listener(
-                        self.receive_buffer_command_message,
-                        UDPEIEIOConnection, local_port=None,
-                        local_host=tag.ip_address)
-                    tag.port = local_port
-                    self._seen_tags.add((tag.ip_address, tag.port))
-
-                # In case we have tags with different specified ports, also
-                # allow the tag to be created here
-                if (tag.ip_address, tag.port) not in self._seen_tags:
-                    logger.debug(
-                        "Listening for packets using tag {} on"
-                        " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-                    self._seen_tags.add((tag.ip_address, tag.port))
-                    self._output_buffering_port_num = tag.port
-                    if self._transceiver is not None:
-                        self._transceiver.register_udp_listener(
+                    # If the tag port is not assigned, create a connection and
+                    # assign the port.  Note that this *should* update the port
+                    # number in any tags being shared
+                    if tag.port is None:
+                        local_port = self._transceiver.register_udp_listener(
                             self.receive_buffer_command_message,
-                            UDPEIEIOConnection, local_port=tag.port,
+                            UDPEIEIOConnection, local_port=None,
                             local_host=tag.ip_address)
+                        tag.port = local_port
+                        self._seen_tags.add((tag.ip_address, tag.port))
+
+                    # In case we have tags with different specified ports, also
+                    # allow the tag to be created here
+                    if (tag.ip_address, tag.port) not in self._seen_tags:
+                        logger.debug(
+                            "Listening for packets using tag {} on"
+                            " {}:{}".format(tag.tag, tag.ip_address, tag.port))
+                        self._seen_tags.add((tag.ip_address, tag.port))
+                        self._output_buffering_port_num = tag.port
+                        if self._transceiver is not None:
+                            self._transceiver.register_udp_listener(
+                                self.receive_buffer_command_message,
+                                UDPEIEIOConnection, local_port=tag.port,
+                                local_host=tag.ip_address)
 
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices\

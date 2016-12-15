@@ -222,6 +222,7 @@ def get_recording_header_array(
         for tag in ip_tags:
             if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                 buffering_output_tag = tag.tag
+                break
         if buffering_output_tag is None:
             raise Exception("Buffering tag not found")
 

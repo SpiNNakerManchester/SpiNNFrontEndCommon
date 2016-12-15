@@ -31,7 +31,4 @@ typedef struct eieio_header_struct {
 eieio_header_struct eieio_interface_get_eieio_header(
     address_t header_start_address);
 
-//! \brief takes a
-
-
 #endif
