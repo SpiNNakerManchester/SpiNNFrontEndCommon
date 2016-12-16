@@ -221,7 +221,8 @@ class BufferManager(object):
                 connection, tag.board_address)
             logger.info(
                 "Listening for packets using tag {} on {}:{}".format(
-                    tag.tag, tag.ip_address, tag.port))
+                    tag.tag, connection.local_ip_address,
+                    connection.local_port))
             return connection
 
     def _add_buffer_listeners(self, vertex):
