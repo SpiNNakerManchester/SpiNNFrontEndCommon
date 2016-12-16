@@ -8,6 +8,7 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
 from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinnman.utilities import utility_functions
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -210,6 +211,19 @@ class BufferManager(object):
         except Exception:
             traceback.print_exc()
 
+    def _create_connection(self, tag):
+        if self._transceiver is not None:
+            connection = self._transceiver.register_udp_listener(
+                self.receive_buffer_command_message, UDPEIEIOConnection,
+                local_port=tag.port, local_host=tag.ip_address)
+            self._seen_tags.add((tag.ip_address, connection.local_port))
+            utility_functions.send_port_trigger_message(
+                connection, tag.board_address)
+            logger.info(
+                "Listening for packets using tag {} on {}:{}".format(
+                    tag.tag, tag.ip_address, tag.port))
+            return connection
+
     def _add_buffer_listeners(self, vertex):
         """ Add listeners for buffered data for the given vertex
         """
@@ -228,25 +242,13 @@ class BufferManager(object):
                     # assign the port.  Note that this *should* update the port
                     # number in any tags being shared
                     if tag.port is None:
-                        local_port = self._transceiver.register_udp_listener(
-                            self.receive_buffer_command_message,
-                            UDPEIEIOConnection, local_port=None,
-                            local_host=tag.ip_address)
-                        tag.port = local_port
-                        self._seen_tags.add((tag.ip_address, tag.port))
+                        connection = self._create_connection(tag)
+                        tag.port = connection.local_port
 
                     # In case we have tags with different specified ports, also
                     # allow the tag to be created here
-                    if (tag.ip_address, tag.port) not in self._seen_tags:
-                        logger.debug(
-                            "Listening for packets using tag {} on"
-                            " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-                        self._seen_tags.add((tag.ip_address, tag.port))
-                        if self._transceiver is not None:
-                            self._transceiver.register_udp_listener(
-                                self.receive_buffer_command_message,
-                                UDPEIEIOConnection, local_port=tag.port,
-                                local_host=tag.ip_address)
+                    elif (tag.ip_address, tag.port) not in self._seen_tags:
+                        self._create_connection(tag)
 
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices\
