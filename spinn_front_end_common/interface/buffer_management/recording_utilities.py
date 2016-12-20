@@ -236,8 +236,8 @@ def get_recording_header_array(
     # The parameters
     data.append(len(recorded_region_sizes))
     data.append(buffering_output_tag)
-    data.append(struct.pack(
-        "<HH", buffering_output_dest_y, buffering_output_dest_x))
+    data.append(struct.unpack("<I", struct.pack(
+        "<HH", buffering_output_dest_y, buffering_output_dest_x))[0])
     data.append(constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
     if buffer_size_before_request is not None:
         data.append(buffer_size_before_request)
