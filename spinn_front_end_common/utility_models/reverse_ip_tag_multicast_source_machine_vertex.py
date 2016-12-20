@@ -14,6 +14,7 @@ from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
+import struct
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.abstract_classes.impl.constrained_object \
@@ -84,11 +85,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('SEND_BUFFER', 3),
                ('PROVENANCE_REGION', 4)])
 
-    # 11 ints (1, has prefix, 2, prefix, 3, prefix type, 4, check key flag,
-    #          5, has key, 6, key, 7, mask, 8, buffer space,
-    #          9, send buffer flag before notify, 10, tag,
-    #          11. receive SDP port)
-    _CONFIGURATION_REGION_SIZE = 11 * 4
+    # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
+    #          5. has key, 6. key, 7. mask, 8. buffer space,
+    #          9. send buffer flag before notify, 10. tag,
+    #          11. tag destination (y, x), 12. receive SDP port)
+    _CONFIGURATION_REGION_SIZE = 12 * 4
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -551,7 +552,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
+            spec.write_value(struct.pack(
+                "<HH", this_tag.destination_chip_y,
+                this_tag.destination_chip_x))
         else:
+            spec.write_value(data=0)
             spec.write_value(data=0)
             spec.write_value(data=0)
             spec.write_value(data=0)

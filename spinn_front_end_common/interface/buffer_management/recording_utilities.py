@@ -11,10 +11,10 @@ import sys
 import math
 
 # The offset of the last sequence number field in bytes
-_LAST_SEQUENCE_NUMBER_OFFSET = 4 * 5
+_LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6
 
 # The offset of the memory addresses in bytes
-_FIRST_REGION_ADDRESS_OFFSET = 4 * 6
+_FIRST_REGION_ADDRESS_OFFSET = 4 * 7
 
 # The Buffer traffic type
 TRAFFIC_IDENTIFIER = "BufferTraffic"
@@ -27,7 +27,7 @@ def get_recording_header_size(n_recorded_regions):
     """
 
     # See recording.h/recording_initialise for data included in the header
-    return (6 + (2 * n_recorded_regions)) * 4
+    return (7 + (2 * n_recorded_regions)) * 4
 
 
 def get_recording_data_size(recorded_region_sizes):
@@ -215,6 +215,8 @@ def get_recording_header_array(
 
     # Find the tag if required
     buffering_output_tag = 0
+    buffering_output_dest_x = 0
+    buffering_output_dest_y = 0
     if buffering_tag is not None:
         buffering_output_tag = buffering_tag
     elif ip_tags is not None and len(ip_tags) > 0:
@@ -222,6 +224,8 @@ def get_recording_header_array(
         for tag in ip_tags:
             if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                 buffering_output_tag = tag.tag
+                buffering_output_dest_x = tag.destination_x
+                buffering_output_dest_y = tag.destination_y
                 break
         if buffering_output_tag is None:
             raise Exception("Buffering tag not found")
@@ -232,6 +236,8 @@ def get_recording_header_array(
     # The parameters
     data.append(len(recorded_region_sizes))
     data.append(buffering_output_tag)
+    data.append(struct.pack(
+        "<HH", buffering_output_dest_y, buffering_output_dest_x))
     data.append(constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
     if buffer_size_before_request is not None:
         data.append(buffer_size_before_request)

@@ -24,6 +24,7 @@ from spinn_front_end_common.abstract_models\
     import AbstractGeneratesDataSpecification
 from spinn_front_end_common.abstract_models\
     .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+import struct
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
@@ -47,7 +48,7 @@ class LivePacketGatherMachineVertex(
                ('PROVENANCE', 2)])
 
     N_ADDITIONAL_PROVENANCE_ITEMS = 2
-    _CONFIG_SIZE = 44
+    _CONFIG_SIZE = 48
     _PROVENANCE_REGION_SIZE = 8
 
     def __init__(
@@ -258,6 +259,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
+        spec.write_value(struct.pack(
+            "<HH", iptag.destination_chip_y, iptag.destination_chip_x))
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
