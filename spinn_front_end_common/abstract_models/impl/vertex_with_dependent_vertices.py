@@ -8,8 +8,8 @@ from spinn_front_end_common.abstract_models.\
 
 
 @add_metaclass(ABCMeta)
-class VertexWithEdgeToDependentVertices\
-            (AbstractVertexWithEdgeToDependentVertices):
+class VertexWithEdgeToDependentVertices(
+        AbstractVertexWithEdgeToDependentVertices):
     """ A vertex with a dependent vertices, which should be connected to this\
         vertex by an edge directly to each of them
     """
@@ -17,8 +17,8 @@ class VertexWithEdgeToDependentVertices\
     def __init__(self, dependent_vertices_to_edge_partition_identifier):
         """
 
-        :param dependent_vertices_to_edge_partition_identifier:
-        The vertex to edge partition identifiers
+        :param dependent_vertices_to_edge_partition_identifier:\
+                The vertex to edge partition identifiers
         :type dependent_vertices_to_edge_partition_identifier: dict
         :return: None
         :rtype: None
@@ -30,7 +30,6 @@ class VertexWithEdgeToDependentVertices\
 
     def dependent_vertices(self):
         """ Return the vertices which this vertex depends upon
-        :return:
         """
         return self._dependent_vertices_to_edge_partition_identifier.keys()
 

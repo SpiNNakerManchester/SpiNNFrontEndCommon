@@ -252,7 +252,7 @@ class SpinnakerMainInterface(object):
         "_app_data_top_simulation_folder",
 
         #
-        "_multi_cast_vertex",
+        "_command_sender"
     ]
 
     def __init__(
@@ -278,8 +278,8 @@ class SpinnakerMainInterface(object):
         self._remote_spinnaker_url = None
         self._machine_allocation_controller = None
 
-        # global verts
-        self._multi_cast_vertex = None
+        # command sender vertex
+        self._command_sender = None
 
         # update graph label if needed
         if graph_label is None:
@@ -651,19 +651,21 @@ class SpinnakerMainInterface(object):
         for vertex in self._application_graph.vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
-                if self._multi_cast_vertex is None:
-                    self._multi_cast_vertex = CommandSender(
+                if self._command_sender is None:
+                    self._command_sender = CommandSender(
                         "auto_added_command_sender", None)
-                    self.add_application_vertex(self._multi_cast_vertex)
+                    self.add_application_vertex(self._command_sender)
 
                 # allow the command sender to create key to partition map
-                self._multi_cast_vertex.add_commands(
+                self._command_sender.add_commands(
                     vertex.start_resume_commands,
                     vertex.pause_stop_commands,
                     vertex.timed_commands, vertex)
-        # add the edges from the command sender to the dependent verts
-        if self._multi_cast_vertex is not None:
-            edges, partition_ids = self._multi_cast_vertex.edges_and_partitions()
+
+        # add the edges from the command sender to the dependent vertices
+        if self._command_sender is not None:
+            edges, partition_ids = \
+                self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
                 self.add_application_edge(edge, partition_id)
 
@@ -1080,8 +1082,8 @@ class SpinnakerMainInterface(object):
             "Database", "create_database")
         inputs["SendStartNotifications"] = self._config.getboolean(
             "Database", "send_start_notification")
-        inputs["SendStopPauseNotifications"] = self._config.getboolean(
-            "Database", "send_stop_resume_notification")
+        inputs["SendStopNotifications"] = self._config.getboolean(
+            "Database", "send_stop_notification")
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(
@@ -1884,14 +1886,6 @@ class SpinnakerMainInterface(object):
 
         if extract_provenance_data:
 
-            # turn off reinjector before extracting provenance data, otherwise
-            # its highly possible when things are going wrong, that the data
-            # extracted from the reinjector is changing.
-            if self._txrx is not None and self._config.getboolean(
-                    "Machine", "enable_reinjection"):
-                self._txrx.enable_reinjection(multicast=False)
-
-            # extract provenance data
             # turn off reinjector before extracting provenance data, otherwise
             # its highly possible when things are going wrong, that the data
             # extracted from the reinjector is changing.

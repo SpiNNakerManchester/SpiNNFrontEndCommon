@@ -5,8 +5,8 @@ from abc import abstractmethod
 
 @add_metaclass(ABCMeta)
 class AbstractProvidesKeyToAtomMapping(object):
-    """ interface to provide a mapping between routing key partitions and
-    atom ids
+    """ interface to provide a mapping between routing key partitions and\
+        atom ids
 
     """
 
@@ -16,5 +16,5 @@ class AbstractProvidesKeyToAtomMapping(object):
 
         :param routing_info: the routing info object to consider
         :param partition: the routing partition to handle.
-        :return: a iterable of tuples of incrementing atom ids to keys.
+        :return: a iterable of tuples of atom ids to keys.
         """

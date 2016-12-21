@@ -17,8 +17,8 @@ from pacman.model.resources.iptag_resource import IPtagResource
 from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.abstract_models.impl.provides_key_to_atom_mapping_impl import \
-    ProvidesKeyToAtomMappingImpl
+from spinn_front_end_common.abstract_models.impl\
+    .provides_key_to_atom_mapping_impl import ProvidesKeyToAtomMappingImpl
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utility_models\
     .reverse_ip_tag_multicast_source_machine_vertex \

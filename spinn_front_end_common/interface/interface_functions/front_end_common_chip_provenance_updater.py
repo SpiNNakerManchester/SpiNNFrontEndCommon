@@ -30,23 +30,22 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        buggered_cores = helpful_functions.get_cores_in_state(
+        error_cores = helpful_functions.get_cores_in_state(
             all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-        watched_dogged_cores = helpful_functions.get_cores_in_state(
+        watchdog_cores = helpful_functions.get_cores_in_state(
             all_core_subsets, CPUState.WATCHDOG, txrx)
-        disappeared_cores = helpful_functions.get_cores_in_state(
+        idle_cores = helpful_functions.get_cores_in_state(
             all_core_subsets, CPUState.IDLE, txrx)
 
-        if (len(buggered_cores) != 0 or len(watched_dogged_cores) != 0 or
-                len(disappeared_cores) != 0):
+        if (len(error_cores) != 0 or len(watchdog_cores) != 0 or
+                len(idle_cores) != 0):
             raise exceptions.ConfigurationException(
-                "Some cores have crashed. RTE cores {}, watch-dogged cores {}, "
-                "idle cores {}".format(
-                    buggered_cores.values(), watched_dogged_cores.values(),
-                    disappeared_cores.values()))
+                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
+                " idle cores {}".format(
+                    error_cores.values(), watchdog_cores.values(),
+                    idle_cores.values()))
 
-
-        # check that all cores are in the state CPU_STATE_12 which shows that
+        # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
         while processors_completed != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(

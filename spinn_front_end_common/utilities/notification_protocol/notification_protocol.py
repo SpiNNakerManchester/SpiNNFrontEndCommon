@@ -66,8 +66,8 @@ class NotificationProtocol(object):
             connection.send_eieio_message(eieio_command_message)
 
     def send_stop_pause_notification(self):
-        """ sends the pause / stop notifications when the script hs either
-        finished or paused
+        """ sends the pause / stop notifications when the script has either\
+            finished or paused
 
         :return:
         """
@@ -79,9 +79,9 @@ class NotificationProtocol(object):
 
     # noinspection PyPep8
     def send_read_notification(self, database_path):
-        """
-        sends notifications to all devices which have expressed an interest in
-        when the databse has been written
+        """ sends notifications to all devices which have expressed an\
+            interest in when the database has been written
+
         :param database_path: the path to the database file
         :return:
         """
@@ -90,9 +90,9 @@ class NotificationProtocol(object):
                                         args=[database_path])
 
     def _send_read_notification(self, database_path):
-        """
-        sends notfications to a list of socket addresses that the database has
-        been written. Messgae also includes the path to the database
+        """ sends notifications to a list of socket addresses that the\
+            database has been written. Message also includes the path to the\
+            database
 
         :param database_path: the path to the database
         :return: None

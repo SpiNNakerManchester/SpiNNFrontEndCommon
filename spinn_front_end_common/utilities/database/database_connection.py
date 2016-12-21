@@ -1,6 +1,4 @@
 # spinnman imports
-import struct
-
 from spinnman import exceptions
 from spinnman.messages.eieio.command_messages.eieio_command_header \
     import EIEIOCommandHeader
@@ -8,7 +6,7 @@ from spinnman.connections.udp_packet_connections.udp_connection \
     import UDPConnection
 from spinnman import constants
 
-# fec imports
+# FrontEndCommon imports
 from spinn_front_end_common.utilities.database.database_reader \
     import DatabaseReader
 

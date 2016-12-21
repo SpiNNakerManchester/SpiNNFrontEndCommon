@@ -29,6 +29,7 @@ class DatabaseWriter(object):
     """
 
     __slots__ = [
+
         # boolean flag for when the database writer has finished
         "_done",
 

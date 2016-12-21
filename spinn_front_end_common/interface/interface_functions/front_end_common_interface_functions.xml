@@ -672,8 +672,8 @@
                 <param_type>SendStartNotifications</param_type>
             </parameter>
             <parameter>
-                <param_name>send_stop_pause_notification</param_name>
-                <param_type>SendStopPauseNotifications</param_type>
+                <param_name>send_stop_notification</param_name>
+                <param_type>SendStopNotifications</param_type>
             </parameter>
             <parameter>
                 <param_name>notification_interface</param_name>
