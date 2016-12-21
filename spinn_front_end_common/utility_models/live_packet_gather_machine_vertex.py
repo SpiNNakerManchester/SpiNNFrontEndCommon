@@ -64,15 +64,17 @@ class LivePacketGatherMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
-            iptags=[IPtagResource(ip_address, port, strip_sdp, tag)])
+            iptags=[IPtagResource(
+                ip_address=ip_address, port=port,
+                strip_sdp=strip_sdp, tag=tag,
+                traffic_identifier="LPG_EVENT_STREAM")])
 
         # implementation for where constraints are stored
         self._constraints = ConstrainedObject()
         self._add_constraints(board_address)
 
         # inheritance
-        MachineVertex.__init__(
-            self, self._resources_required, label, constraints=constraints)
+        MachineVertex.__init__(self, label, constraints=constraints)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
             self.N_ADDITIONAL_PROVENANCE_ITEMS)
@@ -89,6 +91,11 @@ class LivePacketGatherMachineVertex(
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
+
+    @property
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return self._resources_required
 
     def _add_constraints(self, board_address):
         # Try to place this near the Ethernet

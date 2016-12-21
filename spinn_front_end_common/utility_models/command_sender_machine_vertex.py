@@ -69,12 +69,18 @@ class CommandSenderMachineVertex(
             self, self.DATA_REGIONS.PROVENANCE_REGION.value,
             n_additional_data_items=0)
         AbstractRequiresStopCommand.__init__(self)
-        MachineVertex.__init__(self, resources_required, label, constraints)
+        MachineVertex.__init__(self, label, constraints)
 
         # container of different types of command
         self._times_with_commands = times_with_commands
         self._commands_at_start_resume = commands_at_start_resume
         self._commands_at_pause_stop = commands_at_pause_stop
+        self._resources = resources_required
+
+    @property
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return self._resources
 
     @delegates_to("_constraints", ConstrainedObject.add_constraints)
     def add_constraints(self, constraints):

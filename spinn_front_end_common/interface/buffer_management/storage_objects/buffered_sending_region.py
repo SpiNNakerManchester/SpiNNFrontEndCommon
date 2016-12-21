@@ -36,7 +36,10 @@ class BufferedSendingRegion(object):
         "_buffer_size",
 
         # int stating the total size of the buffered region
-        "_total_region_size"
+        "_total_region_size",
+
+        # The maximum number of packets in any timestamp
+        "_max_packets_in_timestamp"
     ]
 
     _HEADER_SIZE = EIEIODataHeader.get_header_size(
@@ -66,6 +69,8 @@ class BufferedSendingRegion(object):
         self._buffer_size = None
 
         self._total_region_size = None
+
+        self._max_packets_in_timestamp = 0
 
     @property
     def buffer_size(self):
@@ -136,6 +141,8 @@ class BufferedSendingRegion(object):
         self._buffer[timestamp].append(key)
         self._total_region_size = None
         self._buffer_size = None
+        if len(self._buffer[timestamp]) > self._max_packets_in_timestamp:
+            self._max_packets_in_timestamp = len(self._buffer[timestamp])
 
     def add_keys(self, timestamp, keys):
         """ Add a set of keys to be sent at the given time
@@ -244,3 +251,9 @@ class BufferedSendingRegion(object):
         self._buffer_size = None
 
         self._total_region_size = None
+
+    @property
+    def max_packets_in_timestamp(self):
+        """ The maximum number of packets in any time stamp
+        """
+        return self._max_packets_in_timestamp

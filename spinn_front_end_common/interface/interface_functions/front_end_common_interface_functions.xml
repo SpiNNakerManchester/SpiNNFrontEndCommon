@@ -1368,6 +1368,10 @@
                 <param_type>BufferManager</param_type>
             </parameter>
             <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
                 <param_name>ran_token</param_name>
                 <param_type>RanToken</param_type>
             </parameter>
@@ -1377,6 +1381,7 @@
             <param_name>placements</param_name>
             <param_name>buffer_manager</param_name>
             <param_name>ran_token</param_name>
+            <param_name>transceiver</param_name>
         </required_inputs>
     </algorithm>
 </algorithms>
