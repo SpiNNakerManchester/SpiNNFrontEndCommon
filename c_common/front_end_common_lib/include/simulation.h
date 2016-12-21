@@ -66,7 +66,7 @@ typedef void (*exit_callback_t)();
 //! \param[in] provenance_data_region_id: the id of the region where
 //!            provenance is to be stored
 //! \param[in] exit_function: function to call when the host tells the
-//!            simulation to exit. Executed before api exit.
+//!            simulation to exit. Executed before API exit.
 //! \param[out] timer_period a pointer to an int to receive the timer period,
 //!             in microseconds
 //! \param[out] simulation_control_sdp_port The SDP port requested for

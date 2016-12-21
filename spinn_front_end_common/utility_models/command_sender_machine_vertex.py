@@ -20,8 +20,6 @@ from spinn_front_end_common.interface.provenance\
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utility_models.commands.\
-    multi_cast_command_with_payload import MultiCastCommandWithPayload
 
 
 class CommandSenderMachineVertex(
@@ -38,33 +36,27 @@ class CommandSenderMachineVertex(
                ('COMMANDS_AT_STOP_PAUSE', 3),
                ('PROVENANCE_REGION', 4)])
 
-    # 4 for key, 4 for has payload, 4 for payload 2 for repeats, 2 for delays
-    _COMMAND_WITH_PAYLOAD_SIZE = 16
-
-    # 4 for key, 4 for no payload, 2 for repeats, 2 for delays
-    _COMMAND_WITHOUT_PAYLOAD_SIZE = 12
+    # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
+    _COMMAND_WITH_PAYLOAD_SIZE = 20
 
     # 4 for the time stamp
     _COMMAND_TIMESTAMP_SIZE = 4
 
-    # 4 for the size of the schedule
-    _COMMAND_SIZE_SIZE = 4
-
     # 4 for the int to represent the number of commands
     _N_COMMANDS_SIZE = 4
 
-    # bool for if the command has a payload
-    _HAS_PAYLOAD = 0
+    # bool for if the command has a payload (true = 1)
+    _HAS_PAYLOAD = 1
 
-    # bool for if the command does not have a payload
-    _HAS_NO_PAYLOAD = 1
+    # bool for if the command does not have a payload (false = 0)
+    _HAS_NO_PAYLOAD = 0
 
-    # the number of mallocs used by the dsg
+    # the number of malloc requests used by the dsg
     TOTAL_REQUIRED_MALLOCS = 5
 
-    def __init__(self, constraints, resources_required, label,
-                 times_with_commands, commands_at_start_resume,
-                 commands_at_pause_stop):
+    def __init__(
+            self, constraints, resources_required, label,
+            commands_at_start_resume, commands_at_pause_stop, timed_commands):
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self.DATA_REGIONS.PROVENANCE_REGION.value,
             n_additional_data_items=0)
@@ -72,7 +64,7 @@ class CommandSenderMachineVertex(
         MachineVertex.__init__(self, label, constraints)
 
         # container of different types of command
-        self._times_with_commands = times_with_commands
+        self._timed_commands = timed_commands
         self._commands_at_start_resume = commands_at_start_resume
         self._commands_at_pause_stop = commands_at_pause_stop
         self._resources = resources_required
@@ -99,7 +91,7 @@ class CommandSenderMachineVertex(
             n_machine_time_steps):
 
         timed_commands_size = \
-            self.get_timed_commands_bytes(self._times_with_commands)
+            self.get_timed_commands_bytes(self._timed_commands)
         start_resume_commands_size = \
             self.get_n_command_bytes(self._commands_at_start_resume)
         pause_stop_commands_size = \
@@ -123,35 +115,27 @@ class CommandSenderMachineVertex(
             region=CommandSenderMachineVertex.DATA_REGIONS.
             COMMANDS_WITH_ARBITRARY_TIMES.value)
 
-        # sort out times and messages not to send
-        new_times = self._sort_out_timings(n_machine_time_steps)
-
         # write commands to spec for timed commands
-        self._write_arbitiary_times(new_times, spec, timed_commands_size)
+        self._write_timed_commands(self._timed_commands, spec)
 
         # write commands fired off during a start or resume
         spec.switch_write_focus(
             region=CommandSenderMachineVertex.DATA_REGIONS.
             COMMANDS_AT_START_RESUME.value)
 
-        self._write_basic_commands(
-            self._commands_at_start_resume, start_resume_commands_size, spec)
+        self._write_basic_commands(self._commands_at_start_resume, spec)
 
         # write commands fired off during a pause or end
         spec.switch_write_focus(
             region=CommandSenderMachineVertex.DATA_REGIONS.
             COMMANDS_AT_STOP_PAUSE.value)
 
-        self._write_basic_commands(
-            self._commands_at_pause_stop, pause_stop_commands_size, spec)
+        self._write_basic_commands(self._commands_at_pause_stop, spec)
 
         # End-of-Spec:
         spec.end_specification()
 
     def _write_basic_commands(self, commands, commands_size, spec):
-        # first size of data region
-        spec.write_value(
-            commands_size - CommandSenderMachineVertex._COMMAND_SIZE_SIZE)
 
         # number of commands
         spec.write_value(len(commands))
@@ -160,64 +144,22 @@ class CommandSenderMachineVertex(
         for command in commands:
             self._write_command(command, spec)
 
-    def _write_arbitiary_times(self, new_times, spec, timed_commands_size):
-        # write size of the data region
-        spec.write_value(timed_commands_size -
-                         CommandSenderMachineVertex._COMMAND_SIZE_SIZE)
+    def _write_timed_commands(self, timed_commands, spec, timed_commands_size):
 
-        # for each time, write commands
-        for time in sorted(new_times):
+        spec.write_value(len(timed_commands))
 
-            # write the time to fire
-            spec.write_value(time)
-
-            # write the number of commands to send
-            spec.write_value(len(self._times_with_commands[time]))
-
-            # Gather the different types of commands
-            for command in self._times_with_commands[time]:
-                self._write_command(command, spec)
+        # write commands
+        for command in self._timed_commands:
+            spec.write_value(command.time)
+            self._write_command(command, spec)
 
     @staticmethod
     def _write_command(command, spec):
-        if isinstance(command, MultiCastCommandWithPayload):
-            spec.write_value(command.key)
-            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
-            spec.write_value(command.payload)
-            spec.write_value((command.repeat << 16 |
-                              command.delay_between_repeats))
-        else:
-            spec.write_value(command.key)
-            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
-            spec.write_value((command.repeat << 16 |
-                              command.delay_between_repeats))
-
-    def _sort_out_timings(self, n_machine_time_steps):
-        # Go through the times and replace negative times with positive ones
-        new_times = set()
-        new_time_commands = dict()
-        times_to_delete = list()
-        for time in self._times_with_commands:
-            if time < 0 and n_machine_time_steps is not None:
-                real_time = n_machine_time_steps + (time + 1)
-                new_time_commands[real_time] = self._times_with_commands[time]
-                times_to_delete.append(time)
-                new_times.add(real_time)
-
-            # if runtime is infinite, then there's no point storing end of
-            # simulation events, as they will never occur
-            elif time < 0 and n_machine_time_steps is None:
-                times_to_delete.append(time)
-            else:
-                new_times.add(time)
-
-        # delete wrong data now
-        for time_to_delete in times_to_delete:
-            del self._times_with_commands[time_to_delete]
-
-        # add new time data to dict
-        self._times_with_commands.update(new_time_commands)
-        return new_times
+        spec.write_value(command.key)
+        spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        spec.write_value(command.payload if command.is_payload else 0)
+        spec.write_value(command.repeat)
+        spec.write_value(command.delay_between_repeats)
 
     @staticmethod
     def _reserve_memory_regions(
@@ -254,15 +196,13 @@ class CommandSenderMachineVertex(
         vertex.reserve_provenance_data_region(spec)
 
     @staticmethod
-    def get_timed_commands_bytes(times_with_commands):
-        n_bytes = CommandSenderMachineVertex._COMMAND_SIZE_SIZE
-
-        # handle timed commands
-        for time in times_with_commands:
-            n_bytes += CommandSenderMachineVertex._COMMAND_TIMESTAMP_SIZE
-            n_bytes += CommandSenderMachineVertex._N_COMMANDS_SIZE
-            for command in times_with_commands[time]:
-                n_bytes += CommandSenderMachineVertex._get_command_size(command)
+    def get_timed_commands_bytes(timed_commands):
+        n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
+        n_bytes += (
+            (CommandSenderMachineVertex._COMMAND_TIMESTAMP_SIZE +
+             CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE) *
+            len(timed_commands)
+        )
         return n_bytes
 
     @staticmethod
@@ -270,18 +210,12 @@ class CommandSenderMachineVertex(
         """
         :return:
         """
-        n_bytes = (CommandSenderMachineVertex._COMMAND_SIZE_SIZE +
-                   CommandSenderMachineVertex._N_COMMANDS_SIZE)
-        for command in commands:
-            n_bytes += CommandSenderMachineVertex._get_command_size(command)
+        n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
+        n_bytes += (
+            CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE *
+            len(commands)
+        )
         return n_bytes
-
-    @staticmethod
-    def _get_command_size(command):
-        if isinstance(command, MultiCastCommandWithPayload):
-            return CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE
-        else:
-            return CommandSenderMachineVertex._COMMAND_WITHOUT_PAYLOAD_SIZE
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

@@ -46,7 +46,7 @@ class CommandSender(
 
         ApplicationVertex.__init__(self, label, constraints, 1)
 
-        self._times_with_commands = dict()
+        self._timed_commands = dict()
         self._commands_at_start_resume = list()
         self._commands_at_pause_stop = list()
         self._partition_id_to_keys = dict()
@@ -56,60 +56,39 @@ class CommandSender(
 
     def add_commands(
             self, start_resume_commands, pause_stop_commands,
-            timed_commands, vertex_to_add):
+            timed_commands, vertex_to_send_to):
         """ Add commands to be sent down a given edge
 
-        :param start_resume_commands: The commands to send at start/resume states
+        :param start_resume_commands: The commands to send when the simulation\
+                starts or resumes from pause
         :type start_resume_commands: iterable of\
-                    :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
-        :param pause_stop_commands: the commands to send at stop/pause states
+                :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :param pause_stop_commands: the commands to send when the simulation\
+                stops or pauses after running
         :type pause_stop_commands: iterable of\
-                    :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
-        :param timed_commands: The commands to send at arbitary times
+                :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :param timed_commands: The commands to send at specific times
         :type timed_commands: iterable of\
-                    :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
-        :param vertex_to_add: The vertex these commands are associatyed with
-                              used in the graph for these commands
-        :param edge: The edge down which the commands will be sent
-        :type edge:\
-                    :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
-        :raise ConfigurationException:\
-            If the edge already has commands or if all the commands masks are\
-            not 0xFFFFFFFF and there is no commonality between the\
-            command masks
+                :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :param vertex_to_send_to: The vertex these commands are to be sent to
         """
 
         # container for keys for partition mapping (remove duplicates)
         command_keys = set()
-        self._vertex_to_key_map[vertex_to_add] = set()
+        self._vertex_to_key_map[vertex_to_send_to] = set()
 
         # update holders
         self._commands_at_start_resume.extend(start_resume_commands)
         self._commands_at_pause_stop.extend(pause_stop_commands)
+        self._timed_commands.extend(timed_commands)
 
-        # Go through the timed commands and record their times and track keys
-        for command in timed_commands:
+        for commands in (
+                start_resume_commands, pause_stop_commands, timed_commands):
+            for command in commands:
 
-            # track times for commands
-            if command.time not in self._times_with_commands:
-                self._times_with_commands[command.time] = list()
-            self._times_with_commands[command.time].append(command)
-
-            # track keys
-            command_keys.add(command.key)
-            self._vertex_to_key_map[vertex_to_add].add(command.key)
-
-        # track keys from start and resume commands.
-        for command in start_resume_commands:
-            # track keys
-            command_keys.add(command.key)
-            self._vertex_to_key_map[vertex_to_add].add(command.key)
-
-        # track keys from pause and stop commands
-        for command in pause_stop_commands:
-            # track keys
-            command_keys.add(command.key)
-            self._vertex_to_key_map[vertex_to_add].add(command.key)
+                # track keys
+                command_keys.add(command.key)
+                self._vertex_to_key_map[vertex_to_send_to].add(command.key)
 
         # create mapping between keys and partitions via partition constraint
         for key in command_keys:
@@ -131,7 +110,7 @@ class CommandSender(
         })
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-             n_machine_time_steps):
+            n_machine_time_steps):
         placement.vertex.generate_data_specification(
             spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps)
@@ -141,15 +120,16 @@ class CommandSender(
             self, vertex_slice, resources_required, label=None,
             constraints=None):
         return CommandSenderMachineVertex(
-            constraints, resources_required, label, self._times_with_commands,
-            self._commands_at_start_resume, self._commands_at_pause_stop)
+            constraints, resources_required, label,
+            self._commands_at_start_resume, self._commands_at_pause_stop,
+            self._timed_commands)
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
 
         sdram = (
             CommandSenderMachineVertex.get_timed_commands_bytes(
-                self._times_with_commands) +
+                self._timed_commands) +
             CommandSenderMachineVertex.get_n_command_bytes(
                 self._commands_at_start_resume) +
             CommandSenderMachineVertex.get_n_command_bytes(
@@ -196,9 +176,8 @@ class CommandSender(
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
-        constraints = list()
-        constraints.append(KeyAllocatorFixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(
-                    self._partition_id_to_keys[partition.identifier],
-                    self._DEFAULT_COMMAND_MASK)]))
-        return constraints
+        return [KeyAllocatorFixedKeyAndMaskConstraint([
+            BaseKeyAndMask(
+                self._partition_id_to_keys[partition.identifier],
+                self._DEFAULT_COMMAND_MASK)
+        ])]
