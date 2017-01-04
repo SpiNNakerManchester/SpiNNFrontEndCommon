@@ -928,6 +928,7 @@ class SpinnakerMainInterface(object):
 
         inputs['ReportFolder'] = self._report_default_directory
         inputs["ApplicationDataFolder"] = self._app_data_runtime_folder
+        inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["APPID"] = self._app_id
         inputs["MemoryRouterCompressorAppID"] = self._config.getint(
             "Machine", "RouterCompressionAppID")
@@ -1124,7 +1125,6 @@ class SpinnakerMainInterface(object):
 
         inputs["RanToken"] = self._has_ran
         inputs["NoSyncChanges"] = self._no_sync_changes
-        inputs["ProvenanceFilePath"] = self._provenance_file_path
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time

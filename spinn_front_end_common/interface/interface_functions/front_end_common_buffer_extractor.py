@@ -11,8 +11,7 @@ class FrontEndCommonBufferExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, machine_graph, placements, buffer_manager, ran_token,
-            transceiver):
+            self, machine_graph, placements, buffer_manager, ran_token):
 
         if not ran_token:
             raise exceptions.ConfigurationException(
