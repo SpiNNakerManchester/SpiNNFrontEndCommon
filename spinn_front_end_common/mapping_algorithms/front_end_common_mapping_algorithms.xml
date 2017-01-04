@@ -12,6 +12,14 @@
                 <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
+                <param_name>provenance_file_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>record_iobuf</param_name>
+                <param_type>RecordIOBufOnChipRouterCompressorFlag</param_type>
+            </parameter>
+            <parameter>
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
@@ -41,6 +49,7 @@
             </parameter>
         </input_definitions>
         <required_inputs>
+            <param_name>provenance_file_path</param_name>
             <param_name>routing_tables</param_name>
             <param_name>machine</param_name>
             <param_name>transceiver</param_name>
@@ -52,6 +61,7 @@
             <param_name>sdram_tag</param_name>
             <param_name>time_expected_to_run</param_name>
             <param_name>over_run_threshold</param_name>
+            <param_name>record_iobuf</param_name>
         </optional_inputs>
         <outputs>
             <param_type>LoadedRoutingTablesToken</param_type>

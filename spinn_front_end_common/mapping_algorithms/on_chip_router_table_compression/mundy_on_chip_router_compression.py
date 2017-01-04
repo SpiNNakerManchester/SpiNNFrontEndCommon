@@ -2,6 +2,9 @@ from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
+    front_end_common_iobuf_extractor import \
+    FrontEndCommonIOBufExtractor
+from spinn_front_end_common.interface.interface_functions.\
     front_end_common_load_executable_images import \
     FrontEndCommonLoadExecutableImages
 from spinnman.model.enums.executable_start_type import ExecutableStartType
@@ -31,12 +34,13 @@ class MundyOnChipRouterCompression(object):
 
     def __call__(
             self, routing_tables, transceiver,  machine, app_app_id,
-            compressor_app_id, store_on_sdram=False, sdram_tag=1,
+            compressor_app_id, provenance_file_path, store_on_sdram=False,
+            sdram_tag=1, record_iobuf=True,
             time_expected_to_run=None, over_run_threshold=None):
         """
 
         :param routing_tables: the memory routing tables to be compressed
-        :param app_id: the app-id used by the main application
+        :param app_app_id: the app-id used by the main application
         :param store_on_sdram: flag to say store it on sdram or in the
         routing table
         :param machine: the spinnaker machine representation
@@ -85,6 +89,7 @@ class MundyOnChipRouterCompression(object):
         # load the router compressor executable
         executable_targets = self._load_executables(
             routing_tables, compressor_app_id, transceiver, machine)
+
         # update progress bar
         progress_bar.update()
 
@@ -92,13 +97,20 @@ class MundyOnChipRouterCompression(object):
         logger = tx.logger
         logger_level = logger.level
         logger.setLevel(logging.ERROR)
+
         # verify when the executable has finished
         transceiver.wait_for_execution_to_complete(
             executable_targets.all_core_subsets, compressor_app_id,
             expected_run_time, runtime_threshold_before_error)
         logger.setLevel(logger_level)
+
         # update progress bar
         progress_bar.update()
+
+        # get debug info if requested
+        if record_iobuf:
+            self._acquire_iobuf(executable_targets, transceiver,
+                                provenance_file_path)
 
         # stop anything that's associated with the compressor binary
         transceiver.stop_application(compressor_app_id)
@@ -108,6 +120,34 @@ class MundyOnChipRouterCompression(object):
 
         # return loaded routing tables flag
         return True
+
+    def _acquire_iobuf(self, executable_targets, transceiver,
+                       provenance_file_path):
+        """
+        :param executable_targets: the mapping between binary and cores
+        :return:
+        """
+        iobuf_extractor = FrontEndCommonIOBufExtractor()
+        io_buffers, io_errors, io_warnings = iobuf_extractor(
+            transceiver, True, None,
+            executable_targets.get_start_core_subsets(
+                ExecutableStartType.RUNNING))
+        self._write_iobuf(io_buffers, provenance_file_path)
+
+    def _write_iobuf(self, io_buffers, provenance_file_path):
+        for iobuf in io_buffers:
+            file_name = os.path.join(
+                provenance_file_path,
+                "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
+            count = 2
+            while os.path.exists(file_name):
+                file_name = os.path.join(
+                    provenance_file_path,
+                    "{}_{}_{}-{}.txt".format(iobuf.x, iobuf.y, iobuf.p, count))
+                count += 1
+            writer = open(file_name, "w")
+            writer.write(iobuf.iobuf)
+            writer.close()
 
     def _load_executables(
             self, routing_tables, compressor_app_id, transceiver, machine):
