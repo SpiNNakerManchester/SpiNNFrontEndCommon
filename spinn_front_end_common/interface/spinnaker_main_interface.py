@@ -1928,24 +1928,6 @@ class SpinnakerMainInterface(object):
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
-    def _send_stop_command_to_request_stop_command_cores(self):
-        # locate cores that need this command sent to it
-        for vertex in self._machine_graph.vertices:
-            if isinstance(vertex, AbstractRequiresStopCommand):
-                placement = self._placements.get_placement_of_vertex(vertex)
-
-                data = struct.pack(
-                    "<I",
-                    constants.SDP_RUNNING_MESSAGE_CODES.SDP_STOP_ID_CODE.value)
-
-                self._txrx.send_sdp_message(SDPMessage(SDPHeader(
-                    flags=SDPFlag.REPLY_NOT_EXPECTED,
-                    destination_cpu=placement.p,
-                    destination_chip_x=placement.x,
-                    destination_port=(
-                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
-                    destination_chip_y=placement.y), data=data))
-
     def _add_socket_address(self, socket_address):
         """
 
