@@ -3,8 +3,6 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-import struct
-
 from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from pacman.model.graphs.application.impl.application_edge import \
     ApplicationEdge
@@ -16,9 +14,6 @@ from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
 # common front end imports
 from spinn_front_end_common.abstract_models.\
-    abstract_requires_stop_command import \
-    AbstractRequiresStopCommand
-from spinn_front_end_common.abstract_models.\
     abstract_send_me_multicast_commands_vertex import \
     AbstractSendMeMulticastCommandsVertex
 from spinn_front_end_common.abstract_models.\
@@ -26,7 +21,6 @@ from spinn_front_end_common.abstract_models.\
     AbstractVertexWithEdgeToDependentVertices
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
@@ -52,10 +46,6 @@ import os
 import sys
 import traceback
 import signal
-
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_message import SDPMessage
 
 
 logger = logging.getLogger(__name__)
