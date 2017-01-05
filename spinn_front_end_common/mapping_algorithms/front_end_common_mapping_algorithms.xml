@@ -52,6 +52,10 @@
                 <param_name>over_run_threshold</param_name>
                 <param_type>RouterCompressorOverRunThresholdTime</param_type>
             </parameter>
+            <parameter>
+                <param_name>use_default_target_length</param_name>
+                <param_type>RouterCompressorUseDefaultTargetLength</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>provenance_file_path</param_name>
@@ -68,6 +72,7 @@
             <param_name>over_run_threshold</param_name>
             <param_name>record_iobuf</param_name>
             <param_name>compress_only_when_needed</param_name>
+            <param_name>use_default_target_length</param_name>
         </optional_inputs>
         <outputs>
             <param_type>LoadedRoutingTablesToken</param_type>

@@ -36,6 +36,7 @@ class MundyOnChipRouterCompression(object):
             self, routing_tables, transceiver,  machine, app_app_id,
             compressor_app_id, provenance_file_path, store_on_sdram=False,
             sdram_tag=1, record_iobuf=True, compress_only_when_needed=False,
+            use_default_target_length=False,
             time_expected_to_run=None, over_run_threshold=None):
         """
 
@@ -68,7 +69,7 @@ class MundyOnChipRouterCompression(object):
 
             data = self._build_data(
                 routing_table, app_app_id, store_on_sdram,
-                compress_only_when_needed)
+                compress_only_when_needed, use_default_target_length)
             chip = machine.get_chip_at(routing_table.x, routing_table.y)
 
             if len(data) > chip.sdram:
@@ -126,6 +127,8 @@ class MundyOnChipRouterCompression(object):
     def _acquire_iobuf(self, executable_targets, transceiver,
                        provenance_file_path):
         """
+        gets the iobufs from the router compressor cores
+
         :param executable_targets: the mapping between binary and cores
         :return:
         """
@@ -136,16 +139,24 @@ class MundyOnChipRouterCompression(object):
                 ExecutableStartType.RUNNING))
         self._write_iobuf(io_buffers, provenance_file_path)
 
-    def _write_iobuf(self, io_buffers, provenance_file_path):
+    @staticmethod
+    def _write_iobuf(io_buffers, provenance_file_path):
+        """ writes the iobuf to files
+
+        :param io_buffers:
+        :param provenance_file_path:
+        :return:
+        """
         for iobuf in io_buffers:
             file_name = os.path.join(
                 provenance_file_path,
-                "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
+                "{}_{}_{}_compressor.txt".format(iobuf.x, iobuf.y, iobuf.p))
             count = 2
             while os.path.exists(file_name):
                 file_name = os.path.join(
                     provenance_file_path,
-                    "{}_{}_{}-{}.txt".format(iobuf.x, iobuf.y, iobuf.p, count))
+                    "{}_{}_{}_compressor-{}.txt".format(
+                        iobuf.x, iobuf.y, iobuf.p, count))
                 count += 1
             writer = open(file_name, "w")
             writer.write(iobuf.iobuf)
@@ -153,7 +164,7 @@ class MundyOnChipRouterCompression(object):
 
     def _load_executables(
             self, routing_tables, compressor_app_id, transceiver, machine):
-        """
+        """ loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
         :param compressor_app_id: the app id of the compressor compressor
@@ -184,7 +195,7 @@ class MundyOnChipRouterCompression(object):
         return executable_targets
 
     def _build_data(self, routing_table, app_id, store_on_sdram,
-                    compress_only_when_needed):
+                    compress_only_when_needed, use_default_target_length):
         """ converts the router table into the data needed by the router
         compressor c code.
 
@@ -193,6 +204,9 @@ class MundyOnChipRouterCompression(object):
         :param store_on_sdram: flag that says store the results in sdram
         :param compress_only_when_needed: flag that tells the c code to
         compress at all times or only when needed
+        :param use_default_target_length: flag that lets the compressor
+        compress as far as possible, or only till it meets the router table
+        available size.
         :return: The byte array needed for spinnman
         """
 
@@ -202,6 +216,7 @@ class MundyOnChipRouterCompression(object):
         data = b''
         data += struct.pack("<I", app_id)
         data += struct.pack("<I", int(compress_only_when_needed))
+        data += struct.pack("<I", int(use_default_target_length))
         data += struct.pack("<I", store_on_sdram)
         data += struct.pack("<I", routing_table.number_of_entries)
 
@@ -231,7 +246,8 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def _build_core_subsets(routing_tables, machine):
-        """
+        """ builds the mapping for a core on each chip to have a router
+        compressor.
 
         :param routing_tables: the routing tables to be loaded for compression
         :return: a core subsets representing all the routing tables
