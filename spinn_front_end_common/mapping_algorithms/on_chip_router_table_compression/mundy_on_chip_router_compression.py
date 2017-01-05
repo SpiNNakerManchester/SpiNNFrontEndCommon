@@ -35,7 +35,7 @@ class MundyOnChipRouterCompression(object):
     def __call__(
             self, routing_tables, transceiver,  machine, app_app_id,
             compressor_app_id, provenance_file_path, store_on_sdram=False,
-            sdram_tag=1, record_iobuf=False,
+            sdram_tag=1, record_iobuf=True, compress_only_when_needed=False,
             time_expected_to_run=None, over_run_threshold=None):
         """
 
@@ -66,7 +66,9 @@ class MundyOnChipRouterCompression(object):
         # table
         for routing_table in routing_tables:
 
-            data = self._build_data(routing_table, app_app_id, store_on_sdram)
+            data = self._build_data(
+                routing_table, app_app_id, store_on_sdram,
+                compress_only_when_needed)
             chip = machine.get_chip_at(routing_table.x, routing_table.y)
 
             if len(data) > chip.sdram:
@@ -181,13 +183,16 @@ class MundyOnChipRouterCompression(object):
                 "compression.")
         return executable_targets
 
-    def _build_data(self, routing_table, app_id, store_on_sdram):
+    def _build_data(self, routing_table, app_id, store_on_sdram,
+                    compress_only_when_needed):
         """ converts the router table into the data needed by the router
         compressor c code.
 
         :param routing_table: the pacman router table instance
         :param app_id: the app-id to load the entries in by
         :param store_on_sdram: flag that says store the results in sdram
+        :param compress_only_when_needed: flag that tells the c code to
+        compress at all times or only when needed
         :return: The byte array needed for spinnman
         """
 
@@ -196,6 +201,7 @@ class MundyOnChipRouterCompression(object):
 
         data = b''
         data += struct.pack("<I", app_id)
+        data += struct.pack("<I", int(compress_only_when_needed))
         data += struct.pack("<I", store_on_sdram)
         data += struct.pack("<I", routing_table.number_of_entries)
 

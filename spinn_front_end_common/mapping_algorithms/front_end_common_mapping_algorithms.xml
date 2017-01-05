@@ -32,6 +32,11 @@
                 <param_type>MemoryRouterCompressorAppID</param_type>
             </parameter>
             <parameter>
+                <param_name>compress_only_when_needed</param_name>
+                <param_type>RouterCompressorOnlyCompressWhenNeededFlag
+                </param_type>
+            </parameter>
+            <parameter>
                 <param_name>store_on_sdram</param_name>
                 <param_type>RouterCompressorStoreInSDRAMFlag</param_type>
             </parameter>
@@ -62,6 +67,7 @@
             <param_name>time_expected_to_run</param_name>
             <param_name>over_run_threshold</param_name>
             <param_name>record_iobuf</param_name>
+            <param_name>compress_only_when_needed</param_name>
         </optional_inputs>
         <outputs>
             <param_type>LoadedRoutingTablesToken</param_type>
