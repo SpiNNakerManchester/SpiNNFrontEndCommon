@@ -1,6 +1,9 @@
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
+from spinn_machine.core_subsets import CoreSubsets
+from spinn_front_end_common.abstract_models.abstract_requires_stop_command \
+    import AbstractRequiresStopCommand
 
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
@@ -16,14 +19,21 @@ class FrontEndCommonApplicationFinisher(object):
 
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_targets, has_ran):
+    def __call__(self, app_id, txrx, placements, graph_mapper=None):
 
-        if not has_ran:
-            raise exceptions.ConfigurationException(
-                "The ran token is not set correctly, please fix and try again")
-
-        total_processors = executable_targets.total_processors
-        all_core_subsets = executable_targets.all_core_subsets
+        total_processors = 0
+        all_core_subsets = CoreSubsets()
+        for placement in placements.placements:
+            app_vertex = (
+                graph_mapper.get_application_vertex(placement.vertex)
+                if graph_mapper is not None else None
+            )
+            if ((app_vertex is not None and
+                    isinstance(app_vertex, AbstractRequiresStopCommand)) or
+                    isinstance(placement.vertex, AbstractRequiresStopCommand)):
+                all_core_subsets.add_processor(
+                    placement.x, placement.y, placement.p)
+            total_processors += 1
 
         progress_bar = ProgressBar(
             total_processors,

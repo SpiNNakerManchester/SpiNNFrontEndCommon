@@ -153,22 +153,17 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             spin1_msg_free(msg);
             break;
 
-        case SDP_SWITCH_STATE:
-
-            log_debug("Switching to state %d", msg->arg1);
-
-            // change the state of the cpu into what's requested from the host
-            sark_cpu_state(msg->arg1);
-
-            // free the message to stop overload
-            spin1_msg_free(msg);
-            break;
-
         case PROVENANCE_DATA_GATHERING:
             log_info("Forced provenance gathering");
 
             // force provenance to be executed and then exit
             _execute_provenance_storage();
+
+            // call any stored exit callbacks
+            if (stored_exit_function != NULL){
+                log_info("Calling pre-exit function");
+                stored_exit_function();
+            }
             spin1_msg_free(msg);
             spin1_exit(1);
             break;
@@ -206,9 +201,7 @@ void simulation_sdp_callback_off(uint sdp_port) {
 bool simulation_initialise(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
-        prov_callback_t provenance_function,
-        address_t provenance_data_address, exit_callback_t exit_function) {
+        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority) {
 
     // handle the timing reading
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
@@ -242,13 +235,21 @@ bool simulation_initialise(
         address[SIMULATION_CONTROL_SDP_PORT],
         _simulation_control_scp_callback);
 
-    // handle the provenance setting up
-    stored_provenance_function = provenance_function;
-    stored_provenance_data_address = provenance_data_address;
-
-    // handle the exit callback set up
-    stored_exit_function = exit_function;
-
     // if all simulation initialisation complete return true,
     return true;
+}
+
+void simulation_set_provenance_data_address(address_t provenance_data_address) {
+    stored_provenance_data_address = provenance_data_address;
+}
+
+void simulation_set_provenance_function(
+        prov_callback_t provenance_function,
+        address_t provenance_data_address) {
+    stored_provenance_function = provenance_function;
+    stored_provenance_data_address = provenance_data_address;
+}
+
+void simulation_set_exit_function(exit_callback_t exit_function) {
+    stored_exit_function = exit_function;
 }

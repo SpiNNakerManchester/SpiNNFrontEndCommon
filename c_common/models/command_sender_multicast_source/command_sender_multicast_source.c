@@ -235,11 +235,12 @@ bool initialize(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP, NULL,
-            data_specification_get_region(PROVENANCE_REGION, address),
-            run_stop_pause_commands)) {
+            &infinite_run, SDP)) {
         return false;
     }
+    simulation_set_provenance_data_address(
+        data_specification_get_region(PROVENANCE_REGION, address));
+    simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
     read_scheduled_parameters(data_specification_get_region(

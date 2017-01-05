@@ -39,6 +39,9 @@ from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
 from spinn_front_end_common.abstract_models\
     .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.utility_models.command_sender import CommandSender
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_application_finisher \
+    import FrontEndCommonApplicationFinisher
 
 
 # general imports
@@ -252,7 +255,10 @@ class SpinnakerMainInterface(object):
         "_app_data_top_simulation_folder",
 
         #
-        "_command_sender"
+        "_command_sender",
+
+        # Run for infinite time
+        "_infinite_run"
     ]
 
     def __init__(
@@ -353,6 +359,7 @@ class SpinnakerMainInterface(object):
         self._machine_time_step = None
         self._time_scale_factor = None
         self._this_run_time_string = None
+        self._infinite_run = False
 
         self._app_id = self._config.getint("Machine", "appID")
 
@@ -496,6 +503,7 @@ class SpinnakerMainInterface(object):
 
         n_machine_time_steps = None
         total_run_time = None
+        self._infinite_run = True
         if run_time is not None:
             n_machine_time_steps = int(
                 (run_time * 1000.0) / self._machine_time_step)
@@ -505,6 +513,7 @@ class SpinnakerMainInterface(object):
                 total_run_timesteps *
                 (float(self._machine_time_step) / 1000.0) *
                 self._time_scale_factor)
+            self._infinite_run = False
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
@@ -1900,9 +1909,12 @@ class SpinnakerMainInterface(object):
                 logger.error("Error when attempting to shut down")
                 traceback.print_exc()
 
-        # set off the stop command to cores that registered their demand of
-        # needing such a behaviour
-        self._send_stop_command_to_request_stop_command_cores()
+        # stop any binaries that need to be notified of the simulation
+        # stopping if in infinite run
+        if self._infinite_run:
+            finisher = FrontEndCommonApplicationFinisher()
+            finisher(
+                self._app_id, self._txrx, self._placements, self._graph_mapper)
 
         # if the end user wants iobuf extract it from the cores now
         if extract_iobuf:
