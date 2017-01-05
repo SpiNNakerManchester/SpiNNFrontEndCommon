@@ -35,7 +35,7 @@ class MundyOnChipRouterCompression(object):
     def __call__(
             self, routing_tables, transceiver,  machine, app_app_id,
             compressor_app_id, provenance_file_path, store_on_sdram=False,
-            sdram_tag=1, record_iobuf=True,
+            sdram_tag=1, record_iobuf=False,
             time_expected_to_run=None, over_run_threshold=None):
         """
 
