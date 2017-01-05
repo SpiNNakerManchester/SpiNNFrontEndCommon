@@ -208,12 +208,21 @@ bool simulation_initialise(
         return false;
     }
 
+    if (sdp_packet_callback_priority < -1) {
+        log_error(
+            "The SDP callback priority should be set to a number greater "
+            "than or equal to -1.  "
+            "It is currently set to %d", sdp_packet_callback_priority);
+        return false;
+    }
+
     // transfer data to pointers for end user usage
     *timer_period = address[SIMULATION_TIMER_PERIOD];
 
     // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
+
     spin1_callback_on(
         SDP_PACKET_RX, _simulation_sdp_callback_handler,
         sdp_packet_callback_priority);

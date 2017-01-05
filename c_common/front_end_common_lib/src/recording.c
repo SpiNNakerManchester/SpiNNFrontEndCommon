@@ -17,6 +17,7 @@
 enum recording_data_e {
     N_REGIONS,
     TAG,
+    SDP_PORT,
     BUFFER_SIZE_BEFORE_REQUEST,
     TIME_BETWEEN_TRIGGERS,
     LAST_SEQUENCE_NUMBER,
@@ -45,6 +46,7 @@ static recording_channel_t *g_recording_channels = NULL;
 static address_t *region_addresses = NULL;
 static uint32_t *region_sizes = NULL;
 static uint32_t n_recording_regions = 0;
+static uint32_t sdp_port = 0;
 static uint32_t sequence_number = 0;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
@@ -451,6 +453,7 @@ bool recording_initialize(
     // Read in the parameters
     n_recording_regions = recording_data_address[N_REGIONS];
     uint8_t buffering_output_tag = recording_data_address[TAG];
+    sdp_port = recording_data_address[SDP_PORT];
     buffer_size_before_trigger =
         recording_data_address[BUFFER_SIZE_BEFORE_REQUEST];
     time_between_triggers = recording_data_address[TIME_BETWEEN_TRIGGERS];
@@ -527,7 +530,7 @@ bool recording_initialize(
     msg.flags = 0x7;
     msg.tag = buffering_output_tag;
     msg.dest_port = 0xFF;
-    msg.srce_port = (BUFFERING_OUT_SDP_PORT << 5) | spin1_get_core_id();
+    msg.srce_port = (sdp_port << 5) | spin1_get_core_id();
     msg.dest_addr = 0;
     msg.srce_addr = spin1_get_chip_id();
 
@@ -568,11 +571,7 @@ void recording_reset() {
                 " starting at 0x%08x", i, region_size,
                 g_recording_channels[i].start);
 
-            // The priority of this callback should not allow this to interrupt
-            // the timer interrupt, or vice-versa to avoid issues with
-            // state
-            simulation_sdp_callback_on(
-                BUFFERING_OUT_SDP_PORT, _buffering_in_handler);
+            simulation_sdp_callback_on(sdp_port, _buffering_in_handler);
         } else {
             g_recording_channels[i].start = NULL;
             g_recording_channels[i].current_write = NULL;

@@ -8,6 +8,7 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
 from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinnman.utilities import utility_functions
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -68,6 +69,9 @@ class BufferManager(object):
     """ Manager of send buffers
     """
 
+    # Buffer manager traffic type
+    TRAFFIC_IDENTIFIER = recording_utilities.TRAFFIC_IDENTIFIER
+
     __slots__ = [
         # placements object
         "_placements",
@@ -101,9 +105,6 @@ class BufferManager(object):
 
         # storage area for received data from cores
         "_received_data",
-
-        # set of vertices which buffers will be received from
-        "_receiver_vertices",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -150,9 +151,6 @@ class BufferManager(object):
 
         # storage area for received data from cores
         self._received_data = BufferedReceivingData()
-
-        # set of vertices with buffers to be received from
-        self._receiver_vertices = set()
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.Lock()
@@ -213,27 +211,51 @@ class BufferManager(object):
         except Exception:
             traceback.print_exc()
 
+    def _create_connection(self, tag):
+        if self._transceiver is not None:
+            connection = self._transceiver.register_udp_listener(
+                self.receive_buffer_command_message, UDPEIEIOConnection,
+                local_port=tag.port, local_host=tag.ip_address)
+            self._seen_tags.add((tag.ip_address, connection.local_port))
+            utility_functions.send_port_trigger_message(
+                connection, tag.board_address)
+            logger.info(
+                "Listening for packets using tag {} on {}:{}".format(
+                    tag.tag, connection.local_ip_address,
+                    connection.local_port))
+            return connection
+
+    def _add_buffer_listeners(self, vertex):
+        """ Add listeners for buffered data for the given vertex
+        """
+
+        # Find a tag for receiving buffer data
+        tags = self._tags.get_ip_tags_for_vertex(vertex)
+
+        if tags is not None:
+
+            # locate the tag that is associated with the buffer manager
+            # traffic
+            for tag in tags:
+                if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
+
+                    # If the tag port is not assigned, create a connection and
+                    # assign the port.  Note that this *should* update the port
+                    # number in any tags being shared
+                    if tag.port is None:
+                        connection = self._create_connection(tag)
+                        tag.port = connection.local_port
+
+                    # In case we have tags with different specified ports, also
+                    # allow the tag to be created here
+                    elif (tag.ip_address, tag.port) not in self._seen_tags:
+                        self._create_connection(tag)
+
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices\
             which require buffers to be received from them during runtime
         """
-        # add to tracker
-        self._receiver_vertices.add(vertex)
-
-        if self._tags.get_ip_tags_for_vertex(vertex) is not None:
-
-            # sort out tags and connection for listening for the packets
-            tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
-            if (tag.ip_address, tag.port) not in self._seen_tags:
-                logger.debug(
-                    "Listening for receive packets using tag {} on"
-                    " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-                self._seen_tags.add((tag.ip_address, tag.port))
-                if self._transceiver is not None:
-                    self._transceiver.register_udp_listener(
-                        self.receive_buffer_command_message,
-                        UDPEIEIOConnection, local_port=tag.port,
-                        local_host=tag.ip_address)
+        self._add_buffer_listeners(vertex)
 
     def add_sender_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices
@@ -244,15 +266,7 @@ class BufferManager(object):
                     :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
-        tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
-        if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.debug("Listening for send packets using tag {} on"
-                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-            self._seen_tags.add((tag.ip_address, tag.port))
-            if self._transceiver is not None:
-                self._transceiver.register_udp_listener(
-                    self.receive_buffer_command_message, UDPEIEIOConnection,
-                    local_port=tag.port, local_host=tag.ip_address)
+        self._add_buffer_listeners(vertex)
 
         # if reload script is set up, store the buffers for future usage
         if self._write_reload_files:
@@ -767,8 +781,9 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=spinn_front_end_constants.SDP_PORTS.
-            OUTPUT_BUFFERING_SDP_PORT.value,
+            destination_port=(
+                spinn_front_end_constants.SDP_PORTS
+                .OUTPUT_BUFFERING_SDP_PORT.value),
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)

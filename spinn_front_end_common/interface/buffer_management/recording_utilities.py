@@ -1,6 +1,7 @@
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .channel_buffer_state import ChannelBufferState
 from spinn_front_end_common.utilities import constants
+
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.iptag_resource import IPtagResource
 from pacman.model.resources.sdram_resource import SDRAMResource
@@ -10,10 +11,13 @@ import sys
 import math
 
 # The offset of the last sequence number field in bytes
-_LAST_SEQUENCE_NUMBER_OFFSET = 4 * 4
+_LAST_SEQUENCE_NUMBER_OFFSET = 4 * 5
 
 # The offset of the memory addresses in bytes
-_FIRST_REGION_ADDRESS_OFFSET = 4 * 5
+_FIRST_REGION_ADDRESS_OFFSET = 4 * 6
+
+# The Buffer traffic type
+TRAFFIC_IDENTIFIER = "BufferTraffic"
 
 
 def get_recording_header_size(n_recorded_regions):
@@ -23,7 +27,7 @@ def get_recording_header_size(n_recorded_regions):
     """
 
     # See recording.h/recording_initialise for data included in the header
-    return (5 + (2 * n_recorded_regions)) * 4
+    return (6 + (2 * n_recorded_regions)) * 4
 
 
 def get_recording_data_size(recorded_region_sizes):
@@ -135,8 +139,8 @@ def get_recording_resources(
         is not in use
     :type buffering_ip_address: str
     :param buffering_port:\
-        The port to receive buffering messages on, or None if buffering is not\
-        in use
+        The port to receive buffering messages on, or None if a port is to be\
+        assigned
     :type buffering_port: int
     :param notification_tag:\
         The tag to send buffering messages with, or None to use a default tag
@@ -146,9 +150,10 @@ def get_recording_resources(
     """
 
     ip_tags = list()
-    if buffering_ip_address is not None and buffering_port is not None:
+    if buffering_ip_address is not None:
         ip_tags.append(IPtagResource(
-            buffering_ip_address, buffering_port, True, notification_tag
+            buffering_ip_address, buffering_port, True, notification_tag,
+            TRAFFIC_IDENTIFIER
         ))
 
     # return the resources including the SDRAM requirements
@@ -192,7 +197,7 @@ def get_recorded_region_sizes(
 def get_recording_header_array(
         recorded_region_sizes,
         time_between_triggers=0, buffer_size_before_request=None, ip_tags=None,
-        buffering_ip_address=None, buffering_port=None, buffering_tag=None):
+        buffering_tag=None):
     """ Get data to be written for the recording header
 
     :param recorded_region_sizes:\
@@ -203,10 +208,6 @@ def get_recording_header_array(
     :param buffer_size_before_request:\
         The amount of buffer to fill before a read request is sent
     :param ip_tags: A list of ip tags to extract the buffer tag from
-    :param buffering_ip_address:\
-        The ip address to which to send buffering requests
-    :param buffering_port:\
-        The port to which to send buffering requests
     :param buffering_tag: The tag to use for buffering requests
     :return: An array of values to be written as the header
     :rtype: list of int
@@ -216,13 +217,12 @@ def get_recording_header_array(
     buffering_output_tag = 0
     if buffering_tag is not None:
         buffering_output_tag = buffering_tag
-    elif (ip_tags is not None and buffering_ip_address is not None and
-            buffering_port is not None):
+    elif ip_tags is not None and len(ip_tags) > 0:
         buffering_output_tag = None
         for tag in ip_tags:
-            if (tag.ip_address == buffering_ip_address and
-                    tag.port == buffering_port):
+            if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                 buffering_output_tag = tag.tag
+                break
         if buffering_output_tag is None:
             raise Exception("Buffering tag not found")
 
@@ -232,6 +232,7 @@ def get_recording_header_array(
     # The parameters
     data.append(len(recorded_region_sizes))
     data.append(buffering_output_tag)
+    data.append(constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
     if buffer_size_before_request is not None:
         data.append(buffer_size_before_request)
     else:

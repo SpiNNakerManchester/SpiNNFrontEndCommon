@@ -31,7 +31,8 @@ typedef enum eieio_prefix_types {
 //! The parameter positions
 typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
-    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
+    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
+    BUFFERED_IN_SDP_PORT
 } read_in_parameters;
 
 //! The memory regions
@@ -109,6 +110,7 @@ static uint8_t pkt_last_sequence_seen;
 static bool send_packet_reqs;
 static bool last_buffer_operation;
 static uint8_t return_tag_id;
+static uint32_t buffered_in_sdp_port;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
@@ -849,6 +851,7 @@ bool read_parameters(address_t region_address) {
     buffer_region_size = region_address[BUFFER_REGION_SIZE];
     space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
     return_tag_id = region_address[RETURN_TAG_ID];
+    buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -1068,7 +1071,7 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    simulation_sdp_callback_on(BUFFERING_IN_SDP_PORT, sdp_packet_callback);
+    simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0
