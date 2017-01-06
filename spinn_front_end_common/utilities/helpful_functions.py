@@ -275,7 +275,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
             finished_flag = os.path.join(os.path.join(
                 starting_directory, current_oldest_file), FINISHED_FILENAME)
             if (os.path.exists(finished_flag) and
-                    files_removed < num_files_to_remove):
+                        files_removed < num_files_to_remove):
                 shutil.rmtree(os.path.join(starting_directory,
                                            current_oldest_file),
                               ignore_errors=True)

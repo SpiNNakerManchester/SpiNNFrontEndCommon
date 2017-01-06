@@ -1,4 +1,7 @@
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.interface.interface_functions. \
+    front_end_common_provenance_xml_writer import \
+    FrontEndCommonProvenanceXMLWriter
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
@@ -7,6 +10,8 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_load_executable_images import \
     FrontEndCommonLoadExecutableImages
+from spinn_front_end_common.utilities.utility_objs.provenance_data_item import \
+    ProvenanceDataItem
 from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 from spinnman.model.executable_targets import \
@@ -21,6 +26,7 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 import logging
 import os
 import struct
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +45,7 @@ class MundyOnChipRouterCompression(object):
             self, routing_tables, transceiver,  machine, app_app_id,
             compressor_app_id, provenance_file_path, store_on_sdram=False,
             sdram_tag=1, record_iobuf=True, compress_only_when_needed=False,
-            use_default_target_length=False,
+            use_default_target_length=False, provenance_data_objects=None,
             time_expected_to_run=None, over_run_threshold=None):
         """
 
@@ -52,6 +58,11 @@ class MundyOnChipRouterCompression(object):
         :param transceiver: the spinnman interface
         :return: flag stating routing compression and loading hath been done
         """
+
+        if provenance_data_objects is not None:
+            prov_items = provenance_data_objects
+        else:
+            prov_items = list()
 
         # process args
         expected_run_time = self.TIME_EXPECTED_TO_RUN
@@ -106,15 +117,18 @@ class MundyOnChipRouterCompression(object):
         tx_logger.setLevel(logging.ERROR)
 
         # verify when the executable has finished
+        start_time = time.time()
         try:
-            transceiver.wait_for_execution_to_complete(
-                executable_targets.all_core_subsets, compressor_app_id,
-                expected_run_time, runtime_threshold_before_error)
+            transceiver.poll_for_execution_to_complete(
+                executable_targets.all_core_subsets, compressor_app_id)
+            stop_time = time.time()
             tx_logger.setLevel(logger_level)
         except spinnman_exceptions.ExecutableFailedToStopException:
             # get the debug data
+            stop_time = time.time()
             self._get_debug_data(
-                executable_targets, transceiver, provenance_file_path)
+                executable_targets, transceiver, provenance_file_path,
+                stop_time - start_time, prov_items)
             transceiver.stop_application(compressor_app_id)
             raise exceptions.SpinnFrontEndException(
                 "The router compressor failed to complete")
@@ -133,11 +147,22 @@ class MundyOnChipRouterCompression(object):
         # update the progress bar
         progress_bar.end()
 
+        # create provenance data item
+        prov_items = self._create_provenenace_data_item(
+            stop_time - start_time, prov_items)
+
         # return loaded routing tables flag
-        return True
+        return True, prov_items
+
+    @staticmethod
+    def _create_provenenace_data_item(duration, prov_items):
+        names = ["on_chip_routing_table_compressor_run_time"]
+        prov_items.append(ProvenanceDataItem(names, str(duration)))
+        return prov_items
 
     def _get_debug_data(
-            self, executable_targets, transceiver, provenance_file_path):
+            self, executable_targets, transceiver, provenance_file_path,
+            duration, prov_items):
         """ gets data from the machine for debug purposes when the
         compressor fails
 
@@ -154,6 +179,10 @@ class MundyOnChipRouterCompression(object):
             logger.warn(warning)
         for error in io_errors:
             logger.error(error)
+
+        prov_items = self._create_provenenace_data_item(duration, prov_items)
+        prov_writer = FrontEndCommonProvenanceXMLWriter()
+        prov_writer(prov_items, provenance_file_path)
 
     def _acquire_iobuf(self, executable_targets, transceiver,
                        provenance_file_path):

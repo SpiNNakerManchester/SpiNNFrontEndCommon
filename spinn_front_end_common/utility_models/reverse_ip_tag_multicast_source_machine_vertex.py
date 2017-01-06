@@ -24,7 +24,7 @@ from pacman.model.graphs.machine.abstract_machine_vertex \
     import AbstractMachineVertex
 
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.interface.buffer_management.buffer_manager\
+from spinn_front_end_common.interface.buffer_management.buffer_manager \
     import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \

@@ -380,8 +380,8 @@ class SpinnakerMainInterface(object):
 
         # set up reports default folder
         self._report_default_directory, \
-            self._report_simulation_top_directory, \
-            self._this_run_time_string = \
+        self._report_simulation_top_directory, \
+        self._this_run_time_string = \
             helpful_functions.set_up_report_specifics(
                 default_report_file_path=self._config.get(
                     "Reports", "defaultReportFilePath"),
