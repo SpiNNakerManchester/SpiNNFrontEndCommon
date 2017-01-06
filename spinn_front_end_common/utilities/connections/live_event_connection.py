@@ -1,6 +1,7 @@
 from threading import Thread
 import traceback
 from collections import OrderedDict
+from spinnman.utilities import utility_functions
 
 from spinn_front_end_common.utilities.database.database_connection \
     import DatabaseConnection
@@ -167,16 +168,18 @@ class LiveEventConnection(DatabaseConnection):
             for receive_label in self._receive_labels:
                 host, port, strip_sdp = None, None, None
                 if self._machine_vertices:
-                    host, port, strip_sdp = \
+                    host, port, strip_sdp, board_address = \
                         database_reader.get_machine_live_output_details(
                             receive_label, self._live_packet_gather_label)
                 else:
-                    host, port, strip_sdp = \
+                    host, port, strip_sdp, board_address = \
                         database_reader.get_live_output_details(
                             receive_label, self._live_packet_gather_label)
                 if strip_sdp:
                     if port not in self._receivers:
                         receiver = UDPEIEIOConnection(local_port=port)
+                        utility_functions.send_port_trigger_message(
+                            receiver, board_address)
                         listener = ConnectionListener(receiver)
                         listener.add_callback(self._receive_packet_callback)
                         listener.start()
