@@ -1111,7 +1111,6 @@ class SpinnakerMainInterface(object):
 
         # get result objects from the pacman executor
         self._mapping_outputs = executor.get_items()
-        self._pacman_provenance.extract_provenance(executor)
 
         # Get the outputs needed
         self._placements = executor.get_item("MemoryPlacements")
@@ -1135,7 +1134,6 @@ class SpinnakerMainInterface(object):
 
         executor = self._run_machine_algorithms(inputs, algorithms, [])
         self._mapping_outputs = executor.get_items()
-        self._pacman_provenance.extract_provenance(executor)
 
     def _do_load(self):
 
@@ -1184,7 +1182,6 @@ class SpinnakerMainInterface(object):
         executor = self._run_machine_algorithms(
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
-        self._pacman_provenance.extract_provenance(executor)
 
     def _do_run(self, n_machine_time_steps):
 

@@ -45,8 +45,7 @@ class MundyOnChipRouterCompression(object):
             self, routing_tables, transceiver,  machine, app_app_id,
             compressor_app_id, provenance_file_path, store_on_sdram=False,
             sdram_tag=1, record_iobuf=True, compress_only_when_needed=False,
-            use_default_target_length=False, provenance_data_objects=None,
-            time_expected_to_run=None, over_run_threshold=None):
+            use_default_target_length=False, provenance_data_objects=None):
         """
 
         :param routing_tables: the memory routing tables to be compressed
@@ -63,15 +62,6 @@ class MundyOnChipRouterCompression(object):
             prov_items = provenance_data_objects
         else:
             prov_items = list()
-
-        # process args
-        expected_run_time = self.TIME_EXPECTED_TO_RUN
-        if time_expected_to_run is not None:
-            expected_run_time = time_expected_to_run
-
-        runtime_threshold_before_error = self.OVER_RUN_THRESHOLD_BEFORE_ERROR
-        if over_run_threshold is not None:
-            runtime_threshold_before_error = over_run_threshold
 
         # build progress bar
         progress_bar = ProgressBar(
