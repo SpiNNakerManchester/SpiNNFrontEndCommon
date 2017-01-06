@@ -1072,7 +1072,14 @@ class SpinnakerMainInterface(object):
             self._config.getboolean("Reports", "writeMemoryMapReport")
         )
 
+        # add report for extracting routing table from machine report if needed
         algorithms = list(self._extra_load_algorithms)
+        if self._config.getboolean("Reports", "reportsEnabled"):
+            if self._config.getboolean(
+                    "Reports", "writeRoutingTablesFromMachineReport"):
+                algorithms.append(
+                    "FrontEndCommonRoutingTableFromMachineReport")
+
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
         optional_algorithms.append("FrontEndCommonTagsLoader")
@@ -1416,7 +1423,9 @@ class SpinnakerMainInterface(object):
         xml_paths.extend(
             helpful_functions.get_front_end_common_pacman_xml_paths())
 
-        xml_paths.extend(extra_algorithm_xml_paths)
+        if extra_algorithm_xml_paths is not None:
+            xml_paths.extend(extra_algorithm_xml_paths)
+
         return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):

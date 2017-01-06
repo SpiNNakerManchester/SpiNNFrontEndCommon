@@ -12,6 +12,7 @@ from spinnman.model.enums.executable_start_type import ExecutableStartType
 from spinnman.model.executable_targets import \
     ExecutableTargets
 from spinnman import transceiver as tx
+from spinnman import exceptions as spinnman_exceptions
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router
@@ -20,6 +21,8 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 import logging
 import os
 import struct
+
+logger = logging.getLogger(__name__)
 
 
 class MundyOnChipRouterCompression(object):
@@ -44,6 +47,7 @@ class MundyOnChipRouterCompression(object):
         :param app_app_id: the app-id used by the main application
         :param store_on_sdram: flag to say store it on sdram or in the
         routing table
+        :param provenance_file_path: the path to where to write the data
         :param machine: the spinnaker machine representation
         :param transceiver: the spinnman interface
         :return: flag stating routing compression and loading hath been done
@@ -97,15 +101,23 @@ class MundyOnChipRouterCompression(object):
         progress_bar.update()
 
         # get logger for spinnman and turn off
-        logger = tx.logger
-        logger_level = logger.level
-        logger.setLevel(logging.ERROR)
+        tx_logger = tx.logger
+        logger_level = tx_logger.level
+        tx_logger.setLevel(logging.ERROR)
 
         # verify when the executable has finished
-        transceiver.wait_for_execution_to_complete(
-            executable_targets.all_core_subsets, compressor_app_id,
-            expected_run_time, runtime_threshold_before_error)
-        logger.setLevel(logger_level)
+        try:
+            transceiver.wait_for_execution_to_complete(
+                executable_targets.all_core_subsets, compressor_app_id,
+                expected_run_time, runtime_threshold_before_error)
+            tx_logger.setLevel(logger_level)
+        except spinnman_exceptions.ExecutableFailedToStopException:
+            # get the debug data
+            self._get_debug_data(
+                executable_targets, transceiver, provenance_file_path)
+            transceiver.stop_application(compressor_app_id)
+            raise exceptions.SpinnFrontEndException(
+                "The router compressor failed to complete")
 
         # update progress bar
         progress_bar.update()
@@ -124,12 +136,33 @@ class MundyOnChipRouterCompression(object):
         # return loaded routing tables flag
         return True
 
+    def _get_debug_data(
+            self, executable_targets, transceiver, provenance_file_path):
+        """ gets data from the machine for debug purposes when the
+        compressor fails
+
+        :param executable_targets: executable targets that represent all
+        cores/chips which have active routing tables
+        :param transceiver: the spinnman interface
+        :param provenance_file_path: the path to where to write the data
+        :return:
+        """
+        logger.info("acquiring debug data from router compressor crash")
+        io_errors, io_warnings = self._acquire_iobuf(
+            executable_targets, transceiver, provenance_file_path)
+        for warning in io_warnings:
+            logger.warn(warning)
+        for error in io_errors:
+            logger.error(error)
+
     def _acquire_iobuf(self, executable_targets, transceiver,
                        provenance_file_path):
         """
         gets the iobufs from the router compressor cores
 
         :param executable_targets: the mapping between binary and cores
+        :param transceiver: the spinnman interface
+        :param provenance_file_path: the path to where to write the data
         :return:
         """
         iobuf_extractor = FrontEndCommonIOBufExtractor()
@@ -138,14 +171,16 @@ class MundyOnChipRouterCompression(object):
             executable_targets.get_start_core_subsets(
                 ExecutableStartType.RUNNING))
         self._write_iobuf(io_buffers, provenance_file_path)
+        return io_errors, io_warnings
 
     @staticmethod
     def _write_iobuf(io_buffers, provenance_file_path):
         """ writes the iobuf to files
 
-        :param io_buffers:
-        :param provenance_file_path:
-        :return:
+        :param io_buffers: the iobufs for the cores
+        :param provenance_file_path: the file path where the iobufs are to
+        be stored
+        :return: None
         """
         for iobuf in io_buffers:
             file_name = os.path.join(
@@ -168,6 +203,8 @@ class MundyOnChipRouterCompression(object):
 
         :param routing_tables: the router tables needed to be compressed
         :param compressor_app_id: the app id of the compressor compressor
+        :param transceiver: the spinnman interface
+        :param machine: the spinnaker machine representation
         :return: the executable targets that represent all cores/chips which
         have active routing tables
         """
@@ -250,6 +287,7 @@ class MundyOnChipRouterCompression(object):
         compressor.
 
         :param routing_tables: the routing tables to be loaded for compression
+        :param machine: the spinnaker machine representation
         :return: a core subsets representing all the routing tables
         """
         core_sets = CoreSubsets()
