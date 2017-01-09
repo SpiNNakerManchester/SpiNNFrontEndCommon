@@ -10,8 +10,8 @@ from spinn_front_end_common.interface.interface_functions.\
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_load_executable_images import \
     FrontEndCommonLoadExecutableImages
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item import \
-    ProvenanceDataItem
+from spinn_front_end_common.utilities.utility_objs. \
+    provenance_data_item import ProvenanceDataItem
 from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 from spinnman.model.executable_targets import \
@@ -112,16 +112,16 @@ class MundyOnChipRouterCompression(object):
             transceiver.poll_for_execution_to_complete(
                 executable_targets.all_core_subsets, compressor_app_id)
             stop_time = time.time()
+            self._check_for_correct_complete_code(
+                executable_targets, transceiver, stop_time - start_time,
+                provenance_file_path, prov_items, compressor_app_id)
             tx_logger.setLevel(logger_level)
         except spinnman_exceptions.ExecutableFailedToStopException:
             # get the debug data
             stop_time = time.time()
-            self._get_debug_data(
+            self._handle_failure(
                 executable_targets, transceiver, provenance_file_path,
-                stop_time - start_time, prov_items)
-            transceiver.stop_application(compressor_app_id)
-            raise exceptions.SpinnFrontEndException(
-                "The router compressor failed to complete")
+                stop_time - start_time, prov_items, compressor_app_id)
 
         # update progress bar
         progress_bar.update()
@@ -138,21 +138,60 @@ class MundyOnChipRouterCompression(object):
         progress_bar.end()
 
         # create provenance data item
-        prov_items = self._create_provenenace_data_item(
+        prov_items = self._create_provenance_data_item(
             stop_time - start_time, prov_items)
 
         # return loaded routing tables flag
         return True, prov_items
 
-    @staticmethod
-    def _create_provenenace_data_item(duration, prov_items):
-        names = ["on_chip_routing_table_compressor_run_time"]
-        prov_items.append(ProvenanceDataItem(names, str(duration)))
-        return prov_items
+    def _check_for_correct_complete_code(
+            self, executable_targets, transceiver, duration,
+            provenance_file_path, prov_items, compressor_app_id):
+        """ goes through the cores checking for cores that have failed to
+        compress the routing tables to the level where they fit into the router
+
+        :param
+        compressor on them
+        :param transceiver: the main spinnman interface
+        :return: None
+        :raises
+        """
+
+        for core_subset in executable_targets.all_core_subsets:
+            x = core_subset.x
+            y = core_subset.y
+            for p in core_subset.processor_ids:
+                user_0_address = \
+                    transceiver.get_user_0_register_address_from_core(x, y, p)
+
+                data = struct.unpack(
+                    "<I", transceiver.read_memory(x, y, user_0_address, 4))[0]
+                if data != 0:
+                    self._handle_failure(
+                        executable_targets, transceiver, provenance_file_path,
+                        duration, prov_items, compressor_app_id)
+
+    def _handle_failure(
+            self, executable_targets, transceiver, provenance_file_path,
+            duration, prov_items, compressor_app_id):
+        """
+
+        :param executable_targets:
+        :param transceiver:
+        :param provenance_file_path:
+        :param duration:
+        :param prov_items:
+        :return:
+        """
+        self._get_debug_data(
+            executable_targets, transceiver, provenance_file_path)
+        self._write_provenance_data(duration, prov_items, provenance_file_path)
+        transceiver.stop_application(compressor_app_id)
+        raise exceptions.SpinnFrontEndException(
+            "The router compressor failed to complete")
 
     def _get_debug_data(
-            self, executable_targets, transceiver, provenance_file_path,
-            duration, prov_items):
+            self, executable_targets, transceiver, provenance_file_path):
         """ gets data from the machine for debug purposes when the
         compressor fails
 
@@ -170,9 +209,17 @@ class MundyOnChipRouterCompression(object):
         for error in io_errors:
             logger.error(error)
 
-        prov_items = self._create_provenenace_data_item(duration, prov_items)
+    def _write_provenance_data(
+            self, duration, prov_items, provenance_file_path):
+        prov_items = self._create_provenance_data_item(duration, prov_items)
         prov_writer = FrontEndCommonProvenanceXMLWriter()
         prov_writer(prov_items, provenance_file_path)
+
+    @staticmethod
+    def _create_provenance_data_item(duration, prov_items):
+        names = ["on_chip_routing_table_compressor_run_time"]
+        prov_items.append(ProvenanceDataItem(names, str(duration)))
+        return prov_items
 
     def _acquire_iobuf(self, executable_targets, transceiver,
                        provenance_file_path):
