@@ -165,7 +165,8 @@ class MundyOnChipRouterCompression(object):
                     transceiver.get_user_0_register_address_from_core(x, y, p)
 
                 data = struct.unpack(
-                    "<I", transceiver.read_memory(x, y, user_0_address, 4))[0]
+                    "<I", str(
+                        transceiver.read_memory(x, y, user_0_address, 4)))[0]
                 if data != 0:
                     self._handle_failure(
                         executable_targets, transceiver, provenance_file_path,
