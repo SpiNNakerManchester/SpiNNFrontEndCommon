@@ -81,19 +81,8 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             data_writer = FileDataWriter(app_data_file_path)
 
             # generate a file writer for DSE report (app pointer table)
-            report_writer = None
-            if write_text_specs:
-                new_report_directory = os.path.join(
-                    report_default_directory, "data_spec_text_files")
-
-                if not os.path.exists(new_report_directory):
-                    os.mkdir(new_report_directory)
-
-                file_name = "{}_DSE_report_for_{}_{}_{}.txt".format(
-                    hostname, x, y, p)
-                report_file_path = os.path.join(new_report_directory,
-                                                file_name)
-                report_writer = FileDataWriter(report_file_path)
+            report_writer = self.generate_report_writer(
+                write_text_specs, report_default_directory, hostname, x, y, p)
 
             # maximum available memory
             # however system updates the memory available
@@ -162,6 +151,35 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         # close the progress bar
         progress_bar.end()
         return processor_to_app_data_base_address, True
+
+    @staticmethod
+    def generate_report_writer(
+            write_text_specs, report_default_directory, hostname, x, y, p):
+        """
+
+        :param write_text_specs:
+        :param report_default_directory:
+        :param hostname:
+        :param x:
+        :param y:
+        :param p:
+        :return:
+        """
+        report_writer = None
+        if write_text_specs:
+
+            new_report_directory = os.path.join(
+                report_default_directory, "data_spec_text_files")
+
+            if not os.path.exists(new_report_directory):
+                os.mkdir(new_report_directory)
+
+            file_name = "{}_DSE_report_for_{}_{}_{}.txt".format(
+                hostname, x, y, p)
+            report_file_path = os.path.join(new_report_directory,
+                                            file_name)
+            report_writer = FileDataWriter(report_file_path)
+        return report_writer
 
     @staticmethod
     def get_application_data_file_path(

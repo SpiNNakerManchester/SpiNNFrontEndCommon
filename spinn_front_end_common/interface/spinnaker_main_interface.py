@@ -13,6 +13,10 @@ from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 # common front end imports
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.abstract_models.abstract_requires_rewriting_data_regions_application_vertex import \
+    AbstractRequiresRewriteDataRegionsApplicationVertex
+from spinn_front_end_common.abstract_models.abstract_requires_rewriting_data_regions_machine_vertex import \
+    AbstractRequiresRewriteDataRegionsMachineVertex
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
@@ -1210,6 +1214,9 @@ class SpinnakerMainInterface(object):
         if not self._use_virtual_board:
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
 
+        if self._has_ran and self._requires_dsg_regions_reloading():
+            algorithms.append("FrontEndCommonDSGRegionReloader")
+
         # Add the database writer in case it is needed
         algorithms.append("FrontEndCommonDatabaseInterface")
         if not self._use_virtual_board:
@@ -1285,6 +1292,29 @@ class SpinnakerMainInterface(object):
         self._no_sync_changes = executor.get_item("NoSyncChanges")
         self.has_reset_last = False
         self._has_ran = True
+
+    def _requires_dsg_regions_reloading(self):
+        """ goes through the vertices in the graphs and asks if any of them
+        need dsg regions to be reloaded into the machine
+
+        :return: bool saying true if regions needed reloading, false otherwise
+        """
+        found_requires = False
+        for vertex in self._application_graph.vertices:
+            if (isinstance(
+                    vertex,
+                    AbstractRequiresRewriteDataRegionsApplicationVertex) and
+                    vertex.requires_memory_regions_to_be_reloaded()):
+                found_requires = True
+
+        for vertex in self._machine_graph.vertices:
+            if (isinstance(
+                    vertex,
+                    AbstractRequiresRewriteDataRegionsMachineVertex) and
+                    vertex.requires_memory_regions_to_be_reloaded()):
+                found_requires = True
+        return found_requires
+
 
     def _extract_provenance(self):
         if (self._config.get("Reports", "reportsEnabled") and

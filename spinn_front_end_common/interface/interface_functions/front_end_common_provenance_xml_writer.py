@@ -1,5 +1,6 @@
+from spinn_front_end_common.utilities import helpful_functions
+
 # general imports
-import os
 from lxml import etree
 import itertools
 import string
@@ -25,13 +26,8 @@ class FrontEndCommonProvenanceXMLWriter(object):
                 c if c in self.VALID_CHARS else '_' for c in name)
 
             # generate file path for xml
-            file_path = os.path.join(
-                provenance_data_path, "{}.xml".format(filename))
-            count = 2
-            while os.path.exists(file_path):
-                file_path = os.path.join(
-                    provenance_data_path, "{}_{}.xml".format(filename, count))
-                count += 1
+            file_path = helpful_functions.generate_unique_folder_name(
+                provenance_data_path, filename)
 
             # Create a root node
             root = etree.Element("provenance_data_items", name=name)
