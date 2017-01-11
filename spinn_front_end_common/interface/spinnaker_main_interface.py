@@ -165,7 +165,7 @@ class SpinnakerMainInterface(object):
         "_has_ran",
 
         #
-        "_has_reset_last",
+        "has_reset_last",
 
         #
         "_current_run_timesteps",
@@ -317,7 +317,7 @@ class SpinnakerMainInterface(object):
 
         # holder for timing related values
         self._has_ran = False
-        self._has_reset_last = False
+        self.has_reset_last = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
         self._no_sync_changes = 0
@@ -489,14 +489,14 @@ class SpinnakerMainInterface(object):
         # create new sub-folder for reporting data if the graph has changed and
         # reset has been called.
         if (self._has_ran and application_graph_changed and
-                self._has_reset_last):
+                self.has_reset_last):
             self._set_up_output_folders()
 
         # verify that the if graph has changed, and has ran, that a reset has
         # been called, otherwise system go boom boom
         if not self._has_ran or application_graph_changed:
             if (application_graph_changed and self._has_ran and
-                    not self._has_reset_last):
+                    not self.has_reset_last):
                 self.stop()
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
@@ -592,7 +592,7 @@ class SpinnakerMainInterface(object):
         # If we have never run before, or the graph has changed, or a reset
         # has been requested, load the data
         if (not self._has_ran or application_graph_changed or
-                self._has_reset_last):
+                self.has_reset_last):
 
             # Data generation needs to be done if not already done
             if not self._has_ran or application_graph_changed:
@@ -1204,7 +1204,7 @@ class SpinnakerMainInterface(object):
 
         # If we have run before, make sure to extract the data before the next
         # run
-        if self._has_ran and not self._has_reset_last:
+        if self._has_ran and not self.has_reset_last:
             algorithms.append("FrontEndCommonBufferExtractor")
 
         if not self._use_virtual_board:
@@ -1283,7 +1283,7 @@ class SpinnakerMainInterface(object):
         self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
         self._no_sync_changes = executor.get_item("NoSyncChanges")
-        self._has_reset_last = False
+        self.has_reset_last = False
         self._has_ran = True
 
     def _extract_provenance(self):
@@ -1460,7 +1460,7 @@ class SpinnakerMainInterface(object):
 
         # sets the reset last flag to true, so that when run occurs, the tools
         # know to update the vertices which need to know a reset has occurred
-        self._has_reset_last = True
+        self.has_reset_last = True
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
 
