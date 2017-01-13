@@ -78,5 +78,7 @@ bool data_specification_read_header(uint32_t* address) {
 //!         start of the requested region.
 address_t data_specification_get_region(
         uint32_t region, address_t data_address) {
-    return (address_t) (data_address[REGION_START_INDEX + region]);
+    address_t address = (address_t) (data_address[REGION_START_INDEX + region]);
+    log_info("region address space is %d", address);
+    return address;
 }
