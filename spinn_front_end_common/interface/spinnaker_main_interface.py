@@ -1151,6 +1151,8 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnHostReport")
+                optional_algorithms.append(
+                    "FrontEndCommonMemoryMapOnHostChipReport")
         else:
             optional_algorithms.append(
                 "FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8

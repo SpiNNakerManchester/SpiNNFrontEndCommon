@@ -2,6 +2,8 @@ from data_specification import constants
 
 from spinn_machine.utilities.progress_bar import ProgressBar
 
+from spinn_front_end_common.utilities import exceptions
+
 import logging
 import os
 import struct
@@ -15,13 +17,18 @@ class FrontEndCommonMemoryMapOnChipReport(object):
     """ Report on memory usage
     """
 
-    def __call__(self, report_default_directory, dsg_targets, transceiver):
+    def __call__(
+            self, report_default_directory, dsg_targets, transceiver,
+            loaded_app_data_token):
         """
 
         :param report_default_directory:
-        :param processor_to_app_data_base_address:
         :return:
         """
+
+        if not loaded_app_data_token:
+            raise exceptions.ConfigurationException(
+                "Needs to have loaded app data for this to work.")
 
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
