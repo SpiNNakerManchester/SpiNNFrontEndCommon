@@ -184,14 +184,20 @@ def get_recorded_region_sizes(
 
     # The size of each buffer is the actual size needed for the number of
     # timesteps, or the maximum for buffering if a maximum is specified
-    return [
-        n_machine_time_steps * sdram
-        if (maximum_sdram_for_buffering is None or
-            maximum_sdram_for_buffering[i] == 0 or
-            (n_machine_time_steps * sdram) > maximum_sdram_for_buffering[i])
-        else maximum_sdram_for_buffering
-        for i, sdram in enumerate(buffered_sdram_per_timestep)
-    ]
+    if n_machine_time_steps is None:
+        data = list()
+        for n in buffered_sdram_per_timestep:
+            data.append(0)
+        return data
+    else:
+        return [
+            n_machine_time_steps * sdram
+            if (maximum_sdram_for_buffering is None or
+                maximum_sdram_for_buffering[i] == 0 or
+                (n_machine_time_steps * sdram) > maximum_sdram_for_buffering[i])
+            else maximum_sdram_for_buffering
+            for i, sdram in enumerate(buffered_sdram_per_timestep)
+            ]
 
 
 def get_recording_header_array(
