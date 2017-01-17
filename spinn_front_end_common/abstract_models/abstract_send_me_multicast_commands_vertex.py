@@ -1,5 +1,6 @@
 from six import add_metaclass
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
+from abc import abstractproperty
 
 
 @add_metaclass(ABCMeta)
@@ -8,28 +9,17 @@ class AbstractSendMeMulticastCommandsVertex(object):
         at fixed points in the simulation
     """
 
-    @property
-    @abstractmethod
+    @abstractproperty
     def start_resume_commands(self):
-        """
-        property method for getting the commands needed during
-        start / resume modes
-        :return:
+        """ The commands needed when starting or resuming simulation
         """
 
-    @property
-    @abstractmethod
+    @abstractproperty
     def pause_stop_commands(self):
-        """
-        property method for getting the commands needed during
-        pause / stop modes
-        :return:
+        """ The commands needed when pausing or stopping simulation
         """
 
-    @property
-    @abstractmethod
+    @abstractproperty
     def timed_commands(self):
-        """property method for getting the commands which have to be sent
-        at arbitrary times
-        :return:
+        """ The commands to be sent at given times in the simulation
         """
