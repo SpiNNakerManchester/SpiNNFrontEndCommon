@@ -28,7 +28,6 @@ static address_t stored_provenance_data_address = NULL;
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
 
-
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
 static address_t _simulation_store_provenance_data() {
@@ -160,6 +159,11 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             spin1_msg_free(msg);
             spin1_exit(1);
             break;
+
+        case DSG_RELOAD_DSG_DATA_REGION:
+            log_info(
+                "Forcing core to reread data in dsg region %d", msg->arg1);
+
 
         default:
             // should never get here

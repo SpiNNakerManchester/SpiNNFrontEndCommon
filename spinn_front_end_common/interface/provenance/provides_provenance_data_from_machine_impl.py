@@ -38,7 +38,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             self._provenance_region_id,
             (len(self.PROVENANCE_DATA_ENTRIES) +
                 self._n_additional_data_items) * 4,
-            label="Provenance", empty=True)
+            label="Provenance", empty=False)
 
     @staticmethod
     def get_provenance_data_size(n_additional_data_items):

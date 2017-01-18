@@ -491,12 +491,12 @@ def read_config_boolean(config, section, item):
     return bool(value)
 
 
-def generate_unique_folder_name(filepath, filename):
+def generate_unique_folder_name(filepath, filename, extension):
     # generate file path for xml
-    new_file_path = os.path.join(filepath, "{}.xml".format(filename))
+    new_file_path = os.path.join(filepath, "{}{}".format(filename, extension))
     count = 2
     while os.path.exists(new_file_path):
         new_file_path = os.path.join(
-            filepath, "{}_{}.xml".format(filename, count))
+            filepath, "{}_{}{}".format(filename, count, extension))
         count += 1
     return new_file_path

@@ -604,7 +604,7 @@ class SpinnakerMainInterface(object):
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load()
+                self.do_load()
 
         # Run for each of the given steps
         logger.info("Running for {} steps for a total of {} ms".format(
@@ -1132,7 +1132,7 @@ class SpinnakerMainInterface(object):
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
-    def _do_load(self):
+    def do_load(self):
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
@@ -1214,10 +1214,9 @@ class SpinnakerMainInterface(object):
             algorithms.append("FrontEndCommonBufferExtractor")
 
         if not self._use_virtual_board:
+            if self._has_ran and self._requires_dsg_regions_reloading():
+                algorithms.append("FrontEndCommonDSGRegionReloader")
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
-
-        if self._has_ran and self._requires_dsg_regions_reloading():
-            algorithms.append("FrontEndCommonDSGRegionReloader")
 
         # Add the database writer in case it is needed
         algorithms.append("FrontEndCommonDatabaseInterface")
@@ -1271,7 +1270,13 @@ class SpinnakerMainInterface(object):
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
             try:
-                self._recover_from_error(e, executor.get_items())
+                if executor is not None:
+                    self._recover_from_error(e, executor.get_items())
+                else:
+                    logger.error(
+                        "The PACMAN executor crashing during initialisation,"
+                        " please read previous error message to locate its"
+                        " error")
             except Exception:
                 logger.error("Error when attempting to recover from error")
                 traceback.print_exc()
@@ -1316,7 +1321,6 @@ class SpinnakerMainInterface(object):
                     vertex.requires_memory_regions_to_be_reloaded()):
                 found_requires = True
         return found_requires
-
 
     def _extract_provenance(self):
         if (self._config.get("Reports", "reportsEnabled") and

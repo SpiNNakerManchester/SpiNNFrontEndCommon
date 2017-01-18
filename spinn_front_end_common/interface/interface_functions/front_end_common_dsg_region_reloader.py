@@ -15,13 +15,13 @@ from spinn_front_end_common.utilities import helpful_functions
 from spinn_storage_handlers.file_data_reader import FileDataReader
 from spinn_storage_handlers.file_data_writer import FileDataWriter
 
+import os
 
 class FrontEndCommonDSGRegionReloader(object):
     def __call__(
             self, application_graph, machine_graph, transceiver,
             placements, hostname, report_directory, write_text_specs,
-            application_data_file_path, graph_mapper, machine,
-            application_has_ran_flag):
+            application_data_file_path, graph_mapper, machine):
         """
 
         :param application_graph:
@@ -37,18 +37,28 @@ class FrontEndCommonDSGRegionReloader(object):
         :return:
         """
 
-        if not application_has_ran_flag:
-            raise exceptions.ConfigurationException(
-                "The simulation needs to have ran at least once for this "
-                "function to operate correctly.")
-
         progress_bar = ProgressBar(
-            len(application_graph.vertices) + len(machine_graph.vertex),
+            len(application_graph.vertices) + len(machine_graph.vertices),
             "Reloading data regions as required")
 
         reloaded_dsg_data_files_file_path = \
             helpful_functions.generate_unique_folder_name(
-                application_data_file_path, "reloaded_data_regions")
+                application_data_file_path, "reloaded_data_regions", "")
+
+        reloaded_dsg_report_files_file_path = \
+            helpful_functions.generate_unique_folder_name(
+                report_directory, "reloaded_data_regions", "")
+
+        # build new folder
+        try:
+            if not os.path.exists(reloaded_dsg_data_files_file_path):
+                os.makedirs(reloaded_dsg_data_files_file_path)
+            if not os.path.exists(reloaded_dsg_report_files_file_path):
+                os.makedirs(reloaded_dsg_report_files_file_path)
+
+        except Exception as e:
+            raise exceptions.ConfigurationException(
+                "Couldn't create folder for storing reloaded data regions")
 
         for vertex in application_graph.vertices:
             if (isinstance(
@@ -57,8 +67,9 @@ class FrontEndCommonDSGRegionReloader(object):
                     vertex.requires_memory_regions_to_be_reloaded()):
                 self._handle_application_vertex(
                     vertex, transceiver, placements, hostname,
-                    report_directory, write_text_specs, graph_mapper,
-                    reloaded_dsg_data_files_file_path, machine)
+                    reloaded_dsg_report_files_file_path, write_text_specs,
+                    graph_mapper, reloaded_dsg_data_files_file_path, machine)
+                vertex.mark_regions_reloaded()
             progress_bar.update()
 
         for vertex in machine_graph.vertices:
@@ -68,9 +79,11 @@ class FrontEndCommonDSGRegionReloader(object):
                     vertex.requires_memory_regions_to_be_reloaded()):
                 self._handle_machine_vertex(
                     vertex, transceiver, placements, hostname,
-                    report_directory, write_text_specs,
+                    reloaded_dsg_report_files_file_path, write_text_specs,
                     reloaded_dsg_data_files_file_path, machine)
+                vertex.mark_regions_reloaded()
             progress_bar.update()
+        progress_bar.end()
 
     def _handle_application_vertex(
             self, application_vertex, transceiver, placements, hostname,
@@ -152,6 +165,7 @@ class FrontEndCommonDSGRegionReloader(object):
 
         for dsg_region in dsg_regions_to_data:
             # build reader for the spec written in sdram
+            file_path = dsg_regions_to_data[dsg_region]
             data_spec_reader = FileDataReader(dsg_regions_to_data[dsg_region])
 
             # generate path for where to store the dse
@@ -176,6 +190,7 @@ class FrontEndCommonDSGRegionReloader(object):
                 machine.get_chip_at(placement.x, placement.y).sdram.size,
                 report_writer)
             data_spec_executor.execute()
+            data_spec_executor.write_dse_region_output_file(dsg_region)
 
             # close the application data file writer
             data_writer.close()

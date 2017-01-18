@@ -27,7 +27,7 @@ class FrontEndCommonProvenanceXMLWriter(object):
 
             # generate file path for xml
             file_path = helpful_functions.generate_unique_folder_name(
-                provenance_data_path, filename)
+                provenance_data_path, filename, ".xml")
 
             # Create a root node
             root = etree.Element("provenance_data_items", name=name)

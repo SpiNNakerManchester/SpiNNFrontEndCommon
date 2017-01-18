@@ -19,3 +19,11 @@ class AbstractRequiresRewriteDataRegionsMachineVertex(object):
 
         :return:
         """
+
+    @abstractmethod
+    def mark_regions_reloaded(self):
+        """ allows the flag that the dsg regions have been reloaded to be
+        cleared
+
+        :return:
+        """
