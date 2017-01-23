@@ -16,6 +16,12 @@ class FrontEndCommonProvenanceXMLWriter(object):
         "-_.() {}{}".format(string.ascii_letters, string.digits))
 
     def __call__(self, provenance_data_items, provenance_data_path):
+        """ writes provenance in xml format
+
+        :param provenance_data_items: data items for provenance
+        :param provenance_data_path: the file path to store provenance in
+        :return:  None
+        """
 
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])

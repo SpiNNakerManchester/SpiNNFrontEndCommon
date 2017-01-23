@@ -160,11 +160,6 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             spin1_exit(1);
             break;
 
-        case DSG_RELOAD_DSG_DATA_REGION:
-            log_info(
-                "Forcing core to reread data in dsg region %d", msg->arg1);
-
-
         default:
             // should never get here
             log_error(

@@ -29,13 +29,21 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             self, hostname, transceiver, report_default_directory,
             write_text_specs, runtime_application_data_folder, machine,
             app_id, dsg_targets):
-        """
+        """ entrance method
 
-        :param hostname:
-        :param write_text_specs:
-        :param runtime_application_data_folder:
-        :param machine:
-        :return:
+        :param hostname: spinnaker machine name
+        :param report_default_directory: the location where reports are stored
+        :param write_text_specs: the bool flag that dicates if the human
+        readable forms of the dsg are written
+        :param runtime_application_data_folder: the folder where application
+         data is stored. In this case, the dsg data
+        :param machine: the python represnetaiton of the spinnaker machine
+        :param transceiver: the spinnman instance
+        :param app_id: the appid of the simulation
+        :param dsg_targets: map of placement to file path
+        vertices
+
+        :return: map of placement and dsg data, and loaded ap data flag.
         """
 
         data = self.host_based_data_specification_execution(
@@ -49,17 +57,21 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             self, hostname, transceiver, write_text_specs,
             application_data_runtime_folder, machine, report_default_directory,
             app_id, dsg_targets):
-        """
+        """ executes the dse
 
-        :param hostname:
-        :param transceiver:
-        :param write_text_specs:
-        :param application_data_runtime_folder:
-        :param machine:
-        :param report_default_directory:
-        :param app_id:
-        :param dsg_targets:
-        :return:
+        :param hostname: spinnaker machine name
+        :param report_default_directory: the location where reports are stored
+        :param write_text_specs: the bool flag that dicates if the human
+        readable forms of the dsg are written
+        :param runtime_application_data_folder: the folder where application
+         data is stored. In this case, the dsg data
+        :param machine: the python represnetaiton of the spinnaker machine
+        :param transceiver: the spinnman instance
+        :param app_id: the appid of the simulation
+        :param dsg_targets: map of placement to file path
+        vertices
+
+        :return: map of placement and dsg data, and loaded ap data flag.
         """
         processor_to_app_data_base_address = dict()
 
@@ -155,15 +167,17 @@ class FrontEndCommonHostExecuteDataSpecification(object):
     @staticmethod
     def generate_report_writer(
             write_text_specs, report_default_directory, hostname, x, y, p):
-        """
+        """  generates a writer for the human readable report of the dsg
 
-        :param write_text_specs:
-        :param report_default_directory:
-        :param hostname:
-        :param x:
-        :param y:
-        :param p:
-        :return:
+        :param write_text_specs: bool stating if the human readable reports
+        should be generated
+        :param report_default_directory: directroy where reprots are to be
+        written
+        :param hostname: machine name
+        :param x: chip coord in x axis
+        :param y: chip coord in y axis
+        :param p: processor id
+        :return: writer object for the report
         """
         report_writer = None
         if write_text_specs:
@@ -187,12 +201,12 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             application_run_time_folder):
         """
 
-        :param processor_chip_x:
-        :param processor_chip_y:
-        :param processor_id:
-        :param hostname:
-        :param application_run_time_folder:
-        :return:
+        :param processor_chip_x: chip coord in x axis
+        :param processor_chip_y: chip coord in y axis
+        :param processor_id: processor id
+        :param hostname: machine name
+        :param application_run_time_folder: folder to store applciation data
+        :return: name of file to store dsg data
         """
 
         if application_run_time_folder == "TEMP":

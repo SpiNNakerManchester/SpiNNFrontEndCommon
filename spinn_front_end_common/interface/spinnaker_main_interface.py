@@ -13,9 +13,11 @@ from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 # common front end imports
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.abstract_models.abstract_requires_rewriting_data_regions_application_vertex import \
+from spinn_front_end_common.abstract_models. \
+    abstract_requires_rewriting_data_regions_application_vertex import \
     AbstractRequiresRewriteDataRegionsApplicationVertex
-from spinn_front_end_common.abstract_models.abstract_requires_rewriting_data_regions_machine_vertex import \
+from spinn_front_end_common.abstract_models. \
+    abstract_requires_rewriting_data_regions_machine_vertex import \
     AbstractRequiresRewriteDataRegionsMachineVertex
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
@@ -378,8 +380,7 @@ class SpinnakerMainInterface(object):
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
             a new timestamp folder for each and clearing
-
-        :return:
+        :return: None
         """
 
         # set up reports default folder
@@ -407,8 +408,8 @@ class SpinnakerMainInterface(object):
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
-        :param hostname:
-        :return:
+        :param hostname: machine name
+        :return: None
         """
         if hostname is not None:
             self._hostname = hostname
@@ -446,7 +447,12 @@ class SpinnakerMainInterface(object):
                     "A spalloc_user must be specified with a spalloc_server")
 
     def signal_handler(self, signal, frame):
+        """ handles closing down of script via keyboard inturpt
 
+        :param signal: the signal recieved
+        :param frame:  ????????
+        :return:  None
+        """
         # If we are to raise the keyboard interrupt, do so
         if self._raise_keyboard_interrupt:
             raise KeyboardInterrupt
@@ -455,11 +461,18 @@ class SpinnakerMainInterface(object):
         self._shutdown()
 
     def exception_handler(self, exctype, value, traceback_obj):
+        """ handler of exceptions
+
+        :param exctype:  the type of exceptiuon recieved
+        :param value: the value of the exception
+        :param traceback_obj: the trace back stuff
+        :return:  ?????????
+        """
         self._shutdown()
         return sys.__excepthook__(exctype, value, traceback_obj)
 
     def run(self, run_time):
-        """
+        """ main call for running a simulation for a given time frame
 
         :param run_time: the run duration in milliseconds.
         :return: None
@@ -621,7 +634,13 @@ class SpinnakerMainInterface(object):
         self._n_calls_to_run += 1
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
+        """ operates the auot pause and resume functionality by figureing out
+        how many timer ticks a sim can run before sdram runs out, and breaks
+        simulation into chunks of that long.
 
+        :param n_machine_time_steps: the total timer ticks to be ran
+        :return: list of timer steps.
+        """
         # Go through the placements and find how much SDRAM is available
         # on each chip
         sdram_tracker = dict()
@@ -659,6 +678,12 @@ class SpinnakerMainInterface(object):
 
     @staticmethod
     def _generate_steps(n_machine_time_steps, min_machine_time_steps):
+        """ generates the list of timer runs
+
+        :param n_machine_time_steps:  the total runtime in machine time steps
+        :param min_machine_time_steps:  the min allwoed per chunk
+        :return: list of time steps
+        """
         number_of_full_iterations = int(math.floor(
             n_machine_time_steps / min_machine_time_steps))
         left_over_time_steps = int(
@@ -699,6 +724,14 @@ class SpinnakerMainInterface(object):
 
     def _run_machine_algorithms(
             self, inputs, algorithms, outputs, optional_algorithms=None):
+        """ runs getting a spinnaker machine logic
+
+        :param inputs: the inputs to the pacman exeuctor
+        :param algorithms: algorithms to call
+        :param outputs: outputs to get
+        :param optional_algorithms: optional algorithms to use
+        :return:  None
+        """
 
         optional = optional_algorithms
         if optional is None:

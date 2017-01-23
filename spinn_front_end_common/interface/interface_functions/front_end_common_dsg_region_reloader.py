@@ -17,39 +17,47 @@ from spinn_storage_handlers.file_data_writer import FileDataWriter
 
 import os
 
+
 class FrontEndCommonDSGRegionReloader(object):
+    """ function that loads data regions that need to be reloaded inbetween
+    runs
+
+    """
+
     def __call__(
             self, application_graph, machine_graph, transceiver,
             placements, hostname, report_directory, write_text_specs,
             application_data_file_path, graph_mapper, machine):
-        """
+        """ entrance method
 
-        :param application_graph:
-        :param machine_graph:
-        :param transceiver:
-        :param placements:
-        :param hostname:
-        :param report_directory:
-        :param write_text_specs:
-        :param application_data_file_path:
-        :param graph_mapper:
-        :param application_has_ran_flag:
-        :return:
+        :param application_graph: the application graph
+        :param machine_graph: the machine graph
+        :param transceiver: the spiNNMan instance
+        :param placements: the list of placements of the machine graph to cores
+        :param hostname: the machine name
+        :param report_directory: the directory where reports are to be written
+        :param write_text_specs: the bool which dicates if human readable dsg
+        files should be build alongside dsg files
+        :param application_data_file_path: the location where the dsg data is
+        to be stored
+        :param graph_mapper: the mapping between application and machine
+        vertices
+        :return: None
         """
 
         progress_bar = ProgressBar(
             len(application_graph.vertices) + len(machine_graph.vertices),
             "Reloading data regions as required")
 
+        # build file paths for reloaded stuff
         reloaded_dsg_data_files_file_path = \
             helpful_functions.generate_unique_folder_name(
                 application_data_file_path, "reloaded_data_regions", "")
-
         reloaded_dsg_report_files_file_path = \
             helpful_functions.generate_unique_folder_name(
                 report_directory, "reloaded_data_regions", "")
 
-        # build new folder
+        # build new folders
         try:
             if not os.path.exists(reloaded_dsg_data_files_file_path):
                 os.makedirs(reloaded_dsg_data_files_file_path)
@@ -60,6 +68,7 @@ class FrontEndCommonDSGRegionReloader(object):
             raise exceptions.ConfigurationException(
                 "Couldn't create folder for storing reloaded data regions")
 
+        # get dsg regions as required and reload them
         for vertex in application_graph.vertices:
             if (isinstance(
                     vertex,
@@ -89,17 +98,20 @@ class FrontEndCommonDSGRegionReloader(object):
             self, application_vertex, transceiver, placements, hostname,
             report_directory, write_text_specs, graph_mapper,
             reloaded_dsg_data_files_file_path, machine):
-        """
+        """ handles all the functions for a applciation graph
 
-        :param application_vertex:
-        :param transceiver:
-        :param placements:
-        :param hostname:
-        :param report_directory:
-        :param write_text_specs:
-        :param graph_mapper:
-        :param reloaded_dsg_data_files_file_path:
-        :return:
+        :param application_vertex: the application vertex to deal with
+        :param transceiver: the spiNNMan instance
+        :param placements: the list of placements of the machine graph to cores
+        :param hostname: the machine name
+        :param report_directory: the directory where reports are to be written
+        :param write_text_specs: the bool which dicates if human readable dsg
+        files should be build alongside dsg files
+        :param application_data_file_path: the location where the dsg data is
+        to be stored
+        :param graph_mapper: the mapping between application and machine
+        vertices
+        :return: None
         """
 
         # get machine vertices from the app vertex
@@ -122,16 +134,20 @@ class FrontEndCommonDSGRegionReloader(object):
             self, machine_vertex, transceiver, placements, hostname,
             report_directory, write_text_specs,
             reloaded_dsg_data_files_file_path, machine):
-        """
+        """ handles all the functions for a machine vertex
 
         :param machine_vertex:
-        :param transceiver:
-        :param placements:
-        :param hostname:
-        :param report_directory:
-        :param write_text_specs:
-        :param reloaded_dsg_data_files_file_path:
-        :return:
+        :param transceiver: the spiNNMan instance
+        :param placements: the list of placements of the machine graph to cores
+        :param hostname: the machine name
+        :param report_directory: the directory where reports are to be written
+        :param write_text_specs: the bool which dicates if human readable dsg
+        files should be build alongside dsg files
+        :param application_data_file_path: the location where the dsg data is
+        to be stored
+        :param graph_mapper: the mapping between application and machine
+        vertices
+        :return: None
         """
 
         # get data from the vertex
@@ -151,15 +167,20 @@ class FrontEndCommonDSGRegionReloader(object):
     def _write_data_regions(
             dsg_regions_to_data, transceiver, machine, write_text_specs,
             placement, hostname, reloaded_dsg_data_files_file_path):
-        """
+        """ handles writing a dsg region to the spinnaker machine SDRAM
 
-        :param dsg_regions_to_data:
-        :param transceiver:
-        :param machine:
-        :param write_text_specs:
-        :param placement:
-        :param hostname:
-        :param reloaded_dsg_data_files_file_path:
+        :param dsg_regions_to_data: map of dsg region and filepath
+        :param transceiver: the spiNNMan instance
+        :param placements: the list of placements of the machine graph to cores
+        :param hostname: the machine name
+        :param report_directory: the directory where reports are to be written
+        :param write_text_specs: the bool which dicates if human readable dsg
+        files should be build alongside dsg files
+        :param application_data_file_path: the location where the dsg data is
+        to be stored
+        :param graph_mapper: the mapping between application and machine
+        vertices
+        :return: None
         :return:
         """
 

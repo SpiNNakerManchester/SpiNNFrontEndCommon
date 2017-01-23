@@ -40,8 +40,19 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             report_default_directory, write_text_specs,
             app_data_runtime_folder, machine, graph_mapper=None):
         """ generates the dsg for the graph.
+        :param placements: placements of machine graph to cores
+        :param graph: applciation graph
+        :param hostname: spinnaker machine name
+        :param report_default_directory: the location where reports are stored
+        :param write_text_specs: the bool flag that dicates if the human
+        readable forms of the dsg are written
+        :param app_data_runtime_folder: the folder where application data is
+        stored. In this case, the dsg data
+        :param machine: the python represnetaiton of the spinnaker machine
+        :param graph_mapper: the mapping between applciation and machine
+        vertices
 
-        :return:
+        :return: dsg targets (map of placement tuple and filename)
         """
 
         # iterate though vertices and call generate_data_spec for each
@@ -78,6 +89,21 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             self, placement, associated_vertex, dsg_targets, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder, machine):
+        """
+
+        :param placements: placements of machine graph to cores
+        :param associated_vertex: the specific vertex to write dsg for.
+        :param hostname: spinnaker machine name
+        :param report_default_directory: the location where reports are stored
+        :param write_text_specs: the bool flag that dicates if the human
+        readable forms of the dsg are written
+        :param app_data_runtime_folder: the folder where application data is
+        stored. In this case, the dsg data
+        :param machine: the python represnetaiton of the spinnaker machine
+        :param graph_mapper: the mapping between applciation and machine
+        vertices
+        :return: None
+        """
 
         # if the vertex can generate a DSG, call it
         if isinstance(associated_vertex, AbstractGeneratesDataSpecification):

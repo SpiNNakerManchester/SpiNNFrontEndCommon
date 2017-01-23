@@ -492,7 +492,13 @@ def read_config_boolean(config, section, item):
 
 
 def generate_unique_folder_name(filepath, filename, extension):
-    # generate file path for xml
+    """ generates a unqiue folder file name with a given extension
+
+    :param filepath: where to put this unqiue file
+    :param filename: the name expected by the file
+    :param extension: extension of the file
+    :return: file path with a unique addition
+    """
     new_file_path = os.path.join(filepath, "{}{}".format(filename, extension))
     count = 2
     while os.path.exists(new_file_path):
