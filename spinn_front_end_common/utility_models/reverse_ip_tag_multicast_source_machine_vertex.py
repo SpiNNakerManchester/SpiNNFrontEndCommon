@@ -14,7 +14,6 @@ from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-import struct
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.abstract_classes.impl.constrained_object \
@@ -60,6 +59,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 from enum import Enum
 import math
 import sys
+import struct
 
 _DEFAULT_MALLOC_REGIONS = 2
 
@@ -430,15 +430,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             time_between_triggers=0):
         """ Enable recording of the keys sent
 
-        :param buffering_ip_address:\
-            The ip address to receive buffer notification messages on
-        :type buffering_ip_address: str
-        :param buffering_port:\
-            The port to receive buffer notification messages on
-        :type buffering_port: int
-        :param notification_tag:\
-            The tag to send buffer notification messages to
-        :type notification_tag: int
         :param record_buffer_size:\
             The size of the recording buffer in bytes.  Note that when using\
             automatic pause and resume, this will be used as the minimum size\

@@ -16,6 +16,10 @@ _LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6
 # The offset of the memory addresses in bytes
 _FIRST_REGION_ADDRESS_OFFSET = 4 * 7
 
+# the number of data elements inside the recording region before
+# recording regions iszes are stored.
+_RECORDING_ELEMENTS_BEFORE_REGION_SIZES = 7
+
 # The Buffer traffic type
 TRAFFIC_IDENTIFIER = "BufferTraffic"
 
@@ -27,7 +31,8 @@ def get_recording_header_size(n_recorded_regions):
     """
 
     # See recording.h/recording_initialise for data included in the header
-    return (7 + (2 * n_recorded_regions)) * 4
+    return (_RECORDING_ELEMENTS_BEFORE_REGION_SIZES +
+            (2 * n_recorded_regions)) * 4
 
 
 def get_recording_data_size(recorded_region_sizes):
