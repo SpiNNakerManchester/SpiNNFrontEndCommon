@@ -46,7 +46,7 @@ class CommandSender(
 
         ApplicationVertex.__init__(self, label, constraints, 1)
 
-        self._timed_commands = dict()
+        self._timed_commands = list()
         self._commands_at_start_resume = list()
         self._commands_at_pause_stop = list()
         self._partition_id_to_keys = dict()

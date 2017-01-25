@@ -135,7 +135,7 @@ class CommandSenderMachineVertex(
         # End-of-Spec:
         spec.end_specification()
 
-    def _write_basic_commands(self, commands, commands_size, spec):
+    def _write_basic_commands(self, commands, spec):
 
         # number of commands
         spec.write_value(len(commands))
@@ -144,7 +144,7 @@ class CommandSenderMachineVertex(
         for command in commands:
             self._write_command(command, spec)
 
-    def _write_timed_commands(self, timed_commands, spec, timed_commands_size):
+    def _write_timed_commands(self, timed_commands, spec):
 
         spec.write_value(len(timed_commands))
 

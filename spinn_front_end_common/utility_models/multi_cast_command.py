@@ -75,6 +75,10 @@ class MultiCastCommand(object):
         """
         return self._payload
 
+    @payload.setter
+    def payload(self, payload):
+        self._payload = payload
+
     @property
     def is_payload(self):
         """ Determine if this command has a payload.  By default, this returns\
