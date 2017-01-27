@@ -49,6 +49,8 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
             processors_completed = txrx.get_core_state_count(
                 app_id, CPUState.FINISHED)
+            processors_completed += txrx.get_core_state_count(
+                app_id, CPUState.RUN_TIME_EXCEPTION)
 
             left_over_now = total_processors - processors_completed
             to_update = left_to_do_cores - left_over_now

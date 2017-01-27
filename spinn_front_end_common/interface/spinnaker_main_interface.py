@@ -1366,6 +1366,7 @@ class SpinnakerMainInterface(object):
 
             # If there is not an RTE, ask the chips with an error to update
             # and get the provenance data
+            print "is rte = {}".format(is_rte)
             if not is_rte:
                 algorithms.append("FrontEndCommonChipProvenanceUpdater")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
