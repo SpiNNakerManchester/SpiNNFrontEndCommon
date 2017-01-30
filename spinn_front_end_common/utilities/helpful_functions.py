@@ -12,7 +12,6 @@ from spinn_front_end_common.utilities.utility_objs.executable_targets\
 # spinnman imports
 from spinnman.model.cpu_state import CPUState
 from spinn_machine.core_subsets import CoreSubsets
-from spinn_machine.core_subset import CoreSubset
 
 # general imports
 import os
@@ -363,32 +362,44 @@ def get_core_subsets(core_infos):
     return core_subsets
 
 
-def sort_out_downed_chips_cores(downed_chips, downed_cores):
+def sort_out_downed_chips_cores_links(
+        downed_chips, downed_cores, downed_links):
     """ Translate the down cores and down chips string into a form that \
         spinnman can understand
 
-    :param downed_cores: string representing down cores
+    :param downed_cores:\
+        string representing down cores formatted as x,y,p[:x,y,p]*
     :type downed_cores: str
-    :param downed_chips: string representing down chips
+    :param downed_chips:\
+        string representing down chips formatted as x,y[:x,y]*
     :type: downed_chips: str
-    :return: a list of down cores and down chips in processor and \
-            core subset format
+    :param downed_links:\
+        string representing down links formatted as x,y,link[:x,y,link]*
+    :return:\
+        a tuple of (\
+            set of (x, y) of down chips, \
+            set of (x, y, p) of down cores, \
+            set of ((x, y), link id) of down links)
+    :rtype: ({(int, int,), }, {(int, int, int), }, {((int, int), int), })
     """
-    ignored_chips = None
-    ignored_cores = None
+    ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
-        ignored_chips = CoreSubsets()
         for downed_chip in downed_chips.split(":"):
             x, y = downed_chip.split(",")
-            ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
-                                                     []))
+            ignored_chips.add((int(x), int(y)))
+
+    ignored_cores = set()
     if downed_cores is not None and downed_cores != "None":
-        ignored_cores = CoreSubsets()
         for downed_core in downed_cores.split(":"):
             x, y, processor_id = downed_core.split(",")
-            ignored_cores.add_processor(int(x), int(y),
-                                        int(processor_id))
-    return ignored_chips, ignored_cores
+            ignored_cores.add((int(x), int(y), int(processor_id)))
+
+    ignored_links = set()
+    if downed_links is not None and downed_links != "None":
+        for downed_link in downed_links.split(":"):
+            x, y, link_id = downed_link.split(",")
+            ignored_links.add((int(x), int(y), int(link_id)))
+    return ignored_chips, ignored_cores, ignored_links
 
 
 def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):

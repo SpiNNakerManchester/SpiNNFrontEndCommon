@@ -22,16 +22,16 @@ class FrontEndCommonVirtualMachineGenerator(object):
         :return: None
         """
 
-        ignored_chips, ignored_cores = \
-            helpful_functions.sort_out_downed_chips_cores(
-                down_chips, down_cores)
+        ignored_chips, ignored_cores, ignored_links = \
+            helpful_functions.sort_out_downed_chips_cores_links(
+                down_chips, down_cores, down_links)
 
         machine = VirtualMachine(
             width=width, height=height,
             with_wrap_arounds=virtual_has_wrap_arounds,
             version=version, n_cpus_per_chip=n_cpus_per_chip,
             with_monitors=with_monitors, down_chips=ignored_chips,
-            down_cores=ignored_cores, down_links=down_links)
+            down_cores=ignored_cores, down_links=ignored_links)
 
         # Work out and add the spinnaker links and FPGA links
         machine.add_spinnaker_links(version)

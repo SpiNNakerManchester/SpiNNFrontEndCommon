@@ -179,6 +179,10 @@
                 <param_type>DownedCoresDetails</param_type>
             </parameter>
             <parameter>
+                <param_name>downed_links</param_name>
+                <param_type>DownedLinksDetails</param_type>
+            </parameter>
+            <parameter>
                 <param_name>board_version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
@@ -213,6 +217,7 @@
             <param_name>bmp_details</param_name>
             <param_name>downed_chips</param_name>
             <param_name>downed_cores</param_name>
+            <param_name>downed_links</param_name>
             <param_name>board_version</param_name>
             <param_name>auto_detect_bmp</param_name>
             <param_name>enable_reinjection</param_name>

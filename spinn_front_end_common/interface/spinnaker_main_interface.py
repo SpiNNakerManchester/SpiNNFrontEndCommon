@@ -868,8 +868,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "down_chips")
             inputs["DownedCoresDetails"] = self._config.get(
                 "Machine", "down_cores")
-            inputs["DownedLinksDetails"] = self._convert_down_links(
-                self._config.get("Machine", "down_links"))
+            inputs["DownedLinksDetails"] = self._config.get(
+                "Machine", "down_links")
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
             inputs["BootPortNum"] = self._read_config_int(
@@ -987,39 +987,6 @@ class SpinnakerMainInterface(object):
                     "MemoryGraphMapper")
 
         return self._machine
-
-    def _convert_down_links(self, down_link_text):
-        """ Converts the text form to a list of down links
-
-        :param down_link_text: the text from the config system
-        :return:\
-            array of (tuple(int, int), tuple(int, int), int) where the\
-            first tuple is the source x and y for the chip the link is from,\
-            the second is a destination x and y for the chip the link goes to,\
-            the third is the link id from the source chip.
-        """
-        down_links = list()
-        if down_link_text == "None":
-            return down_links
-
-        bits = down_link_text.split("]")
-        for bit in bits:
-            if len(bit) > 0:
-                removed_first_bracket = bit.split("[")
-                coords_bits = removed_first_bracket[1].split(":")
-                source_bits = coords_bits[0].split(",")
-                removed_bracket_sx = source_bits[0].split("(")[1]
-                removed_bracket_sy = source_bits[1].split(")")[0]
-                source_tuple = (int(removed_bracket_sx),
-                                int(removed_bracket_sy))
-                dest_bits = coords_bits[1].split(",")
-                removed_bracket_dx = dest_bits[0].split("(")[1]
-                removed_bracket_dy = dest_bits[1].split(")")[0]
-                dest_tuple = (int(removed_bracket_dx), int(removed_bracket_dy))
-                link_id = int(coords_bits[2])
-                down_links.append((source_tuple, dest_tuple, link_id))
-        print bits
-        return down_links
 
     def generate_file_machine(self):
         inputs = {

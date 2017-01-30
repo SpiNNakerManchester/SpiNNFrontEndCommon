@@ -229,6 +229,10 @@ class BufferManager(object):
         """ Add listeners for buffered data for the given vertex
         """
 
+        # If using virtual board, no listeners can be set up
+        if self._transceiver is None:
+            return
+
         # Find a tag for receiving buffer data
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
