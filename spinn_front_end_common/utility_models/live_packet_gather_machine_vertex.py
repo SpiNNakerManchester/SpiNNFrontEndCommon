@@ -59,8 +59,7 @@ class LivePacketGatherMachineVertex(
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0,
             ip_address=None, port=None, strip_sdp=None, board_address=None,
-            tag=None,
-            constraints=None):
+            tag=None, constraints=None):
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
