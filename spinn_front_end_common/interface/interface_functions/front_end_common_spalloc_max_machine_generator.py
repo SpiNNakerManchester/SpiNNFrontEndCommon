@@ -25,4 +25,5 @@ class FrontEndCommonSpallocMaxMachineGenerator(object):
                     max_width = machine["width"]
                     max_height = machine["height"]
 
-        return max_width * 12, max_height * 12
+        # Return the width and height, and assume it has wrap arounds
+        return max_width * 12, max_height * 12, True

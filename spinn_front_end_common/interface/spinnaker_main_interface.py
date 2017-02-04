@@ -871,6 +871,8 @@ class SpinnakerMainInterface(object):
             inputs["DownedLinksDetails"] = self._config.get(
                 "Machine", "down_links")
             inputs["AutoDetectBMPFlag"] = False
+            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
+                "Machine", "requires_wrap_arounds")
             inputs["ScampConnectionData"] = None
             inputs["BootPortNum"] = self._read_config_int(
                 "Machine", "boot_connection_port_num")
@@ -1042,8 +1044,6 @@ class SpinnakerMainInterface(object):
         inputs["WriteTextSpecsFlag"] = self._config.getboolean(
             "Reports", "writeTextSpecs")
         inputs["ExecutableFinder"] = self._executable_finder
-        inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
-            "Machine", "requires_wrap_arounds")
         inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
         inputs["SendStartNotifications"] = self._config.getboolean(

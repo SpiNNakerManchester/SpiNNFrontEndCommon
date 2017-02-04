@@ -23,6 +23,7 @@ import inspect
 import struct
 import time
 from collections import OrderedDict
+from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
@@ -499,4 +500,7 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
-    return bool(value)
+    if value.lower() in RawConfigParser._boolean_states:
+        return RawConfigParser._boolean_states[value.lower()]
+    raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
+        value, section, item))

@@ -1313,6 +1313,7 @@
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
+            <param_type>MachineHasWrapAroundsFlag</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonHBPMaxMachineGenerator">
@@ -1335,6 +1336,7 @@
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
+            <param_type>MachineHasWrapAroundsFlag</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionedGraphMeasurer">
