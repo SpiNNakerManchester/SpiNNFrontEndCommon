@@ -988,9 +988,7 @@ void resume_callback() {
 
     // have fallen out of a resume mode, set up the functions to start
     // resuming again
-    if(!initialise_recording()){
-        log_error("Could not reset recording regions");
-    }
+    recording_reset();
 
     stopped = false;
 }
