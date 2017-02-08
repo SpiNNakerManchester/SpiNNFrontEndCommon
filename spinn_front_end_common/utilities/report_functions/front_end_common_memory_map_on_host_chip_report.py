@@ -20,10 +20,14 @@ class FrontEndCommonMemoryMapOnHostChipReport(object):
     def __call__(
             self, report_default_directory, dsg_targets, transceiver,
             loaded_app_data_token):
-        """
+        """ creates a report that states where in sdram each region is
+        (read from machine)
 
-        :param report_default_directory:
-        :return:
+        :param report_default_directory: the folder where reports are written
+        :param dsg_targets: the map between placement and file writer
+        :param transceiver: the spinnMan instance
+        :param loaded_app_data_token: flag that app data has been loaded
+        :return: None
         """
 
         if not loaded_app_data_token:
