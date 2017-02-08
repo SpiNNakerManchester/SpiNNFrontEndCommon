@@ -22,8 +22,9 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.abstract_models \
+    .abstract_binary_uses_simulation_run import \
+    AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
@@ -33,6 +34,7 @@ from spinn_front_end_common.utilities import constants
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
 from enum import Enum
+import struct
 
 
 class LivePacketGatherMachineVertex(
@@ -47,7 +49,7 @@ class LivePacketGatherMachineVertex(
                ('PROVENANCE', 2)])
 
     N_ADDITIONAL_PROVENANCE_ITEMS = 2
-    _CONFIG_SIZE = 44
+    _CONFIG_SIZE = 48
     _PROVENANCE_REGION_SIZE = 8
 
     def __init__(
@@ -258,6 +260,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
+        spec.write_value(struct.unpack("<I", struct.pack(
+            "<HH", iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
