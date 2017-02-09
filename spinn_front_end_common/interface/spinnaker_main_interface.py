@@ -1474,7 +1474,8 @@ class SpinnakerMainInterface(object):
         xml_paths.extend(
             helpful_functions.get_front_end_common_pacman_xml_paths())
 
-        xml_paths.extend(extra_algorithm_xml_paths)
+        if extra_algorithm_xml_paths is not None:
+            xml_paths.extend(extra_algorithm_xml_paths)
         return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
