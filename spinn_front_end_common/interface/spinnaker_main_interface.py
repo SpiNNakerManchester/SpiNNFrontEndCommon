@@ -1788,6 +1788,7 @@ class SpinnakerMainInterface(object):
                     logger.info("Turning off machine")
 
                 self._txrx.close(power_off_machine=turn_off_machine)
+                self._txrx = None
 
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.close()
