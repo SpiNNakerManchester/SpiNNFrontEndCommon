@@ -94,7 +94,7 @@ class FrontEndCommonApplicationRunner(object):
         :param sync_state_changes: the number of runs been done between setup\
                 and end
         :param txrx: the python interface to the spinnaker machine
-        :return: None
+        :rtype: None
         """
 
         total_processors = executable_targets.total_processors
@@ -152,7 +152,7 @@ class FrontEndCommonApplicationRunner(object):
         :param txrx:
         :param no_sync_state_changes: the number of runs been done between\
                 setup and end
-        :return:
+        :rtype: None
         """
 
         total_processors = executable_targets.total_processors

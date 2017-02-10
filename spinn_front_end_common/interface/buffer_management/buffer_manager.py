@@ -725,7 +725,7 @@ class BufferManager(object):
                 SpiNNaker system
         :type packet:\
                 :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
-        :return: None
+        :rtype: None
         """
         x = packet.x
         y = packet.y
@@ -801,13 +801,11 @@ class BufferManager(object):
     @property
     def sender_vertices(self):
         """ The vertices which are buffered
-        :return:
         """
         return self._sender_vertices
 
     @property
     def reload_buffer_files(self):
         """ The file paths for each buffered region for each sender vertex
-        :return:
         """
         return self._reload_buffer_file_paths
