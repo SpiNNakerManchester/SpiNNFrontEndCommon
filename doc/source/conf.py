@@ -41,15 +41,15 @@ intersphinx_mapping = {'spinn_machine':
                            None),
                        'spinn_storage_handlers':
                            ('http://spinnmachine.readthedocs.io/en/latest/',
-                           None),
+                            None),
                        'spinnman':
                            ('http://spinnman.readthedocs.io/en/latest/',
-                           None),
+                            None),
                        'pacman': ('http://pacman.readthedocs.io/en/latest/',
-                           None),
+                                  None),
                        'data_specification':
-                           ('http://dataspecification.readthedocs.io/en/latest/'
-                           ,None),
+                           ('http://dataspecification.readthedocs.io\
+                            /en/latest/', None),
                        }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -218,8 +218,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  ('index', 'SpiNNakerGraphFrontEnd.tex', u'SpiNNakerGraphFrontEnd Documentation',
-   u'', 'manual'),
+  ('index', 'SpiNNakerGraphFrontEnd.tex',
+   u'SpiNNakerGraphFrontEnd Documentation', u'', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -248,7 +248,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'SpiNNakerGraphFrontEnd', u'SpiNNakerGraphFrontEnd Documentation',
+    ('index', 'SpiNNakerGraphFrontEnd',
+     u'SpiNNakerGraphFrontEnd Documentation',
      [u''], 1)
 ]
 
@@ -262,8 +263,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'SpiNNakerGraphFrontEnd', u'SpiNNakerGraphFrontEnd Documentation',
-   u'', 'SpiNNakerGraphFrontEnd', '',
+  ('index', 'SpiNNakerGraphFrontEnd',
+   u'SpiNNakerGraphFrontEnd Documentation', u'', 'SpiNNakerGraphFrontEnd', '',
    'Miscellaneous'),
 ]
 
