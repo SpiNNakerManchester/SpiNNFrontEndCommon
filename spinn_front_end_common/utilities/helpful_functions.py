@@ -34,7 +34,7 @@ def get_valid_components(module, terminator):
 
     :param module:
     :param terminator:
-    :return:
+    :rtype: dict
     """
     terminator = re.compile(terminator + '$')
     return dict(map(lambda (name, router): (terminator.sub('', name),
@@ -68,7 +68,6 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type placement: pacman.model.placements.placement.Placement
     :param transceiver: the python interface to the spinnaker machine
     :type transceiver: spiNNMan.transciever.Transciever
-    :return: None
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
@@ -302,7 +301,6 @@ def get_cores_in_state(all_core_subsets, states, txrx):
     :param all_core_subsets:
     :param states:
     :param txrx:
-    :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_in_state = OrderedDict()
@@ -324,7 +322,6 @@ def get_cores_not_in_state(all_core_subsets, states, txrx):
     :param all_core_subsets:
     :param states:
     :param txrx:
-    :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
@@ -370,7 +367,7 @@ def sort_out_downed_chips_cores(downed_chips, downed_cores):
     :param downed_cores: string representing down cores
     :type downed_cores: str
     :param downed_chips: string representing down chips
-    :type: downed_chips: str
+    :type downed_chips: str
     :return: a list of down cores and down chips in processor and \
             core subset format
     """
@@ -398,7 +395,7 @@ def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
     :param app_id: the app id that being used by the simulation
     :param txrx: the python interface to the spinnaker machine
     :param sync_state: The expected state once the applications are ready
-    :return:
+    :rtype: None
     """
 
     total_processors = executable_targets.total_processors

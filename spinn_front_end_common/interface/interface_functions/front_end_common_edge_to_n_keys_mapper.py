@@ -94,7 +94,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
         :param constraints:
         :param stored_constraints:
-        :return:
+        :rtype: None
         """
         for constraint in constraints:
             if constraint not in stored_constraints:

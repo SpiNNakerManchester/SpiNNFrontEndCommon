@@ -19,7 +19,7 @@ class FrontEndCommonMachineGraphNetworkSpecificationReport(object):
                     pacman.model.graph.machine.machine_graph.MachineGraph
         :param hostname: the machine name
         :type hostname:
-        :return: None
+        :rtype: None
         """
         filename = report_folder + os.sep + "network_specification.rpt"
         f_network_specification = None
