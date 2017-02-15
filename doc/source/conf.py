@@ -248,8 +248,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'SpiNNakerGraphFrontEnd',
-     u'SpiNNakerGraphFrontEnd Documentation',
+    ('index', 'SpiNNFrontEndCommon',
+     u'SpiNNFrontEndCommon Documentation',
      [u''], 1)
 ]
 
@@ -263,13 +263,13 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'SpiNNakerGraphFrontEnd',
-   u'SpiNNakerGraphFrontEnd Documentation', u'', 'SpiNNakerGraphFrontEnd', '',
+  ('index', 'SpiNNFrontEndCommon',
+   u'SpiNNFrontEndCommon Documentation', u'', 'SpiNNFrontEndCommon', '',
    'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
-# texinfo_appendices = []
+# texinfo_appendices = []y
 
 # If false, no module index is generated.
 # texinfo_domain_indices = True
@@ -284,7 +284,7 @@ texinfo_documents = [
 # -- Options for Epub output ----------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = u'SpiNNakerGraphFrontEnd'
+epub_title = u'SpiNNFrontEndCommon'
 epub_author = u''
 epub_publisher = u''
 epub_copyright = u'2014-2017'
