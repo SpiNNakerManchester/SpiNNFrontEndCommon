@@ -5,4 +5,4 @@ enum34
 -e git+https://github.com/SpiNNakerManchester/SpiNNMan.git@master#egg=spinnman
 -e git+https://github.com/SpiNNakerManchester/PACMAN.git@master#egg=pacman
 -e git+https://github.com/SpiNNakerManchester/DataSpecification.git@master#egg=data_specification
-
+-e git+https://github.com/SpiNNakerManchester/spalloc.git@master#egg=spalloc
