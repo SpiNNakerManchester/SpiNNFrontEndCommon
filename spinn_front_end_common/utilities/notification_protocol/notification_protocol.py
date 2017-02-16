@@ -120,18 +120,34 @@ class NotificationProtocol(object):
                     "ready for reading ***")
 
                 # noinspection PyBroadException
-                try:
-                    for connection in self._data_base_message_connections:
+                for connection in self._data_base_message_connections:
+                    try:
                         connection.send_eieio_message(eieio_command_message)
+                    except Exception:
+                        logger.warning(
+                            "*** Failed to notify external application on"
+                            " {}:{} about the database ***".format(
+                                connection.remote_ip_address,
+                                connection.remote_port))
 
-                    # if the system needs to wait, try receiving a packet back
-                    if self._wait_for_read_confirmation:
-                        for connection in self._data_base_message_connections:
+                # if the system needs to wait, try receiving a packet back
+                if self._wait_for_read_confirmation:
+                    for connection in self._data_base_message_connections:
+                        try:
                             connection.receive_eieio_message()
-                    logger.info("*** Confirmation received, continuing ***")
-                except Exception:
-                    logger.warning("*** Failed to notify external application"
-                                   " about the database - continuing ***")
+                            logger.info(
+                                "*** Confirmation from {}:{} received,"
+                                " continuing ***".format(
+                                    connection.remote_ip_address,
+                                    connection.remote_port))
+                        except Exception:
+                            logger.warning(
+                                "*** Failed to receive notification from"
+                                " external application on"
+                                " {}:{} about the database ***".format(
+                                    connection.remote_ip_address,
+                                    connection.remote_port))
+
             except Exception:
                 traceback.print_exc()
 

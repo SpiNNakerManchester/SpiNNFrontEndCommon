@@ -45,9 +45,9 @@ class DatabaseConnection(UDPConnection, Thread):
         UDPConnection.__init__(
             self, local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
-        Thread.__init__(self,
-                        name="spynnaker database connection for {}:{}"
-                        .format(local_host, local_port))
+        Thread.__init__(
+            self, name="SpyNNakerDatabaseConnection:{}:{}".format(
+                self.local_ip_address, self.local_port))
         self._database_callback_functions = list()
         self._start_resume_callback_function = start_resume_callback_function
         self._pause_and_stop_callback_function = stop_pause_callback_function
@@ -74,14 +74,16 @@ class DatabaseConnection(UDPConnection, Thread):
         try:
             self._running = True
             logger.info(
-                "Waiting for message to indicate that the database is ready")
+                "{}:{} Waiting for message to indicate that the database"
+                " is ready".format(self.local_ip_address, self.local_port))
             while self._running:
 
                 data, address = self._retrieve_database_address()
 
                 if data is not None:
                     # Read the read packet confirmation
-                    logger.info("Reading database")
+                    logger.info("{}:{} Reading database".format(
+                        self.local_ip_address, self.local_port))
                     database_path = str(data[2:])
 
                     # Call the callback

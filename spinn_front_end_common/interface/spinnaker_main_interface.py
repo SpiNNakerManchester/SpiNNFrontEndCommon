@@ -826,8 +826,8 @@ class SpinnakerMainInterface(object):
                 "Machine", "down_chips")
             inputs["DownedCoresDetails"] = self._config.get(
                 "Machine", "down_cores")
-            inputs["DownedLinksDetails"] = self._convert_down_links(
-                self._config.get("Machine", "down_links"))
+            inputs["DownedLinksDetails"] = self._config.get(
+                "Machine", "down_links")
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
