@@ -8,6 +8,7 @@ from spinn_front_end_common.interface.provenance\
 
 
 class FrontEndCommonGraphProvenanceGatherer(object):
+    __slots__ = []
 
     def __call__(
             self, machine_graph, application_graph=None,
@@ -19,16 +20,13 @@ class FrontEndCommonGraphProvenanceGatherer(object):
         :param provenance_data_objects: Any existing objects to append to
         """
 
-        __slots__ = []
-
         if provenance_data_objects is not None:
             prov_items = provenance_data_objects
         else:
             prov_items = list()
 
         progress = ProgressBar(
-            len(machine_graph.vertices) +
-            len(machine_graph.edges),
+            len(machine_graph.vertices) + len(machine_graph.edges),
             "Getting provenance data from machine graph")
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
@@ -42,8 +40,7 @@ class FrontEndCommonGraphProvenanceGatherer(object):
 
         if application_graph is not None:
             progress = ProgressBar(
-                len(application_graph.vertices) +
-                len(application_graph.edges),
+                len(application_graph.vertices) + len(application_graph.edges),
                 "Getting provenance data from application graph")
             for vertex in application_graph.vertices:
                 if isinstance(vertex, AbstractProvidesLocalProvenanceData):
