@@ -7,6 +7,16 @@ matrix:
 virtualenv:
   system_site_packages: true
 
-before_script:
+install:
+  - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNMachine.git@master
+  - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNMan.git@master
+  - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNStorageHandlers.git@master
+  - pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@master
+  - pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@master
+  - pip install -r requirements-test.txt
   - python ./setup.py install
-script: "py.test ."
+script:
+  - py.test unittests
+  - py.test integration_tests
+  - flake8 spinn_front_end_common
+  - flake8 unittests integration_tests
