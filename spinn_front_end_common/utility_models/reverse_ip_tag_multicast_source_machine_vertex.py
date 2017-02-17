@@ -702,8 +702,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         provenance_items.append(ProvenanceDataItem(
             self._add_name(names, "received_sdp_packets"),
             provenance_data[self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value],
-            report=provenance_data[
-                self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value] == 0,
+            report=(
+                provenance_data[
+                    self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value] == 0 and
+                self._send_buffer_times is None),
             message=(
                 "No SDP packets were received by {}.  If you expected packets"
                 " to be injected, this could indicate an error".format(
