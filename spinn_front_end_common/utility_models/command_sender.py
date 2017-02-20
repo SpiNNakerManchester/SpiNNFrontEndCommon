@@ -151,7 +151,6 @@ class CommandSender(
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 
-        :return:
         """
         return CommandSenderMachineVertex.get_binary_file_name()
 

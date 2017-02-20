@@ -77,17 +77,13 @@ class DatabaseWriter(object):
 
     @property
     def database_path(self):
-        """
-
-        :return:
-        """
         return self._database_path
 
     def add_machine_objects(self, machine):
         """ Store the machine object into the database
 
         :param machine: the machine object.
-        :return: None
+        :rtype: None
         """
 
         # noinspection PyBroadException
@@ -146,7 +142,7 @@ class DatabaseWriter(object):
         """
 
         :param application_graph:
-        :return:
+        :rtype: None
         """
 
         try:
@@ -293,7 +289,7 @@ class DatabaseWriter(object):
         :param machine_graph: the machine graph object
         :param graph_mapper: the graph mapper object
         :param application_graph: the application graph object
-        :return: None
+        :rtype: None
         """
 
         # noinspection PyBroadException
@@ -421,7 +417,7 @@ class DatabaseWriter(object):
 
         :param placements: the placements object
         :param machine_graph: the machine graph object
-        :return: None
+        :rtype: None
         """
 
         # noinspection PyBroadException
@@ -461,7 +457,7 @@ class DatabaseWriter(object):
 
         :param routing_infos: the routing information object
         :param machine_graph: the machine graph object
-        :return:
+        :rtype: None:
         """
 
         # noinspection PyBroadException
@@ -497,7 +493,7 @@ class DatabaseWriter(object):
         """ Adds the routing tables into the database
 
         :param routing_tables: the routing tables object
-        :return: None
+        :rtype: None
         """
 
         # noinspection PyBroadException
@@ -538,7 +534,7 @@ class DatabaseWriter(object):
 
         :param machine_graph: the machine graph object
         :param tags: the tags object
-        :return:
+        :rtype: None
         """
 
         # noinspection PyBroadException
@@ -600,7 +596,7 @@ class DatabaseWriter(object):
         :param machine_graph:
         :param routing_infos:
         :param graph_mapper:
-        :return:
+        :rtype: None
         """
 
         # noinspection PyBroadException

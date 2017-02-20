@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationProtocol(object):
-    """ The protocol which hand shakes with external devices about the \
+    """ The protocol which hand shakes with external devices about the\
         database and starting execution
     """
 
@@ -43,7 +43,7 @@ class NotificationProtocol(object):
         """ if asked to wait for confirmation, waits for all external systems\
             to confirm that they are configured and have read the database
 
-        :return:
+        :rtype: None
         """
         logger.info("*** Awaiting for a response from an external source "
                     "to state its ready for the simulation to start ***")
@@ -55,7 +55,7 @@ class NotificationProtocol(object):
             are configured, and/or just sends the start notification\
             (when the system is executing)
 
-        :return:
+        :rtype: None
         """
         logger.info("*** Sending start / resume message to external sources "
                     "to state the simulation has started or resumed. ***")
@@ -69,7 +69,7 @@ class NotificationProtocol(object):
         """ sends the pause / stop notifications when the script has either\
             finished or paused
 
-        :return:
+        :rtype: None
         """
         logger.info("*** Sending pause / stop message to external sources "
                     "to state the simulation has been paused or stopped. ***")
@@ -82,8 +82,9 @@ class NotificationProtocol(object):
         """ sends notifications to all devices which have expressed an\
             interest in when the database has been written
 
+
         :param database_path: the path to the database file
-        :return:
+        :rtype: None
         """
         if database_path is not None:
             self._wait_pool.apply_async(self._send_read_notification,
@@ -95,7 +96,7 @@ class NotificationProtocol(object):
             database
 
         :param database_path: the path to the database
-        :return: None
+        :rtype: None
 
         """
         # noinspection PyBroadException
@@ -153,6 +154,5 @@ class NotificationProtocol(object):
 
     def close(self):
         """ Closes the thread pool
-        :return:
         """
         self._wait_pool.close()

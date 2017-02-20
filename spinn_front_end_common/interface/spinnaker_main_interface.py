@@ -399,7 +399,7 @@ class SpinnakerMainInterface(object):
         """ Sets up the outgoing folders (reports and app data) by creating\
             a new timestamp folder for each and clearing
 
-        :return:
+        :rtype: None
         """
 
         # set up reports default folder
@@ -427,8 +427,6 @@ class SpinnakerMainInterface(object):
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
-        :param hostname:
-        :return:
         """
         if hostname is not None:
             self._hostname = hostname
@@ -482,7 +480,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param run_time: the run duration in milliseconds.
-        :return: None
+        :rtype: None
         """
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -1552,18 +1550,10 @@ class SpinnakerMainInterface(object):
 
     @property
     def has_ran(self):
-        """
-
-        :return:
-        """
-        return self._has_ran
+         return self._has_ran
 
     @property
     def machine_time_step(self):
-        """
-
-        :return:
-        """
         return self._machine_time_step
 
     @property
@@ -1576,73 +1566,40 @@ class SpinnakerMainInterface(object):
 
     @property
     def no_machine_time_steps(self):
-        """
-
-        :return:
-        """
         return self._no_machine_time_steps
 
     @property
     def timescale_factor(self):
-        """
-
-        :return:
-        """
         return self._time_scale_factor
 
     @property
     def machine_graph(self):
-        """
-
-        :return:
-        """
         return self._machine_graph
 
     @property
     def application_graph(self):
-        """
-
-        :return:
-        """
         return self._application_graph
 
     @property
     def routing_infos(self):
-        """
-
-        :return:
-        """
         return self._routing_infos
 
     @property
     def placements(self):
-        """
-
-        :return:
-        """
         return self._placements
 
     @property
     def transceiver(self):
-        """
-
-        :return:
-        """
         return self._txrx
 
     @property
     def graph_mapper(self):
-        """
-
-        :return:
-        """
         return self._graph_mapper
 
     @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
-        :return:
         """
         return self._buffer_manager
 
@@ -1650,7 +1607,6 @@ class SpinnakerMainInterface(object):
     def dsg_algorithm(self):
         """ The dsg algorithm used by the tools
 
-        :return:
         """
         return self._dsg_algorithm
 
@@ -1659,7 +1615,7 @@ class SpinnakerMainInterface(object):
         """ Set the dsg algorithm to be used by the tools
 
         :param new_dsg_algorithm: the new dsg algorithm name
-        :return:
+        :rtype: None
         """
         self._dsg_algorithm = new_dsg_algorithm
 
@@ -1692,10 +1648,6 @@ class SpinnakerMainInterface(object):
         return self._use_virtual_board
 
     def get_current_time(self):
-        """
-
-        :return:
-        """
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
@@ -1710,7 +1662,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param vertex_to_add: the vertex to add to the graph
-        :return: None
+        :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
         if (len(self._machine_graph.vertices) > 0 and
@@ -1728,8 +1680,8 @@ class SpinnakerMainInterface(object):
     def add_machine_vertex(self, vertex):
         """
 
-        :param vertex the vertex to add to the graph
-        :return: None
+        :param vertex: the vertex to add to the graph
+        :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
@@ -1750,7 +1702,7 @@ class SpinnakerMainInterface(object):
         :param edge_to_add:
         :param partition_identifier: the partition identifier for the outgoing
                     edge partition
-        :return:
+        :rtype: None
         """
 
         self._application_graph.add_edge(
@@ -1762,7 +1714,7 @@ class SpinnakerMainInterface(object):
         :param edge: the edge to add to the graph
         :param partition_id: the partition identifier for the outgoing
                     edge partition
-        :return:
+        :rtype: None
         """
         self._machine_graph.add_edge(edge, partition_id)
 
@@ -1847,7 +1799,7 @@ class SpinnakerMainInterface(object):
         :param extract_iobuf: tells the tools if it should try to \
             extract iobuf
         :type extract_iobuf: bool
-        :return: None
+        :rtype: None
         """
 
         if extract_provenance_data:
@@ -1889,7 +1841,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param socket_address:
-        :return:
+        :rtype: None
         """
         self._database_socket_addresses.add(socket_address)
 

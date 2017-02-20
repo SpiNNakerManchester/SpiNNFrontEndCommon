@@ -113,7 +113,6 @@ class LivePacketGatherMachineVertex(
 
         :param transceiver: spinnman interface to the machine
         :param placement: the location of this vertex on the machine
-        :return:
         """
         provenance_data = self._read_provenance_data(transceiver, placement)
         provenance_items = self._read_basic_provenance_items(
@@ -203,7 +202,7 @@ class LivePacketGatherMachineVertex(
                     :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
         :param iptags: The set of ip tags assigned to the object
         :type iptags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
-        :raises DataSpecificationException: when something goes wrong with the\
+        :raise DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """
         spec.switch_write_focus(
@@ -268,8 +267,6 @@ class LivePacketGatherMachineVertex(
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
 
-        :param spec:
-        :return:
         """
 
         # Write this to the system region (to be picked up by the simulation):
@@ -284,7 +281,8 @@ class LivePacketGatherMachineVertex(
     def get_cpu_usage():
         """ Get the CPU used by this vertex
 
-        :return:
+        :return:  0
+        :rtype: int
         """
         return 0
 
@@ -292,7 +290,6 @@ class LivePacketGatherMachineVertex(
     def get_sdram_usage():
         """ Get the SDRAM used by this vertex
 
-        :return:
         """
         return (
             constants.SYSTEM_BYTES_REQUIREMENT +
@@ -305,6 +302,5 @@ class LivePacketGatherMachineVertex(
     def get_dtcm_usage():
         """ Get the DTCM used by this vertex
 
-        :return:
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE

@@ -170,7 +170,7 @@ class ReloadScript(object):
         """ Store a socket address for database usage
 
         :param socket_address: the socket addresses to be stored by the reload
-        :return:
+        :rtype: None
         """
         self._println("database_socket_addresses.append(")
         self._println("    SocketAddress(\"{}\", {}, {}))".format(
@@ -181,7 +181,7 @@ class ReloadScript(object):
         """ Add a routing table to be reloaded
 
         :param routing_table: the routing table to reload
-        :return:
+        :rtype: None
         """
         location = ReloadRoutingTable.store(
             self._app_data_runtime_folder, routing_table)
@@ -194,7 +194,7 @@ class ReloadScript(object):
         """ Add an iptag to be reloaded
 
         :param iptag: the iptag object to be loaded.
-        :return:
+        :rtype: None
         """
         board_address = None
         if iptag.board_address == "127.0.0.1":
@@ -210,7 +210,7 @@ class ReloadScript(object):
         """ Add a reverse ip tag to be reloaded
 
         :param reverse_ip_tag: the reverse iptag to be loaded.
-        :return:
+        :rtype: None
         """
         board_address = None
         if reverse_ip_tag.board_address == "127.0.0.1":

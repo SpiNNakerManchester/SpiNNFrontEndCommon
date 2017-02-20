@@ -19,7 +19,6 @@ class FrontEndCommonVirtualMachineGenerator(object):
         :param version: The version of board to create
         :param n_cpus_per_chip: The number of cores to put on each chip
         :param with_monitors: If true, CPU 0 will be marked as a monitor
-        :return: None
         """
 
         ignored_chips, ignored_cores, ignored_links = \
