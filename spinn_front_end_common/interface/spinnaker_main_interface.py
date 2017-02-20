@@ -1862,3 +1862,11 @@ class SpinnakerMainInterface(object):
     def _read_config_boolean(self, section, item):
         return helpful_functions.read_config_boolean(
             self._config, section, item)
+
+    @property
+    def config(self):
+        """ helper method for the  front end impls till we remove config
+
+        :return:
+        """
+        return self._config
