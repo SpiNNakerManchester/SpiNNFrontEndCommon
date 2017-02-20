@@ -1550,7 +1550,7 @@ class SpinnakerMainInterface(object):
 
     @property
     def has_ran(self):
-         return self._has_ran
+        return self._has_ran
 
     @property
     def machine_time_step(self):
