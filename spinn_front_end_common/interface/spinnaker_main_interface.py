@@ -168,7 +168,7 @@ class SpinnakerMainInterface(object):
         "_has_reset_last",
 
         #
-        "_current_run_time_steps",
+        "_current_run_timesteps",
 
         #
         "_no_sync_changes",
@@ -322,7 +322,7 @@ class SpinnakerMainInterface(object):
         self._has_ran = False
         self._has_reset_last = False
         self._n_calls_to_run = 1
-        self._current_run_time_steps = 0
+        self._current_run_timesteps = 0
         self._no_sync_changes = 0
         self._minimum_step_generated = None
         self._no_machine_time_steps = None
@@ -474,7 +474,7 @@ class SpinnakerMainInterface(object):
             n_machine_time_steps = int(
                 (run_time * 1000.0) / self._machine_time_step)
             total_run_timesteps = (
-                self._current_run_time_steps + n_machine_time_steps)
+                self._current_run_timesteps + n_machine_time_steps)
             total_run_time = (
                 total_run_timesteps *
                 (float(self._machine_time_step) / 1000.0) *
@@ -670,7 +670,7 @@ class SpinnakerMainInterface(object):
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
         total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
-            total_run_timesteps += self._current_run_time_steps
+            total_run_timesteps += self._current_run_timesteps
             machine_time_steps = (
                 (total_run_timesteps * 1000.0) / self._machine_time_step)
             if machine_time_steps != int(machine_time_steps):
@@ -1121,7 +1121,7 @@ class SpinnakerMainInterface(object):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
-        inputs["FirstMachineTimeStep"] = self._current_run_time_steps
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
 
         # Run the data generation algorithms
@@ -1197,7 +1197,7 @@ class SpinnakerMainInterface(object):
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time
-        inputs["FirstMachineTimeStep"] = self._current_run_time_steps
+        inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
         inputs["CoresToExtractIOBufFrom"] = \
             helpful_functions.translate_iobuf_extraction_elements(
@@ -1309,7 +1309,7 @@ class SpinnakerMainInterface(object):
 
         # move data around
         self._last_run_outputs = executor.get_items()
-        self._current_run_time_steps = total_run_timesteps
+        self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
         self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._has_reset_last = False
@@ -1496,7 +1496,7 @@ class SpinnakerMainInterface(object):
 
         # reset the current count of how many milliseconds the application
         # has ran for over multiple calls to run
-        self._current_run_time_steps = 0
+        self._current_run_timesteps = 0
 
         # change number of resets as loading the binary again resets the sync\
         # to 0
@@ -1659,7 +1659,7 @@ class SpinnakerMainInterface(object):
     def get_current_time(self):
         if self._has_ran:
             return (
-                float(self._current_run_time_steps) *
+                float(self._current_run_timesteps) *
                 (float(self._machine_time_step) / 1000.0))
         return 0.0
 

@@ -89,10 +89,10 @@ void simulation_exit(){
     simulation_handle_pause_resume(NULL);
 }
 
-//! \brief method for sending ok response to the host when a command message
+//! \brief method for sending OK response to the host when a command message
 //! is received.
 //! \param[in] msg: the message object to send to the host.
-void _send_response(sdp_msg_t *msg){
+void _send_ok_response(sdp_msg_t *msg){
     msg->cmd_rc = RC_OK;
     msg->length = 12;
     uint dest_port = msg->dest_port;
@@ -141,7 +141,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
-                _send_response(msg);
+                _send_ok_response(msg);
             }
 
             // free the message to stop overload
@@ -170,18 +170,16 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
         case IOBUF_CLEAR:
 
+            // run clear iobuf code
+            sark_reset_iobuf();
+
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
-                _send_response(msg);
+                _send_ok_response(msg);
             }
 
             // free the message to stop overload
             spin1_msg_free(msg);
-
-            // run clear iobuf code
-            log_info("attempting to clear iobuf");
-            sark_reset_iobuf();
-            log_info("cleared iobuf");
             break;
 
         default:

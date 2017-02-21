@@ -14,7 +14,7 @@ class FrontEndCommonChipIOBufClearer(object):
 
         if not ran_token:
             raise exceptions.ConfigurationException(
-                "The simulation has to have ran before runnning this system")
+                "The simulation has to have ran before running this system")
 
         process = ClearIOBUFProcess(transceiver._scamp_connection_selector)
         process.clear_iobuf(executable_targets.all_core_subsets,

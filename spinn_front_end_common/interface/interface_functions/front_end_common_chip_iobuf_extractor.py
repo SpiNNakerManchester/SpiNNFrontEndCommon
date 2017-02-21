@@ -33,7 +33,7 @@ class FrontEndCommonChipIOBufExtractor(object):
         error_entries = list()
         warn_entries = list()
 
-        # extract iobufs
+        # extract iobuf
         io_buffers = list(transceiver.get_iobuf(core_subsets))
 
         # check iobuf for errors
