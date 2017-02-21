@@ -9,7 +9,7 @@ virtualenv:
 
 install:
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNMachine.git@master
-  - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNMan.git@master
+  - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNMan.git@notification_protocol_upgrade
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNStorageHandlers.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@master
