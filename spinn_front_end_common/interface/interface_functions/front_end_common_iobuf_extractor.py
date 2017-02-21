@@ -51,7 +51,7 @@ class FrontEndCommonIOBufExtractor(object):
         warn_entries = list()
         progress_bar = ProgressBar(len(placements), "Extracting IOBUF")
         for placement in placements:
-
+            
             # only read from vertices which reside on real chips.
             # virtual chips have no iobuf
             if not isinstance(placement.vertex, AbstractVirtualVertex):
