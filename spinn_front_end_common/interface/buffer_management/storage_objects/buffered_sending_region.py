@@ -76,7 +76,6 @@ class BufferedSendingRegion(object):
     def buffer_size(self):
         """
         property method for getting the max size of this buffer
-        :return:
         """
         if self._buffer_size is None:
             self._calculate_sizes()
@@ -85,7 +84,6 @@ class BufferedSendingRegion(object):
     @property
     def total_region_size(self):
         """ Get the max size of this region
-        :return:
         """
         if self._total_region_size is None:
             self._calculate_sizes()
@@ -94,13 +92,11 @@ class BufferedSendingRegion(object):
     @property
     def max_buffer_size_possible(self):
         """ Get the max possible size of a buffer from this region
-        :return:
         """
         return self._max_size_of_buffer
 
     def _calculate_sizes(self):
         """ Deduce how big the buffer and the region needs to be
-        :return:
         """
         size = 0
         for timestamp in self._timestamps:
@@ -184,6 +180,7 @@ class BufferedSendingRegion(object):
     @property
     def is_next_timestamp(self):
         """ Determines if the region is empty
+
         :return: True if the region is empty, false otherwise
         :rtype: bool
         """
