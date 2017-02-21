@@ -42,58 +42,66 @@ class SpinnakerMainInterface(object):
     """
 
     __slots__ = [
-        #
+        # the interface to the cfg files. supports get get_int etc
         "_config",
 
-        #
+        # the object that contains a set of file paths, which should encompass
+        # all locations where binaries are for this simulation.
         "_executable_finder",
 
-        #
+        # the number of chips required for this simulation to run, mainly tied
+        # to the spalloc system
         "_n_chips_required",
 
-        #
+        # The ip-address of the SpiNNaker machine
         "_hostname",
 
-        #
+        # the ip_address of the spalloc server
         "_spalloc_server",
 
-        #
+        # the URL for the HBP platform interface
         "_remote_spinnaker_url",
 
-        #
+        # the algorithm used for allocating machines from the HBP platform
+        #  interface
         "_machine_allocation_controller",
 
-        #
+        # the human readable label for the application graph.
         "_graph_label",
 
-        #
+        # the pacman application graph, used to hold vertices which need to be
+        # split to core sizes
         "_application_graph",
 
-        #
+        # the pacman machine graph, used to hold vertices which represent cores
         "_machine_graph",
 
-        #
+        # the mapping interface between application and machine graphs.
         "_graph_mapper",
 
-        #
+        # The holder for where machine graph vertices are placed.
         "_placements",
 
-        #
+        # The holder for the routing table entries for all used routers in this
+        # simulation
         "_router_tables",
 
-        #
+        # the holder for the keys used by the machine vertices for
+        # communication
         "_routing_infos",
 
-        #
+        # The holder for the ip and reverse iptags used by the simulation
         "_tags",
 
-        #
+        # The python representation of the SpiNNaker machine that this
+        # simulation is going to run on
         "_machine",
 
-        #
+        # The SpiNNMan interface instance.
         "_txrx",
 
-        #
+        # The manager of streaming buffered data in and out of the SpiNNaker
+        # machine
         "_buffer_manager",
 
         #
@@ -210,6 +218,18 @@ class SpinnakerMainInterface(object):
         #
         "_raise_keyboard_interrupt",
 
+        #
+        "_n_calls_to_run",
+
+        #
+        "_this_run_time_string",
+
+        #
+        "_report_simulation_top_directory",
+
+        #
+        "_app_data_top_simulation_folder",
+
         # iobuf cores
         "_cores_to_read_iobuf"
     ]
@@ -301,33 +321,24 @@ class SpinnakerMainInterface(object):
         # holder for timing related values
         self._has_ran = False
         self._has_reset_last = False
+        self._n_calls_to_run = 1
         self._current_run_time_steps = 0
         self._no_sync_changes = 0
         self._minimum_step_generated = None
         self._no_machine_time_steps = None
         self._machine_time_step = None
         self._time_scale_factor = None
+        self._this_run_time_string = None
 
         self._app_id = self._config.getint("Machine", "appID")
 
-        # set up reports default folder
-        self._report_default_directory, this_run_time_string = \
-            helpful_functions.set_up_report_specifics(
-                default_report_file_path=self._config.get(
-                    "Reports", "defaultReportFilePath"),
-                max_reports_kept=self._config.getint(
-                    "Reports", "max_reports_kept"),
-                app_id=self._app_id)
+        # folders
+        self._report_default_directory = None
+        self._report_simulation_top_directory = None
+        self._app_data_runtime_folder = None
+        self._app_data_top_simulation_folder = None
 
-        # set up application report folder
-        self._app_data_runtime_folder = \
-            helpful_functions.set_up_output_application_data_specifics(
-                max_application_binaries_kept=self._config.getint(
-                    "Reports", "max_application_binaries_kept"),
-                where_to_write_application_data_files=self._config.get(
-                    "Reports", "defaultApplicationDataFilePath"),
-                app_id=self._app_id,
-                this_run_time_string=this_run_time_string)
+        self._set_up_output_folders()
 
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")
@@ -363,11 +374,38 @@ class SpinnakerMainInterface(object):
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
+    def _set_up_output_folders(self):
+        """ Sets up the outgoing folders (reports and app data) by creating\
+            a new timestamp folder for each and clearing
+
+        :rtype: None
+        """
+
+        # set up reports default folder
+        self._report_default_directory, \
+            self._report_simulation_top_directory, \
+            self._this_run_time_string = \
+            helpful_functions.set_up_report_specifics(
+                default_report_file_path=self._config.get(
+                    "Reports", "defaultReportFilePath"),
+                max_reports_kept=self._config.getint(
+                    "Reports", "max_reports_kept"),
+                app_id=self._app_id, n_calls_to_run=self._n_calls_to_run,
+                this_run_time_string=self._this_run_time_string)
+
+        # set up application report folder
+        self._app_data_runtime_folder, self._app_data_top_simulation_folder = \
+            helpful_functions.set_up_output_application_data_specifics(
+                max_application_binaries_kept=self._config.getint(
+                    "Reports", "max_application_binaries_kept"),
+                where_to_write_application_data_files=self._config.get(
+                    "Reports", "defaultApplicationDataFilePath"),
+                app_id=self._app_id, n_calls_to_run=self._n_calls_to_run,
+                this_run_time_string=self._this_run_time_string)
+
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
-        :param hostname:
-        :return:
         """
         if hostname is not None:
             self._hostname = hostname
@@ -421,7 +459,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param run_time: the run duration in milliseconds.
-        :return: None
+        :rtype: None
         """
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -448,6 +486,15 @@ class SpinnakerMainInterface(object):
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         application_graph_changed = self._detect_if_graph_has_changed(True)
+
+        # create new sub-folder for reporting data if the graph has changed and
+        # reset has been called.
+        if (self._has_ran and application_graph_changed and
+                self._has_reset_last):
+            self._set_up_output_folders()
+
+        # verify that the if graph has changed, and has ran, that a reset has
+        # been called, otherwise system go boom boom
         if not self._has_ran or application_graph_changed:
             if (application_graph_changed and self._has_ran and
                     not self._has_reset_last):
@@ -465,7 +512,17 @@ class SpinnakerMainInterface(object):
             # graph has changed
             if (application_graph_changed and self._hostname is None and
                     not self._use_virtual_board):
+
+                # wipe out stuff associated with a given machine, as these need
+                # to be rebuilt.
                 self._machine = None
+                if self._buffer_manager is not None:
+                    self._buffer_manager.stop()
+                    self._buffer_manager = None
+                if self._txrx is not None:
+                    self._txrx.close()
+                if self._machine_allocation_controller is not None:
+                    self._machine_allocation_controller.close()
 
             if self._machine is None:
                 self._get_machine(total_run_time, n_machine_time_steps)
@@ -495,6 +552,7 @@ class SpinnakerMainInterface(object):
                     if not isinstance(
                             app_vertex, AbstractBinaryUsesSimulationRun):
                         is_runtime_updatable = False
+
         if not is_runtime_updatable:
             self._config.set("Buffers", "use_auto_pause_and_resume", "False")
 
@@ -555,6 +613,9 @@ class SpinnakerMainInterface(object):
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
         sys.excepthook = self.exception_handler
+
+        # update counter for runs (used by reports and app data)
+        self._n_calls_to_run += 1
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
 
@@ -655,6 +716,10 @@ class SpinnakerMainInterface(object):
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
             self._shutdown()
+            helpful_functions.write_finished_file(
+                self._app_data_top_simulation_folder,
+                self._report_simulation_top_directory)
+
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
@@ -1025,11 +1090,17 @@ class SpinnakerMainInterface(object):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MemoryMachineGraph", "BufferManager"
         ]
-
         if len(self._application_graph.vertices) > 0:
             outputs.append("MemoryGraphMapper")
+
+        # Create a buffer manager if there isn't one already
+        if self._buffer_manager is None:
+            inputs["WriteReloadFilesFlag"] = False
+            algorithms.append("FrontEndCommonBufferManagerCreator")
+        else:
+            inputs["BufferManager"] = self._buffer_manager
 
         # Execute the mapping algorithms
         executor = self._run_machine_algorithms(inputs, algorithms, outputs)
@@ -1043,6 +1114,7 @@ class SpinnakerMainInterface(object):
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
+        self._buffer_manager = executor.get_item("BufferManager")
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1143,15 +1215,9 @@ class SpinnakerMainInterface(object):
         # If we have run before, make sure to extract the data before the next
         # run
         if (self._has_ran and not self._has_reset_last and
-                self._config.getboolean("Reports", "extract_iobuf_during_run")):
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
             algorithms.append("FrontEndCommonBufferExtractor")
-
-        # Create a buffer manager if there isn't one already
-        if self._buffer_manager is None:
-            inputs["WriteReloadFilesFlag"] = False
-            algorithms.append("FrontEndCommonBufferManagerCreator")
-        else:
-            inputs["BufferManager"] = self._buffer_manager
 
         if not self._use_virtual_board:
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
@@ -1177,7 +1243,7 @@ class SpinnakerMainInterface(object):
         if self._extra_post_run_algorithms is not None:
             algorithms += self._extra_post_run_algorithms
 
-            # add extractor of iobufs if supported
+            # add extractor of iobuf if supported
             if (self._config.getboolean("Reports", "extract_iobuf") and
                     self._config.getboolean(
                         "Reports", "extract_iobuf_during_run")):
@@ -1235,7 +1301,7 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-        # write iobufs to file if they exist
+        # write iobuf to file if they exist
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._config.getboolean(
                     "Reports", "extract_iobuf_during_run")):
@@ -1246,7 +1312,6 @@ class SpinnakerMainInterface(object):
         self._current_run_time_steps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
         self._no_sync_changes = executor.get_item("NoSyncChanges")
-        self._buffer_manager = executor.get_item("BufferManager")
         self._has_reset_last = False
         self._has_ran = True
 
@@ -1494,18 +1559,10 @@ class SpinnakerMainInterface(object):
 
     @property
     def has_ran(self):
-        """
-
-        :return:
-        """
         return self._has_ran
 
     @property
     def machine_time_step(self):
-        """
-
-        :return:
-        """
         return self._machine_time_step
 
     @property
@@ -1518,73 +1575,40 @@ class SpinnakerMainInterface(object):
 
     @property
     def no_machine_time_steps(self):
-        """
-
-        :return:
-        """
         return self._no_machine_time_steps
 
     @property
     def timescale_factor(self):
-        """
-
-        :return:
-        """
         return self._time_scale_factor
 
     @property
     def machine_graph(self):
-        """
-
-        :return:
-        """
         return self._machine_graph
 
     @property
     def application_graph(self):
-        """
-
-        :return:
-        """
         return self._application_graph
 
     @property
     def routing_infos(self):
-        """
-
-        :return:
-        """
         return self._routing_infos
 
     @property
     def placements(self):
-        """
-
-        :return:
-        """
         return self._placements
 
     @property
     def transceiver(self):
-        """
-
-        :return:
-        """
         return self._txrx
 
     @property
     def graph_mapper(self):
-        """
-
-        :return:
-        """
         return self._graph_mapper
 
     @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
-        :return:
         """
         return self._buffer_manager
 
@@ -1592,7 +1616,6 @@ class SpinnakerMainInterface(object):
     def dsg_algorithm(self):
         """ The dsg algorithm used by the tools
 
-        :return:
         """
         return self._dsg_algorithm
 
@@ -1601,7 +1624,7 @@ class SpinnakerMainInterface(object):
         """ Set the dsg algorithm to be used by the tools
 
         :param new_dsg_algorithm: the new dsg algorithm name
-        :return:
+        :rtype: None
         """
         self._dsg_algorithm = new_dsg_algorithm
 
@@ -1634,10 +1657,6 @@ class SpinnakerMainInterface(object):
         return self._use_virtual_board
 
     def get_current_time(self):
-        """
-
-        :return:
-        """
         if self._has_ran:
             return (
                 float(self._current_run_time_steps) *
@@ -1652,7 +1671,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param vertex_to_add: the vertex to add to the graph
-        :return: None
+        :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
         if (len(self._machine_graph.vertices) > 0 and
@@ -1670,8 +1689,8 @@ class SpinnakerMainInterface(object):
     def add_machine_vertex(self, vertex):
         """
 
-        :param vertex the vertex to add to the graph
-        :return: None
+        :param vertex: the vertex to add to the graph
+        :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
@@ -1692,7 +1711,7 @@ class SpinnakerMainInterface(object):
         :param edge_to_add:
         :param partition_identifier: the partition identifier for the outgoing
                     edge partition
-        :return:
+        :rtype: None
         """
 
         self._application_graph.add_edge(
@@ -1704,7 +1723,7 @@ class SpinnakerMainInterface(object):
         :param edge: the edge to add to the graph
         :param partition_id: the partition identifier for the outgoing
                     edge partition
-        :return:
+        :rtype: None
         """
         self._machine_graph.add_edge(edge, partition_id)
 
@@ -1789,11 +1808,11 @@ class SpinnakerMainInterface(object):
         :param extract_iobuf: tells the tools if it should try to \
             extract iobuf
         :type extract_iobuf: bool
-        :return: None
+        :rtype: None
         """
 
         if extract_provenance_data:
-            
+
             # turn off reinjector before extracting provenance data, otherwise
             # its highly possible when things are going wrong, that the data
             # extracted from the reinjector is changing.
@@ -1816,11 +1835,15 @@ class SpinnakerMainInterface(object):
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
 
+        helpful_functions.write_finished_file(
+            self._app_data_top_simulation_folder,
+            self._report_simulation_top_directory)
+
     def _add_socket_address(self, socket_address):
         """
 
         :param socket_address:
-        :return:
+        :rtype: None
         """
         self._database_socket_addresses.add(socket_address)
 
@@ -1833,19 +1856,11 @@ class SpinnakerMainInterface(object):
                 logger.warn(item.message)
 
     def _read_config(self, section, item):
-        value = self._config.get(section, item)
-        if value == "None":
-            return None
-        return value
+        return helpful_functions.read_config(self._config, section, item)
 
     def _read_config_int(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return int(value)
+        return helpful_functions.read_config_int(self._config, section, item)
 
     def _read_config_boolean(self, section, item):
-        value = self._read_config(section, item)
-        if value is None:
-            return value
-        return bool(value)
+        return helpful_functions.read_config_boolean(
+            self._config, section, item)

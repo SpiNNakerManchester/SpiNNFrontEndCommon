@@ -21,7 +21,6 @@ class FrontEndCommonMachineGenerator(object):
             board_version, auto_detect_bmp, enable_reinjection,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             max_sdram_size=None, max_core_id=None):
-
         """
         :param hostname: the hostname or ip address of the spinnaker machine
         :param bmp_details: the details of the BMP connections
@@ -41,7 +40,6 @@ class FrontEndCommonMachineGenerator(object):
         :param max_sdram_size: the maximum SDRAM each chip can say it has
                (mainly used in debugging purposes)
         :type max_sdram_size: int or None
-        :return: None
         """
 
         # if the end user gives you scamp data, use it and don't discover them

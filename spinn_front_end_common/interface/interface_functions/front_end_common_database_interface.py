@@ -85,10 +85,6 @@ class FrontEndCommonDatabaseInterface(object):
 
     @property
     def database_file_path(self):
-        """
-
-        :return:
-        """
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
             return self._writer.database_path

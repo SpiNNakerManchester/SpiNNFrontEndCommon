@@ -26,6 +26,7 @@ import time
 from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
+FINISHED_FILENAME = "finished"
 
 
 def get_valid_components(module, terminator):
@@ -33,7 +34,7 @@ def get_valid_components(module, terminator):
 
     :param module:
     :param terminator:
-    :return:
+    :rtype: dict
     """
     terminator = re.compile(terminator + '$')
     return dict(map(lambda (name, router): (terminator.sub('', name),
@@ -67,7 +68,6 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type placement: pacman.model.placements.placement.Placement
     :param transceiver: the python interface to the spinnaker machine
     :type transceiver: spiNNMan.transciever.Transciever
-    :return: None
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
@@ -84,16 +84,20 @@ def locate_memory_region_for_placement(placement, region, transceiver):
 
 def set_up_output_application_data_specifics(
         where_to_write_application_data_files,
-        max_application_binaries_kept, app_id, this_run_time_string):
+        max_application_binaries_kept, app_id, n_calls_to_run,
+        this_run_time_string):
     """
 
-    :param where_to_write_application_data_files:
-    :param max_application_binaries_kept:
-    :param app_id:
-    :param this_run_time_string:
-    :return:
+    :param where_to_write_application_data_files:\
+        the location where all app data is by default written to
+    :param max_application_binaries_kept:\
+        The max number of report folders to keep active at any one time
+    :param app_id:\
+        the id used for identifying the simulation on the SpiNNaker machine
+    :param n_calls_to_run: the counter of how many times run has been called.
+    :param this_run_time_string: the time stamp string for this run
+    :return: the run folder for this simulation to hold app data
     """
-    created_folder = False
     this_run_time_folder = None
     if where_to_write_application_data_files == "DEFAULT":
         directory = os.getcwd()
@@ -101,16 +105,15 @@ def set_up_output_application_data_specifics(
             os.path.join(directory, 'application_generated_data_files')
         if not os.path.exists(application_generated_data_file_folder):
             os.makedirs(application_generated_data_file_folder)
-            created_folder = True
 
-        if not created_folder:
-            _move_report_and_binary_files(
-                max_application_binaries_kept,
-                application_generated_data_file_folder)
+        _remove_excess_folders(
+            max_application_binaries_kept,
+            application_generated_data_file_folder)
 
         # add time stamped folder for this run
         this_run_time_folder = \
-            os.path.join(application_generated_data_file_folder, "latest")
+            os.path.join(
+                application_generated_data_file_folder, this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
 
@@ -132,13 +135,15 @@ def set_up_output_application_data_specifics(
 
         # add time stamped folder for this run
         this_run_time_folder = \
-            os.path.join(where_to_write_application_data_files, "latest")
-        if os.path.exists(this_run_time_folder):
-            _move_report_and_binary_files(
-                max_application_binaries_kept,
-                where_to_write_application_data_files)
+            os.path.join(where_to_write_application_data_files,
+                         this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
+
+        # remove folders that are old and above the limit
+        _remove_excess_folders(
+            max_application_binaries_kept,
+            where_to_write_application_data_files)
 
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(this_run_time_folder,
@@ -149,17 +154,31 @@ def set_up_output_application_data_specifics(
 
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
-    return this_run_time_folder
+
+    # create sub folder within reports for sub runs (where changes need to be
+    # recorded)
+    this_run_time_sub_folder = os.path.join(
+        this_run_time_folder, "run_{}".format(n_calls_to_run))
+
+    if not os.path.exists(this_run_time_sub_folder):
+        os.makedirs(this_run_time_sub_folder)
+
+    return this_run_time_sub_folder, this_run_time_folder
 
 
 def set_up_report_specifics(
-        default_report_file_path, max_reports_kept, app_id):
+        default_report_file_path, max_reports_kept, app_id, n_calls_to_run,
+        this_run_time_string=None):
     """
 
-    :param default_report_file_path:
-    :param max_reports_kept:
-    :param app_id:
-    :return:
+    :param default_report_file_path: The location where all reports reside
+    :param max_reports_kept:\
+        The max number of report folders to keep active at any one time
+    :param app_id:\
+        the id used for identifying the simulation on the SpiNNaker machine
+    :param n_calls_to_run: the counter of how many times run has been called.
+    :param this_run_time_string: holder for the timestamp for future runs
+    :return: The folder for this run, the time_stamp
     """
 
     # determine common report folder
@@ -184,68 +203,83 @@ def set_up_report_specifics(
             os.makedirs(report_default_directory)
 
     # clear and clean out folders considered not useful anymore
-    if not created_folder \
-            and len(os.listdir(report_default_directory)) > 0:
-        _move_report_and_binary_files(max_reports_kept,
-                                      report_default_directory)
+    if not created_folder and len(os.listdir(report_default_directory)) > 0:
+        _remove_excess_folders(max_reports_kept, report_default_directory)
+
+    # determine the time slot for later
+    if this_run_time_string is None:
+        this_run_time = datetime.datetime.now()
+        this_run_time_string = (
+            "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+                this_run_time.year, this_run_time.month, this_run_time.day,
+                this_run_time.hour, this_run_time.minute,
+                this_run_time.second, this_run_time.microsecond))
 
     # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = os.path.join(report_default_directory, "latest")
+    app_folder_name = os.path.join(
+        report_default_directory, this_run_time_string)
+
     if not os.path.exists(app_folder_name):
             os.makedirs(app_folder_name)
 
-    # store timestamp in latest/time_stamp
+    # create sub folder within reports for sub runs (where changes need to be
+    # recorded)
+    app_sub_folder_name = os.path.join(
+        app_folder_name, "run_{}".format(n_calls_to_run))
+
+    if not os.path.exists(app_sub_folder_name):
+        os.makedirs(app_sub_folder_name)
+
+    # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
     writer = open(time_of_run_file_name, "w")
-
-    # determine the time slot for later
-    this_run_time = datetime.datetime.now()
-    this_run_time_string = (
-        "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-            this_run_time.year, this_run_time.month, this_run_time.day,
-            this_run_time.hour, this_run_time.minute,
-            this_run_time.second))
-    writer.writelines("app_{}_{}".format(app_id,
-                                         this_run_time_string))
+    writer.writelines("app_{}_{}".format(app_id, this_run_time_string))
     writer.flush()
     writer.close()
-    return app_folder_name, this_run_time_string
+    return app_sub_folder_name, app_folder_name, this_run_time_string
 
 
-def _move_report_and_binary_files(max_to_keep, starting_directory):
-    app_folder_name = os.path.join(starting_directory, "latest")
-    app_name_file = os.path.join(app_folder_name, "time_stamp")
-    if os.path.isfile(app_name_file):
-        time_stamp_in = open(app_name_file, "r")
-        time_stamp_in_string = time_stamp_in.readline()
-        time_stamp_in.close()
-        os.remove(app_name_file)
-        new_app_folder = os.path.join(starting_directory,
-                                      time_stamp_in_string)
-        extra = 2
-        while os.path.exists(new_app_folder):
-            new_app_folder = os.path.join(
-                starting_directory,
-                time_stamp_in_string + "_" + str(extra))
-            extra += 1
+def write_finished_file(app_data_runtime_folder, report_default_directory):
+    # write a finished file that allows file removal to only remove folders
+    # that are finished
+    app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
+    writer = open(app_file_name, "w")
+    writer.writelines("finished")
+    writer.flush()
+    writer.close()
 
-        os.makedirs(new_app_folder)
-        list_of_files = os.listdir(app_folder_name)
-        for file_to_move in list_of_files:
-            file_path = os.path.join(app_folder_name, file_to_move)
-            shutil.move(file_path, new_app_folder)
-        files_in_report_folder = os.listdir(starting_directory)
+    app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
+    writer = open(app_file_name, "w")
+    writer.writelines("finished")
+    writer.flush()
+    writer.close()
 
-        # while there's more than the valid max, remove the oldest one
-        while len(files_in_report_folder) > max_to_keep:
-            files_in_report_folder.sort(
-                cmp, key=lambda temp_file:
-                os.path.getmtime(os.path.join(starting_directory,
-                                              temp_file)))
-            oldest_file = files_in_report_folder[0]
-            shutil.rmtree(os.path.join(starting_directory, oldest_file),
-                          ignore_errors=True)
-            files_in_report_folder.remove(oldest_file)
+
+def _remove_excess_folders(max_to_keep, starting_directory):
+    files_in_report_folder = os.listdir(starting_directory)
+
+    # while there's more than the valid max, remove the oldest one
+    if len(files_in_report_folder) > max_to_keep:
+
+        # sort files into time frame
+        files_in_report_folder.sort(
+            cmp, key=lambda temp_file:
+            os.path.getmtime(os.path.join(starting_directory,
+                                          temp_file)))
+
+        # remove only the number of files required, and only if they have
+        # the finished flag file created
+        num_files_to_remove = len(files_in_report_folder) - max_to_keep
+        files_removed = 0
+        for current_oldest_file in files_in_report_folder:
+            finished_flag = os.path.join(os.path.join(
+                starting_directory, current_oldest_file), FINISHED_FILENAME)
+            if (os.path.exists(finished_flag) and
+                    files_removed < num_files_to_remove):
+                shutil.rmtree(os.path.join(starting_directory,
+                                           current_oldest_file),
+                              ignore_errors=True)
+                files_removed += 1
 
 
 def get_front_end_common_pacman_xml_paths():
@@ -267,7 +301,6 @@ def get_cores_in_state(all_core_subsets, states, txrx):
     :param all_core_subsets:
     :param states:
     :param txrx:
-    :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_in_state = OrderedDict()
@@ -289,7 +322,6 @@ def get_cores_not_in_state(all_core_subsets, states, txrx):
     :param all_core_subsets:
     :param states:
     :param txrx:
-    :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
@@ -335,7 +367,7 @@ def convert_string_info_chip_and_core_subsets(downed_chips, downed_cores):
     :param downed_cores: string representing down cores
     :type downed_cores: str or None
     :param downed_chips: string representing down chips
-    :type: downed_chips: str or None
+    :type downed_chips: str or None
     :return: a list of down cores and down chips in processor and \
             core subset format
     """
@@ -397,7 +429,7 @@ def translate_iobuf_extraction_elements(
         return model_core_subsets
 
     # should never get here,
-    raise exceptions.ConfigurationException("Somet odd has happened")
+    raise exceptions.ConfigurationException("Something odd has happened")
 
 
 def _handle_model_binaries(
@@ -419,6 +451,7 @@ def _handle_model_binaries(
             cores.add_core_subset(core_subset)
     return cores
 
+
 def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
     """
 
@@ -426,7 +459,7 @@ def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
     :param app_id: the app id that being used by the simulation
     :param txrx: the python interface to the spinnaker machine
     :param sync_state: The expected state once the applications are ready
-    :return:
+    :rtype: None
     """
 
     total_processors = executable_targets.total_processors
@@ -487,3 +520,33 @@ def get_executables_by_run_type(
                     other_executables.add_processor(
                         binary, core_subset.x, core_subset.y, p)
     return matching_executables, other_executables
+
+
+def read_config(config, section, item):
+    """ Get the string value of a config item, returning None if the value\
+        is "None"
+    """
+    value = config.get(section, item)
+    if value == "None":
+        return None
+    return value
+
+
+def read_config_int(config, section, item):
+    """ Get the integer value of a config item, returning None if the value\
+        is "None"
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return int(value)
+
+
+def read_config_boolean(config, section, item):
+    """ Get the boolean value of a config item, returning None if the value\
+        is "None"
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return bool(value)

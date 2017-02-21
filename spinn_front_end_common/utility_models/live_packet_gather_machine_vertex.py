@@ -22,8 +22,9 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.abstract_models \
+    .abstract_binary_uses_simulation_run import \
+    AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
@@ -33,6 +34,7 @@ from spinn_front_end_common.utilities import constants
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
 from enum import Enum
+import struct
 
 
 class LivePacketGatherMachineVertex(
@@ -47,7 +49,7 @@ class LivePacketGatherMachineVertex(
                ('PROVENANCE', 2)])
 
     N_ADDITIONAL_PROVENANCE_ITEMS = 2
-    _CONFIG_SIZE = 44
+    _CONFIG_SIZE = 48
     _PROVENANCE_REGION_SIZE = 8
 
     def __init__(
@@ -64,7 +66,10 @@ class LivePacketGatherMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
-            iptags=[IPtagResource(ip_address, port, strip_sdp, tag)])
+            iptags=[IPtagResource(
+                ip_address=ip_address, port=port,
+                strip_sdp=strip_sdp, tag=tag,
+                traffic_identifier="LPG_EVENT_STREAM")])
 
         # implementation for where constraints are stored
         self._constraints = ConstrainedObject()
@@ -109,7 +114,6 @@ class LivePacketGatherMachineVertex(
 
         :param transceiver: spinnman interface to the machine
         :param placement: the location of this vertex on the machine
-        :return:
         """
         provenance_data = self._read_provenance_data(transceiver, placement)
         provenance_items = self._read_basic_provenance_items(
@@ -199,7 +203,7 @@ class LivePacketGatherMachineVertex(
                     :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
         :param iptags: The set of ip tags assigned to the object
         :type iptags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
-        :raises DataSpecificationException: when something goes wrong with the\
+        :raise DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """
         spec.switch_write_focus(
@@ -255,6 +259,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
+        spec.write_value(struct.unpack("<I", struct.pack(
+            "<HH", iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
@@ -262,8 +268,6 @@ class LivePacketGatherMachineVertex(
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
 
-        :param spec:
-        :return:
         """
 
         # Write this to the system region (to be picked up by the simulation):
@@ -278,7 +282,8 @@ class LivePacketGatherMachineVertex(
     def get_cpu_usage():
         """ Get the CPU used by this vertex
 
-        :return:
+        :return:  0
+        :rtype: int
         """
         return 0
 
@@ -286,7 +291,6 @@ class LivePacketGatherMachineVertex(
     def get_sdram_usage():
         """ Get the SDRAM used by this vertex
 
-        :return:
         """
         return (
             constants.SYSTEM_BYTES_REQUIREMENT +
@@ -299,6 +303,5 @@ class LivePacketGatherMachineVertex(
     def get_dtcm_usage():
         """ Get the DTCM used by this vertex
 
-        :return:
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE

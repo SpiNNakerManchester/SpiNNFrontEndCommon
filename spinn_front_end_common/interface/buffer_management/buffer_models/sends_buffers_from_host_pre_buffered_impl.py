@@ -86,7 +86,6 @@ class SendsBuffersFromHostPreBufferedImpl(
         """ Get the next key for a given region
 
         :param region: the region to get the next key from
-        :return:
         """
         return self._send_buffers[region].next_key
 
@@ -104,6 +103,5 @@ class SendsBuffersFromHostPreBufferedImpl(
 
         :param region: The region to rewind
         :type region: int
-        :return:
         """
         self._send_buffers[region].rewind()
