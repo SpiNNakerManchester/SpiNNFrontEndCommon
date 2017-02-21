@@ -1,7 +1,8 @@
 These pages document the python code for the SpiNNFrontEndCommon_ module
 which is part of the SpiNNaker_ Project.
 
-This code depends on SpiNNMachine_, SpiNNStorageHandlers_, SpiNNMan_, PACMAN_, DataSpecification_.
+This code depends on SpiNNMachine_, SpiNNStorageHandlers_, SpiNNMan_, PACMAN_, DataSpecification_
+(Combined_documentation_).
 
 .. _SpiNNaker: http://apt.cs.manchester.ac.uk/projects/SpiNNaker
 .. _SpiNNFrontEndCommon: https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon
@@ -10,6 +11,7 @@ This code depends on SpiNNMachine_, SpiNNStorageHandlers_, SpiNNMan_, PACMAN_, D
 .. _SpiNNMan: http://spinnman.readthedocs.io
 .. _PACMAN: http://pacman.readthedocs.io
 .. _DataSpecification: http://dataspecification.readthedocs.io
+.. _Combined_documentation: http://spinnakermanchester.readthedocs.io
 
 SpiNNFrontEndCommon
 ===================
