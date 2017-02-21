@@ -57,10 +57,7 @@ class CommandSender(
         :param commands: The commands to send
         :type commands: iterable of\
                     :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
-        :param partition:
-        :param edge: The edge down which the commands will be sent
-        :type edge:\
-                    :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
+        :param partitions:
         :raise ConfigurationException:\
             If the edge already has commands or if all the commands masks are\
             not 0xFFFFFFFF and there is no commonality between the\
