@@ -1,6 +1,12 @@
 from spinn_machine.utilities.progress_bar import ProgressBar
-
 from spinn_front_end_common.utilities import exceptions
+import re
+
+
+ERROR_ENTRY = re.compile("\[ERROR\]\s+\((.*)\):\s+(.*)")
+WARNING_ENTRY = re.compile("\[WARNING\]\s+\((.*)\):\s+(.*)")
+ENTRY_FILE = 1
+ENTRY_TEXT = 2
 
 
 class FrontEndCommonChipIOBufExtractor(object):
@@ -47,16 +53,14 @@ class FrontEndCommonChipIOBufExtractor(object):
         lines = iobuf.iobuf.split("\n")
         for line in lines:
             line = line.encode('ascii', 'ignore')
-            bits = line.split("[ERROR]")
-            if len(bits) != 1:
-                self._convert_line_bits(bits, iobuf, error_entries)
-            bits = line.split("[WARNING]")
-            if len(bits) != 1:
-                self._convert_line_bits(bits, iobuf, warn_entries)
+            self._add_value_if_match(
+                ERROR_ENTRY, line, error_entries, iobuf.x, iobuf.y, iobuf.p)
+            self._add_value_if_match(
+                WARNING_ENTRY, line, warn_entries, iobuf.x, iobuf.y, iobuf.p)
 
     @staticmethod
-    def _convert_line_bits(bits, iobuf, entries):
-        error_line = bits[1]
-        bits = error_line.split("):")
-        entries.append("{}, {}, {}: {} ({})".format(
-            iobuf.x, iobuf.y, iobuf.p, bits[1], bits[0]))
+    def _add_value_if_match(regex, line, entries, x, y, p):
+        match = regex.match(line)
+        if match:
+            entries.append("{}, {}, {}: {} ({})".format(
+                x, y, p, match.group(ENTRY_TEXT), match.group(ENTRY_FILE)))
