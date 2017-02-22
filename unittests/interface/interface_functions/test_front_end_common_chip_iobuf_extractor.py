@@ -41,5 +41,6 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         self.assertEqual(error_entries[0], result_error)
         self.assertEqual(warn_entries[0], result_warning)
 
+
 if __name__ == "__main__":
     unittest.main()

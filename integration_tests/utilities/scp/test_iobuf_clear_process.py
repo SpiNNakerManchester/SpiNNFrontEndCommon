@@ -15,7 +15,7 @@ from spinn_front_end_common.utilities.scp.clear_iobuf_process \
     import ClearIOBUFProcess
 from spinn_front_end_common.utilities import constants
 
-from mock_machine import MockMachine
+from integration_tests.mock_machine import MockMachine
 
 
 class TestIOBufClearProcess(unittest.TestCase):
@@ -46,6 +46,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         self.assertEqual(
             command,
             constants.SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
+
 
 if __name__ == "__main__":
     unittest.main()
