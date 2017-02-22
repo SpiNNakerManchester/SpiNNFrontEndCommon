@@ -10,7 +10,6 @@ from spinnman.model.diagnostic_filter_source import DiagnosticFilterSource
 
 
 class FrontEndCommonRoutingTableLoader(object):
-
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
