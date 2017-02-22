@@ -20,19 +20,12 @@ class FrontEndCommonIOBufExtractor(object):
                 "iobuf. Please fix and try again")
 
         if core_subsets is not None:
-            io_buffers, error_entries, warn_entries =\
-                self._run_for_core_subsets(
-                    core_subsets, transceiver)
+            return self._run_for_core_subsets(core_subsets, transceiver)
         elif placements is not None:
-            io_buffers, error_entries, warn_entries =\
-                self._run_for_placements(
-                    placements, transceiver)
-        else:
-            raise exceptions.ConfigurationException(
-                "The FrontEndCommonIOBufExtractor requires either a placements"
-                " object or a core sets object to be able to execute")
-
-        return io_buffers, error_entries, warn_entries
+            return self._run_for_placements(placements, transceiver)
+        raise exceptions.ConfigurationException(
+            "The FrontEndCommonIOBufExtractor requires either a placements"
+            " object or a core sets object to be able to execute")
 
     def _run_for_core_subsets(self, core_subsets, transceiver):
         progress_bar = ProgressBar(len(core_subsets), "Extracting IOBUF")
@@ -51,7 +44,6 @@ class FrontEndCommonIOBufExtractor(object):
         warn_entries = list()
         progress_bar = ProgressBar(len(placements), "Extracting IOBUF")
         for placement in placements:
-            
             # only read from vertices which reside on real chips.
             # virtual chips have no iobuf
             if not isinstance(placement.vertex, AbstractVirtualVertex):
