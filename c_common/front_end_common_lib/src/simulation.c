@@ -171,7 +171,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
         case IOBUF_CLEAR:
 
             // run clear iobuf code
-            sark_reset_iobuf();
+            sark_io_buf_reset();
 
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
