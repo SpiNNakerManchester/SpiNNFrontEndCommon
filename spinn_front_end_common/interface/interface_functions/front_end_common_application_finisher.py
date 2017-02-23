@@ -47,17 +47,11 @@ class FrontEndCommonApplicationFinisher(object):
                 app_id, CPUState.WATCHDOG)
 
             if processors_rte > 0 or processors_watchdogged > 0:
-                error_cores = helpful_functions.get_cores_in_state(
-                    all_core_subsets,
-                    {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG}, txrx)
-                fail_message = helpful_functions.get_core_status_string(
-                    error_cores)
                 raise exceptions.ExecutableFailedToStopException(
                     "{} of {} processors went into an error state when"
                     " shutting down: {}".format(
                         processors_rte + processors_watchdogged,
-                        total_processors, fail_message),
-                    helpful_functions.get_core_subsets(error_cores), True)
+                        total_processors))
 
             successful_cores_finished = set(
                 helpful_functions.get_cores_in_state(

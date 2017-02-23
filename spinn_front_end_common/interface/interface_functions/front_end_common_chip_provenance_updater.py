@@ -29,7 +29,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        # check that all cores are in the state CPU_STATE_12 which shows that
+        # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
         while processors_completed != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(

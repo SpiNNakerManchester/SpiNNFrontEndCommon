@@ -476,19 +476,17 @@ def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
     processors_ready = txrx.get_core_state_count(
         app_id, sync_state)
     if processors_ready != total_processors:
+
+        # check that the count given is actually correct
         unsuccessful_cores = get_cores_not_in_state(
             all_core_subsets, sync_state, txrx)
 
         # last chance to slip out of error check
         if len(unsuccessful_cores) != 0:
-            break_down = get_core_status_string(
-                unsuccessful_cores)
             raise exceptions.ExecutableFailedToStartException(
-                "Only {} processors out of {} have successfully reached "
-                "{}:{}".format(
-                    processors_ready, total_processors, sync_state.name,
-                    break_down),
-                get_core_subsets(unsuccessful_cores))
+                "Only {} processors out of {} have successfully reached {}"
+                .format(
+                    processors_ready, total_processors, sync_state.name))
 
 
 def get_executables_by_run_type(

@@ -24,6 +24,30 @@ from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.abstract_models\
     .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_provenance_xml_writer \
+    import FrontEndCommonProvenanceXMLWriter
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_provenance_json_writer \
+    import FrontEndCommonProvenanceJSONWriter
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_chip_provenance_updater \
+    import FrontEndCommonChipProvenanceUpdater
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_placements_provenance_gatherer \
+    import FrontEndCommonPlacementsProvenanceGatherer
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_router_provenance_gatherer\
+    import FrontEndCommonRouterProvenanceGatherer
+from spinn_front_end_common.interface.interface_functions\
+    .front_end_common_chip_iobuf_extractor \
+    import FrontEndCommonChipIOBufExtractor
+
+# spinnman imports
+from spinnman.model.cpu_state import CPUState
+
+# spinnmachine imports
+from spinn_machine.core_subsets import CoreSubsets
 
 # general imports
 from collections import defaultdict
@@ -230,8 +254,8 @@ class SpinnakerMainInterface(object):
         #
         "_app_data_top_simulation_folder",
 
-        # iobuf cores
-        "_cores_to_read_iobuf"
+        #
+        "_all_provenance_items"
     ]
 
     def __init__(
@@ -282,6 +306,7 @@ class SpinnakerMainInterface(object):
         self._load_outputs = None
         self._last_run_outputs = None
         self._pacman_provenance = PacmanProvenanceExtractor()
+        self._all_provenance_items = list()
         self._xml_paths = self._create_xml_paths(extra_algorithm_xml_paths)
 
         # extra algorithms and inputs for runs, should disappear in future
@@ -1125,11 +1150,25 @@ class SpinnakerMainInterface(object):
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
 
         # Run the data generation algorithms
+        outputs = []
         algorithms = [self._dsg_algorithm]
 
-        executor = self._run_machine_algorithms(inputs, algorithms, [])
+        if (self._config.get("Reports", "reportsEnabled") and
+                self._config.get("Reports", "writeProvenanceData")):
+            algorithms.append("FrontEndCommonGraphProvenanceGatherer")
+            outputs.append("ProvenanceItems")
+
+        executor = self._run_machine_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
+
+        # write provenance to file if necessary
+        if (self._config.get("Reports", "reportsEnabled") and
+                self._config.get("Reports", "writeProvenanceData") and
+                not self._use_virtual_board):
+            prov_items = executor.get_item("ProvenanceItems")
+            self._write_provenance(prov_items)
+            self._check_provenance(prov_items)
 
     def _do_load(self):
 
@@ -1215,9 +1254,12 @@ class SpinnakerMainInterface(object):
         # If we have run before, make sure to extract the data before the next
         # run
         if (self._has_ran and not self._has_reset_last and
-                self._config.getboolean(
-                    "Reports", "extract_iobuf_during_run")):
+                not self._use_virtual_board):
             algorithms.append("FrontEndCommonBufferExtractor")
+
+            # check if we need to clear the iobuf during runs
+            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
+                algorithms.append("FrontEndCommonChipIOBufClearer")
 
         if not self._use_virtual_board:
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
@@ -1243,48 +1285,78 @@ class SpinnakerMainInterface(object):
         if self._extra_post_run_algorithms is not None:
             algorithms += self._extra_post_run_algorithms
 
-            # add extractor of iobuf if supported
-            if (self._config.getboolean("Reports", "extract_iobuf") and
-                    self._config.getboolean(
-                        "Reports", "extract_iobuf_during_run")):
-                algorithms.append("FrontEndCommonChipIOBufExtractor")
+        # add extractor of iobuf if needed
+        if (self._config.getboolean("Reports", "extract_iobuf") and
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run") and
+                not self._use_virtual_board and
+                n_machine_time_steps is not None):
+            algorithms.append("FrontEndCommonChipIOBufExtractor")
+            outputs.append("IOBuffers")
 
-            # check if we need to clear the iobuf during runs
-            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
-                algorithms.append("FrontEndCommonChipIOBufClearer")
+        # add extractor of provenance if needed
+        if (self._config.get("Reports", "reportsEnabled") and
+                self._config.get("Reports", "writeProvenanceData") and
+                not self._use_virtual_board and
+                n_machine_time_steps is not None):
+            algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
+            algorithms.append("FrontEndCommonRouterProvenanceGatherer")
+            outputs.append("ProvenanceItems")
 
-        executor = None
+        run_complete = False
+        executor = PACMANAlgorithmExecutor(
+            algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+            xml_paths=self._xml_paths, required_outputs=outputs,
+            do_timings=self._do_timings, print_timings=self._print_timings)
         try:
-            executor = PACMANAlgorithmExecutor(
-                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
-                xml_paths=self._xml_paths, required_outputs=outputs,
-                do_timings=self._do_timings, print_timings=self._print_timings)
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
+            run_complete = True
+
+            # write iobuf to file if necessary
+            if (self._config.getboolean("Reports", "extract_iobuf") and
+                    self._config.getboolean(
+                        "Reports", "extract_iobuf_during_run") and
+                    not self._use_virtual_board and
+                    n_machine_time_steps is not None):
+                self._write_iobuf(executor.get_item("IOBuffers"))
+
+            # write provenance to file if necessary
+            if (self._config.get("Reports", "reportsEnabled") and
+                    self._config.get("Reports", "writeProvenanceData") and
+                    not self._use_virtual_board and
+                    n_machine_time_steps is not None):
+                prov_items = executor.get_item("ProvenanceItems")
+                prov_items.extend(self._pacman_provenance.data_items)
+                self._pacman_provenance.clear()
+                self._write_provenance(prov_items)
+                self._all_provenance_items.append(prov_items)
+
+            # move data around
+            self._last_run_outputs = executor.get_items()
+            self._current_run_timesteps = total_run_timesteps
+            self._last_run_outputs = executor.get_items()
+            self._no_sync_changes = executor.get_item("NoSyncChanges")
+            self._has_reset_last = False
+            self._has_ran = True
+
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
             self._shutdown()
             sys.exit(1)
         except Exception as e:
 
-            logger.error(
-                "An error has occurred during simulation")
             ex_type, ex_value, ex_traceback = sys.exc_info()
-            for line in traceback.format_tb(ex_traceback):
-                logger.error(line.strip())
-
-            # if exception has an exception, print to system
-            if isinstance(e, PacmanAlgorithmFailedToCompleteException):
-                logger.error(e.exception)
-            else:
-                logger.error(e)
-
-            logger.info("\n\nAttempting to extract data\n\n")
 
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
             try:
-                self._recover_from_error(e, executor.get_items())
+
+                # Only do this if the error occurred in the run
+                if not run_complete and not self._use_virtual_board:
+                    self._recover_from_error(
+                        e, ex_traceback, executor.get_item(
+                            "ExecutableTargets"))
             except Exception:
                 logger.error("Error when attempting to recover from error")
                 traceback.print_exc()
@@ -1294,162 +1366,111 @@ class SpinnakerMainInterface(object):
             if not in_debug_mode:
                 self.stop(
                     turn_off_machine=False, clear_routing_tables=False,
-                    clear_tags=False, extract_provenance_data=False,
-                    extract_iobuf=False)
+                    clear_tags=False)
 
             # raise exception
-            ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-        # write iobuf to file if they exist
-        if (self._config.getboolean("Reports", "extract_iobuf") and
-                self._config.getboolean(
-                    "Reports", "extract_iobuf_during_run")):
-            self._write_iobuf(executor.get_item("IOBuffers"))
-
-        # move data around
-        self._last_run_outputs = executor.get_items()
-        self._current_run_timesteps = total_run_timesteps
-        self._last_run_outputs = executor.get_items()
-        self._no_sync_changes = executor.get_item("NoSyncChanges")
-        self._has_reset_last = False
-        self._has_ran = True
-
-    def _extract_provenance(self):
-        if (self._config.get("Reports", "reportsEnabled") and
-                self._config.get("Reports", "writeProvenanceData") and
-                not self._use_virtual_board):
-
-            if (self._last_run_outputs is not None and
-                    not self._use_virtual_board):
-                inputs = dict(self._last_run_outputs)
-                algorithms = list()
-                outputs = list()
-
-                # check if running forever at which point, force cores to
-                # gather provenance before extracting
-                if self._last_run_outputs["RunTime"] is None:
-                    algorithms.append("FrontEndCommonChipProvenanceUpdater")
-                    inputs["FailedCoresSubsets"] = \
-                        inputs["ExecutableTargets"].all_core_subsets
-
-                algorithms.append("FrontEndCommonGraphProvenanceGatherer")
-                algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
-                algorithms.append("FrontEndCommonRouterProvenanceGatherer")
-                outputs.append("ProvenanceItems")
-
-                executor = PACMANAlgorithmExecutor(
-                    algorithms=algorithms, optional_algorithms=[],
-                    inputs=inputs, xml_paths=self._xml_paths,
-                    required_outputs=outputs, do_timings=self._do_timings,
-                    print_timings=self._print_timings)
-                executor.execute_mapping()
-                self._pacman_provenance.extract_provenance(executor)
-                provenance_outputs = executor.get_items()
-                prov_items = executor.get_item("ProvenanceItems")
-                prov_items.extend(self._pacman_provenance.data_items)
-            else:
-                prov_items = self._pacman_provenance.data_items
-                if self._load_outputs is not None:
-                    provenance_outputs = self._load_outputs
-                else:
-                    provenance_outputs = self._mapping_outputs
-
-            if provenance_outputs is not None:
-                self._write_provenance(provenance_outputs)
-            if prov_items is not None:
-                self._check_provenance(prov_items)
-
-    def _write_provenance(self, provenance_outputs):
+    def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
         """
-        writer_algorithms = list()
         if self._provenance_format == "xml":
-            writer_algorithms.append("FrontEndCommonProvenanceXMLWriter")
+            writer = FrontEndCommonProvenanceXMLWriter()
         elif self._provenance_format == "json":
-            writer_algorithms.append("FrontEndCommonProvenanceJSONWriter")
-        executor = PACMANAlgorithmExecutor(
-            algorithms=writer_algorithms, optional_algorithms=[],
-            inputs=provenance_outputs, xml_paths=self._xml_paths,
-            required_outputs=[], do_timings=self._do_timings,
-            print_timings=self._print_timings)
-        executor.execute_mapping()
+            writer = FrontEndCommonProvenanceJSONWriter()
+        writer(provenance_data_items, self._provenance_file_path)
 
-    def _recover_from_error(self, e, error_outputs):
-        has_failed_to_start = isinstance(
-            e, common_exceptions.ExecutableFailedToStartException)
-        has_failed_to_end = isinstance(
-            e, common_exceptions.ExecutableFailedToStopException)
+    def _recover_from_error(self, exception, ex_traceback, executable_targets):
 
-        # If we have failed to start or end, get some extra data
-        if has_failed_to_start or has_failed_to_end:
-            is_rte = True
-            if has_failed_to_end:
-                is_rte = e.is_rte
+        # if exception has an exception, print to system
+        logger.error("An error has occurred during simulation")
+        if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
+            logger.error(exception.exception)
+        else:
+            logger.error(exception)
 
-            inputs = dict(error_outputs)
-            inputs["FailedCoresSubsets"] = e.failed_core_subsets
-            inputs["RanToken"] = True
-            algorithms = list()
-            outputs = list()
+        # Now print the traceback
+        for line in traceback.format_tb(ex_traceback):
+            logger.error(line.strip())
 
-            # If there is not an RTE, ask the chips with an error to update
-            # and get the provenance data
-            if not is_rte:
-                algorithms.append("FrontEndCommonChipProvenanceUpdater")
-                algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
+        logger.info("\n\nAttempting to extract data\n\n")
 
-            inputs["CoresToExtractIOBufFrom"] = e.failed_core_subsets
+        # Extract router provenance
+        router_provenance = FrontEndCommonRouterProvenanceGatherer()
+        prov_items = router_provenance(
+            self._txrx, self._machine, self._router_tables, True)
 
-            # Get the other data
-            algorithms.append("FrontEndCommonIOBufExtractor")
-            algorithms.append("FrontEndCommonRouterProvenanceGatherer")
+        # Find the cores that are not in an expected state
+        unsuccessful_cores = helpful_functions.get_cores_not_in_state(
+            executable_targets.all_core_subsets,
+            {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED},
+            self._txrx)
 
-            # define outputs for the execution
-            outputs.append("ProvenanceItems")
-            outputs.append("IOBuffers")
-            outputs.append("ErrorMessages")
-            outputs.append("WarnMessages")
+        # If there are no cores in a bad state, find those not yet finished
+        if len(unsuccessful_cores) == 0:
+            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
+                executable_targets.all_core_subsets,
+                {CPUState.PAUSED, CPUState.FINISHED},
+                self._txrx)
+        unsuccessful_core_subset = CoreSubsets()
+        for (x, y, p), _ in unsuccessful_cores.iteritems():
+            unsuccessful_core_subset.add_processor(x, y, p)
 
-            executor = PACMANAlgorithmExecutor(
-                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
-                xml_paths=self._xml_paths, required_outputs=outputs,
-                do_timings=self._do_timings, print_timings=self._print_timings)
-            executor.execute_mapping()
+        # Find the cores that are not in RTE i.e. that can still be read
+        non_rte_cores = [
+            (x, y, p)
+            for (x, y, p), core_info in unsuccessful_cores.iteritems()
+            if core_info.state != CPUState.RUN_TIME_EXCEPTION
+        ]
 
-            self._write_provenance(executor.get_items())
-            self._check_provenance(executor.get_item("ProvenanceItems"))
-            self._write_iobuf(executor.get_item("IOBuffers"))
-            self._print_iobuf(
-                executor.get_item("ErrorMessages"),
-                executor.get_item("WarnMessages"))
-            self.stop(turn_off_machine=False, clear_routing_tables=False,
-                      clear_tags=False, extract_provenance_data=False,
-                      extract_iobuf=False)
-            sys.exit(1)
+        # If there are any cores, extract data from them
+        if len(non_rte_cores) > 0:
+            non_rte_coresubsets = CoreSubsets()
+            for (x, y, p) in non_rte_cores:
+                non_rte_coresubsets.add_processor(x, y, p)
 
-    def _extract_iobuf(self):
-        if (self._config.getboolean("Reports", "extract_iobuf") and
-                self._last_run_outputs is not None and
-                not self._use_virtual_board):
+            # Attempt to force the cores to write provenance and exit
+            updater = FrontEndCommonChipProvenanceUpdater()
+            updater(self._txrx, self._app_id, non_rte_coresubsets)
 
-            inputs = self._last_run_outputs
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._last_run_outputs["ExecutableTargets"])
+            # Extract any written provenance data
+            extracter = FrontEndCommonPlacementsProvenanceGatherer()
+            extracter(self._txrx, self._placements, True, prov_items)
 
-            algorithms = ["FrontEndCommonChipIOBufExtractor",
-                          "FrontEndCommonChipIOBufClearer"]
-            outputs = ["IOBuffers"]
-            executor = PACMANAlgorithmExecutor(
-                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
-                xml_paths=self._xml_paths, required_outputs=outputs,
-                do_timings=self._do_timings, print_timings=self._print_timings)
-            executor.execute_mapping()
-            self._write_iobuf(executor.get_item("IOBuffers"))
+        # Finish getting the provenance
+        prov_items.extend(self._pacman_provenance.data_items)
+        self._pacman_provenance.clear()
+        self._write_provenance(prov_items)
+        self._all_provenance_items.append(prov_items)
+
+        # Read IOBUF where possible (that should be everywhere)
+        iobuf = FrontEndCommonChipIOBufExtractor()
+        iobufs, errors, warnings = iobuf(
+            self._txrx, True, unsuccessful_core_subset)
+        self._write_iobuf(iobufs)
+
+        # Print the details of error cores
+        for (x, y, p), core_info in unsuccessful_cores.iteritems():
+            state = core_info.state
+            if state == CPUState.RUN_TIME_EXCEPTION:
+                state = core_info.run_time_error
+            logger.error("{}, {}, {}: {} {}".format(
+                x, y, p, state.name, core_info.application_name))
+            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
+                logger.error(
+                    "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}".format(
+                        core_info.registers[0], core_info.registers[1],
+                        core_info.registers[2], core_info.registers[3]))
+                logger.error(
+                    "r4=0x{:08X} r5=0x{:08X} r6=0x{:08X} r7=0x{:08X}".format(
+                        core_info.registers[4], core_info.registers[5],
+                        core_info.registers[6], core_info.registers[7]))
+                logger.error("PSR=0x{:08X} SR=0x{:08X} LR=0x{:08X}".format(
+                    core_info.processor_state_register,
+                    core_info.stack_pointer, core_info.link_register))
+
+        # Print the IOBUFs
+        self._print_iobuf(errors, warnings)
 
     def _write_iobuf(self, io_buffers):
         for iobuf in io_buffers:
@@ -1481,12 +1502,10 @@ class SpinnakerMainInterface(object):
         """ Code that puts the simulation back at time zero
         """
 
-        logger.info("Starting reset progress")
+        logger.info("Resetting")
         if self._txrx is not None:
 
-            # Get provenance up to this point
-            self._extract_provenance()
-            self._extract_iobuf()
+            # Stop the application
             self._txrx.stop_application(self._app_id)
 
         # rewind the buffers from the buffer manager, to start at the beginning
@@ -1789,8 +1808,7 @@ class SpinnakerMainInterface(object):
                 self._machine_allocation_controller.close()
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None, extract_provenance_data=True,
-             extract_iobuf=True):
+             clear_tags=None):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -1802,38 +1820,81 @@ class SpinnakerMainInterface(object):
         :param clear_tags: informs the tool chain if it should clear the tags\
             off the machine at stop
         :type clear_tags: boolean
-        :param extract_provenance_data: informs the tools if it should \
-            try to extract provenance data.
-        :type extract_provenance_data: bool
-        :param extract_iobuf: tells the tools if it should try to \
-            extract iobuf
-        :type extract_iobuf: bool
         :rtype: None
         """
 
-        if extract_provenance_data:
+        # If we have run forever, stop the binaries
+        if (self._has_ran and self._current_run_timesteps is None and
+                not self._use_virtual_board):
+            inputs = self._last_run_outputs
+            algorithms = ["FrontEndCommonApplicationFinisher"]
+            outputs = []
 
-            # turn off reinjector before extracting provenance data, otherwise
-            # its highly possible when things are going wrong, that the data
-            # extracted from the reinjector is changing.
-            if self._txrx is not None and self._config.getboolean(
-                    "Machine", "enable_reinjection"):
-                self._txrx.enable_reinjection(multicast=False)
+            # add extractor of iobuf if needed
+            if (self._config.getboolean("Reports", "extract_iobuf") and
+                    self._config.getboolean(
+                        "Reports", "extract_iobuf_during_run")):
+                algorithms.append("FrontEndCommonChipIOBufExtractor")
+                outputs.append("IOBuffers")
 
-            # extract provenance data
-            self._extract_provenance()
+            # add extractor of provenance if needed
+            if (self._config.get("Reports", "reportsEnabled") and
+                    self._config.get("Reports", "writeProvenanceData")):
+                algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
+                algorithms.append("FrontEndCommonRouterProvenanceGatherer")
+                outputs.append("ProvenanceItems")
 
-        # only extract iobuf if it hasn't been extracted during run, and the
-        # end user has requested it
-        if (extract_iobuf and
-                not self._config.getboolean("Reports", "extract_iobuf") and
-                not self._config.getboolean(
-                    "Reports", "extract_iobuf_during_run")):
-            self._extract_iobuf()
+            # Run the algorithms
+            executor = PACMANAlgorithmExecutor(
+                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+                xml_paths=self._xml_paths, required_outputs=outputs,
+                do_timings=self._do_timings, print_timings=self._print_timings)
+            run_complete = False
+            try:
+                executor.execute_mapping()
+                self._pacman_provenance.extract_provenance(executor)
+                run_complete = True
+
+                # write iobuf to file if necessary
+                if (self._config.getboolean("Reports", "extract_iobuf") and
+                        self._config.getboolean(
+                            "Reports", "extract_iobuf_during_run")):
+                    self._write_iobuf(executor.get_item("IOBuffers"))
+
+                # write provenance to file if necessary
+                if (self._config.get("Reports", "reportsEnabled") and
+                        self._config.get("Reports", "writeProvenanceData")):
+                    prov_items = executor.get_item("ProvenanceItems")
+                    prov_items.extend(self._pacman_provenance.data_items)
+                    self._pacman_provenance.clear()
+                    self._write_provenance(prov_items)
+                    self._all_provenance_items.append(prov_items)
+            except Exception as e:
+                _, _, ex_traceback = sys.exc_info()
+
+                # If an exception occurs during a run, attempt to get
+                # information out of the simulation before shutting down
+                try:
+
+                    # Only do this if the error occurred in the run
+                    if not run_complete and not self._use_virtual_board:
+                        self._recover_from_error(
+                            e, ex_traceback, executor.get_item(
+                                "ExecutableTargets"))
+                except Exception:
+                    logger.error("Error when attempting to recover from error")
+                    traceback.print_exc()
 
         # shut down the tools.
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
+
+        # display any provenance data gathered
+        for i, provenance_items in enumerate(self._all_provenance_items):
+            message = None
+            if len(self._all_provenance_items) > 1:
+                message = "Provenance from run {}".format(i)
+            self._check_provenance(provenance_items, message)
 
         helpful_functions.write_finished_file(
             self._app_data_top_simulation_folder,
@@ -1848,11 +1909,15 @@ class SpinnakerMainInterface(object):
         self._database_socket_addresses.add(socket_address)
 
     @staticmethod
-    def _check_provenance(items):
+    def _check_provenance(items, initial_message=None):
         """ Display any errors from provenance data
         """
+        initial_message_printed = False
         for item in items:
             if item.report:
+                if not initial_message_printed and initial_message is not None:
+                    print initial_message
+                    initial_message_printed = True
                 logger.warn(item.message)
 
     def _read_config(self, section, item):

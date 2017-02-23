@@ -122,9 +122,10 @@ class FrontEndCommonApplicationRunner(object):
                 txrx.get_core_state_count(app_id, CPUState.FINISHED))
 
             if processors_running + processors_finished >= total_processors:
-                logger.warn("some processors finished between signal "
-                            "transmissions. Could be a sign of an error")
+                logger.warn("Some processors finished early")
             else:
+
+                # check that the count is actually correct
                 unsuccessful_cores = helpful_functions.get_cores_not_in_state(
                     all_core_subsets,
                     {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED},
@@ -132,12 +133,9 @@ class FrontEndCommonApplicationRunner(object):
 
                 # Last chance to get out of error state
                 if len(unsuccessful_cores) > 0:
-                    break_down = helpful_functions.get_core_status_string(
-                        unsuccessful_cores)
                     raise exceptions.ExecutableFailedToStartException(
-                        "Only {} of {} processors started:{}".format(
-                            processors_running, total_processors, break_down),
-                        helpful_functions.get_core_subsets(unsuccessful_cores))
+                        "Only {} of {} processors started:".format(
+                            processors_running, total_processors))
 
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling, txrx,
@@ -167,30 +165,25 @@ class FrontEndCommonApplicationRunner(object):
         start_time = time.time()
 
         retries = 0
+        errors = False
         while (processors_not_finished != 0 and
-                not self._has_overrun(start_time, time_threshold)):
+                not self._has_overrun(start_time, time_threshold) and
+                not errors):
             try:
                 processors_rte = txrx.get_core_state_count(
                     app_id, CPUState.RUN_TIME_EXCEPTION)
                 processors_wdog = txrx.get_core_state_count(
                     app_id, CPUState.WATCHDOG)
                 if processors_rte > 0 or processors_wdog > 0:
-                    error_cores = helpful_functions.get_cores_in_state(
-                        all_core_subsets,
-                        {CPUState.RUN_TIME_EXCEPTION, CPUState.WATCHDOG}, txrx)
-                    break_down = helpful_functions.get_core_status_string(
-                        error_cores)
-                    raise exceptions.ExecutableFailedToStopException(
-                        "{} cores have gone into an error state:"
-                        "{}".format(processors_rte, break_down),
-                        helpful_functions.get_core_subsets(error_cores), True)
-
-                processors_not_finished = txrx.get_core_state_count(
-                    app_id, CPUState.RUNNING)
-                if processors_not_finished > 0:
-                    logger.info("Simulation still not finished or failed - "
-                                "waiting a bit longer...")
-                    time.sleep(0.5)
+                    errors = True
+                else:
+                    processors_not_finished = txrx.get_core_state_count(
+                        app_id, CPUState.RUNNING)
+                    if processors_not_finished > 0:
+                        logger.info(
+                            "Simulation still not finished or failed - "
+                            "waiting a bit longer...")
+                        time.sleep(0.5)
             except Exception as e:
                 retries += 1
                 if retries >= 10:
@@ -200,14 +193,15 @@ class FrontEndCommonApplicationRunner(object):
                 time.sleep(0.5)
 
         if processors_not_finished != 0:
+
+            # Check the cores just to be sure
             running_cores = helpful_functions.get_cores_in_state(
                 all_core_subsets, CPUState.RUNNING, txrx)
             if len(running_cores) > 0:
                 raise exceptions.ExecutableFailedToStopException(
                     "Simulation did not finish within the time allocated. "
                     "Please try increasing the machine time step and / "
-                    "or time scale factor in your simulation.",
-                    helpful_functions.get_core_subsets(running_cores), False)
+                    "or time scale factor in your simulation.")
 
         processors_exited = (
             txrx.get_core_state_count(app_id, CPUState.PAUSED) +
@@ -219,15 +213,10 @@ class FrontEndCommonApplicationRunner(object):
 
             # Last chance to get out of the error state
             if len(unsuccessful_cores) > 0:
-                break_down = helpful_functions.get_core_status_string(
-                    unsuccessful_cores)
                 raise exceptions.ExecutableFailedToStopException(
-                    "{} of {} processors failed to exit successfully:"
-                    "{}".format(
-                        total_processors - processors_exited, total_processors,
-                        break_down),
-                    helpful_functions.get_core_subsets(unsuccessful_cores),
-                    True)
+                    "{} of {} processors failed to exit successfully".format(
+                        total_processors - processors_exited,
+                        total_processors))
         logger.info("Application has run to completion")
 
     @staticmethod
