@@ -1,6 +1,8 @@
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
@@ -16,14 +18,22 @@ class FrontEndCommonApplicationFinisher(object):
 
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_targets, has_ran):
+    def __call__(
+            self, app_id, txrx, executable_targets, has_ran, placements,
+            graph_mapper=None):
 
         if not has_ran:
             raise exceptions.ConfigurationException(
                 "The ran token is not set correctly, please fix and try again")
 
-        total_processors = executable_targets.total_processors
-        all_core_subsets = executable_targets.all_core_subsets
+        # Only deal with binaries that *can* be shut down i.e. those that
+        # have been compiled with simulation runner
+        filtered_targets, _ = helpful_functions.get_executables_by_run_type(
+            executable_targets, placements, graph_mapper,
+            AbstractBinaryUsesSimulationRun)
+
+        total_processors = filtered_targets.total_processors
+        all_core_subsets = filtered_targets.all_core_subsets
 
         progress_bar = ProgressBar(
             total_processors,
@@ -64,8 +74,8 @@ class FrontEndCommonApplicationFinisher(object):
                 for processor in core_subset.processor_ids:
                     byte_data = struct.pack(
                         "<I",
-                        constants.SDP_RUNNING_MESSAGE_CODES.SDP_STOP_ID_CODE
-                        .value)
+                        constants.SDP_RUNNING_MESSAGE_CODES
+                        .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
 
                     txrx.send_sdp_message(SDPMessage(
                         sdp_header=SDPHeader(
