@@ -4,6 +4,7 @@ main interface for the spinnaker tools
 
 # pacman imports
 from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
+from pacman.model.placements.placements import Placements
 from pacman.model.graphs.application.impl.application_graph \
     import ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
@@ -1425,17 +1426,19 @@ class SpinnakerMainInterface(object):
 
         # If there are any cores, extract data from them
         if len(non_rte_cores) > 0:
-            non_rte_coresubsets = CoreSubsets()
+            placements = Placements()
             for (x, y, p) in non_rte_cores:
-                non_rte_coresubsets.add_processor(x, y, p)
+                vertex = self._placements.get_vertex_on_processor(x, y, p)
+                placements.add_placement(
+                    self._placements.get_placement_of_vertex(vertex))
 
             # Attempt to force the cores to write provenance and exit
             updater = FrontEndCommonChipProvenanceUpdater()
-            updater(self._txrx, self._app_id, non_rte_coresubsets)
+            updater(self._txrx, self._app_id, placements, self._graph_mapper)
 
             # Extract any written provenance data
             extracter = FrontEndCommonPlacementsProvenanceGatherer()
-            extracter(self._txrx, self._placements, True, prov_items)
+            extracter(self._txrx, placements, True, prov_items)
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)

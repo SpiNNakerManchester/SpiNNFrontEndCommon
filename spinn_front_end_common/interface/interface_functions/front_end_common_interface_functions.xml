@@ -1147,15 +1147,22 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>all_core_subsets</param_name>
-                <param_type>FailedCoresSubsets</param_type>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
             <param_name>app_id</param_name>
-            <param_name>all_core_subsets</param_name>
+            <param_name>placements</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipIOBufClearer">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_iobuf_clearer</python_module>

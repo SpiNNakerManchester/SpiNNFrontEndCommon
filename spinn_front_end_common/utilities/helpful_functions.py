@@ -360,6 +360,15 @@ def get_core_subsets(core_infos):
     return core_subsets
 
 
+def get_placement_core_subsets(placements):
+    """ Converts placements into core_subset objects
+    """
+    core_subsets = CoreSubsets()
+    for placement in placements:
+        core_subsets.add_processor(placement.x, placement.y, placement.p)
+    return core_subsets
+
+
 def convert_string_info_chip_and_core_subsets(downed_chips, downed_cores):
     """ Translate the down cores and down chips string into a form that \
         spinnman can understand
@@ -518,6 +527,27 @@ def get_executables_by_run_type(
                     other_executables.add_processor(
                         binary, core_subset.x, core_subset.y, p)
     return matching_executables, other_executables
+
+
+def get_placements_by_run_type(placements, graph_mapper, type_to_find):
+    """ Get placements by the type of the vertex
+    """
+    matching_placements = list()
+    other_placements = list()
+    for placement in placements.placements:
+        is_of_type = False
+        vertex = placement.vertex
+        if isinstance(vertex, type_to_find):
+            matching_placements.append(placement)
+            is_of_type = True
+        elif graph_mapper is not None:
+            assoc_vertex = graph_mapper.get_application_vertex(vertex)
+            if isinstance(assoc_vertex, type_to_find):
+                matching_placements.append(placement)
+                is_of_type = True
+        if not is_of_type:
+            other_placements.append(placement)
+    return matching_placements, other_placements
 
 
 def read_config(config, section, item):
