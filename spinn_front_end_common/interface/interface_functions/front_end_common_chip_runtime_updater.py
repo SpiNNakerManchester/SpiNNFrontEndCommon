@@ -15,7 +15,7 @@ class FrontEndCommonChipRuntimeUpdater(object):
     __slots__ = []
 
     def __call__(
-            self, txrx, no_sync_changes, app_id, placements,
+            self, txrx, app_id, placements,
             executable_targets, no_machine_timesteps, loaded_binaries_token,
             graph_mapper=None):
 
@@ -45,4 +45,4 @@ class FrontEndCommonChipRuntimeUpdater(object):
                 executable_targets.all_core_subsets,
                 executable_targets.total_processors)
 
-        return no_sync_changes, True
+        return True
