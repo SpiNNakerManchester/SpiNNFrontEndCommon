@@ -42,7 +42,7 @@ class FrontEndCommonChipRuntimeUpdater(object):
             process = UpdateRuntimeProcess(txrx._scamp_connection_selector)
             process.update_runtime(
                 no_machine_timesteps, infinite_run,
-                executable_targets.all_core_subsets,
-                executable_targets.total_processors)
+                updatable_binaries.all_core_subsets,
+                updatable_binaries.total_processors)
 
         return True
