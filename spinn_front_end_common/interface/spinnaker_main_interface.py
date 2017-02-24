@@ -1294,8 +1294,7 @@ class SpinnakerMainInterface(object):
             if not in_debug_mode:
                 self.stop(
                     turn_off_machine=False, clear_routing_tables=False,
-                    clear_tags=False, extract_provenance_data=False,
-                    extract_iobuf=False)
+                    clear_tags=False)
 
             # raise exception
             ex_type, ex_value, ex_traceback = sys.exc_info()
@@ -1424,8 +1423,7 @@ class SpinnakerMainInterface(object):
                 executor.get_item("ErrorMessages"),
                 executor.get_item("WarnMessages"))
             self.stop(turn_off_machine=False, clear_routing_tables=False,
-                      clear_tags=False, extract_provenance_data=False,
-                      extract_iobuf=False)
+                      clear_tags=False)
             sys.exit(1)
 
     def _extract_iobuf(self):
@@ -1789,8 +1787,7 @@ class SpinnakerMainInterface(object):
                 self._machine_allocation_controller.close()
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
-             clear_tags=None, extract_provenance_data=True,
-             extract_iobuf=True):
+             clear_tags=None):
         """
         :param turn_off_machine: decides if the machine should be powered down\
             after running the execution. Note that this powers down all boards\
@@ -1802,12 +1799,6 @@ class SpinnakerMainInterface(object):
         :param clear_tags: informs the tool chain if it should clear the tags\
             off the machine at stop
         :type clear_tags: boolean
-        :param extract_provenance_data: informs the tools if it should \
-            try to extract provenance data.
-        :type extract_provenance_data: bool
-        :param extract_iobuf: tells the tools if it should try to \
-            extract iobuf
-        :type extract_iobuf: bool
         :rtype: None
         """
 
