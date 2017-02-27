@@ -36,7 +36,7 @@ class ExecutableTargets(object):
         :param binary: the path to the binary needed to be executed
         :param subsets: the subset of cores that the binary needs to be loaded\
                     on
-        :return:
+        :rtype: None:
         """
         if self.has_binary(binary):
             self._targets[binary].add_core_subset(subsets)
@@ -54,7 +54,7 @@ class ExecutableTargets(object):
         :param chip_x: the coordinate on the machine in terms of x for the chip
         :param chip_y: the coordinate on the machine in terms of y for the chip
         :param chip_p: the processor id to place this executable on
-        :return:
+        :rtype: None
         """
         if not self.has_binary(binary):
             self.add_binary(binary)

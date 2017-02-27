@@ -37,7 +37,6 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         :param transceiver:
         :param dse_app_id: the app_id used by the DSE on chip application
         :param app_id:
-        :return:
         """
         data = self.spinnaker_based_data_specification_execution(
             write_memory_map_report, dsg_targets, transceiver,
@@ -54,7 +53,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         :param transceiver:
         :param dse_app_id:
         :param app_id:
-        :return:
+        :return: True
+        :rtype: bool
         """
 
         # create a progress bar for end users

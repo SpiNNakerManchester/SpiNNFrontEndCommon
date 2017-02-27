@@ -72,7 +72,10 @@ class ReverseIpTagMultiCastSource(
             # Buffer parameters
             buffer_notification_ip_address=None,
             buffer_notification_port=None,
-            buffer_notification_tag=None):
+            buffer_notification_tag=None,
+
+            # Extra flag for input without a reserved port
+            reserve_reverse_ip_tag=False):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -134,7 +137,7 @@ class ReverseIpTagMultiCastSource(
         self._check_keys = check_keys
 
         self._reverse_iptags = None
-        if receive_port is not None:
+        if receive_port is not None or reserve_reverse_ip_tag:
             self._reverse_iptags = [ReverseIPtagResource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
@@ -151,6 +154,7 @@ class ReverseIpTagMultiCastSource(
         self._buffer_notification_ip_address = buffer_notification_ip_address
         self._buffer_notification_port = buffer_notification_port
         self._buffer_notification_tag = buffer_notification_tag
+        self._reserve_reverse_ip_tag = reserve_reverse_ip_tag
 
         self._iptags = None
         if send_buffer_times is not None:
@@ -263,7 +267,8 @@ class ReverseIpTagMultiCastSource(
             buffer_notification_ip_address=(
                 self._buffer_notification_ip_address),
             buffer_notification_port=self._buffer_notification_port,
-            buffer_notification_tag=self._buffer_notification_tag)
+            buffer_notification_tag=self._buffer_notification_tag,
+            reserve_reverse_ip_tag=self._reserve_reverse_ip_tag)
         if self._record_buffer_size > 0:
             vertex.enable_recording(
                 self._record_buffer_size,

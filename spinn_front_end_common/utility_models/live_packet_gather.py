@@ -136,7 +136,9 @@ class LivePacketGather(
             cpu_cycles=CPUCyclesPerTickResource(
                 LivePacketGatherMachineVertex.get_cpu_usage()),
             iptags=[IPtagResource(
-                self._ip_address, self._port, self._strip_sdp, self._tag)])
+                ip_address=self._ip_address, port=self._port,
+                strip_sdp=self._strip_sdp, tag=self._tag,
+                traffic_identifier="LPG_EVENT_STREAM")])
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):

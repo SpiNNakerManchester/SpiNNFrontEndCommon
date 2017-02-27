@@ -64,6 +64,7 @@ static uint32_t payload_prefix;
 // Right payload shift (for the sender)
 static uint32_t payload_right_shift;
 static uint32_t sdp_tag;
+static uint32_t sdp_dest;
 static uint32_t packets_per_timestamp;
 
 //! human readable definitions of each region in SDRAM
@@ -86,6 +87,7 @@ typedef enum configuration_region_components_e {
     PAYLOAD_PREFIX,
     PAYLOAD_RIGHT_SHIFT,
     SDP_TAG,
+    SDP_DEST,
     PACKETS_PER_TIMESTEP
 } configuration_region_components_e;
 
@@ -371,6 +373,7 @@ void read_parameters(address_t region_address) {
     // Right payload shift (for the sender)
     payload_right_shift = region_address[PAYLOAD_RIGHT_SHIFT];
     sdp_tag = region_address[SDP_TAG];
+    sdp_dest = region_address[SDP_DEST];
     packets_per_timestamp = region_address[PACKETS_PER_TIMESTEP];
 
     log_info("apply_prefix: %d\n", apply_prefix);
@@ -383,6 +386,7 @@ void read_parameters(address_t region_address) {
     log_info("payload_prefix: %08x\n", payload_prefix);
     log_info("payload_right_shift: %d\n", payload_right_shift);
     log_info("sdp_tag: %d\n", sdp_tag);
+    log_info("sdp_dest: 0x%08x\n", sdp_dest);
     log_info("packets_per_timestamp: %d\n", packets_per_timestamp);
 }
 
@@ -432,7 +436,7 @@ bool configure_sdp_msg(void) {
     g_event_message.flags = 0x07;
 
     // Chip 0,0
-    g_event_message.dest_addr = 0;
+    g_event_message.dest_addr = sdp_dest;
 
     // Dump through Ethernet
     g_event_message.dest_port = PORT_ETH;

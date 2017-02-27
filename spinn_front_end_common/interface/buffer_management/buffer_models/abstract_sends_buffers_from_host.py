@@ -111,5 +111,4 @@ class AbstractSendsBuffersFromHost(object):
 
         :param region: The region to rewind
         :type region: int
-        :return:
         """

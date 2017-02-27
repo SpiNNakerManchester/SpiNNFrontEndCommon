@@ -20,7 +20,7 @@ class FrontEndCommonMemoryMapOnChipReport(object):
 
         :param report_default_directory:
         :param processor_to_app_data_base_address:
-        :return:
+        :rtype: None
         """
 
         directory_name = os.path.join(
