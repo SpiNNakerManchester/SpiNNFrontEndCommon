@@ -32,7 +32,7 @@ typedef enum eieio_prefix_types {
 typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
     BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
-    BUFFERED_IN_SDP_PORT
+    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT
 } read_in_parameters;
 
 //! The memory regions
@@ -110,6 +110,7 @@ static uint8_t pkt_last_sequence_seen;
 static bool send_packet_reqs;
 static bool last_buffer_operation;
 static uint8_t return_tag_id;
+static uint32_t return_tag_dest;
 static uint32_t buffered_in_sdp_port;
 static uint32_t last_space;
 static uint32_t last_request_tick;
@@ -851,6 +852,7 @@ bool read_parameters(address_t region_address) {
     buffer_region_size = region_address[BUFFER_REGION_SIZE];
     space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
     return_tag_id = region_address[RETURN_TAG_ID];
+    return_tag_dest = region_address[RETURN_TAG_DEST];
     buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
 
     // There is no point in sending requests until there is space for
@@ -882,7 +884,7 @@ bool read_parameters(address_t region_address) {
     req.tag = return_tag_id;
     req.dest_port = 0xFF;
     req.srce_port = (1 << 5) | spin1_get_core_id();
-    req.dest_addr = 0;
+    req.dest_addr = return_tag_dest;
     req.srce_addr = spin1_get_chip_id();
     req_ptr = (req_packet_sdp_t*) &(req.cmd_rc);
     req_ptr->eieio_header_command = 1 << 14 | SPINNAKER_REQUEST_BUFFERS;
@@ -899,6 +901,7 @@ bool read_parameters(address_t region_address) {
     log_info("mask: 0x%08x", mask);
     log_info("space_before_read_request: %d", space_before_data_request);
     log_info("return_tag_id: %d", return_tag_id);
+    log_info("return_tag_dest: 0x%08x", return_tag_dest);
 
     return true;
 }
@@ -985,9 +988,7 @@ void resume_callback() {
 
     // have fallen out of a resume mode, set up the functions to start
     // resuming again
-    if(!initialise_recording()){
-        log_error("Could not reset recording regions");
-    }
+    recording_reset();
 
     stopped = false;
 }

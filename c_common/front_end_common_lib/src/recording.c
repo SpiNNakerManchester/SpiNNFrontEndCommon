@@ -17,6 +17,7 @@
 enum recording_data_e {
     N_REGIONS,
     TAG,
+    TAG_DESTINATION,
     SDP_PORT,
     BUFFER_SIZE_BEFORE_REQUEST,
     TIME_BETWEEN_TRIGGERS,
@@ -453,6 +454,7 @@ bool recording_initialize(
     // Read in the parameters
     n_recording_regions = recording_data_address[N_REGIONS];
     uint8_t buffering_output_tag = recording_data_address[TAG];
+    uint32_t buffering_destination = recording_data_address[TAG_DESTINATION];
     sdp_port = recording_data_address[SDP_PORT];
     buffer_size_before_trigger =
         recording_data_address[BUFFER_SIZE_BEFORE_REQUEST];
@@ -531,7 +533,7 @@ bool recording_initialize(
     msg.tag = buffering_output_tag;
     msg.dest_port = 0xFF;
     msg.srce_port = (sdp_port << 5) | spin1_get_core_id();
-    msg.dest_addr = 0;
+    msg.dest_addr = buffering_destination;
     msg.srce_addr = spin1_get_chip_id();
 
     return true;

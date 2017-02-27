@@ -172,7 +172,7 @@ class ReloadScript(object):
         """ Store a socket address for database usage
 
         :param socket_address: the socket addresses to be stored by the reload
-        :return:
+        :rtype: None
         """
         self._println("database_socket_addresses.append(")
         self._println("    SocketAddress(\"{}\", {}, {}))".format(
@@ -183,7 +183,7 @@ class ReloadScript(object):
         """ Add a routing table to be reloaded
 
         :param routing_table: the routing table to reload
-        :return:
+        :rtype: None
         """
         location = ReloadRoutingTable.store(
             self._app_data_runtime_folder, routing_table)
@@ -196,7 +196,7 @@ class ReloadScript(object):
         """ Add an iptag to be reloaded
 
         :param iptag: the iptag object to be loaded.
-        :return:
+        :rtype: None
         """
         board_address = None
         if iptag.board_address == "127.0.0.1":
@@ -204,15 +204,15 @@ class ReloadScript(object):
         else:
             board_address = "\"{}\"".format(iptag.board_address)
         self._println("iptags.append(")
-        self._println("    IPTag({}, {}, \"{}\", {}, {})) ".format(
-            board_address, iptag.tag, iptag.ip_address, iptag.port,
-            iptag.strip_sdp))
+        self._println("    IPTag(\"{}\", {}, {}, {}, \"{}\", {}, {})) ".format(
+            board_address, iptag.destination_x, iptag.destination_y, iptag.tag,
+            iptag.ip_address, iptag.port, iptag.strip_sdp))
 
     def add_reverse_ip_tag(self, reverse_ip_tag):
         """ Add a reverse ip tag to be reloaded
 
         :param reverse_ip_tag: the reverse iptag to be loaded.
-        :return:
+        :rtype: None
         """
         board_address = None
         if reverse_ip_tag.board_address == "127.0.0.1":
@@ -220,7 +220,7 @@ class ReloadScript(object):
         else:
             board_address = "\"{}\"".format(reverse_ip_tag.board_address)
         self._println("reverse_iptags.append(")
-        self._println("    ReverseIPTag({}, {}, {}, {}, {}, {}))".format(
+        self._println("    ReverseIPTag(\"{}\", {}, {}, {}, {}, {}))".format(
             board_address, reverse_ip_tag.tag,
             reverse_ip_tag.port, reverse_ip_tag.destination_x,
             reverse_ip_tag.destination_y, reverse_ip_tag.destination_p,
@@ -252,9 +252,10 @@ class ReloadScript(object):
         self._println("    Placement(vertex, {}, {}, {}))".format(
             placement.x, placement.y, placement.p))
         self._println("buffered_tags.add_ip_tag(")
-        self._println("    IPTag(\"{}\", {}, \"{}\", {}, {}), vertex)".format(
-            iptag.board_address, iptag.tag, iptag.ip_address,
-            iptag.port, iptag.strip_sdp))
+        self._println(
+            "    IPTag(\"{}\", {}, {}, {}, \"{}\", {}, {}), vertex)".format(
+                iptag.board_address, iptag.destination_x, iptag.destination_y,
+                iptag.tag, iptag.ip_address, iptag.port, iptag.strip_sdp))
 
     def add_dsg_target(self, x, y, p, file_path):
         """ Add a Data Specification Generated file to be reloaded

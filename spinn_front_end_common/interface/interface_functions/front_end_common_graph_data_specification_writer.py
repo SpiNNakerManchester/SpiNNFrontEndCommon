@@ -48,7 +48,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             app_data_runtime_folder, machine, graph_mapper=None):
         """ generates the dsg for the graph.
 
-        :return:
         """
 
         # iterate though vertices and call generate_data_spec for each
@@ -146,7 +145,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         :param report_directory:
         :param write_text_specs:
         :param application_run_time_report_folder:
-        :return:
         """
 
         binary_file_path = self.get_data_spec_file_path(
@@ -181,15 +179,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     def get_data_spec_file_path(processor_chip_x, processor_chip_y,
                                 processor_id, hostname,
                                 application_run_time_folder):
-        """
-        :param processor_chip_x:
-        :param processor_chip_y:
-        :param processor_id:
-        :param hostname:
-        :param application_run_time_folder:
-        :return:
-        """
-
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
 
@@ -203,16 +192,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     def get_application_data_file_path(
             processor_chip_x, processor_chip_y, processor_id, hostname,
             application_run_time_folder):
-        """
-
-        :param processor_chip_x:
-        :param processor_chip_y:
-        :param processor_id:
-        :param hostname:
-        :param application_run_time_folder:
-        :return:
-        """
-
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
 

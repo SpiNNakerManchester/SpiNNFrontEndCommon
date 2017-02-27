@@ -2,12 +2,7 @@ import logging
 
 from spinn_front_end_common.utilities import exceptions
 
-from spinn_front_end_common.utilities import helpful_functions
-
-from spinnman.messages.scp.enums.scp_signal import SCPSignal
 from spinnman.model.enums.cpu_state import CPUState
-from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
-    import AbstractStartsSynchronized
 from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 logger = logging.getLogger(__name__)
@@ -80,7 +75,7 @@ class FrontEndCommonApplicationRunner(object):
 
         # collect all the cores that operate on a sync start mode
         sync_cores = executable_targets.get_start_core_subsets(
-                ExecutableStartType.USES_SIMULATION_INTERFACE)
+            ExecutableStartType.USES_SIMULATION_INTERFACE)
         for core_subset in executable_targets.get_start_core_subsets(
                 ExecutableStartType.SYNC):
             sync_cores.add_core_subset(core_subset)
@@ -104,4 +99,3 @@ class FrontEndCommonApplicationRunner(object):
                 runtime * time_scale_factor, time_threshold)
 
         return True, no_sync_changes
-

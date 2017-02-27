@@ -60,6 +60,7 @@ from enum import Enum
 import math
 from spinnman.model.enums.executable_start_type import ExecutableStartType
 import sys
+import struct
 
 _DEFAULT_MALLOC_REGIONS = 2
 
@@ -85,11 +86,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('SEND_BUFFER', 3),
                ('PROVENANCE_REGION', 4)])
 
-    # 11 ints (1, has prefix, 2, prefix, 3, prefix type, 4, check key flag,
-    #          5, has key, 6, key, 7, mask, 8, buffer space,
-    #          9, send buffer flag before notify, 10, tag,
-    #          11. receive SDP port)
-    _CONFIGURATION_REGION_SIZE = 11 * 4
+    # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
+    #          5. has key, 6. key, 7. mask, 8. buffer space,
+    #          9. send buffer flag before notify, 10. tag,
+    #          11. tag destination (y, x), 12. receive SDP port)
+    _CONFIGURATION_REGION_SIZE = 12 * 4
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -430,15 +431,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             time_between_triggers=0):
         """ Enable recording of the keys sent
 
-        :param buffering_ip_address:\
-            The ip address to receive buffer notification messages on
-        :type buffering_ip_address: str
-        :param buffering_port:\
-            The port to receive buffer notification messages on
-        :type buffering_port: int
-        :param notification_tag:\
-            The tag to send buffer notification messages to
-        :type notification_tag: int
         :param record_buffer_size:\
             The size of the recording buffer in bytes.  Note that when using\
             automatic pause and resume, this will be used as the minimum size\
@@ -552,7 +544,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
+            spec.write_value(struct.unpack("<I", struct.pack(
+                "<HH", this_tag.destination_y, this_tag.destination_x))[0])
         else:
+            spec.write_value(data=0)
             spec.write_value(data=0)
             spec.write_value(data=0)
             spec.write_value(data=0)

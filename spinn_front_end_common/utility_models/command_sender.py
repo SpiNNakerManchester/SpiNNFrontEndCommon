@@ -245,9 +245,6 @@ class CommandSender(
         return 1
 
     def _get_n_command_bytes(self):
-        """
-        :return:
-        """
         n_bytes = 0
 
         for time in self._times_with_commands:
@@ -270,7 +267,6 @@ class CommandSender(
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 
-        :return:
         """
         return 'command_sender_multicast_source.aplx'
 
