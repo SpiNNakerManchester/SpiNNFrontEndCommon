@@ -6,7 +6,8 @@ from spinnman.model.enums.diagnostic_filter_default_routing_status import \
     DiagnosticFilterDefaultRoutingStatus
 from spinnman.model.enums.diagnostic_filter_packet_type import \
     DiagnosticFilterPacketType
-from spinnman.model.enums.diagnostic_filter_source import DiagnosticFilterSource
+from spinnman.model.enums.diagnostic_filter_source \
+    import DiagnosticFilterSource
 
 
 class FrontEndCommonRoutingTableLoader(object):

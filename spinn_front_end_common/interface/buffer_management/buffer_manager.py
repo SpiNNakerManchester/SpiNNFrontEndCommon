@@ -783,7 +783,7 @@ class BufferManager(object):
         return_message_header = SDPHeader(
             destination_port=(
                 spinn_front_end_constants.SDP_PORTS
-                    .OUTPUT_BUFFERING_SDP_PORT.value),
+                .OUTPUT_BUFFERING_SDP_PORT.value),
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
