@@ -26,7 +26,7 @@ class FrontEndCommonChipRuntimeUpdater(object):
             ExecutableStartType.USES_SIMULATION_INTERFACE)
 
         if len(updatable_binaries) > 0:
-            txrx.wait_for_cores_to_be_ready(
+            txrx.wait_for_cores_to_be_in_state(
                 updatable_binaries, app_id, [CPUState.PAUSED])
 
             infinite_run = 0

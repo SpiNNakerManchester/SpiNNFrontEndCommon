@@ -1,4 +1,5 @@
 from spinn_front_end_common.utilities import exceptions
+from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.interface.interface_functions. \
     front_end_common_provenance_xml_writer import \
     FrontEndCommonProvenanceXMLWriter
@@ -107,8 +108,9 @@ class MundyOnChipRouterCompression(object):
         # verify when the executable has finished
         start_time = time.time()
         try:
-            transceiver.poll_for_execution_to_complete(
-                executable_targets.all_core_subsets, compressor_app_id)
+            transceiver.wait_for_cores_to_be_in_state(
+                executable_targets.all_core_subsets, compressor_app_id,
+                [CPUState.FINISHED])
             stop_time = time.time()
             self._check_for_correct_complete_code(
                 executable_targets, transceiver, stop_time - start_time,

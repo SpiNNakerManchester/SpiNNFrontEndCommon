@@ -1,8 +1,7 @@
 # spinn_io_handler imports
 from spinn_storage_handlers.file_data_reader import FileDataReader
 
-# data spec imports
-import data_specification.data_spec_sender.spec_sender as spec_sender
+from data_specification import data_spec_sender
 
 from spinn_machine.utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
@@ -16,7 +15,6 @@ from spinn_front_end_common.utilities import constants
 import os
 import logging
 import struct
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +55,6 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
 
         dse_app_id = transceiver.app_id_tracker.get_new_id()
 
-        number_of_cores_used = 0
         core_subset = CoreSubsets()
         for (x, y, p, label) in dsg_targets:
 
@@ -107,31 +104,14 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         # Execute the DSE on all the cores
         logger.info("Loading the Data Specification Executor")
         dse_exec = os.path.join(
-            os.path.dirname(spec_sender.__file__),
+            os.path.dirname(data_spec_sender),
             'data_specification_executor.aplx')
-        file_reader = FileDataReader(dse_exec)
-        size = os.stat(dse_exec).st_size
-        transceiver.execute_flood(
-            core_subset, file_reader, app_id, size)
+        transceiver.execute_flood(core_subset, dse_exec, app_id)
 
         logger.info(
             "Waiting for On-chip Data Specification Executor to complete")
-        processors_exited = transceiver.get_core_state_count(
-            dse_app_id, CPUState.FINISHED)
-        while processors_exited < number_of_cores_used:
-            processors_errored = transceiver.get_core_state_count(
-                dse_app_id, CPUState.RUN_TIME_EXCEPTION)
-            if processors_errored > 0:
-                error_cores = transceiver.get_cores_in_state(
-                    core_subset, CPUState)
-                if len(error_cores) > 0:
-                    error = transceiver.get_core_status_string(error_cores)
-                    raise Exception(
-                        "Data Specification Execution has failed: {}".format(
-                            error))
-            time.sleep(1)
-            processors_exited = transceiver.get_core_state_count(
-                dse_app_id, CPUState.FINISHED)
+        transceiver.wait_for_cores_to_be_in_state(
+            core_subset, app_id, [CPUState.FINISHED])
 
         transceiver.stop_application(dse_app_id)
         transceiver.app_id_tracker.free_id(dse_app_id)
