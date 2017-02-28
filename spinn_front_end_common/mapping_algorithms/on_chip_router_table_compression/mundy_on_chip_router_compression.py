@@ -30,6 +30,9 @@ import time
 
 logger = logging.getLogger(__name__)
 
+# The SDRAM Tag used by the application - note this is fixed in the APLX
+_SDRAM_TAG = 1
+
 
 class MundyOnChipRouterCompression(object):
     """ Compressor that uses a on chip router compressor
@@ -41,20 +44,21 @@ class MundyOnChipRouterCompression(object):
     OVER_RUN_THRESHOLD_BEFORE_ERROR = 1000
 
     def __call__(
-            self, routing_tables, transceiver, machine, app_app_id,
-            compressor_app_id, provenance_file_path, store_on_sdram=False,
-            sdram_tag=1, record_iobuf=True, compress_only_when_needed=False,
+            self, routing_tables, transceiver, machine, app_id,
+            provenance_file_path, store_on_sdram=False,
+            record_iobuf=False, compress_only_when_needed=True,
             use_default_target_length=False, provenance_data_objects=None):
         """
 
         :param routing_tables: the memory routing tables to be compressed
-        :param app_app_id: the app-id used by the main application
+        :param app_id: the app-id used by the main application
         :param store_on_sdram:\
-            flag to say store it on sdram or in the routing table
+            if True store the resulting table in sdram.  If False,\
+            store it in the routing table
         :param provenance_file_path: the path to where to write the data
         :param machine: the spinnaker machine representation
         :param transceiver: the spinnman interface
-        :return: flag stating routing compression and loading hath been done
+        :return: flag stating routing compression and loading has been done
         """
 
         if provenance_data_objects is not None:
@@ -66,25 +70,20 @@ class MundyOnChipRouterCompression(object):
         progress_bar = ProgressBar(
             len(routing_tables.routing_tables) + 2,
             "Running routing table compression on chip")
+        compressor_app_id = transceiver.app_id_tracker.get_new_id()
 
         # figure size of sdram needed for each chip for storing the routing
         # table
         for routing_table in routing_tables:
 
             data = self._build_data(
-                routing_table, app_app_id, store_on_sdram,
+                routing_table, app_id, store_on_sdram,
                 compress_only_when_needed, use_default_target_length)
-            chip = machine.get_chip_at(routing_table.x, routing_table.y)
-
-            if len(data) > chip.sdram:
-                raise exceptions.ConfigurationException(
-                    "There is not enough memory on the chip to write the "
-                    "routing tables into.")
 
             # go to spinnman and ask for a memory region of that size per chip.
             base_address = transceiver.malloc_sdram(
                 routing_table.x, routing_table.y, len(data),
-                compressor_app_id, sdram_tag)
+                compressor_app_id, _SDRAM_TAG)
 
             # write sdram requirements per chip
             transceiver.write_memory(
@@ -127,11 +126,12 @@ class MundyOnChipRouterCompression(object):
 
         # get debug info if requested
         if record_iobuf:
-            self._acquire_iobuf(executable_targets, transceiver,
-                                provenance_file_path)
+            self._acquire_iobuf(
+                executable_targets, transceiver, provenance_file_path)
 
         # stop anything that's associated with the compressor binary
         transceiver.stop_application(compressor_app_id)
+        transceiver.app_id_tracker.free_id(compressor_app_id)
 
         # update the progress bar
         progress_bar.end()
@@ -148,12 +148,6 @@ class MundyOnChipRouterCompression(object):
             provenance_file_path, prov_items, compressor_app_id):
         """ goes through the cores checking for cores that have failed to
         compress the routing tables to the level where they fit into the router
-
-        :param
-        compressor on them
-        :param transceiver: the main spinnman interface
-        :return: None
-        :raises
         """
 
         for core_subset in executable_targets.all_core_subsets:

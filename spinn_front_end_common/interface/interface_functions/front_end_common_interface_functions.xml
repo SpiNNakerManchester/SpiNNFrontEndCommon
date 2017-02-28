@@ -132,10 +132,6 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>dse_app_id</param_name>
-                <param_type>DSEAppID</param_type>
-            </parameter>
-            <parameter>
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
@@ -144,7 +140,6 @@
             <param_name>write_memory_map_report</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
-            <param_name>dse_app_id</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
         <outputs>

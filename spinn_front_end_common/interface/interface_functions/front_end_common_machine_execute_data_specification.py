@@ -28,29 +28,24 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
     __slots__ = []
 
     def __call__(
-            self, write_memory_map_report, dsg_targets, transceiver,
-            dse_app_id, app_id):
+            self, write_memory_map_report, dsg_targets, transceiver, app_id):
         """
         :param write_memory_map_report:
         :param dsg_targets:
         :param transceiver:
-        :param dse_app_id: the app_id used by the DSE on chip application
         :param app_id:
         """
         data = self.spinnaker_based_data_specification_execution(
-            write_memory_map_report, dsg_targets, transceiver,
-            dse_app_id, app_id)
+            write_memory_map_report, dsg_targets, transceiver, app_id)
         return data
 
     def spinnaker_based_data_specification_execution(
-            self, write_memory_map_report, dsg_targets, transceiver,
-            dse_app_id, app_id):
+            self, write_memory_map_report, dsg_targets, transceiver, app_id):
         """
 
         :param write_memory_map_report:
         :param dsg_targets:
         :param transceiver:
-        :param dse_app_id:
         :param app_id:
         :return: True
         :rtype: bool
@@ -59,6 +54,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         # create a progress bar for end users
         progress_bar = ProgressBar(
             len(dsg_targets), "Loading data specifications")
+
+        dse_app_id = transceiver.app_id_tracker.get_new_id()
 
         number_of_cores_used = 0
         core_subset = CoreSubsets()
@@ -137,6 +134,7 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
                 dse_app_id, CPUState.FINISHED)
 
         transceiver.stop_application(dse_app_id)
+        transceiver.app_id_tracker.free_id(dse_app_id)
         logger.info("On-chip Data Specification Executor completed")
 
         return True

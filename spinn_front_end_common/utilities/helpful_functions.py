@@ -84,7 +84,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
 
 def set_up_output_application_data_specifics(
         where_to_write_application_data_files,
-        max_application_binaries_kept, app_id, n_calls_to_run,
+        max_application_binaries_kept, n_calls_to_run,
         this_run_time_string):
     """
 
@@ -92,8 +92,6 @@ def set_up_output_application_data_specifics(
         the location where all app data is by default written to
     :param max_application_binaries_kept:\
         The max number of report folders to keep active at any one time
-    :param app_id:\
-        the id used for identifying the simulation on the SpiNNaker machine
     :param n_calls_to_run: the counter of how many times run has been called.
     :param this_run_time_string: the time stamp string for this run
     :return: the run folder for this simulation to hold app data
@@ -121,8 +119,7 @@ def set_up_output_application_data_specifics(
         time_of_run_file_name = os.path.join(this_run_time_folder,
                                              "time_stamp")
         writer = open(time_of_run_file_name, "w")
-        writer.writelines("app_{}_{}".format(
-            app_id, this_run_time_string))
+        writer.writelines("{}".format(this_run_time_string))
         writer.flush()
         writer.close()
 
@@ -149,8 +146,7 @@ def set_up_output_application_data_specifics(
         time_of_run_file_name = os.path.join(this_run_time_folder,
                                              "time_stamp")
         writer = open(time_of_run_file_name, "w")
-        writer.writelines("app_{}_{}".format(
-            app_id, this_run_time_string))
+        writer.writelines("{}".format(this_run_time_string))
 
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
@@ -167,15 +163,13 @@ def set_up_output_application_data_specifics(
 
 
 def set_up_report_specifics(
-        default_report_file_path, max_reports_kept, app_id, n_calls_to_run,
+        default_report_file_path, max_reports_kept, n_calls_to_run,
         this_run_time_string=None):
     """
 
     :param default_report_file_path: The location where all reports reside
     :param max_reports_kept:\
         The max number of report folders to keep active at any one time
-    :param app_id:\
-        the id used for identifying the simulation on the SpiNNaker machine
     :param n_calls_to_run: the counter of how many times run has been called.
     :param this_run_time_string: holder for the timestamp for future runs
     :return: The folder for this run, the time_stamp
@@ -233,7 +227,7 @@ def set_up_report_specifics(
     # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
     writer = open(time_of_run_file_name, "w")
-    writer.writelines("app_{}_{}".format(app_id, this_run_time_string))
+    writer.writelines("{}".format(this_run_time_string))
     writer.flush()
     writer.close()
     return app_sub_folder_name, app_folder_name, this_run_time_string

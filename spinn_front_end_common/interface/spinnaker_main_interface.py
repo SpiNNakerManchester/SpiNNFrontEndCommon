@@ -330,7 +330,8 @@ class SpinnakerMainInterface(object):
         self._time_scale_factor = None
         self._this_run_time_string = None
 
-        self._app_id = self._config.getint("Machine", "appID")
+        self._app_id = helpful_functions.read_config_int(
+            config, "Machine", "appID")
 
         # folders
         self._report_default_directory = None
@@ -368,9 +369,6 @@ class SpinnakerMainInterface(object):
         self._use_virtual_board = self._config.getboolean(
             "Machine", "virtual_board")
 
-        # log app id to end user
-        logger.info("Setting appID to %d." % self._app_id)
-
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
@@ -389,7 +387,7 @@ class SpinnakerMainInterface(object):
                     "Reports", "defaultReportFilePath"),
                 max_reports_kept=self._config.getint(
                     "Reports", "max_reports_kept"),
-                app_id=self._app_id, n_calls_to_run=self._n_calls_to_run,
+                n_calls_to_run=self._n_calls_to_run,
                 this_run_time_string=self._this_run_time_string)
 
         # set up application report folder
@@ -399,7 +397,7 @@ class SpinnakerMainInterface(object):
                     "Reports", "max_application_binaries_kept"),
                 where_to_write_application_data_files=self._config.get(
                     "Reports", "defaultApplicationDataFilePath"),
-                app_id=self._app_id, n_calls_to_run=self._n_calls_to_run,
+                n_calls_to_run=self._n_calls_to_run,
                 this_run_time_string=self._this_run_time_string)
 
     def set_up_machine_specifics(self, hostname):
@@ -919,6 +917,9 @@ class SpinnakerMainInterface(object):
                     "MemoryMachineGraph")
                 self._graph_mapper = executor.get_item(
                     "MemoryGraphMapper")
+
+        if self._txrx is not None and self._app_id is None:
+            self._app_id = self._txrx.app_id_tracker.get_new_id()
 
         return self._machine
 

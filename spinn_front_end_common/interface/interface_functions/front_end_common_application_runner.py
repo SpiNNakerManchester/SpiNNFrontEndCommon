@@ -45,14 +45,14 @@ class FrontEndCommonApplicationRunner(object):
         # wait for all cores that are in a barrier to reach the barrier
         txrx.wait_for_cores_to_be_ready(
             executable_targets.get_start_core_subsets(
-                ExecutableStartType.SYNC), app_id,
-            [CPUState.SYNC0, CPUState.SYNC1])
+                ExecutableStartType.SYNC),
+            app_id, [CPUState.SYNC0, CPUState.SYNC1])
 
         # wait for all cores that are in a barrier to reach the barrier
         txrx.wait_for_cores_to_be_ready(
             executable_targets.get_start_core_subsets(
-                ExecutableStartType.USES_SIMULATION_INTERFACE), app_id,
-            [sync_state])
+                ExecutableStartType.USES_SIMULATION_INTERFACE),
+            app_id, [sync_state])
 
         # wait for the other cores (which should not be at a barrier)
         # to be in running state
