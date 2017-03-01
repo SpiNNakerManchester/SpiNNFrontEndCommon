@@ -166,10 +166,6 @@
                 <param_name>loaded_application_data_token</param_name>
                 <param_type>LoadedApplicationDataToken</param_type>
             </parameter>
-            <parameter>
-                <param_name>use_progress_bar</param_name>
-                <param_type>LoadExecutableImagesUseProgressBar</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>executable_targets</param_name>
@@ -177,9 +173,6 @@
             <param_name>transceiver</param_name>
             <param_name>loaded_application_data_token</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>use_progress_bar</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>LoadBinariesToken</param_type>
         </outputs>
@@ -256,172 +249,6 @@
         <outputs>
             <param_type>MemoryMachine</param_type>
             <param_type>MemoryTransceiver</param_type>
-        </outputs>
-    </algorithm>
-        <algorithm name="FrontEndCommonReloadScriptCreator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_reload_script_creator</python_module>
-        <python_class>FrontEndCommonReloadScriptCreator</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_name</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>version</param_name>
-                <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>bmp_details</param_name>
-                <param_type>BMPDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>down_chips</param_name>
-                <param_type>DownedChipsDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>down_cores</param_name>
-                <param_type>DownedCoresDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>auto_detect_bmp</param_name>
-                <param_type>AutoDetectBMPFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>enable_reinjection</param_name>
-                <param_type>EnableReinjectionFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>scamp_connection_data</param_name>
-                <param_type>ScampConnectionData</param_type>
-            </parameter>
-            <parameter>
-                <param_name>boot_port_num</param_name>
-                <param_type>BootPortNum</param_type>
-            </parameter>
-            <parameter>
-                <param_name>reset_machine_on_start_up</param_name>
-                <param_type>ResetMachineOnStartupFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>max_sdram_per_chip</param_name>
-                <param_type>MaxSDRAMSize</param_type>
-            </parameter>
-            <parameter>
-                <param_name>router_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
-            </parameter>
-            <parameter>
-                <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>dsg_targets</param_name>
-                <param_type>DataSpecificationTargets</param_type>
-            </parameter>
-            <parameter>
-                <param_name>dse_app_id</param_name>
-                <param_type>DSEAppID</param_type>
-            </parameter>
-            <parameter>
-                <param_name>exec_dse_on_host</param_name>
-                <param_type>ExecDSEOnHostFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>buffer_manager</param_name>
-                <param_type>BufferManager</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>wait_for_read_confirmation</param_name>
-                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>database_socket_addresses</param_name>
-                <param_type>DatabaseSocketAddresses</param_type>
-            </parameter>
-            <parameter>
-                <param_name>database_file_path</param_name>
-                <param_type>DatabaseFilePath</param_type>
-            </parameter>
-            <parameter>
-                <param_name>send_start_notification</param_name>
-                <param_type>SendStartNotifications</param_type>
-            </parameter>
-            <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_id</param_name>
-                <param_type>APPID</param_type>
-            </parameter>
-            <parameter>
-                <param_name>runtime</param_name>
-                <param_type>RunTime</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
-                <param_name>total_machine_timesteps</param_name>
-                <param_type>TotalMachineTimeSteps</param_type>
-            </parameter>
-            <parameter>
-                <param_name>executable_finder</param_name>
-                <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_threshold</param_name>
-                <param_type>PostSimulationOverrunBeforeError</param_type>
-            </parameter>
-        </input_definitions>
-         <required_inputs>
-             <param_name>machine</param_name>
-             <param_name>machine_name</param_name>
-             <param_name>version</param_name>
-             <param_name>bmp_details</param_name>
-             <param_name>down_chips</param_name>
-             <param_name>down_cores</param_name>
-             <param_name>auto_detect_bmp</param_name>
-             <param_name>enable_reinjection</param_name>
-             <param_name>scamp_connection_data</param_name>
-             <param_name>boot_port_num</param_name>
-             <param_name>reset_machine_on_start_up</param_name>
-             <param_name>max_sdram_per_chip</param_name>
-             <param_name>router_tables</param_name>
-             <param_name>tags</param_name>
-             <param_name>app_data_runtime_folder</param_name>
-             <param_name>dsg_targets</param_name>
-             <param_name>dse_app_id</param_name>
-             <param_name>exec_dse_on_host</param_name>
-             <param_name>buffer_manager</param_name>
-             <param_name>placements</param_name>
-             <param_name>wait_for_read_confirmation</param_name>
-             <param_name>database_socket_addresses</param_name>
-             <param_name>database_file_path</param_name>
-             <param_name>send_start_notification</param_name>
-             <param_name>executable_targets</param_name>
-             <param_name>app_id</param_name>
-             <param_name>runtime</param_name>
-             <param_name>time_scale_factor</param_name>
-             <param_name>total_machine_timesteps</param_name>
-             <param_name>executable_finder</param_name>
-             <param_name>time_threshold</param_name>
-        </required_inputs>
-        <outputs>
-            <param_type>ReloadToken</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonRoutingTableLoader">
@@ -647,6 +474,7 @@
         </optional_inputs>
         <outputs>
             <param_type>ExecutableTargets</param_type>
+            <param_type>ExecutableStartType</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonBufferManagerCreator">
@@ -710,6 +538,10 @@
                 <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
+                <param_name>executable_start_type</param_name>
+                <param_type>ExecutableStartType</param_type>
+            </parameter>
+            <parameter>
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
@@ -753,18 +585,6 @@
                 <param_name>time_threshold</param_name>
                 <param_type>PostSimulationOverrunBeforeError</param_type>
             </parameter>
-            <parameter>
-                <param_name>has_loaded_runtime_flag</param_name>
-                <param_type>HasLoadedRuntimeToChips</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>buffer_manager</param_name>
@@ -772,6 +592,7 @@
             <param_name>send_start_notification</param_name>
             <param_name>notification_interface</param_name>
             <param_name>executable_targets</param_name>
+            <param_name>executable_start_type</param_name>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
             <param_name>runtime</param_name>
@@ -783,12 +604,7 @@
             <param_name>loaded_application_data_token</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
-            <param_name>has_loaded_runtime_flag</param_name>
-            <param_name>placements</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>RanToken</param_type>
             <param_type>NoSyncChanges</param_type>

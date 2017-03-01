@@ -1,6 +1,3 @@
-# spinn_io_handler imports
-from spinn_storage_handlers.file_data_reader import FileDataReader
-
 from data_specification import data_spec_sender
 
 from spinn_machine.utilities.progress_bar import ProgressBar
@@ -66,9 +63,6 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
             data_spec_file_path = dsg_targets[x, y, p, label]
             data_spec_file_size = os.path.getsize(data_spec_file_path)
 
-            application_data_file_reader = FileDataReader(
-                data_spec_file_path)
-
             base_address = transceiver.malloc_sdram(
                 x, y, data_spec_file_size, dse_app_id)
 
@@ -81,8 +75,7 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
                 len(dse_data_struct_data))
 
             transceiver.write_memory(
-                x, y, base_address, application_data_file_reader,
-                data_spec_file_size)
+                x, y, base_address, data_spec_file_path, is_filename=True)
 
             # data spec file is written at specific address (base_address)
             # this is encapsulated in a structure with four fields:
@@ -106,7 +99,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         dse_exec = os.path.join(
             os.path.dirname(data_spec_sender),
             'data_specification_executor.aplx')
-        transceiver.execute_flood(core_subset, dse_exec, app_id)
+        transceiver.execute_flood(
+            core_subset, dse_exec, app_id, is_filename=True)
 
         logger.info(
             "Waiting for On-chip Data Specification Executor to complete")

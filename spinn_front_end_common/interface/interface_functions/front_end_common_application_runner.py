@@ -2,9 +2,11 @@ import logging
 import time
 
 from spinn_front_end_common.utilities import exceptions
+from spinnman.messages.scp.enums.scp_signal import SCPSignal
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 from spinnman.model.enums.cpu_state import CPUState
-from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 logger = logging.getLogger(__name__)
 
@@ -19,47 +21,53 @@ class FrontEndCommonApplicationRunner(object):
     def __call__(
             self, buffer_manager, wait_on_confirmation,
             send_start_notification, notification_interface,
-            executable_targets, app_id, txrx, runtime, time_scale_factor,
-            loaded_reverse_iptags_token, loaded_iptags_token,
-            loaded_routing_tables_token, loaded_binaries_token,
-            loaded_application_data_token, no_sync_changes, time_threshold,
-            has_loaded_runtime_flag):
+            executable_targets, executable_start_type, app_id, txrx, runtime,
+            time_scale_factor, loaded_reverse_iptags_token,
+            loaded_iptags_token, loaded_routing_tables_token,
+            loaded_binaries_token, loaded_application_data_token,
+            no_sync_changes, time_threshold):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
                 not loaded_routing_tables_token or not loaded_binaries_token or
-                not loaded_application_data_token or
-                not has_loaded_runtime_flag):
+                not loaded_application_data_token):
             raise exceptions.ConfigurationException(
-                "Not all valid tokens have been given in the positive state. "
-                "please rerun and try again")
+                "Not all valid tokens have been given in the positive state")
 
         logger.info("*** Running simulation... *** ")
 
-        if no_sync_changes % 2 == 0:
-            sync_state = CPUState.SYNC0
-        else:
-            sync_state = CPUState.SYNC1
+        # Get the expected state of the application, depending on the run type
+        expected_states = None
+        sync_signal = None
+        if executable_start_type == ExecutableStartType.RUNNING:
+            expected_states = [
+                CPUState.RUNNING, CPUState.FINISHED, CPUState.PAUSED,
+                CPUState.SYNC0, CPUState.SYNC1
+            ]
+        elif executable_start_type == ExecutableStartType.SYNC:
+            sync_signal = SCPSignal.SYNC0
+            expected_states = [CPUState.SYNC0]
+        elif (executable_start_type ==
+                ExecutableStartType.USES_SIMULATION_INTERFACE):
+            if no_sync_changes % 2 == 0:
+                expected_states = [CPUState.SYNC0]
+                sync_signal = SCPSignal.SYNC0
+            else:
+                expected_states = [CPUState.SYNC1]
+                sync_signal = SCPSignal.SYNC1
 
-        # wait for all cores that are in a barrier to reach the barrier
-        txrx.wait_for_cores_to_be_in_state(
-            executable_targets.get_start_core_subsets(
-                ExecutableStartType.SYNC),
-            app_id, [CPUState.SYNC0, CPUState.SYNC1])
+            # when it falls out of the running, it'll be in a next sync state,
+            # thus update needed
+            no_sync_changes += 1
 
-        # wait for all cores that are in a barrier to reach the barrier
-        txrx.wait_for_cores_to_be_in_state(
-            executable_targets.get_start_core_subsets(
-                ExecutableStartType.USES_SIMULATION_INTERFACE),
-            app_id, [sync_state])
+        if expected_states is None:
+            raise exceptions.ConfigurationException(
+                "Unknown executable start type {}".format(
+                    executable_start_type))
 
-        # wait for the other cores to be in an acceptable state
+        # wait for all cores to be ready
         txrx.wait_for_cores_to_be_in_state(
-            executable_targets.get_start_core_subsets(
-                ExecutableStartType.RUNNING),
-            app_id,
-            [CPUState.RUNNING, CPUState.FINISHED, CPUState.PAUSED,
-             CPUState.SYNC0, CPUState.SYNC1, CPUState.READY])
+            executable_targets.all_core_subsets, app_id, expected_states)
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
@@ -72,26 +80,18 @@ class FrontEndCommonApplicationRunner(object):
         if notification_interface is not None and wait_on_confirmation:
             notification_interface.wait_for_confirmation()
 
-        # collect all the cores that operate on a sync start mode
-        sync_cores = executable_targets.get_start_core_subsets(
-            ExecutableStartType.USES_SIMULATION_INTERFACE)
-        for core_subset in executable_targets.get_start_core_subsets(
-                ExecutableStartType.SYNC):
-            sync_cores.add_core_subset(core_subset)
-
         # set off the executables that are in sync state
-        txrx.send_signal(app_id, sync_state)
-        txrx.wait_for_cores_to_be_in_state(
-            sync_cores, app_id,
-            [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
+        if sync_signal is not None:
+            txrx.send_signal(app_id, sync_signal)
+            txrx.wait_for_cores_to_be_in_state(
+                executable_targets.all_core_subsets, app_id,
+                [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
 
-        # when it falls out of the running, it'll be in a next sync state,
-        # thus update needed
-        no_sync_changes += 1
-
+        # Send start notification
         if notification_interface is not None and send_start_notification:
             notification_interface.send_start_notification()
 
+        # Wait for the application to finish
         if runtime is None:
             logger.info("Application is set to run forever - exiting")
         else:

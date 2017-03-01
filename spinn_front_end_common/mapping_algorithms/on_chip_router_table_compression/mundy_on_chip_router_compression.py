@@ -13,12 +13,9 @@ from spinn_front_end_common.interface.interface_functions.\
     FrontEndCommonLoadExecutableImages
 from spinn_front_end_common.utilities.utility_objs. \
     provenance_data_item import ProvenanceDataItem
-from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 from spinnman.model.executable_targets import \
     ExecutableTargets
-from spinnman import transceiver as tx
-from spinnman import exceptions as spinnman_exceptions
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router
@@ -100,11 +97,6 @@ class MundyOnChipRouterCompression(object):
         # update progress bar
         progress_bar.update()
 
-        # get logger for spinnman and turn off
-        tx_logger = tx.logger
-        logger_level = tx_logger.level
-        tx_logger.setLevel(logging.ERROR)
-
         # verify when the executable has finished
         start_time = time.time()
         try:
@@ -115,8 +107,8 @@ class MundyOnChipRouterCompression(object):
             self._check_for_correct_complete_code(
                 executable_targets, transceiver, stop_time - start_time,
                 provenance_file_path, prov_items, compressor_app_id)
-            tx_logger.setLevel(logger_level)
-        except spinnman_exceptions.ExecutableFailedToStopException:
+        except:
+
             # get the debug data
             stop_time = time.time()
             self._handle_failure(
@@ -229,8 +221,7 @@ class MundyOnChipRouterCompression(object):
         """
         iobuf_extractor = FrontEndCommonChipIOBufExtractor()
         io_buffers, io_errors, io_warnings = iobuf_extractor(
-            transceiver, True, executable_targets.get_start_core_subsets(
-                ExecutableStartType.RUNNING))
+            transceiver, True, executable_targets.all_core_subsets)
         self._write_iobuf(io_buffers, provenance_file_path)
         return io_errors, io_warnings
 
@@ -281,12 +272,11 @@ class MundyOnChipRouterCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(
-            binary_path, core_subsets, ExecutableStartType.RUNNING)
+        executable_targets.add_subsets(binary_path, core_subsets)
 
         executable_loader = FrontEndCommonLoadExecutableImages()
         success = executable_loader(
-            executable_targets, compressor_app_id, transceiver, True, False)
+            executable_targets, compressor_app_id, transceiver, True)
         if not success:
             raise exceptions.ConfigurationException(
                 "The app loader failed to load the executable for router "

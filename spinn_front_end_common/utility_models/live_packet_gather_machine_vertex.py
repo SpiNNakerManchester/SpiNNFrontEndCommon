@@ -22,17 +22,15 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models \
-    .abstract_binary_uses_simulation_run import \
-    AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 from spinnman.messages.eieio.eieio_type import EIEIOType
-from spinnman.model.enums.executable_start_type import ExecutableStartType
 
 from enum import Enum
 import struct
@@ -40,8 +38,7 @@ import struct
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        AbstractBinaryUsesSimulationRun):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -152,8 +149,8 @@ class LivePacketGatherMachineVertex(
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
 
-    @overrides(AbstractHasAssociatedBinary.get_binary_start_mode_enum)
-    def get_binary_start_mode_enum(self):
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
         return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @inject_items({
