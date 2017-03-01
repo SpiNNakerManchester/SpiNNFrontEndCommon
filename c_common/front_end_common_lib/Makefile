@@ -4,7 +4,7 @@ ifndef SPINN_DIRS
 endif
 
 SPINN_COMMON_BUILD = build
-LIB := 1
+override LIB := 1
 include $(SPINN_DIRS)/make/Makefile.common
 
 ifndef PRINT_DEBUG

@@ -25,9 +25,9 @@ class FrontEndCommonRoutingTableLoader(object):
                 transceiver.clear_router_diagnostic_counters(router_table.x,
                                                              router_table.y)
 
-                # set the router diag for user 3 to catch local default routed
-                #  packets. This can only occur when the source router has no
-                #  router entry, and therefore should be detected a bad
+                # set the router diagnostic for user 3 to catch local default
+                # routed packets. This can only occur when the source router
+                # has no router entry, and therefore should be detected a bad
                 # dropped packet.
                 self._set_router_diagnostic_filters(
                     router_table.x, router_table.y, transceiver)
