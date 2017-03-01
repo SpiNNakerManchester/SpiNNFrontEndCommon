@@ -23,7 +23,7 @@ HEADERS = common-typedefs.h data_specification.h simulation.h recording.h buffer
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
-MAKEFILES = Makefile.SpiNNFrontEndCommon
+MAKEFILES = SpiNNFrontEndCommon.mk
 INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 
 # Libraries

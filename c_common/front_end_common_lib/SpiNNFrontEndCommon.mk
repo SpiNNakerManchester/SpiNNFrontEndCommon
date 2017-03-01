@@ -41,7 +41,8 @@ FEC_DEBUG := PRODUCTION_CODE
 SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | md5sum | cut -c 1-8)
 
-CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) $(OTIME) -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
+CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) $(OTIME) \
+	-DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
 include $(SPINN_DIRS)/make/Makefile.common
 
@@ -49,4 +50,5 @@ all: $(APP_OUTPUT_DIR)$(APP).aplx
 
 # Tidy and cleaning dependencies
 clean:
-	$(RM) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(APP_OUTPUT_DIR)$(APP).aplx
+	$(RM) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt \
+		$(APP_OUTPUT_DIR)$(APP).aplx
