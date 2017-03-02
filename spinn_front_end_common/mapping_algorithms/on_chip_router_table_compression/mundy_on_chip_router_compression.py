@@ -1,15 +1,10 @@
 from spinn_front_end_common.utilities import exceptions
 from spinnman.model.enums.cpu_state import CPUState
-from spinn_front_end_common.interface.interface_functions. \
-    front_end_common_provenance_xml_writer import \
-    FrontEndCommonProvenanceXMLWriter
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_chip_iobuf_extractor import \
     FrontEndCommonChipIOBufExtractor
-from spinn_front_end_common.utilities.utility_objs. \
-    provenance_data_item import ProvenanceDataItem
 
 from spinnman.model.executable_targets import \
     ExecutableTargets
@@ -21,7 +16,6 @@ from spinn_machine.utilities.progress_bar import ProgressBar
 import logging
 import os
 import struct
-import time
 
 logger = logging.getLogger(__name__)
 
@@ -40,26 +34,17 @@ class MundyOnChipRouterCompression(object):
 
     def __call__(
             self, routing_tables, transceiver, machine, app_id,
-            provenance_file_path, store_on_sdram=False,
-            record_iobuf=False, compress_only_when_needed=True,
-            use_default_target_length=False, provenance_data_objects=None):
+            provenance_file_path, compress_only_when_needed=True,
+            compress_as_much_as_possible=False):
         """
 
         :param routing_tables: the memory routing tables to be compressed
-        :param app_id: the app-id used by the main application
-        :param store_on_sdram:\
-            if True store the resulting table in sdram.  If False,\
-            store it in the routing table
-        :param provenance_file_path: the path to where to write the data
-        :param machine: the spinnaker machine representation
         :param transceiver: the spinnman interface
+        :param machine: the spinnaker machine representation
+        :param app_id: the app-id used by the main application
+        :param provenance_file_path: the path to where to write the data
         :return: flag stating routing compression and loading has been done
         """
-
-        if provenance_data_objects is not None:
-            prov_items = provenance_data_objects
-        else:
-            prov_items = list()
 
         # build progress bar
         progress_bar = ProgressBar(
@@ -72,8 +57,8 @@ class MundyOnChipRouterCompression(object):
         for routing_table in routing_tables:
 
             data = self._build_data(
-                routing_table, app_id, store_on_sdram,
-                compress_only_when_needed, use_default_target_length)
+                routing_table, app_id, compress_only_when_needed,
+                compress_as_much_as_possible)
 
             # go to spinnman and ask for a memory region of that size per chip.
             base_address = transceiver.malloc_sdram(
@@ -94,31 +79,25 @@ class MundyOnChipRouterCompression(object):
         # update progress bar
         progress_bar.update()
 
-        # verify when the executable has finished
-        start_time = time.time()
+        # Wait for the executable to finish
         try:
             transceiver.wait_for_cores_to_be_in_state(
                 executable_targets.all_core_subsets, compressor_app_id,
                 [CPUState.FINISHED])
-            stop_time = time.time()
-            self._check_for_correct_complete_code(
-                executable_targets, transceiver, stop_time - start_time,
-                provenance_file_path, prov_items, compressor_app_id)
         except:
 
             # get the debug data
-            stop_time = time.time()
             self._handle_failure(
                 executable_targets, transceiver, provenance_file_path,
-                stop_time - start_time, prov_items, compressor_app_id)
+                compressor_app_id)
+
+        # Check if any cores have not completed successfully
+        self._check_for_success(
+            executable_targets, transceiver,
+            provenance_file_path, compressor_app_id)
 
         # update progress bar
         progress_bar.update()
-
-        # get debug info if requested
-        if record_iobuf:
-            self._acquire_iobuf(
-                executable_targets, transceiver, provenance_file_path)
 
         # stop anything that's associated with the compressor binary
         transceiver.stop_application(compressor_app_id)
@@ -127,100 +106,59 @@ class MundyOnChipRouterCompression(object):
         # update the progress bar
         progress_bar.end()
 
-        # create provenance data item
-        prov_items = self._create_provenance_data_item(
-            stop_time - start_time, prov_items)
-
         # return loaded routing tables flag
-        return True, prov_items
+        return True
 
-    def _check_for_correct_complete_code(
-            self, executable_targets, transceiver, duration,
-            provenance_file_path, prov_items, compressor_app_id):
-        """ goes through the cores checking for cores that have failed to
-        compress the routing tables to the level where they fit into the router
+    def _check_for_success(
+            self, executable_targets, transceiver, provenance_file_path,
+            compressor_app_id):
+        """ goes through the cores checking for cores that have failed to\
+            compress the routing tables to the level where they fit into the\
+            router
         """
 
         for core_subset in executable_targets.all_core_subsets:
             x = core_subset.x
             y = core_subset.y
             for p in core_subset.processor_ids:
+
+                # Read the result from USER0 register
                 user_0_address = \
                     transceiver.get_user_0_register_address_from_core(x, y, p)
 
-                data = struct.unpack(
-                    "<I", str(
-                        transceiver.read_memory(x, y, user_0_address, 4)))[0]
-                if data != 0:
+                result = struct.unpack(
+                    "<I", str(transceiver.read_memory(x, y, user_0_address, 4))
+                )[0]
+
+                # The result is 0 if success, otherwise failure
+                if result != 0:
                     self._handle_failure(
                         executable_targets, transceiver, provenance_file_path,
-                        duration, prov_items, compressor_app_id)
+                        compressor_app_id)
 
     def _handle_failure(
             self, executable_targets, transceiver, provenance_file_path,
-            duration, prov_items, compressor_app_id):
+            compressor_app_id):
         """
 
         :param executable_targets:
         :param transceiver:
         :param provenance_file_path:
-        :param duration:
         :param prov_items:
         :return:
         """
-        self._get_debug_data(
-            executable_targets, transceiver, provenance_file_path)
-        self._write_provenance_data(duration, prov_items, provenance_file_path)
-        # transceiver.stop_application(compressor_app_id)
-        raise exceptions.SpinnFrontEndException(
-            "The router compressor failed to complete")
-
-    def _get_debug_data(
-            self, executable_targets, transceiver, provenance_file_path):
-        """ get data from the machine for debug purposes when the compressor\
-            fails
-
-        :param executable_targets:\
-            executable targets that represent all cores/chips which have\
-            active routing tables
-        :param transceiver: the spinnman interface
-        :param provenance_file_path: the path to where to write the data
-        :return:
-        """
-        logger.info("acquiring debug data from router compressor crash")
-        io_errors, io_warnings = self._acquire_iobuf(
-            executable_targets, transceiver, provenance_file_path)
-        for warning in io_warnings:
-            logger.warn(warning)
-        for error in io_errors:
-            logger.error(error)
-
-    def _write_provenance_data(
-            self, duration, prov_items, provenance_file_path):
-        prov_items = self._create_provenance_data_item(duration, prov_items)
-        prov_writer = FrontEndCommonProvenanceXMLWriter()
-        prov_writer(prov_items, provenance_file_path)
-
-    @staticmethod
-    def _create_provenance_data_item(duration, prov_items):
-        names = ["on_chip_routing_table_compressor_run_time"]
-        prov_items.append(ProvenanceDataItem(names, str(duration)))
-        return prov_items
-
-    def _acquire_iobuf(self, executable_targets, transceiver,
-                       provenance_file_path):
-        """ Get the iobuf from the router compressor cores
-
-        :param executable_targets: the mapping between binary and cores
-        :param transceiver: the spinnman interface
-        :param provenance_file_path: the path to where to write the data
-        :return:
-        """
+        logger.info("Router compressor has failed")
         iobuf_extractor = FrontEndCommonChipIOBufExtractor()
         io_buffers, io_errors, io_warnings = iobuf_extractor(
             transceiver, True, executable_targets.all_core_subsets)
         self._write_iobuf(io_buffers, provenance_file_path)
-        return io_errors, io_warnings
+        for warning in io_warnings:
+            logger.warn(warning)
+        for error in io_errors:
+            logger.error(error)
+        transceiver.stop_application(compressor_app_id)
+        raise exceptions.SpinnFrontEndException(
+            "The router compressor failed to complete")
 
     @staticmethod
     def _write_iobuf(io_buffers, provenance_file_path):
@@ -260,7 +198,16 @@ class MundyOnChipRouterCompression(object):
         """
 
         # build core subsets
-        core_subsets = self._build_core_subsets(routing_tables, machine)
+        core_subsets = CoreSubsets()
+        for routing_table in routing_tables:
+
+            # get the first none monitor core
+            chip = machine.get_chip_at(routing_table.x, routing_table.y)
+            processor = chip.get_first_none_monitor_processor()
+
+            # add to the core subsets
+            core_subsets.add_processor(
+                routing_table.x, routing_table.y, processor.processor_id)
 
         # build binary path
         binary_path = os.path.join(
@@ -274,21 +221,23 @@ class MundyOnChipRouterCompression(object):
         transceiver.execute_application(executable_targets, compressor_app_id)
         return executable_targets
 
-    def _build_data(self, routing_table, app_id, store_on_sdram,
-                    compress_only_when_needed, use_default_target_length):
+    def _build_data(
+            self, routing_table, app_id, compress_only_when_needed,
+            compress_as_much_as_possible):
         """ convert the router table into the data needed by the router\
             compressor c code.
 
         :param routing_table: the pacman router table instance
         :param app_id: the app-id to load the entries in by
-        :param store_on_sdram: flag that says store the results in sdram
         :param compress_only_when_needed:\
-            flag that tells the c code to compress at all times or only when\
-            needed
-        :param use_default_target_length:\
-            flag that lets the compressor compress as far as possible, or only\
-            till it meets the router table available size.
-        :return: The byte array needed for spinnman
+            If True, the compressor will only compress if the table doesn't\
+            fit in the current router space, otherwise it will just load\
+            the table
+        :param compress_as_much_as_possible:\
+            If False, the compressor will only reduce the table until it fits\
+            in the router space, otherwise it will try to reduce until it\
+            until it can't reduce it any more
+        :return: The byte array of data
         """
 
         # write header data of the app id to load the data, if to store
@@ -297,8 +246,9 @@ class MundyOnChipRouterCompression(object):
         data = b''
         data += struct.pack("<I", app_id)
         data += struct.pack("<I", int(compress_only_when_needed))
-        data += struct.pack("<I", int(use_default_target_length))
-        data += struct.pack("<I", store_on_sdram)
+        data += struct.pack("<I", int(compress_as_much_as_possible))
+
+        # Write the size of the table
         data += struct.pack("<I", routing_table.number_of_entries)
 
         for entry in routing_table.multicast_routing_entries:
@@ -323,24 +273,3 @@ class MundyOnChipRouterCompression(object):
             return list(entry.link_ids)[0]
         else:
             return 0
-
-    @staticmethod
-    def _build_core_subsets(routing_tables, machine):
-        """ builds the mapping for a core on each chip to have a router\
-            compressor.
-
-        :param routing_tables: the routing tables to be loaded for compression
-        :param machine: the spinnaker machine representation
-        :return: a core subsets representing all the routing tables
-        """
-        core_sets = CoreSubsets()
-        for routing_table in routing_tables:
-
-            # get the first none monitor core
-            chip = machine.get_chip_at(routing_table.x, routing_table.y)
-            processor = chip.get_first_none_monitor_processor()
-
-            # add to the core subsets
-            core_sets.add_processor(routing_table.x, routing_table.y,
-                                    processor.processor_id)
-        return core_sets
