@@ -1,5 +1,6 @@
 from spinn_front_end_common.utilities import exceptions
 from spinnman.model.enums.cpu_state import CPUState
+import sys
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
@@ -91,6 +92,9 @@ class MundyOnChipRouterCompression(object):
                 executable_targets, transceiver, provenance_file_path,
                 compressor_app_id)
 
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            raise exc_type, exc_value, exc_traceback
+
         # Check if any cores have not completed successfully
         self._check_for_success(
             executable_targets, transceiver,
@@ -136,6 +140,10 @@ class MundyOnChipRouterCompression(object):
                         executable_targets, transceiver, provenance_file_path,
                         compressor_app_id)
 
+                    raise exceptions.SpinnFrontEndException(
+                        "The router compressor on {}, {} failed to complete"
+                        .format(x, y))
+
     def _handle_failure(
             self, executable_targets, transceiver, provenance_file_path,
             compressor_app_id):
@@ -158,8 +166,6 @@ class MundyOnChipRouterCompression(object):
             logger.error(error)
         transceiver.stop_application(compressor_app_id)
         transceiver.app_id_tracker.free_id(compressor_app_id)
-        raise exceptions.SpinnFrontEndException(
-            "The router compressor failed to complete")
 
     @staticmethod
     def _write_iobuf(io_buffers, provenance_file_path):
