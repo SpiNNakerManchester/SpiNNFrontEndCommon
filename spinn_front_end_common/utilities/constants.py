@@ -46,7 +46,8 @@ SDP_RUNNING_MESSAGE_CODES = Enum(
         ("SDP_STOP_ID_CODE", 6),
         ("SDP_NEW_RUNTIME_ID_CODE", 7),
         ("SDP_SWITCH_STATE", 8),
-        ("SDP_UPDATE_PROVENCE_REGION_AND_EXIT", 9)])
+        ("SDP_UPDATE_PROVENCE_REGION_AND_EXIT", 9),
+        ("SDP_CLEAR_IOBUF_CODE", 10)])
 
 
 # SDP port handling output buffering data streaming

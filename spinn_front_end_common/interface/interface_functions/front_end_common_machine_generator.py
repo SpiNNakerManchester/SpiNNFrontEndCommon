@@ -5,7 +5,6 @@ from spinnman.model.bmp_connection_data import BMPConnectionData
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities import helpful_functions
 
 # general imports
 import re
@@ -22,7 +21,6 @@ class FrontEndCommonMachineGenerator(object):
             board_version, auto_detect_bmp, enable_reinjection,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             max_sdram_size=None, max_core_id=None):
-
         """
         :param hostname: the hostname or ip address of the spinnaker machine
         :param bmp_details: the details of the BMP connections
@@ -42,7 +40,6 @@ class FrontEndCommonMachineGenerator(object):
         :param max_sdram_size: the maximum SDRAM each chip can say it has
                (mainly used in debugging purposes)
         :type max_sdram_size: int or None
-        :return: None
         """
 
         # if the end user gives you scamp data, use it and don't discover them
@@ -50,18 +47,13 @@ class FrontEndCommonMachineGenerator(object):
             scamp_connection_data = \
                 self._sort_out_scamp_connections(scamp_connection_data)
 
-        # sort out down chips and down cores if needed
-        ignored_chips, ignored_cores = \
-            helpful_functions.sort_out_downed_chips_cores(
-                downed_chips, downed_cores)
-
         # sort out BMP connections into list of strings
         bmp_connection_data = self._sort_out_bmp_string(bmp_details)
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname, bmp_connection_data=bmp_connection_data,
-            version=board_version, ignore_chips=ignored_chips,
-            ignore_cores=ignored_cores, auto_detect_bmp=auto_detect_bmp,
+            version=board_version, ignore_chips=downed_chips,
+            ignore_cores=downed_cores, auto_detect_bmp=auto_detect_bmp,
             boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
             max_sdram_size=max_sdram_size, max_core_id=max_core_id)

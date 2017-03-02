@@ -10,7 +10,6 @@ from spinnman.model.diagnostic_filter_source import DiagnosticFilterSource
 
 
 class FrontEndCommonRoutingTableLoader(object):
-
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
@@ -26,9 +25,9 @@ class FrontEndCommonRoutingTableLoader(object):
                 transceiver.clear_router_diagnostic_counters(router_table.x,
                                                              router_table.y)
 
-                # set the router diag for user 3 to catch local default routed
-                #  packets. This can only occur when the source router has no
-                #  router entry, and therefore should be detected a bad
+                # set the router diagnostic for user 3 to catch local default
+                # routed packets. This can only occur when the source router
+                # has no router entry, and therefore should be detected a bad
                 # dropped packet.
                 self._set_router_diagnostic_filters(
                     router_table.x, router_table.y, transceiver)
@@ -49,8 +48,7 @@ class FrontEndCommonRoutingTableLoader(object):
             constants.ROUTER_REGISTER_REGISTERS.USER_3.value,
             DiagnosticFilter(
                 enable_interrupt_on_counter_event=False,
-                match_emergency_routing_status_to_incoming_packet
-                =False,
+                match_emergency_routing_status_to_incoming_packet=False,
                 destinations=[],
                 sources=[DiagnosticFilterSource.LOCAL],
                 payload_statuses=[],
@@ -64,8 +62,7 @@ class FrontEndCommonRoutingTableLoader(object):
             constants.ROUTER_REGISTER_REGISTERS.USER_2.value,
             DiagnosticFilter(
                 enable_interrupt_on_counter_event=False,
-                match_emergency_routing_status_to_incoming_packet
-                =False,
+                match_emergency_routing_status_to_incoming_packet=False,
                 destinations=[],
                 sources=[DiagnosticFilterSource.NON_LOCAL],
                 payload_statuses=[],

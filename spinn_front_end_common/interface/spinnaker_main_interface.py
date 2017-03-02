@@ -229,6 +229,9 @@ class SpinnakerMainInterface(object):
 
         #
         "_app_data_top_simulation_folder",
+
+        # iobuf cores
+        "_cores_to_read_iobuf"
     ]
 
     def __init__(
@@ -375,7 +378,7 @@ class SpinnakerMainInterface(object):
         """ Sets up the outgoing folders (reports and app data) by creating\
             a new timestamp folder for each and clearing
 
-        :return:
+        :rtype: None
         """
 
         # set up reports default folder
@@ -403,8 +406,6 @@ class SpinnakerMainInterface(object):
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
-        :param hostname:
-        :return:
         """
         if hostname is not None:
             self._hostname = hostname
@@ -458,7 +459,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param run_time: the run duration in milliseconds.
-        :return: None
+        :rtype: None
         """
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -754,10 +755,12 @@ class SpinnakerMainInterface(object):
         if self._hostname is not None:
             inputs["IPAddress"] = self._hostname
             inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            inputs["DownedChipsDetails"] = self._config.get(
-                "Machine", "down_chips")
-            inputs["DownedCoresDetails"] = self._config.get(
-                "Machine", "down_cores")
+            down_chips, down_cores = \
+                helpful_functions.convert_string_info_chip_and_core_subsets(
+                    self._config.get("Machine", "down_chips"),
+                    self._config.get("Machine", "down_cores"))
+            inputs["DownedChipsDetails"] = down_chips
+            inputs["DownedCoresDetails"] = down_cores
             inputs["DownedLinksDetails"] = self._convert_down_links(
                 self._config.get("Machine", "down_links"))
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
@@ -1196,6 +1199,13 @@ class SpinnakerMainInterface(object):
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
+        inputs["CoresToExtractIOBufFrom"] = \
+            helpful_functions.translate_iobuf_extraction_elements(
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_binary_types"),
+                self._load_outputs["ExecutableTargets"],
+                self._executable_finder)
+
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
             algorithms = list(self._extra_pre_run_algorithms)
@@ -1204,7 +1214,9 @@ class SpinnakerMainInterface(object):
 
         # If we have run before, make sure to extract the data before the next
         # run
-        if self._has_ran and not self._has_reset_last:
+        if (self._has_ran and not self._has_reset_last and
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
             algorithms.append("FrontEndCommonBufferExtractor")
 
         if not self._use_virtual_board:
@@ -1230,6 +1242,16 @@ class SpinnakerMainInterface(object):
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
             algorithms += self._extra_post_run_algorithms
+
+            # add extractor of iobuf if supported
+            if (self._config.getboolean("Reports", "extract_iobuf") and
+                    self._config.getboolean(
+                        "Reports", "extract_iobuf_during_run")):
+                algorithms.append("FrontEndCommonChipIOBufExtractor")
+
+            # check if we need to clear the iobuf during runs
+            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
+                algorithms.append("FrontEndCommonChipIOBufClearer")
 
         executor = None
         try:
@@ -1279,6 +1301,13 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
+        # write iobuf to file if they exist
+        if (self._config.getboolean("Reports", "extract_iobuf") and
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
+            self._write_iobuf(executor.get_item("IOBuffers"))
+
+        # move data around
         self._last_run_outputs = executor.get_items()
         self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
@@ -1370,6 +1399,8 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonChipProvenanceUpdater")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
 
+            inputs["CoresToExtractIOBufFrom"] = e.failed_core_subsets
+
             # Get the other data
             algorithms.append("FrontEndCommonIOBufExtractor")
             algorithms.append("FrontEndCommonRouterProvenanceGatherer")
@@ -1401,8 +1432,17 @@ class SpinnakerMainInterface(object):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._last_run_outputs is not None and
                 not self._use_virtual_board):
+
             inputs = self._last_run_outputs
-            algorithms = ["FrontEndCommonIOBufExtractor"]
+            inputs["CoresToExtractIOBufFrom"] = \
+                helpful_functions.translate_iobuf_extraction_elements(
+                    self._config.get("Reports", "extract_iobuf_from_cores"),
+                    self._config.get(
+                        "Reports", "extract_iobuf_from_binary_types"),
+                    self._last_run_outputs["ExecutableTargets"])
+
+            algorithms = ["FrontEndCommonChipIOBufExtractor",
+                          "FrontEndCommonChipIOBufClearer"]
             outputs = ["IOBuffers"]
             executor = PACMANAlgorithmExecutor(
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,
@@ -1416,14 +1456,18 @@ class SpinnakerMainInterface(object):
             file_name = os.path.join(
                 self._provenance_file_path,
                 "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
-            count = 2
-            while os.path.exists(file_name):
-                file_name = os.path.join(
-                    self._provenance_file_path,
-                    "{}_{}_{}-{}.txt".format(iobuf.x, iobuf.y, iobuf.p, count))
-                count += 1
-            writer = open(file_name, "w")
+
+            # set mode of the file based off if the file already exists
+            mode = "w"
+            if os.path.exists(file_name):
+                mode = "a"
+
+            # open file and write iobuf to it.
+            writer = open(file_name, mode)
             writer.write(iobuf.iobuf)
+
+            # close file.
+            writer.flush()
             writer.close()
 
     @staticmethod
@@ -1515,18 +1559,10 @@ class SpinnakerMainInterface(object):
 
     @property
     def has_ran(self):
-        """
-
-        :return:
-        """
         return self._has_ran
 
     @property
     def machine_time_step(self):
-        """
-
-        :return:
-        """
         return self._machine_time_step
 
     @property
@@ -1539,73 +1575,40 @@ class SpinnakerMainInterface(object):
 
     @property
     def no_machine_time_steps(self):
-        """
-
-        :return:
-        """
         return self._no_machine_time_steps
 
     @property
     def timescale_factor(self):
-        """
-
-        :return:
-        """
         return self._time_scale_factor
 
     @property
     def machine_graph(self):
-        """
-
-        :return:
-        """
         return self._machine_graph
 
     @property
     def application_graph(self):
-        """
-
-        :return:
-        """
         return self._application_graph
 
     @property
     def routing_infos(self):
-        """
-
-        :return:
-        """
         return self._routing_infos
 
     @property
     def placements(self):
-        """
-
-        :return:
-        """
         return self._placements
 
     @property
     def transceiver(self):
-        """
-
-        :return:
-        """
         return self._txrx
 
     @property
     def graph_mapper(self):
-        """
-
-        :return:
-        """
         return self._graph_mapper
 
     @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
-        :return:
         """
         return self._buffer_manager
 
@@ -1613,7 +1616,6 @@ class SpinnakerMainInterface(object):
     def dsg_algorithm(self):
         """ The dsg algorithm used by the tools
 
-        :return:
         """
         return self._dsg_algorithm
 
@@ -1622,7 +1624,7 @@ class SpinnakerMainInterface(object):
         """ Set the dsg algorithm to be used by the tools
 
         :param new_dsg_algorithm: the new dsg algorithm name
-        :return:
+        :rtype: None
         """
         self._dsg_algorithm = new_dsg_algorithm
 
@@ -1655,10 +1657,6 @@ class SpinnakerMainInterface(object):
         return self._use_virtual_board
 
     def get_current_time(self):
-        """
-
-        :return:
-        """
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
@@ -1673,7 +1671,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param vertex_to_add: the vertex to add to the graph
-        :return: None
+        :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
         if (len(self._machine_graph.vertices) > 0 and
@@ -1691,8 +1689,8 @@ class SpinnakerMainInterface(object):
     def add_machine_vertex(self, vertex):
         """
 
-        :param vertex the vertex to add to the graph
-        :return: None
+        :param vertex: the vertex to add to the graph
+        :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
@@ -1713,7 +1711,7 @@ class SpinnakerMainInterface(object):
         :param edge_to_add:
         :param partition_identifier: the partition identifier for the outgoing
                     edge partition
-        :return:
+        :rtype: None
         """
 
         self._application_graph.add_edge(
@@ -1725,7 +1723,7 @@ class SpinnakerMainInterface(object):
         :param edge: the edge to add to the graph
         :param partition_id: the partition identifier for the outgoing
                     edge partition
-        :return:
+        :rtype: None
         """
         self._machine_graph.add_edge(edge, partition_id)
 
@@ -1810,7 +1808,7 @@ class SpinnakerMainInterface(object):
         :param extract_iobuf: tells the tools if it should try to \
             extract iobuf
         :type extract_iobuf: bool
-        :return: None
+        :rtype: None
         """
 
         if extract_provenance_data:
@@ -1824,9 +1822,16 @@ class SpinnakerMainInterface(object):
 
             # extract provenance data
             self._extract_provenance()
-        if extract_iobuf:
+
+        # only extract iobuf if it hasn't been extracted during run, and the
+        # end user has requested it
+        if (extract_iobuf and
+                not self._config.getboolean("Reports", "extract_iobuf") and
+                not self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
             self._extract_iobuf()
 
+        # shut down the tools.
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
 
@@ -1838,7 +1843,7 @@ class SpinnakerMainInterface(object):
         """
 
         :param socket_address:
-        :return:
+        :rtype: None
         """
         self._database_socket_addresses.add(socket_address)
 

@@ -1,0 +1,9 @@
+six
+enum34
+SpiNNMachine >= 3.0.0, < 4.0.0
+SpiNNStorageHandlers >= 3.0.0, < 4.0.0
+SpiNNaker_PACMAN >= 3.0.0, < 4.0.0
+SpiNNaker_DataSpecification >= 3.0.0, < 4.0.0
+spalloc >= v0.2.2, < v1.0.0
+requests >= 2.4.1
+numpy
