@@ -8,9 +8,6 @@ from spinn_front_end_common.mapping_algorithms \
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_chip_iobuf_extractor import \
     FrontEndCommonChipIOBufExtractor
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_load_executable_images import \
-    FrontEndCommonLoadExecutableImages
 from spinn_front_end_common.utilities.utility_objs. \
     provenance_data_item import ProvenanceDataItem
 
@@ -174,7 +171,7 @@ class MundyOnChipRouterCompression(object):
         self._get_debug_data(
             executable_targets, transceiver, provenance_file_path)
         self._write_provenance_data(duration, prov_items, provenance_file_path)
-        transceiver.stop_application(compressor_app_id)
+        # transceiver.stop_application(compressor_app_id)
         raise exceptions.SpinnFrontEndException(
             "The router compressor failed to complete")
 
@@ -274,13 +271,7 @@ class MundyOnChipRouterCompression(object):
         executable_targets = ExecutableTargets()
         executable_targets.add_subsets(binary_path, core_subsets)
 
-        executable_loader = FrontEndCommonLoadExecutableImages()
-        success = executable_loader(
-            executable_targets, compressor_app_id, transceiver, True)
-        if not success:
-            raise exceptions.ConfigurationException(
-                "The app loader failed to load the executable for router "
-                "compression.")
+        transceiver.execute_application(executable_targets, compressor_app_id)
         return executable_targets
 
     def _build_data(self, routing_table, app_id, store_on_sdram,
@@ -344,6 +335,7 @@ class MundyOnChipRouterCompression(object):
         """
         core_sets = CoreSubsets()
         for routing_table in routing_tables:
+
             # get the first none monitor core
             chip = machine.get_chip_at(routing_table.x, routing_table.y)
             processor = chip.get_first_none_monitor_processor()

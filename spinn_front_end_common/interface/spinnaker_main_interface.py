@@ -1104,6 +1104,10 @@ class SpinnakerMainInterface(object):
                 algorithms.append(
                     "FrontEndCommonApplicationGraphNetworkSpecificationReport")
 
+        # Add algorithm to clear routing tables and set up routing
+        if not self._use_virtual_board:
+            algorithms.append("FrontEndCommonRoutingSetup")
+
         # only add the partitioner if there isn't already a machine graph
         if (len(self._application_graph.vertices) > 0 and
                 len(self._machine_graph.vertices) == 0):
@@ -1846,8 +1850,12 @@ class SpinnakerMainInterface(object):
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board):
             inputs = self._last_run_outputs
-            algorithms = ["FrontEndCommonApplicationFinisher"]
+            algorithms = []
             outputs = []
+
+            if (self._executable_start_type ==
+                    ExecutableStartType.USES_SIMULATION_INTERFACE):
+                algorithms.append("FrontEndCommonApplicationFinisher")
 
             # add extractor of iobuf if needed
             if (self._config.getboolean("Reports", "extract_iobuf") and

@@ -283,6 +283,38 @@
             <param_type>LoadedRoutingTablesToken</param_type>
         </outputs>
     </algorithm>
+    <algorithm name="FrontEndCommonRoutingSetup">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_routing_setup</python_module>
+        <python_class>FrontEndCommonRoutingSetup</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>router_tables</param_name>
+                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>router_tables</param_name>
+            <param_name>app_id</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>machine</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>LoadedRoutingTablesToken</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="FrontEndCommonTagsLoader">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_tags_loader</python_module>
         <python_class>FrontEndCommonTagsLoader</python_class>

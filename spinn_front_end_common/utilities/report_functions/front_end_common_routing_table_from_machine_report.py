@@ -39,4 +39,4 @@ class FrontEndCommonRoutingTableFromMachineReport(object):
                 machine_routing_table.add_mutlicast_routing_entry(
                     multi_cast_entry)
 
-            reports.generate_routing_table(machine_routing_table, folder_name)
+            reports._generate_routing_table(machine_routing_table, folder_name)
