@@ -17,7 +17,7 @@ _LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6
 _FIRST_REGION_ADDRESS_OFFSET = 4 * 7
 
 # the number of data elements inside the recording region before
-# recording regions iszes are stored.
+# recording regions sizes are stored.
 _RECORDING_ELEMENTS_BEFORE_REGION_SIZES = 7
 
 # The Buffer traffic type
@@ -189,6 +189,9 @@ def get_recorded_region_sizes(
 
     # The size of each buffer is the actual size needed for the number of
     # timesteps, or the maximum for buffering if a maximum is specified
+    if n_machine_time_steps is None:
+        data = [0 for _ in buffered_sdram_per_timestep]
+        return data
     return [
         n_machine_time_steps * sdram
         if (maximum_sdram_for_buffering is None or
