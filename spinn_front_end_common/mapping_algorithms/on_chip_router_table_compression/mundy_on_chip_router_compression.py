@@ -157,6 +157,7 @@ class MundyOnChipRouterCompression(object):
         for error in io_errors:
             logger.error(error)
         transceiver.stop_application(compressor_app_id)
+        transceiver.app_id_tracker.free_id(compressor_app_id)
         raise exceptions.SpinnFrontEndException(
             "The router compressor failed to complete")
 
