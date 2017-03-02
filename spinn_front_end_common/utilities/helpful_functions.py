@@ -8,10 +8,6 @@ from spinn_front_end_common.utilities import report_functions as \
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common import mapping_algorithms
 
-# spinnman imports
-from spinnman.model.executable_targets \
-    import ExecutableTargets
-
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.core_subset import CoreSubset
@@ -383,37 +379,6 @@ def _handle_model_binaries(
         for core_subset in core_subsets:
             cores.add_core_subset(core_subset)
     return cores
-
-
-def get_executables_by_run_type(
-        executable_targets, placements, graph_mapper, type_to_find):
-    """ Get executables by the type of the vertices
-    """
-
-    # Divide executables by type
-    matching_executables = ExecutableTargets()
-    other_executables = ExecutableTargets()
-    for binary in executable_targets.binaries:
-        core_subsets = executable_targets.get_cores_for_binary(binary)
-        for core_subset in core_subsets:
-            for p in core_subset.processor_ids:
-                vertex = placements.get_vertex_on_processor(
-                    core_subset.x, core_subset.y, p)
-                is_of_type = False
-                if isinstance(vertex, type_to_find):
-                    matching_executables.add_processor(
-                        binary, core_subset.x, core_subset.y, p)
-                    is_of_type = True
-                elif graph_mapper is not None:
-                    assoc_vertex = graph_mapper.get_application_vertex(vertex)
-                    if isinstance(assoc_vertex, type_to_find):
-                        matching_executables.add_processor(
-                            binary, core_subset.x, core_subset.y, p)
-                        is_of_type = True
-                if not is_of_type:
-                    other_executables.add_processor(
-                        binary, core_subset.x, core_subset.y, p)
-    return matching_executables, other_executables
 
 
 def read_config(config, section, item):
