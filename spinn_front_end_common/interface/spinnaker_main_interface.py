@@ -1534,12 +1534,13 @@ class SpinnakerMainInterface(object):
                         changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
-            for edge in self._application_graph.edges:
-                if isinstance(edge, AbstractChangableAfterRun):
-                    if edge.requires_mapping:
-                        changed = True
-                    if reset_flags:
-                        edge.mark_no_changes()
+            for partition in self._application_graph.outgoing_edge_partitions:
+                for edge in partition.edges:
+                    if isinstance(edge, AbstractChangableAfterRun):
+                        if edge.requires_mapping:
+                            changed = True
+                        if reset_flags:
+                            edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
         elif len(self._machine_graph.vertices) != 0:
@@ -1549,12 +1550,13 @@ class SpinnakerMainInterface(object):
                         changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
-            for machine_edge in self._machine_graph.edges:
-                if isinstance(machine_edge, AbstractChangableAfterRun):
-                    if machine_edge.requires_mapping:
-                        changed = True
-                    if reset_flags:
-                        machine_edge.mark_no_changes()
+            for partition in self._machine_graph.outgoing_edge_partitions:
+                for machine_edge in partition.edges:
+                    if isinstance(machine_edge, AbstractChangableAfterRun):
+                        if machine_edge.requires_mapping:
+                            changed = True
+                        if reset_flags:
+                            machine_edge.mark_no_changes()
         return changed
 
     @property
