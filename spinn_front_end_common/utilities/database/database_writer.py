@@ -193,7 +193,7 @@ class DatabaseWriter(object):
                             .format(vertex.label, vertex.n_atoms, sys.maxint))
 
             # add edges
-            vertices = application_graph.vertices
+            vertices = list(application_graph.vertices)
             for vertex in application_graph.vertices:
                 for edge in application_graph.\
                         get_edges_starting_at_vertex(vertex):
@@ -603,7 +603,7 @@ class DatabaseWriter(object):
                 " REFERENCES Machine_vertices(vertex_id))")
 
             if (application_graph is not None and
-                    len(application_graph.vertices) != 0):
+                    application_graph.n_vertices != 0):
 
                 # insert into table
                 vertices = list(application_graph.vertices)
