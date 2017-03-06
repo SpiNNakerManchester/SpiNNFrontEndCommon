@@ -21,7 +21,6 @@ class FrontEndCommonMemoryMapOnChipReport(object):
             self, report_default_directory, dsg_targets, transceiver,
             loaded_app_data_token):
         """ creates a report that states where in sdram each region is
-        (read from machine)
 
         :param report_default_directory: the folder where reports are written
         :param dsg_targets: the map between placement and file writer

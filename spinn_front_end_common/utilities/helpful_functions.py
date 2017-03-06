@@ -34,7 +34,7 @@ def get_valid_components(module, terminator):
 
     :param module:
     :param terminator:
-    :return:
+    :rtype: dict
     """
     terminator = re.compile(terminator + '$')
     return dict(map(lambda (name, router): (terminator.sub('', name),
@@ -68,7 +68,6 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type placement: pacman.model.placements.placement.Placement
     :param transceiver: the python interface to the spinnaker machine
     :type transceiver: spiNNMan.transciever.Transciever
-    :return: None
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
@@ -302,7 +301,6 @@ def get_cores_in_state(all_core_subsets, states, txrx):
     :param all_core_subsets:
     :param states:
     :param txrx:
-    :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_in_state = OrderedDict()
@@ -324,7 +322,6 @@ def get_cores_not_in_state(all_core_subsets, states, txrx):
     :param all_core_subsets:
     :param states:
     :param txrx:
-    :return:
     """
     core_infos = txrx.get_cpu_information(all_core_subsets)
     cores_not_in_state = OrderedDict()
@@ -363,14 +360,14 @@ def get_core_subsets(core_infos):
     return core_subsets
 
 
-def sort_out_downed_chips_cores(downed_chips, downed_cores):
+def convert_string_info_chip_and_core_subsets(downed_chips, downed_cores):
     """ Translate the down cores and down chips string into a form that \
         spinnman can understand
 
     :param downed_cores: string representing down cores
-    :type downed_cores: str
+    :type downed_cores: str or None
     :param downed_chips: string representing down chips
-    :type: downed_chips: str
+    :type downed_chips: str or None
     :return: a list of down cores and down chips in processor and \
             core subset format
     """
@@ -391,6 +388,70 @@ def sort_out_downed_chips_cores(downed_chips, downed_cores):
     return ignored_chips, ignored_cores
 
 
+def translate_iobuf_extraction_elements(
+        hard_coded_cores, hard_coded_model_binary, executable_targets,
+        executable_finder):
+    """
+
+    :param hard_coded_cores: list of cores to read iobuf from
+    :param hard_coded_model_binary: list of binary names to read iobuf from
+    :param executable_targets: the targets of cores and executable binaries
+    :param executable_finder: where to find binaries paths from binary names
+    :return: core subsets for the cores to read iobuf from
+    """
+    # all the cores
+    if hard_coded_cores == "ALL" and hard_coded_model_binary == "None":
+        return executable_targets.all_core_subsets
+
+    # some hard coded cores
+    if hard_coded_cores != "None" and hard_coded_model_binary == "None":
+        _, ignored_cores = convert_string_info_chip_and_core_subsets(
+            None, hard_coded_cores)
+        return ignored_cores
+
+    # some binaries
+    if hard_coded_cores == "None" and hard_coded_model_binary != "None":
+        return _handle_model_binaries(
+            hard_coded_model_binary, executable_targets, executable_finder)
+
+    # nothing
+    if hard_coded_cores == "None" and hard_coded_model_binary == "None":
+        return CoreSubsets()
+
+    # bit of both
+    if hard_coded_cores != "None" and hard_coded_model_binary != "None":
+        model_core_subsets = _handle_model_binaries(
+            hard_coded_model_binary, executable_targets, executable_finder)
+        _, hard_coded_core_core_subsets = \
+            convert_string_info_chip_and_core_subsets(None, hard_coded_cores)
+        for core_subset in hard_coded_core_core_subsets:
+            model_core_subsets.add_core_subset(core_subset)
+        return model_core_subsets
+
+    # should never get here,
+    raise exceptions.ConfigurationException("Something odd has happened")
+
+
+def _handle_model_binaries(
+        hard_coded_model_binary, executable_targets, executable_finder):
+    """
+    :param hard_coded_model_binary: list of binary names to read iobuf from
+    :param executable_targets: the targets of cores and executable binaries
+    :param executable_finder: where to find binaries paths from binary names
+    :return: core subsets from binaries that need iobuf to be read from them
+    """
+    model_binaries = hard_coded_model_binary.split(",")
+    cores = CoreSubsets()
+    for model_binary in model_binaries:
+        model_binary_path = \
+            executable_finder.get_executable_path(model_binary)
+        core_subsets = \
+            executable_targets.get_cores_for_binary(model_binary_path)
+        for core_subset in core_subsets:
+            cores.add_core_subset(core_subset)
+    return cores
+
+
 def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
     """
 
@@ -398,7 +459,7 @@ def wait_for_cores_to_be_ready(executable_targets, app_id, txrx, sync_state):
     :param app_id: the app id that being used by the simulation
     :param txrx: the python interface to the spinnaker machine
     :param sync_state: The expected state once the applications are ready
-    :return:
+    :rtype: None
     """
 
     total_processors = executable_targets.total_processors

@@ -33,17 +33,16 @@ class FrontEndCommonHostExecuteDataSpecification(object):
 
         :param hostname: spinnaker machine name
         :param report_default_directory: the location where reports are stored
-        :param write_text_specs: the bool flag that dicates if the human
-        readable forms of the dsg are written
-        :param runtime_application_data_folder: the folder where application
-         data is stored. In this case, the dsg data
-        :param machine: the python represnetaiton of the spinnaker machine
+        :param write_text_specs:\
+            True if the textual version of the specification is to be written
+        :param runtime_application_data_folder:\
+            Folder where data specifications should be written to
+        :param machine: the python representation of the spinnaker machine
         :param transceiver: the spinnman instance
-        :param app_id: the appid of the simulation
+        :param app_id: the application ID of the simulation
         :param dsg_targets: map of placement to file path
-        vertices
 
-        :return: map of placement and dsg data, and loaded ap data flag.
+        :return: map of placement and dsg data, and loaded data flag.
         """
 
         data = self.host_based_data_specification_execution(
@@ -57,21 +56,20 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             self, hostname, transceiver, write_text_specs,
             application_data_runtime_folder, machine, report_default_directory,
             app_id, dsg_targets):
-        """ executes the dse
+        """ executes the DSE
 
         :param hostname: spinnaker machine name
         :param report_default_directory: the location where reports are stored
-        :param write_text_specs: the bool flag that dicates if the human
-        readable forms of the dsg are written
-        :param runtime_application_data_folder: the folder where application
-         data is stored. In this case, the dsg data
-        :param machine: the python represnetaiton of the spinnaker machine
+        :param write_text_specs:\
+            True if the textual version of the specification is to be written
+        :param runtime_application_data_folder:\
+            Folder where data specifications should be written to
+        :param machine: the python representation of the spinnaker machine
         :param transceiver: the spinnman instance
-        :param app_id: the appid of the simulation
+        :param app_id: the application ID of the simulation
         :param dsg_targets: map of placement to file path
-        vertices
 
-        :return: map of placement and dsg data, and loaded ap data flag.
+        :return: map of placement and dsg data, and loaded data flag.
         """
         processor_to_app_data_base_address = dict()
 
@@ -169,10 +167,10 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             write_text_specs, report_default_directory, hostname, x, y, p):
         """  generates a writer for the human readable report of the dsg
 
-        :param write_text_specs: bool stating if the human readable reports
-        should be generated
-        :param report_default_directory: directroy where reprots are to be
-        written
+        :param write_text_specs:\
+            True if the textual version of the specification is to be written
+        :param report_default_directory:\
+            Folder where reports are to be written
         :param hostname: machine name
         :param x: chip coord in x axis
         :param y: chip coord in y axis
@@ -205,7 +203,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         :param processor_chip_y: chip coord in y axis
         :param processor_id: processor id
         :param hostname: machine name
-        :param application_run_time_folder: folder to store applciation data
+        :param application_run_time_folder: folder to store application data
         :return: name of file to store dsg data
         """
 

@@ -39,18 +39,19 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             self, placements, graph, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder, machine, graph_mapper=None):
-        """ generates the dsg for the graph.
+        """
+
         :param placements: placements of machine graph to cores
-        :param graph: applciation graph
+        :param graph: application graph
         :param hostname: spinnaker machine name
         :param report_default_directory: the location where reports are stored
-        :param write_text_specs: the bool flag that dicates if the human
-        readable forms of the dsg are written
-        :param app_data_runtime_folder: the folder where application data is
-        stored. In this case, the dsg data
-        :param machine: the python represnetaiton of the spinnaker machine
-        :param graph_mapper: the mapping between applciation and machine
-        vertices
+        :param write_text_specs:\
+            True if the textual version of the specification is to be written
+        :param app_data_runtime_folder:\
+            Folder where data specifications should be written to
+        :param machine: the python representation of the spinnaker machine
+        :param graph_mapper:\
+            the mapping between application and machine graph
 
         :return: dsg targets (map of placement tuple and filename)
         """
@@ -72,8 +73,8 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 progress_bar.update()
             progress_bar.end()
         elif isinstance(graph, MachineGraph):
-            progress_bar = ProgressBar(len(list(graph.vertices)),
-                                       "Generating data specifications")
+            progress_bar = ProgressBar(
+                graph.n_vertices, "Generating data specifications")
             for vertex in graph.vertices:
                 placement = placements.get_placement_of_vertex(vertex)
                 self._generate_data_spec_for_vertices(
@@ -95,13 +96,12 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         :param associated_vertex: the specific vertex to write dsg for.
         :param hostname: spinnaker machine name
         :param report_default_directory: the location where reports are stored
-        :param write_text_specs: the bool flag that dicates if the human
-        readable forms of the dsg are written
-        :param app_data_runtime_folder: the folder where application data is
-        stored. In this case, the dsg data
-        :param machine: the python represnetaiton of the spinnaker machine
-        :param graph_mapper: the mapping between applciation and machine
-        vertices
+        :param write_text_specs:\
+            True if the textual version of the specification is to be written
+        :param app_data_runtime_folder: \
+            Folder where data specifications should be written to
+        :param machine: the python representation of the spinnaker machine
+        :param graph_mapper: the mapping between application and machine graph
         :return: None
         """
 
