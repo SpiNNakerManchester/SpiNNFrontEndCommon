@@ -194,6 +194,7 @@ class DatabaseWriter(object):
 
             # add edges
             vertices = list(application_graph.vertices)
+            edges = list(application_graph.edges)
             for vertex in application_graph.vertices:
                 for edge in application_graph.\
                         get_edges_starting_at_vertex(vertex):
@@ -208,8 +209,6 @@ class DatabaseWriter(object):
             # update graph
             edge_id_offset = 0
             for vertex in application_graph.vertices:
-                edges = application_graph.get_edges_starting_at_vertex(
-                    vertex)
                 for edge in application_graph.\
                         get_edges_starting_at_vertex(vertex):
                     cur.execute(
@@ -218,7 +217,6 @@ class DatabaseWriter(object):
                         " VALUES({}, {})"
                         .format(vertices.index(vertex) + 1,
                                 edges.index(edge) + edge_id_offset))
-                edge_id_offset += len(edges)
             connection.commit()
             connection.close()
         except Exception:
