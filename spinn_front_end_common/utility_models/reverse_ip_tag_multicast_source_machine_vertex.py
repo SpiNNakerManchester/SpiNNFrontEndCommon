@@ -485,9 +485,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             else:
                 partitions = machine_graph\
                     .get_outgoing_edge_partitions_starting_at_vertex(self)
-                if len(partitions) == 1:
+                partition = next(iter(partitions), None)
+
+                if partition is not None:
                     rinfo = routing_info.get_routing_info_from_partition(
-                        partitions[0])
+                        partition)
                     self._virtual_key = rinfo.first_key
                     self._mask = rinfo.first_mask
 

@@ -36,7 +36,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
             # generate progress bar
             progress_bar = ProgressBar(
-                len(machine_graph.vertices),
+                machine_graph.n_vertices,
                 "Getting the number of keys required by each edge using the"
                 "application graph")
 
@@ -62,7 +62,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
             # generate progress bar
             progress_bar = ProgressBar(
-                len(machine_graph.vertices),
+                machine_graph.n_vertices,
                 "Getting the number of keys required by each edge using the"
                 "machine graph")
 

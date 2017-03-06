@@ -67,8 +67,8 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 progress_bar.update()
             progress_bar.end()
         elif isinstance(graph, MachineGraph):
-            progress_bar = ProgressBar(len(list(graph.vertices)),
-                                       "Generating data specifications")
+            progress_bar = ProgressBar(
+                graph.n_vertices, "Generating data specifications")
             for vertex in graph.vertices:
                 placement = placements.get_placement_of_vertex(vertex)
                 self._generate_data_spec_for_vertices(
