@@ -17,8 +17,7 @@ class FrontEndCommonGraphBinaryGatherer(object):
 
         executable_targets = ExecutableTargets()
         binary_start_type = None
-        progress_bar = ProgressBar(
-            len(list(graph.vertices)), "Finding binaries")
+        progress_bar = ProgressBar(graph.n_vertices, "Finding binaries")
         for vertex in graph.vertices:
             placement = placements.get_placement_of_vertex(vertex)
             placement_binary_start_type = self._get_binary(

@@ -228,8 +228,8 @@ class ReverseIpTagMultiCastSource(
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
-        return partition.edges[0].pre_vertex.\
-            get_outgoing_partition_constraints(partition)
+        return partition.pre_vertex.get_outgoing_partition_constraints(
+            partition)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
