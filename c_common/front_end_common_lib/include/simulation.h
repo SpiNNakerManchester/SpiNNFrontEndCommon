@@ -30,6 +30,7 @@ typedef enum provenance_data_elements{
 
 typedef enum simulation_commands{
     CMD_STOP = 6, CMD_RUNTIME = 7, PROVENANCE_DATA_GATHERING = 8,
+    IOBUF_CLEAR = 9
 } simulation_commands;
 
 //! the definition of the callback used by provenance data functions

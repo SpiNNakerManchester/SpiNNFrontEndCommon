@@ -5,7 +5,6 @@ from spinnman.model.bmp_connection_data import BMPConnectionData
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities import helpful_functions
 
 # general imports
 import re
@@ -48,18 +47,13 @@ class FrontEndCommonMachineGenerator(object):
             scamp_connection_data = \
                 self._sort_out_scamp_connections(scamp_connection_data)
 
-        # sort out down chips and down cores if needed
-        ignored_chips, ignored_cores, ignored_links = \
-            helpful_functions.sort_out_downed_chips_cores_links(
-                downed_chips, downed_cores, downed_links)
-
         # sort out BMP connections into list of strings
         bmp_connection_data = self._sort_out_bmp_string(bmp_details)
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname, bmp_connection_data=bmp_connection_data,
-            version=board_version, ignore_chips=ignored_chips,
-            ignore_cores=ignored_cores, ignored_links=ignored_links,
+            version=board_version, ignore_chips=downed_chips,
+            ignore_cores=downed_cores, ignored_links=downed_links,
             auto_detect_bmp=auto_detect_bmp,
             boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,

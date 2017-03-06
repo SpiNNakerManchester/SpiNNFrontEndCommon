@@ -197,7 +197,8 @@ class DatabaseWriter(object):
                             .format(vertex.label, vertex.n_atoms, sys.maxint))
 
             # add edges
-            vertices = application_graph.vertices
+            vertices = list(application_graph.vertices)
+            edges = list(application_graph.edges)
             for vertex in application_graph.vertices:
                 for edge in application_graph.\
                         get_edges_starting_at_vertex(vertex):
@@ -212,8 +213,6 @@ class DatabaseWriter(object):
             # update graph
             edge_id_offset = 0
             for vertex in application_graph.vertices:
-                edges = application_graph.get_edges_starting_at_vertex(
-                    vertex)
                 for edge in application_graph.\
                         get_edges_starting_at_vertex(vertex):
                     cur.execute(
@@ -222,7 +221,6 @@ class DatabaseWriter(object):
                         " VALUES({}, {})"
                         .format(vertices.index(vertex) + 1,
                                 edges.index(edge) + edge_id_offset))
-                edge_id_offset += len(edges)
             connection.commit()
             connection.close()
         except Exception:
@@ -331,7 +329,8 @@ class DatabaseWriter(object):
 
             # add machine edges
             machine_vertices = list(machine_graph.vertices)
-            for edge in machine_graph.edges:
+            machine_edges = list(machine_graph.edges)
+            for edge in machine_edges:
                 cur.execute(
                     "INSERT INTO Machine_edges ("
                     "pre_vertex, post_vertex, label) "
@@ -341,20 +340,14 @@ class DatabaseWriter(object):
                             edge.label))
 
             # add to machine graph
-            edge_id_offset = 0
-            edges = list(machine_graph.edges)
             for vertex in machine_graph.vertices:
-                edges = machine_graph.\
-                    get_edges_starting_at_vertex(vertex)
-                for edge in machine_graph.\
-                        get_edges_starting_at_vertex(vertex):
+                for edge in machine_graph.get_edges_starting_at_vertex(vertex):
                     cur.execute(
                         "INSERT INTO Machine_graph ("
                         "vertex_id, edge_id)"
                         " VALUES({}, {});"
                         .format(machine_vertices.index(vertex) + 1,
-                                edges.index(edge) + 1 + edge_id_offset))
-                edge_id_offset += len(edges)
+                                machine_edges.index(edge) + 1))
 
             if application_graph is not None:
 
@@ -380,11 +373,10 @@ class DatabaseWriter(object):
                     " REFERENCES Application_edges(edge_id))")
 
                 # add mapper for vertex
-                machine_vertices = list(machine_graph.vertices)
-                app_vertices = application_graph.vertices
-                for machine_vertex in machine_graph.vertices:
-                    app_vertex = \
-                        graph_mapper.get_application_vertex(machine_vertex)
+                app_vertices = list(application_graph.vertices)
+                for machine_vertex in machine_vertices:
+                    app_vertex = graph_mapper.get_application_vertex(
+                        machine_vertex)
                     vertex_slice = graph_mapper.get_slice(machine_vertex)
                     cur.execute(
                         "INSERT INTO graph_mapper_vertex ("
@@ -396,16 +388,15 @@ class DatabaseWriter(object):
                                 vertex_slice.lo_atom, vertex_slice.hi_atom))
 
                 # add graph_mapper edges
-                edges = application_graph.edges
-                for edge in machine_graph.edges:
-                    app_edge = graph_mapper.\
-                        get_application_edge(edge)
+                app_edges = list(application_graph.edges)
+                for edge in machine_edges:
+                    app_edge = graph_mapper.get_application_edge(edge)
                     cur.execute(
                         "INSERT INTO graph_mapper_edges ("
                         "application_edge_id, machine_edge_id) "
                         "VALUES({}, {})"
-                        .format(machine_graph.edges.index(edge) + 1,
-                                edges.index(app_edge) + 1))
+                        .format(machine_edges.index(edge) + 1,
+                                app_edges.index(app_edge) + 1))
 
             connection.commit()
             connection.close()
@@ -614,7 +605,7 @@ class DatabaseWriter(object):
                 " REFERENCES Machine_vertices(vertex_id))")
 
             if (application_graph is not None and
-                    len(application_graph.vertices) != 0):
+                    application_graph.n_vertices != 0):
 
                 # insert into table
                 vertices = list(application_graph.vertices)

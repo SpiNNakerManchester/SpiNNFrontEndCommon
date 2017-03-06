@@ -248,7 +248,10 @@ class SpinnakerMainInterface(object):
         "_command_sender",
 
         # Run for infinite time
-        "_infinite_run"
+        "_infinite_run",
+
+        # iobuf cores
+        "_cores_to_read_iobuf"
     ]
 
     def __init__(
@@ -531,7 +534,7 @@ class SpinnakerMainInterface(object):
                 self._add_commands_to_command_sender()
 
             # Reset the machine graph if there is an application graph
-            if len(self._application_graph.vertices) > 0:
+            if self._application_graph.n_vertices > 0:
                 self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
 
@@ -797,9 +800,9 @@ class SpinnakerMainInterface(object):
         outputs = list()
 
         # add the application and machine graphs as needed
-        if len(self._application_graph.vertices) > 0:
+        if self._application_graph.n_vertices > 0:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif len(self._machine_graph.vertices) > 0:
+        elif self._machine_graph.n_vertices > 0:
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         # add reinjection flag
@@ -820,12 +823,14 @@ class SpinnakerMainInterface(object):
         if self._hostname is not None:
             inputs["IPAddress"] = self._hostname
             inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            inputs["DownedChipsDetails"] = self._config.get(
-                "Machine", "down_chips")
-            inputs["DownedCoresDetails"] = self._config.get(
-                "Machine", "down_cores")
-            inputs["DownedLinksDetails"] = self._config.get(
-                "Machine", "down_links")
+            down_chips, down_cores, down_links = \
+                helpful_functions.sort_out_downed_chips_cores_links(
+                    self._config.get("Machine", "down_chips"),
+                    self._config.get("Machine", "down_cores"),
+                    self._config.get("Machine", "down_links"))
+            inputs["DownedChipsDetails"] = down_chips
+            inputs["DownedCoresDetails"] = down_cores
+            inputs["DownedLinksDetails"] = down_links
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
@@ -918,8 +923,8 @@ class SpinnakerMainInterface(object):
                     algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
                     need_virtual_board = True
 
-            if (len(self._application_graph.vertices) == 0 and
-                    len(self._machine_graph.vertices) == 0 and
+            if (self._application_graph.n_vertices == 0 and
+                    self._machine_graph.n_vertices == 0 and
                     need_virtual_board):
                 raise common_exceptions.ConfigurationException(
                     "A allocated machine has been requested but there are no"
@@ -940,7 +945,7 @@ class SpinnakerMainInterface(object):
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
                 # the graph
-                if len(self._application_graph.vertices) != 0:
+                if self._application_graph.n_vertices != 0:
                     inputs["MemoryApplicationGraph"] = \
                         self._application_graph
                     algorithms.extend(self._config.get(
@@ -949,7 +954,7 @@ class SpinnakerMainInterface(object):
                     outputs.append("MemoryMachineGraph")
                     outputs.append("MemoryGraphMapper")
                     do_partitioning = True
-                elif len(self._machine_graph.vertices) != 0:
+                elif self._machine_graph.n_vertices != 0:
                     inputs["MemoryMachineGraph"] = self._machine_graph
                     algorithms.append("FrontEndCommonGraphMeasurer")
             else:
@@ -1015,10 +1020,10 @@ class SpinnakerMainInterface(object):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if (len(self._application_graph.vertices) > 0 and
+        if (self._application_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif len(self._machine_graph.vertices) > 0:
+        elif self._machine_graph.n_vertices > 0:
             inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
@@ -1087,14 +1092,14 @@ class SpinnakerMainInterface(object):
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
                     "Reports", "writePartitionerReports") and
-                    len(self._application_graph.vertices) != 0):
+                    self._application_graph.n_vertices != 0):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with application graph when
             # there's application vertices
             if (self._config.getboolean(
                     "Reports", "writeApplicationGraphPlacerReport") and
-                    len(self._application_graph.vertices) != 0):
+                    self._application_graph.n_vertices != 0):
                 algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
@@ -1105,13 +1110,13 @@ class SpinnakerMainInterface(object):
             # application vertices.
             if (self._config.getboolean(
                     "Reports", "writeNetworkSpecificationReport") and
-                    len(self._application_graph.vertices) != 0):
+                    self._application_graph.n_vertices != 0):
                 algorithms.append(
                     "FrontEndCommonApplicationGraphNetworkSpecificationReport")
 
         # only add the partitioner if there isn't already a machine graph
-        if (len(self._application_graph.vertices) > 0 and
-                len(self._machine_graph.vertices) == 0):
+        if (self._application_graph.n_vertices > 0 and
+                self._machine_graph.n_vertices == 0):
             algorithms.extend(self._config.get(
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
@@ -1124,7 +1129,7 @@ class SpinnakerMainInterface(object):
             "MemoryTags", "MemoryRoutingInfos",
             "MemoryMachineGraph", "BufferManager"
         ]
-        if len(self._application_graph.vertices) > 0:
+        if self._application_graph.n_vertices > 0:
             outputs.append("MemoryGraphMapper")
 
         # Create a buffer manager if there isn't one already
@@ -1231,6 +1236,13 @@ class SpinnakerMainInterface(object):
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
+        inputs["CoresToExtractIOBufFrom"] = \
+            helpful_functions.translate_iobuf_extraction_elements(
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_binary_types"),
+                self._load_outputs["ExecutableTargets"],
+                self._executable_finder)
+
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
             algorithms = list(self._extra_pre_run_algorithms)
@@ -1239,7 +1251,9 @@ class SpinnakerMainInterface(object):
 
         # If we have run before, make sure to extract the data before the next
         # run
-        if self._has_ran and not self._has_reset_last:
+        if (self._has_ran and not self._has_reset_last and
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
             algorithms.append("FrontEndCommonBufferExtractor")
 
         if not self._use_virtual_board:
@@ -1265,6 +1279,16 @@ class SpinnakerMainInterface(object):
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
             algorithms += self._extra_post_run_algorithms
+
+            # add extractor of iobuf if supported
+            if (self._config.getboolean("Reports", "extract_iobuf") and
+                    self._config.getboolean(
+                        "Reports", "extract_iobuf_during_run")):
+                algorithms.append("FrontEndCommonChipIOBufExtractor")
+
+            # check if we need to clear the iobuf during runs
+            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
+                algorithms.append("FrontEndCommonChipIOBufClearer")
 
         executor = None
         try:
@@ -1314,6 +1338,13 @@ class SpinnakerMainInterface(object):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
+        # write iobuf to file if they exist
+        if (self._config.getboolean("Reports", "extract_iobuf") and
+                self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
+            self._write_iobuf(executor.get_item("IOBuffers"))
+
+        # move data around
         self._last_run_outputs = executor.get_items()
         self._current_run_timesteps = total_run_timesteps
         self._last_run_outputs = executor.get_items()
@@ -1405,6 +1436,8 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonChipProvenanceUpdater")
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
 
+            inputs["CoresToExtractIOBufFrom"] = e.failed_core_subsets
+
             # Get the other data
             algorithms.append("FrontEndCommonIOBufExtractor")
             algorithms.append("FrontEndCommonRouterProvenanceGatherer")
@@ -1436,8 +1469,17 @@ class SpinnakerMainInterface(object):
         if (self._config.getboolean("Reports", "extract_iobuf") and
                 self._last_run_outputs is not None and
                 not self._use_virtual_board):
+
             inputs = self._last_run_outputs
-            algorithms = ["FrontEndCommonIOBufExtractor"]
+            inputs["CoresToExtractIOBufFrom"] = \
+                helpful_functions.translate_iobuf_extraction_elements(
+                    self._config.get("Reports", "extract_iobuf_from_cores"),
+                    self._config.get(
+                        "Reports", "extract_iobuf_from_binary_types"),
+                    self._last_run_outputs["ExecutableTargets"])
+
+            algorithms = ["FrontEndCommonChipIOBufExtractor",
+                          "FrontEndCommonChipIOBufClearer"]
             outputs = ["IOBuffers"]
             executor = PACMANAlgorithmExecutor(
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,
@@ -1451,14 +1493,18 @@ class SpinnakerMainInterface(object):
             file_name = os.path.join(
                 self._provenance_file_path,
                 "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
-            count = 2
-            while os.path.exists(file_name):
-                file_name = os.path.join(
-                    self._provenance_file_path,
-                    "{}_{}_{}-{}.txt".format(iobuf.x, iobuf.y, iobuf.p, count))
-                count += 1
-            writer = open(file_name, "w")
+
+            # set mode of the file based off if the file already exists
+            mode = "w"
+            if os.path.exists(file_name):
+                mode = "a"
+
+            # open file and write iobuf to it.
+            writer = open(file_name, mode)
             writer.write(iobuf.iobuf)
+
+            # close file.
+            writer.flush()
             writer.close()
 
     @staticmethod
@@ -1518,34 +1564,36 @@ class SpinnakerMainInterface(object):
         changed = False
 
         # if application graph is filled, check their changes
-        if len(self._application_graph.vertices) != 0:
+        if self._application_graph.n_vertices != 0:
             for vertex in self._application_graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
-            for edge in self._application_graph.edges:
-                if isinstance(edge, AbstractChangableAfterRun):
-                    if edge.requires_mapping:
-                        changed = True
-                    if reset_flags:
-                        edge.mark_no_changes()
+            for partition in self._application_graph.outgoing_edge_partitions:
+                for edge in partition.edges:
+                    if isinstance(edge, AbstractChangableAfterRun):
+                        if edge.requires_mapping:
+                            changed = True
+                        if reset_flags:
+                            edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
-        elif len(self._machine_graph.vertices) != 0:
+        elif self._machine_graph.n_vertices != 0:
             for machine_vertex in self._machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
-            for machine_edge in self._machine_graph.edges:
-                if isinstance(machine_edge, AbstractChangableAfterRun):
-                    if machine_edge.requires_mapping:
-                        changed = True
-                    if reset_flags:
-                        machine_edge.mark_no_changes()
+            for partition in self._machine_graph.outgoing_edge_partitions:
+                for machine_edge in partition.edges:
+                    if isinstance(machine_edge, AbstractChangableAfterRun):
+                        if machine_edge.requires_mapping:
+                            changed = True
+                        if reset_flags:
+                            machine_edge.mark_no_changes()
         return changed
 
     @property
@@ -1665,7 +1713,7 @@ class SpinnakerMainInterface(object):
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if (len(self._machine_graph.vertices) > 0 and
+        if (self._machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
@@ -1685,7 +1733,7 @@ class SpinnakerMainInterface(object):
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
-        if len(self._application_graph.vertices) > 0:
+        if self._application_graph.n_vertices > 0:
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
@@ -1826,7 +1874,13 @@ class SpinnakerMainInterface(object):
                 self._app_id, self._txrx, self._placements, self._graph_mapper)
 
         # if the end user wants iobuf extract it from the cores now
-        if extract_iobuf:
+
+        # only extract iobuf if it hasn't been extracted during run, and the
+        # end user has requested it
+        if (extract_iobuf and
+                not self._config.getboolean("Reports", "extract_iobuf") and
+                not self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run")):
             self._extract_iobuf()
 
         # shut down the machine properly
