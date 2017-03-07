@@ -10,6 +10,10 @@ from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
+from spinn_utilities.helpful_functions \
+    import set_up_output_application_data_specifics, set_up_report_specifics, \
+    write_finished_file
+
 # common front end imports
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
@@ -385,7 +389,7 @@ class SpinnakerMainInterface(object):
         self._report_default_directory, \
             self._report_simulation_top_directory, \
             self._this_run_time_string = \
-            helpful_functions.set_up_report_specifics(
+            set_up_report_specifics(
                 default_report_file_path=self._config.get(
                     "Reports", "defaultReportFilePath"),
                 max_reports_kept=self._config.getint(
@@ -395,7 +399,7 @@ class SpinnakerMainInterface(object):
 
         # set up application report folder
         self._app_data_runtime_folder, self._app_data_top_simulation_folder = \
-            helpful_functions.set_up_output_application_data_specifics(
+            set_up_output_application_data_specifics(
                 max_application_binaries_kept=self._config.getint(
                     "Reports", "max_application_binaries_kept"),
                 where_to_write_application_data_files=self._config.get(
@@ -716,7 +720,7 @@ class SpinnakerMainInterface(object):
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
             self._shutdown()
-            helpful_functions.write_finished_file(
+            write_finished_file(
                 self._app_data_top_simulation_folder,
                 self._report_simulation_top_directory)
 
@@ -1831,7 +1835,7 @@ class SpinnakerMainInterface(object):
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
 
-        helpful_functions.write_finished_file(
+        write_finished_file(
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
