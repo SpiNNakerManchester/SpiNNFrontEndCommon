@@ -1462,13 +1462,9 @@ class SpinnakerMainInterface(object):
             if os.path.exists(file_name):
                 mode = "a"
 
-            # open file and write iobuf to it.
-            writer = open(file_name, mode)
-            writer.write(iobuf.iobuf)
-
-            # close file.
-            writer.flush()
-            writer.close()
+            # write iobuf to file.
+            with open(file_name, mode) as writer:
+                writer.write(iobuf.iobuf)
 
     @staticmethod
     def _print_iobuf(errors, warnings):
