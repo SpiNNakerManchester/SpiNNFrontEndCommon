@@ -39,12 +39,14 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             dsg_targets, "Executing data specifications and loading data")
 
-        for ((x, y, p), data_spec_file_path) in dsg_targets.iteritems():
+        for ((x, y, p), data_spec_file_path) in progress.over(
+                dsg_targets.iteritems()):
             # build specification reader
             data_spec_file_path = dsg_targets[x, y, p]
+            # TODO: data_spec_file_path value extracted twice?
             data_spec_reader = FileDataReader(data_spec_file_path)
 
             # build application data writer
@@ -127,11 +129,6 @@ class FrontEndCommonHostExecuteDataSpecification(object):
                 'memory_used': bytes_used_by_spec,
                 'memory_written': bytes_written_by_spec}
 
-            # update the progress bar
-            progress_bar.update()
-
-        # close the progress bar
-        progress_bar.end()
         return processor_to_app_data_base_address, True
 
     @staticmethod

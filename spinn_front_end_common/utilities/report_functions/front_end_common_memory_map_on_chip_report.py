@@ -28,16 +28,14 @@ class FrontEndCommonMemoryMapOnChipReport(object):
         if not os.path.exists(directory_name):
             os.makedirs(directory_name)
 
-        progress_bar = ProgressBar(dsg_targets, "Writing memory map reports")
-        for (x, y, p) in dsg_targets:
+        progress = ProgressBar(dsg_targets, "Writing memory map reports")
+        for (x, y, p) in progress.over(dsg_targets):
             file_name = os.path.join(
                 directory_name,
                 "memory_map_from_processor"
                 "_{0:d}_{1:d}_{2:d}.txt".format(x, y, p))
             with open(file_name, "w") as output:
                 self._write_processor_memory_map(output, transceiver, x, y, p)
-            progress_bar.update()
-        progress_bar.end()
 
     def _write_processor_memory_map(self, output, txrx, x, y, p):
         output.write("On chip data specification executor\n\n")

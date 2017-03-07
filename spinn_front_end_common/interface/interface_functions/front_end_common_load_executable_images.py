@@ -30,8 +30,8 @@ class FrontEndCommonLoadExecutableImages(object):
                 " to false and therefore I cannot run. Please fix and try "
                 "again")
 
-        progress_bar = ProgressBar(executable_targets.total_processors,
-                                   "Loading executables onto the machine")
+        progress = ProgressBar(executable_targets.total_processors,
+                               "Loading executables onto the machine")
         for executable_target_key in executable_targets.binaries:
             file_reader = FileDataReader(executable_target_key)
             core_subset = executable_targets.get_cores_for_binary(
@@ -67,7 +67,7 @@ class FrontEndCommonLoadExecutableImages(object):
             for chip_based in core_subset.core_subsets:
                 for _ in chip_based.processor_ids:
                     acutal_cores_loaded += 1
-            progress_bar.update(amount_to_add=acutal_cores_loaded)
-        progress_bar.end()
+            progress.update(amount_to_add=acutal_cores_loaded)
+        progress.end()
 
         return True

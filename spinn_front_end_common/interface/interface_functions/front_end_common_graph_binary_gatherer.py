@@ -16,8 +16,8 @@ class FrontEndCommonGraphBinaryGatherer(object):
     def __call__(
             self, placements, graph, executable_finder, graph_mapper=None):
         executable_targets = ExecutableTargets()
-        progress_bar = ProgressBar(graph.vertices, "Finding binaries")
-        for vertex in graph.vertices:
+        progress = ProgressBar(graph.vertices, "Finding binaries")
+        for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)
             if (not self._get_binary(
                 placement, vertex, executable_targets, executable_finder) and
@@ -26,8 +26,6 @@ class FrontEndCommonGraphBinaryGatherer(object):
                 self._get_binary(
                     placement, associated_vertex, executable_targets,
                     executable_finder)
-            progress_bar.update()
-        progress_bar.end()
 
         return executable_targets
 

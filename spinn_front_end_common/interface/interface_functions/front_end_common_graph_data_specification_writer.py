@@ -52,28 +52,24 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         dsg_targets = dict()
 
         if isinstance(graph, ApplicationGraph):
-            progress_bar = ProgressBar(placements.placements,
-                                       "Generating data specifications")
-            for placement in placements.placements:
+            progress = ProgressBar(placements.placements,
+                                   "Generating data specifications")
+            for placement in progress.over(placements.placements):
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
                 self._generate_data_spec_for_vertices(
                     placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder, machine)
-                progress_bar.update()
-            progress_bar.end()
         elif isinstance(graph, MachineGraph):
-            progress_bar = ProgressBar(graph.vertices,
-                                       "Generating data specifications")
-            for vertex in graph.vertices:
+            progress = ProgressBar(graph.vertices,
+                                   "Generating data specifications")
+            for vertex in progress.over(graph.vertices):
                 placement = placements.get_placement_of_vertex(vertex)
                 self._generate_data_spec_for_vertices(
                     placement, vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder, machine)
-                progress_bar.update()
-            progress_bar.end()
 
         return dsg_targets
 

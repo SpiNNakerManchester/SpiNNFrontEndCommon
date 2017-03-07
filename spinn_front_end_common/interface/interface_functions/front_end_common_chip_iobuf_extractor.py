@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import exceptions
 import re
 
@@ -17,24 +17,19 @@ class FrontEndCommonChipIOBufExtractor(object):
     __slots__ = []
 
     def __call__(self, transceiver, has_ran, core_subsets=None):
-
         if not has_ran:
             raise exceptions.ConfigurationException(
                 "The simulation needs to have tried to run before asking for"
                 "iobuf. Please fix and try again")
-
-        if core_subsets is not None:
-            io_buffers, error_entries, warn_entries =\
-                self._run_for_core_subsets(core_subsets, transceiver)
-        else:
+        if core_subsets is None:
             raise exceptions.ConfigurationException(
                 "The FrontEndCommonIOBufExtractor requires a core sets "
                 "object to be able to execute")
 
-        return io_buffers, error_entries, warn_entries
+        return self._run_for_core_subsets(core_subsets, transceiver)
 
     def _run_for_core_subsets(self, core_subsets, transceiver):
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             len(core_subsets), "Extracting IOBUF from the machine")
         error_entries = list()
         warn_entries = list()
@@ -43,10 +38,8 @@ class FrontEndCommonChipIOBufExtractor(object):
         io_buffers = list(transceiver.get_iobuf(core_subsets))
 
         # check iobuf for errors
-        for io_buffer in io_buffers:
+        for io_buffer in progress.over(io_buffers):
             self._check_iobuf_for_error(io_buffer, error_entries, warn_entries)
-            progress_bar.update()
-        progress_bar.end()
         return io_buffers, error_entries, warn_entries
 
     def _check_iobuf_for_error(self, iobuf, error_entries, warn_entries):

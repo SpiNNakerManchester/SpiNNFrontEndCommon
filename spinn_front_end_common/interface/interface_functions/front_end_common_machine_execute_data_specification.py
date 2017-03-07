@@ -57,12 +57,11 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         """
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(dsg_targets, "Loading data specifications")
+        progress = ProgressBar(dsg_targets, "Loading data specifications")
 
         number_of_cores_used = 0
         core_subset = CoreSubsets()
-        for (x, y, p, label) in dsg_targets:
-
+        for (x, y, p, label) in progress.over(dsg_targets):
             core_subset.add_processor(x, y, p)
 
             dse_data_struct_address = transceiver.malloc_sdram(
@@ -102,9 +101,6 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
 
             transceiver.write_memory(
                 x, y, user_0_address, dse_data_struct_address, 4)
-
-            progress_bar.update()
-        progress_bar.end()
 
         # Execute the DSE on all the cores
         logger.info("Loading the Data Specification Executor")

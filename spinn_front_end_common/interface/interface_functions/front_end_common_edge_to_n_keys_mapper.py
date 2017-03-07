@@ -41,13 +41,13 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
         if application_graph is not None:
             # generate progress bar
-            progress_bar = ProgressBar(
+            progress = ProgressBar(
                 machine_graph.vertices,
                 "Getting number of keys required by each edge using "
                 "application graph")
 
             # iterate over each partition in the graph
-            for vertex in machine_graph.vertices:
+            for vertex in progress.over(machine_graph.vertices):
                 partitions = machine_graph.\
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
@@ -60,16 +60,15 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                     else:
                         self._check_constraints_equal(
                             constraints, partition.constraints)
-                progress_bar.update()
 
         else:
             # generate progress bar
-            progress_bar = ProgressBar(
+            progress = ProgressBar(
                 machine_graph.vertices,
                 "Getting number of keys required by each edge using "
                 "machine graph")
 
-            for vertex in machine_graph.vertices:
+            for vertex in progress.over(machine_graph.vertices):
                 partitions = machine_graph.\
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
@@ -82,9 +81,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                     else:
                         self._check_constraints_equal(
                             constraints, partition.constraints)
-                progress_bar.update()
 
-        progress_bar.end()
         return n_keys_map
 
     @staticmethod

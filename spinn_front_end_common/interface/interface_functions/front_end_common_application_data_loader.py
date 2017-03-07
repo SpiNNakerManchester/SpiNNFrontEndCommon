@@ -15,9 +15,9 @@ class FrontEndCommonApplicationDataLoader(object):
 
         # go through the placements and see if there's any application data to
         # load
-        progress_bar = ProgressBar(len(placement_to_app_data_files),
-                                   "Loading application data onto the machine")
-        for (x, y, p, label) in placement_to_app_data_files:
+        progress = ProgressBar(placement_to_app_data_files,
+                               "Loading application data onto the machine")
+        for (x, y, p, label) in progress.over(placement_to_app_data_files):
             logger.debug(
                 "loading application data for vertex {}".format(label))
             key = (x, y, p, label)
@@ -70,7 +70,5 @@ class FrontEndCommonApplicationDataLoader(object):
                     transceiver.get_user_0_register_address_from_core(x, y, p)
                 transceiver.write_memory(
                     x, y, user_o_register_address, start_address)
-            progress_bar.update()
-        progress_bar.end()
 
         return True

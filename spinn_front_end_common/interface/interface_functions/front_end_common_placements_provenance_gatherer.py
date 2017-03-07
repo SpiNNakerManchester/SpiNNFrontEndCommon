@@ -33,15 +33,12 @@ class FrontEndCommonPlacementsProvenanceGatherer(object):
             placements.n_placements, "Getting provenance data")
 
         # retrieve provenance data from any cores that provide data
-        for placement in placements.placements:
+        for placement in progress.over(placements.placements):
             if isinstance(placement.vertex,
                           AbstractProvidesProvenanceDataFromMachine):
                 # get data
                 prov_items.extend(
                     placement.vertex.get_provenance_data_from_machine(
                         transceiver, placement))
-
-            progress.update()
-        progress.end()
 
         return prov_items

@@ -23,7 +23,7 @@ class FrontEndCommonApplicationFinisher(object):
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             total_processors,
             "Turning off all the cores within the simulation")
 
@@ -34,7 +34,7 @@ class FrontEndCommonApplicationFinisher(object):
 
         while processors_finished != total_processors:
             if processors_finished > finished_cores:
-                progress_bar.update(finished_cores - processors_finished)
+                progress.update(finished_cores - processors_finished)
                 finished_cores = processors_finished
 
             processors_rte = txrx.get_core_state_count(
@@ -82,4 +82,4 @@ class FrontEndCommonApplicationFinisher(object):
             processors_finished = txrx.get_core_state_count(
                 app_id, CPUState.FINISHED)
 
-        progress_bar.end()
+        progress.end()

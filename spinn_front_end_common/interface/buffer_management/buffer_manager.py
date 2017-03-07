@@ -299,12 +299,12 @@ class BufferManager(object):
             for region in vertex.get_regions():
                 total_data += vertex.get_region_buffer_size(region)
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                self._send_initial_messages(vertex, region, progress_bar)
-        progress_bar.end()
+                self._send_initial_messages(vertex, region, progress)
+        progress.end()
 
     def reset(self):
         """ Resets the buffered regions to start transmitting from the\
@@ -376,7 +376,7 @@ class BufferManager(object):
                     "{}:{}\n".format(next_timestamp, key))
         return message
 
-    def _send_initial_messages(self, vertex, region, progress_bar):
+    def _send_initial_messages(self, vertex, region, progress):
         """ Send the initial set of messages
 
         :param vertex: The vertex to get the keys from
@@ -425,7 +425,7 @@ class BufferManager(object):
 
                 # Update the positions
                 bytes_to_go -= len(data)
-                progress_bar.update(len(data))
+                progress.update(len(data))
 
         if not sent_message:
             raise exceptions.BufferableRegionTooSmall(
@@ -442,7 +442,7 @@ class BufferManager(object):
             #         placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
-            progress_bar.update(len(data))
+            progress.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
 

@@ -20,15 +20,12 @@ class FrontEndCommonBufferManagerCreator(object):
         buffer_manager = BufferManager(
             placements, tags, txrx, write_reload_files, app_data_folder)
 
-        for placement in placements.placements:
+        for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):
                 if placement.vertex.buffering_input():
                     buffer_manager.add_sender_vertex(placement.vertex)
 
             if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
                 buffer_manager.add_receiving_vertex(placement.vertex)
-
-            progress.update()
-        progress.end()
 
         return buffer_manager

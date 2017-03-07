@@ -24,7 +24,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
@@ -52,5 +52,5 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_over_now = total_processors - processors_completed
             to_update = left_to_do_cores - left_over_now
             if to_update != 0:
-                progress_bar.update(to_update)
-        progress_bar.end()
+                progress.update(to_update)
+        progress.end()
