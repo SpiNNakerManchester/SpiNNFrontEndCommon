@@ -1,5 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
-
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_storage_handlers.file_data_reader import FileDataReader
 
 import logging
@@ -8,7 +7,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonApplicationDataLoader(object):
-
     __slots__ = []
 
     def __call__(

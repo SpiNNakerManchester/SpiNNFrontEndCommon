@@ -1,5 +1,5 @@
-# spinn_machine imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+# spinn_utilites imports
+from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman import constants

@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman import constants
 from spinnman.model.diagnostic_filter import DiagnosticFilter
@@ -13,7 +13,7 @@ class FrontEndCommonRoutingTableLoader(object):
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
-        progress_bar = ProgressBar(len(list(router_tables.routing_tables)),
+        progress_bar = ProgressBar(router_tables.routing_tables,
                                    "Loading routing data onto the machine")
 
         # load each router table that is needed for the application to run into

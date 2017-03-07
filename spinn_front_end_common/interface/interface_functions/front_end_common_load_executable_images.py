@@ -1,6 +1,4 @@
-
-# pacman imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinn_storage_handlers.file_data_reader import FileDataReader
@@ -17,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonLoadExecutableImages(object):
-
     __slots__ = []
 
     def __call__(self, executable_targets, app_id, transceiver,

@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.interface.buffer_management.buffer_manager import \
     BufferManager
@@ -10,14 +10,11 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 
 
 class FrontEndCommonBufferManagerCreator(object):
-
     __slots__ = []
 
     def __call__(
             self, placements, tags, txrx, write_reload_files, app_data_folder):
-
-        progress_bar = ProgressBar(
-            len(list(placements.placements)), "Initialising buffers")
+        progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager
         buffer_manager = BufferManager(
@@ -31,7 +28,7 @@ class FrontEndCommonBufferManagerCreator(object):
             if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
                 buffer_manager.add_receiving_vertex(placement.vertex)
 
-            progress_bar.update()
-        progress_bar.end()
+            progress.update()
+        progress.end()
 
         return buffer_manager

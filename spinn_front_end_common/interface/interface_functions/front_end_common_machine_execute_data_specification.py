@@ -4,7 +4,7 @@ from spinn_storage_handlers.file_data_reader import FileDataReader
 # data spec imports
 import data_specification.data_spec_sender.spec_sender as spec_sender
 
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 
 # spinnman imports
@@ -38,10 +38,9 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         :param dse_app_id: the app_id used by the DSE on chip application
         :param app_id:
         """
-        data = self.spinnaker_based_data_specification_execution(
+        return self.spinnaker_based_data_specification_execution(
             write_memory_map_report, dsg_targets, transceiver,
             dse_app_id, app_id)
-        return data
 
     def spinnaker_based_data_specification_execution(
             self, write_memory_map_report, dsg_targets, transceiver,
@@ -58,8 +57,7 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         """
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(
-            len(dsg_targets), "Loading data specifications")
+        progress_bar = ProgressBar(dsg_targets, "Loading data specifications")
 
         number_of_cores_used = 0
         core_subset = CoreSubsets()

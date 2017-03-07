@@ -1,6 +1,6 @@
+from spinn_utilities.progress_bar import ProgressBar
 
 # pacman imports
-from spinn_machine.utilities.progress_bar import ProgressBar
 from pacman.utilities.utility_objs.resource_tracker import ResourceTracker
 from pacman.utilities.algorithm_utilities import placer_algorithm_utilities
 
@@ -33,8 +33,7 @@ class FrontEndCommonGraphMeasurer(object):
                 machine_graph.vertices)
 
         # Iterate over vertices and allocate
-        progress_bar = ProgressBar(len(ordered_vertices),
-                                   "Measuring the graph")
+        progress_bar = ProgressBar(ordered_vertices, "Measuring the graph")
         resource_tracker = ResourceTracker(machine)
         for vertex in ordered_vertices:
             resource_tracker.allocate_constrained_resources(

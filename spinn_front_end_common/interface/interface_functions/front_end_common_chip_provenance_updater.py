@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
@@ -18,7 +18,6 @@ class FrontEndCommonChipProvenanceUpdater(object):
     __slots__ = []
 
     def __call__(self, txrx, app_id, all_core_subsets):
-
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
             app_id, CPUState.FINISHED)

@@ -7,17 +7,15 @@ from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.model.cpu_state import CPUState
 
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 import struct
 
 
 class FrontEndCommonApplicationFinisher(object):
-
     __slots__ = []
 
     def __call__(self, app_id, txrx, executable_targets, has_ran):
-
         if not has_ran:
             raise exceptions.ConfigurationException(
                 "The ran token is not set correctly, please fix and try again")
@@ -35,10 +33,8 @@ class FrontEndCommonApplicationFinisher(object):
         finished_cores = processors_finished
 
         while processors_finished != total_processors:
-
             if processors_finished > finished_cores:
-                progress_bar.update(
-                    finished_cores - processors_finished)
+                progress_bar.update(finished_cores - processors_finished)
                 finished_cores = processors_finished
 
             processors_rte = txrx.get_core_state_count(

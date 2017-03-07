@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary\
     import AbstractHasAssociatedBinary
@@ -15,10 +15,8 @@ class FrontEndCommonGraphBinaryGatherer(object):
 
     def __call__(
             self, placements, graph, executable_finder, graph_mapper=None):
-
         executable_targets = ExecutableTargets()
-        progress_bar = ProgressBar(
-            len(list(graph.vertices)), "Finding binaries")
+        progress_bar = ProgressBar(graph.vertices, "Finding binaries")
         for vertex in graph.vertices:
             placement = placements.get_placement_of_vertex(vertex)
             if (not self._get_binary(
@@ -36,21 +34,20 @@ class FrontEndCommonGraphBinaryGatherer(object):
     def _get_binary(
             self, placement, associated_vertex, executable_targets,
             executable_finder):
+        # if the vertex cannot generate a DSG, ignore it
+        if not isinstance(associated_vertex, AbstractHasAssociatedBinary):
+            return False
 
-        # if the vertex can generate a DSG, call it
-        if isinstance(associated_vertex, AbstractHasAssociatedBinary):
+        # Get name of binary from vertex
+        binary_name = associated_vertex.get_binary_file_name()
 
-            # Get name of binary from vertex
-            binary_name = associated_vertex.get_binary_file_name()
+        # Attempt to find this within search paths
+        binary_path = executable_finder.get_executable_path(binary_name)
+        if binary_path is None:
+            raise exceptions.ExecutableNotFoundException(binary_name)
 
-            # Attempt to find this within search paths
-            binary_path = executable_finder.get_executable_path(binary_name)
-            if binary_path is None:
-                raise exceptions.ExecutableNotFoundException(binary_name)
-
-            if not executable_targets.has_binary(binary_path):
-                executable_targets.add_binary(binary_path)
-            executable_targets.add_processor(
-                binary_path, placement.x, placement.y, placement.p)
-            return True
-        return False
+        if not executable_targets.has_binary(binary_path):
+            executable_targets.add_binary(binary_path)
+        executable_targets.add_processor(
+            binary_path, placement.x, placement.y, placement.p)
+        return True

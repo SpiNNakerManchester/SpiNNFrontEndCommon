@@ -3,7 +3,7 @@ from data_specification.data_specification_generator import \
 from pacman.model.graphs.application.impl.application_graph import \
     ApplicationGraph
 from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.abstract_models.\
     abstract_generates_data_specification import \
@@ -26,13 +26,10 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     """
 
     __slots__ = (
-
         # Dict of sdram usage by chip coordinates
         "_sdram_usage",
-
         # Dict of list of region sizes by vertex
         "_region_sizes",
-
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip"
     )
@@ -55,7 +52,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         dsg_targets = dict()
 
         if isinstance(graph, ApplicationGraph):
-            progress_bar = ProgressBar(len(list(placements.placements)),
+            progress_bar = ProgressBar(placements.placements,
                                        "Generating data specifications")
             for placement in placements.placements:
                 associated_vertex = graph_mapper.get_application_vertex(
@@ -67,7 +64,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 progress_bar.update()
             progress_bar.end()
         elif isinstance(graph, MachineGraph):
-            progress_bar = ProgressBar(len(list(graph.vertices)),
+            progress_bar = ProgressBar(graph.vertices,
                                        "Generating data specifications")
             for vertex in graph.vertices:
                 placement = placements.get_placement_of_vertex(vertex)
@@ -84,10 +81,8 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             self, placement, associated_vertex, dsg_targets, hostname,
             report_default_directory, write_text_specs,
             app_data_runtime_folder, machine):
-
         # if the vertex can generate a DSG, call it
         if isinstance(associated_vertex, AbstractGeneratesDataSpecification):
-
             # build the writers for the reports and data
             data_writer, report_writer = \
                 self.get_data_spec_file_writers(
@@ -110,9 +105,8 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 spec.region_sizes)
             if (self._sdram_usage[placement.x, placement.y] >
                     machine.get_chip_at(placement.x, placement.y).sdram.size):
-
                 # creating the error message which contains the memory usage of
-                #  what each core within the chip uses and its original
+                # what each core within the chip uses and its original
                 # estimate.
                 memory_usage = "\n".join([
                     "    {}: {} (total={}, estimated={})".format(
