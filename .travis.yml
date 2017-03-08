@@ -9,7 +9,7 @@ virtualenv:
 
 cache: pip
 
-install:
+before_install:
   # Install separately as it takes a long time
   - pip install 'numpy>=1.12'
   # SpiNNakerManchester internal dependencies; development mode
@@ -19,9 +19,12 @@ install:
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNStorageHandlers.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@master
+
+install:
   # These things ought to be enough
   - pip install -r requirements-test.txt
   - python ./setup.py install
+
 script:
   - py.test unittests
   - py.test integration_tests
