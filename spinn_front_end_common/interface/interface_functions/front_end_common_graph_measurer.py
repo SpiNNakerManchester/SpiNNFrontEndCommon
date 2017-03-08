@@ -33,7 +33,7 @@ class FrontEndCommonGraphMeasurer(object):
                 machine_graph.vertices)
 
         # Iterate over vertices and allocate
-        progress = ProgressBar(ordered_vertices, "Measuring the graph")
+        progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")
         resource_tracker = ResourceTracker(machine)
         for vertex in progress.over(ordered_vertices):
             resource_tracker.allocate_constrained_resources(

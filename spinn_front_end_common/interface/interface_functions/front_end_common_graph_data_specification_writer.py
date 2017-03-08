@@ -62,7 +62,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder, machine)
         elif isinstance(graph, MachineGraph):
-            progress = ProgressBar(graph.vertices,
+            progress = ProgressBar(graph.n_vertices,
                                    "Generating data specifications")
             for vertex in progress.over(graph.vertices):
                 placement = placements.get_placement_of_vertex(vertex)

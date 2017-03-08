@@ -25,29 +25,33 @@ class FrontEndCommonGraphProvenanceGatherer(object):
             prov_items = list()
 
         progress = ProgressBar(
-            len(machine_graph.vertices) + len(machine_graph.edges),
+            machine_graph.n_vertices +
+            machine_graph.n_outgoing_edge_partitions,
             "Getting provenance data from machine graph")
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
                 prov_items.extend(vertex.get_local_provenance_data())
             progress.update()
-        for edge in machine_graph.edges:
-            if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                prov_items.extend(edge.get_local_provenance_data())
+        for partition in machine_graph.outgoing_edge_partitions:
+            for edge in partition.edges:
+                if isinstance(edge, AbstractProvidesLocalProvenanceData):
+                    prov_items.extend(edge.get_local_provenance_data())
             progress.update()
         progress.end()
 
         if application_graph is not None:
             progress = ProgressBar(
-                len(application_graph.vertices) + len(application_graph.edges),
+                application_graph.n_vertices +
+                application_graph.n_outgoing_edge_partitions,
                 "Getting provenance data from application graph")
             for vertex in application_graph.vertices:
                 if isinstance(vertex, AbstractProvidesLocalProvenanceData):
                     prov_items.extend(vertex.get_local_provenance_data())
                 progress.update()
-            for edge in application_graph.edges:
-                if isinstance(edge, AbstractProvidesLocalProvenanceData):
-                    prov_items.extend(edge.get_local_provenance_data())
+            for partition in application_graph.outgoing_edge_partitions:
+                for edge in partition.edges:
+                    if isinstance(edge, AbstractProvidesLocalProvenanceData):
+                        prov_items.extend(edge.get_local_provenance_data())
                 progress.update()
             progress.end()
 
