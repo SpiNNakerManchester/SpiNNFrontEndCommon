@@ -10,16 +10,11 @@ from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
 from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
 from pacman.model.constraints.placer_constraints\
     .placer_board_constraint import PlacerBoardConstraint
-from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
-from pacman.model.abstract_classes.impl.constrained_object \
-    import ConstrainedObject
-from pacman.model.abstract_classes.abstract_has_constraints \
-    import AbstractHasConstraints
 from pacman.model.graphs.machine.abstract_machine_vertex \
     import AbstractMachineVertex
 
@@ -66,7 +61,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        AbstractMachineVertex, AbstractHasConstraints,
+        AbstractMachineVertex,
         AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
         ProvidesProvenanceDataFromMachineImpl,
@@ -161,13 +156,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
+        AbstractMachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
 
-        self._constraints = ConstrainedObject(constraints)
-        self._label = label
         self._iptags = None
         self._reverse_iptags = None
 
@@ -270,23 +264,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 # If no prefix was generated, generate one
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
-
-    @property
-    @overrides(AbstractMachineVertex.label)
-    def label(self):
-        return self._label
 
     @property
     @overrides(AbstractMachineVertex.resources_required)
