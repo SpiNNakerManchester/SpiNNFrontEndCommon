@@ -29,7 +29,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             self, hostname, transceiver, report_default_directory,
             write_text_specs, runtime_application_data_folder, machine,
             app_id, dsg_targets):
-        """ entrance method
+        """
 
         :param hostname: spinnaker machine name
         :param report_default_directory: the location where reports are stored
@@ -165,7 +165,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
     @staticmethod
     def generate_report_writer(
             write_text_specs, report_default_directory, hostname, x, y, p):
-        """  generates a writer for the human readable report of the dsg
+        """ Generate a writer for the human readable report of the dsg
 
         :param write_text_specs:\
             True if the textual version of the specification is to be written
