@@ -604,6 +604,10 @@ class SpinnakerMainInterface(object):
                 steps = self._deduce_number_of_iterations(n_machine_time_steps)
                 self._minimum_step_generated = steps[0]
 
+        # Keep track of if loading was done; if loading is done before run,
+        # run doesn't need to rewrite data again
+        loading_done = False
+
         # If we have never run before, or the graph has changed, or a reset
         # has been requested, load the data
         if (not self._has_ran or application_graph_changed or
@@ -616,13 +620,14 @@ class SpinnakerMainInterface(object):
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
                 self.do_load()
+                loading_done = True
 
         # Run for each of the given steps
         logger.info("Running for {} steps for a total of {} ms".format(
             len(steps), run_time))
         for i, step in enumerate(steps):
             logger.info("Run {} of {}".format(i + 1, len(steps)))
-            self._do_run(step)
+            self._do_run(step, loading_done)
 
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
@@ -1193,6 +1198,11 @@ class SpinnakerMainInterface(object):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
 
+        # Reload any parameters over the loaded data if we have already
+        # run and not using a virtual board
+        if self._has_ran and not self._use_virtual_board:
+            optional_algorithms.append("FrontEndCommonDSGRegionReloader")
+
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
         optional_algorithms.append("FrontEndCommonLoadExecutableImages")
@@ -1209,7 +1219,7 @@ class SpinnakerMainInterface(object):
         self._load_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
-    def _do_run(self, n_machine_time_steps):
+    def _do_run(self, n_machine_time_steps, loading_done):
 
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
@@ -1250,12 +1260,19 @@ class SpinnakerMainInterface(object):
 
         # If we have run before, make sure to extract the data before the next
         # run
-        if self._has_ran and not self._has_reset_last:
+        if (self._has_ran and not self._use_virtual_board and
+                not self._has_reset_last):
             algorithms.append("FrontEndCommonBufferExtractor")
 
+        # Reload any parameters over the loaded data if we have already
+        # run and not using a virtual board and the data hasn't already
+        # been regenerated during a load
+        if (self._has_ran and not self._use_virtual_board and
+                not loading_done):
+            algorithms.append("FrontEndCommonDSGRegionReloader")
+
+        # Update the run time if not using a virtual board
         if not self._use_virtual_board:
-            if self._has_ran:
-                algorithms.append("FrontEndCommonDSGRegionReloader")
             algorithms.append("FrontEndCommonChipRuntimeUpdater")
 
         # Add the database writer in case it is needed
@@ -1481,7 +1498,8 @@ class SpinnakerMainInterface(object):
                     self._config.get("Reports", "extract_iobuf_from_cores"),
                     self._config.get(
                         "Reports", "extract_iobuf_from_binary_types"),
-                    self._last_run_outputs["ExecutableTargets"])
+                    self._last_run_outputs["ExecutableTargets"],
+                    self._executable_finder)
 
             algorithms = ["FrontEndCommonChipIOBufExtractor",
                           "FrontEndCommonChipIOBufClearer"]
