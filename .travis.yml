@@ -10,8 +10,8 @@ virtualenv:
 cache: pip
 
 before_install:
-  # Install separately as it takes a long time
-  - pip install 'numpy>=1.12'
+  - pip install --upgrade pip setuptools wheel
+  - pip install --only-binary=numpy,scipy numpy scipy
   # SpiNNakerManchester internal dependencies; development mode
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNUtils.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/SpiNNMachine.git@master
