@@ -1,7 +1,6 @@
 # pacman imports
-from pacman.model.routing_info.\
-    dict_based_machine_partition_n_keys_map import \
-    DictBasedMachinePartitionNKeysMap
+from pacman.model.routing_info \
+    import DictBasedMachinePartitionNKeysMap
 
 # spinnMachine imports
 from spinn_machine.utilities.progress_bar import ProgressBar

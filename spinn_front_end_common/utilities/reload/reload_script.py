@@ -1,9 +1,8 @@
 # pacman imports
 from pacman.model.placements.placements import Placements
 from pacman.model.placements.placement import Placement
-from pacman.model.routing_tables.multicast_routing_tables \
-    import MulticastRoutingTables
-from pacman.model.tags.tags import Tags
+from pacman.model.routing_tables import MulticastRoutingTables
+from pacman.model.tags import Tags
 
 # spinnmachine imports
 from spinn_machine.tags.iptag import IPTag

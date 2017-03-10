@@ -1,8 +1,7 @@
 from data_specification.data_specification_generator import \
     DataSpecificationGenerator
-from pacman.model.graphs.application.impl.application_graph import \
-    ApplicationGraph
-from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
+from pacman.model.graphs.application import ApplicationGraph
+from pacman.model.graphs.machine import MachineGraph
 from spinn_machine.utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.abstract_models.\

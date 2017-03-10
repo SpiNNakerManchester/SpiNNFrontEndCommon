@@ -2,9 +2,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects\
     .channel_buffer_state import ChannelBufferState
 from spinn_front_end_common.utilities import constants
 
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources \
+    import ResourceContainer, IPtagResource, SDRAMResource
 
 import struct
 import sys

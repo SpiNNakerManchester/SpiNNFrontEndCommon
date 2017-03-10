@@ -1,22 +1,15 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.executor.injection_decorator import supports_injection
 from pacman.executor.injection_decorator import inject
-from pacman.model.constraints.key_allocator_constraints\
-    .key_allocator_fixed_key_and_mask_constraint \
-    import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.constraints.placer_constraints\
-    .placer_board_constraint import PlacerBoardConstraint
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.resources.cpu_cycles_per_tick_resource \
-    import CPUCyclesPerTickResource
-from pacman.model.graphs.machine.abstract_machine_vertex \
-    import AbstractMachineVertex
+from pacman.model.constraints.key_allocator_constraints \
+    import KeyAllocatorFixedKeyAndMaskConstraint
+from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
+from pacman.model.resources import IPtagResource, ReverseIPtagResource
+from pacman.model.resources import ResourceContainer, DTCMResource
+from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
+from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management.buffer_manager\
@@ -61,8 +54,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        AbstractMachineVertex,
-        AbstractGeneratesDataSpecification,
+        MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
@@ -156,7 +148,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
-        AbstractMachineVertex.__init__(self, label, constraints)
+        MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self._REGIONS.PROVENANCE_REGION.value, 0)
@@ -266,7 +258,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 self._prefix = self._virtual_key
 
     @property
-    @overrides(AbstractMachineVertex.resources_required)
+    @overrides(MachineVertex.resources_required)
     def resources_required(self):
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
@@ -425,7 +417,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._time_between_triggers = time_between_triggers
 
     def _reserve_regions(self, spec):
-
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
@@ -453,7 +444,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _update_virtual_key(self, routing_info, machine_graph):
         if self._virtual_key is None:
             if self._send_buffer_partition_id is not None:
-
                 rinfo = routing_info.get_routing_info_from_pre_vertex(
                     self, self._send_buffer_partition_id)
                 self._virtual_key = rinfo.first_key
@@ -506,7 +496,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write send buffer data
         if self._send_buffer_times is not None:
-
             this_tag = None
 
             for tag in ip_tags:

@@ -25,12 +25,12 @@ class ReloadBufferedVertex(SendsBuffersFromHostPreBufferedImpl):
         self._send_buffers = dict()
         for (region_id, filename, max_size_of_buffer) in region_files_tuples:
             send_buffer = BufferedSendingRegion(max_size_of_buffer)
-            reader = open(filename, "r")
-            line = reader.readline()
-            while line != "":
-                bits = line.split(":")
-                send_buffer.add_key(int(bits[0]), int(bits[1]))
+            with open(filename, "r") as reader:
                 line = reader.readline()
+                while line != "":
+                    bits = line.split(":")
+                    send_buffer.add_key(int(bits[0]), int(bits[1]))
+                    line = reader.readline()
             self._send_buffers[region_id] = send_buffer
         SendsBuffersFromHostPreBufferedImpl.__init__(
             self, self._send_buffers)

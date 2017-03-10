@@ -1,13 +1,10 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.model.constraints.key_allocator_constraints.\
-    key_allocator_fixed_key_and_mask_constraint \
+from pacman.model.constraints.key_allocator_constraints\
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.routing_info import BaseKeyAndMask
 from pacman.executor.injection_decorator import inject_items
 
 # spinn front end common imports
@@ -56,11 +53,11 @@ class CommandSender(
 
         :param commands: The commands to send
         :type commands: iterable of\
-                    :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
         :param partition:
         :param edge: The edge down which the commands will be sent
         :type edge:\
-                    :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
+            :py:class:`pacman.model.graph.application.impl.application_edge.ApplicationEdge`
         :raise ConfigurationException:\
             If the edge already has commands or if all the commands masks are\
             not 0xFFFFFFFF and there is no commonality between the\
