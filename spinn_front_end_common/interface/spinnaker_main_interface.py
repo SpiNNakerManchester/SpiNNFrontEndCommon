@@ -619,7 +619,7 @@ class SpinnakerMainInterface(object):
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self.do_load()
+                self._do_load()
                 loading_done = True
 
         # Run for each of the given steps
@@ -1170,7 +1170,7 @@ class SpinnakerMainInterface(object):
         self._mapping_outputs = executor.get_items()
         self._pacman_provenance.extract_provenance(executor)
 
-    def do_load(self):
+    def _do_load(self):
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
