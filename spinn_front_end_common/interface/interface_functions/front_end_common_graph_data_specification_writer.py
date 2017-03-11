@@ -131,10 +131,10 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         # estimate.
         memory_usage = "\n".join([
             "    {}: {} (total={}, estimated={})".format(
-                vertex, self._region_sizes[vertex],
-                sum(self._region_sizes[vertex]),
-                vertex.resources_required.sdram.get_value())
-            for vertex in self._vertices_by_chip[
+                vert, self._region_sizes[vert],
+                sum(self._region_sizes[vert]),
+                vert.resources_required.sdram.get_value())
+            for vert in self._vertices_by_chip[
                 placement.x, placement.y]])
 
         raise exceptions.ConfigurationException(
