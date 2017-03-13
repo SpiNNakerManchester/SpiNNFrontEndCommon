@@ -7,6 +7,8 @@ from spinnman.model.cpu_state import CPUState
 
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.abstract_models\
+    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 
 import struct
 
@@ -17,23 +19,30 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
     __slots__ = []
 
-    def __call__(self, txrx, app_id, all_core_subsets):
+    def __call__(
+            self, txrx, app_id, placements, graph_mapper=None):
 
-        # check that the right number of processors are in sync
+        # Get the placements that are compatible with provenance updating
+        matching_placements, _ = helpful_functions.get_placements_by_run_type(
+            placements, graph_mapper, AbstractBinaryUsesSimulationRun)
+        matching_subsets = helpful_functions.get_placement_core_subsets(
+            matching_placements)
+
+        # check that the right number of processors are finished
         processors_completed = txrx.get_core_state_count(
             app_id, CPUState.FINISHED)
-        total_processors = len(all_core_subsets)
+        total_processors = len(matching_subsets)
         left_to_do_cores = total_processors - processors_completed
 
         progress_bar = ProgressBar(
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        # check that all cores are in the state CPU_STATE_12 which shows that
+        # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
         while processors_completed != total_processors:
             unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, CPUState.FINISHED, txrx)
+                matching_subsets, CPUState.FINISHED, txrx)
 
             for (x, y, p) in unsuccessful_cores:
                 data = struct.pack(
