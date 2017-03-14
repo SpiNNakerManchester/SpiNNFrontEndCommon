@@ -142,18 +142,6 @@ class FrontEndCommonApplicationRunner(object):
     def wait_for_execution_to_complete(
             self, executable_targets, app_id, runtime, time_scaling, txrx,
             time_threshold):
-        """
-
-        :param executable_targets:
-        :param app_id:
-        :param runtime:
-        :param time_scaling:
-        :param time_threshold:
-        :param txrx:
-        :param no_sync_state_changes: the number of runs been done between\
-                setup and end
-        :rtype: None
-        """
 
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets
