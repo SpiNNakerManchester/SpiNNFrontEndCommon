@@ -504,7 +504,7 @@ class SpinnakerMainInterface(object):
                     " resetting")
 
             # Reset the machine graph if there is an application graph
-            if len(self._application_graph.vertices) > 0:
+            if self._application_graph.n_vertices > 0:
                 self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
 
@@ -732,9 +732,9 @@ class SpinnakerMainInterface(object):
         outputs = list()
 
         # add the application and machine graphs as needed
-        if len(self._application_graph.vertices) > 0:
+        if self._application_graph.n_vertices > 0:
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif len(self._machine_graph.vertices) > 0:
+        elif self._machine_graph.n_vertices > 0:
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         # add reinjection flag
@@ -853,8 +853,8 @@ class SpinnakerMainInterface(object):
                     algorithms.append("FrontEndCommonHBPMaxMachineGenerator")
                     need_virtual_board = True
 
-            if (len(self._application_graph.vertices) == 0 and
-                    len(self._machine_graph.vertices) == 0 and
+            if (self._application_graph.n_vertices == 0 and
+                    self._machine_graph.n_vertices == 0 and
                     need_virtual_board):
                 raise common_exceptions.ConfigurationException(
                     "A allocated machine has been requested but there are no"
@@ -875,7 +875,7 @@ class SpinnakerMainInterface(object):
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
                 # the graph
-                if len(self._application_graph.vertices) != 0:
+                if self._application_graph.n_vertices != 0:
                     inputs["MemoryApplicationGraph"] = \
                         self._application_graph
                     algorithms.extend(self._config.get(
@@ -884,7 +884,7 @@ class SpinnakerMainInterface(object):
                     outputs.append("MemoryMachineGraph")
                     outputs.append("MemoryGraphMapper")
                     do_partitioning = True
-                elif len(self._machine_graph.vertices) != 0:
+                elif self._machine_graph.n_vertices != 0:
                     inputs["MemoryMachineGraph"] = self._machine_graph
                     algorithms.append("FrontEndCommonGraphMeasurer")
             else:
@@ -983,10 +983,10 @@ class SpinnakerMainInterface(object):
             "Machine", "post_simulation_overrun_before_error")
 
         # handle graph additions
-        if (len(self._application_graph.vertices) > 0 and
+        if (self._application_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif len(self._machine_graph.vertices) > 0:
+        elif self._machine_graph.n_vertices > 0:
             inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
@@ -1055,14 +1055,14 @@ class SpinnakerMainInterface(object):
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
                     "Reports", "writePartitionerReports") and
-                    len(self._application_graph.vertices) != 0):
+                    self._application_graph.n_vertices != 0):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with application graph when
             # there's application vertices
             if (self._config.getboolean(
                     "Reports", "writeApplicationGraphPlacerReport") and
-                    len(self._application_graph.vertices) != 0):
+                    self._application_graph.n_vertices != 0):
                 algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
@@ -1073,13 +1073,13 @@ class SpinnakerMainInterface(object):
             # application vertices.
             if (self._config.getboolean(
                     "Reports", "writeNetworkSpecificationReport") and
-                    len(self._application_graph.vertices) != 0):
+                    self._application_graph.n_vertices != 0):
                 algorithms.append(
                     "FrontEndCommonApplicationGraphNetworkSpecificationReport")
 
         # only add the partitioner if there isn't already a machine graph
-        if (len(self._application_graph.vertices) > 0 and
-                len(self._machine_graph.vertices) == 0):
+        if (self._application_graph.n_vertices > 0 and
+                self._machine_graph.n_vertices == 0):
             algorithms.extend(self._config.get(
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
@@ -1092,7 +1092,7 @@ class SpinnakerMainInterface(object):
             "MemoryTags", "MemoryRoutingInfos",
             "MemoryMachineGraph", "BufferManager"
         ]
-        if len(self._application_graph.vertices) > 0:
+        if self._application_graph.n_vertices > 0:
             outputs.append("MemoryGraphMapper")
 
         # Create a buffer manager if there isn't one already
@@ -1525,34 +1525,36 @@ class SpinnakerMainInterface(object):
         changed = False
 
         # if application graph is filled, check their changes
-        if len(self._application_graph.vertices) != 0:
+        if self._application_graph.n_vertices != 0:
             for vertex in self._application_graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
-            for edge in self._application_graph.edges:
-                if isinstance(edge, AbstractChangableAfterRun):
-                    if edge.requires_mapping:
-                        changed = True
-                    if reset_flags:
-                        edge.mark_no_changes()
+            for partition in self._application_graph.outgoing_edge_partitions:
+                for edge in partition.edges:
+                    if isinstance(edge, AbstractChangableAfterRun):
+                        if edge.requires_mapping:
+                            changed = True
+                        if reset_flags:
+                            edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
-        elif len(self._machine_graph.vertices) != 0:
+        elif self._machine_graph.n_vertices != 0:
             for machine_vertex in self._machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
-            for machine_edge in self._machine_graph.edges:
-                if isinstance(machine_edge, AbstractChangableAfterRun):
-                    if machine_edge.requires_mapping:
-                        changed = True
-                    if reset_flags:
-                        machine_edge.mark_no_changes()
+            for partition in self._machine_graph.outgoing_edge_partitions:
+                for machine_edge in partition.edges:
+                    if isinstance(machine_edge, AbstractChangableAfterRun):
+                        if machine_edge.requires_mapping:
+                            changed = True
+                        if reset_flags:
+                            machine_edge.mark_no_changes()
         return changed
 
     @property
@@ -1672,7 +1674,7 @@ class SpinnakerMainInterface(object):
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if (len(self._machine_graph.vertices) > 0 and
+        if (self._machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
@@ -1692,7 +1694,7 @@ class SpinnakerMainInterface(object):
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
-        if len(self._application_graph.vertices) > 0:
+        if self._application_graph.n_vertices > 0:
             raise common_exceptions.ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
