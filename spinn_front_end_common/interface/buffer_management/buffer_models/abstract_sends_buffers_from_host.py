@@ -13,6 +13,8 @@ class AbstractSendsBuffersFromHost(object):
         transmitted at given timestamps in the simulation
     """
 
+    __slots__ = ()
+
     @abstractmethod
     def buffering_input(self):
         """ Return True if the input of this vertex is to be buffered

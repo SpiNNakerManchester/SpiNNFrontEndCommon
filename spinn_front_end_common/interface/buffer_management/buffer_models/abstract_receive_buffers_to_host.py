@@ -8,6 +8,8 @@ class AbstractReceiveBuffersToHost(object):
     """ Indicates that this object can receive buffers
     """
 
+    __slots__ = ()
+
     @abstractmethod
     def get_minimum_buffer_sdram_usage(self):
         """ Get the minimum amount of SDRAM to reserve for buffers

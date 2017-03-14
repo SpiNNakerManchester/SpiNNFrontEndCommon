@@ -7,3 +7,5 @@ class AbstractStartsSynchronized(object):
     """ Indicates that the binary starts in synchronisation with other\
         binaries in the simulation
     """
+
+    __slots__ = ()

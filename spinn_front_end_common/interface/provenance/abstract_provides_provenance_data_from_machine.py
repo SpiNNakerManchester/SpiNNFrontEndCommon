@@ -9,6 +9,8 @@ class AbstractProvidesProvenanceDataFromMachine(object):
         machine
     """
 
+    __slots__ = ()
+
     def __init__(self):
         pass
 
