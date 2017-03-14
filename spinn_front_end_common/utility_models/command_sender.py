@@ -57,7 +57,7 @@ class CommandSender(
         :param commands: The commands to send
         :type commands: iterable of\
                     :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
-        :param partitions:
+        :param partitions: The partition down which the commands will be sent
         :raise ConfigurationException:\
             If the edge already has commands or if all the commands masks are\
             not 0xFFFFFFFF and there is no commonality between the\
