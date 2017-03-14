@@ -48,8 +48,8 @@ intersphinx_mapping = {'spinn_machine':
                        'pacman': ('http://pacman.readthedocs.io/en/latest/',
                                   None),
                        'data_specification':
-                           ('http://dataspecification.readthedocs.io\
-                            /en/latest/', None),
+                           ('http://dataspecification.readthedocs.io'
+                            '/en/latest/', None),
                        }
 
 # Add any paths that contain templates here, relative to this directory.
