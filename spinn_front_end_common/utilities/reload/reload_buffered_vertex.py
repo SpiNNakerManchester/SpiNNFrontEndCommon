@@ -18,7 +18,7 @@ class ReloadBufferedVertex(SendsBuffersFromHostPreBufferedImpl):
     def __init__(self, label, region_files_tuples):
         """
         :param label: The label of the vertex
-        :param region_files_dict: A dictionary of region id -> file name
+        :param region_files_tuples: A dictionary of region id -> file name
         """
         self._label = label
 

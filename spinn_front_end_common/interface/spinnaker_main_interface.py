@@ -1293,8 +1293,7 @@ class SpinnakerMainInterface(object):
             if not in_debug_mode:
                 self.stop(
                     turn_off_machine=False, clear_routing_tables=False,
-                    clear_tags=False, extract_provenance_data=False,
-                    extract_iobuf=False)
+                    clear_tags=False)
 
             # raise exception
             ex_type, ex_value, ex_traceback = sys.exc_info()
@@ -1423,8 +1422,7 @@ class SpinnakerMainInterface(object):
                 executor.get_item("ErrorMessages"),
                 executor.get_item("WarnMessages"))
             self.stop(turn_off_machine=False, clear_routing_tables=False,
-                      clear_tags=False, extract_provenance_data=False,
-                      extract_iobuf=False)
+                      clear_tags=False)
             sys.exit(1)
 
     def _extract_iobuf(self):

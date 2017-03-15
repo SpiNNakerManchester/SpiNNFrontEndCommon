@@ -257,7 +257,9 @@ class ReloadScript(object):
     def add_dsg_target(self, x, y, p, file_path):
         """ Add a Data Specification Generated file to be reloaded
 
-        :param placement: The placement of the target
+        :param x: The x-coordinate of the chip of the target
+        :param y: The y-coordinate of the chip of the target
+        :param p: The processor id of the target
         :param file_path: The path of the DSG program to execute
         """
         local_file_path = os.path.basename(file_path)
