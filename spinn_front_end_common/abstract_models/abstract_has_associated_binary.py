@@ -10,3 +10,5 @@ class AbstractHasAssociatedBinary(object):
     def get_binary_file_name(self):
         """ Get the binary name to be run for vertices of this vertex
         """
+
+    __slots__ = ()

@@ -9,3 +9,5 @@ from spinn_front_end_common.abstract_models.abstract_starts_synchronized \
 class AbstractBinaryUsesSimulationRun(AbstractStartsSynchronized):
     """ Indicates that the binary run time can be updated
     """
+
+    __slots__ = ()

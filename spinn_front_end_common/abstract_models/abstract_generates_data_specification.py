@@ -6,6 +6,8 @@ from abc import abstractmethod
 @add_metaclass(ABCMeta)
 class AbstractGeneratesDataSpecification(object):
 
+    __slots__ = ()
+
     @abstractmethod
     def generate_data_specification(self, spec, placement):
         """ Generate a data specification
