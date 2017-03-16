@@ -1,5 +1,5 @@
-from pacman.executor.injection_decorator import supports_injection
-from pacman.executor.injection_decorator import inject
+from pacman.executor.injection_decorator import supports_injection,\
+    requires_injection, inject
 
 
 @supports_injection
@@ -8,8 +8,13 @@ class NeedsNMachineTimeSteps(object):
     """
 
     def __init__(self):
-        self._n_machine_time_steps = None
+        self.__n_machine_time_steps = None
 
     @inject("TotalMachineTimeSteps")
     def set_n_machine_time_steps(self, n_machine_time_steps):
-        self._n_machine_time_steps = n_machine_time_steps
+        self.__n_machine_time_steps = n_machine_time_steps
+
+    @property
+    @requires_injection(["TotalMachineTimeSteps"])
+    def n_machine_time_steps(self):
+        return self.__n_machine_time_steps
