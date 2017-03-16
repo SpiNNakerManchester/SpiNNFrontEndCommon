@@ -1,8 +1,8 @@
 from six import add_metaclass
-from abc import ABCMeta
 
+from spinn_utilities.abstract_base import AbstractBase
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractStartsSynchronized(object):
     """ Indicates that the binary starts in synchronisation with other\
         binaries in the simulation

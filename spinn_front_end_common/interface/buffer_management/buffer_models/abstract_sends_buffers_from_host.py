@@ -1,13 +1,12 @@
 # general imports
-from abc import ABCMeta
-from abc import abstractmethod
-from six import add_metaclass
 import logging
+from six import add_metaclass
+
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 logger = logging.getLogger(__name__)
 
-
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractSendsBuffersFromHost(object):
     """ Interface to an object that sends buffers of keys to be\
         transmitted at given timestamps in the simulation

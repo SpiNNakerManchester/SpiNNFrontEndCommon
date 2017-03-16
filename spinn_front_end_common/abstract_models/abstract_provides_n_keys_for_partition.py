@@ -1,9 +1,8 @@
 from six import add_metaclass
-from abc import abstractmethod
-from abc import ABCMeta
 
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractProvidesNKeysForPartition(object):
     """ Allows a vertex to provide the number of keys for a partition of edges,\
         rather than relying on the number of atoms in the pre-vertex
