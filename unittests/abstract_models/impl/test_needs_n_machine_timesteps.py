@@ -12,5 +12,6 @@ class TestNeedsNMachineTimeSteps(unittest.TestCase):
                 {"TotalMachineTimeSteps": 10}):
             self.assertEqual(obj._n_machine_time_steps, 10)
 
+
 if __name__ == "__main__":
     unittest.main()
