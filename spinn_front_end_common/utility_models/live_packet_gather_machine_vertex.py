@@ -55,9 +55,6 @@ class LivePacketGatherMachineVertex(
             constraints=None):
         # inheritance
         MachineVertex.__init__(self, label, constraints=constraints)
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
-            self.N_ADDITIONAL_PROVENANCE_ITEMS)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
@@ -86,6 +83,16 @@ class LivePacketGatherMachineVertex(
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return self.N_ADDITIONAL_PROVENANCE_ITEMS
 
     @property
     @overrides(MachineVertex.resources_required)

@@ -150,8 +150,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         """
         MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self._REGIONS.PROVENANCE_REGION.value, 0)
+
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
 
         self._iptags = None
@@ -256,6 +255,17 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 # If no prefix was generated, generate one
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
+
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self._REGIONS.PROVENANCE_REGION.value
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return 0
 
     @property
     @overrides(MachineVertex.resources_required)

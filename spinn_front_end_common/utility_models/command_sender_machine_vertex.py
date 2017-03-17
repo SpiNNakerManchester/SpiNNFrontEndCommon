@@ -17,8 +17,6 @@ class CommandSenderMachineVertex(
     PROVENANCE_REGION = 2
 
     def __init__(self, constraints, resources_required, label):
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self.PROVENANCE_REGION, n_additional_data_items=0)
         MachineVertex.__init__(self, label, constraints)
 
         self._edge_constraints = dict()
@@ -27,6 +25,16 @@ class CommandSenderMachineVertex(
         self._commands_with_payloads = dict()
         self._commands_without_payloads = dict()
         self._resources = resources_required
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+       return self.PROVENANCE_REGION
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return 0
 
     @property
     @overrides(MachineVertex.resources_required)
