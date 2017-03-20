@@ -194,7 +194,7 @@ def get_recorded_region_sizes(
         if (maximum_sdram_for_buffering is None or
             maximum_sdram_for_buffering[i] == 0 or
             (n_machine_time_steps * sdram) > maximum_sdram_for_buffering[i])
-        else maximum_sdram_for_buffering
+        else maximum_sdram_for_buffering[0]
         for i, sdram in enumerate(buffered_sdram_per_timestep)
     ]
 
