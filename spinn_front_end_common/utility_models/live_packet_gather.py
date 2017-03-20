@@ -21,10 +21,10 @@ from spinn_front_end_common.utility_models\
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -33,7 +33,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 class LivePacketGather(
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        ApplicationVertex, AbstractBinaryUsesSimulationRun):
+        ApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -121,6 +121,10 @@ class LivePacketGather(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @property
     @overrides(ApplicationVertex.n_atoms)
