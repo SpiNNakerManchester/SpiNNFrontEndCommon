@@ -172,8 +172,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if send_buffer_times is None:
             self._send_buffer_times = None
             self._send_buffer_max_space = send_buffer_max_space
-            SendsBuffersFromHostPreBufferedImpl.__init__(
-                self, None)
+            self._send_buffers = None
         else:
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
@@ -186,8 +185,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
-            SendsBuffersFromHostPreBufferedImpl.__init__(
-                self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
+                self._send_buffers = {self._REGIONS.SEND_BUFFER.value:
+                                          self._send_buffer}
 
         # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
@@ -655,3 +654,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_recording_region_base_address(self, txrx, placement):
         return helpful_functions.locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING.value, txrx)
+
+    @property
+    def send_buffers(self):
+        return self._send_buffers
+
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
