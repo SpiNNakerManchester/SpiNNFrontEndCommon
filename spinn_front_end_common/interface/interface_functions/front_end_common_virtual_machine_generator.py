@@ -1,6 +1,5 @@
 # spinn_machine imports
 from spinn_machine.virtual_machine import VirtualMachine
-from spinn_front_end_common.utilities import helpful_functions
 
 
 class FrontEndCommonVirtualMachineGenerator(object):
@@ -8,7 +7,7 @@ class FrontEndCommonVirtualMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, width=None, height=None, virtual_has_wrap_arounds=False,
+            self, width=None, height=None, virtual_has_wrap_arounds=None,
             version=None, n_cpus_per_chip=18, with_monitors=True,
             down_chips=None, down_cores=None, down_links=None):
         """
@@ -19,19 +18,14 @@ class FrontEndCommonVirtualMachineGenerator(object):
         :param version: The version of board to create
         :param n_cpus_per_chip: The number of cores to put on each chip
         :param with_monitors: If true, CPU 0 will be marked as a monitor
-        :return: None
         """
-
-        ignored_chips, ignored_cores = \
-            helpful_functions.sort_out_downed_chips_cores(
-                down_chips, down_cores)
 
         machine = VirtualMachine(
             width=width, height=height,
             with_wrap_arounds=virtual_has_wrap_arounds,
             version=version, n_cpus_per_chip=n_cpus_per_chip,
-            with_monitors=with_monitors, down_chips=ignored_chips,
-            down_cores=ignored_cores, down_links=down_links)
+            with_monitors=with_monitors, down_chips=down_chips,
+            down_cores=down_cores, down_links=down_links)
 
         # Work out and add the spinnaker links and FPGA links
         machine.add_spinnaker_links(version)

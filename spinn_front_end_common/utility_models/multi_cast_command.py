@@ -5,7 +5,7 @@ class MultiCastCommand(object):
     """ A command to be sent to a vertex
     """
 
-    def __init__(self, time, key, mask=0xFFFFFFFF, payload=None, repeat=0,
+    def __init__(self, time, key, payload=None, repeat=0,
                  delay_between_repeats=0):
         """
 
@@ -19,10 +19,6 @@ class MultiCastCommand(object):
         :type time: int
         :param key: The key of the command
         :type key: int
-        :param mask: A mask to indicate the important bits of the command key.\
-                    By default, all bits are assumed to be important, but this\
-                    can be used to optimise the sending of a group of commands
-        :type mask: int
         :param payload: The payload of the command
         :type payload: int
         :param repeat: The number of times that the command should be\
@@ -49,7 +45,7 @@ class MultiCastCommand(object):
 
         self._time = time
         self._key = key
-        self._mask = mask
+
         self._payload = payload
         self._repeat = repeat
         self._delay_between_repeats = delay_between_repeats
@@ -63,10 +59,6 @@ class MultiCastCommand(object):
         return self._key
 
     @property
-    def mask(self):
-        return self._mask
-
-    @property
     def repeat(self):
         return self._repeat
 
@@ -74,23 +66,10 @@ class MultiCastCommand(object):
     def delay_between_repeats(self):
         return self._delay_between_repeats
 
-    def get_payload(self, routing_info, graph, graph_mapper):
-        """ Get the payload of the command.  By default, this just returns the\
-            payload in the packet, but this can be overridden to compute the\
-            payload from the routing information if so required.  This will be\
-            called after mapping, during data specification generation.
+    @property
+    def payload(self):
+        """ Get the payload of the command.
 
-        :param routing_info: The routing information generated during mapping\
-                    from which edge keys can be obtained
-        :type routing_info: \
-                    :py:class:`pacman.model.routing_info.routing_info.RoutingInfo`
-        :param graph: The graph for which the routing\
-                    information was obtained
-        :type graph: \
-                    :py:class:`pacman.model.graph.machine.machine_graph.MachineGraph`
-        :param graph_mapper: The mapper between the graphs
-        :type graph_mapper: \
-                    :py:class:`pacman.model.graph.graph_mapper.GraphMapper`
         :return: The payload of the command, or None if there is no payload
         :rtype: int
         """
@@ -106,3 +85,10 @@ class MultiCastCommand(object):
         :rtype: bool
         """
         return self._payload is not None
+
+    def __repr__(self):
+        return \
+            "MultiCastCommand(time={}, key={}, payload={},"\
+            " time_between_repeat={}, repeats={})".format(
+                self._time, self._key, self._payload,
+                self._delay_between_repeats, self._repeat)

@@ -15,6 +15,8 @@ import threading
 
 # used to stop file conflicts
 from spinn_storage_handlers.file_data_writer import FileDataWriter
+from collections import defaultdict
+from spinn_front_end_common.utilities import exceptions
 
 _lock_condition = threading.Condition()
 
@@ -23,15 +25,29 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     """ Executes data specification generation
     """
 
-    __slots__ = []
+    __slots__ = (
+
+        # Dict of sdram usage by chip coordinates
+        "_sdram_usage",
+
+        # Dict of list of region sizes by vertex
+        "_region_sizes",
+
+        # Dict of list of vertices by chip coordinates
+        "_vertices_by_chip"
+    )
+
+    def __init__(self):
+        self._sdram_usage = defaultdict(lambda: 0)
+        self._region_sizes = dict()
+        self._vertices_by_chip = defaultdict(list)
 
     def __call__(
             self, placements, graph, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder, graph_mapper=None):
+            app_data_runtime_folder, machine, graph_mapper=None):
         """ generates the dsg for the graph.
 
-        :return:
         """
 
         # iterate though vertices and call generate_data_spec for each
@@ -47,18 +63,18 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                 self._generate_data_spec_for_vertices(
                     placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
-                    app_data_runtime_folder)
+                    app_data_runtime_folder, machine)
                 progress_bar.update()
             progress_bar.end()
         elif isinstance(graph, MachineGraph):
-            progress_bar = ProgressBar(len(list(graph.vertices)),
-                                       "Generating data specifications")
+            progress_bar = ProgressBar(
+                graph.n_vertices, "Generating data specifications")
             for vertex in graph.vertices:
                 placement = placements.get_placement_of_vertex(vertex)
                 self._generate_data_spec_for_vertices(
                     placement, vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
-                    app_data_runtime_folder)
+                    app_data_runtime_folder, machine)
                 progress_bar.update()
             progress_bar.end()
 
@@ -67,7 +83,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     def _generate_data_spec_for_vertices(
             self, placement, associated_vertex, dsg_targets, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder):
+            app_data_runtime_folder, machine):
 
         # if the vertex can generate a DSG, call it
         if isinstance(associated_vertex, AbstractGeneratesDataSpecification):
@@ -85,6 +101,31 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             # generate the dsg file
             associated_vertex.generate_data_specification(spec, placement)
             data_writer.close()
+
+            # Check the memory usage
+            self._region_sizes[placement.vertex] = spec.region_sizes
+            self._vertices_by_chip[placement.x, placement.y].append(
+                placement.vertex)
+            self._sdram_usage[placement.x, placement.y] += sum(
+                spec.region_sizes)
+            if (self._sdram_usage[placement.x, placement.y] >
+                    machine.get_chip_at(placement.x, placement.y).sdram.size):
+
+                # creating the error message which contains the memory usage of
+                #  what each core within the chip uses and its original
+                # estimate.
+                memory_usage = "\n".join([
+                    "    {}: {} (total={}, estimated={})".format(
+                        vertex, self._region_sizes[vertex],
+                        sum(self._region_sizes[vertex]),
+                        vertex.resources_required.sdram.get_value())
+                    for vertex in self._vertices_by_chip[
+                        placement.x, placement.y]])
+
+                raise exceptions.ConfigurationException(
+                    "Too much SDRAM has been used on {}, {}.  Vertices and"
+                    " their usage on that chip is as follows:\n{}".format(
+                        placement.x, placement.y, memory_usage))
 
             # link dsg file to vertex
             dsg_targets[placement.x, placement.y, placement.p] = \
@@ -104,7 +145,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         :param report_directory:
         :param write_text_specs:
         :param application_run_time_report_folder:
-        :return:
         """
 
         binary_file_path = self.get_data_spec_file_path(
@@ -139,15 +179,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     def get_data_spec_file_path(processor_chip_x, processor_chip_y,
                                 processor_id, hostname,
                                 application_run_time_folder):
-        """
-        :param processor_chip_x:
-        :param processor_chip_y:
-        :param processor_id:
-        :param hostname:
-        :param application_run_time_folder:
-        :return:
-        """
-
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
 
@@ -161,16 +192,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     def get_application_data_file_path(
             processor_chip_x, processor_chip_y, processor_id, hostname,
             application_run_time_folder):
-        """
-
-        :param processor_chip_x:
-        :param processor_chip_y:
-        :param processor_id:
-        :param hostname:
-        :param application_run_time_folder:
-        :return:
-        """
-
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()
 
