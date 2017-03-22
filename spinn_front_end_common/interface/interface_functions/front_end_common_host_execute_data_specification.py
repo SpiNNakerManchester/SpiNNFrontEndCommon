@@ -115,11 +115,9 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             data_writer.close()
 
             # the data is written to memory
-            file_reader = FileDataReader(app_data_file_path)
-            app_data = file_reader.readall()
-            bytes_written_by_spec = len(app_data)
-            transceiver.write_memory(x, y, start_address, app_data)
-            file_reader.close()
+            transceiver.write_memory(
+                x, y, start_address, app_data_file_path, is_filename=True)
+            bytes_written_by_spec = os.stat(app_data_file_path).st_size
 
             # set user 0 register appropriately to the application data
             user_0_address = \

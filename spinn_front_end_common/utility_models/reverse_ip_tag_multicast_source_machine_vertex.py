@@ -12,7 +12,7 @@ from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.interface.buffer_management.buffer_manager\
+from spinn_front_end_common.interface.buffer_management.buffer_manager \
     import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
@@ -20,8 +20,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -41,6 +39,8 @@ from spinn_front_end_common.interface.provenance\
     ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
@@ -55,7 +55,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
+        AbstractHasAssociatedBinary,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
@@ -425,6 +425,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._time_between_triggers = time_between_triggers
 
     def _reserve_regions(self, spec):
+
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
@@ -452,6 +453,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _update_virtual_key(self, routing_info, machine_graph):
         if self._virtual_key is None:
             if self._send_buffer_partition_id is not None:
+
                 rinfo = routing_info.get_routing_info_from_pre_vertex(
                     self, self._send_buffer_partition_id)
                 self._virtual_key = rinfo.first_key
@@ -504,6 +506,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write send buffer data
         if self._send_buffer_times is not None:
+
             this_tag = None
 
             for tag in ip_tags:
@@ -581,6 +584,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
