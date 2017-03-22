@@ -12,9 +12,9 @@ class NeedsNMachineTimeSteps(object):
     """ A class that uses the number of machine time steps
     """
 
-    __slots__=()
+    __slots__ = ()
 
     @inject("TotalMachineTimeSteps")
     @abstractmethod
     def set_n_machine_time_steps(self, n_machine_time_steps):
-       pass
+        pass

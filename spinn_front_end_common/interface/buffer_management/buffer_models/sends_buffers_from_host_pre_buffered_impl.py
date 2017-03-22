@@ -11,6 +11,7 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod, \
 
 logger = logging.getLogger(__name__)
 
+
 @add_metaclass(AbstractBase)
 class SendsBuffersFromHostPreBufferedImpl(
         AbstractSendsBuffersFromHost):

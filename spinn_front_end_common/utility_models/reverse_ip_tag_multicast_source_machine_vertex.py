@@ -186,7 +186,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
                 self._send_buffers = {self._REGIONS.SEND_BUFFER.value:
-                                          self._send_buffer}
+                                      self._send_buffer}
 
         # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
@@ -254,7 +254,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 # If no prefix was generated, generate one
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
-
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)

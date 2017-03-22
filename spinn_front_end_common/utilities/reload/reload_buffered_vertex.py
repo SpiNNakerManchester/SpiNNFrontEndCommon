@@ -38,4 +38,3 @@ class ReloadBufferedVertex(SendsBuffersFromHostPreBufferedImpl):
     @send_buffers.setter
     def send_buffers(self, value):
         self._send_buffers = value
-

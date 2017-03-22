@@ -13,7 +13,8 @@ from data_specification import utility_calls as dsg_utility_calls
 import struct
 from enum import Enum
 
-add_metaclass(AbstractBase)
+
+@add_metaclass(AbstractBase)
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine):
     """ An implementation that gets provenance data from a region of ints on\
