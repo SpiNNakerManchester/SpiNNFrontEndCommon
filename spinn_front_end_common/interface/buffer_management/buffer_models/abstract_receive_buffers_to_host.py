@@ -18,7 +18,7 @@ class AbstractReceiveBuffersToHost(object):
         """ Get the number of timesteps that can be stored fully in the given\
             buffer space in bytes
 
-        :param buffer_space The buffer space in bytes
+        :param buffer_space: The buffer space in bytes
         :param machine_time_step: The size of each time step
         :return: The number of time steps that can be stored in the buffer
         :rtype: int

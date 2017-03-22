@@ -16,7 +16,7 @@ class FrontEndCommonMemoryMapOnHostReport(object):
 
         :param report_default_directory:
         :param processor_to_app_data_base_address:
-        :return:
+        :rtype: None
         """
 
         file_name = os.path.join(report_default_directory,
