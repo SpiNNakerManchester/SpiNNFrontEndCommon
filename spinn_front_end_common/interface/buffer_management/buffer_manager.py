@@ -8,6 +8,7 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
 from spinnman.messages.eieio.command_messages.eieio_command_message import \
     EIEIOCommandMessage
 from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinnman.utilities import utility_functions
 from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
     import SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages.host_data_read \
@@ -42,10 +43,11 @@ from spinn_front_end_common.interface.buffer_management.\
 from spinn_front_end_common.utilities import constants as \
     spinn_front_end_constants
 from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    end_buffering_state import EndBufferingState
+    channel_buffer_state import ChannelBufferState
+from spinn_front_end_common.interface.buffer_management \
+    import recording_utilities
 
 # general imports
-import struct
 import threading
 import logging
 import traceback
@@ -66,6 +68,9 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 class BufferManager(object):
     """ Manager of send buffers
     """
+
+    # Buffer manager traffic type
+    TRAFFIC_IDENTIFIER = recording_utilities.TRAFFIC_IDENTIFIER
 
     __slots__ = [
         # placements object
@@ -190,10 +195,8 @@ class BufferManager(object):
                         #     " from chip ({},{}, core {}".format(
                         #         packet.n_requests, packet.sequence_no,
                         #         packet.x, packet.y, packet.p))
-                        vertex = self._placements.get_vertex_on_processor(
-                            packet.x, packet.y, packet.p)
                         try:
-                            self._retrieve_and_store_data(packet, vertex)
+                            self._retrieve_and_store_data(packet)
                         except Exception:
                             traceback.print_exc()
                 elif isinstance(packet, EIEIOCommandMessage):
@@ -208,19 +211,51 @@ class BufferManager(object):
         except Exception:
             traceback.print_exc()
 
+    def _create_connection(self, tag):
+        if self._transceiver is not None:
+            connection = self._transceiver.register_udp_listener(
+                self.receive_buffer_command_message, UDPEIEIOConnection,
+                local_port=tag.port, local_host=tag.ip_address)
+            self._seen_tags.add((tag.ip_address, connection.local_port))
+            utility_functions.send_port_trigger_message(
+                connection, tag.board_address)
+            logger.info(
+                "Listening for packets using tag {} on {}:{}".format(
+                    tag.tag, connection.local_ip_address,
+                    connection.local_port))
+            return connection
+
+    def _add_buffer_listeners(self, vertex):
+        """ Add listeners for buffered data for the given vertex
+        """
+
+        # Find a tag for receiving buffer data
+        tags = self._tags.get_ip_tags_for_vertex(vertex)
+
+        if tags is not None:
+
+            # locate the tag that is associated with the buffer manager
+            # traffic
+            for tag in tags:
+                if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
+
+                    # If the tag port is not assigned, create a connection and
+                    # assign the port.  Note that this *should* update the port
+                    # number in any tags being shared
+                    if tag.port is None:
+                        connection = self._create_connection(tag)
+                        tag.port = connection.local_port
+
+                    # In case we have tags with different specified ports, also
+                    # allow the tag to be created here
+                    elif (tag.ip_address, tag.port) not in self._seen_tags:
+                        self._create_connection(tag)
+
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices\
             which require buffers to be received from them during runtime
         """
-        tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
-        if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.debug("Listening for receive packets using tag {} on"
-                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-            self._seen_tags.add((tag.ip_address, tag.port))
-            if self._transceiver is not None:
-                self._transceiver.register_udp_listener(
-                    self.receive_buffer_command_message, UDPEIEIOConnection,
-                    local_port=tag.port, local_host=tag.ip_address)
+        self._add_buffer_listeners(vertex)
 
     def add_sender_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices
@@ -231,15 +266,7 @@ class BufferManager(object):
                     :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
-        tag = self._tags.get_ip_tags_for_vertex(vertex)[0]
-        if (tag.ip_address, tag.port) not in self._seen_tags:
-            logger.debug("Listening for send packets using tag {} on"
-                         " {}:{}".format(tag.tag, tag.ip_address, tag.port))
-            self._seen_tags.add((tag.ip_address, tag.port))
-            if self._transceiver is not None:
-                self._transceiver.register_udp_listener(
-                    self.receive_buffer_command_message, UDPEIEIOConnection,
-                    local_port=tag.port, local_host=tag.ip_address)
+        self._add_buffer_listeners(vertex)
 
         # if reload script is set up, store the buffers for future usage
         if self._write_reload_files:
@@ -295,7 +322,18 @@ class BufferManager(object):
     def resume(self):
         """ Resets any data structures needed before starting running again
         """
+
+        # update the received data items
         self._received_data.resume()
+
+    def _generate_end_buffering_state_from_machine(
+            self, placement, state_region_base_address):
+
+        # retrieve channel state memory area
+        channel_state_data = str(self._transceiver.read_memory(
+            placement.x, placement.y, state_region_base_address,
+            ChannelBufferState.size_of_channel_state()))
+        return ChannelBufferState.create_from_bytearray(channel_state_data)
 
     def _create_message_to_send(self, size, vertex, region):
         """ Creates a single message to send with the given boundaries.
@@ -506,51 +544,56 @@ class BufferManager(object):
             for buffer_file in self._reload_buffer_file.itervalues():
                 buffer_file.close()
 
-    def get_data_for_vertex(self, placement, region_to_read, state_region):
+    def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
         :param placement: the placement to get the data from
         :type placement: pacman.model.placements.placement.Placement
-        :param region_to_read: desired data region
-        :type region_to_read: int
-        :param state_region: final state storage region
-        :type state_region: int
+        :param recording_region_id: desired recording data region
+        :type recording_region_id: int
         :return: pointer to a class which inherits from\
                 AbstractBufferedDataStorage
         :rtype:\
                 py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
         """
-        # flush data here
+
+        recording_data_address = \
+            placement.vertex.get_recording_region_base_address(
+                self._transceiver, placement)
+
+        # Ensure the last sequence number sent has been retrieved
+        if not self._received_data.is_end_buffering_sequence_number_stored(
+                placement.x, placement.y, placement.p):
+            self._received_data.store_end_buffering_sequence_number(
+                placement.x, placement.y, placement.p,
+                recording_utilities.get_last_sequence_number(
+                    placement, self._transceiver, recording_data_address))
+
+        # Read the data if not already received
         if not self._received_data.is_data_from_region_flushed(
-                placement.x, placement.y, placement.p, region_to_read):
+                placement.x, placement.y, placement.p,
+                recording_region_id):
+
+            # Read the end state of the recording for this region
             if not self._received_data.is_end_buffering_state_recovered(
-                    placement.x, placement.y, placement.p):
+                    placement.x, placement.y, placement.p,
+                    recording_region_id):
 
-                # Get the App Data for the core
-                state_region_base_address = \
-                    helpful_functions.locate_memory_region_for_placement(
-                        placement, state_region, self._transceiver)
-
-                # retrieve channel state memory area
-                raw_number_of_channels = self._transceiver.read_memory(
-                    placement.x, placement.y, state_region_base_address, 4)
-                number_of_channels = struct.unpack(
-                    "<I", str(raw_number_of_channels))[0]
-                channel_state_data = str(self._transceiver.read_memory(
-                    placement.x, placement.y, state_region_base_address,
-                    EndBufferingState.size_of_region(number_of_channels)))
-                end_buffering_state = EndBufferingState.create_from_bytearray(
-                    channel_state_data)
+                end_state_address = recording_utilities.get_region_pointer(
+                    placement, self._transceiver, recording_data_address,
+                    recording_region_id)
+                end_state = self._generate_end_buffering_state_from_machine(
+                    placement, end_state_address)
                 self._received_data.store_end_buffering_state(
-                    placement.x, placement.y, placement.p, end_buffering_state)
+                    placement.x, placement.y, placement.p, recording_region_id,
+                    end_state)
             else:
-                end_buffering_state = self._received_data.\
+                end_state = self._received_data.\
                     get_end_buffering_state(
-                        placement.x, placement.y, placement.p)
+                        placement.x, placement.y, placement.p,
+                        recording_region_id)
 
-            end_state = end_buffering_state.get_state_for_region(
-                region_to_read)
             start_ptr = end_state.start_address
             write_ptr = end_state.current_write
             end_ptr = end_state.end_address
@@ -565,8 +608,13 @@ class BufferManager(object):
             seq_no_last_ack_packet = \
                 self._received_data.last_sequence_no_for_core(
                     placement.x, placement.y, placement.p)
-            seq_no_internal_fsm = end_buffering_state.buffering_out_fsm_state
-            if seq_no_internal_fsm == seq_no_last_ack_packet:
+
+            # get the last sequence number
+            last_sequence_number = \
+                self._received_data.get_end_buffering_sequence_number(
+                    placement.x, placement.y, placement.p)
+
+            if last_sequence_number == seq_no_last_ack_packet:
 
                 # if the last ACK packet has not been processed on the chip,
                 # process it now
@@ -582,7 +630,12 @@ class BufferManager(object):
                         "I was looking for a HostDataRead packet, "
                         "while I got {0:s}".format(last_sent_ack_packet))
                 for i in xrange(last_sent_ack_packet.n_requests):
-                    if (region_to_read == last_sent_ack_packet.region_id(i) and
+
+                    last_ack_packet_is_of_this_region = \
+                        recording_region_id == \
+                        last_sent_ack_packet.region_id(i)
+
+                    if (last_ack_packet_is_of_this_region and
                             not end_state.is_state_updated):
                         read_ptr += last_sent_ack_packet.space_read(i)
                         if (read_ptr == write_ptr or
@@ -613,7 +666,7 @@ class BufferManager(object):
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read,
+                    placement.x, placement.y, placement.p, recording_region_id,
                     data)
 
             elif read_ptr > write_ptr:
@@ -621,14 +674,14 @@ class BufferManager(object):
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
-                    placement.x, placement.y, placement.p, region_to_read,
+                    placement.x, placement.y, placement.p, recording_region_id,
                     data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read,
+                    placement.x, placement.y, placement.p, recording_region_id,
                     data)
 
             elif (read_ptr == write_ptr and
@@ -638,14 +691,14 @@ class BufferManager(object):
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
-                    placement.x, placement.y, placement.p, region_to_read,
+                    placement.x, placement.y, placement.p, recording_region_id,
                     data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read,
+                    placement.x, placement.y, placement.p, recording_region_id,
                     data)
 
             elif (read_ptr == write_ptr and
@@ -653,16 +706,16 @@ class BufferManager(object):
                     BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
                 self._received_data.flushing_data_from_region(
-                    placement.x, placement.y, placement.p, region_to_read,
+                    placement.x, placement.y, placement.p, recording_region_id,
                     data)
 
         # data flush has been completed - return appropriate data
         # the two returns can be exchanged - one returns data and the other
         # returns a pointer to the structure holding the data
         return self._received_data.get_region_data_pointer(
-            placement.x, placement.y, placement.p, region_to_read)
+            placement.x, placement.y, placement.p, recording_region_id)
 
-    def _retrieve_and_store_data(self, packet, vertex):
+    def _retrieve_and_store_data(self, packet):
         """ Following a SpinnakerRequestReadData packet, the data stored\
            during the simulation needs to be read by the host and stored in a\
            data structure, following the specifications of buffering out\
@@ -672,10 +725,7 @@ class BufferManager(object):
                 SpiNNaker system
         :type packet:\
                 :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
-        :param vertex: Vertex associated with the read request
-        :type vertex:\
-                :py:class:`pacman.model.graph.machine.machine_vertex.MachineVertex`
-        :return: None
+        :rtype: None
         """
         x = packet.x
         y = packet.y
@@ -731,8 +781,9 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=spinn_front_end_constants.SDP_PORTS.
-            OUTPUT_BUFFERING_SDP_PORT.value,
+            destination_port=(
+                spinn_front_end_constants.SDP_PORTS
+                .OUTPUT_BUFFERING_SDP_PORT.value),
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
@@ -750,13 +801,11 @@ class BufferManager(object):
     @property
     def sender_vertices(self):
         """ The vertices which are buffered
-        :return:
         """
         return self._sender_vertices
 
     @property
     def reload_buffer_files(self):
         """ The file paths for each buffered region for each sender vertex
-        :return:
         """
         return self._reload_buffer_file_paths

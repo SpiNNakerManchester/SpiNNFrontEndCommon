@@ -29,14 +29,6 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             self, hostname, transceiver, report_default_directory,
             write_text_specs, runtime_application_data_folder, machine,
             app_id, dsg_targets):
-        """
-
-        :param hostname:
-        :param write_text_specs:
-        :param runtime_application_data_folder:
-        :param machine:
-        :return:
-        """
 
         data = self.host_based_data_specification_execution(
             hostname, transceiver, write_text_specs,
@@ -49,18 +41,6 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             self, hostname, transceiver, write_text_specs,
             application_data_runtime_folder, machine, report_default_directory,
             app_id, dsg_targets):
-        """
-
-        :param hostname:
-        :param transceiver:
-        :param write_text_specs:
-        :param application_data_runtime_folder:
-        :param machine:
-        :param report_default_directory:
-        :param app_id:
-        :param dsg_targets:
-        :return:
-        """
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
@@ -135,11 +115,9 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             data_writer.close()
 
             # the data is written to memory
-            file_reader = FileDataReader(app_data_file_path)
-            app_data = file_reader.readall()
-            bytes_written_by_spec = len(app_data)
-            transceiver.write_memory(x, y, start_address, app_data)
-            file_reader.close()
+            transceiver.write_memory(
+                x, y, start_address, app_data_file_path, is_filename=True)
+            bytes_written_by_spec = os.stat(app_data_file_path).st_size
 
             # set user 0 register appropriately to the application data
             user_0_address = \
@@ -167,15 +145,6 @@ class FrontEndCommonHostExecuteDataSpecification(object):
     def get_application_data_file_path(
             processor_chip_x, processor_chip_y, processor_id, hostname,
             application_run_time_folder):
-        """
-
-        :param processor_chip_x:
-        :param processor_chip_y:
-        :param processor_id:
-        :param hostname:
-        :param application_run_time_folder:
-        :return:
-        """
 
         if application_run_time_folder == "TEMP":
             application_run_time_folder = tempfile.gettempdir()

@@ -16,8 +16,6 @@ class FrontEndCommonTagsLoader(object):
         :param iptags: a list of iptags, given when tags is none
         :param reverse_iptags: a list of reverse iptags when tags is none.
         :param transceiver: the transceiver object
-
-        :return none
         """
         # clear all the tags from the Ethernet connection, as nothing should
         # be allowed to use it (no two apps should use the same Ethernet
@@ -55,7 +53,7 @@ class FrontEndCommonTagsLoader(object):
 
         :param iptags: the iptags to be loaded.
         :param transceiver: the transceiver object
-        :return: none
+        :rtype: None
         """
         for ip_tag in iptags:
             transceiver.set_ip_tag(ip_tag)
@@ -67,7 +65,7 @@ class FrontEndCommonTagsLoader(object):
 
         :param reverse_ip_tags: the reverse iptags to be loaded
         :param transceiver: the transceiver object
-        :return: None
+        :rtype: None
         """
         for reverse_ip_tag in reverse_ip_tags:
             transceiver.set_reverse_ip_tag(reverse_ip_tag)
