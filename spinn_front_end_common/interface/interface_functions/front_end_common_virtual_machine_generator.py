@@ -7,7 +7,7 @@ class FrontEndCommonVirtualMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, width=None, height=None, virtual_has_wrap_arounds=True,
+            self, width=None, height=None, virtual_has_wrap_arounds=None,
             version=None, n_cpus_per_chip=18, with_monitors=True,
             down_chips=None, down_cores=None, down_links=None):
         """

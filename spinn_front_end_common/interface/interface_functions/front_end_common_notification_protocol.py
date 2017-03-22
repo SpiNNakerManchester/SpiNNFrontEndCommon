@@ -27,8 +27,8 @@ class FrontEndCommonNotificationProtocol(object):
         """
 
         # notification protocol
-        self._notification_protocol = \
-            NotificationProtocol(socket_addresses, wait_for_read_confirmation)
+        self._notification_protocol = NotificationProtocol(
+            socket_addresses, wait_for_read_confirmation)
         self.send_read_notification(database_file_path)
 
         return self

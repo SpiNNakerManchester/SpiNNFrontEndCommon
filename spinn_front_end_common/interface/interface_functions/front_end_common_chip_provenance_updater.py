@@ -1,15 +1,14 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+import struct
 
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.model.cpu_state import CPUState
 
-from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
-import struct
+from spinnman.model.enums.cpu_state import CPUState
+from spinn_utilities.progress_bar import ProgressBar
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
@@ -30,12 +29,12 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        error_cores = helpful_functions.get_cores_in_state(
-            all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
-        watchdog_cores = helpful_functions.get_cores_in_state(
-            all_core_subsets, CPUState.WATCHDOG, txrx)
-        idle_cores = helpful_functions.get_cores_in_state(
-            all_core_subsets, CPUState.IDLE, txrx)
+        error_cores = txrx.get_cores_in_state(
+            all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_cores = txrx.get_cores_in_state(
+            all_core_subsets, CPUState.WATCHDOG)
+        idle_cores = txrx.get_cores_in_state(
+            all_core_subsets, CPUState.IDLE)
 
         if (len(error_cores) != 0 or len(watchdog_cores) != 0 or
                 len(idle_cores) != 0):
@@ -48,10 +47,10 @@ class FrontEndCommonChipProvenanceUpdater(object):
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
         while processors_completed != total_processors:
-            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, CPUState.FINISHED, txrx)
+            unsuccessful_cores = txrx.get_cores_not_in_state(
+                all_core_subsets, CPUState.FINISHED)
 
-            for (x, y, p) in unsuccessful_cores:
+            for (x, y, p) in unsuccessful_cores.iterkeys():
                 data = struct.pack(
                     "<I", constants.SDP_RUNNING_MESSAGE_CODES.
                     SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
