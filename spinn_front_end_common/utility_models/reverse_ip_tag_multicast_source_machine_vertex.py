@@ -14,8 +14,6 @@ from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.resources.resource_container import ResourceContainer
 from pacman.model.resources.dtcm_resource import DTCMResource
 from pacman.model.resources.sdram_resource import SDRAMResource
-from spinn_front_end_common.utilities import helpful_functions
-import sys
 from pacman.model.resources.cpu_cycles_per_tick_resource \
     import CPUCyclesPerTickResource
 from pacman.model.abstract_classes.impl.constrained_object \
@@ -25,14 +23,15 @@ from pacman.model.abstract_classes.abstract_has_constraints \
 from pacman.model.graphs.machine.abstract_machine_vertex \
     import AbstractMachineVertex
 
+from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.interface.buffer_management.buffer_manager \
+    import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
     import SendsBuffersFromHostPreBufferedImpl
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -52,11 +51,15 @@ from spinn_front_end_common.interface.provenance\
     ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 from enum import Enum
 import math
+import sys
+import struct
 
 _DEFAULT_MALLOC_REGIONS = 2
 
@@ -65,7 +68,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 class ReverseIPTagMulticastSourceMachineVertex(
         AbstractMachineVertex, AbstractHasConstraints,
         AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
+        AbstractHasAssociatedBinary,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
@@ -82,7 +85,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('SEND_BUFFER', 3),
                ('PROVENANCE_REGION', 4)])
 
-    _CONFIGURATION_REGION_SIZE = 40
+    # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
+    #          5. has key, 6. key, 7. mask, 8. buffer space,
+    #          9. send buffer flag before notify, 10. tag,
+    #          11. tag destination (y, x), 12. receive SDP port)
+    _CONFIGURATION_REGION_SIZE = 12 * 4
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -111,7 +118,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Buffer notification details
             buffer_notification_ip_address=None,
             buffer_notification_port=None,
-            buffer_notification_tag=None):
+            buffer_notification_tag=None,
+
+            # Extra flag for receiving packets without a port
+            reserve_reverse_ip_tag=False):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -142,13 +152,13 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param send_buffer_space_before_notify: The amount of space free in\
                 the sending buffer before the machine will ask the host for\
                 more data (default setting is optimised for most cases)
-        :param send_buffer_notification_ip_address: The IP address of the host\
+        :param buffer_notification_ip_address: The IP address of the host\
                 that will send new buffers (must be specified if a send buffer\
                 is specified)
-        :param send_buffer_notification_port: The port that the host that will\
+        :param buffer_notification_port: The port that the host that will\
                 send new buffers is listening on (must be specified if a\
                 send buffer is specified)
-        :param send_buffer_notification_tag: The IP tag to use to notify the\
+        :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
         AbstractReceiveBuffersToHost.__init__(self)
@@ -162,13 +172,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._reverse_iptags = None
 
         # Set up for receiving live packets
-        if receive_port is not None:
+        if receive_port is not None or reserve_reverse_ip_tag:
             self._reverse_iptags = [ReverseIPtagResource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
         self._receive_rate = receive_rate
+        self._receive_sdp_port = receive_sdp_port
 
         # Work out if buffers are being sent
         self._send_buffer = None
@@ -184,8 +195,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_times = send_buffer_times
 
             self._iptags = [IPtagResource(
-                buffer_notification_ip_address, buffer_notification_port, True,
-                buffer_notification_tag)]
+                ip_address=buffer_notification_ip_address,
+                port=buffer_notification_port, strip_sdp=True,
+                tag=buffer_notification_tag,
+                traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
             SendsBuffersFromHostPreBufferedImpl.__init__(
@@ -417,15 +430,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
             time_between_triggers=0):
         """ Enable recording of the keys sent
 
-        :param buffering_ip_address:\
-            The ip address to receive buffer notification messages on
-        :type buffering_ip_address: str
-        :param buffering_port:\
-            The port to receive buffer notification messages on
-        :type buffering_port: int
-        :param notification_tag:\
-            The tag to send buffer notification messages to
-        :type notification_tag: int
         :param record_buffer_size:\
             The size of the recording buffer in bytes.  Note that when using\
             automatic pause and resume, this will be used as the minimum size\
@@ -481,9 +485,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             else:
                 partitions = machine_graph\
                     .get_outgoing_edge_partitions_starting_at_vertex(self)
-                if len(partitions) == 1:
+                partition = next(iter(partitions), None)
+
+                if partition is not None:
                     rinfo = routing_info.get_routing_info_from_partition(
-                        partitions[0])
+                        partition)
                     self._virtual_key = rinfo.first_key
                     self._mask = rinfo.first_mask
 
@@ -525,11 +531,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._send_buffer_times is not None:
 
             this_tag = None
+
             for tag in ip_tags:
-                if (tag.ip_address ==
-                        self._buffer_notification_ip_address and
-                        tag.port == self._buffer_notification_port):
+                if tag.traffic_identifier == BufferManager.TRAFFIC_IDENTIFIER:
                     this_tag = tag
+                    break
             if this_tag is None:
                 raise Exception("Could not find tag for send buffering")
 
@@ -539,10 +545,16 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
+            spec.write_value(struct.unpack("<I", struct.pack(
+                "<HH", this_tag.destination_y, this_tag.destination_x))[0])
         else:
             spec.write_value(data=0)
             spec.write_value(data=0)
             spec.write_value(data=0)
+            spec.write_value(data=0)
+
+        # write SDP port to which SDP packets will be received
+        spec.write_value(data=self._receive_sdp_port)
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
@@ -584,8 +596,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         spec.write_array(recording_utilities.get_recording_header_array(
             [self._record_buffer_size],
             self._time_between_triggers, self._buffer_size_before_receive,
-            iptags, self._buffer_notification_ip_address,
-            self._buffer_notification_port, self._buffer_notification_tag))
+            iptags, self._buffer_notification_tag))
 
         # Write the configuration information
         self._write_configuration(spec, iptags)
@@ -596,6 +607,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)

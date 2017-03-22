@@ -16,7 +16,6 @@ class EndBufferingState(object):
             self, buffering_out_fsm_state, list_channel_buffer_state):
         """
 
-        :param n_recording_regions: Number of buffering regions used
         :param buffering_out_fsm_state: Final sequence number received
         :param list_channel_buffer_state: a list of channel state, where each\
                 channel is stored in a ChannelBufferState object

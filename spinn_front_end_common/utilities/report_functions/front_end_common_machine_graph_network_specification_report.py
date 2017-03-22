@@ -19,7 +19,7 @@ class FrontEndCommonMachineGraphNetworkSpecificationReport(object):
                     pacman.model.graph.machine.machine_graph.MachineGraph
         :param hostname: the machine name
         :type hostname:
-        :return: None
+        :rtype: None
         """
         filename = report_folder + os.sep + "network_specification.rpt"
         f_network_specification = None
@@ -52,20 +52,21 @@ class FrontEndCommonMachineGraphNetworkSpecificationReport(object):
 
         # Print information on edges:
         f_network_specification.write("*** Edges:\n")
-        for edge in machine_graph.edges:
-            label = edge.label
-            model = "No Model"
-            if hasattr(edge, "connector"):
-                model = edge.connector.__class__.__name__
-            pre_v = edge.pre_vertex
-            post_v = edge.post_vertex
-            pre_v_label = pre_v.label
-            post_v_label = post_v.label
-            edge_str = "Edge {} from vertex: '{}' to vertex: '{}' \n"\
-                .format(label, pre_v_label, post_v_label)
-            f_network_specification.write(edge_str)
-            f_network_specification.write("  Model: {}\n".format(model))
-            f_network_specification.write("\n")
+        for partition in machine_graph.outgoing_edge_partitions:
+            for edge in partition.edges:
+                label = edge.label
+                model = "No Model"
+                if hasattr(edge, "connector"):
+                    model = edge.connector.__class__.__name__
+                pre_v = edge.pre_vertex
+                post_v = edge.post_vertex
+                pre_v_label = pre_v.label
+                post_v_label = post_v.label
+                edge_str = "Edge {} from vertex: '{}' to vertex: '{}' \n"\
+                    .format(label, pre_v_label, post_v_label)
+                f_network_specification.write(edge_str)
+                f_network_specification.write("  Model: {}\n".format(model))
+                f_network_specification.write("\n")
 
         # Close file:
         f_network_specification.close()

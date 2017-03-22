@@ -24,12 +24,12 @@ from spinn_front_end_common.utility_models\
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 # general imports
 import sys
@@ -38,8 +38,7 @@ import sys
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
-        AbstractProvidesOutgoingPartitionConstraints,
-        AbstractBinaryUsesSimulationRun):
+        AbstractProvidesOutgoingPartitionConstraints):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -72,7 +71,10 @@ class ReverseIpTagMultiCastSource(
             # Buffer parameters
             buffer_notification_ip_address=None,
             buffer_notification_port=None,
-            buffer_notification_tag=None):
+            buffer_notification_tag=None,
+
+            # Extra flag for input without a reserved port
+            reserve_reverse_ip_tag=False):
         """
 
         :param n_keys: The number of keys to be sent via this multicast source
@@ -134,7 +136,7 @@ class ReverseIpTagMultiCastSource(
         self._check_keys = check_keys
 
         self._reverse_iptags = None
-        if receive_port is not None:
+        if receive_port is not None or reserve_reverse_ip_tag:
             self._reverse_iptags = [ReverseIPtagResource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
@@ -151,6 +153,7 @@ class ReverseIpTagMultiCastSource(
         self._buffer_notification_ip_address = buffer_notification_ip_address
         self._buffer_notification_port = buffer_notification_port
         self._buffer_notification_tag = buffer_notification_tag
+        self._reserve_reverse_ip_tag = reserve_reverse_ip_tag
 
         self._iptags = None
         if send_buffer_times is not None:
@@ -225,12 +228,16 @@ class ReverseIpTagMultiCastSource(
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
-        return partition.edges[0].pre_vertex.\
-            get_outgoing_partition_constraints(partition)
+        return partition.pre_vertex.get_outgoing_partition_constraints(
+            partition)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'reverse_iptag_multicast_source.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(spec, placement)
@@ -263,7 +270,8 @@ class ReverseIpTagMultiCastSource(
             buffer_notification_ip_address=(
                 self._buffer_notification_ip_address),
             buffer_notification_port=self._buffer_notification_port,
-            buffer_notification_tag=self._buffer_notification_tag)
+            buffer_notification_tag=self._buffer_notification_tag,
+            reserve_reverse_ip_tag=self._reserve_reverse_ip_tag)
         if self._record_buffer_size > 0:
             vertex.enable_recording(
                 self._record_buffer_size,

@@ -14,5 +14,5 @@ class AbstractGeneratesDataSpecification(object):
         :param placement: the placement object this spec is associated with
         :type spec:\
             :py:class:`data_specification.data_specification_generator.DataSpecificationGenerator`
-        :return: None
+        :rtype: None
         """

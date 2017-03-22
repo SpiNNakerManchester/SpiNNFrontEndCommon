@@ -89,6 +89,21 @@ void simulation_exit(){
     simulation_handle_pause_resume(NULL);
 }
 
+//! \brief method for sending OK response to the host when a command message
+//! is received.
+//! \param[in] msg: the message object to send to the host.
+void _send_ok_response(sdp_msg_t *msg){
+    msg->cmd_rc = RC_OK;
+    msg->length = 12;
+    uint dest_port = msg->dest_port;
+    uint dest_addr = msg->dest_addr;
+    msg->dest_port = msg->srce_port;
+    msg->srce_port = dest_port;
+    msg->dest_addr = msg->srce_addr;
+    msg->srce_addr = dest_addr;
+    spin1_send_sdp_msg(msg, 10);
+}
+
 //! \brief handles the new commands needed to resume the binary with a new
 //! runtime counter, as well as switching off the binary when it truly needs
 //! to be stopped.
@@ -126,15 +141,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
-                msg->cmd_rc = RC_OK;
-                msg->length = 12;
-                uint dest_port = msg->dest_port;
-                uint dest_addr = msg->dest_addr;
-                msg->dest_port = msg->srce_port;
-                msg->srce_port = dest_port;
-                msg->dest_addr = msg->srce_addr;
-                msg->srce_addr = dest_addr;
-                spin1_send_sdp_msg(msg, 10);
+                _send_ok_response(msg);
             }
 
             // free the message to stop overload
@@ -159,6 +166,20 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             _execute_provenance_storage();
             spin1_msg_free(msg);
             spin1_exit(1);
+            break;
+
+        case IOBUF_CLEAR:
+
+            // run clear iobuf code
+            sark_io_buf_reset();
+
+            // If we are told to send a response, send it now
+            if (msg->arg3 == 1) {
+                _send_ok_response(msg);
+            }
+
+            // free the message to stop overload
+            spin1_msg_free(msg);
             break;
 
         default:
@@ -208,12 +229,21 @@ bool simulation_initialise(
         return false;
     }
 
+    if (sdp_packet_callback_priority < -1) {
+        log_error(
+            "The SDP callback priority should be set to a number greater "
+            "than or equal to -1.  "
+            "It is currently set to %d", sdp_packet_callback_priority);
+        return false;
+    }
+
     // transfer data to pointers for end user usage
     *timer_period = address[SIMULATION_TIMER_PERIOD];
 
     // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
+
     spin1_callback_on(
         SDP_PACKET_RX, _simulation_sdp_callback_handler,
         sdp_packet_callback_priority);
