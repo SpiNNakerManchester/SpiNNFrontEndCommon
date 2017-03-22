@@ -4,6 +4,8 @@ from pacman.operations.algorithm_reports import reports
 
 from spinn_front_end_common.utilities import exceptions
 
+from spinn_machine.utilities.progress_bar import ProgressBar
+
 import logging
 import os
 
@@ -14,6 +16,10 @@ class FrontEndCommonRoutingTableFromMachineReport(object):
     def __call__(
             self, report_default_directory, routing_tables, transceiver,
             app_id, has_loaded_routing_tables_flag):
+
+        progress = ProgressBar(
+            len(list(routing_tables.routing_tables)),
+            "Reading Routing Tables from Machine")
 
         if not has_loaded_routing_tables_flag:
             raise exceptions.ConfigurationException(
@@ -40,3 +46,5 @@ class FrontEndCommonRoutingTableFromMachineReport(object):
                     multi_cast_entry)
 
             reports._generate_routing_table(machine_routing_table, folder_name)
+            progress.update()
+        progress.end()
