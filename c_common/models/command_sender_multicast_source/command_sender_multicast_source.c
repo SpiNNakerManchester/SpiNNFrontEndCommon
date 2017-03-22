@@ -31,6 +31,10 @@ void timer_callback(uint unused0, uint unused1) {
     if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
             (time >= simulation_ticks)) {
         simulation_handle_pause_resume(NULL);
+
+        // Subtract 1 from the time so this tick gets done again on the next
+        // run
+        time -= 1;
         return;
     }
 
@@ -136,10 +140,12 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
 
-    // Get the timing details
-    if (!simulation_read_timing_details(
+    // Get the timing details and set up the simulation interface
+    if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run, SDP, NULL,
+            data_specification_get_region(PROVENANCE_REGION, address))) {
         return false;
     }
 
@@ -164,9 +170,6 @@ void c_main(void) {
 
     // Register callbacks
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
-    simulation_register_simulation_sdp_callback(
-        &simulation_ticks, &infinite_run, SDP);
-    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;

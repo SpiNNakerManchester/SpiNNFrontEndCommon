@@ -1,6 +1,7 @@
 from threading import Thread
 import traceback
 from collections import OrderedDict
+from spinnman.utilities import utility_functions
 
 from spinn_front_end_common.utilities.database.database_connection \
     import DatabaseConnection
@@ -34,10 +35,10 @@ class LiveEventConnection(DatabaseConnection):
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=19999,
-                 partitioned_vertices=False):
+                 machine_vertices=False):
         """
 
-        :param event_receiver_label: The label of the LivePacketGather\
+        :param live_packet_gather_label: The label of the LivePacketGather\
                     vertex to which received events are being sent
         :param receive_labels: Labels of vertices from which live events\
                     will be received.
@@ -64,7 +65,7 @@ class LiveEventConnection(DatabaseConnection):
         self._live_packet_gather_label = live_packet_gather_label
         self._receive_labels = receive_labels
         self._send_labels = send_labels
-        self._partitioned_vertices = partitioned_vertices
+        self._machine_vertices = machine_vertices
         self._sender_connection = None
         self._send_address_details = dict()
         self._atom_id_to_key = dict()
@@ -142,16 +143,16 @@ class LiveEventConnection(DatabaseConnection):
             self._sender_connection = UDPEIEIOConnection()
             for send_label in self._send_labels:
                 ip_address, port = None, None
-                if self._partitioned_vertices:
+                if self._machine_vertices:
                     ip_address, port = \
-                        database_reader.get_partitioned_live_input_details(
+                        database_reader.get_machine_live_input_details(
                             send_label)
                 else:
                     ip_address, port = database_reader.get_live_input_details(
                         send_label)
                 self._send_address_details[send_label] = (ip_address, port)
-                if self._partitioned_vertices:
-                    key, _ = database_reader.get_partitioned_live_input_key(
+                if self._machine_vertices:
+                    key, _ = database_reader.get_machine_live_input_key(
                         send_label)
                     self._atom_id_to_key[send_label] = {0: key}
                     vertex_sizes[send_label] = 1
@@ -166,17 +167,19 @@ class LiveEventConnection(DatabaseConnection):
             label_id = 0
             for receive_label in self._receive_labels:
                 host, port, strip_sdp = None, None, None
-                if self._partitioned_vertices:
-                    host, port, strip_sdp = \
-                        database_reader.get_partitioned_live_output_details(
+                if self._machine_vertices:
+                    host, port, strip_sdp, board_address = \
+                        database_reader.get_machine_live_output_details(
                             receive_label, self._live_packet_gather_label)
                 else:
-                    host, port, strip_sdp = \
+                    host, port, strip_sdp, board_address = \
                         database_reader.get_live_output_details(
                             receive_label, self._live_packet_gather_label)
                 if strip_sdp:
                     if port not in self._receivers:
                         receiver = UDPEIEIOConnection(local_port=port)
+                        utility_functions.send_port_trigger_message(
+                            receiver, board_address)
                         listener = ConnectionListener(receiver)
                         listener.add_callback(self._receive_packet_callback)
                         listener.start()
@@ -189,8 +192,8 @@ class LiveEventConnection(DatabaseConnection):
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
 
-                if self._partitioned_vertices:
-                    key, _ = database_reader.get_partitioned_live_output_key(
+                if self._machine_vertices:
+                    key, _ = database_reader.get_machine_live_output_key(
                         receive_label, self._live_packet_gather_label)
                     self._key_to_atom_id_and_label[key] = (0, label_id)
                     vertex_sizes[receive_label] = 1

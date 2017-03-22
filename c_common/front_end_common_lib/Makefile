@@ -4,13 +4,14 @@ ifndef SPINN_DIRS
 endif
 
 SPINN_COMMON_BUILD = build
-include $(SPINN_DIRS)/Makefile.common
+override LIB := 1
+include $(SPINN_DIRS)/make/Makefile.common
 
-ifndef DEBUG
-    DEBUG = PRODUCTION_CODE
+ifndef PRINT_DEBUG
+    PRINT_DEBUG = PRODUCTION_CODE
 endif
 
-CFLAGS += -Os -I include -D$(DEBUG)
+CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects

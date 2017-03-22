@@ -8,46 +8,42 @@ ifndef SOURCE_DIRS
 endif
 
 ifndef APP_OUTPUT_DIR
-    $(error APP_OUTPUT_DIRS is not set.  Please define APP_OUTPUT_DIRS)
+    $(error APP_OUTPUT_DIR is not set.  Please define APP_OUTPUT_DIR)
 endif
 
 ifndef BUILD_DIR
     $(error BUILD_DIR is not set.  Please define BUILD_DIR)
 endif
 
+define define-build-code
+$$(BUILD_DIR)%.o: $1/%.c
+	-mkdir -p $$(dir $$@)
+	$$(CC) $$(CFLAGS) -D__FILENAME__=\"$$(notdir $$*.c)\" -o $$@ $$<
+endef
+
+define source_dir
+$(firstword $(abspath $(strip $(foreach dir, $(sort $(SOURCE_DIRS)), $(findstring $(dir), $(1))))))
+endef
+
+define build_dir
+$(patsubst $(call source_dir, $(1))/%.c,$(BUILD_DIR)%.o,$(1))
+endef
+
 # Convert the objs into the correct format to work here
-ABSOBJS = $(abspath $(OBJECTS))
-ABSDIR = $(abspath $(SOURCE_DIRS))
-ifdef EXTRA_SRC_DIR
-    ABS_EXTRA_SRC_DIR = $(abspath $(EXTRA_SRC_DIR))
-    EXTRA_OBJS = $(ABSOBJS:$(ABS_EXTRA_SRC_DIR)/%.o=%.o)
-else
-    EXTRA_OBJS = $(ABSOBJS)
-endif
-RELOBJS := $(EXTRA_OBJS:$(ABSDIR)/%.o=%.o)
-OBJECTS := $(RELOBJS:%.o=$(BUILD_DIR)%.o)
+OBJS := $(abspath $(SOURCES))
+$(foreach dir, $(sort $(SOURCE_DIRS)), $(eval OBJS := $(OBJS:$(abspath $(dir))/%.c=$(BUILD_DIR)%.o)))
+$(foreach dir, $(sort $(SOURCE_DIRS)), $(eval $(call define-build-code,$(dir))))
+OBJECTS += $(OBJS)
 
 LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
-ifndef DEBUG
-    DEBUG = PRODUCTION_CODE
-endif
+FEC_DEBUG := PRODUCTION_CODE
 # Run md5sum on application name and extract first 8 bytes
 SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | md5sum | cut -c 1-8)
 
-CFLAGS += -Wall -Wextra -D$(DEBUG) -Ofast -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
+CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) $(OTIME) -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
-include $(SPINN_DIRS)/Makefile.common
-
-$(BUILD_DIR)%.o: $(SOURCE_DIRS)/%.c
-	-mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -D__FILE__=\"$*.c\" -o $@ $<
-	
-ifdef EXTRA_SRC_DIR
-    $(BUILD_DIR)%.o: $(EXTRA_SRC_DIR)/%.c
-		-mkdir -p $(dir $@)
-		$(CC) $(CFLAGS) -D__FILE__=\"$*.c\" -o $@ $<
-endif
+include $(SPINN_DIRS)/make/Makefile.common
 
 all: $(APP_OUTPUT_DIR)$(APP).aplx
 

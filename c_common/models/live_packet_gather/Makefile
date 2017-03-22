@@ -1,5 +1,5 @@
 APP = live_packet_gather
 BUILD_DIR = build/
-OBJECTS = live_packet_gather.o
+SOURCES = live_packet_gather.c
 
 include ../Makefile.common

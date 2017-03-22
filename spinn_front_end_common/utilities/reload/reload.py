@@ -1,4 +1,4 @@
-from pacman.operations.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from spinn_front_end_common.utilities import helpful_functions
 
 
@@ -11,9 +11,8 @@ class Reload(object):
 
             # Machine information
             machine_name, version, bmp_details, down_chips, down_cores,
-            number_of_boards, height, width, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
-            reset_machine_on_start_up, max_sdram_per_chip,
+            auto_detect_bmp, enable_reinjection, scamp_connection_data,
+            boot_port_num, reset_machine_on_start_up, max_sdram_per_chip,
 
             # Load data information
             router_tables, iptags, reverse_iptags, app_data_runtime_folder,
@@ -31,7 +30,7 @@ class Reload(object):
             total_machine_timesteps, time_threshold,
 
             # Flags that indicate what to actually do
-            loading=True, running=True):
+            running=True, loading=True):
 
         if machine_name == "None":
             raise Exception(
@@ -50,9 +49,6 @@ class Reload(object):
         inputs["BMPDetails"] = bmp_details
         inputs["DownedChipsDetails"] = down_chips
         inputs["DownedCoresDetails"] = down_cores
-        inputs["NumberOfBoards"] = number_of_boards
-        inputs["MachineWidth"] = width
-        inputs["MachineHeight"] = height
         inputs["AutoDetectBMPFlag"] = auto_detect_bmp
         inputs["EnableReinjectionFlag"] = enable_reinjection
         inputs["ScampConnectionData"] = scamp_connection_data
@@ -69,6 +65,7 @@ class Reload(object):
         inputs["WriteTextSpecsFlag"] = False
         inputs["WriteMemoryMapReportFlag"] = False
         inputs["DSEAPPID"] = dse_app_id
+        inputs["ReportFolder"] = None
 
         # Buffered inputs
         inputs["MemoryTags"] = buffered_tags
@@ -91,28 +88,35 @@ class Reload(object):
         inputs["PostSimulationOverrunBeforeError"] = time_threshold
 
         algorithms = list()
-        algorithms.append("FrontEndCommonMachineInterfacer")
+        algorithms.append("FrontEndCommonMachineGenerator")
         algorithms.append("MallocBasedChipIDAllocator")
 
         if loading:
             algorithms.append("FrontEndCommonRoutingTableLoader")
-            algorithms.append("FrontEndCommonTagsLoaderSeperateLists")
+            algorithms.append("FrontEndCommonTagsLoaderSeparateLists")
             if exec_dse_on_host:
                 algorithms.append(
-                    "FrontEndCommonPartitionableGraphHostExecuteDataSpecification")  # @IgnorePep8
+                    "FrontEndCommonHostExecuteDataSpecification")
             else:
                 algorithms.append(
-                    "FrontEndCommonPartitionableGraphMachineExecuteDataSpecification")  # @IgnorePep8
+                    "FrontEndCommonMachineExecuteDataSpecification")
+        else:
+            inputs["LoadedApplicationDataToken"] = True
+            inputs["LoadedRoutingTablesToken"] = True
+            inputs["LoadedIPTagsToken"] = True
+            inputs["LoadedReverseIPTagsToken"] = True
 
         if running:
-            algorithms.append("FrontEndCommonBufferManagerCreater")
+            algorithms.append("FrontEndCommonBufferManagerCreator")
             algorithms.append("FrontEndCommonLoadExecutableImages")
             algorithms.append("FrontEndCommonNotificationProtocol")
-            algorithms.append("FrontEndCommonRuntimeUpdater")
+            algorithms.append("FrontEndCommonChipRuntimeUpdater")
             algorithms.append("FrontEndCommonApplicationRunner")
 
         # run the pacman executor
         xml_paths = helpful_functions.get_front_end_common_pacman_xml_paths()
         executer = PACMANAlgorithmExecutor(
-            algorithms, [], inputs, xml_paths, [], False, False)
+            algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+            required_outputs=[], xml_paths=xml_paths, packages=None,
+            do_timings=False, print_timings=False)
         executer.execute_mapping()

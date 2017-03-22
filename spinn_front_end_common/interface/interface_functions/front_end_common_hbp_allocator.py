@@ -12,6 +12,17 @@ logger = logging.getLogger(__name__)
 
 class _HBPJobController(Thread, AbstractMachineAllocationController):
 
+    __slots__ = [
+        # thread flag to allow it to be killed when the main thread dies
+        "daemon",
+
+        # the URL to call the HBP system
+        "_url",
+
+        # boolean flag for telling this thread when the system has ended
+        "_exited"
+    ]
+
     _WAIT_TIME_MS = 10000
 
     def __init__(self, url):
@@ -45,7 +56,7 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
 
 class FrontEndCommonHBPAllocator(object):
     """ Request a machine from the HBP remote access server that will fit\
-        a given partitioned graph
+        a number of chips
     """
 
     def __call__(
@@ -72,19 +83,8 @@ class FrontEndCommonHBPAllocator(object):
         if "bmp_details" in machine:
             bmp_details = machine["bmpDetails"]
 
-        return {
-            "machine_name": machine["machineName"],
-            "machine_version": int(machine["version"]),
-            "machine_width": int(machine["width"]),
-            "machine_height": int(machine["height"]),
-            "machine_n_boards": None,
-            "machine_down_chips": None,
-            "machine_down_cores": None,
-            "machine_bmp_details": bmp_details,
-            "reset_machine_on_start_up": False,
-            "auto_detect_bmp": False,
-            "scamp_connection_data": None,
-            "boot_port_number": None,
-            "max_sdram_size": None,
-            "machine_allocation_controller": machine_allocation_controller
-        }
+        return (
+            machine["machineName"], int(machine["version"]), None, None,
+            bmp_details, False, False, None, None, None,
+            machine_allocation_controller
+        )

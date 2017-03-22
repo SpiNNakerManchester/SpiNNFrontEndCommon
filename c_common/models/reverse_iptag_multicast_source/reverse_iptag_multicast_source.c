@@ -7,6 +7,11 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
+#ifndef APPLICATION_NAME_HASH
+#define APPLICATION_NAME_HASH 0
+#error APPLICATION_NAME_HASH must be defined
+#endif
+
 //! The EIEIO message types
 
 //! \brief human readable versions of the different priorities and usages.
@@ -26,16 +31,16 @@ typedef enum eieio_prefix_types {
 //! The parameter positions
 typedef enum read_in_parameters{
     APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
-    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID
+    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
+    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT
 } read_in_parameters;
 
 //! The memory regions
 typedef enum memory_regions{
     SYSTEM,
     CONFIGURATION,
+    RECORDING_REGION,
     BUFFER_REGION,
-    BUFFERING_OUT_SPIKE_RECORDING_REGION,
-    BUFFERING_OUT_CONTROL_REGION,
     PROVENANCE_REGION,
 } memory_regions;
 
@@ -105,9 +110,12 @@ static uint8_t pkt_last_sequence_seen;
 static bool send_packet_reqs;
 static bool last_buffer_operation;
 static uint8_t return_tag_id;
+static uint32_t return_tag_dest;
+static uint32_t buffered_in_sdp_port;
 static uint32_t last_space;
 static uint32_t last_request_tick;
 
+static bool stopped = false;
 
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
@@ -177,7 +185,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
 
 static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (data_hdr_value >> 14) && 0x03;
+    uint8_t pkt_type = (data_hdr_value >> 14) & 0x03;
 
     if (pkt_type == 0x01) {
         return calculate_eieio_packet_command_size(eieio_msg_ptr);
@@ -258,19 +266,19 @@ static inline bool is_eieio_packet_in_buffer(void) {
 
 static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    bool pkt_has_timestamp = (bool) (data_hdr_value >> 12 & 0x1);
-    bool pkt_apply_prefix = (bool) (data_hdr_value >> 15);
-    bool pkt_mode = data_hdr_value >> 14;
+    bool pkt_has_timestamp = (bool) ((data_hdr_value >> 12) & 0x1);
+    bool pkt_apply_prefix = (bool) ((data_hdr_value >> 15) & 0x1);
+    bool pkt_mode = (bool) ((data_hdr_value >> 14) & 0x1);
 
     // If the packet is actually a command packet, return the current time
-    if (pkt_apply_prefix == 0 && pkt_mode == 1) {
+    if (!pkt_apply_prefix && pkt_mode) {
         return time;
     }
 
     // If the packet indicates that payloads are timestamps
     if (pkt_has_timestamp) {
-        bool pkt_payload_prefix_apply = (bool) (data_hdr_value >> 13 & 0x1);
-        uint8_t pkt_type = (uint8_t) (data_hdr_value >> 10 & 0x3);
+        bool pkt_payload_prefix_apply = (bool) ((data_hdr_value >> 13) & 0x1);
+        uint8_t pkt_type = (uint8_t) ((data_hdr_value >> 10) & 0x3);
         uint32_t payload_time = 0;
         bool got_payload_time = false;
         uint16_t *event_ptr = &eieio_msg_ptr[1];
@@ -286,7 +294,7 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
             if (pkt_type & 0x2) {
 
                 // 32 bit packet
-                payload_time = event_ptr[1] << 16 | event_ptr[0];
+                payload_time = (event_ptr[1] << 16) | event_ptr[0];
                 event_ptr += 2;
             } else {
 
@@ -302,7 +310,7 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
             if (pkt_type & 0x2) {
 
                 // 32 bit packet
-                payload_time |= event_ptr[1] << 16 | event_ptr[0];
+                payload_time |= (event_ptr[1] << 16) | event_ptr[0];
             } else {
 
                 // 16 bit packet
@@ -433,13 +441,14 @@ static inline void process_16_bit_packets(
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 16-bit key=%d", key);
+                    log_debug(
+                        "mc packet 16-bit key=%d, payload=%d", key, payload);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
                 } else {
                     log_debug(
-                        "mc packet 16-bit key=%d, payload=%d", key, payload);
+                        "mc packet 16-bit key=%d", key);
                     while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
@@ -465,12 +474,12 @@ static inline void process_32_bit_packets(
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-        uint32_t key = next_event[1] << 16 | next_event[0];
+        uint32_t key = (next_event[1] << 16) | next_event[0];
         log_debug("Packet key = 0x%08x", key);
         next_event += 2;
         uint32_t payload = 0;
         if (pkt_has_payload) {
-            payload = next_event[1] << 16 | next_event[0];
+            payload = (next_event[1] << 16) | next_event[0];
             next_event += 2;
         }
 
@@ -483,13 +492,14 @@ static inline void process_32_bit_packets(
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
-                    log_debug("mc packet 32-bit key=0x%08x", key);
+                    log_debug(
+                        "mc packet 32-bit key=0x%08x , payload=0x%08x",
+                        key, payload);
                     while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
                 } else {
-                    log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
-                              key, payload);
+                    log_debug("mc packet 32-bit key=0x%08x", key);
                     while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
                         spin1_delay_us(1);
                     }
@@ -520,10 +530,10 @@ static inline bool eieio_data_parse_packet(
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     print_packet(eieio_msg_ptr);
 
-    bool pkt_apply_prefix = (bool) (data_hdr_value >> 15);
+    bool pkt_apply_prefix = (bool) ((data_hdr_value >> 15) & 0x1);
     bool pkt_prefix_upper = (bool) ((data_hdr_value >> 14) & 0x1);
-    bool pkt_payload_apply_prefix = (bool) (data_hdr_value >> 13 & 0x1);
-    uint8_t pkt_type = (uint8_t) (data_hdr_value >> 10 & 0x3);
+    bool pkt_payload_apply_prefix = (bool) ((data_hdr_value >> 13) & 0x1);
+    uint8_t pkt_type = (uint8_t) ((data_hdr_value >> 10) & 0x3);
     uint8_t pkt_count = (uint8_t) (data_hdr_value & 0xFF);
     bool pkt_has_payload = (bool) (pkt_type & 0x1);
 
@@ -575,7 +585,8 @@ static inline bool eieio_data_parse_packet(
 
             // If there is a payload prefix and the payload is 32-bit
             pkt_payload_prefix =
-                (uint32_t) hdr_pointer[1] << 16 | hdr_pointer[0];
+                (((uint32_t) hdr_pointer[1] << 16) |
+                 (uint32_t) hdr_pointer[0]);
             hdr_pointer += 2;
         }
     }
@@ -695,7 +706,7 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
 
     case EVENT_STOP_COMMANDS:
         log_debug("command: EVENT_STOP");
-        time = simulation_ticks + 1;
+        stopped = true;
         write_pointer = read_pointer;
         break;
 
@@ -711,7 +722,7 @@ static inline bool packet_handler_selector(eieio_msg_t eieio_msg_ptr,
     log_debug("packet_handler_selector");
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (data_hdr_value >> 14) && 0x03;
+    uint8_t pkt_type = (data_hdr_value >> 14) & 0x03;
 
     if (pkt_type == 0x01) {
         log_debug("parsing a command packet");
@@ -841,6 +852,8 @@ bool read_parameters(address_t region_address) {
     buffer_region_size = region_address[BUFFER_REGION_SIZE];
     space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
     return_tag_id = region_address[RETURN_TAG_ID];
+    return_tag_dest = region_address[RETURN_TAG_DEST];
+    buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -871,7 +884,7 @@ bool read_parameters(address_t region_address) {
     req.tag = return_tag_id;
     req.dest_port = 0xFF;
     req.srce_port = (1 << 5) | spin1_get_core_id();
-    req.dest_addr = 0;
+    req.dest_addr = return_tag_dest;
     req.srce_addr = spin1_get_chip_id();
     req_ptr = (req_packet_sdp_t*) &(req.cmd_rc);
     req_ptr->eieio_header_command = 1 << 14 | SPINNAKER_REQUEST_BUFFERS;
@@ -888,6 +901,7 @@ bool read_parameters(address_t region_address) {
     log_info("mask: 0x%08x", mask);
     log_info("space_before_read_request: %d", space_before_data_request);
     log_info("return_tag_id: %d", return_tag_id);
+    log_info("return_tag_dest: 0x%08x", return_tag_dest);
 
     return true;
 }
@@ -909,20 +923,12 @@ bool setup_buffer_region(address_t region_address) {
 //! \return True if recording initialisation is successful, false otherwise
 static bool initialise_recording(){
     address_t address = data_specification_get_data_address();
-    address_t system_region =
-        data_specification_get_region(SYSTEM, address);
-    uint8_t regions_to_record[] = {
-        BUFFERING_OUT_SPIKE_RECORDING_REGION,
-    };
-    uint8_t n_regions_to_record = NUMBER_OF_REGIONS_TO_RECORD;
-    uint32_t *recording_flags_from_system_conf =
-        &system_region[SIMULATION_N_TIMING_DETAIL_WORDS];
-    uint8_t state_region = BUFFERING_OUT_CONTROL_REGION;
+    address_t recording_region = data_specification_get_region(
+            RECORDING_REGION, address);
 
-    bool success = recording_initialize(
-        n_regions_to_record, regions_to_record,
-        recording_flags_from_system_conf, state_region, 2,
-        &recording_flags);
+    log_info("Recording starts at 0x%08x", recording_region);
+
+    bool success = recording_initialize(recording_region, &recording_flags);
     log_info("Recording flags = 0x%08x", recording_flags);
     return success;
 }
@@ -937,10 +943,12 @@ bool initialise(uint32_t *timer_period) {
         return false;
     }
 
-    // Get the timing details
-    address_t system_region = data_specification_get_region(SYSTEM, address);
-    if (!simulation_read_timing_details(
-            system_region, APPLICATION_NAME_HASH, timer_period)) {
+    // Get the timing details and set up the simulation interface
+    if (!simulation_initialise(
+            data_specification_get_region(SYSTEM, address),
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run, SDP_CALLBACK, NULL,
+            data_specification_get_region(PROVENANCE_REGION, address))) {
         return false;
     }
 
@@ -967,6 +975,11 @@ bool initialise(uint32_t *timer_period) {
 }
 
 void resume_callback() {
+
+    address_t address = data_specification_get_data_address();
+    setup_buffer_region(data_specification_get_region(
+        BUFFER_REGION, address));
+
     // set the code to start sending packet requests again
     send_packet_reqs = true;
 
@@ -975,9 +988,9 @@ void resume_callback() {
 
     // have fallen out of a resume mode, set up the functions to start
     // resuming again
-    if(!initialise_recording()){
-        log_error("Could not reset recording regions");
-    }
+    recording_reset();
+
+    stopped = false;
 }
 
 void timer_callback(uint unused0, uint unused1) {
@@ -989,7 +1002,7 @@ void timer_callback(uint unused0, uint unused1) {
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
-    if ((infinite_run != TRUE) && (time >= simulation_ticks + 1)) {
+    if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
 
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);
@@ -1005,9 +1018,9 @@ void timer_callback(uint unused0, uint unused1) {
         log_info("Last time of stop notification request: %d",
                  last_stop_notification_request);
 
-        address_t address = data_specification_get_data_address();
-        setup_buffer_region(data_specification_get_region(
-            BUFFER_REGION, address));
+        // Subtract 1 from the time so this tick gets done again on the next
+        // run
+        time = simulation_ticks - 1;
 
         return;
     }
@@ -1059,11 +1072,7 @@ void c_main(void) {
     spin1_set_timer_tick(timer_period);
 
     // Register callbacks
-    simulation_register_simulation_sdp_callback(
-        &simulation_ticks, &infinite_run, SDP_CALLBACK);
-    simulation_register_provenance_callback(NULL, PROVENANCE_REGION);
-    spin1_sdp_callback_on(
-        BUFFERING_IN_SDP_PORT, sdp_packet_callback, SDP_CALLBACK);
+    simulation_sdp_callback_on(buffered_in_sdp_port, sdp_packet_callback);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0

@@ -9,6 +9,8 @@ class FrontEndCommonProvenanceJSONWriter(object):
     """ Write provenance data into JSON
     """
 
+    __slots__ = []
+
     VALID_CHARS = frozenset(
         "-_.() {}{}".format(string.ascii_letters, string.digits))
 

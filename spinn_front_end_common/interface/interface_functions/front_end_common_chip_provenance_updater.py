@@ -1,25 +1,25 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+import struct
 
+from spinn_front_end_common.utilities import constants
+
+from spinn_machine.utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.model.cpu_state import CPUState
-
-from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.utilities import constants
-
-import struct
+from spinnman.model.enums.cpu_state import CPUState
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit
     """
 
+    __slots__ = []
+
     def __call__(self, txrx, app_id, all_core_subsets):
 
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
-            app_id, CPUState.RUN_TIME_EXCEPTION)
+            app_id, CPUState.FINISHED)
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 
@@ -27,13 +27,13 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
-        # check that all cores are in the state CPU_STATE_12 which shows that
+        # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
         while processors_completed != total_processors:
-            unsuccessful_cores = helpful_functions.get_cores_not_in_state(
-                all_core_subsets, CPUState.RUN_TIME_EXCEPTION, txrx)
+            unsuccessful_cores = txrx.get_cores_not_in_state(
+                all_core_subsets, CPUState.FINISHED)
 
-            for (x, y, p) in unsuccessful_cores:
+            for (x, y, p) in unsuccessful_cores.iterkeys():
                 data = struct.pack(
                     "<I", constants.SDP_RUNNING_MESSAGE_CODES.
                     SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
@@ -46,7 +46,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
                     destination_chip_y=y), data=data))
 
             processors_completed = txrx.get_core_state_count(
-                app_id, CPUState.RUN_TIME_EXCEPTION)
+                app_id, CPUState.FINISHED)
 
             left_over_now = total_processors - processors_completed
             to_update = left_to_do_cores - left_over_now

@@ -42,6 +42,18 @@ class ExecutableFinder(object):
         """
         self._binary_search_paths.append(path)
 
+    @property
+    def binary_paths(self):
+        output = ""
+        first = True
+        for path in self._binary_search_paths:
+            if first:
+                output += path
+                first = False
+            else:
+                output += " : " + path
+        return output
+
     def get_executable_path(self, executable_name):
         """ Finds an executable within the set of folders.  The set of folders\
             is searched sequentially and the first match is returned.

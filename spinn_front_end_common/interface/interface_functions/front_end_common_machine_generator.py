@@ -1,8 +1,6 @@
 # spinnman imports
 from spinnman.connections.socket_address_with_chip import SocketAddressWithChip
 from spinnman.transceiver import create_transceiver_from_hostname
-from spinnman.model.core_subsets import CoreSubsets
-from spinnman.model.core_subset import CoreSubset
 from spinnman.model.bmp_connection_data import BMPConnectionData
 
 # front end common imports
@@ -16,12 +14,13 @@ class FrontEndCommonMachineGenerator(object):
     """ Interface to make a transceiver and a spinn_machine object
     """
 
+    __slots__ = []
+
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
-            board_version, number_of_boards, width, height, auto_detect_bmp,
-            enable_reinjection, scamp_connection_data, boot_port_num,
-            reset_machine_on_start_up, max_sdram_size=None):
-
+            board_version, auto_detect_bmp, enable_reinjection,
+            scamp_connection_data, boot_port_num, reset_machine_on_start_up,
+            max_sdram_size=None, max_core_id=None):
         """
         :param hostname: the hostname or ip address of the spinnaker machine
         :param bmp_details: the details of the BMP connections
@@ -31,9 +30,6 @@ class FrontEndCommonMachineGenerator(object):
                 alive
         :param board_version: the version of the boards being used within the\
                 machine (1, 2, 3, 4 or 5)
-        :param number_of_boards: the number of boards within the machine
-        :param width: The width of the machine in chips
-        :param height: The height of the machine in chips
         :param auto_detect_bmp: boolean which determines if the BMP should
                be automatically determined
         :param enable_reinjection: True if dropped packet reinjection is to be\
@@ -44,7 +40,6 @@ class FrontEndCommonMachineGenerator(object):
         :param max_sdram_size: the maximum SDRAM each chip can say it has
                (mainly used in debugging purposes)
         :type max_sdram_size: int or None
-        :return: None
         """
 
         # if the end user gives you scamp data, use it and don't discover them
@@ -52,27 +47,19 @@ class FrontEndCommonMachineGenerator(object):
             scamp_connection_data = \
                 self._sort_out_scamp_connections(scamp_connection_data)
 
-        # sort out down chips and down cores if needed
-        ignored_chips, ignored_cores = \
-            self._sort_out_downed_chips_cores(downed_chips, downed_cores)
-
         # sort out BMP connections into list of strings
         bmp_connection_data = self._sort_out_bmp_string(bmp_details)
 
         txrx = create_transceiver_from_hostname(
             hostname=hostname, bmp_connection_data=bmp_connection_data,
-            version=board_version, ignore_chips=ignored_chips,
-            ignore_cores=ignored_cores, number_of_boards=number_of_boards,
-            auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
+            version=board_version, ignore_chips=downed_chips,
+            ignore_cores=downed_cores, auto_detect_bmp=auto_detect_bmp,
+            boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
-            max_sdram_size=max_sdram_size)
+            max_sdram_size=max_sdram_size, max_core_id=max_core_id)
 
         if reset_machine_on_start_up:
             txrx.power_off_machine()
-
-        # update number of boards from machine
-        if number_of_boards is None:
-            number_of_boards = txrx.number_of_boards_located
 
         # do auto boot if possible
         if board_version is None:
@@ -80,12 +67,11 @@ class FrontEndCommonMachineGenerator(object):
                 "Please set a machine version number in the configuration "
                 "file (spynnaker.cfg or pacman.cfg)")
         txrx.ensure_board_is_ready(
-            number_of_boards, width, height,
             enable_reinjector=enable_reinjection)
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()
 
-        return {"machine": machine, "txrx": txrx}
+        return machine, txrx
 
     @staticmethod
     def _sort_out_scamp_connections(scamp_connections_data):
@@ -181,31 +167,3 @@ class FrontEndCommonMachineGenerator(object):
                         BMPConnectionData(cabinet, frame, hostname, boards,
                                           None))
         return bmp_details
-
-    @staticmethod
-    def _sort_out_downed_chips_cores(downed_chips, downed_cores):
-        """ Translate the down cores and down chips string into a form that \
-            spinnman can understand
-
-        :param downed_cores: string representing down cores
-        :type downed_cores: str
-        :param downed_chips: string representing down chips
-        :type: downed_chips: str
-        :return: a list of down cores and down chips in processor and \
-                core subset format
-        """
-        ignored_chips = None
-        ignored_cores = None
-        if downed_chips is not None and downed_chips != "None":
-            ignored_chips = CoreSubsets()
-            for downed_chip in downed_chips.split(":"):
-                x, y = downed_chip.split(",")
-                ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
-                                                         []))
-        if downed_cores is not None and downed_cores != "None":
-            ignored_cores = CoreSubsets()
-            for downed_core in downed_cores.split(":"):
-                x, y, processor_id = downed_core.split(",")
-                ignored_cores.add_processor(int(x), int(y),
-                                            int(processor_id))
-        return ignored_chips, ignored_cores
