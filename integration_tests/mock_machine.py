@@ -1,6 +1,6 @@
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.scp.scp_request_header import SCPRequestHeader
-from spinnman.messages.scp.scp_result import SCPResult
+from spinnman.messages.scp.enums.scp_result import SCPResult
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.connections.udp_packet_connections import udp_utils

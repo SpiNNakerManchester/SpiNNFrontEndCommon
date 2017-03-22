@@ -1,4 +1,40 @@
 <algorithms>
+    <algorithm name="FrontEndCommonRoutingTableFromMachineReport">
+        <python_module>
+            spinn_front_end_common.utilities.report_functions.front_end_common_routing_table_from_machine_report
+        </python_module>
+        <python_class>FrontEndCommonRoutingTableFromMachineReport
+        </python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>routing_tables</param_name>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_loaded_routing_tables_flag</param_name>
+                <param_type>LoadedRoutingTablesToken</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>report_default_directory</param_name>
+            <param_name>routing_tables</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>app_id</param_name>
+            <param_name>has_loaded_routing_tables_flag</param_name>
+        </required_inputs>
+    </algorithm>
     <algorithm name="FrontEndCommonMemoryMapOnHostReport">
         <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_memory_map_on_host_report</python_module>
         <python_class>FrontEndCommonMemoryMapOnHostReport</python_class>
