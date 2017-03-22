@@ -1,7 +1,7 @@
 # pacman imports
 from pacman.model.routing_info.\
-    dict_based_partitioned_partition_n_keys_map import \
-    DictBasedPartitionedPartitionNKeysMap
+    dict_based_machine_partition_n_keys_map import \
+    DictBasedMachinePartitionNKeysMap
 
 # spinnMachine imports
 from spinn_machine.utilities.progress_bar import ProgressBar
@@ -23,30 +23,57 @@ class FrontEndCommonEdgeToNKeysMapper(object):
     """ Works out the number of keys needed for each edge
     """
 
-    def __call__(self, partitioned_graph, partitionable_graph=None,
+    __slots__ = []
+
+    def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
 
         # Generate an n_keys map for the graph and add constraints
-        n_keys_map = DictBasedPartitionedPartitionNKeysMap()
+        n_keys_map = DictBasedMachinePartitionNKeysMap()
 
-        # generate progress bar
-        progress_bar = ProgressBar(
-            len(partitioned_graph.subvertices),
-            "Deducing edge to number of keys map")
+        if (application_graph is not None and graph_mapper is not None and
+                machine_graph is not None):
 
-        # contains a partitionable vertex
-        if partitionable_graph is not None and graph_mapper is not None:
-            # iterate over each partition in the partitioned graph
-            for vertex in partitioned_graph.subvertices:
-                partitions = \
-                    partitioned_graph.outgoing_edges_partitions_from_vertex(
+            # generate progress bar
+            progress_bar = ProgressBar(
+                machine_graph.n_vertices,
+                "Getting the number of keys required by each edge using the"
+                "application graph")
+
+            # iterate over each partition in the graph
+            for vertex in machine_graph.vertices:
+                partitions = machine_graph.\
+                    get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
-                for partition_id in partitions:
-                    partition = partitions[partition_id]
+                for partition in partitions:
                     added_constraints = False
-                    constraints = self._process_partitionable_partition(
-                        partition, n_keys_map, partition_id, graph_mapper,
-                        partitionable_graph)
+                    constraints = self._process_application_partition(
+                        partition, n_keys_map, graph_mapper)
+                    if not added_constraints:
+                        partition.add_constraints(constraints)
+                    else:
+                        self._check_constraints_equal(
+                            constraints, partition.constraints)
+                progress_bar.update()
+            progress_bar.end()
+
+        elif (machine_graph is not None and application_graph is None and
+                graph_mapper is None):
+
+            # generate progress bar
+            progress_bar = ProgressBar(
+                machine_graph.n_vertices,
+                "Getting the number of keys required by each edge using the"
+                "machine graph")
+
+            for vertex in machine_graph.vertices:
+                partitions = machine_graph.\
+                    get_outgoing_edge_partitions_starting_at_vertex(
+                        vertex)
+                for partition in partitions:
+                    added_constraints = False
+                    constraints = self._process_machine_partition(
+                        partition, n_keys_map)
                     if not added_constraints:
                         partition.add_constraints(constraints)
                     else:
@@ -55,24 +82,11 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                 progress_bar.update()
             progress_bar.end()
         else:
-            for vertex in partitioned_graph.subvertices:
-                partitions = \
-                    partitioned_graph.outgoing_edges_partitions_from_vertex(
-                        vertex)
-                for partition_id in partitions:
-                    partition = partitions[partition_id]
-                    added_constraints = False
-                    constraints = self._process_partitioned_partition(
-                        partition, n_keys_map, partition_id, partitioned_graph)
-                    if not added_constraints:
-                        partition.add_constraints(constraints)
-                    else:
-                        self._check_constraints_equal(
-                            constraints, partition.constraints)
-                progress_bar.update()
-            progress_bar.end()
+            raise exceptions.ConfigurationException(
+                "Can only do one graph. semantically doing 2 graphs makes no "
+                "sense. Please choose and try again")
 
-        return {'n_keys_map': n_keys_map}
+        return n_keys_map
 
     @staticmethod
     def _check_constraints_equal(constraints, stored_constraints):
@@ -80,77 +94,69 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
         :param constraints:
         :param stored_constraints:
-        :return:
+        :rtype: None
         """
         for constraint in constraints:
             if constraint not in stored_constraints:
                 raise exceptions.ConfigurationException(
                     "Two edges within the same partition have different "
-                    "constraints. This is deemed an error. Please fix and "
-                    "try again")
+                    "constraints")
 
     @staticmethod
-    def _process_partitionable_partition(
-            partition, n_keys_map, partition_id, graph_mapper,
-            partitionable_graph):
-        partitioned_edge = partition.edges[0]
-        vertex_slice = graph_mapper.get_subvertex_slice(
-            partitioned_edge.pre_subvertex)
-        edge = graph_mapper.get_partitionable_edge_from_partitioned_edge(
-            partitioned_edge)
+    def _process_application_partition(partition, n_keys_map, graph_mapper):
+        vertex_slice = graph_mapper.get_slice(
+            partition.pre_vertex)
+        vertex = graph_mapper.get_application_vertex(
+            partition.pre_vertex)
 
-        if not isinstance(edge.pre_vertex, AbstractProvidesNKeysForPartition):
+        if not isinstance(vertex, AbstractProvidesNKeysForPartition):
             n_keys_map.set_n_keys_for_partition(
                 partition, vertex_slice.n_atoms)
         else:
             n_keys_map.set_n_keys_for_partition(
                 partition,
-                edge.pre_vertex.get_n_keys_for_partition(
+                vertex.get_n_keys_for_partition(
                     partition, graph_mapper))
 
         constraints = list()
-        if isinstance(edge.pre_vertex,
+        if isinstance(vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             constraints.extend(
-                edge.pre_vertex.get_outgoing_partition_constraints(
-                    partition, graph_mapper))
-        if isinstance(edge.post_vertex,
-                      AbstractProvidesIncomingPartitionConstraints):
-            constraints.extend(
-                edge.post_vertex.get_incoming_partition_constraints(
-                    partition, graph_mapper))
-        constraints.extend(
-            partitionable_graph.partition_from_vertex(
-                edge.pre_vertex, partition_id).constraints)
+                vertex.get_outgoing_partition_constraints(partition))
+        for edge in partition.edges:
+            app_edge = graph_mapper.get_application_edge(edge)
+            if isinstance(app_edge.post_vertex,
+                          AbstractProvidesIncomingPartitionConstraints):
+                constraints.extend(
+                    app_edge.post_vertex.get_incoming_partition_constraints(
+                        partition))
+        constraints.extend(partition.constraints)
         return constraints
 
     @staticmethod
-    def _process_partitioned_partition(
-            partition, n_keys_map, partition_id, partitioned_graph):
-        edge = partition.edges[0]
+    def _process_machine_partition(partition, n_keys_map):
 
-        if not isinstance(edge.pre_subvertex,
+        if not isinstance(partition.pre_vertex,
                           AbstractProvidesNKeysForPartition):
             n_keys_map.set_n_keys_for_partition(partition, 1)
         else:
             n_keys_map.set_n_keys_for_partition(
                 partition,
-                edge.pre_subvertex.get_n_keys_for_partition(
-                    partition, None))
+                partition.pre_vertex.get_n_keys_for_partition(partition, None))
 
         constraints = list()
-        if isinstance(edge.pre_subvertex,
+        if isinstance(partition.pre_vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
             constraints.extend(
-                edge.pre_subvertex.get_outgoing_partition_constraints(
-                    partition, None))
-        if isinstance(edge.post_subvertex,
-                      AbstractProvidesIncomingPartitionConstraints):
-            constraints.extend(
-                edge.post_subvertex.get_incoming_partition_constraints(
-                    partition, None))
-        constraints.extend(
-            partitioned_graph.partition_from_vertex(
-                edge.pre_subvertex, partition_id).constraints)
+                partition.pre_vertex.get_outgoing_partition_constraints(
+                    partition))
+
+        for edge in partition.edges:
+            if isinstance(edge.post_vertex,
+                          AbstractProvidesIncomingPartitionConstraints):
+                constraints.extend(
+                    edge.post_vertex.get_incoming_partition_constraints(
+                        partition))
+        constraints.extend(partition.constraints)
 
         return constraints

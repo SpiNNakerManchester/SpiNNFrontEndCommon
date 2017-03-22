@@ -11,8 +11,11 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 
 class FrontEndCommonBufferManagerCreator(object):
 
+    __slots__ = []
+
     def __call__(
             self, placements, tags, txrx, write_reload_files, app_data_folder):
+
         progress_bar = ProgressBar(
             len(list(placements.placements)), "Initialising buffers")
 
@@ -21,17 +24,14 @@ class FrontEndCommonBufferManagerCreator(object):
             placements, tags, txrx, write_reload_files, app_data_folder)
 
         for placement in placements.placements:
-            if isinstance(
-                    placement.subvertex,
-                    AbstractSendsBuffersFromHost):
-                if placement.subvertex.buffering_input():
-                    buffer_manager.add_sender_vertex(placement.subvertex)
+            if isinstance(placement.vertex, AbstractSendsBuffersFromHost):
+                if placement.vertex.buffering_input():
+                    buffer_manager.add_sender_vertex(placement.vertex)
 
-            if isinstance(placement.subvertex, AbstractReceiveBuffersToHost):
-                if placement.subvertex.buffering_output():
-                    buffer_manager.add_receiving_vertex(placement.subvertex)
+            if isinstance(placement.vertex, AbstractReceiveBuffersToHost):
+                buffer_manager.add_receiving_vertex(placement.vertex)
 
             progress_bar.update()
         progress_bar.end()
 
-        return {"buffer_manager": buffer_manager}
+        return buffer_manager

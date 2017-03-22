@@ -16,6 +16,17 @@ logger = logging.getLogger(__name__)
 
 class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
+    __slots__ = [
+        # thread flag to allow it to be killed when the main thread dies
+        "daemon",
+
+        # the spalloc job object
+        "_job",
+
+        # boolean flag for telling this thread when the system has ended
+        "_exited"
+    ]
+
     def __init__(self, job):
         Thread.__init__(self, name="SpallocJobController")
         self.daemon = True
@@ -52,7 +63,7 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
 class FrontEndCommonSpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
-        partitioned graph
+        number of chips
     """
 
     # Use a worst case calculation
@@ -60,7 +71,8 @@ class FrontEndCommonSpallocAllocator(object):
     _MACHINE_VERSION = 5
 
     def __call__(
-            self, spalloc_server, spalloc_user, n_chips, spalloc_port=None):
+            self, spalloc_server, spalloc_user, n_chips, spalloc_port=None,
+            spalloc_machine=None):
         """
 
         :param spalloc_server: The server from which the machine should be\
@@ -68,6 +80,8 @@ class FrontEndCommonSpallocAllocator(object):
         :param spalloc_port: The port of the SPALLOC server
         :param spalloc_user: The user to allocate the machine to
         :param n_chips: The number of chips required
+        :param spalloc_port: The optional port number to speak to spalloc
+        :param spalloc_machine: The optional spalloc machine to use
         """
 
         # Work out how many boards are needed
@@ -79,13 +93,15 @@ class FrontEndCommonSpallocAllocator(object):
             n_boards += 1
         n_boards = int(math.ceil(n_boards))
 
-        job = None
-        if spalloc_port is None:
-            job = Job(n_boards, hostname=spalloc_server, owner=spalloc_user)
-        else:
-            job = Job(
-                n_boards, hostname=spalloc_server, port=spalloc_port,
-                owner=spalloc_user)
+        spalloc_kw_args = {
+            'hostname': spalloc_server,
+            'owner': spalloc_user
+        }
+        if spalloc_port is not None:
+            spalloc_kw_args['port'] = spalloc_port
+        if spalloc_machine is not None:
+            spalloc_kw_args['machine'] = spalloc_machine
+        job = Job(n_boards, **spalloc_kw_args)
 
         try:
             job.wait_until_ready()
@@ -100,16 +116,7 @@ class FrontEndCommonSpallocAllocator(object):
         machine_allocation_controller = _SpallocJobController(job)
         machine_allocation_controller.start()
 
-        return {
-            "machine_name": hostname,
-            "machine_version": self._MACHINE_VERSION,
-            "machine_down_chips": None,
-            "machine_down_cores": None,
-            "machine_bmp_details": None,
-            "reset_machine_on_start_up": False,
-            "auto_detect_bmp": False,
-            "scamp_connection_data": None,
-            "boot_port_number": None,
-            "max_sdram_size": None,
-            "machine_allocation_controller": machine_allocation_controller
-        }
+        return (
+            hostname, self._MACHINE_VERSION, None, None, None, False,
+            False, None, None, None, machine_allocation_controller
+        )

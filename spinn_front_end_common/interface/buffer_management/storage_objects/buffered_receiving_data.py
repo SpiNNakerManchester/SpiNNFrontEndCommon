@@ -13,6 +13,33 @@ class BufferedReceivingData(object):
         core has been flushed and the final state of the buffering output\
         state machine
     """
+
+    __slots__ = [
+        # boolean flag for if data is to be stored in memory or a file on disk
+        "_store_to_file",
+
+        # the data to store
+        "_data",
+
+        # dict of booleans indicating if a region on a core has been flushed
+        "_is_flushed",
+
+        # dict of last sequence number received by core
+        "_sequence_no",
+
+        # dict of last packet received by core
+        "_last_packet_received",
+
+        # dict of last packet sent by core
+        "_last_packet_sent",
+
+        # dict of end buffer sequence number
+        "_end_buffering_sequence_no",
+
+        # dict of end state by core
+        "_end_buffering_state"
+    ]
+
     def __init__(self, store_to_file=False):
         """
 
@@ -31,6 +58,7 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+        self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
@@ -170,7 +198,6 @@ class BufferedReceivingData(object):
         :type p: int
         :param sequence_no: last sequence number used
         :type sequence_no: int
-        :return: None
         :rtype: None
         """
         self._sequence_no[x, y, p] = sequence_no
@@ -191,8 +218,7 @@ class BufferedReceivingData(object):
         :rtype: (bytearray, bool)
         """
         missing = None
-        if self._end_buffering_state[x, y, p].get_missing_info_for_region(
-                region):
+        if (x, y, p, region) not in self._end_buffering_state:
             missing = (x, y, p, region)
         data = self._data[x, y, p, region].read_all()
         return data, missing
@@ -215,13 +241,12 @@ class BufferedReceivingData(object):
              bool)
         """
         missing = False
-        if self._end_buffering_state[x, y, p].get_missing_info_for_region(
-                region):
+        if (x, y, p, region) not in self._end_buffering_state:
             missing = True
         data_pointer = self._data[x, y, p, region]
         return data_pointer, missing
 
-    def store_end_buffering_state(self, x, y, p, state):
+    def store_end_buffering_state(self, x, y, p, region, state):
         """ Store the end state of buffering
 
         :param x: x coordinate of the chip
@@ -232,9 +257,9 @@ class BufferedReceivingData(object):
         :type p: int
         :param state: The end state
         """
-        self._end_buffering_state[x, y, p] = state
+        self._end_buffering_state[x, y, p, region] = state
 
-    def is_end_buffering_state_recovered(self, x, y, p):
+    def is_end_buffering_state_recovered(self, x, y, p, region):
         """ Determine if the end state has been stored
 
         :param x: x coordinate of the chip
@@ -245,9 +270,9 @@ class BufferedReceivingData(object):
         :type p: int
         :return: True if the state has been stored
         """
-        return (x, y, p) in self._end_buffering_state
+        return (x, y, p, region) in self._end_buffering_state
 
-    def get_end_buffering_state(self, x, y, p):
+    def get_end_buffering_state(self, x, y, p, region):
         """ Get the end state of the buffering
 
         :param x: x coordinate of the chip
@@ -258,7 +283,49 @@ class BufferedReceivingData(object):
         :type p: int
         :return: The end state
         """
-        return self._end_buffering_state[x, y, p]
+        return self._end_buffering_state[x, y, p, region]
+
+    def store_end_buffering_sequence_number(self, x, y, p, sequence):
+        """ Store the last sequence number sent by the core
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :param sequence: The last sequence number
+        :type sequence: int
+        """
+        self._end_buffering_sequence_no[x, y, p] = sequence
+
+    def is_end_buffering_sequence_number_stored(self, x, y, p):
+        """ Determine if the last sequence number has been retrieved
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :return: True if the number has been retrieved
+        :rtype: bool
+        """
+        return (x, y, p) in self._end_buffering_sequence_no
+
+    def get_end_buffering_sequence_number(self, x, y, p):
+        """ Get the last sequence number sent by the core
+
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :return: The last sequence number
+        :rtype: int
+        """
+        return self._end_buffering_sequence_no[x, y, p]
 
     def resume(self):
         """ Resets states so that it can behave in a resumed mode

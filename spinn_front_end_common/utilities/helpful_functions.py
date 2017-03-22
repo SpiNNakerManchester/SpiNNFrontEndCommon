@@ -5,10 +5,12 @@ from data_specification import utility_calls
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
+from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common import mapping_algorithms
 
-# spinnman imports
-from spinnman.model.cpu_state import CPUState
-from spinnman.model.core_subsets import CoreSubsets
+# SpiNMachine imports
+from spinn_machine.core_subsets import CoreSubsets
+from spinn_machine.core_subset import CoreSubset
 
 # general imports
 import os
@@ -18,9 +20,9 @@ import logging
 import re
 import inspect
 import struct
-from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
+FINISHED_FILENAME = "finished"
 
 
 def get_valid_components(module, terminator):
@@ -28,7 +30,7 @@ def get_valid_components(module, terminator):
 
     :param module:
     :param terminator:
-    :return:
+    :rtype: dict
     """
     terminator = re.compile(terminator + '$')
     return dict(map(lambda (name, router): (terminator.sub('', name),
@@ -62,7 +64,6 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type placement: pacman.model.placements.placement.Placement
     :param transceiver: the python interface to the spinnaker machine
     :type transceiver: spiNNMan.transciever.Transciever
-    :return: None
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
@@ -79,16 +80,18 @@ def locate_memory_region_for_placement(placement, region, transceiver):
 
 def set_up_output_application_data_specifics(
         where_to_write_application_data_files,
-        max_application_binaries_kept, app_id, this_run_time_string):
+        max_application_binaries_kept, n_calls_to_run,
+        this_run_time_string):
     """
 
-    :param where_to_write_application_data_files:
-    :param max_application_binaries_kept:
-    :param app_id:
-    :param this_run_time_string:
-    :return:
+    :param where_to_write_application_data_files:\
+        the location where all app data is by default written to
+    :param max_application_binaries_kept:\
+        The max number of report folders to keep active at any one time
+    :param n_calls_to_run: the counter of how many times run has been called.
+    :param this_run_time_string: the time stamp string for this run
+    :return: the run folder for this simulation to hold app data
     """
-    created_folder = False
     this_run_time_folder = None
     if where_to_write_application_data_files == "DEFAULT":
         directory = os.getcwd()
@@ -96,16 +99,15 @@ def set_up_output_application_data_specifics(
             os.path.join(directory, 'application_generated_data_files')
         if not os.path.exists(application_generated_data_file_folder):
             os.makedirs(application_generated_data_file_folder)
-            created_folder = True
 
-        if not created_folder:
-            _move_report_and_binary_files(
-                max_application_binaries_kept,
-                application_generated_data_file_folder)
+        _remove_excess_folders(
+            max_application_binaries_kept,
+            application_generated_data_file_folder)
 
         # add time stamped folder for this run
         this_run_time_folder = \
-            os.path.join(application_generated_data_file_folder, "latest")
+            os.path.join(
+                application_generated_data_file_folder, this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
 
@@ -113,8 +115,7 @@ def set_up_output_application_data_specifics(
         time_of_run_file_name = os.path.join(this_run_time_folder,
                                              "time_stamp")
         writer = open(time_of_run_file_name, "w")
-        writer.writelines("app_{}_{}".format(
-            app_id, this_run_time_string))
+        writer.writelines("{}".format(this_run_time_string))
         writer.flush()
         writer.close()
 
@@ -127,34 +128,47 @@ def set_up_output_application_data_specifics(
 
         # add time stamped folder for this run
         this_run_time_folder = \
-            os.path.join(where_to_write_application_data_files, "latest")
+            os.path.join(where_to_write_application_data_files,
+                         this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
-        else:
-            _move_report_and_binary_files(
-                max_application_binaries_kept,
-                where_to_write_application_data_files)
+
+        # remove folders that are old and above the limit
+        _remove_excess_folders(
+            max_application_binaries_kept,
+            where_to_write_application_data_files)
 
         # store timestamp in latest/time_stamp
         time_of_run_file_name = os.path.join(this_run_time_folder,
                                              "time_stamp")
         writer = open(time_of_run_file_name, "w")
-        writer.writelines("app_{}_{}".format(
-            app_id, this_run_time_string))
+        writer.writelines("{}".format(this_run_time_string))
 
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
-    return this_run_time_folder
+
+    # create sub folder within reports for sub runs (where changes need to be
+    # recorded)
+    this_run_time_sub_folder = os.path.join(
+        this_run_time_folder, "run_{}".format(n_calls_to_run))
+
+    if not os.path.exists(this_run_time_sub_folder):
+        os.makedirs(this_run_time_sub_folder)
+
+    return this_run_time_sub_folder, this_run_time_folder
 
 
 def set_up_report_specifics(
-        default_report_file_path, max_reports_kept, app_id):
+        default_report_file_path, max_reports_kept, n_calls_to_run,
+        this_run_time_string=None):
     """
 
-    :param default_report_file_path:
-    :param max_reports_kept:
-    :param app_id:
-    :return:
+    :param default_report_file_path: The location where all reports reside
+    :param max_reports_kept:\
+        The max number of report folders to keep active at any one time
+    :param n_calls_to_run: the counter of how many times run has been called.
+    :param this_run_time_string: holder for the timestamp for future runs
+    :return: The folder for this run, the time_stamp
     """
 
     # determine common report folder
@@ -179,68 +193,83 @@ def set_up_report_specifics(
             os.makedirs(report_default_directory)
 
     # clear and clean out folders considered not useful anymore
-    if not created_folder \
-            and len(os.listdir(report_default_directory)) > 0:
-        _move_report_and_binary_files(max_reports_kept,
-                                      report_default_directory)
+    if not created_folder and len(os.listdir(report_default_directory)) > 0:
+        _remove_excess_folders(max_reports_kept, report_default_directory)
+
+    # determine the time slot for later
+    if this_run_time_string is None:
+        this_run_time = datetime.datetime.now()
+        this_run_time_string = (
+            "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
+                this_run_time.year, this_run_time.month, this_run_time.day,
+                this_run_time.hour, this_run_time.minute,
+                this_run_time.second, this_run_time.microsecond))
 
     # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = os.path.join(report_default_directory, "latest")
+    app_folder_name = os.path.join(
+        report_default_directory, this_run_time_string)
+
     if not os.path.exists(app_folder_name):
             os.makedirs(app_folder_name)
 
-    # store timestamp in latest/time_stamp
+    # create sub folder within reports for sub runs (where changes need to be
+    # recorded)
+    app_sub_folder_name = os.path.join(
+        app_folder_name, "run_{}".format(n_calls_to_run))
+
+    if not os.path.exists(app_sub_folder_name):
+        os.makedirs(app_sub_folder_name)
+
+    # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
     writer = open(time_of_run_file_name, "w")
-
-    # determine the time slot for later
-    this_run_time = datetime.datetime.now()
-    this_run_time_string = (
-        "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-            this_run_time.year, this_run_time.month, this_run_time.day,
-            this_run_time.hour, this_run_time.minute,
-            this_run_time.second))
-    writer.writelines("app_{}_{}".format(app_id,
-                                         this_run_time_string))
+    writer.writelines("{}".format(this_run_time_string))
     writer.flush()
     writer.close()
-    return app_folder_name, this_run_time_string
+    return app_sub_folder_name, app_folder_name, this_run_time_string
 
 
-def _move_report_and_binary_files(max_to_keep, starting_directory):
-    app_folder_name = os.path.join(starting_directory, "latest")
-    app_name_file = os.path.join(app_folder_name, "time_stamp")
-    if os.path.isfile(app_name_file):
-        time_stamp_in = open(app_name_file, "r")
-        time_stamp_in_string = time_stamp_in.readline()
-        time_stamp_in.close()
-        os.remove(app_name_file)
-        new_app_folder = os.path.join(starting_directory,
-                                      time_stamp_in_string)
-        extra = 2
-        while os.path.exists(new_app_folder):
-            new_app_folder = os.path.join(
-                starting_directory,
-                time_stamp_in_string + "_" + str(extra))
-            extra += 1
+def write_finished_file(app_data_runtime_folder, report_default_directory):
+    # write a finished file that allows file removal to only remove folders
+    # that are finished
+    app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
+    writer = open(app_file_name, "w")
+    writer.writelines("finished")
+    writer.flush()
+    writer.close()
 
-        os.makedirs(new_app_folder)
-        list_of_files = os.listdir(app_folder_name)
-        for file_to_move in list_of_files:
-            file_path = os.path.join(app_folder_name, file_to_move)
-            shutil.move(file_path, new_app_folder)
-        files_in_report_folder = os.listdir(starting_directory)
+    app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
+    writer = open(app_file_name, "w")
+    writer.writelines("finished")
+    writer.flush()
+    writer.close()
 
-        # while there's more than the valid max, remove the oldest one
-        while len(files_in_report_folder) > max_to_keep:
-            files_in_report_folder.sort(
-                cmp, key=lambda temp_file:
-                os.path.getmtime(os.path.join(starting_directory,
-                                              temp_file)))
-            oldest_file = files_in_report_folder[0]
-            shutil.rmtree(os.path.join(starting_directory, oldest_file),
-                          ignore_errors=True)
-            files_in_report_folder.remove(oldest_file)
+
+def _remove_excess_folders(max_to_keep, starting_directory):
+    files_in_report_folder = os.listdir(starting_directory)
+
+    # while there's more than the valid max, remove the oldest one
+    if len(files_in_report_folder) > max_to_keep:
+
+        # sort files into time frame
+        files_in_report_folder.sort(
+            cmp, key=lambda temp_file:
+            os.path.getmtime(os.path.join(starting_directory,
+                                          temp_file)))
+
+        # remove only the number of files required, and only if they have
+        # the finished flag file created
+        num_files_to_remove = len(files_in_report_folder) - max_to_keep
+        files_removed = 0
+        for current_oldest_file in files_in_report_folder:
+            finished_flag = os.path.join(os.path.join(
+                starting_directory, current_oldest_file), FINISHED_FILENAME)
+            if (os.path.exists(finished_flag) and
+                    files_removed < num_files_to_remove):
+                shutil.rmtree(os.path.join(starting_directory,
+                                           current_oldest_file),
+                              ignore_errors=True)
+                files_removed += 1
 
 
 def get_front_end_common_pacman_xml_paths():
@@ -252,72 +281,131 @@ def get_front_end_common_pacman_xml_paths():
             "front_end_common_interface_functions.xml"),
         os.path.join(
             os.path.dirname(front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml")
+            "front_end_common_reports.xml"),
+        os.path.join(
+            os.path.dirname(mapping_algorithms.__file__),
+            "front_end_common_mapping_algorithms.xml"
+        )
     ]
 
 
-def get_cores_in_state(all_core_subsets, states, txrx):
+def convert_string_info_chip_and_core_subsets(downed_chips, downed_cores):
+    """ Translate the down cores and down chips string into a form that \
+        spinnman can understand
+
+    :param downed_cores: string representing down cores
+    :type downed_cores: str or None
+    :param downed_chips: string representing down chips
+    :type downed_chips: str or None
+    :return: a list of down cores and down chips in processor and \
+            core subset format
+    """
+    ignored_chips = None
+    ignored_cores = None
+    if downed_chips is not None and downed_chips != "None":
+        ignored_chips = CoreSubsets()
+        for downed_chip in downed_chips.split(":"):
+            x, y = downed_chip.split(",")
+            ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
+                                                     []))
+    if downed_cores is not None and downed_cores != "None":
+        ignored_cores = CoreSubsets()
+        for downed_core in downed_cores.split(":"):
+            x, y, processor_id = downed_core.split(",")
+            ignored_cores.add_processor(int(x), int(y),
+                                        int(processor_id))
+    return ignored_chips, ignored_cores
+
+
+def translate_iobuf_extraction_elements(
+        hard_coded_cores, hard_coded_model_binary, executable_targets,
+        executable_finder):
     """
 
-    :param all_core_subsets:
-    :param states:
-    :param txrx:
-    :return:
+    :param hard_coded_cores: list of cores to read iobuf from
+    :param hard_coded_model_binary: list of binary names to read iobuf from
+    :param executable_targets: the targets of cores and executable binaries
+    :param executable_finder: where to find binaries paths from binary names
+    :return: core subsets for the cores to read iobuf from
     """
-    core_infos = txrx.get_cpu_information(all_core_subsets)
-    cores_in_state = OrderedDict()
-    for core_info in core_infos:
-        if hasattr(states, "__iter__"):
-            if core_info.state in states:
-                cores_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        elif core_info.state == states:
-            cores_in_state[
-                (core_info.x, core_info.y, core_info.p)] = core_info
+    # all the cores
+    if hard_coded_cores == "ALL" and hard_coded_model_binary == "None":
+        return executable_targets.all_core_subsets
 
-    return cores_in_state
+    # some hard coded cores
+    if hard_coded_cores != "None" and hard_coded_model_binary == "None":
+        _, ignored_cores = convert_string_info_chip_and_core_subsets(
+            None, hard_coded_cores)
+        return ignored_cores
+
+    # some binaries
+    if hard_coded_cores == "None" and hard_coded_model_binary != "None":
+        return _handle_model_binaries(
+            hard_coded_model_binary, executable_targets, executable_finder)
+
+    # nothing
+    if hard_coded_cores == "None" and hard_coded_model_binary == "None":
+        return CoreSubsets()
+
+    # bit of both
+    if hard_coded_cores != "None" and hard_coded_model_binary != "None":
+        model_core_subsets = _handle_model_binaries(
+            hard_coded_model_binary, executable_targets, executable_finder)
+        _, hard_coded_core_core_subsets = \
+            convert_string_info_chip_and_core_subsets(None, hard_coded_cores)
+        for core_subset in hard_coded_core_core_subsets:
+            model_core_subsets.add_core_subset(core_subset)
+        return model_core_subsets
+
+    # should never get here,
+    raise exceptions.ConfigurationException("Something odd has happened")
 
 
-def get_cores_not_in_state(all_core_subsets, states, txrx):
+def _handle_model_binaries(
+        hard_coded_model_binary, executable_targets, executable_finder):
     """
-
-    :param all_core_subsets:
-    :param states:
-    :param txrx:
-    :return:
+    :param hard_coded_model_binary: list of binary names to read iobuf from
+    :param executable_targets: the targets of cores and executable binaries
+    :param executable_finder: where to find binaries paths from binary names
+    :return: core subsets from binaries that need iobuf to be read from them
     """
-    core_infos = txrx.get_cpu_information(all_core_subsets)
-    cores_not_in_state = OrderedDict()
-    for core_info in core_infos:
-        if hasattr(states, "__iter__"):
-            if core_info.state not in states:
-                cores_not_in_state[
-                    (core_info.x, core_info.y, core_info.p)] = core_info
-        elif core_info.state != states:
-            cores_not_in_state[
-                (core_info.x, core_info.y, core_info.p)] = core_info
-    return cores_not_in_state
+    model_binaries = hard_coded_model_binary.split(",")
+    cores = CoreSubsets()
+    for model_binary in model_binaries:
+        model_binary_path = \
+            executable_finder.get_executable_path(model_binary)
+        core_subsets = \
+            executable_targets.get_cores_for_binary(model_binary_path)
+        for core_subset in core_subsets:
+            cores.add_core_subset(core_subset)
+    return cores
 
 
-def get_core_status_string(core_infos):
-    """ Get a string indicating the status of the given cores
+def read_config(config, section, item):
+    """ Get the string value of a config item, returning None if the value\
+        is "None"
     """
-    break_down = "\n"
-    for ((x, y, p), core_info) in core_infos.iteritems():
-        if core_info.state == CPUState.RUN_TIME_EXCEPTION:
-            break_down += "    {}:{}:{} in state {}:{}\n".format(
-                x, y, p, core_info.state.name,
-                core_info.run_time_error.name)
-        else:
-            break_down += "    {}:{}:{} in state {}\n".format(
-                x, y, p, core_info.state.name)
-    return break_down
+    value = config.get(section, item)
+    if value == "None":
+        return None
+    return value
 
 
-def get_core_subsets(core_infos):
-    """ Convert core information from get_cores_in_state to core_subset objects
+def read_config_int(config, section, item):
+    """ Get the integer value of a config item, returning None if the value\
+        is "None"
     """
-    core_subsets = CoreSubsets()
-    for (x, y, p) in core_infos:
-        core_subsets.add_processor(x, y, p)
-    return core_subsets
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return int(value)
+
+
+def read_config_boolean(config, section, item):
+    """ Get the boolean value of a config item, returning None if the value\
+        is "None"
+    """
+    value = read_config(config, section, item)
+    if value is None:
+        return value
+    return bool(value)

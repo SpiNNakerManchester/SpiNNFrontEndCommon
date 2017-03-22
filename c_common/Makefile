@@ -4,11 +4,13 @@ BUILD_DIRS = models
 all: install build
 	
 build: install $(BUILD_DIRS)
-	for d in $(BUILD_DIRS); do (cd $$d; "$(MAKE)") || exit $$?; done
+	for d in $(BUILD_DIRS); do "$(MAKE)" -C $$d || exit $$?; done
 
 install: $(INSTALL_DIRS)
-	for d in $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" install) || exit $$?; done
+	for d in $(INSTALL_DIRS); do "$(MAKE)" -C $$d install || exit $$?; done
 
 clean: $(BUILD_DIRS)
-	for d in $(BUILD_DIRS) $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" clean) || exit $$?; done
-	for d in $(INSTALL_DIRS); do (cd $$d; "$(MAKE)" install-clean) || exit $$?; done
+	for d in $(BUILD_DIRS) $(INSTALL_DIRS); do "$(MAKE)" -C $$d clean || exit $$?; done
+	for d in $(INSTALL_DIRS); do "$(MAKE)" -C $$d install-clean || exit $$?; done
+
+.PHONY: all build install clean

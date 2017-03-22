@@ -17,3 +17,6 @@ class PacmanProvenanceExtractor(object):
     @property
     def data_items(self):
         return self._data_items
+
+    def clear(self):
+        self._data_items = list()

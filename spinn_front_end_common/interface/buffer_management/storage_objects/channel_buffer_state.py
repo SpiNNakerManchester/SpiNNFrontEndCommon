@@ -9,6 +9,32 @@ class ChannelBufferState(object):
         SpiNNaker system.
     """
 
+    __slots__ = [
+        # start buffering area memory address (32 bits)
+        "_start_address",
+
+        # address where data was last written (32 bits)
+        "_current_write",
+
+        # address where data was last read (32 bits)
+        "_current_read",
+
+        # The address of first byte after the buffer (32 bits)
+        "_end_address",
+
+        # The id of the region (8 bits)
+        "_region_id",
+
+        # True if the region overflowed during the simulation (8 bits)
+        "_missing_info",
+
+        # Last operation performed on the buffer - read or write (8 bits)
+        "_last_buffer_operation",
+
+        #
+        "_update_completed",
+    ]
+
     def __init__(
             self, start_address, current_write, current_read, end_address,
             region_id, missing_info, last_buffer_operation):
@@ -76,10 +102,10 @@ class ChannelBufferState(object):
         self._update_completed = True
 
     @staticmethod
-    def create_from_bytearray(data, offset):
+    def create_from_bytearray(data):
         (start_address, current_write, current_read, end_address,
          region_id, missing_info, last_buffer_operation) = struct.unpack_from(
-            "<IIIIBBBx", data, offset)
+            "<IIIIBBBx", data)
         if last_buffer_operation == 0:
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_READ.value

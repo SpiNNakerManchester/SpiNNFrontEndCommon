@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 class FrontEndCommonApplicationDataLoader(object):
 
+    __slots__ = []
+
     def __call__(
             self, processor_to_app_data_base_address, transceiver,
             placement_to_app_data_files, app_id, verify=False):
@@ -73,4 +75,4 @@ class FrontEndCommonApplicationDataLoader(object):
             progress_bar.update()
         progress_bar.end()
 
-        return {"LoadedApplicationDataToken": True}
+        return True

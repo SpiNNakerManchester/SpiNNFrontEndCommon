@@ -4,7 +4,6 @@
  */
 
 #include "simulation.h"
-#include "data_specification.h"
 
 #include <stdbool.h>
 #include <debug.h>
@@ -24,7 +23,7 @@ static prov_callback_t stored_provenance_function = NULL;
 static resume_callback_t stored_resume_function = NULL;
 
 //! the region id for storing provenance data from the chip
-static uint32_t stored_provenance_data_region_id = NULL;
+static address_t stored_provenance_data_address = NULL;
 
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
@@ -37,58 +36,31 @@ static address_t _simulation_store_provenance_data() {
     //! gets access to the diagnostics object from SARK
     extern diagnostics_t diagnostics;
 
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-
-    // get the address of the start of the core's provenance data region
-    address_t provenance_region = data_specification_get_region(
-        stored_provenance_data_region_id, address);
-
     // store the data into the provenance data region
-    provenance_region[TRANSMISSION_EVENT_OVERFLOW] =
+    stored_provenance_data_address[TRANSMISSION_EVENT_OVERFLOW] =
         diagnostics.tx_packet_queue_full;
-    provenance_region[CALLBACK_QUEUE_OVERLOADED] =
+    stored_provenance_data_address[CALLBACK_QUEUE_OVERLOADED] =
         diagnostics.task_queue_full;
-    provenance_region[DMA_QUEUE_OVERLOADED] =
+    stored_provenance_data_address[DMA_QUEUE_OVERLOADED] =
         diagnostics.dma_queue_full;
-    provenance_region[TIMER_TIC_HAS_OVERRUN] =
+    stored_provenance_data_address[TIMER_TIC_HAS_OVERRUN] =
         diagnostics.total_times_tick_tic_callback_overran;
-    provenance_region[MAX_NUMBER_OF_TIMER_TIC_OVERRUN] =
+    stored_provenance_data_address[MAX_NUMBER_OF_TIMER_TIC_OVERRUN] =
         diagnostics.largest_number_of_concurrent_timer_tic_overruns;
-    return &provenance_region[PROVENANCE_DATA_ELEMENTS];
+    return &stored_provenance_data_address[PROVENANCE_DATA_ELEMENTS];
 }
 
 //! \brief helper private method for running provenance data storage
 static void _execute_provenance_storage() {
-    if (stored_provenance_data_region_id != NULL) {
+    if (stored_provenance_data_address != NULL) {
         log_info("Starting basic provenance gathering");
-        address_t region_to_start_with = _simulation_store_provenance_data();
+        address_t address_to_start_with = _simulation_store_provenance_data();
         if (stored_provenance_function != NULL){
             log_info("running other provenance gathering");
-            stored_provenance_function(region_to_start_with);
+            stored_provenance_function(address_to_start_with);
         }
     }
 }
-
-bool simulation_read_timing_details(
-        address_t address, uint32_t expected_app_magic_number,
-        uint32_t* timer_period, uint32_t *simulation_control_sdp_port) {
-
-    if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
-        log_error(
-            "Unexpected magic number 0x%08x instead of 0x%08x at 0x%08x",
-            address[APPLICATION_MAGIC_NUMBER],
-            expected_app_magic_number,
-            (uint32_t) address + APPLICATION_MAGIC_NUMBER);
-        return false;
-    }
-
-    *timer_period = address[SIMULATION_TIMER_PERIOD];
-
-    *simulation_control_sdp_port = address[SIMULATION_CONTROL_SDP_PORT];
-    return true;
-}
-
 
 void simulation_run() {
 
@@ -96,6 +68,10 @@ void simulation_run() {
     spin1_start_paused();
 }
 
+//! \brief cleans up the house keeping, falls into a sync state and handles
+//!        the resetting up of states as required to resume.
+//! \param[in] resume_function The function to call just before the simulation
+//!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback){
 
     stored_resume_function = callback;
@@ -105,6 +81,27 @@ void simulation_handle_pause_resume(resume_callback_t callback){
 
     // Pause the simulation
     spin1_pause();
+}
+
+//! \brief a helper method for people not using the auto pause and
+//! resume functionality
+void simulation_exit(){
+    simulation_handle_pause_resume(NULL);
+}
+
+//! \brief method for sending OK response to the host when a command message
+//! is received.
+//! \param[in] msg: the message object to send to the host.
+void _send_ok_response(sdp_msg_t *msg){
+    msg->cmd_rc = RC_OK;
+    msg->length = 12;
+    uint dest_port = msg->dest_port;
+    uint dest_addr = msg->dest_addr;
+    msg->dest_port = msg->srce_port;
+    msg->srce_port = dest_port;
+    msg->dest_addr = msg->srce_addr;
+    msg->srce_addr = dest_addr;
+    spin1_send_sdp_msg(msg, 10);
 }
 
 //! \brief handles the new commands needed to resume the binary with a new
@@ -144,15 +141,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // If we are told to send a response, send it now
             if (msg->arg3 == 1) {
-                msg->cmd_rc = RC_OK;
-                msg->length = 12;
-                uint dest_port = msg->dest_port;
-                uint dest_addr = msg->dest_addr;
-                msg->dest_port = msg->srce_port;
-                msg->srce_port = dest_port;
-                msg->dest_addr = msg->srce_addr;
-                msg->srce_addr = dest_addr;
-                spin1_send_sdp_msg(msg, 10);
+                _send_ok_response(msg);
             }
 
             // free the message to stop overload
@@ -177,6 +166,20 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             _execute_provenance_storage();
             spin1_msg_free(msg);
             spin1_exit(1);
+            break;
+
+        case IOBUF_CLEAR:
+
+            // run clear iobuf code
+            sark_io_buf_reset();
+
+            // If we are told to send a response, send it now
+            if (msg->arg3 == 1) {
+                _send_ok_response(msg);
+            }
+
+            // free the message to stop overload
+            spin1_msg_free(msg);
             break;
 
         default:
@@ -209,22 +212,49 @@ void simulation_sdp_callback_off(uint sdp_port) {
     sdp_callback[sdp_port] = NULL;
 }
 
-void simulation_register_simulation_sdp_callback(
-        uint32_t *simulation_ticks_pointer, uint32_t *infinite_run_pointer,
-        int sdp_packet_callback_priority,
-        uint32_t simulation_control_sdp_port) {
+bool simulation_initialise(
+        address_t address, uint32_t expected_app_magic_number,
+        uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
+        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
+        prov_callback_t provenance_function,
+        address_t provenance_data_address) {
+
+    // handle the timing reading
+    if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
+        log_error(
+            "Unexpected magic number 0x%08x instead of 0x%08x at 0x%08x",
+            address[APPLICATION_MAGIC_NUMBER],
+            expected_app_magic_number,
+            (uint32_t) address + APPLICATION_MAGIC_NUMBER);
+        return false;
+    }
+
+    if (sdp_packet_callback_priority < -1) {
+        log_error(
+            "The SDP callback priority should be set to a number greater "
+            "than or equal to -1.  "
+            "It is currently set to %d", sdp_packet_callback_priority);
+        return false;
+    }
+
+    // transfer data to pointers for end user usage
+    *timer_period = address[SIMULATION_TIMER_PERIOD];
+
+    // handle the SDP callback for the simulation
     pointer_to_simulation_time = simulation_ticks_pointer;
     pointer_to_infinite_run = infinite_run_pointer;
+
     spin1_callback_on(
         SDP_PACKET_RX, _simulation_sdp_callback_handler,
         sdp_packet_callback_priority);
     simulation_sdp_callback_on(
-        simulation_control_sdp_port, _simulation_control_scp_callback);
-}
+        address[SIMULATION_CONTROL_SDP_PORT],
+        _simulation_control_scp_callback);
 
-void  simulation_register_provenance_callback(
-        prov_callback_t provenance_function,
-        uint32_t provenance_data_region_id){
+    // handle the provenance setting up
     stored_provenance_function = provenance_function;
-    stored_provenance_data_region_id = provenance_data_region_id;
+    stored_provenance_data_address = provenance_data_address;
+
+    // if all simulation initialisation complete return true,
+    return true;
 }

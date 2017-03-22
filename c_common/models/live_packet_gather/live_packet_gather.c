@@ -64,6 +64,7 @@ static uint32_t payload_prefix;
 // Right payload shift (for the sender)
 static uint32_t payload_right_shift;
 static uint32_t sdp_tag;
+static uint32_t sdp_dest;
 static uint32_t packets_per_timestamp;
 
 //! human readable definitions of each region in SDRAM
@@ -86,6 +87,7 @@ typedef enum configuration_region_components_e {
     PAYLOAD_PREFIX,
     PAYLOAD_RIGHT_SHIFT,
     SDP_TAG,
+    SDP_DEST,
     PACKETS_PER_TIMESTEP
 } configuration_region_components_e;
 
@@ -371,6 +373,7 @@ void read_parameters(address_t region_address) {
     // Right payload shift (for the sender)
     payload_right_shift = region_address[PAYLOAD_RIGHT_SHIFT];
     sdp_tag = region_address[SDP_TAG];
+    sdp_dest = region_address[SDP_DEST];
     packets_per_timestamp = region_address[PACKETS_PER_TIMESTEP];
 
     log_info("apply_prefix: %d\n", apply_prefix);
@@ -383,10 +386,11 @@ void read_parameters(address_t region_address) {
     log_info("payload_prefix: %08x\n", payload_prefix);
     log_info("payload_right_shift: %d\n", payload_right_shift);
     log_info("sdp_tag: %d\n", sdp_tag);
+    log_info("sdp_dest: 0x%08x\n", sdp_dest);
     log_info("packets_per_timestamp: %d\n", packets_per_timestamp);
 }
 
-bool initialize(uint32_t *timer_period, uint32_t *simulation_sdp_port) {
+bool initialize(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -396,10 +400,12 @@ bool initialize(uint32_t *timer_period, uint32_t *simulation_sdp_port) {
         return false;
     }
 
-    // Get the timing details
-    if (!simulation_read_timing_details(
+    // Get the timing details and set up the simulation interface
+    if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, simulation_sdp_port)) {
+            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            &infinite_run, SDP, record_provenance_data,
+            data_specification_get_region(PROVENANCE_REGION, address))) {
         return false;
     }
 
@@ -430,7 +436,7 @@ bool configure_sdp_msg(void) {
     g_event_message.flags = 0x07;
 
     // Chip 0,0
-    g_event_message.dest_addr = 0;
+    g_event_message.dest_addr = sdp_dest;
 
     // Dump through Ethernet
     g_event_message.dest_port = PORT_ETH;
@@ -560,8 +566,7 @@ void c_main(void) {
 
     // Configure system
     uint32_t timer_period = 0;
-    uint32_t simulation_sdp_port = 0;
-    if (!initialize(&timer_period, &simulation_sdp_port)) {
+    if (!initialize(&timer_period)) {
          log_error("Error in initialisation - exiting!");
          rt_error(RTE_SWERR);
     }
@@ -585,12 +590,6 @@ void c_main(void) {
     spin1_callback_on(
         USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
-
-    // register simulation based requirements
-    simulation_register_simulation_sdp_callback(
-        &simulation_ticks, &infinite_run, SDP, simulation_sdp_port);
-    simulation_register_provenance_callback(
-        record_provenance_data, PROVENANCE_REGION);
 
     // Start the time at "-1" so that the first tick will be 0
     time = UINT32_MAX;

@@ -39,7 +39,7 @@ class NotificationProtocol(object):
         """ if asked to wait for confirmation, waits for all external systems\
             to confirm that they are configured and have read the database
 
-        :return:
+        :rtype: None
         """
         logger.info("*** Awaiting for a response from an external source "
                     "to state its ready for the simulation to start ***")
@@ -51,7 +51,7 @@ class NotificationProtocol(object):
             are configured, and/or just sends the start notification\
             (when the system is executing)
 
-        :return:
+        :rtype: None
         """
         if self._wait_for_read_confirmation:
             self.wait_for_confirmation()
@@ -64,8 +64,9 @@ class NotificationProtocol(object):
         """
         sends notifications to all devices which have expressed an interest in
         when the databse has been written
+
         :param database_path: the path to the database file
-        :return:
+        :rtype: None
         """
         if database_path is not None:
             self._wait_pool.apply_async(self._send_read_notification,
@@ -77,7 +78,7 @@ class NotificationProtocol(object):
         been written. Messgae also includes the path to the database
 
         :param database_path: the path to the database
-        :return: None
+        :rtype: None
 
         """
         # noinspection PyBroadException
@@ -120,6 +121,5 @@ class NotificationProtocol(object):
 
     def close(self):
         """ Closes the thread pool
-        :return:
         """
         self._wait_pool.close()

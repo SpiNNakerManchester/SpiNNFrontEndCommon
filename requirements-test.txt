@@ -1,0 +1,3 @@
+-r requirements.txt
+flake8
+sphinx==1.5.3

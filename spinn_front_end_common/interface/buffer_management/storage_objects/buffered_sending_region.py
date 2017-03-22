@@ -18,6 +18,30 @@ class BufferedSendingRegion(object):
         exception will be raised
     """
 
+    __slots__ = [
+
+        # The maximum size of any buffer
+        "_max_size_of_buffer",
+
+        # A dictionary of timestamp -> list of keys
+        "_buffer",
+
+        # A list of timestamps
+        "_timestamps",
+
+        # The current position in the list of timestamps
+        "_current_timestamp_pos",
+
+        # int stating the size of the buffer
+        "_buffer_size",
+
+        # int stating the total size of the buffered region
+        "_total_region_size",
+
+        # The maximum number of packets in any timestamp
+        "_max_packets_in_timestamp"
+    ]
+
     _HEADER_SIZE = EIEIODataHeader.get_header_size(
         EIEIOType.KEY_32_BIT, is_payload_base=True)
 
@@ -32,13 +56,26 @@ class BufferedSendingRegion(object):
 
     def __init__(self, max_buffer_size):
         self._max_size_of_buffer = max_buffer_size
-        self.clear()
+
+        # A dictionary of timestamp -> list of keys
+        self._buffer = dict()
+
+        # A list of timestamps
+        self._timestamps = list()
+
+        # The current position in the list of timestamps
+        self._current_timestamp_pos = 0
+
+        self._buffer_size = None
+
+        self._total_region_size = None
+
+        self._max_packets_in_timestamp = 0
 
     @property
     def buffer_size(self):
         """
         property method for getting the max size of this buffer
-        :return:
         """
         if self._buffer_size is None:
             self._calculate_sizes()
@@ -47,7 +84,6 @@ class BufferedSendingRegion(object):
     @property
     def total_region_size(self):
         """ Get the max size of this region
-        :return:
         """
         if self._total_region_size is None:
             self._calculate_sizes()
@@ -56,13 +92,11 @@ class BufferedSendingRegion(object):
     @property
     def max_buffer_size_possible(self):
         """ Get the max possible size of a buffer from this region
-        :return:
         """
         return self._max_size_of_buffer
 
     def _calculate_sizes(self):
         """ Deduce how big the buffer and the region needs to be
-        :return:
         """
         size = 0
         for timestamp in self._timestamps:
@@ -103,6 +137,8 @@ class BufferedSendingRegion(object):
         self._buffer[timestamp].append(key)
         self._total_region_size = None
         self._buffer_size = None
+        if len(self._buffer[timestamp]) > self._max_packets_in_timestamp:
+            self._max_packets_in_timestamp = len(self._buffer[timestamp])
 
     def add_keys(self, timestamp, keys):
         """ Add a set of keys to be sent at the given time
@@ -144,6 +180,7 @@ class BufferedSendingRegion(object):
     @property
     def is_next_timestamp(self):
         """ Determines if the region is empty
+
         :return: True if the region is empty, false otherwise
         :rtype: bool
         """
@@ -211,3 +248,9 @@ class BufferedSendingRegion(object):
         self._buffer_size = None
 
         self._total_region_size = None
+
+    @property
+    def max_packets_in_timestamp(self):
+        """ The maximum number of packets in any time stamp
+        """
+        return self._max_packets_in_timestamp

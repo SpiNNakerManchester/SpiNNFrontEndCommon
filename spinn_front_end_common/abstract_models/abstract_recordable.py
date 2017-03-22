@@ -11,5 +11,4 @@ class AbstractRecordable(object):
     @abstractmethod
     def is_recording(self):
         """ Deduce if the recorder is actually recording
-        :return:
         """
