@@ -185,9 +185,9 @@ class LiveEventConnection(DatabaseConnection):
                         listener.start()
                         self._receivers[port] = receiver
                         self._listeners[port] = listener
-#                     logger.info(
-#                         "Listening for traffic from {} on {}:{}".format(
-#                             receive_label, host, port))
+                    logger.info(
+                        "Listening for traffic from {} on {}:{}".format(
+                            receive_label, host, port))
                 else:
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
