@@ -7,9 +7,6 @@ from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.machine.impl.machine_vertex \
     import MachineVertex
 from spinn_front_end_common.abstract_models.\
-    abstract_binary_uses_simulation_run import \
-    AbstractBinaryUsesSimulationRun
-from spinn_front_end_common.abstract_models.\
     abstract_has_associated_binary import \
     AbstractHasAssociatedBinary
 from spinn_front_end_common.abstract_models.\
@@ -20,12 +17,13 @@ from spinn_front_end_common.interface.provenance\
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.utility_objs.executable_start_type\
+    import ExecutableStartType
 
 
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractRequiresStopCommand, AbstractHasAssociatedBinary,
-        AbstractBinaryUsesSimulationRun):
+        AbstractRequiresStopCommand, AbstractHasAssociatedBinary):
 
     # Regions for populations
     DATA_REGIONS = Enum(
@@ -224,6 +222,10 @@ class CommandSenderMachineVertex(
         :return:
         """
         return 'command_sender_multicast_source.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @staticmethod
     def get_number_of_mallocs_used_by_dsg():
