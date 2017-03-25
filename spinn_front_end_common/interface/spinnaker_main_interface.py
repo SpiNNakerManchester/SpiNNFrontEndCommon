@@ -888,12 +888,14 @@ class SpinnakerMainInterface(object):
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
             inputs["BMPDetails"] = None
-            inputs["DownedChipsDetails"] = self._config.get(
-                "Machine", "down_chips")
-            inputs["DownedCoresDetails"] = self._config.get(
-                "Machine", "down_cores")
-            inputs["DownedLinksDetails"] = self._config.get(
-                "Machine", "down_links")
+            down_chips, down_cores, down_links = \
+                helpful_functions.sort_out_downed_chips_cores_links(
+                    self._config.get("Machine", "down_chips"),
+                    self._config.get("Machine", "down_cores"),
+                    self._config.get("Machine", "down_links"))
+            inputs["DownedChipsDetails"] = down_chips
+            inputs["DownedCoresDetails"] = down_cores
+            inputs["DownedLinksDetails"] = down_links
             inputs["AutoDetectBMPFlag"] = False
             inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
                 "Machine", "requires_wrap_arounds")
