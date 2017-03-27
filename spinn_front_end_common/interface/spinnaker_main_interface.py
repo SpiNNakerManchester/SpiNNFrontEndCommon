@@ -1903,6 +1903,7 @@ class SpinnakerMainInterface(object):
 
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.close()
+                self._machine_allocation_controller = None
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):

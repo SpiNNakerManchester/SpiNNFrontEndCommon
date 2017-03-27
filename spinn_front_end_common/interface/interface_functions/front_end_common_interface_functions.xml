@@ -317,7 +317,6 @@
             <param_name>machine</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedRoutingTablesToken</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonTagsLoader">
