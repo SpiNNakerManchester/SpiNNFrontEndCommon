@@ -17,6 +17,9 @@ setup(
         'spinn_front_end_common.interface.interface_functions',
         'spinn_front_end_common.interface.provenance',
         'spinn_front_end_common.interface.simulation',
+        'spinn_front_end_common.mapping_algorithms',
+        'spinn_front_end_common'
+            '.mapping_algorithms.on_chip_router_table_compression',
         'spinn_front_end_common.utilities',
         'spinn_front_end_common.utilities.connections',
         'spinn_front_end_common.utilities.database',

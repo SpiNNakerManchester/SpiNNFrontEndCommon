@@ -6,7 +6,7 @@ from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions as \
     front_end_common_report_functions
 from spinn_front_end_common.utilities import exceptions
-import spinn_front_end_common.mapping_algorithms
+from spinn_front_end_common import mapping_algorithms
 
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
@@ -283,8 +283,7 @@ def get_front_end_common_pacman_xml_paths():
             os.path.dirname(front_end_common_report_functions.__file__),
             "front_end_common_reports.xml"),
         os.path.join(
-            os.path.dirname(
-                spinn_front_end_common.mapping_algorithms.__file__),
+            os.path.dirname(mapping_algorithms.__file__),
             "front_end_common_mapping_algorithms.xml"
         )
     ]
