@@ -918,22 +918,20 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
+                <param_name>has_ran</param_name>
+                <param_type>RanToken</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
-            <param_name>placements</param_name>
+            <param_name>executable_targets</param_name>
+            <param_name>has_ran</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipRuntimeUpdater">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_runtime_updater</python_module>

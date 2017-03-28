@@ -25,8 +25,7 @@ class FrontEndCommonApplicationRunner(object):
             time_scale_factor, loaded_reverse_iptags_token,
             loaded_iptags_token, loaded_routing_tables_token,
             loaded_binaries_token, loaded_application_data_token,
-            no_sync_changes, time_threshold, has_loaded_runtime_flag,
-            placements, graph_mapper=None):
+            no_sync_changes, time_threshold, has_loaded_runtime_flag):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or

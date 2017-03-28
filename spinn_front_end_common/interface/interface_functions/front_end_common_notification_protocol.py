@@ -19,12 +19,6 @@ class FrontEndCommonNotificationProtocol(object):
     def __call__(
             self, wait_for_read_confirmation,
             socket_addresses, database_file_path):
-        """
-
-        :param wait_for_read_confirmation:
-        :param socket_addresses:
-        :param database_file_path:
-        """
 
         # notification protocol
         self._notification_protocol = NotificationProtocol(

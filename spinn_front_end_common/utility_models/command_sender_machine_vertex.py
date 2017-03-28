@@ -9,9 +9,6 @@ from pacman.model.graphs.machine.impl.machine_vertex \
 from spinn_front_end_common.abstract_models.\
     abstract_has_associated_binary import \
     AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models.\
-    abstract_requires_stop_command import \
-    AbstractRequiresStopCommand
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl \
     import ProvidesProvenanceDataFromMachineImpl
@@ -23,7 +20,7 @@ from spinn_front_end_common.utilities.utility_objs.executable_start_type\
 
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractRequiresStopCommand, AbstractHasAssociatedBinary):
+        AbstractHasAssociatedBinary):
 
     # Regions for populations
     DATA_REGIONS = Enum(
@@ -58,7 +55,6 @@ class CommandSenderMachineVertex(
         ProvidesProvenanceDataFromMachineImpl.__init__(
             self, self.DATA_REGIONS.PROVENANCE_REGION.value,
             n_additional_data_items=0)
-        AbstractRequiresStopCommand.__init__(self)
         MachineVertex.__init__(self, label, constraints)
 
         # container of different types of command
