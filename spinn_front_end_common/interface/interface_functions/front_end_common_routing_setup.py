@@ -36,8 +36,6 @@ class FrontEndCommonRoutingSetup(object):
             progress_bar.update()
         progress_bar.end()
 
-        return True
-
     @staticmethod
     def _set_router_diagnostic_filters(x, y, transceiver):
         transceiver.set_router_diagnostic_filter(
