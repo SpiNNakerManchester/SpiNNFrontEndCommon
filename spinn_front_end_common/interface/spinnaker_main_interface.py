@@ -1117,6 +1117,10 @@ class SpinnakerMainInterface(object):
                 optional_algorithms.append("unCompressedRoutingTableReports")
                 optional_algorithms.append("compressedRoutingTableReports")
                 optional_algorithms.append("comparisonOfRoutingTablesReport")
+            if self._config.getboolean(
+                    "Reports", "writeRoutingTablesFromMachineReport"):
+                optional_algorithms.append(
+                    "FrontEndCommonRoutingTableFromMachineReport")
 
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
@@ -1233,11 +1237,6 @@ class SpinnakerMainInterface(object):
 
         # add report for extracting routing table from machine report if needed
         algorithms = list(self._extra_load_algorithms)
-        if self._config.getboolean("Reports", "reportsEnabled"):
-            if self._config.getboolean(
-                    "Reports", "writeRoutingTablesFromMachineReport"):
-                algorithms.append(
-                    "FrontEndCommonRoutingTableFromMachineReport")
 
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
