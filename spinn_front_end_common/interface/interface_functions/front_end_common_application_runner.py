@@ -95,7 +95,7 @@ class FrontEndCommonApplicationRunner(object):
         if runtime is None:
             logger.info("Application is set to run forever - exiting")
         else:
-            time_to_wait = (runtime / 1000.0) + 0.1
+            time_to_wait = ((runtime * time_scale_factor) / 1000.0) + 0.1
             logger.info(
                 "Application started - waiting {} seconds for it to stop"
                 .format(time_to_wait))
