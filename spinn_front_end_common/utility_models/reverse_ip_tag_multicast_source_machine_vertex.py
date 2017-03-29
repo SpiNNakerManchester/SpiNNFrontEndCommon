@@ -683,3 +683,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_recording_region_base_address(self, txrx, placement):
         return helpful_functions.locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING.value, txrx)
+
+    def __repr__(self):
+        return self._label
