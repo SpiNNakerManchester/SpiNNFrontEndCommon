@@ -1099,10 +1099,8 @@ class SpinnakerMainInterface(object):
             # only add network specification report if there's
             # application vertices.
             if (self._config.getboolean(
-                    "Reports", "writeNetworkSpecificationReport") and
-                    self._application_graph.n_vertices != 0):
-                algorithms.append(
-                    "FrontEndCommonApplicationGraphNetworkSpecificationReport")
+                    "Reports", "writeNetworkSpecificationReport")):
+                algorithms.append("NetworkSpecificationReport")
 
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board:
