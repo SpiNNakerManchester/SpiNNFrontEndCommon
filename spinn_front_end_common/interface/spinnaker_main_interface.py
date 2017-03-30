@@ -1142,10 +1142,8 @@ class SpinnakerMainInterface(object):
             # only add network specification report if there's
             # application vertices.
             if (self._config.getboolean(
-                    "Reports", "writeNetworkSpecificationReport") and
-                    self._application_graph.n_vertices != 0):
-                algorithms.append(
-                    "FrontEndCommonApplicationGraphNetworkSpecificationReport")
+                    "Reports", "writeNetworkSpecificationReport")):
+                algorithms.append("NetworkSpecificationReport")
 
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board:
@@ -1495,7 +1493,8 @@ class SpinnakerMainInterface(object):
         non_rte_cores = [
             (x, y, p)
             for (x, y, p), core_info in unsuccessful_cores.iteritems()
-            if core_info.state != CPUState.RUN_TIME_EXCEPTION
+            if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
+                core_info.state != CPUState.WATCHDOG)
         ]
 
         # If there are any cores that are not in RTE, extract data from them
@@ -1503,14 +1502,16 @@ class SpinnakerMainInterface(object):
                 self._executable_start_type ==
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
             placements = Placements()
+            non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
                 vertex = self._placements.get_vertex_on_processor(x, y, p)
                 placements.add_placement(
                     self._placements.get_placement_of_vertex(vertex))
+                non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
             updater = FrontEndCommonChipProvenanceUpdater()
-            updater(self._txrx, self._app_id, placements, self._graph_mapper)
+            updater(self._txrx, self._app_id, non_rte_core_subsets)
 
             inputs = self._last_run_outputs
             inputs["CoresToExtractIOBufFrom"] = \
