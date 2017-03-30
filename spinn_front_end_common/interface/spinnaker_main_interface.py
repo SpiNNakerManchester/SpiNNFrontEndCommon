@@ -1445,7 +1445,8 @@ class SpinnakerMainInterface(object):
         non_rte_cores = [
             (x, y, p)
             for (x, y, p), core_info in unsuccessful_cores.iteritems()
-            if core_info.state != CPUState.RUN_TIME_EXCEPTION
+            if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
+                core_info.state != CPUState.WATCHDOG)
         ]
 
         # If there are any cores that are not in RTE, extract data from them
@@ -1453,14 +1454,16 @@ class SpinnakerMainInterface(object):
                 self._executable_start_type ==
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
             placements = Placements()
+            non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
                 vertex = self._placements.get_vertex_on_processor(x, y, p)
                 placements.add_placement(
                     self._placements.get_placement_of_vertex(vertex))
+                non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
             updater = FrontEndCommonChipProvenanceUpdater()
-            updater(self._txrx, self._app_id, placements, self._graph_mapper)
+            updater(self._txrx, self._app_id, non_rte_core_subsets)
 
             # Extract any written provenance data
             extracter = FrontEndCommonPlacementsProvenanceGatherer()
@@ -1838,6 +1841,7 @@ class SpinnakerMainInterface(object):
 
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.close()
+                self._machine_allocation_controller = None
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
