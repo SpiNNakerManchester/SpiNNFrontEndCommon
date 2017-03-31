@@ -1,5 +1,6 @@
+from spinn_front_end_common.utilities import helpful_functions
+
 # general imports
-import os
 from lxml import etree
 import itertools
 import string
@@ -15,6 +16,12 @@ class FrontEndCommonProvenanceXMLWriter(object):
         "-_.() {}{}".format(string.ascii_letters, string.digits))
 
     def __call__(self, provenance_data_items, provenance_data_path):
+        """ writes provenance in xml format
+
+        :param provenance_data_items: data items for provenance
+        :param provenance_data_path: the file path to store provenance in
+        :return:  None
+        """
 
         # Group data by the first name
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
@@ -25,13 +32,8 @@ class FrontEndCommonProvenanceXMLWriter(object):
                 c if c in self.VALID_CHARS else '_' for c in name)
 
             # generate file path for xml
-            file_path = os.path.join(
-                provenance_data_path, "{}.xml".format(filename))
-            count = 2
-            while os.path.exists(file_path):
-                file_path = os.path.join(
-                    provenance_data_path, "{}_{}.xml".format(filename, count))
-                count += 1
+            file_path = helpful_functions.generate_unique_folder_name(
+                provenance_data_path, filename, ".xml")
 
             # Create a root node
             root = etree.Element("provenance_data_items", name=name)

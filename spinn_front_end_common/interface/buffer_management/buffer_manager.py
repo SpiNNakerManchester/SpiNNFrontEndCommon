@@ -748,12 +748,12 @@ class BufferManager(object):
             if last_packet_sent is not None:
                 self._transceiver.send_sdp_message(last_packet_sent)
             else:
-                raise Exception("Something somewhere went terribly wrong - "
-                                "The packet sequence numbers have gone wrong "
-                                "somewhere: the packet sent from the board "
-                                "has incorrect sequence number, but the host "
-                                "never sent one acknowledge - how is this "
-                                "possible?")
+                raise Exception(
+                    "{}, {}, {}: Something somewhere went terribly wrong - "
+                    "The packet sequence numbers have gone wrong "
+                    "somewhere: the packet sent from the board "
+                    "has incorrect sequence number, but the host "
+                    "never sent one acknowledge".format(x, y, p))
             return
 
         # read data from memory, store it and create data for return ACK packet
