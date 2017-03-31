@@ -432,6 +432,8 @@ class SpinnakerMainInterface(object):
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 
+        :param hostname: machine name
+        :rtype: None
         """
         if hostname is not None:
             self._hostname = hostname
@@ -469,7 +471,12 @@ class SpinnakerMainInterface(object):
                     "A spalloc_user must be specified with a spalloc_server")
 
     def signal_handler(self, signal, frame):
+        """ handles closing down of script via keyboard interrupt
 
+        :param signal: the signal received
+        :param frame:  ????????
+        :return:  None
+        """
         # If we are to raise the keyboard interrupt, do so
         if self._raise_keyboard_interrupt:
             raise KeyboardInterrupt
@@ -478,11 +485,18 @@ class SpinnakerMainInterface(object):
         self._shutdown()
 
     def exception_handler(self, exctype, value, traceback_obj):
+        """ handler of exceptions
+
+        :param exctype:  the type of execution received
+        :param value: the value of the exception
+        :param traceback_obj: the trace back stuff
+        :return:  ?????????
+        """
         self._shutdown()
         return sys.__excepthook__(exctype, value, traceback_obj)
 
     def run(self, run_time):
-        """
+        """ main call for running a simulation for a given time frame
 
         :param run_time: the run duration in milliseconds.
         :rtype: None
@@ -610,6 +624,10 @@ class SpinnakerMainInterface(object):
                 steps = self._deduce_number_of_iterations(n_machine_time_steps)
                 self._minimum_step_generated = steps[0]
 
+        # Keep track of if loading was done; if loading is done before run,
+        # run doesn't need to rewrite data again
+        loading_done = False
+
         # If we have never run before, or the graph has changed, or a reset
         # has been requested, load the data
         if (not self._has_ran or application_graph_changed or
@@ -622,13 +640,14 @@ class SpinnakerMainInterface(object):
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
                 self._do_load()
+                loading_done = True
 
         # Run for each of the given steps
         logger.info("Running for {} steps for a total of {} ms".format(
             len(steps), run_time))
         for i, step in enumerate(steps):
             logger.info("Run {} of {}".format(i + 1, len(steps)))
-            self._do_run(step)
+            self._do_run(step, loading_done)
 
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
@@ -638,7 +657,13 @@ class SpinnakerMainInterface(object):
         self._n_calls_to_run += 1
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
+        """ operates the auto pause and resume functionality by figuring out\
+            how many timer ticks a simulation can run before sdram runs out,\
+            and breaks simulation into chunks of that long.
 
+        :param n_machine_time_steps: the total timer ticks to be ran
+        :return: list of timer steps.
+        """
         # Go through the placements and find how much SDRAM is available
         # on each chip
         sdram_tracker = dict()
@@ -676,6 +701,12 @@ class SpinnakerMainInterface(object):
 
     @staticmethod
     def _generate_steps(n_machine_time_steps, min_machine_time_steps):
+        """ generates the list of timer runs
+
+        :param n_machine_time_steps: the total runtime in machine time steps
+        :param min_machine_time_steps: the min allowed per chunk
+        :return: list of time steps
+        """
         number_of_full_iterations = int(math.floor(
             n_machine_time_steps / min_machine_time_steps))
         left_over_time_steps = int(
@@ -716,6 +747,14 @@ class SpinnakerMainInterface(object):
 
     def _run_machine_algorithms(
             self, inputs, algorithms, outputs, optional_algorithms=None):
+        """ runs getting a spinnaker machine logic
+
+        :param inputs: the inputs
+        :param algorithms: algorithms to call
+        :param outputs: outputs to get
+        :param optional_algorithms: optional algorithms to use
+        :return:  None
+        """
 
         optional = optional_algorithms
         if optional is None:
@@ -1077,6 +1116,10 @@ class SpinnakerMainInterface(object):
                 optional_algorithms.append("unCompressedRoutingTableReports")
                 optional_algorithms.append("compressedRoutingTableReports")
                 optional_algorithms.append("comparisonOfRoutingTablesReport")
+            if self._config.getboolean(
+                    "Reports", "writeRoutingTablesFromMachineReport"):
+                optional_algorithms.append(
+                    "FrontEndCommonRoutingTableFromMachineReport")
 
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
@@ -1191,11 +1234,6 @@ class SpinnakerMainInterface(object):
 
         # add report for extracting routing table from machine report if needed
         algorithms = list(self._extra_load_algorithms)
-        if self._config.getboolean("Reports", "reportsEnabled"):
-            if self._config.getboolean(
-                    "Reports", "writeRoutingTablesFromMachineReport"):
-                algorithms.append(
-                    "FrontEndCommonRoutingTableFromMachineReport")
 
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
@@ -1206,12 +1244,19 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnHostReport")
+                optional_algorithms.append(
+                    "FrontEndCommonMemoryMapOnHostChipReport")
         else:
             optional_algorithms.append(
                 "FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
             if self._config.getboolean("Reports", "writeMemoryMapReport"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
+
+        # Reload any parameters over the loaded data if we have already
+        # run and not using a virtual board
+        if self._has_ran and not self._use_virtual_board:
+            optional_algorithms.append("FrontEndCommonDSGRegionReloader")
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("FrontEndCommonLoadExecutableImages")
@@ -1227,7 +1272,7 @@ class SpinnakerMainInterface(object):
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
 
-    def _do_run(self, n_machine_time_steps):
+    def _do_run(self, n_machine_time_steps, loading_done):
 
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
@@ -1275,6 +1320,14 @@ class SpinnakerMainInterface(object):
             if self._config.getboolean("Reports", "clear_iobuf_during_run"):
                 algorithms.append("FrontEndCommonChipIOBufClearer")
 
+        # Reload any parameters over the loaded data if we have already
+        # run and not using a virtual board and the data hasn't already
+        # been regenerated during a load
+        if (self._has_ran and not self._use_virtual_board and
+                not loading_done):
+            algorithms.append("FrontEndCommonDSGRegionReloader")
+
+        # Update the run time if not using a virtual board
         if (not self._use_virtual_board and
                 self._executable_start_type ==
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
@@ -1367,12 +1420,17 @@ class SpinnakerMainInterface(object):
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
             try:
-
-                # Only do this if the error occurred in the run
-                if not run_complete and not self._use_virtual_board:
-                    self._recover_from_error(
-                        e, ex_traceback, executor.get_item(
-                            "ExecutableTargets"))
+                if executor is not None:
+                    # Only do this if the error occurred in the run
+                    if not run_complete and not self._use_virtual_board:
+                        self._recover_from_error(
+                            e, ex_traceback, executor.get_item(
+                                "ExecutableTargets"))
+                else:
+                    logger.error(
+                        "The PACMAN executor crashing during initialisation,"
+                        " please read previous error message to locate its"
+                        " error")
             except Exception:
                 logger.error("Error when attempting to recover from error")
                 traceback.print_exc()
@@ -1453,6 +1511,15 @@ class SpinnakerMainInterface(object):
             # Attempt to force the cores to write provenance and exit
             updater = FrontEndCommonChipProvenanceUpdater()
             updater(self._txrx, self._app_id, non_rte_core_subsets)
+
+            inputs = self._last_run_outputs
+            inputs["CoresToExtractIOBufFrom"] = \
+                helpful_functions.translate_iobuf_extraction_elements(
+                    self._config.get("Reports", "extract_iobuf_from_cores"),
+                    self._config.get(
+                        "Reports", "extract_iobuf_from_binary_types"),
+                    self._last_run_outputs["ExecutableTargets"],
+                    self._executable_finder)
 
             # Extract any written provenance data
             extracter = FrontEndCommonPlacementsProvenanceGatherer()
@@ -1959,3 +2026,7 @@ class SpinnakerMainInterface(object):
     def _read_config_boolean(self, section, item):
         return helpful_functions.read_config_boolean(
             self._config, section, item)
+
+    @property
+    def has_reset_last(self):
+        return self._has_reset_last

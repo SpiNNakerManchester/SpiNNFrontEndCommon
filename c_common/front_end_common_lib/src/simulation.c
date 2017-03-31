@@ -28,7 +28,6 @@ static address_t stored_provenance_data_address = NULL;
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
 
-
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
 static address_t _simulation_store_provenance_data() {
