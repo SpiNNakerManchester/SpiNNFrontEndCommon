@@ -1,9 +1,8 @@
 from six import add_metaclass
-from abc import ABCMeta
-from abc import abstractmethod
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractRewritesDataSpecification(object):
     """ Indicates an object that allows data to be changed after run,\
         and so can rewrite the data specification
