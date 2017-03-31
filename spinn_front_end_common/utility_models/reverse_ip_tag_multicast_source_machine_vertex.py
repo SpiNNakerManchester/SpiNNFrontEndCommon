@@ -185,8 +185,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
-                self._send_buffers = {self._REGIONS.SEND_BUFFER.value:
-                                      self._send_buffer}
+            self._send_buffers = {
+                self._REGIONS.SEND_BUFFER.value:
+                self._send_buffer
+            }
 
         # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
