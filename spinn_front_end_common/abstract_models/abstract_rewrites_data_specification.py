@@ -7,6 +7,8 @@ class AbstractRewritesDataSpecification(object):
     """ Indicates an object that allows data to be changed after run,\
         and so can rewrite the data specification
     """
+    
+    __slots__ = ()
 
     @abstractmethod
     def regenerate_data_specification(self, spec, placement):
