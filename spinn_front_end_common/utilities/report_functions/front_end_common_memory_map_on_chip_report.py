@@ -1,6 +1,6 @@
 from data_specification import constants
-
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities import exceptions
 
 import logging
 import os
@@ -15,7 +15,22 @@ class FrontEndCommonMemoryMapOnChipReport(object):
     """ Report on memory usage
     """
 
-    def __call__(self, report_default_directory, dsg_targets, transceiver):
+    def __call__(
+            self, report_default_directory, dsg_targets, transceiver,
+            loaded_app_data_token):
+        """ creates a report that states where in sdram each region is
+
+        :param report_default_directory: the folder where reports are written
+        :param dsg_targets: the map between placement and file writer
+        :param transceiver: the spinnMan instance
+        :param loaded_app_data_token: flag that app data has been loaded
+        :return: None
+        """
+
+        if not loaded_app_data_token:
+            raise exceptions.ConfigurationException(
+                "Needs to have loaded app data for this to work.")
+
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
         if not os.path.exists(directory_name):
