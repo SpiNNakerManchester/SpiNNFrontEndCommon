@@ -77,8 +77,9 @@ class FrontEndCommonDSGRegionReloader(object):
             progress_bar.update()
         progress_bar.end()
 
+    @staticmethod
     def _regenerate_data_spec_for_vertices(
-            self, transceiver, placement, vertex, hostname,
+            transceiver, placement, vertex, hostname,
             reloaded_dsg_report_files_file_path, write_text_specs,
             reloaded_dsg_data_files_file_path):
 
