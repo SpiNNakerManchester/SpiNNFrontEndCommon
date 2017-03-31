@@ -1,10 +1,12 @@
-from abc import ABCMeta
 from six import add_metaclass
-from abc import abstractmethod
+
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractHasAssociatedBinary(object):
+
+    __slots__ = ()
 
     @abstractmethod
     def get_binary_file_name(self):

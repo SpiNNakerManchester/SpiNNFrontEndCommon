@@ -1,12 +1,14 @@
 from six import add_metaclass
-from abc import ABCMeta
-from abc import abstractmethod
+
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractProvidesOutgoingPartitionConstraints(object):
     """ A vertex that can provide constraints for its outgoing edge partitions
     """
+
+    __slots__ = ()
 
     @abstractmethod
     def get_outgoing_partition_constraints(self, partition):

@@ -1,9 +1,5 @@
-from pacman.model.abstract_classes.impl.constrained_object import \
-    ConstrainedObject
-from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex \
-    import MachineVertex
+from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl \
     import ProvidesProvenanceDataFromMachineImpl
@@ -21,8 +17,6 @@ class CommandSenderMachineVertex(
     PROVENANCE_REGION = 2
 
     def __init__(self, constraints, resources_required, label):
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self.PROVENANCE_REGION, n_additional_data_items=0)
         MachineVertex.__init__(self, label, constraints)
 
         self._edge_constraints = dict()
@@ -33,18 +27,16 @@ class CommandSenderMachineVertex(
         self._resources = resources_required
 
     @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self.PROVENANCE_REGION
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return 0
+
+    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self._resources
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
