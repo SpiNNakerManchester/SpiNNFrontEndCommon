@@ -1165,6 +1165,7 @@
             <param_type>BoardVersion</param_type>
             <param_type>DownedChipsDetails</param_type>
             <param_type>DownedCoresDetails</param_type>
+            <param_type>DownedLinksDetails</param_type>
             <param_type>BMPDetails</param_type>
             <param_type>ResetMachineOnStartupFlag</param_type>
             <param_type>AutoDetectBMPFlag</param_type>
