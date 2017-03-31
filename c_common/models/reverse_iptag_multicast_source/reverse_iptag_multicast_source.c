@@ -1035,13 +1035,8 @@ void timer_callback(uint unused0, uint unused1) {
             recording_finalise();
         }
 
-        log_info("Incorrect keys discarded: %d", incorrect_keys);
-        log_info("Incorrect packets discarded: %d", incorrect_packets);
-        log_info("Late packets: %d", late_packets);
-        log_info("Last time of stop notification request: %d",
-                 last_stop_notification_request);
-        log_info("Packets received: %d", n_received_packets);
-        log_info("Packets send: %d", n_send_packets);
+        log_debug("Last time of stop notification request: %d",
+                  last_stop_notification_request);
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run

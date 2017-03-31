@@ -881,26 +881,14 @@ class SpinnakerMainInterface(object):
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
+            self._handle_dead_bits(inputs)
+            self._handle_machine_common_bits(inputs)
             inputs["IPAddress"] = self._hostname
             inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
-            down_chips, down_cores, down_links = \
-                helpful_functions.sort_out_downed_chips_cores_links(
-                    self._config.get("Machine", "down_chips"),
-                    self._config.get("Machine", "down_cores"),
-                    self._config.get("Machine", "down_links"))
-            inputs["DownedChipsDetails"] = down_chips
-            inputs["DownedCoresDetails"] = down_cores
-            inputs["DownedLinksDetails"] = down_links
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
                 "Machine", "scamp_connections_data")
-            inputs["BootPortNum"] = self._read_config_int(
-                "Machine", "boot_connection_port_num")
-            inputs["BoardVersion"] = self._read_config_int(
-                "Machine", "version")
-            inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
-                "Machine", "reset_machine_on_startup")
             inputs["MaxCoreId"] = self._read_config_int(
                 "Machine", "core_limit")
 
@@ -917,32 +905,20 @@ class SpinnakerMainInterface(object):
             self._machine_outputs = executor.get_items()
 
         if self._use_virtual_board:
+            self._handle_dead_bits(inputs)
+            self._handle_machine_common_bits(inputs)
             inputs["IPAddress"] = "virtual"
-            inputs["BoardVersion"] = self._read_config_int(
-                "Machine", "version")
             inputs["NumberOfBoards"] = self._read_config_int(
                 "Machine", "number_of_boards")
             inputs["MachineWidth"] = self._read_config_int(
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
-            inputs["BMPDetails"] = None
-            down_chips, down_cores, down_links = \
-                helpful_functions.sort_out_downed_chips_cores_links(
-                    self._config.get("Machine", "down_chips"),
-                    self._config.get("Machine", "down_cores"),
-                    self._config.get("Machine", "down_links"))
-            inputs["DownedChipsDetails"] = down_chips
-            inputs["DownedCoresDetails"] = down_cores
-            inputs["DownedLinksDetails"] = down_links
-            inputs["AutoDetectBMPFlag"] = False
             inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
                 "Machine", "requires_wrap_arounds")
+            inputs["BMPDetails"] = None
+            inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["BootPortNum"] = self._read_config_int(
-                "Machine", "boot_connection_port_num")
-            inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
-                "Machine", "reset_machine_on_startup")
             inputs["MemoryTransceiver"] = None
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
@@ -1057,6 +1033,35 @@ class SpinnakerMainInterface(object):
             self._app_id = self._txrx.app_id_tracker.get_new_id()
 
         return self._machine
+
+    def _handle_dead_bits(self, inputs):
+        """ adds the dead chips, cores, links to the inputs dict.
+        
+        :param inputs: the input dict
+        :rtype: None 
+        """
+        down_chips, down_cores, down_links = \
+            helpful_functions.sort_out_downed_chips_cores_links(
+                self._config.get("Machine", "down_chips"),
+                self._config.get("Machine", "down_cores"),
+                self._config.get("Machine", "down_links"))
+        inputs["DownedChipsDetails"] = down_chips
+        inputs["DownedCoresDetails"] = down_cores
+        inputs["DownedLinksDetails"] = down_links
+
+    def _handle_machine_common_bits(self, inputs):
+        """ adds common code for machine bits
+        
+        :param inputs:  the input dict
+        :rtype: None 
+        """
+        inputs["BoardVersion"] = self._read_config_int(
+            "Machine", "version")
+        inputs["ResetMachineOnStartupFlag"] = self._config.getboolean(
+            "Machine", "reset_machine_on_startup")
+        inputs["BootPortNum"] = self._read_config_int(
+            "Machine", "boot_connection_port_num")
+
 
     def _convert_down_links(self, down_link_text):
         """ Converts the text form to a list of down links
