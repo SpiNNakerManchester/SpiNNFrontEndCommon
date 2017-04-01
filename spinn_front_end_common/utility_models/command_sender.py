@@ -1,15 +1,11 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.model.constraints.key_allocator_constraints.\
-    key_allocator_fixed_key_and_mask_constraint \
+from pacman.model.graphs.application.application_edge import ApplicationEdge
+from pacman.model.constraints.key_allocator_constraints \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.graphs.application.impl.application_edge import \
-    ApplicationEdge
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.routing_info import BaseKeyAndMask
 from pacman.executor.injection_decorator import inject_items
 
 # spinn front end common imports

@@ -1,19 +1,14 @@
 # pacman imports
 from pacman.model.constraints.placer_constraints\
-    .placer_radial_placement_from_chip_constraint import \
-    PlacerRadialPlacementFromChipConstraint
+    import PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
+from pacman.model.graphs.application import ApplicationVertex
 from pacman.executor.injection_decorator import inject_items
 
 # spinn front end imports
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import IPtagResource, ResourceContainer
+from pacman.model.resources import SDRAMResource
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
     .live_packet_gather_machine_vertex \

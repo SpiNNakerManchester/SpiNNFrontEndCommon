@@ -7,9 +7,8 @@ from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
 from pacman.model.graphs.application.impl.application_edge import \
     ApplicationEdge
 from pacman.model.placements.placements import Placements
-from pacman.model.graphs.application.impl.application_graph \
-    import ApplicationGraph
-from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
+from pacman.model.graphs.application import ApplicationGraph
+from pacman.model.graphs.machine import MachineGraph
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 
@@ -499,7 +498,7 @@ class SpinnakerMainInterface(object):
         """ handles closing down of script via keyboard interrupt
 
         :param signal: the signal received
-        :param frame:  ????????
+        :param frame: frame executed in
         :return:  None
         """
         # If we are to raise the keyboard interrupt, do so
@@ -515,7 +514,6 @@ class SpinnakerMainInterface(object):
         :param exctype:  the type of execution received
         :param value: the value of the exception
         :param traceback_obj: the trace back stuff
-        :return:  ?????????
         """
         self._shutdown()
         return sys.__excepthook__(exctype, value, traceback_obj)

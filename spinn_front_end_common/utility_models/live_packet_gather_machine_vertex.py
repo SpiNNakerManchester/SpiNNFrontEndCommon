@@ -1,19 +1,11 @@
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.abstract_classes.impl.constrained_object import \
-    ConstrainedObject
-from pacman.model.constraints.placer_constraints.placer_board_constraint\
-    import PlacerBoardConstraint
 from pacman.model.constraints.placer_constraints\
-    .placer_radial_placement_from_chip_constraint \
-    import PlacerRadialPlacementFromChipConstraint
+    import PlacerBoardConstraint, PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import IPtagResource, ResourceContainer
+from pacman.model.resources import SDRAMResource
 
 from spinn_front_end_common.interface.provenance\
     .provides_provenance_data_from_machine_impl \
@@ -58,6 +50,8 @@ class LivePacketGatherMachineVertex(
             number_of_packets_sent_per_time_step=0,
             ip_address=None, port=None, strip_sdp=None, board_address=None,
             tag=None, constraints=None):
+        # inheritance
+        MachineVertex.__init__(self, label, constraints=constraints)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
@@ -69,14 +63,10 @@ class LivePacketGatherMachineVertex(
                 traffic_identifier="LPG_EVENT_STREAM")])
 
         # implementation for where constraints are stored
-        self._constraints = ConstrainedObject()
-        self._add_constraints(board_address)
-
-        # inheritance
-        MachineVertex.__init__(self, label, constraints=constraints)
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
-            self.N_ADDITIONAL_PROVENANCE_ITEMS)
+        self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
+        if board_address is not None:
+            # Try to place this near the Ethernet
+            self.add_constraint(PlacerBoardConstraint(board_address))
 
         # app specific data items
         self._use_prefix = use_prefix
@@ -92,17 +82,19 @@ class LivePacketGatherMachineVertex(
             number_of_packets_sent_per_time_step
 
     @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return self.N_ADDITIONAL_PROVENANCE_ITEMS
+
+    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self._resources_required
-
-    def _add_constraints(self, board_address):
-        # Try to place this near the Ethernet
-        self._constraints.add_constraint(
-            PlacerRadialPlacementFromChipConstraint(0, 0))
-        if board_address is not None:
-            self._constraints.add_constraint(
-                PlacerBoardConstraint(board_address))
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                get_provenance_data_from_machine)

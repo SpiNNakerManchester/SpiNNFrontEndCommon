@@ -1,13 +1,15 @@
-from abc import ABCMeta
 from six import add_metaclass
-from abc import abstractmethod
+
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractProvidesProvenanceDataFromMachine(object):
     """ Indicates that an object provides provenance data retrieved from the\
         machine
     """
+
+    __slots__ = ()
 
     def __init__(self):
         pass

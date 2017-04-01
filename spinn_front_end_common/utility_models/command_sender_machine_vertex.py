@@ -1,11 +1,7 @@
 from enum import Enum
 
-from pacman.model.abstract_classes.impl.constrained_object import \
-    ConstrainedObject
-from pacman.model.decorators.delegates_to import delegates_to
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex \
-    import MachineVertex
+from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models.\
     abstract_has_associated_binary import \
     AbstractHasAssociatedBinary
@@ -64,21 +60,19 @@ class CommandSenderMachineVertex(
         self._resources = resources_required
 
     @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self.PROVENANCE_REGION
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return 0
+
+    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self._resources
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
 
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
