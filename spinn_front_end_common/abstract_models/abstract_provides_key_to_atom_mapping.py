@@ -1,14 +1,17 @@
 from six import add_metaclass
-from abc import ABCMeta
-from abc import abstractmethod
+
+from spinn_utilities.abstract_base import AbstractBase
+from spinn_utilities.abstract_base import abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractProvidesKeyToAtomMapping(object):
     """ interface to provide a mapping between routing key partitions and\
         atom ids
 
     """
+
+    __slots__ = ()
 
     @abstractmethod
     def routing_key_partition_atom_mapping(self, routing_info, partition):
