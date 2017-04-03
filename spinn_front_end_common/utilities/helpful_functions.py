@@ -409,3 +409,20 @@ def read_config_boolean(config, section, item):
     if value is None:
         return value
     return bool(value)
+
+
+def generate_unique_folder_name(folder, filename, extension):
+    """ Generate a unique file name with a given extension in a given folder
+
+    :param folder: where to put this unique file
+    :param filename: the name of the first part of the file without extension
+    :param extension: extension of the file
+    :return: file path with a unique addition
+    """
+    new_file_path = os.path.join(folder, "{}{}".format(filename, extension))
+    count = 2
+    while os.path.exists(new_file_path):
+        new_file_path = os.path.join(
+            folder, "{}_{}{}".format(filename, count, extension))
+        count += 1
+    return new_file_path

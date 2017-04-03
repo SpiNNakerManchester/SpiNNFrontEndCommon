@@ -12,6 +12,8 @@ from abc import abstractmethod
 @supports_injection
 class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
 
+    __slots__ = ()
+
     @inject_items({
         "machine_graph": "MemoryMachineGraph",
         "routing_info": "MemoryRoutingInfos",

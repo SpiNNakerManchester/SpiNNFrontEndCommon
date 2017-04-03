@@ -1,27 +1,15 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.executor.injection_decorator import supports_injection
 from pacman.executor.injection_decorator import inject
-from pacman.model.constraints.key_allocator_constraints\
-    .key_allocator_fixed_key_and_mask_constraint \
-    import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.constraints.placer_constraints\
-    .placer_board_constraint import PlacerBoardConstraint
-from pacman.model.decorators.delegates_to import delegates_to
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.resources.cpu_cycles_per_tick_resource \
-    import CPUCyclesPerTickResource
-from pacman.model.abstract_classes.impl.constrained_object \
-    import ConstrainedObject
-from pacman.model.abstract_classes.abstract_has_constraints \
-    import AbstractHasConstraints
-from pacman.model.graphs.machine.abstract_machine_vertex \
-    import AbstractMachineVertex
+from pacman.model.constraints.key_allocator_constraints \
+    import KeyAllocatorFixedKeyAndMaskConstraint
+from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
+from pacman.model.resources import IPtagResource, ReverseIPtagResource
+from pacman.model.resources import ResourceContainer, DTCMResource
+from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
+from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management.buffer_manager \
@@ -66,8 +54,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        AbstractMachineVertex, AbstractHasConstraints,
-        AbstractGeneratesDataSpecification,
+        MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
@@ -161,13 +148,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
+        MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self._REGIONS.PROVENANCE_REGION.value, 0)
+
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
 
-        self._constraints = ConstrainedObject(constraints)
-        self._label = label
         self._iptags = None
         self._reverse_iptags = None
 
@@ -187,8 +172,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if send_buffer_times is None:
             self._send_buffer_times = None
             self._send_buffer_max_space = send_buffer_max_space
-            SendsBuffersFromHostPreBufferedImpl.__init__(
-                self, None)
+            self._send_buffers = None
         else:
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
@@ -201,8 +185,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
-            SendsBuffersFromHostPreBufferedImpl.__init__(
-                self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
+            self._send_buffers = {
+                self._REGIONS.SEND_BUFFER.value:
+                self._send_buffer
+            }
 
         # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
@@ -271,25 +257,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
 
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self._REGIONS.PROVENANCE_REGION.value
 
     @property
-    @overrides(AbstractMachineVertex.label)
-    def label(self):
-        return self._label
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return 0
 
     @property
-    @overrides(AbstractMachineVertex.resources_required)
+    @overrides(MachineVertex.resources_required)
     def resources_required(self):
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
@@ -683,6 +662,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_recording_region_base_address(self, txrx, placement):
         return helpful_functions.locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING.value, txrx)
+
+    @property
+    def send_buffers(self):
+        return self._send_buffers
+
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
 
     def __repr__(self):
         return self._label
