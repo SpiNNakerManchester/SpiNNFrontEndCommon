@@ -48,9 +48,7 @@ class CommandSenderMachineVertex(
     def __init__(
             self, constraints, resources_required, label,
             commands_at_start_resume, commands_at_pause_stop, timed_commands):
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self.DATA_REGIONS.PROVENANCE_REGION.value,
-            n_additional_data_items=0)
+        ProvidesProvenanceDataFromMachineImpl.__init__(self)
         MachineVertex.__init__(self, label, constraints)
 
         # container of different types of command
@@ -62,7 +60,7 @@ class CommandSenderMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
     def _provenance_region_id(self):
-        return self.PROVENANCE_REGION
+        return self.DATA_REGIONS.PROVENANCE_REGION.value
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
