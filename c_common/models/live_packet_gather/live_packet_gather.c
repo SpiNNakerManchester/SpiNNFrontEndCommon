@@ -91,6 +91,14 @@ typedef enum configuration_region_components_e {
     PACKETS_PER_TIMESTEP
 } configuration_region_components_e;
 
+static inline void print_packet(void *buffer, uint8_t length) {
+    log_debug("===========Packet============\n");
+    uint8_t *print_ptr = (uint8_t *) buffer;
+    for (uint8_t i = 0; i < length; i++) {
+        log_debug("%02x ", print_ptr[i]);
+    }
+}
+
 void flush_events(void) {
 
     // Send the event message only if there is data
@@ -117,11 +125,7 @@ void flush_events(void) {
                                      + event_count * event_size;
 
 #if LOG_LEVEL >= LOG_DEBUG
-            log_debug("===========Packet============\n");
-            uint8_t *print_ptr1 = (uint8_t *) &g_event_message;
-            for (uint8_t i = 0; i < g_event_message.length + 8; i++) {
-                log_debug("%02x ", print_ptr1[i]);
-            }
+            print_packet(&g_event_message, g_event_message.length + 8);
 #endif // LOG_LEVEL >= LOG_DEBUG
 
             if (payload_apply_prefix && payload_timestamp) {
@@ -136,11 +140,7 @@ void flush_events(void) {
             }
 
 #if LOG_LEVEL >= LOG_DEBUG
-            log_debug("===========Packet============\n");
-            uint8_t *print_ptr2 = (uint8_t *) &sdp_msg_aer_data;
-            for (uint8_t i = 0; i < buffer_index * event_size; i++) {
-                log_debug("%02x ", print_ptr2[i]);
-            }
+            print_packet(&sdp_msg_aer_data, buffer_index * event_size);
 #endif // LOG_LEVEL >= LOG_DEBUG
 
             spin1_send_sdp_msg(&g_event_message, 1);
@@ -313,8 +313,7 @@ void incoming_event_process_callback(uint unused0, uint unused1) {
        } else {
            processing_events = false;
        }
-    }
-    while (processing_events);
+    } while (processing_events);
 }
 
 void incoming_event_callback(uint key, uint unused) {
@@ -338,8 +337,7 @@ void incoming_event_payload_callback(uint key, uint payload) {
             processing_events = true;
             spin1_trigger_user_event(0, 0);
         }
-    }
-    else {
+    } else {
         provenance_data.number_of_over_flows_payload += 1;
     }
 }
