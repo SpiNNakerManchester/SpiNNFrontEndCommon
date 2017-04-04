@@ -1,19 +1,14 @@
 # pacman imports
 from pacman.model.constraints.placer_constraints\
-    .placer_radial_placement_from_chip_constraint import \
-    PlacerRadialPlacementFromChipConstraint
+    import PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
+from pacman.model.graphs.application import ApplicationVertex
 from pacman.executor.injection_decorator import inject_items
 
 # spinn front end imports
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import IPtagResource, ResourceContainer
+from pacman.model.resources import SDRAMResource
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
     .live_packet_gather_machine_vertex \
@@ -21,10 +16,10 @@ from spinn_front_end_common.utility_models\
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 # spinnman imports
 from spinnman.messages.eieio.eieio_type import EIEIOType
@@ -33,7 +28,7 @@ from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
 class LivePacketGather(
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        ApplicationVertex, AbstractBinaryUsesSimulationRun):
+        ApplicationVertex):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -121,6 +116,10 @@ class LivePacketGather(
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
         return 'live_packet_gather.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
 
     @property
     @overrides(ApplicationVertex.n_atoms)

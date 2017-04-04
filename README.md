@@ -58,3 +58,9 @@ Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.wi
 Windows 7/8 32-bit
 ------------------
 Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.win32-py2.7.exe
+
+Documentation
+=============
+[SpiNNFrontEndCommon Python documentation](http://spinnakergraphfrontend.readthedocs.io)
+
+[Combined python documentation](http://spinnakermanchester.readthedocs.io)

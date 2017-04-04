@@ -3,9 +3,8 @@ from spinn_utilities.socket_address import SocketAddress
 # pacman imports
 from pacman.model.placements.placements import Placements
 from pacman.model.placements.placement import Placement
-from pacman.model.routing_tables.multicast_routing_tables \
-    import MulticastRoutingTables
-from pacman.model.tags.tags import Tags
+from pacman.model.routing_tables import MulticastRoutingTables
+from pacman.model.tags import Tags
 
 # spinnmachine imports
 from spinn_machine.tags.iptag import IPTag
@@ -18,7 +17,9 @@ from spinn_front_end_common.utilities.reload.reload_routing_table import \
 from spinn_front_end_common.utilities.reload.reload_buffered_vertex \
     import ReloadBufferedVertex
 from spinn_front_end_common.utilities.reload.reload import Reload
-from spinn_front_end_common.utilities.utility_objs.executable_targets \
+
+# spinnman imports
+from spinnman.model.executable_targets \
     import ExecutableTargets
 
 # general imports
@@ -258,7 +259,9 @@ class ReloadScript(object):
     def add_dsg_target(self, x, y, p, file_path):
         """ Add a Data Specification Generated file to be reloaded
 
-        :param placement: The placement of the target
+        :param x: The x-coordinate of the chip of the target
+        :param y: The y-coordinate of the chip of the target
+        :param p: The processor id of the target
         :param file_path: The path of the DSG program to execute
         """
         local_file_path = os.path.basename(file_path)

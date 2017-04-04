@@ -1,10 +1,12 @@
 from six import add_metaclass
-from abc import ABCMeta
-from abc import abstractmethod
+
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractGeneratesDataSpecification(object):
+
+    __slots__ = ()
 
     @abstractmethod
     def generate_data_specification(self, spec, placement):

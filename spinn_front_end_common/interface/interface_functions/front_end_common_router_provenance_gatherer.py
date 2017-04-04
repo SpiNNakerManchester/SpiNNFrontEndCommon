@@ -5,6 +5,10 @@ from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import exceptions
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class FrontEndCommonRouterProvenanceGatherer(object):
     """
@@ -108,13 +112,18 @@ class FrontEndCommonRouterProvenanceGatherer(object):
     def _write_router_table_diagnostic(self, txrx, machine, x, y, seen_chips,
                                        router_table, items):
         if not machine.get_chip_at(x, y).virtual:
-            router_diagnostic = txrx.get_router_diagnostics(x, y)
-            seen_chips.add((x, y))
-            reinjector_status = txrx.get_reinjection_status(x, y)
-            items.extend(self._write_router_diagnostics(
-                x, y, router_diagnostic, reinjector_status, True,
-                router_table))
-            self._add_totals(router_diagnostic, reinjector_status)
+            try:
+                router_diagnostic = txrx.get_router_diagnostics(x, y)
+                seen_chips.add((x, y))
+                reinjector_status = txrx.get_reinjection_status(x, y)
+                items.extend(self._write_router_diagnostics(
+                    x, y, router_diagnostic, reinjector_status, True,
+                    router_table))
+                self._add_totals(router_diagnostic, reinjector_status)
+            except Exception as e:
+                logger.warn(
+                    "Could not read routing diagnostics from {}, {}: {}"
+                    .format(x, y, e))
 
     def _write_router_chip_diagnostic(self, txrx, chip, seen_chips, items):
         if not chip.virtual and (chip.x, chip.y) not in seen_chips:
