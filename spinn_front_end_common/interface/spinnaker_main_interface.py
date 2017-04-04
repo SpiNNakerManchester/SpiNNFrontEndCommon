@@ -258,15 +258,11 @@ class SpinnakerMainInterface(object):
         "_all_provenance_items",
 
         #
-        "_executable_start_type",
-
-        #
-        "_config_default_name"
+        "_executable_start_type"
     ]
 
     def __init__(
-            self, config, config_default_name, executable_finder,
-            graph_label=None,
+            self, config, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             extra_mapping_inputs=None, extra_mapping_algorithms=None,
             extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
@@ -274,7 +270,6 @@ class SpinnakerMainInterface(object):
 
         # global params
         self._config = config
-        self._config_default_name = config_default_name
 
         self._executable_finder = executable_finder
 
