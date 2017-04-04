@@ -9,6 +9,7 @@ from spinn_front_end_common.abstract_models.\
     AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities import exceptions
 
+
 class FrontEndCommonGraphDataSpecificationWriter(object):
     """ Executes data specification generation
     """

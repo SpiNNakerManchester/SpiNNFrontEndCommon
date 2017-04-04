@@ -104,7 +104,7 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             progress.update()
 
         for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):
-            self._write_router_chip_diagnostic(txrx, chip, seen_chips, items)         
+            self._write_router_chip_diagnostic(txrx, chip, seen_chips, items)        
             progress.update()
         progress.end()
         return items
@@ -130,9 +130,9 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             try:
                 diagnostic = txrx.get_router_diagnostics(chip.x, chip.y)
 
-                if (diagnostic.n_dropped_multicast_packets != 0 or
-                            diagnostic.n_local_multicast_packets != 0 or
-                            diagnostic.n_external_multicast_packets != 0):
+                if (diagnostic.n_dropped_multicast_packets or
+                        diagnostic.n_local_multicast_packets or
+                        diagnostic.n_external_multicast_packets):
                     reinjector_status = txrx.get_reinjection_status(
                             chip.x, chip.y)
                     items.extend(self._write_router_diagnostics(
