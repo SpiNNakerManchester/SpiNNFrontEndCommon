@@ -1894,6 +1894,7 @@ class SpinnakerMainInterface(object):
                     logger.info("Turning off machine")
 
                 self._txrx.close(power_off_machine=turn_off_machine)
+                self._txrx = None
 
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.close()
@@ -2029,3 +2030,11 @@ class SpinnakerMainInterface(object):
     @property
     def has_reset_last(self):
         return self._has_reset_last
+
+    @property
+    def config(self):
+        """ helper method for the  front end impls till we remove config
+
+        :return:
+        """
+        return self._config
