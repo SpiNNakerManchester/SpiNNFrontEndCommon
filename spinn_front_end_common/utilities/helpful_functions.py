@@ -272,6 +272,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
             logger.warning("{} has {} old reports that have not been closed".
                            format(starting_directory, files_not_closed))
 
+
 def get_front_end_common_pacman_xml_paths():
     """ Get the XML path for the front end common interface functions
     """
