@@ -104,7 +104,7 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             progress.update()
 
         for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):
-            self._write_router_chip_diagnostic(txrx, chip, seen_chips, items)        
+            self._write_router_chip_diagnostic(txrx, chip, seen_chips, items)
             progress.update()
         progress.end()
         return items
