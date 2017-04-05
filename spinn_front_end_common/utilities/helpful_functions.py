@@ -119,13 +119,7 @@ def set_up_output_application_data_specifics(
         writer.flush()
         writer.close()
 
-    elif where_to_write_application_data_files == "TEMP":
-
-        # just don't set the config param, code downstairs
-        # from here will create temp folders if needed
-        pass
     else:
-
         # add time stamped folder for this run
         this_run_time_folder = \
             os.path.join(where_to_write_application_data_files,
