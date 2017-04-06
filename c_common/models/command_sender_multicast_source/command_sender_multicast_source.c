@@ -30,6 +30,9 @@ static uint32_t n_timed_commands;
 static uint32_t n_start_resume_commands;
 static uint32_t n_pause_stop_commands;
 static uint32_t next_timed_command;
+static uint32_t expected_next_send;
+static uint32_t time_between_sends;
+static bool resume = true;
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
@@ -38,9 +41,9 @@ typedef enum callback_priorities{
 
 //! region identifiers
 typedef enum region_identifiers{
-    SYSTEM_REGION = 0, COMMANDS_WITH_ARBITRARY_TIMES = 1,
-    COMMANDS_AT_START_RESUME = 2, COMMANDS_AT_STOP_PAUSE = 3,
-    PROVENANCE_REGION = 4
+    SYSTEM_REGION = 0, SETUP = 1, COMMANDS_WITH_ARBITRARY_TIMES = 2,
+    COMMANDS_AT_START_RESUME = 3, COMMANDS_AT_STOP_PAUSE = 4,
+    PROVENANCE_REGION = 5
 } region_identifiers;
 
 //! address data
@@ -59,6 +62,13 @@ typedef enum n_commands_id{
 } n_commands_id;
 
 static void transmit_command(command *command_to_send) {
+
+    // Wait until the expected time to send
+    while (tc[T1_COUNT] > expected_next_send) {
+
+        // Do Nothing
+    }
+    expected_next_send -= time_between_sends;
 
     // check for repeats
     if (command_to_send->repeats != 0) {
@@ -104,14 +114,14 @@ static void transmit_command(command *command_to_send) {
 }
 
 static void run_stop_pause_commands() {
-    log_debug("Transmit pause/stop commands");
+    log_info("Transmit pause/stop commands");
     for (uint32_t i = 0; i < n_pause_stop_commands; i++) {
         transmit_command(&(pause_stop_commands[i]));
     }
 }
 
 static void run_start_resume_commands() {
-    log_debug("Transmit start/resume commands");
+    log_info("Transmit start/resume commands");
     for (uint32_t i = 0; i < n_start_resume_commands; i++) {
         transmit_command(&(start_resume_commands[i]));
     }
@@ -191,22 +201,32 @@ bool read_pause_stop_commands(address_t address) {
     return true;
 }
 
+void read_setup(address_t address) {
+    time_between_sends = address[0] * sv->cpu_clk;
+    log_info("Separating sends by %u clock cycles", time_between_sends);
+}
+
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time++;
 
-    if (time == 0) {
+    // Set the next expected time to wait for between spike sending
+    expected_next_send = tc[T1_COUNT] - time_between_sends;
+
+    if (resume) {
         log_info("running first start resume commands");
         run_start_resume_commands();
+        resume = false;
     }
 
     if (((infinite_run != TRUE) && (time >= simulation_ticks))) {
         run_stop_pause_commands();
 
         log_info("in pause resume mode");
-        simulation_handle_pause_resume(run_start_resume_commands);
+        resume = true;
+        simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
@@ -243,6 +263,7 @@ bool initialize(uint32_t *timer_period) {
     simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
+    read_setup(data_specification_get_region(SETUP, address));
     read_scheduled_parameters(data_specification_get_region(
         COMMANDS_WITH_ARBITRARY_TIMES, address));
     read_start_resume_commands(data_specification_get_region(
