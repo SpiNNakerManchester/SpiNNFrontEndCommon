@@ -670,3 +670,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @send_buffers.setter
     def send_buffers(self, value):
         self._send_buffers = value
+
+    def __repr__(self):
+        return self._label
