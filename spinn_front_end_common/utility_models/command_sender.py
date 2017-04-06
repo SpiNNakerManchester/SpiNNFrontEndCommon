@@ -1,33 +1,29 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.model.constraints.key_allocator_constraints.\
-    key_allocator_fixed_key_and_mask_constraint \
+from pacman.model.constraints.key_allocator_constraints \
     import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.routing_info import BaseKeyAndMask
 from pacman.executor.injection_decorator import inject_items
 
 # spinn front end common imports
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import constants, exceptions
 from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\
     .abstract_generates_data_specification \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.utility_models.command_sender_machine_vertex \
     import CommandSenderMachineVertex
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 
 class CommandSender(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun):
+        AbstractHasAssociatedBinary):
     """ A utility for sending commands to a vertex (possibly an external\
         device) at fixed times in the simulation
     """
@@ -57,10 +53,7 @@ class CommandSender(
         :param commands: The commands to send
         :type commands: iterable of\
                     :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
-        :param partition:
-        :param edge: The edge down which the commands will be sent
-        :type edge:\
-                    :py:class:`pacman.model.graph.application.abstract_application_edge.AbstractApplicationEdge`
+        :param partitions: The partition down which the commands will be sent
         :raise ConfigurationException:\
             If the edge already has commands or if all the commands masks are\
             not 0xFFFFFFFF and there is no commonality between the\
@@ -244,9 +237,6 @@ class CommandSender(
         return 1
 
     def _get_n_command_bytes(self):
-        """
-        :return:
-        """
         n_bytes = 0
 
         for time in self._times_with_commands:
@@ -269,6 +259,9 @@ class CommandSender(
     def get_binary_file_name(self):
         """ Return a string representation of the models binary
 
-        :return:
         """
         return 'command_sender_multicast_source.aplx'
+
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE

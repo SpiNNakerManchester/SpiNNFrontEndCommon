@@ -198,7 +198,6 @@ class BufferedReceivingData(object):
         :type p: int
         :param sequence_no: last sequence number used
         :type sequence_no: int
-        :return: None
         :rtype: None
         """
         self._sequence_no[x, y, p] = sequence_no

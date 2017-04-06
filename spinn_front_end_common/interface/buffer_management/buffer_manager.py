@@ -737,7 +737,7 @@ class BufferManager(object):
                 SpiNNaker system
         :type packet:\
                 :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
-        :return: None
+        :rtype: None
         """
         x = packet.x
         y = packet.y
@@ -756,12 +756,12 @@ class BufferManager(object):
             if last_packet_sent is not None:
                 self._transceiver.send_sdp_message(last_packet_sent)
             else:
-                raise Exception("Something somewhere went terribly wrong - "
-                                "The packet sequence numbers have gone wrong "
-                                "somewhere: the packet sent from the board "
-                                "has incorrect sequence number, but the host "
-                                "never sent one acknowledge - how is this "
-                                "possible?")
+                raise Exception(
+                    "{}, {}, {}: Something somewhere went terribly wrong - "
+                    "The packet sequence numbers have gone wrong "
+                    "somewhere: the packet sent from the board "
+                    "has incorrect sequence number, but the host "
+                    "never sent one acknowledge".format(x, y, p))
             return
 
         # read data from memory, store it and create data for return ACK packet
@@ -813,13 +813,11 @@ class BufferManager(object):
     @property
     def sender_vertices(self):
         """ The vertices which are buffered
-        :return:
         """
         return self._sender_vertices
 
     @property
     def reload_buffer_files(self):
         """ The file paths for each buffered region for each sender vertex
-        :return:
         """
         return self._reload_buffer_file_paths

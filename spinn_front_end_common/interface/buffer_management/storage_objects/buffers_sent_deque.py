@@ -96,7 +96,6 @@ class BuffersSentDeque(object):
 
     def send_stop_message(self):
         """ Send a message to indicate the end of all the messages
-        :return:
         """
         if not self._sent_stop_message:
             self._sent_stop_message = True
