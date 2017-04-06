@@ -1,7 +1,9 @@
-This package provides functionality which are common to front ends that translate application level programs into 
-exeuctables which run on a SpiNNaker machine.
+This package provides functionality which are common to front ends that
+translate application level programs into executables which run on a SpiNNaker
+machine.
 
 Requirements
+============
 
 In addition to a standard Python installation, this package depends on:
 
@@ -15,7 +17,8 @@ In addition to a standard Python installation, this package depends on:
     PyNN
     numpy
 
-These dependencies, excluding numpy, can be installed using pip:
+These dependencies, excluding `numpy`, can be installed using `pip`:
+
     pip install six
     pip install enum34
     pip install SpiNNStorageHandlers
@@ -26,18 +29,38 @@ These dependencies, excluding numpy, can be installed using pip:
     pip install SpiNNFrontEndCommon
     pip install SpiNNMachine
 
-Details of the installation of numpy on various operating systems are shown below.
+Details of the installation of `numpy` on various operating systems are shown
+below.
 
-If you are using virtualenv, please also follow the instructions below to install numpy. Further instructions for adding this global package to your virutalenv are detailed in the "User Installation" and "Developer Installation" sections below.
+Installing NumPy
+================
+If you are using `virtualenv`, please also follow the instructions below to
+install `numpy`. Further instructions for adding this global package to your
+`virutalenv` are detailed in the "_User Installation_" and
+"_Developer Installation_" sections below.
+
 Ubuntu Linux
+------------
+Execute the following to install both `gtk` and `pygtk`:
 
-Execute the following to install both gtk and pygtk: sudo apt-get install python-numpy
+    sudo apt-get install python-numpy
+
 Fedora Linux
+------------
+Execute the following to install both `gtk` and `pygtk`:
 
-Execute the following to install both gtk and pygtk: sudo yum install numpy
+    sudo yum install numpy
+
 Windows 7/8 64-bit
-
+------------------
 Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.win-amd64-py2.7.exe
-Windows 7/8 32-bit
 
+Windows 7/8 32-bit
+------------------
 Download and install http://spinnaker.cs.manchester.ac.uk/.../numpy-MKL-1.8.1.win32-py2.7.exe
+
+Documentation
+=============
+[SpiNNFrontEndCommon Python documentation](http://spinnakergraphfrontend.readthedocs.io)
+
+[Combined python documentation](http://spinnakermanchester.readthedocs.io)

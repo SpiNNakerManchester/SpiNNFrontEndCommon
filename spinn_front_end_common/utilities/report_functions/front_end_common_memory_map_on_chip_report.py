@@ -16,13 +16,6 @@ class FrontEndCommonMemoryMapOnChipReport(object):
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
-        """
-
-        :param report_default_directory:
-        :param processor_to_app_data_base_address:
-        :return:
-        """
-
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
         if not os.path.exists(directory_name):

@@ -87,7 +87,9 @@ class DatabaseReader(object):
             " AND post_vertices.vertex_label == \"{}\""
             .format(label, receiver_label))
         row = self._cursor.fetchone()
-        return (row["ip_address"], row["port"], row["strip_sdp"])
+        return (
+            row["ip_address"], row["port"], row["strip_sdp"],
+            row["board_address"])
 
     def get_live_input_details(self, label):
         """ Get the ip address and port where live input should be sent\
@@ -130,7 +132,9 @@ class DatabaseReader(object):
             " AND post_vertices.label == \"{}\""
             .format(label, receiver_label))
         row = self._cursor.fetchone()
-        return (row["ip_address"], row["port"], row["strip_sdp"])
+        return (
+            row["ip_address"], row["port"], row["strip_sdp"],
+            row["board_address"])
 
     def get_machine_live_input_details(self, label):
         """ Get the ip address and port where live input should be sent\
