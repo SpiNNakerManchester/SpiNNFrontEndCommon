@@ -337,8 +337,8 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
 
     def clear(self, x, y, p, region_id):
-        """ clears the data from a given data region (only clears things
-        associated with a given data regionding region).
+        """ clears the data from a given data region (only clears things\
+            associated with a given data recording region).
 
         :param x: placement x coord
         :param y: placement y coord
