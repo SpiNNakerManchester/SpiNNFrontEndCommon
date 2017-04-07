@@ -113,7 +113,10 @@ class BufferManager(object):
         "_thread_lock_buffer_in",
 
         # bool flag
-        "_finished"
+        "_finished",
+
+        # listener port
+        "_listener_port"
     ]
 
     def __init__(self, placements, tags, transceiver, write_reload_files,
@@ -157,6 +160,8 @@ class BufferManager(object):
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
+
+        self._listener_port = None
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -216,6 +221,8 @@ class BufferManager(object):
             connection = self._transceiver.register_udp_listener(
                 self.receive_buffer_command_message, UDPEIEIOConnection,
                 local_port=tag.port, local_host=tag.ip_address)
+
+
             self._seen_tags.add((tag.ip_address, connection.local_port))
             utility_functions.send_port_trigger_message(
                 connection, tag.board_address)
@@ -229,31 +236,30 @@ class BufferManager(object):
         """ Add listeners for buffered data for the given vertex
         """
 
-        # If using virtual board, no listeners can be set up
-        if self._transceiver is None:
-            return
-
         # Find a tag for receiving buffer data
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
+                # locate tag associated with the buffer manage traffic
+                for tag in tags:
+                    if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
+                        # If the tag port is not assigned, create a connection and
+                        # assign the port.  Note that this *should* update the port
+                        # number in any tags being shared
+                        if tag.port is None:
+                            # If connection already setup, ensure subsequent
+                            # boards use same listener port in their tag
+                            if self._listener_port is  None:
+                                connection = self._create_connection(tag)
+                                tag.port = connection.local_port
+                                self._listener_port = connection.local_port
+                            else:
+                                tag.port = self._listener_port
 
-            # locate the tag that is associated with the buffer manager
-            # traffic
-            for tag in tags:
-                if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
-
-                    # If the tag port is not assigned, create a connection and
-                    # assign the port.  Note that this *should* update the port
-                    # number in any tags being shared
-                    if tag.port is None:
-                        connection = self._create_connection(tag)
-                        tag.port = connection.local_port
-
-                    # In case we have tags with different specified ports, also
-                    # allow the tag to be created here
-                    elif (tag.ip_address, tag.port) not in self._seen_tags:
-                        self._create_connection(tag)
+                        # In case we have tags with different specified ports, also
+                        # allow the tag to be created here
+                        elif (tag.ip_address, tag.port) not in self._seen_tags:
+                            self._create_connection(tag)
 
     def add_receiving_vertex(self, vertex):
         """ Add a vertex into the managed list for vertices\
@@ -329,18 +335,6 @@ class BufferManager(object):
 
         # update the received data items
         self._received_data.resume()
-
-    def clear_recorded_data(self, x, y, p, recording_region_id):
-        """ Removes the recorded data stored in memory.
-
-        :param x: placement x coord
-        :param y: placement y coord
-        :param p: placement p coord
-        :param recording_region_id: the recording region id
-
-        :return:
-        """
-        self._received_data.clear(x, y, p, recording_region_id)
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):
