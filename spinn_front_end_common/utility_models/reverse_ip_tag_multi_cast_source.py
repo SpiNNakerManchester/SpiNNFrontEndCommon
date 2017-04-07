@@ -277,3 +277,6 @@ class ReverseIpTagMultiCastSource(
                 self._record_time_between_requests)
         self._machine_vertices.append((vertex_slice, vertex))
         return vertex
+
+    def __repr__(self):
+        return self._label

@@ -738,3 +738,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 " transmitted in the simulation".format(self._label))))
 
         return provenance_items
+
+    def __repr__(self):
+        return self._label

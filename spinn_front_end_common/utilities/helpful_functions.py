@@ -119,13 +119,7 @@ def set_up_output_application_data_specifics(
         writer.flush()
         writer.close()
 
-    elif where_to_write_application_data_files == "TEMP":
-
-        # just don't set the config param, code downstairs
-        # from here will create temp folders if needed
-        pass
     else:
-
         # add time stamped folder for this run
         this_run_time_folder = \
             os.path.join(where_to_write_application_data_files,
@@ -261,15 +255,22 @@ def _remove_excess_folders(max_to_keep, starting_directory):
         # the finished flag file created
         num_files_to_remove = len(files_in_report_folder) - max_to_keep
         files_removed = 0
+        files_not_closed = 0
         for current_oldest_file in files_in_report_folder:
             finished_flag = os.path.join(os.path.join(
                 starting_directory, current_oldest_file), FINISHED_FILENAME)
-            if (os.path.exists(finished_flag) and
-                    files_removed < num_files_to_remove):
+            if os.path.exists(finished_flag):
                 shutil.rmtree(os.path.join(starting_directory,
                                            current_oldest_file),
                               ignore_errors=True)
                 files_removed += 1
+            else:
+                files_not_closed += 1
+            if (files_removed + files_not_closed) >= num_files_to_remove:
+                break
+        if files_not_closed > max_to_keep / 4:
+            logger.warning("{} has {} old reports that have not been closed".
+                           format(starting_directory, files_not_closed))
 
 
 def get_front_end_common_pacman_xml_paths():
