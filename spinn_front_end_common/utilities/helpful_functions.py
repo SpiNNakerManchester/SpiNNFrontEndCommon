@@ -34,7 +34,7 @@ def get_valid_components(module, terminator):
     :rtype: dict
     """
     logger.warning(
-        "get_valid_components has been deprecated - please use"
+        "get_valid_components has been deprecated - please use "
         "spinn_utilities.helpful_functions.get_valid_components instead")
     return utils_get_valid_components(module, terminator)
 
