@@ -44,6 +44,15 @@ typedef enum memory_regions{
     PROVENANCE_REGION,
 } memory_regions;
 
+//! The provenance data items
+typedef enum provenance_items {
+    N_RECEIVED_PACKETS,
+    N_SENT_PACKETS,
+    INCORRECT_KEYS,
+    INCORRECT_PACKETS,
+    LATE_PACKETS
+} provenance_items;
+
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
 #define SPIKE_HISTORY_CHANNEL 0
@@ -91,6 +100,8 @@ static uint32_t last_stop_notification_request;
 static eieio_prefix_types prefix_type;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
+static uint32_t n_received_packets = 0;
+static uint32_t n_send_packets = 0;
 
 //! keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
@@ -440,6 +451,7 @@ static inline void process_16_bit_packets(
 
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
+                n_send_packets += 1;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug(
                         "mc packet 16-bit key=%d, payload=%d", key, payload);
@@ -491,6 +503,7 @@ static inline void process_32_bit_packets(
 
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
+                n_send_packets += 1;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug(
                         "mc packet 32-bit key=0x%08x , payload=0x%08x",
@@ -933,6 +946,14 @@ static bool initialise_recording(){
     return success;
 }
 
+static void provenance_callback(address_t address) {
+    address[N_RECEIVED_PACKETS] = n_received_packets;
+    address[N_SENT_PACKETS] = n_send_packets;
+    address[INCORRECT_KEYS] = incorrect_keys;
+    address[INCORRECT_PACKETS] = incorrect_packets;
+    address[LATE_PACKETS] = late_packets;
+}
+
 bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
@@ -947,10 +968,12 @@ bool initialise(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK, NULL,
-            data_specification_get_region(PROVENANCE_REGION, address))) {
+            &infinite_run, SDP_CALLBACK)) {
         return false;
     }
+    simulation_set_provenance_function(
+        provenance_callback,
+        data_specification_get_region(PROVENANCE_REGION, address));
 
     // Read the parameters
     if (!read_parameters(
@@ -1012,11 +1035,8 @@ void timer_callback(uint unused0, uint unused1) {
             recording_finalise();
         }
 
-        log_info("Incorrect keys discarded: %d", incorrect_keys);
-        log_info("Incorrect packets discarded: %d", incorrect_packets);
-        log_info("Late packets: %d", late_packets);
-        log_info("Last time of stop notification request: %d",
-                 last_stop_notification_request);
+        log_debug("Last time of stop notification request: %d",
+                  last_stop_notification_request);
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
@@ -1051,6 +1071,8 @@ void sdp_packet_callback(uint mailbox, uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
+
+    n_received_packets += 1;
 
     packet_handler_selector(eieio_msg_ptr, length - 8);
 

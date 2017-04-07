@@ -229,6 +229,10 @@ class BufferManager(object):
         """ Add listeners for buffered data for the given vertex
         """
 
+        # If using virtual board, no listeners can be set up
+        if self._transceiver is None:
+            return
+
         # Find a tag for receiving buffer data
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
@@ -325,6 +329,18 @@ class BufferManager(object):
 
         # update the received data items
         self._received_data.resume()
+
+    def clear_recorded_data(self, x, y, p, recording_region_id):
+        """ Removes the recorded data stored in memory.
+
+        :param x: placement x coord
+        :param y: placement y coord
+        :param p: placement p coord
+        :param recording_region_id: the recording region id
+
+        :return:
+        """
+        self._received_data.clear(x, y, p, recording_region_id)
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):

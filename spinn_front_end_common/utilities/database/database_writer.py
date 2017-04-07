@@ -1,6 +1,9 @@
 # spinn front end common
 from pacman.model.abstract_classes.abstract_has_global_max_atoms import \
     AbstractHasGlobalMaxAtoms
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_key_to_atom_mapping import \
+    AbstractProvidesKeyToAtomMapping
 from spinn_front_end_common.abstract_models.abstract_recordable import \
     AbstractRecordable
 from spinn_front_end_common.utility_models.\
@@ -26,6 +29,7 @@ class DatabaseWriter(object):
     """
 
     __slots__ = [
+
         # boolean flag for when the database writer has finished
         "_done",
 
@@ -615,16 +619,9 @@ class DatabaseWriter(object):
                         app_vertex = graph_mapper.get_application_vertex(
                             vertex)
                         vertex_id = vertices.index(app_vertex) + 1
-                        vertex_slice = graph_mapper.get_slice(vertex)
-                        low_atom_id = vertex_slice.lo_atom
-                        event_ids = routing_info.get_keys(vertex_slice.n_atoms)
-                        for key in event_ids:
-                            cur.execute(
-                                "INSERT INTO event_to_atom_mapping("
-                                "vertex_id, event_id, atom_id) "
-                                "VALUES ({}, {}, {})"
-                                .format(vertex_id, key, low_atom_id))
-                            low_atom_id += 1
+                        self._insert_vertex_atom_to_key_map(
+                            app_vertex, partition, vertex_id, routing_info,
+                            cur)
             else:
                 # insert into table
                 vertices = list(machine_graph.vertices)
@@ -636,14 +633,31 @@ class DatabaseWriter(object):
                         routing_info = routing_infos.\
                             get_routing_info_from_partition(partition)
                         vertex_id = vertices.index(vertex) + 1
-                        event_ids = routing_info.get_keys()
-                        for key in event_ids:
-                            cur.execute(
-                                "INSERT INTO event_to_atom_mapping("
-                                "vertex_id, event_id, atom_id) "
-                                "VALUES ({}, {}, {})"
-                                .format(vertex_id, key, 0))
+                        self._insert_vertex_atom_to_key_map(
+                            vertex, partition, vertex_id, routing_info, cur)
+
             connection.commit()
             connection.close()
         except Exception:
             traceback.print_exc()
+
+    @staticmethod
+    def _insert_vertex_atom_to_key_map(
+            vertex, partition, vertex_id, routing_info, cur):
+        """
+
+        :param vertex:
+        :param partition:
+        :param vertex_id:
+        :param routing_info:
+        :param cur:
+        :return:
+        """
+        if isinstance(vertex, AbstractProvidesKeyToAtomMapping):
+            mapping = vertex.routing_key_partition_atom_mapping(
+                routing_info, partition)
+            for (atom_id, key) in mapping:
+                cur.execute(
+                    "INSERT INTO event_to_atom_mapping("
+                    "vertex_id, event_id, atom_id) "
+                    "VALUES ({}, {}, {})".format(vertex_id, key, atom_id))
