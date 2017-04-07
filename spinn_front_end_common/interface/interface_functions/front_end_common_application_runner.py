@@ -19,7 +19,7 @@ class FrontEndCommonApplicationRunner(object):
     __slots__ = []
 
     def __call__(
-            self, buffer_manager, wait_on_confirmation,
+            self, buffer_manager, wait_on_confirmation, send_stop_notification,
             send_start_notification, notification_interface,
             executable_targets, executable_start_type, app_id, txrx, runtime,
             time_scale_factor, loaded_reverse_iptags_token,
@@ -89,7 +89,7 @@ class FrontEndCommonApplicationRunner(object):
 
         # Send start notification
         if notification_interface is not None and send_start_notification:
-            notification_interface.send_start_notification()
+            notification_interface.send_start_resume_notification()
 
         # Wait for the application to finish
         if runtime is None:
@@ -104,5 +104,9 @@ class FrontEndCommonApplicationRunner(object):
             txrx.wait_for_cores_to_be_in_state(
                 executable_targets.all_core_subsets, app_id,
                 [CPUState.FINISHED, CPUState.PAUSED], timeout=time_threshold)
+
+        if (notification_interface is not None and
+                send_stop_notification and runtime is not None):
+            notification_interface.send_stop_pause_notification()
 
         return True, no_sync_changes

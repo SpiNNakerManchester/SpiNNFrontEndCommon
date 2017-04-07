@@ -1,12 +1,14 @@
 import struct
 
-from spinn_front_end_common.utilities import constants
-
-from spinn_machine.utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
+
+from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import exceptions
+
 from spinnman.model.enums.cpu_state import CPUState
+from spinn_utilities.progress_bar import ProgressBar
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
@@ -26,6 +28,21 @@ class FrontEndCommonChipProvenanceUpdater(object):
         progress_bar = ProgressBar(
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
+
+        error_cores = txrx.get_cores_in_state(
+            all_core_subsets, CPUState.RUN_TIME_EXCEPTION)
+        watchdog_cores = txrx.get_cores_in_state(
+            all_core_subsets, CPUState.WATCHDOG)
+        idle_cores = txrx.get_cores_in_state(
+            all_core_subsets, CPUState.IDLE)
+
+        if (len(error_cores) != 0 or len(watchdog_cores) != 0 or
+                len(idle_cores) != 0):
+            raise exceptions.ConfigurationException(
+                "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
+                " idle cores {}".format(
+                    error_cores.values(), watchdog_cores.values(),
+                    idle_cores.values()))
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating

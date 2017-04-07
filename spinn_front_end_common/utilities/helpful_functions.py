@@ -10,7 +10,6 @@ from spinn_front_end_common import mapping_algorithms
 
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
-from spinn_machine.core_subset import CoreSubset
 
 # general imports
 import os
@@ -20,6 +19,7 @@ import logging
 import re
 import inspect
 import struct
+from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
@@ -290,32 +290,59 @@ def get_front_end_common_pacman_xml_paths():
     ]
 
 
-def convert_string_info_chip_and_core_subsets(downed_chips, downed_cores):
+def convert_string_into_chip_and_core_subset(cores):
+    """ Translate a string list of cores into a core subset
+
+    :param cores:\
+        string representing down cores formatted as x,y,p[:x,y,p]*
+    :type cores: str or None
+    """
+    ignored_cores = CoreSubsets()
+    if cores is not None and cores != "None":
+        for downed_core in cores.split(":"):
+            x, y, processor_id = downed_core.split(",")
+            ignored_cores.add_processor((int(x), int(y), int(processor_id)))
+    return ignored_cores
+
+
+def sort_out_downed_chips_cores_links(
+        downed_chips, downed_cores, downed_links):
     """ Translate the down cores and down chips string into a form that \
         spinnman can understand
 
-    :param downed_cores: string representing down cores
+    :param downed_cores:\
+        string representing down cores formatted as x,y,p[:x,y,p]*
     :type downed_cores: str or None
-    :param downed_chips: string representing down chips
+    :param downed_chips:\
+        string representing down chips formatted as x,y[:x,y]*
     :type downed_chips: str or None
-    :return: a list of down cores and down chips in processor and \
-            core subset format
+    :param downed_links:\
+        string representing down links formatted as x,y,link[:x,y,link]*
+    :return:\
+        a tuple of (\
+            set of (x, y) of down chips, \
+            set of (x, y, p) of down cores, \
+            set of ((x, y), link id) of down links)
+    :rtype: ({(int, int,), }, {(int, int, int), }, {((int, int), int), })
     """
-    ignored_chips = None
-    ignored_cores = None
+    ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
-        ignored_chips = CoreSubsets()
         for downed_chip in downed_chips.split(":"):
             x, y = downed_chip.split(",")
-            ignored_chips.add_core_subset(CoreSubset(int(x), int(y),
-                                                     []))
+            ignored_chips.add((int(x), int(y)))
+
+    ignored_cores = set()
     if downed_cores is not None and downed_cores != "None":
-        ignored_cores = CoreSubsets()
         for downed_core in downed_cores.split(":"):
             x, y, processor_id = downed_core.split(",")
-            ignored_cores.add_processor(int(x), int(y),
-                                        int(processor_id))
-    return ignored_chips, ignored_cores
+            ignored_cores.add((int(x), int(y), int(processor_id)))
+
+    ignored_links = set()
+    if downed_links is not None and downed_links != "None":
+        for downed_link in downed_links.split(":"):
+            x, y, link_id = downed_link.split(",")
+            ignored_links.add((int(x), int(y), int(link_id)))
+    return ignored_chips, ignored_cores, ignored_links
 
 
 def translate_iobuf_extraction_elements(
@@ -335,8 +362,8 @@ def translate_iobuf_extraction_elements(
 
     # some hard coded cores
     if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        _, ignored_cores = convert_string_info_chip_and_core_subsets(
-            None, hard_coded_cores)
+        _, ignored_cores = convert_string_into_chip_and_core_subset(
+            hard_coded_cores)
         return ignored_cores
 
     # some binaries
@@ -353,7 +380,7 @@ def translate_iobuf_extraction_elements(
         model_core_subsets = _handle_model_binaries(
             hard_coded_model_binary, executable_targets, executable_finder)
         _, hard_coded_core_core_subsets = \
-            convert_string_info_chip_and_core_subsets(None, hard_coded_cores)
+            convert_string_into_chip_and_core_subset(hard_coded_cores)
         for core_subset in hard_coded_core_core_subsets:
             model_core_subsets.add_core_subset(core_subset)
         return model_core_subsets
@@ -409,7 +436,10 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
-    return bool(value)
+    if value.lower() in RawConfigParser._boolean_states:
+        return RawConfigParser._boolean_states[value.lower()]
+    raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
+        value, section, item))
 
 
 def generate_unique_folder_name(folder, filename, extension):

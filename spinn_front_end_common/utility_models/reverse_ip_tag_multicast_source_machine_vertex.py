@@ -39,6 +39,8 @@ from spinn_front_end_common.interface.provenance\
     ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
+from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
+    import ProvenanceDataItem
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 
@@ -71,6 +73,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('RECORDING', 2),
                ('SEND_BUFFER', 3),
                ('PROVENANCE_REGION', 4)])
+
+    _PROVENANCE_ITEMS = Enum(
+        value="_PROVENANCE_ITEMS",
+        names=[("N_RECEIVED_PACKETS", 0),
+               ("N_SENT_PACKETS", 1),
+               ("INCORRECT_KEYS", 2),
+               ("INCORRECT_PACKETS", 3),
+               ("LATE_PACKETS", 4)])
 
     # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
@@ -265,7 +275,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
     def _n_additional_data_items(self):
-        return 0
+        return 5
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -670,6 +680,64 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @send_buffers.setter
     def send_buffers(self, value):
         self._send_buffers = value
+
+    @overrides(ProvidesProvenanceDataFromMachineImpl.
+               get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, transceiver, placement):
+        provenance_data = self._read_provenance_data(transceiver, placement)
+        provenance_items = self._read_basic_provenance_items(
+            provenance_data, placement)
+        provenance_data = self._get_remaining_provenance_data_items(
+            provenance_data)
+        _, _, _, _, names = self._get_placement_details(placement)
+
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "received_sdp_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value],
+            report=(
+                provenance_data[
+                    self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value] == 0 and
+                self._send_buffer_times is None),
+            message=(
+                "No SDP packets were received by {}.  If you expected packets"
+                " to be injected, this could indicate an error".format(
+                    self._label))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "send_multicast_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.N_SENT_PACKETS.value] == 0,
+            message=(
+                "No multicast packets were sent by {}.  If you expected"
+                " packets to be sent this could indicate an error".format(
+                    self._label))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "incorrect_keys"),
+            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.INCORRECT_KEYS.value] > 0,
+            message=(
+                "Keys were received by {} that did not match the key {} and"
+                " mask {}".format(
+                    self._label, self._virtual_key, self._mask))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "incorrect_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_PACKETS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.INCORRECT_PACKETS.value] > 0,
+            message=(
+                "SDP Packets were received by {} that were not correct".format(
+                    self._label))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "late_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.LATE_PACKETS.value] > 0,
+            message=(
+                "SDP Packets were received by {} that were too late to be"
+                " transmitted in the simulation".format(self._label))))
+
+        return provenance_items
 
     def __repr__(self):
         return self._label
