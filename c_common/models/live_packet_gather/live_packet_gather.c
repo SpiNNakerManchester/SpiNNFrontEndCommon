@@ -402,10 +402,12 @@ bool initialize(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP, record_provenance_data,
-            data_specification_get_region(PROVENANCE_REGION, address))) {
+            &infinite_run, SDP)) {
         return false;
     }
+    simulation_set_provenance_function(
+        record_provenance_data,
+        data_specification_get_region(PROVENANCE_REGION, address));
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (infinite_run != TRUE) {

@@ -249,6 +249,10 @@
                 <param_type>DownedCoresDetails</param_type>
             </parameter>
             <parameter>
+                <param_name>downed_links</param_name>
+                <param_type>DownedLinksDetails</param_type>
+            </parameter>
+            <parameter>
                 <param_name>board_version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
@@ -283,6 +287,7 @@
             <param_name>bmp_details</param_name>
             <param_name>downed_chips</param_name>
             <param_name>downed_cores</param_name>
+            <param_name>downed_links</param_name>
             <param_name>board_version</param_name>
             <param_name>auto_detect_bmp</param_name>
             <param_name>enable_reinjection</param_name>
@@ -598,6 +603,10 @@
                 <param_type>DatabaseWaitOnConfirmationFlag</param_type>
             </parameter>
             <parameter>
+                <param_name>send_stop_notification</param_name>
+                <param_type>SendStopNotifications</param_type>
+            </parameter>
+            <parameter>
                 <param_name>send_start_notification</param_name>
                 <param_type>SendStartNotifications</param_type>
             </parameter>
@@ -662,6 +671,7 @@
             <param_name>buffer_manager</param_name>
             <param_name>wait_on_confirmation</param_name>
             <param_name>send_start_notification</param_name>
+            <param_name>send_stop_notification</param_name>
             <param_name>notification_interface</param_name>
             <param_name>executable_targets</param_name>
             <param_name>executable_start_type</param_name>
@@ -1155,6 +1165,7 @@
             <param_type>BoardVersion</param_type>
             <param_type>DownedChipsDetails</param_type>
             <param_type>DownedCoresDetails</param_type>
+            <param_type>DownedLinksDetails</param_type>
             <param_type>BMPDetails</param_type>
             <param_type>ResetMachineOnStartupFlag</param_type>
             <param_type>AutoDetectBMPFlag</param_type>
@@ -1222,6 +1233,7 @@
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
+            <param_type>MachineHasWrapAroundsFlag</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonHBPMaxMachineGenerator">
@@ -1244,6 +1256,7 @@
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
+            <param_type>MachineHasWrapAroundsFlag</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionedGraphMeasurer">

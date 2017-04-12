@@ -3,14 +3,36 @@
 #include <debug.h>
 #include <simulation.h>
 #include <string.h>
+#include <stdbool.h>
+
+// Command structure
+typedef struct command {
+    uint32_t key;
+    bool has_payload;
+    uint32_t payload;
+    uint32_t repeats;
+    uint32_t delay;
+} command;
+
+typedef struct timed_command {
+    uint32_t time;
+    command command;
+} timed_command;
 
 // Globals
 static uint32_t time;
 static uint32_t simulation_ticks;
 static uint32_t infinite_run;
-static uint32_t *schedule;
-static uint32_t schedule_size;
-static uint32_t next_pos;
+static timed_command *timed_commands;
+static command *start_resume_commands;
+static command *pause_stop_commands;
+static uint32_t n_timed_commands;
+static uint32_t n_start_resume_commands;
+static uint32_t n_pause_stop_commands;
+static uint32_t next_timed_command;
+static uint32_t expected_next_send;
+static uint32_t time_between_sends;
+static bool resume = true;
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
@@ -19,8 +41,170 @@ typedef enum callback_priorities{
 
 //! region identifiers
 typedef enum region_identifiers{
-    SYSTEM_REGION = 0, COMMANDS = 1, PROVENANCE_REGION = 2
+    SYSTEM_REGION = 0, SETUP = 1, COMMANDS_WITH_ARBITRARY_TIMES = 2,
+    COMMANDS_AT_START_RESUME = 3, COMMANDS_AT_STOP_PAUSE = 4,
+    PROVENANCE_REGION = 5
 } region_identifiers;
+
+//! address data
+typedef enum address_data{
+    SCHEDULE_SIZE = 0, START_OF_SCHEDULE = 1
+} address_data;
+
+//! time ID
+typedef enum time_id{
+    FIRST_TIME = 0
+} time_id;
+
+//! n_commands enum
+typedef enum n_commands_id{
+    N_COMMANDS = 0
+} n_commands_id;
+
+static void transmit_command(command *command_to_send) {
+
+    // Wait until the expected time to send
+    while (tc[T1_COUNT] > expected_next_send) {
+
+        // Do Nothing
+    }
+    expected_next_send -= time_between_sends;
+
+    // check for repeats
+    if (command_to_send->repeats != 0) {
+
+        for (uint32_t repeat_count = 0;
+                repeat_count <= command_to_send->repeats;
+                repeat_count++) {
+            if (command_to_send->has_payload) {
+                log_debug(
+                    "Sending %08x, %08x at time %u with %u repeats and "
+                    "%u delay ", command_to_send->key, command_to_send->payload,
+                    time, command_to_send->repeats, command_to_send->delay);
+                spin1_send_mc_packet(
+                    command_to_send->key, command_to_send->payload,
+                    WITH_PAYLOAD);
+            } else {
+                log_debug(
+                    "Sending %08x at time %u with %u repeats and "
+                    "%u delay ", command_to_send->key, time,
+                    command_to_send->repeats, command_to_send->delay);
+                spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
+            }
+
+            // if the delay is 0, don't call delay
+            if (command_to_send->delay > 0) {
+                spin1_delay_us(command_to_send->delay);
+            }
+        }
+    } else {
+        if (command_to_send->has_payload) {
+            log_debug(
+                "Sending %08x, %08x at time %u",
+                command_to_send->key, command_to_send->payload, time);
+
+            //if no repeats, then just send the message
+            spin1_send_mc_packet(
+                command_to_send->key, command_to_send->payload, WITH_PAYLOAD);
+        } else {
+            log_debug("Sending %08x at time %u", command_to_send->key, time);
+            spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
+        }
+    }
+}
+
+static void run_stop_pause_commands() {
+    log_info("Transmit pause/stop commands");
+    for (uint32_t i = 0; i < n_pause_stop_commands; i++) {
+        transmit_command(&(pause_stop_commands[i]));
+    }
+}
+
+static void run_start_resume_commands() {
+    log_info("Transmit start/resume commands");
+    for (uint32_t i = 0; i < n_start_resume_commands; i++) {
+        transmit_command(&(start_resume_commands[i]));
+    }
+}
+
+bool read_scheduled_parameters(address_t address) {
+    n_timed_commands = address[SCHEDULE_SIZE];
+    log_info("%d timed commands", n_timed_commands);
+
+    // if no data, do not read it in
+    if (n_timed_commands == 0) {
+        return true;
+    }
+
+    // Allocate the space for the scheduled_commands
+    timed_commands = (timed_command*) spin1_malloc(
+        n_timed_commands * sizeof(timed_command));
+
+    if (timed_commands == NULL) {
+        log_error("Could not allocate the scheduled commands");
+        return false;
+    }
+
+    memcpy(
+        timed_commands, &address[START_OF_SCHEDULE],
+        n_timed_commands * sizeof(timed_command));
+
+    log_info(
+        "Schedule commands starts at time %u", timed_commands[FIRST_TIME].time);
+
+    return true;
+}
+
+bool read_start_resume_commands(address_t address) {
+    n_start_resume_commands = address[SCHEDULE_SIZE];
+    log_info("%u start/resume commands", n_start_resume_commands);
+
+    if (n_start_resume_commands == 0) {
+        return true;
+    }
+
+    // Allocate the space for the start resume
+    start_resume_commands = (command*) spin1_malloc(
+        n_start_resume_commands * sizeof(command));
+
+    if (start_resume_commands == NULL) {
+        log_error("Could not allocate the start/resume commands");
+        return false;
+    }
+    memcpy(
+        start_resume_commands, &address[START_OF_SCHEDULE],
+        n_start_resume_commands * sizeof(command));
+
+    return true;
+}
+
+bool read_pause_stop_commands(address_t address) {
+    n_pause_stop_commands = address[SCHEDULE_SIZE];
+    log_info("%u pause/stop commands", n_pause_stop_commands);
+
+    if (n_pause_stop_commands == 0){
+        return true;
+    }
+
+    // Allocate the space for the start resume
+    pause_stop_commands = (command*) spin1_malloc(
+        n_pause_stop_commands * sizeof(command));
+
+    if (pause_stop_commands == NULL) {
+        log_error("Could not allocate the pause/stop commands");
+        return false;
+    }
+    memcpy(
+        pause_stop_commands, &address[START_OF_SCHEDULE],
+        n_pause_stop_commands * sizeof(command));
+
+    return true;
+}
+
+void read_setup(address_t address) {
+    time_between_sends = address[0] * sv->cpu_clk;
+    log_info("Separating sends by %u clock cycles", time_between_sends);
+}
 
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
@@ -28,8 +212,20 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    if ((next_pos >= schedule_size) && (infinite_run != TRUE) &&
-            (time >= simulation_ticks)) {
+    // Set the next expected time to wait for between spike sending
+    expected_next_send = tc[T1_COUNT] - time_between_sends;
+
+    if (resume) {
+        log_info("running first start resume commands");
+        run_start_resume_commands();
+        resume = false;
+    }
+
+    if (((infinite_run != TRUE) && (time >= simulation_ticks))) {
+        run_stop_pause_commands();
+
+        log_info("in pause resume mode");
+        resume = true;
         simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
@@ -38,96 +234,11 @@ void timer_callback(uint unused0, uint unused1) {
         return;
     }
 
-    if ((next_pos < schedule_size) && schedule[next_pos] == time) {
-        uint32_t with_payload_count = schedule[++next_pos];
-        log_debug(
-            "Sending %u packets with payloads at time %u",
-            with_payload_count, time);
-        for (uint32_t i = 0; i < with_payload_count; i++) {
-            uint32_t key = schedule[++next_pos];
-            uint32_t payload = schedule[++next_pos];
-
-            //check for delays and repeats
-            uint32_t delay_and_repeat_data = schedule[++next_pos];
-            if (delay_and_repeat_data != 0) {
-                uint32_t repeat = delay_and_repeat_data >> 16;
-                uint32_t delay = delay_and_repeat_data & 0x0000ffff;
-                log_debug(
-                    "Sending %08x, %08x at time %u with %u repeats and "
-                    "%u delay ", key, payload, time, repeat, delay);
-
-                for (uint32_t repeat_count = 0; repeat_count < repeat;
-                        repeat_count++) {
-                    spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
-
-                    // if the delay is 0, don't call delay
-                    if (delay > 0) {
-                        spin1_delay_us(delay);
-                    }
-                }
-            } else {
-                log_debug("Sending %08x, %08x at time %u", key, payload, time);
-
-                //if no repeats, then just send the message
-                spin1_send_mc_packet(key, payload, WITH_PAYLOAD);
-            }
-        }
-
-        uint32_t without_payload_count = schedule[++next_pos];
-        log_debug(
-            "Sending %u packets without payloads at time %u",
-            without_payload_count, time);
-        for (uint32_t i = 0; i < without_payload_count; i++) {
-            uint32_t key = schedule[++next_pos];
-            log_debug("Sending %08x", key);
-
-            //check for delays and repeats
-            uint32_t delay_and_repeat_data = schedule[++next_pos];
-            if (delay_and_repeat_data != 0) {
-                uint32_t repeat = delay_and_repeat_data >> 16;
-                uint32_t delay = delay_and_repeat_data & 0x0000ffff;
-                for (uint32_t repeat_count = 0; repeat_count < repeat;
-                        repeat_count++) {
-                    spin1_send_mc_packet(key, 0, NO_PAYLOAD);
-
-                    // if the delay is 0, don't call delay
-                    if (delay > 0) {
-                        spin1_delay_us(delay);
-                    }
-                }
-            } else {
-                log_debug("Sending %08x at time %u", key, time);
-
-                //if no repeats, then just send the message
-                spin1_send_mc_packet(key, 0, NO_PAYLOAD);
-            }
-
-        }
-        ++next_pos;
-
-        if (next_pos < schedule_size) {
-            log_debug("Next packets will be sent at %u", schedule[next_pos]);
-        } else {
-            log_debug("End of Schedule");
-        }
+    while ((next_timed_command < n_timed_commands) &&
+            (timed_commands[next_timed_command].time == time)) {
+        transmit_command(&(timed_commands[next_timed_command].command));
+        ++next_timed_command;
     }
-}
-
-bool read_parameters(address_t address) {
-    schedule_size = address[0] >> 2;
-
-    // Allocate the space for the schedule
-    schedule = (uint32_t*) spin1_malloc(schedule_size * sizeof(uint32_t));
-    if (schedule == NULL) {
-        log_error("Could not allocate the schedule");
-        return false;
-    }
-    memcpy(schedule, &address[1], schedule_size * sizeof(uint32_t));
-
-    next_pos = 0;
-    log_info("Schedule starts at time %d", schedule[0]);
-
-    return (true);
 }
 
 bool initialize(uint32_t *timer_period) {
@@ -144,14 +255,21 @@ bool initialize(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP, NULL,
-            data_specification_get_region(PROVENANCE_REGION, address))) {
+            &infinite_run, SDP)) {
         return false;
     }
+    simulation_set_provenance_data_address(
+        data_specification_get_region(PROVENANCE_REGION, address));
+    simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
-    read_parameters(data_specification_get_region(COMMANDS, address));
-
+    read_setup(data_specification_get_region(SETUP, address));
+    read_scheduled_parameters(data_specification_get_region(
+        COMMANDS_WITH_ARBITRARY_TIMES, address));
+    read_start_resume_commands(data_specification_get_region(
+        COMMANDS_AT_START_RESUME, address));
+    read_pause_stop_commands(data_specification_get_region(
+        COMMANDS_AT_STOP_PAUSE, address));
     return true;
 }
 
