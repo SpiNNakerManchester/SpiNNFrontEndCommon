@@ -222,7 +222,6 @@ class BufferManager(object):
                 self.receive_buffer_command_message, UDPEIEIOConnection,
                 local_port=tag.port, local_host=tag.ip_address)
 
-
             self._seen_tags.add((tag.ip_address, connection.local_port))
             utility_functions.send_port_trigger_message(
                 connection, tag.board_address)
@@ -243,21 +242,21 @@ class BufferManager(object):
                 # locate tag associated with the buffer manage traffic
                 for tag in tags:
                     if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
-                        # If the tag port is not assigned, create a connection and
-                        # assign the port.  Note that this *should* update the port
-                        # number in any tags being shared
+                        # If the tag port is not assigned create a connection\
+                        # and assign the port.  Note that this *should* \
+                        # update the port number in any tags being shared
                         if tag.port is None:
                             # If connection already setup, ensure subsequent
                             # boards use same listener port in their tag
-                            if self._listener_port is  None:
+                            if self._listener_port is None:
                                 connection = self._create_connection(tag)
                                 tag.port = connection.local_port
                                 self._listener_port = connection.local_port
                             else:
                                 tag.port = self._listener_port
 
-                        # In case we have tags with different specified ports, also
-                        # allow the tag to be created here
+                        # In case we have tags with different specified ports,\
+                        # also allow the tag to be created here
                         elif (tag.ip_address, tag.port) not in self._seen_tags:
                             self._create_connection(tag)
 
