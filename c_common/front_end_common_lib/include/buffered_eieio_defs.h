@@ -3,7 +3,6 @@
 
 //! The different command message IDs
 typedef enum eieio_command_messages {
-
     // Database handshake with visualiser
     DATABASE_CONFIRMATION = 1,
 
@@ -39,9 +38,9 @@ typedef enum buffered_operations {
 } buffered_operations;
 
 //! pointer to an EIEIO message
-typedef uint16_t* eieio_msg_t;
+typedef uint16_t *eieio_msg_t;
 
 // The maximum sequence number
-#define MAX_SEQUENCE_NO 0xFF
+#define MAX_SEQUENCE_NO			0xFF
 
 #endif
