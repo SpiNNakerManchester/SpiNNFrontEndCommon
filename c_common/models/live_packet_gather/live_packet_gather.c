@@ -307,8 +307,7 @@ void incoming_event_process_callback(uint unused0, uint unused1) {
        } else {
            processing_events = false;
        }
-    }
-    while (processing_events);
+    } while (processing_events);
 }
 
 void incoming_event_callback(uint key, uint unused) {
