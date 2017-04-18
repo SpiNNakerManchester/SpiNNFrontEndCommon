@@ -362,7 +362,7 @@ def translate_iobuf_extraction_elements(
 
     # some hard coded cores
     if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        _, ignored_cores = convert_string_into_chip_and_core_subset(
+        ignored_cores = convert_string_into_chip_and_core_subset(
             hard_coded_cores)
         return ignored_cores
 
