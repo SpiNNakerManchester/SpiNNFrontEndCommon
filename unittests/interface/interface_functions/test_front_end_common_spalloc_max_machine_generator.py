@@ -71,5 +71,6 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         self.assertEqual(max_width, 12 * 3)
         self.assertEqual(max_height, 12 * 2)
 
+
 if __name__ == "__main__":
     unittest.main()
