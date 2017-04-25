@@ -2070,6 +2070,5 @@ class SpinnakerMainInterface(object):
     def config(self):
         """ helper method for the  front end impls till we remove config
 
-        :return:
         """
         return self._config

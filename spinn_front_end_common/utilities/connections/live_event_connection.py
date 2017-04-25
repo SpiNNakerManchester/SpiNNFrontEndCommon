@@ -152,7 +152,7 @@ class LiveEventConnection(DatabaseConnection):
                     this class, which can be used to send events
         :type pause_stop_callback: function(str, \
                     :py:class:`SpynnakerLiveEventConnection`) -> None
-        :return: None
+        :rtype: None
         """
         self._pause_stop_callbacks[label].append(pause_stop_callback)
 

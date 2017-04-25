@@ -338,7 +338,6 @@ class BufferManager(object):
         :param p: placement p coord
         :param recording_region_id: the recording region id
 
-        :return:
         """
         self._received_data.clear(x, y, p, recording_region_id)
 

@@ -85,7 +85,7 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             app_data_runtime_folder, machine):
         """
 
-        :param placements: placements of machine graph to cores
+        :param placement: placement of machine graph to cores
         :param vertex: the specific vertex to write dsg for.
         :param hostname: spinnaker machine name
         :param report_default_directory: the location where reports are stored
@@ -94,7 +94,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         :param app_data_runtime_folder: \
             Folder where data specifications should be written to
         :param machine: the python representation of the spinnaker machine
-        :param graph_mapper: the mapping between application and machine graph
         :return: True if the vertex was data specable, False otherwise
         """
 

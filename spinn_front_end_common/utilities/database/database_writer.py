@@ -651,7 +651,7 @@ class DatabaseWriter(object):
         :param vertex_id:
         :param routing_info:
         :param cur:
-        :return:
+        :rtype: None
         """
         if isinstance(vertex, AbstractProvidesKeyToAtomMapping):
             mapping = vertex.routing_key_partition_atom_mapping(

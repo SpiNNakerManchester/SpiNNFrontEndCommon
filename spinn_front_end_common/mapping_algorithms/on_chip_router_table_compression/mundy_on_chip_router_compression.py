@@ -152,8 +152,7 @@ class MundyOnChipRouterCompression(object):
         :param executable_targets:
         :param transceiver:
         :param provenance_file_path:
-        :param prov_items:
-        :return:
+        :rtype: None
         """
         logger.info("Router compressor has failed")
         iobuf_extractor = FrontEndCommonChipIOBufExtractor()
@@ -174,7 +173,7 @@ class MundyOnChipRouterCompression(object):
         :param io_buffers: the iobuf for the cores
         :param provenance_file_path:\
             the file path where the iobuf are to be stored
-        :return: None
+        :rtype: None
         """
         for iobuf in io_buffers:
             file_name = os.path.join(
@@ -271,6 +270,7 @@ class MundyOnChipRouterCompression(object):
     def _make_source_hack(entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
+
         :param entry: the multicast router table entry.
         :return: return the source value
         """
