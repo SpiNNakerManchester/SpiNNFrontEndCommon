@@ -116,14 +116,6 @@ void flush_events(void) {
             g_event_message.length = sizeof(sdp_hdr_t) + header_len
                                      + event_count * event_size;
 
-#if LOG_LEVEL >= LOG_DEBUG
-            log_debug("===========Packet============\n");
-            uint8_t *print_ptr1 = (uint8_t *) &g_event_message;
-            for (uint8_t i = 0; i < g_event_message.length + 8; i++) {
-                log_debug("%02x ", print_ptr1[i]);
-            }
-#endif // LOG_LEVEL >= LOG_DEBUG
-
             if (payload_apply_prefix && payload_timestamp) {
                 uint16_t *temp = (uint16_t *) sdp_msg_aer_payload_prefix;
 
@@ -134,14 +126,6 @@ void flush_events(void) {
                     temp[1] = ((time >> 16) & 0xFFFF);
                 }
             }
-
-#if LOG_LEVEL >= LOG_DEBUG
-            log_debug("===========Packet============\n");
-            uint8_t *print_ptr2 = (uint8_t *) &sdp_msg_aer_data;
-            for (uint8_t i = 0; i < buffer_index * event_size; i++) {
-                log_debug("%02x ", print_ptr2[i]);
-            }
-#endif // LOG_LEVEL >= LOG_DEBUG
 
             spin1_send_sdp_msg(&g_event_message, 1);
             packets_sent++;
@@ -404,10 +388,12 @@ bool initialize(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP, record_provenance_data,
-            data_specification_get_region(PROVENANCE_REGION, address))) {
+            &infinite_run, SDP)) {
         return false;
     }
+    simulation_set_provenance_function(
+        record_provenance_data,
+        data_specification_get_region(PROVENANCE_REGION, address));
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (infinite_run != TRUE) {

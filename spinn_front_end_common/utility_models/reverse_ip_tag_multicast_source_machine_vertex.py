@@ -1,30 +1,18 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.executor.injection_decorator import supports_injection
 from pacman.executor.injection_decorator import inject
-from pacman.model.constraints.key_allocator_constraints\
-    .key_allocator_fixed_key_and_mask_constraint \
-    import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from pacman.model.constraints.placer_constraints\
-    .placer_board_constraint import PlacerBoardConstraint
-from pacman.model.decorators.delegates_to import delegates_to
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.resources.cpu_cycles_per_tick_resource \
-    import CPUCyclesPerTickResource
-from pacman.model.abstract_classes.impl.constrained_object \
-    import ConstrainedObject
-from pacman.model.abstract_classes.abstract_has_constraints \
-    import AbstractHasConstraints
-from pacman.model.graphs.machine.abstract_machine_vertex \
-    import AbstractMachineVertex
+from pacman.model.constraints.key_allocator_constraints \
+    import KeyAllocatorFixedKeyAndMaskConstraint
+from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
+from pacman.model.resources import IPtagResource, ReverseIPtagResource
+from pacman.model.resources import ResourceContainer, DTCMResource
+from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
+from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.interface.buffer_management.buffer_manager\
+from spinn_front_end_common.interface.buffer_management.buffer_manager \
     import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .sends_buffers_from_host_pre_buffered_impl \
@@ -32,8 +20,6 @@ from spinn_front_end_common.interface.buffer_management.buffer_models\
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.abstract_models\
-    .abstract_binary_uses_simulation_run import AbstractBinaryUsesSimulationRun
 from spinn_front_end_common.interface.buffer_management.buffer_models\
     .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -53,6 +39,10 @@ from spinn_front_end_common.interface.provenance\
     ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
+from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
+    import ProvenanceDataItem
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 
 from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
 
@@ -66,9 +56,8 @@ _DEFAULT_MALLOC_REGIONS = 2
 
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
-        AbstractMachineVertex, AbstractHasConstraints,
-        AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary, AbstractBinaryUsesSimulationRun,
+        MachineVertex, AbstractGeneratesDataSpecification,
+        AbstractHasAssociatedBinary,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
@@ -84,6 +73,14 @@ class ReverseIPTagMulticastSourceMachineVertex(
                ('RECORDING', 2),
                ('SEND_BUFFER', 3),
                ('PROVENANCE_REGION', 4)])
+
+    _PROVENANCE_ITEMS = Enum(
+        value="_PROVENANCE_ITEMS",
+        names=[("N_RECEIVED_PACKETS", 0),
+               ("N_SENT_PACKETS", 1),
+               ("INCORRECT_KEYS", 2),
+               ("INCORRECT_PACKETS", 3),
+               ("LATE_PACKETS", 4)])
 
     # 12 ints (1. has prefix, 2. prefix, 3. prefix type, 4. check key flag,
     #          5. has key, 6. key, 7. mask, 8. buffer space,
@@ -161,13 +158,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
         :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
         """
+        MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self._REGIONS.PROVENANCE_REGION.value, 0)
+
         AbstractProvidesOutgoingPartitionConstraints.__init__(self)
 
-        self._constraints = ConstrainedObject(constraints)
-        self._label = label
         self._iptags = None
         self._reverse_iptags = None
 
@@ -187,8 +182,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if send_buffer_times is None:
             self._send_buffer_times = None
             self._send_buffer_max_space = send_buffer_max_space
-            SendsBuffersFromHostPreBufferedImpl.__init__(
-                self, None)
+            self._send_buffers = None
         else:
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
@@ -201,8 +195,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
-            SendsBuffersFromHostPreBufferedImpl.__init__(
-                self, {self._REGIONS.SEND_BUFFER.value: self._send_buffer})
+            self._send_buffers = {
+                self._REGIONS.SEND_BUFFER.value:
+                self._send_buffer
+            }
 
         # buffered out parameters
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
@@ -271,25 +267,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
                 self._prefix = self._virtual_key
 
-    @delegates_to("_constraints", ConstrainedObject.add_constraint)
-    def add_constraint(self, constraint):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.add_constraints)
-    def add_constraints(self, constraints):
-        pass
-
-    @delegates_to("_constraints", ConstrainedObject.constraints)
-    def constraints(self):
-        pass
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self._REGIONS.PROVENANCE_REGION.value
 
     @property
-    @overrides(AbstractMachineVertex.label)
-    def label(self):
-        return self._label
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return 5
 
     @property
-    @overrides(AbstractMachineVertex.resources_required)
+    @overrides(MachineVertex.resources_required)
     def resources_required(self):
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
@@ -485,9 +474,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
             else:
                 partitions = machine_graph\
                     .get_outgoing_edge_partitions_starting_at_vertex(self)
-                if len(partitions) == 1:
+                partition = next(iter(partitions), None)
+
+                if partition is not None:
                     rinfo = routing_info.get_routing_info_from_partition(
-                        partitions[0])
+                        partition)
                     self._virtual_key = rinfo.first_key
                     self._mask = rinfo.first_mask
 
@@ -606,6 +597,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_binary_file_name(self):
         return "reverse_iptag_multicast_source.aplx"
 
+    @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
+    def get_binary_start_type(self):
+        return ExecutableStartType.USES_SIMULATION_INTERFACE
+
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
@@ -677,3 +672,72 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_recording_region_base_address(self, txrx, placement):
         return helpful_functions.locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING.value, txrx)
+
+    @property
+    def send_buffers(self):
+        return self._send_buffers
+
+    @send_buffers.setter
+    def send_buffers(self, value):
+        self._send_buffers = value
+
+    @overrides(ProvidesProvenanceDataFromMachineImpl.
+               get_provenance_data_from_machine)
+    def get_provenance_data_from_machine(self, transceiver, placement):
+        provenance_data = self._read_provenance_data(transceiver, placement)
+        provenance_items = self._read_basic_provenance_items(
+            provenance_data, placement)
+        provenance_data = self._get_remaining_provenance_data_items(
+            provenance_data)
+        _, _, _, _, names = self._get_placement_details(placement)
+
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "received_sdp_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value],
+            report=(
+                provenance_data[
+                    self._PROVENANCE_ITEMS.N_RECEIVED_PACKETS.value] == 0 and
+                self._send_buffer_times is None),
+            message=(
+                "No SDP packets were received by {}.  If you expected packets"
+                " to be injected, this could indicate an error".format(
+                    self._label))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "send_multicast_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.N_SENT_PACKETS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.N_SENT_PACKETS.value] == 0,
+            message=(
+                "No multicast packets were sent by {}.  If you expected"
+                " packets to be sent this could indicate an error".format(
+                    self._label))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "incorrect_keys"),
+            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_KEYS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.INCORRECT_KEYS.value] > 0,
+            message=(
+                "Keys were received by {} that did not match the key {} and"
+                " mask {}".format(
+                    self._label, self._virtual_key, self._mask))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "incorrect_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.INCORRECT_PACKETS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.INCORRECT_PACKETS.value] > 0,
+            message=(
+                "SDP Packets were received by {} that were not correct".format(
+                    self._label))))
+        provenance_items.append(ProvenanceDataItem(
+            self._add_name(names, "late_packets"),
+            provenance_data[self._PROVENANCE_ITEMS.LATE_PACKETS.value],
+            report=provenance_data[
+                self._PROVENANCE_ITEMS.LATE_PACKETS.value] > 0,
+            message=(
+                "SDP Packets were received by {} that were too late to be"
+                " transmitted in the simulation".format(self._label))))
+
+        return provenance_items
+
+    def __repr__(self):
+        return self._label

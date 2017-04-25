@@ -1,4 +1,5 @@
 <algorithms>
+    <algorithms>
     <algorithm name="SpiNNFrontEndCommonTDMAAgendaBuilder">
         <python_module>
             spinn_front_end_common.interface.interface_functions.front_end_common_tdma_agenda_builder
@@ -49,6 +50,81 @@
         </optional_inputs>
         <outputs>
             <param_type>TDMAAgenda</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonDSGRegionReloader">
+        <python_module>
+            spinn_front_end_common.interface.interface_functions.front_end_common_dsg_region_reloader
+        </python_module>
+        <python_class>FrontEndCommonDSGRegionReloader</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>report_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_text_specs</param_name>
+                <param_type>WriteTextSpecsFlag</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_data_file_path</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>placements</param_name>
+            <param_name>hostname</param_name>
+            <param_name>report_directory</param_name>
+            <param_name>write_text_specs</param_name>
+            <param_name>application_data_file_path</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonPortConnectionAllocator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_port_connection_allocator</python_module>
+        <python_class>FrontEndCommonPortConnectionAllocator</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>buffer_ip_address</param_name>
+                <param_type>BufferIpAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>buffer_ip_address</param_name>
+            <param_name>machine_graph</param_name>
+        </required_inputs>
+        <optional_inputs>
+        </optional_inputs>
+        <outputs>
+            <param_type>TrafficIdentifierToPortNumMap</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonApplicationDataLoader">
@@ -156,10 +232,6 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>dse_app_id</param_name>
-                <param_type>DSEAppID</param_type>
-            </parameter>
-            <parameter>
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
@@ -168,7 +240,6 @@
             <param_name>write_memory_map_report</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
-            <param_name>dse_app_id</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
         <outputs>
@@ -231,6 +302,10 @@
                 <param_type>DownedCoresDetails</param_type>
             </parameter>
             <parameter>
+                <param_name>downed_links</param_name>
+                <param_type>DownedLinksDetails</param_type>
+            </parameter>
+            <parameter>
                 <param_name>board_version</param_name>
                 <param_type>BoardVersion</param_type>
             </parameter>
@@ -265,6 +340,7 @@
             <param_name>bmp_details</param_name>
             <param_name>downed_chips</param_name>
             <param_name>downed_cores</param_name>
+            <param_name>downed_links</param_name>
             <param_name>board_version</param_name>
             <param_name>auto_detect_bmp</param_name>
             <param_name>enable_reinjection</param_name>
@@ -278,172 +354,6 @@
         <outputs>
             <param_type>MemoryMachine</param_type>
             <param_type>MemoryTransceiver</param_type>
-        </outputs>
-    </algorithm>
-        <algorithm name="FrontEndCommonReloadScriptCreator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_reload_script_creator</python_module>
-        <python_class>FrontEndCommonReloadScriptCreator</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
-            </parameter>
-            <parameter>
-                <param_name>machine_name</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>version</param_name>
-                <param_type>BoardVersion</param_type>
-            </parameter>
-            <parameter>
-                <param_name>bmp_details</param_name>
-                <param_type>BMPDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>down_chips</param_name>
-                <param_type>DownedChipsDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>down_cores</param_name>
-                <param_type>DownedCoresDetails</param_type>
-            </parameter>
-            <parameter>
-                <param_name>auto_detect_bmp</param_name>
-                <param_type>AutoDetectBMPFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>enable_reinjection</param_name>
-                <param_type>EnableReinjectionFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>scamp_connection_data</param_name>
-                <param_type>ScampConnectionData</param_type>
-            </parameter>
-            <parameter>
-                <param_name>boot_port_num</param_name>
-                <param_type>BootPortNum</param_type>
-            </parameter>
-            <parameter>
-                <param_name>reset_machine_on_start_up</param_name>
-                <param_type>ResetMachineOnStartupFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>max_sdram_per_chip</param_name>
-                <param_type>MaxSDRAMSize</param_type>
-            </parameter>
-            <parameter>
-                <param_name>router_tables</param_name>
-                <param_type>MemoryRoutingTables</param_type>
-            </parameter>
-            <parameter>
-                <param_name>tags</param_name>
-                <param_type>MemoryTags</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>dsg_targets</param_name>
-                <param_type>DataSpecificationTargets</param_type>
-            </parameter>
-            <parameter>
-                <param_name>dse_app_id</param_name>
-                <param_type>DSEAppID</param_type>
-            </parameter>
-            <parameter>
-                <param_name>exec_dse_on_host</param_name>
-                <param_type>ExecDSEOnHostFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>buffer_manager</param_name>
-                <param_type>BufferManager</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>wait_for_read_confirmation</param_name>
-                <param_type>DatabaseWaitOnConfirmationFlag</param_type>
-            </parameter>
-            <parameter>
-                <param_name>database_socket_addresses</param_name>
-                <param_type>DatabaseSocketAddresses</param_type>
-            </parameter>
-            <parameter>
-                <param_name>database_file_path</param_name>
-                <param_type>DatabaseFilePath</param_type>
-            </parameter>
-            <parameter>
-                <param_name>send_start_notification</param_name>
-                <param_type>SendStartNotifications</param_type>
-            </parameter>
-            <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_id</param_name>
-                <param_type>APPID</param_type>
-            </parameter>
-            <parameter>
-                <param_name>runtime</param_name>
-                <param_type>RunTime</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_scale_factor</param_name>
-                <param_type>TimeScaleFactor</param_type>
-            </parameter>
-            <parameter>
-                <param_name>total_machine_timesteps</param_name>
-                <param_type>TotalMachineTimeSteps</param_type>
-            </parameter>
-            <parameter>
-                <param_name>executable_finder</param_name>
-                <param_type>ExecutableFinder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>time_threshold</param_name>
-                <param_type>PostSimulationOverrunBeforeError</param_type>
-            </parameter>
-        </input_definitions>
-         <required_inputs>
-             <param_name>machine</param_name>
-             <param_name>machine_name</param_name>
-             <param_name>version</param_name>
-             <param_name>bmp_details</param_name>
-             <param_name>down_chips</param_name>
-             <param_name>down_cores</param_name>
-             <param_name>auto_detect_bmp</param_name>
-             <param_name>enable_reinjection</param_name>
-             <param_name>scamp_connection_data</param_name>
-             <param_name>boot_port_num</param_name>
-             <param_name>reset_machine_on_start_up</param_name>
-             <param_name>max_sdram_per_chip</param_name>
-             <param_name>router_tables</param_name>
-             <param_name>tags</param_name>
-             <param_name>app_data_runtime_folder</param_name>
-             <param_name>dsg_targets</param_name>
-             <param_name>dse_app_id</param_name>
-             <param_name>exec_dse_on_host</param_name>
-             <param_name>buffer_manager</param_name>
-             <param_name>placements</param_name>
-             <param_name>wait_for_read_confirmation</param_name>
-             <param_name>database_socket_addresses</param_name>
-             <param_name>database_file_path</param_name>
-             <param_name>send_start_notification</param_name>
-             <param_name>executable_targets</param_name>
-             <param_name>app_id</param_name>
-             <param_name>runtime</param_name>
-             <param_name>time_scale_factor</param_name>
-             <param_name>total_machine_timesteps</param_name>
-             <param_name>executable_finder</param_name>
-             <param_name>time_threshold</param_name>
-        </required_inputs>
-        <outputs>
-            <param_type>ReloadToken</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonRoutingTableLoader">
@@ -476,6 +386,37 @@
         </required_inputs>
         <outputs>
             <param_type>LoadedRoutingTablesToken</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonRoutingSetup">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_routing_setup</python_module>
+        <python_class>FrontEndCommonRoutingSetup</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>router_tables</param_name>
+                <param_type>MemoryCompressedRoutingTables</param_type>
+                <param_type>MemoryRoutingTables</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>router_tables</param_name>
+            <param_name>app_id</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>machine</param_name>
+        </required_inputs>
+        <outputs>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonTagsLoader">
@@ -592,15 +533,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
-                <param_type>MemoryApplicationGraph</param_type>
-            </parameter>
-            <parameter>
                 <param_name>hostname</param_name>
                 <param_type>IPAddress</param_type>
             </parameter>
@@ -620,10 +552,13 @@
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>placements</param_name>
-            <param_name>graph</param_name>
             <param_name>hostname</param_name>
             <param_name>report_default_directory</param_name>
             <param_name>write_text_specs</param_name>
@@ -669,6 +604,7 @@
         </optional_inputs>
         <outputs>
             <param_type>ExecutableTargets</param_type>
+            <param_type>ExecutableStartType</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonBufferManagerCreator">
@@ -720,6 +656,10 @@
                 <param_type>DatabaseWaitOnConfirmationFlag</param_type>
             </parameter>
             <parameter>
+                <param_name>send_stop_notification</param_name>
+                <param_type>SendStopNotifications</param_type>
+            </parameter>
+            <parameter>
                 <param_name>send_start_notification</param_name>
                 <param_type>SendStartNotifications</param_type>
             </parameter>
@@ -730,6 +670,10 @@
             <parameter>
                 <param_name>executable_targets</param_name>
                 <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_start_type</param_name>
+                <param_type>ExecutableStartType</param_type>
             </parameter>
             <parameter>
                 <param_name>app_id</param_name>
@@ -775,25 +719,15 @@
                 <param_name>time_threshold</param_name>
                 <param_type>PostSimulationOverrunBeforeError</param_type>
             </parameter>
-            <parameter>
-                <param_name>has_loaded_runtime_flag</param_name>
-                <param_type>HasLoadedRuntimeToChips</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>buffer_manager</param_name>
             <param_name>wait_on_confirmation</param_name>
             <param_name>send_start_notification</param_name>
+            <param_name>send_stop_notification</param_name>
             <param_name>notification_interface</param_name>
             <param_name>executable_targets</param_name>
+            <param_name>executable_start_type</param_name>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
             <param_name>runtime</param_name>
@@ -805,12 +739,7 @@
             <param_name>loaded_application_data_token</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
-            <param_name>has_loaded_runtime_flag</param_name>
-            <param_name>placements</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>RanToken</param_type>
             <param_type>NoSyncChanges</param_type>
@@ -1107,10 +1036,6 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>no_sync_changes</param_name>
-                <param_type>NoSyncChanges</param_type>
-            </parameter>
-            <parameter>
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
@@ -1126,29 +1051,15 @@
                 <param_name>loaded_binaries_token</param_name>
                 <param_type>LoadBinariesToken</param_type>
             </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
-            <param_name>no_sync_changes</param_name>
             <param_name>app_id</param_name>
             <param_name>executable_targets</param_name>
             <param_name>no_machine_timesteps</param_name>
             <param_name>loaded_binaries_token</param_name>
-            <param_name>placements</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>graph_mapper</param_name>
-        </optional_inputs>
         <outputs>
-            <param_type>NoSyncChanges</param_type>
             <param_type>HasLoadedRuntimeToChips</param_type>
         </outputs>
     </algorithm>
@@ -1175,9 +1086,37 @@
             <param_name>all_core_subsets</param_name>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonIOBufExtractor">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_iobuf_extractor</python_module>
-        <python_class>FrontEndCommonIOBufExtractor</python_class>
+    <algorithm name="FrontEndCommonChipIOBufClearer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_iobuf_clearer</python_module>
+        <python_class>FrontEndCommonChipIOBufClearer</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>ran_token</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>executable_targets</param_name>
+            <param_name>ran_token</param_name>
+        </required_inputs>
+        <optional_inputs>
+        </optional_inputs>
+        <outputs>
+            <param_type>ClearedIOBufToken</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonChipIOBufExtractor">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_iobuf_extractor</python_module>
+        <python_class>FrontEndCommonChipIOBufExtractor</python_class>
         <input_definitions>
             <parameter>
                 <param_name>transceiver</param_name>
@@ -1188,21 +1127,14 @@
                 <param_type>RanToken</param_type>
             </parameter>
             <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
                 <param_name>core_subsets</param_name>
-                <param_type>FailedCoresSubsets</param_type>
+                <param_type>CoresToExtractIOBufFrom</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>has_ran</param_name>
-            <one_of>
-                <param_name>placements</param_name>
-                <param_name>core_subsets</param_name>
-            </one_of>
+            <param_name>core_subsets</param_name>
         </required_inputs>
         <outputs>
             <param_type>IOBuffers</param_type>
@@ -1286,6 +1218,7 @@
             <param_type>BoardVersion</param_type>
             <param_type>DownedChipsDetails</param_type>
             <param_type>DownedCoresDetails</param_type>
+            <param_type>DownedLinksDetails</param_type>
             <param_type>BMPDetails</param_type>
             <param_type>ResetMachineOnStartupFlag</param_type>
             <param_type>AutoDetectBMPFlag</param_type>
@@ -1353,6 +1286,7 @@
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
+            <param_type>MachineHasWrapAroundsFlag</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonHBPMaxMachineGenerator">
@@ -1375,6 +1309,7 @@
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
+            <param_type>MachineHasWrapAroundsFlag</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionedGraphMeasurer">
@@ -1415,10 +1350,6 @@
                 <param_type>BufferManager</param_type>
             </parameter>
             <parameter>
-                <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
-            </parameter>
-            <parameter>
                 <param_name>ran_token</param_name>
                 <param_type>RanToken</param_type>
             </parameter>
@@ -1428,7 +1359,6 @@
             <param_name>placements</param_name>
             <param_name>buffer_manager</param_name>
             <param_name>ran_token</param_name>
-            <param_name>transceiver</param_name>
         </required_inputs>
     </algorithm>
 </algorithms>

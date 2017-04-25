@@ -43,7 +43,7 @@ class FrontEndCommonDatabaseInterface(object):
                 self._user_create_database == "True"):
 
             if (application_graph is not None and
-                    len(application_graph.vertices) != 0):
+                    application_graph.n_vertices != 0):
                 database_progress = ProgressBar(11, "Creating database")
             else:
                 database_progress = ProgressBar(10, "Creating database")
@@ -54,7 +54,7 @@ class FrontEndCommonDatabaseInterface(object):
             self._writer.add_machine_objects(machine)
             database_progress.update()
             if (application_graph is not None and
-                    len(application_graph.vertices) != 0):
+                    application_graph.n_vertices != 0):
                 self._writer.add_application_vertices(application_graph)
                 database_progress.update()
             self._writer.add_vertices(
@@ -85,10 +85,6 @@ class FrontEndCommonDatabaseInterface(object):
 
     @property
     def database_file_path(self):
-        """
-
-        :return:
-        """
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
             return self._writer.database_path
