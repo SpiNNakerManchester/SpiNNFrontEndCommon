@@ -15,6 +15,7 @@ import os
 import logging
 import struct
 import tempfile
+from data_specification import constants
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,6 @@ class FrontEndCommonHostExecuteDataSpecification(object):
 
             # run data spec executor
             try:
-                # bytes_used_by_spec, bytes_written_by_spec = \
                 host_based_data_spec_executor.execute()
             except exceptions.DataSpecificationException as e:
                 logger.error(
@@ -125,18 +125,32 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             start_address = transceiver.malloc_sdram(
                 x, y, bytes_used_by_spec, app_id)
 
-            # the base address address needs to be passed to the DSE to
-            # generate the pointer table with absolute addresses
-            host_based_data_spec_executor.write_dse_output_file(
-                start_address)
-
-            # close the application data file writer
+            # Write the header and pointer table and load it
+            host_based_data_spec_executor.write_header()
+            host_based_data_spec_executor.write_pointer_table(start_address)
             data_writer.close()
-
-            # the data is written to memory
             transceiver.write_memory(
                 x, y, start_address, app_data_file_path, is_filename=True)
-            bytes_written_by_spec = os.stat(app_data_file_path).st_size
+            file_length = os.stat(app_data_file_path).st_size
+
+            # Write each region
+            position = start_address + file_length
+            bytes_written_by_spec = file_length
+            for region_id in range(constants.MAX_MEM_REGIONS):
+                region = host_based_data_spec_executor.get_region(region_id)
+                if region is not None:
+
+                    if region.max_write_pointer > 0:
+
+                        # Get the data up to what has been written
+                        data = region.region_data[:region.max_write_pointer]
+
+                        # Write the data to the position
+                        transceiver.write_memory(x, y, position, data)
+                        bytes_written_by_spec += len(data)
+
+                    # Move on to the next region
+                    position += region.allocated_size
 
             # set user 0 register appropriately to the application data
             user_0_address = \
