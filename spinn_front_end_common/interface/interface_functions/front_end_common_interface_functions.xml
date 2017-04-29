@@ -1,5 +1,4 @@
 <algorithms>
-    <algorithms>
     <algorithm name="SpiNNFrontEndCommonTDMAAgendaBuilder">
         <python_module>
             spinn_front_end_common.interface.interface_functions.front_end_common_tdma_agenda_builder
@@ -33,8 +32,7 @@
             </parameter>
             <parameter>
                 <param_name>safety_factor</param_name>
-                <param_type>EndUserConfigurableSafetyFactorForTDMAAgenda
-                </param_type>
+                <param_type>EndUserConfigurableSafetyFactorForTDMAAgenda</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
