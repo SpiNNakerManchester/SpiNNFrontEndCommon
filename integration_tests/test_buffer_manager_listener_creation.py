@@ -29,7 +29,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         t1 = IPTag(board_address='127.0.0.1', destination_x=0,
                    destination_y=1, tag=1, port=None, ip_address=None,
                    strip_sdp=True, traffic_identifier='BufferTraffic')
-        t2 = IPTag(board_address='127.0.0.2', destination_x=0,
+        t2 = IPTag(board_address='127.0.0.1', destination_x=0,
                    destination_y=2, tag=1, port=None, ip_address=None,
                    strip_sdp=True, traffic_identifier='BufferTraffic')
 
@@ -73,7 +73,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
                 number_of_listeners += 1
             print i
         self.assertEqual(number_of_listeners, 1)
-        self.assertTrue(Flase, "for testing purposes")
+        #self.assertTrue(False, "for testing purposes")
 
 
 class TestVertex(ApplicationVertex):
