@@ -253,8 +253,8 @@ class BufferManager(object):
                     if tag.port is None:
                         # If connection already setup, ensure subsequent
                         # boards use same listener port in their tag
-                        print "going to create a listener"
                         if self._listener_port is None:
+                            print "going to create a listener"
                             connection = self._create_connection(tag)
                             tag.port = connection.local_port
                             self._listener_port = connection.local_port
