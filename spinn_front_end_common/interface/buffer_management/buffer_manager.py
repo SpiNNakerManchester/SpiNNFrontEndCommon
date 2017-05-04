@@ -236,7 +236,6 @@ class BufferManager(object):
 
         # If using virtual board, no listeners can be set up
         if self._transceiver is None:
-            print "no transceiver"
             return
 
         # Find a tag for receiving buffer data
@@ -245,7 +244,6 @@ class BufferManager(object):
         if tags is not None:
             # locate tag associated with the buffer manager traffic
             for tag in tags:
-                print tag
                 if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
                     # If the tag port is not assigned create a connection\
                     # and assign the port.  Note that this *should* \
@@ -254,11 +252,8 @@ class BufferManager(object):
                         # If connection already setup, ensure subsequent
                         # boards use same listener port in their tag
                         if self._listener_port is None:
-                            print "going to create a listener"
                             connection = self._create_connection(tag)
                             tag.port = connection.local_port
-                            print "connection local port = {}".\
-                                format(connection.local_port)
                             self._listener_port = connection.local_port
                         else:
                             tag.port = self._listener_port
