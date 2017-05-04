@@ -257,7 +257,8 @@ class BufferManager(object):
                             print "going to create a listener"
                             connection = self._create_connection(tag)
                             tag.port = connection.local_port
-                            print "connection local port = {}".format(connection.local_port)
+                            print "connection local port = {}".\
+                                format(connection.local_port)
                             self._listener_port = connection.local_port
                         else:
                             tag.port = self._listener_port
