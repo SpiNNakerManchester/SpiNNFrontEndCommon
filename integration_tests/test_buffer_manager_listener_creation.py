@@ -41,7 +41,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # Create board connections
         connections = []
         connections.append(UDPSCAMPConnection(
-                    remote_host=None))
+            remote_host=None))
         connections.append(UDPEIEIOConnection())
 
         # Create two placements and 'Placements' object
