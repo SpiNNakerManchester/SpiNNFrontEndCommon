@@ -221,7 +221,6 @@ class BufferManager(object):
             connection = self._transceiver.register_udp_listener(
                 self.receive_buffer_command_message, UDPEIEIOConnection,
                 local_port=tag.port, local_host=tag.ip_address)
-
             self._seen_tags.add((tag.ip_address, connection.local_port))
             utility_functions.send_port_trigger_message(
                 connection, tag.board_address)
