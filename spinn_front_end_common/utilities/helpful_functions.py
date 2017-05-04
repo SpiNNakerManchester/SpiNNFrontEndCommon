@@ -301,7 +301,7 @@ def convert_string_into_chip_and_core_subset(cores):
     if cores is not None and cores != "None":
         for downed_core in cores.split(":"):
             x, y, processor_id = downed_core.split(",")
-            ignored_cores.add_processor((int(x), int(y), int(processor_id)))
+            ignored_cores.add_processor(int(x), int(y), int(processor_id))
     return ignored_cores
 
 
@@ -362,7 +362,7 @@ def translate_iobuf_extraction_elements(
 
     # some hard coded cores
     if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        _, ignored_cores = convert_string_into_chip_and_core_subset(
+        ignored_cores = convert_string_into_chip_and_core_subset(
             hard_coded_cores)
         return ignored_cores
 
@@ -379,7 +379,7 @@ def translate_iobuf_extraction_elements(
     if hard_coded_cores != "None" and hard_coded_model_binary != "None":
         model_core_subsets = _handle_model_binaries(
             hard_coded_model_binary, executable_targets, executable_finder)
-        _, hard_coded_core_core_subsets = \
+        hard_coded_core_core_subsets = \
             convert_string_into_chip_and_core_subset(hard_coded_cores)
         for core_subset in hard_coded_core_core_subsets:
             model_core_subsets.add_core_subset(core_subset)
