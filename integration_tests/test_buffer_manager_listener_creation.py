@@ -73,7 +73,6 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
                 number_of_listeners += 1
             print i
         self.assertEqual(number_of_listeners, 1)
-        #self.assertTrue(False, "for testing purposes")
 
 
 class TestVertex(ApplicationVertex):
