@@ -243,9 +243,9 @@ class BufferManager(object):
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
-            print "tags are not none"
             # locate tag associated with the buffer manager traffic
             for tag in tags:
+                print tag
                 if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
                     # If the tag port is not assigned create a connection\
                     # and assign the port.  Note that this *should* \
