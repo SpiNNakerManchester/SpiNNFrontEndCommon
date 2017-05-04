@@ -34,8 +34,6 @@ class FrontEndCommonLoadExecutableImages(object):
             executable_targets.total_processors + 1,
             "Loading executables onto the machine")
 
-        transceiver.execute_application(executable_targets, app_id)
-
         for binary in executable_targets.binaries:
             core_subset = executable_targets.get_cores_for_binary(binary)
             transceiver.execute_flood(
