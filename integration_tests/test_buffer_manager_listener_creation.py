@@ -12,12 +12,13 @@ from spinnman.connections.udp_packet_connections.udp_eieio_connection \
     import UDPEIEIOConnection
 from spinn_machine.tags.iptag import IPTag
 
+
 class TestBufferManagerListenerCreation(unittest.TestCase):
 
     def test_listener_creation(self):
         # Test of buffer manager listener creation problem, where multiple
         # listeners were being created for the buffer manager traffic from
-        #individual boards, where it's preferred all traffic is received by
+        # individual boards, where it's preferred all traffic is received by
         # a single listener
 
         # Create two vertices
@@ -25,12 +26,12 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         v2 = TestVertex(10, "v2", 256)
 
         # Create two tags - important thing is port=None
-        t1 = IPTag(board_address='130.88.193.148', destination_x=0, destination_y=1,
-                   tag=1, port=None, ip_address=None, strip_sdp=True,
-                   traffic_identifier='BufferTraffic')
-        t2 = IPTag(board_address='130.88.193.148', destination_x=0, destination_y=2,
-                   tag=1, port=None, ip_address=None, strip_sdp=True,
-                   traffic_identifier='BufferTraffic')
+        t1 = IPTag(board_address='0.0.0.0', destination_x=0,
+                   destination_y=1, tag=1, port=None, ip_address=None,
+                   strip_sdp=True, traffic_identifier='BufferTraffic')
+        t2 = IPTag(board_address='0.0.0.0', destination_x=0,
+                   destination_y=2, tag=1, port=None, ip_address=None,
+                   strip_sdp=True, traffic_identifier='BufferTraffic')
 
         # Create 'Tags' object and add tags
         t = Tags()
@@ -38,7 +39,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         t.add_ip_tag(t2, v2)
 
         # Create board connections
-        connections=[]
+        connections = []
         connections.append(UDPSCAMPConnection(
                     remote_host=None))
         connections.append(UDPEIEIOConnection())
@@ -68,10 +69,11 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
             # Check if listener is registered on connection - we only expect
             # one listener to be registered, as all connections can use the
             # same listener for the buffer manager
-            if not i[1] == None:
+            if not i[1] is None:
                 number_of_listeners += 1
             print i
         self.assertEqual(number_of_listeners, 1)
+
 
 class TestVertex(ApplicationVertex):
     """
@@ -98,7 +100,8 @@ class TestVertex(ApplicationVertex):
     @property
     @overrides(ApplicationVertex.n_atoms)
     def n_atoms(self):
-       return self._n_atoms
+        return self._n_atoms
+
 
 if __name__ == "__main__":
     unittest.main()
