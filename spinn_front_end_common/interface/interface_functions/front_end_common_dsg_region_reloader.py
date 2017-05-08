@@ -1,10 +1,9 @@
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.sdram import SDRAM
-from spinn_machine.utilities.progress_bar import ProgressBar
 
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
-from data_specification import utility_calls
-from data_specification import constants
+from data_specification import utility_calls, constants
 
 from spinn_front_end_common.abstract_models\
     .abstract_rewrites_data_specification \
@@ -55,10 +54,8 @@ class FrontEndCommonDSGRegionReloader(object):
         if not os.path.exists(reloaded_dsg_report_files_file_path):
             os.makedirs(reloaded_dsg_report_files_file_path)
 
-        progress_bar = ProgressBar(
-            placements.n_placements, "Reloading data")
-        for placement in placements.placements:
-
+        progress = ProgressBar(placements.n_placements, "Reloading data")
+        for placement in progress.over(placements.placements):
             # Try to generate the data spec for the placement
             generated = self._regenerate_data_spec_for_vertices(
                 transceiver, placement, placement.vertex, hostname,
@@ -74,8 +71,6 @@ class FrontEndCommonDSGRegionReloader(object):
                     transceiver, placement, associated_vertex, hostname,
                     reloaded_dsg_report_files_file_path, write_text_specs,
                     reloaded_dsg_data_files_file_path)
-            progress_bar.update()
-        progress_bar.end()
 
     @staticmethod
     def _regenerate_data_spec_for_vertices(

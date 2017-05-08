@@ -1,9 +1,9 @@
 import unittest
 
+from spinn_utilities.socket_address import SocketAddress
+
 from spinn_front_end_common.utilities.notification_protocol\
     .notification_protocol import NotificationProtocol
-from spinn_front_end_common.utilities.notification_protocol.socket_address \
-    import SocketAddress
 
 from spinnman.connections.udp_packet_connections.udp_eieio_connection \
     import UDPEIEIOConnection
