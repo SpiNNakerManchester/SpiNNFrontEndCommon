@@ -9,7 +9,6 @@ from pacman.model.graphs.machine.machine_graph import MachineGraph
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_graph_binary_gatherer \
     import FrontEndCommonGraphBinaryGatherer
-from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
