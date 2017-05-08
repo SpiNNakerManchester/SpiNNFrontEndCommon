@@ -30,7 +30,7 @@ class FrontEndCommonTagsLoader(object):
         progress = None
         if tags is not None:
             progress = ProgressBar(
-                len(tags.ip_tags) + len(tags.reverse_ip_tags),
+                len(list(tags.ip_tags)) + len(list(tags.reverse_ip_tags)),
                 "Loading Tags")
             self.load_iptags(tags.ip_tags, transceiver, progress)
             self.load_reverse_iptags(

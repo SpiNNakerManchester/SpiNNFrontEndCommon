@@ -38,7 +38,8 @@ class FrontEndCommonGraphBinaryGatherer(object):
                     " type {}".format(
                         binary_start_type, placement,
                         placement_binary_start_type))
-            binary_start_type = placement_binary_start_type
+            if placement_binary_start_type is not None:
+                binary_start_type = placement_binary_start_type
 
         return executable_targets, binary_start_type
 
@@ -47,7 +48,7 @@ class FrontEndCommonGraphBinaryGatherer(object):
             executable_finder):
         # if the vertex cannot generate a DSG, ignore it
         if not isinstance(associated_vertex, AbstractHasAssociatedBinary):
-            return False
+            return None
 
         # Get name of binary from vertex
         binary_name = associated_vertex.get_binary_file_name()
