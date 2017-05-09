@@ -11,14 +11,15 @@ from spinn_front_end_common import mapping_algorithms
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
 
+from spinn_utilities.helpful_functions\
+    import get_valid_components as utils_get_valid_components
+
 # general imports
 import os
+import logging
+import struct
 import datetime
 import shutil
-import logging
-import re
-import inspect
-import struct
 from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
@@ -32,10 +33,10 @@ def get_valid_components(module, terminator):
     :param terminator:
     :rtype: dict
     """
-    terminator = re.compile(terminator + '$')
-    return dict(map(lambda (name, router): (terminator.sub('', name),
-                                            router),
-                inspect.getmembers(module, inspect.isclass)))
+    logger.warning(
+        "get_valid_components has been deprecated - please use "
+        "spinn_utilities.helpful_functions.get_valid_components instead")
+    return utils_get_valid_components(module, terminator)
 
 
 def read_data(x, y, address, length, data_format, transceiver):
