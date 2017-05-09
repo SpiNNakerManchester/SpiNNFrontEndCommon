@@ -22,8 +22,8 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # a single listener
 
         # Create two vertices
-        v1 = TestVertex(10, "v1", 256)
-        v2 = TestVertex(10, "v2", 256)
+        v1 = _TestVertex(10, "v1", 256)
+        v2 = _TestVertex(10, "v2", 256)
 
         # Create two tags - important thing is port=None
         t1 = IPTag(board_address='127.0.0.1', destination_x=0,
@@ -75,7 +75,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         self.assertEqual(number_of_listeners, 1)
 
 
-class TestVertex(ApplicationVertex):
+class _TestVertex(ApplicationVertex):
     """
     taken skeleton test vertex definition from PACMAN.uinit_test_objects
     """
