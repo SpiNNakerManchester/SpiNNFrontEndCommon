@@ -1,5 +1,5 @@
-# pacman imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+# utilities imports
+from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.utilities.database.database_writer import \
@@ -42,8 +42,7 @@ class FrontEndCommonDatabaseInterface(object):
         if ((self._user_create_database == "None" and self._needs_database) or
                 self._user_create_database == "True"):
 
-            if (application_graph is not None and
-                    application_graph.n_vertices != 0):
+            if application_graph is not None and application_graph.n_vertices:
                 database_progress = ProgressBar(11, "Creating database")
             else:
                 database_progress = ProgressBar(10, "Creating database")
@@ -53,8 +52,7 @@ class FrontEndCommonDatabaseInterface(object):
             database_progress.update()
             self._writer.add_machine_objects(machine)
             database_progress.update()
-            if (application_graph is not None and
-                    application_graph.n_vertices != 0):
+            if application_graph is not None and application_graph.n_vertices:
                 self._writer.add_application_vertices(application_graph)
                 database_progress.update()
             self._writer.add_vertices(
