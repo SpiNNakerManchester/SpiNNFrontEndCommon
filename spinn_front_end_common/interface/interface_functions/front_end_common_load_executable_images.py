@@ -31,8 +31,6 @@ class FrontEndCommonLoadExecutableImages(object):
             executable_targets.total_processors + 1,
             "Loading executables onto the machine")
 
-        transceiver.execute_application(executable_targets, app_id)
-
         for binary in executable_targets.binaries:
             progress.update(self._launch_binary(
                 executable_targets, binary, transceiver, app_id))
