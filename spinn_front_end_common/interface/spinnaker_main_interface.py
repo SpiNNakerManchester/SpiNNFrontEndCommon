@@ -423,6 +423,8 @@ class SpinnakerMainInterface(object):
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
+        self._has_been_shutdown = False
+
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
             a new timestamp folder for each and clearing
@@ -1868,6 +1870,8 @@ class SpinnakerMainInterface(object):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
+        self._has_been_shutdown = True
+
         # if not a virtual machine then shut down stuff on the board
         if not self._use_virtual_board:
 
@@ -1926,6 +1930,10 @@ class SpinnakerMainInterface(object):
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.close()
                 self._machine_allocation_controller = None
+
+    @property
+    def has_been_shutdown(self):
+        return self._has_been_shutdown
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
