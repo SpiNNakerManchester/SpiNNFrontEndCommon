@@ -277,6 +277,8 @@ class SpinnakerMainInterface(object):
 
         #
         "_executable_start_type",
+
+        "_has_been_shutdown",
     ]
 
     def __init__(
