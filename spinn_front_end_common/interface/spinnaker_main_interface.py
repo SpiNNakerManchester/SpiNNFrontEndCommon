@@ -277,6 +277,7 @@ class SpinnakerMainInterface(object):
 
         #
         "_executable_start_type",
+
     ]
 
     def __init__(
@@ -1444,7 +1445,6 @@ class SpinnakerMainInterface(object):
             self._shutdown()
             sys.exit(1)
         except Exception as e:
-
             ex_type, ex_value, ex_traceback = sys.exc_info()
 
             # If an exception occurs during a run, attempt to get
@@ -1541,15 +1541,6 @@ class SpinnakerMainInterface(object):
             # Attempt to force the cores to write provenance and exit
             updater = FrontEndCommonChipProvenanceUpdater()
             updater(self._txrx, self._app_id, non_rte_core_subsets)
-
-            inputs = self._last_run_outputs
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._last_run_outputs["ExecutableTargets"],
-                    self._executable_finder)
 
             # Extract any written provenance data
             extracter = FrontEndCommonPlacementsProvenanceGatherer()
