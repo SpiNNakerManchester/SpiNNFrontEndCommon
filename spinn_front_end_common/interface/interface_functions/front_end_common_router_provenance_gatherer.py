@@ -1,6 +1,4 @@
-
-# pacman imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
@@ -91,7 +89,7 @@ class FrontEndCommonRouterProvenanceGatherer(object):
         :param machine: the spinnMachine object
         :param txrx: the transceiver object
         """
-        progress = ProgressBar(machine.n_chips, "Getting Router Provenance")
+        progress = ProgressBar(machine.n_chips*2, "Getting Router Provenance")
 
         # acquire diagnostic data
         items = list()
@@ -100,44 +98,50 @@ class FrontEndCommonRouterProvenanceGatherer(object):
         for router_table in sorted(
                 router_tables.routing_tables,
                 key=lambda table: (table.x, table.y)):
-            x = router_table.x
-            y = router_table.y
-            if not machine.get_chip_at(x, y).virtual:
-                try:
-                    router_diagnostic = txrx.get_router_diagnostics(x, y)
-                    seen_chips.add((x, y))
-                    reinjector_status = txrx.get_reinjection_status(x, y)
-                    items.extend(self._write_router_diagnostics(
-                        x, y, router_diagnostic, reinjector_status, True,
-                        router_table))
-                    self._add_totals(router_diagnostic, reinjector_status)
-                except Exception as e:
-                    logger.warn(
-                        "Could not read routing diagnostics from {}, {}: {}"
-                        .format(x, y, e))
+            self._write_router_table_diagnostic(
+                txrx, machine, router_table.x, router_table.y, seen_chips,
+                router_table, items)
             progress.update()
 
         for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):
-            if not chip.virtual and (chip.x, chip.y) not in seen_chips:
-                try:
-                    diagnostic = txrx.get_router_diagnostics(chip.x, chip.y)
-
-                    if (diagnostic.n_dropped_multicast_packets != 0 or
-                            diagnostic.n_local_multicast_packets != 0 or
-                            diagnostic.n_external_multicast_packets != 0):
-
-                        reinjector_status = txrx.get_reinjection_status(
-                            chip.x, chip.y)
-                        items.extend(self._write_router_diagnostics(
-                            chip.x, chip.y, diagnostic, reinjector_status,
-                            False, None))
-                        self._add_totals(diagnostic, reinjector_status)
-                        progress.update()
-                except Exception:
-                    # There could be issues with unused chips - don't worry!
-                    pass
+            self._write_router_chip_diagnostic(txrx, chip, seen_chips, items)
+            progress.update()
         progress.end()
         return items
+
+    def _write_router_table_diagnostic(self, txrx, machine, x, y, seen_chips,
+                                       router_table, items):
+        if not machine.get_chip_at(x, y).virtual:
+            try:
+                router_diagnostic = txrx.get_router_diagnostics(x, y)
+                seen_chips.add((x, y))
+                reinjector_status = txrx.get_reinjection_status(x, y)
+                items.extend(self._write_router_diagnostics(
+                    x, y, router_diagnostic, reinjector_status, True,
+                    router_table))
+                self._add_totals(router_diagnostic, reinjector_status)
+            except Exception as e:
+                logger.warn(
+                    "Could not read routing diagnostics from {}, {}: {}"
+                    .format(x, y, e))
+
+    def _write_router_chip_diagnostic(self, txrx, chip, seen_chips, items):
+        if not chip.virtual and (chip.x, chip.y) not in seen_chips:
+            try:
+                diagnostic = txrx.get_router_diagnostics(chip.x, chip.y)
+
+                if (diagnostic.n_dropped_multicast_packets or
+                        diagnostic.n_local_multicast_packets or
+                        diagnostic.n_external_multicast_packets):
+                    reinjector_status = txrx.get_reinjection_status(
+                            chip.x, chip.y)
+                    items.extend(self._write_router_diagnostics(
+                            chip.x, chip.y, diagnostic, reinjector_status,
+                            False, None))
+                    self._add_totals(diagnostic, reinjector_status)
+            except Exception:
+                # There could be issues with unused chips - don't worry!
+                pass
 
     def _add_totals(self, router_diagnostic, reinjector_status):
         self._total_sent_packets += (

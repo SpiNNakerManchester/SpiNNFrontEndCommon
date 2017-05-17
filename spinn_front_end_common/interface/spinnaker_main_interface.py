@@ -3,14 +3,12 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
-from pacman.model.graphs.application.application_edge import \
-    ApplicationEdge
-from pacman.model.placements.placements import Placements
-from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.machine import MachineGraph
+from pacman.model.graphs import AbstractVirtualVertex
+from pacman.model.placements import Placements
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
+from pacman.model.graphs.application import ApplicationGraph, ApplicationEdge
+from pacman.model.graphs.machine import MachineGraph
 
 # common front end imports
 from spinn_front_end_common.abstract_models.\
@@ -1603,13 +1601,9 @@ class SpinnakerMainInterface(object):
             if os.path.exists(file_name):
                 mode = "a"
 
-            # open file and write iobuf to it.
-            writer = open(file_name, mode)
-            writer.write(iobuf.iobuf)
-
-            # close file.
-            writer.flush()
-            writer.close()
+            # write iobuf to file.
+            with open(file_name, mode) as writer:
+                writer.write(iobuf.iobuf)
 
     @staticmethod
     def _print_iobuf(errors, warnings):

@@ -2,6 +2,10 @@ from setuptools import setup
 from collections import defaultdict
 import os
 
+__version__ = None
+exec(open("spinn_front_end_common/_version.py").read())
+assert __version__
+
 # Build a list of all project modules, as well as supplementary files
 main_package = "spinn_front_end_common"
 data_extensions = {".aplx", ".xml"}
@@ -24,18 +28,18 @@ for dirname, dirnames, filenames in os.walk(main_package_dir):
 
 setup(
     name="SpiNNFrontEndCommon",
-    version="3.0.1",
+    version=__version__,
     description="Common Spinnaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     packages=packages,
     package_data=package_data,
-    install_requires=['SpiNNUtilities >= 3.0.0, < 4.0.0',
-                      'SpiNNMachine >= 3.0.0, < 4.0.0',
-                      'SpiNNMan >= 3.0.0, < 4.0.0',
-                      'SpiNNaker_PACMAN >= 3.0.0, < 4.0.0',
-                      'SpiNNaker_DataSpecification >= 3.0.0, < 4.0.0',
-                      'SpiNNStorageHandlers >= 3.0.0, < 4.0.0',
-                      'spalloc >= v0.2.2, < v1.0.0',
+    install_requires=['SpiNNUtilities >= 1!4.0.0a5, < 1!5.0.0',
+                      'SpiNNStorageHandlers >= 1!4.0.0a5, < 1!5.0.0',
+                      'SpiNNMachine >= 1!4.0.0a5, < 1!5.0.0',
+                      'SpiNNMan >= 1!4.0.0a5, < 1!5.0.0',
+                      'SpiNNaker_PACMAN >= 1!4.0.0a5, < 1!5.0.0',
+                      'SpiNNaker_DataSpecification >= 1!4.0.0a5, < 1!5.0.0',
+                      'spalloc >= 0.2.2, < 1.0.0',
                       'requests >= 2.4.1',
                       'numpy', 'six']
 )
