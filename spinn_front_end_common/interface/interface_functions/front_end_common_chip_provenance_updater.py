@@ -67,6 +67,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
             left_over_now = total_processors - processors_completed
             to_update = left_to_do_cores - left_over_now
+            left_to_do_cores = left_over_now
             if to_update != 0:
                 progress.update(to_update)
         progress.end()
