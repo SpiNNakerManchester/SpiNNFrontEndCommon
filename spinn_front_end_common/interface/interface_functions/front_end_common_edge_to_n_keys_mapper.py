@@ -2,8 +2,8 @@
 from pacman.model.routing_info \
     import DictBasedMachinePartitionNKeysMap
 
-# spinnMachine imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+# utilities imports
+from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\
@@ -26,21 +26,27 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
     def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
-
         # Generate an n_keys map for the graph and add constraints
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
-        if (application_graph is not None and graph_mapper is not None and
-                machine_graph is not None):
+        if machine_graph is None:
+            raise exceptions.ConfigurationException(
+                "A machine graph is required for this mapper. "
+                "Please choose and try again")
+        if (application_graph is None) != (graph_mapper is None):
+            raise exceptions.ConfigurationException(
+                "Can only do one graph. semantically doing 2 graphs makes no "
+                "sense. Please choose and try again")
 
+        if application_graph is not None:
             # generate progress bar
-            progress_bar = ProgressBar(
+            progress = ProgressBar(
                 machine_graph.n_vertices,
-                "Getting the number of keys required by each edge using the"
+                "Getting number of keys required by each edge using "
                 "application graph")
 
             # iterate over each partition in the graph
-            for vertex in machine_graph.vertices:
+            for vertex in progress.over(machine_graph.vertices):
                 partitions = machine_graph.\
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
@@ -53,19 +59,15 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                     else:
                         self._check_constraints_equal(
                             constraints, partition.constraints)
-                progress_bar.update()
-            progress_bar.end()
 
-        elif (machine_graph is not None and application_graph is None and
-                graph_mapper is None):
-
+        else:
             # generate progress bar
-            progress_bar = ProgressBar(
+            progress = ProgressBar(
                 machine_graph.n_vertices,
-                "Getting the number of keys required by each edge using the"
+                "Getting number of keys required by each edge using "
                 "machine graph")
 
-            for vertex in machine_graph.vertices:
+            for vertex in progress.over(machine_graph.vertices):
                 partitions = machine_graph.\
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
@@ -78,12 +80,6 @@ class FrontEndCommonEdgeToNKeysMapper(object):
                     else:
                         self._check_constraints_equal(
                             constraints, partition.constraints)
-                progress_bar.update()
-            progress_bar.end()
-        else:
-            raise exceptions.ConfigurationException(
-                "Can only do one graph. semantically doing 2 graphs makes no "
-                "sense. Please choose and try again")
 
         return n_keys_map
 

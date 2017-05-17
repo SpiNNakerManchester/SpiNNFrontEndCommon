@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.utilities.scp.scp_clear_iobuf_request import \
     SCPClearIOBUFRequest
