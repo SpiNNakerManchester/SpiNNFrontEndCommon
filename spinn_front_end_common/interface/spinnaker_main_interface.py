@@ -3,14 +3,12 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
-from pacman.model.graphs.abstract_virtual_vertex import AbstractVirtualVertex
-from pacman.model.graphs.application.application_edge import \
-    ApplicationEdge
-from pacman.model.placements.placements import Placements
-from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.machine import MachineGraph
+from pacman.model.graphs import AbstractVirtualVertex
+from pacman.model.placements import Placements
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
+from pacman.model.graphs.application import ApplicationGraph, ApplicationEdge
+from pacman.model.graphs.machine import MachineGraph
 
 # common front end imports
 from spinn_front_end_common.abstract_models.\
@@ -279,6 +277,7 @@ class SpinnakerMainInterface(object):
 
         #
         "_executable_start_type",
+
     ]
 
     def __init__(
@@ -1450,7 +1449,6 @@ class SpinnakerMainInterface(object):
             self._shutdown()
             sys.exit(1)
         except Exception as e:
-
             ex_type, ex_value, ex_traceback = sys.exc_info()
 
             # If an exception occurs during a run, attempt to get
@@ -1548,15 +1546,6 @@ class SpinnakerMainInterface(object):
             updater = FrontEndCommonChipProvenanceUpdater()
             updater(self._txrx, self._app_id, non_rte_core_subsets)
 
-            inputs = self._last_run_outputs
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._last_run_outputs["ExecutableTargets"],
-                    self._executable_finder)
-
             # Extract any written provenance data
             extracter = FrontEndCommonPlacementsProvenanceGatherer()
             extracter(self._txrx, placements, True, prov_items)
@@ -1607,13 +1596,9 @@ class SpinnakerMainInterface(object):
             if os.path.exists(file_name):
                 mode = "a"
 
-            # open file and write iobuf to it.
-            writer = open(file_name, mode)
-            writer.write(iobuf.iobuf)
-
-            # close file.
-            writer.flush()
-            writer.close()
+            # write iobuf to file.
+            with open(file_name, mode) as writer:
+                writer.write(iobuf.iobuf)
 
     @staticmethod
     def _print_iobuf(errors, warnings):
