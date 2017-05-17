@@ -1,6 +1,6 @@
 from data_specification import data_spec_sender
 
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 
 # spinnman imports
@@ -30,9 +30,8 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         :param transceiver:
         :param app_id:
         """
-        data = self.spinnaker_based_data_specification_execution(
+        return self.spinnaker_based_data_specification_execution(
             write_memory_map_report, dsg_targets, transceiver, app_id)
-        return data
 
     def spinnaker_based_data_specification_execution(
             self, write_memory_map_report, dsg_targets, transceiver, app_id):
@@ -47,14 +46,12 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
         """
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(
-            len(dsg_targets), "Loading data specifications")
+        progress = ProgressBar(dsg_targets, "Loading data specifications")
 
         dse_app_id = transceiver.app_id_tracker.get_new_id()
 
         core_subset = CoreSubsets()
-        for (x, y, p, label) in dsg_targets:
-
+        for (x, y, p, label) in progress.over(dsg_targets):
             core_subset.add_processor(x, y, p)
 
             dse_data_struct_address = transceiver.malloc_sdram(
@@ -90,9 +87,6 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
 
             transceiver.write_memory(
                 x, y, user_0_address, dse_data_struct_address, 4)
-
-            progress_bar.update()
-        progress_bar.end()
 
         # Execute the DSE on all the cores
         logger.info("Loading the Data Specification Executor")

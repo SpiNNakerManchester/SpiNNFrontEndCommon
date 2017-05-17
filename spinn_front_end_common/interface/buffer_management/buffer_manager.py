@@ -1,5 +1,5 @@
-# spinn_machine imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+# spinn_utilites imports
+from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman import constants
@@ -113,7 +113,10 @@ class BufferManager(object):
         "_thread_lock_buffer_in",
 
         # bool flag
-        "_finished"
+        "_finished",
+
+        # listener port
+        "_listener_port"
     ]
 
     def __init__(self, placements, tags, transceiver, write_reload_files,
@@ -157,6 +160,8 @@ class BufferManager(object):
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
+
+        self._listener_port = None
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -237,21 +242,24 @@ class BufferManager(object):
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
-
-            # locate the tag that is associated with the buffer manager
-            # traffic
+            # locate tag associated with the buffer manager traffic
             for tag in tags:
                 if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
-
-                    # If the tag port is not assigned, create a connection and
-                    # assign the port.  Note that this *should* update the port
-                    # number in any tags being shared
+                    # If the tag port is not assigned create a connection\
+                    # and assign the port.  Note that this *should* \
+                    # update the port number in any tags being shared
                     if tag.port is None:
-                        connection = self._create_connection(tag)
-                        tag.port = connection.local_port
+                        # If connection already setup, ensure subsequent
+                        # boards use same listener port in their tag
+                        if self._listener_port is None:
+                            connection = self._create_connection(tag)
+                            tag.port = connection.local_port
+                            self._listener_port = connection.local_port
+                        else:
+                            tag.port = self._listener_port
 
-                    # In case we have tags with different specified ports, also
-                    # allow the tag to be created here
+                    # In case we have tags with different specified ports,\
+                    # also allow the tag to be created here
                     elif (tag.ip_address, tag.port) not in self._seen_tags:
                         self._create_connection(tag)
 
@@ -303,12 +311,12 @@ class BufferManager(object):
             for region in vertex.get_regions():
                 total_data += vertex.get_region_buffer_size(region)
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                self._send_initial_messages(vertex, region, progress_bar)
-        progress_bar.end()
+                self._send_initial_messages(vertex, region, progress)
+        progress.end()
 
     def reset(self):
         """ Resets the buffered regions to start transmitting from the\
@@ -392,7 +400,7 @@ class BufferManager(object):
                     "{}:{}\n".format(next_timestamp, key))
         return message
 
-    def _send_initial_messages(self, vertex, region, progress_bar):
+    def _send_initial_messages(self, vertex, region, progress):
         """ Send the initial set of messages
 
         :param vertex: The vertex to get the keys from
@@ -441,7 +449,7 @@ class BufferManager(object):
 
                 # Update the positions
                 bytes_to_go -= len(data)
-                progress_bar.update(len(data))
+                progress.update(len(data))
 
         if not sent_message:
             raise exceptions.BufferableRegionTooSmall(
@@ -458,7 +466,7 @@ class BufferManager(object):
             #         placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
-            progress_bar.update(len(data))
+            progress.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
 

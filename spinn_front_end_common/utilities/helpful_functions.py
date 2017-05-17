@@ -11,14 +11,15 @@ from spinn_front_end_common import mapping_algorithms
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
 
+from spinn_utilities.helpful_functions\
+    import get_valid_components as utils_get_valid_components
+
 # general imports
 import os
+import logging
+import struct
 import datetime
 import shutil
-import logging
-import re
-import inspect
-import struct
 from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
@@ -32,10 +33,10 @@ def get_valid_components(module, terminator):
     :param terminator:
     :rtype: dict
     """
-    terminator = re.compile(terminator + '$')
-    return dict(map(lambda (name, router): (terminator.sub('', name),
-                                            router),
-                inspect.getmembers(module, inspect.isclass)))
+    logger.warning(
+        "get_valid_components has been deprecated - please use "
+        "spinn_utilities.helpful_functions.get_valid_components instead")
+    return utils_get_valid_components(module, terminator)
 
 
 def read_data(x, y, address, length, data_format, transceiver):
@@ -301,7 +302,7 @@ def convert_string_into_chip_and_core_subset(cores):
     if cores is not None and cores != "None":
         for downed_core in cores.split(":"):
             x, y, processor_id = downed_core.split(",")
-            ignored_cores.add_processor((int(x), int(y), int(processor_id)))
+            ignored_cores.add_processor(int(x), int(y), int(processor_id))
     return ignored_cores
 
 
@@ -362,7 +363,7 @@ def translate_iobuf_extraction_elements(
 
     # some hard coded cores
     if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        _, ignored_cores = convert_string_into_chip_and_core_subset(
+        ignored_cores = convert_string_into_chip_and_core_subset(
             hard_coded_cores)
         return ignored_cores
 
@@ -379,7 +380,7 @@ def translate_iobuf_extraction_elements(
     if hard_coded_cores != "None" and hard_coded_model_binary != "None":
         model_core_subsets = _handle_model_binaries(
             hard_coded_model_binary, executable_targets, executable_finder)
-        _, hard_coded_core_core_subsets = \
+        hard_coded_core_core_subsets = \
             convert_string_into_chip_and_core_subset(hard_coded_cores)
         for core_subset in hard_coded_core_core_subsets:
             model_core_subsets.add_core_subset(core_subset)
