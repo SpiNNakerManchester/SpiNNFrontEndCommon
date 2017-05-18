@@ -19,6 +19,8 @@ from spinn_front_end_common.abstract_models.\
     AbstractVertexWithEdgeToDependentVertices
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities.simulator_interface \
+    import SimulatorInterface
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
@@ -70,7 +72,7 @@ import signal
 logger = logging.getLogger(__name__)
 
 
-class SpinnakerMainInterface(object):
+class SpinnakerMainInterface(SimulatorInterface):
     """ Main interface into the tools logic flow
     """
 
@@ -2062,8 +2064,4 @@ class SpinnakerMainInterface(object):
 
     @property
     def config(self):
-        """ helper method for the  front end impls till we remove config
-
-        :return:
-        """
-        return self._config
+         return self._config
