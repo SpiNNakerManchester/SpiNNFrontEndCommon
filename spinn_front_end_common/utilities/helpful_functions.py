@@ -26,19 +26,6 @@ logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
 
 
-def get_valid_components(module, terminator):
-    """ Get possible components
-
-    :param module:
-    :param terminator:
-    :rtype: dict
-    """
-    logger.warning(
-        "get_valid_components has been deprecated - please use "
-        "spinn_utilities.helpful_functions.get_valid_components instead")
-    return utils_get_valid_components(module, terminator)
-
-
 def read_data(x, y, address, length, data_format, transceiver):
     """ Reads and converts a single data item from memory
 
