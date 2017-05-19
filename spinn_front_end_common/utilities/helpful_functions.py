@@ -11,9 +11,6 @@ from spinn_front_end_common import mapping_algorithms
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
 
-from spinn_utilities.helpful_functions\
-    import get_valid_components as utils_get_valid_components
-
 # general imports
 import os
 import logging
