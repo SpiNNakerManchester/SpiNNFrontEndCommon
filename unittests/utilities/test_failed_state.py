@@ -15,11 +15,22 @@ class SimulatorInterfaceStub(SimulatorInterface):
 
 class TestFailedState(unittest.TestCase):
 
+    def setUp(self):
+        # Not the normal way of doing it but cleans up between tests
+        globals_variables._simulator = None
+        globals_variables._failed_state = None
+
     def test_init(self):
         fs = FailedState()
         self.assertIsNotNone(fs)
 
-    def test_globals_variable(self):
+    def test_unset_failed_state(self):
+        with self.assertRaises(ValueError):
+            sim = globals_variables.get_simulator()
+            self.assertTrue(isinstance(sim, FailedState))
+
+    def test_set_failed_state(self):
+        globals_variables.set_failed_state(FailedState())
         sim = globals_variables.get_simulator()
         self.assertTrue(isinstance(sim, FailedState))
 
@@ -29,18 +40,9 @@ class TestFailedState(unittest.TestCase):
         sim = globals_variables.get_simulator()
         self.assertTrue(isinstance(sim, SimulatorInterfaceStub))
 
-        # Make sure to set it back for other tests
-        fs = FailedState()
-        globals_variables.set_failed_state(fs)
-        sim = globals_variables.get_simulator()
-        self.assertTrue(isinstance(sim, FailedState))
-
     def test_set_sim(self):
+        globals_variables.set_failed_state(FailedState())
         globals_variables.set_simulator("BOO")
         sim = globals_variables.get_simulator()
         self.assertTrue(isinstance(sim, str))
 
-        # Make sure to set it back for other tests
-        globals_variables.unset_simulator()
-        sim = globals_variables.get_simulator()
-        self.assertTrue(isinstance(sim, FailedState))

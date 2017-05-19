@@ -6,6 +6,8 @@ from spinn_front_end_common.interface.spinnaker_main_interface import \
     SpinnakerMainInterface
 from spinn_front_end_common.utilities.utility_objs.executable_finder \
     import ExecutableFinder
+from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.utilities.failed_state import FailedState
 
 
 class Close_Once(object):
@@ -23,6 +25,9 @@ class Close_Once(object):
 
 
 class TestSpinnakerMainInterface(unittest.TestCase):
+
+    def setUp(self):
+        globals_variables.set_failed_state(FailedState())
 
     def default_config(self):
         config = ConfigParser.RawConfigParser()
