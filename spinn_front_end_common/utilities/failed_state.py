@@ -7,5 +7,5 @@ class FailedState(SimulatorInterface):
 
     @property
     def config(self):
-       raise exceptions.ConfigurationException(
+        raise exceptions.ConfigurationException(
             "This call is only valid after SpiNNaker.__init__ has been called")

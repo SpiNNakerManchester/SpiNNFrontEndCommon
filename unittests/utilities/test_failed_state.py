@@ -45,4 +45,3 @@ class TestFailedState(unittest.TestCase):
         globals_variables.set_simulator("BOO")
         sim = globals_variables.get_simulator()
         self.assertTrue(isinstance(sim, str))
-
