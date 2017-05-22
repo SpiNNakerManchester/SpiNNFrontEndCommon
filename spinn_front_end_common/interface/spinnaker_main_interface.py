@@ -280,6 +280,7 @@ class SpinnakerMainInterface(SimulatorInterface):
 
         #
         "_executable_start_type",
+
     ]
 
     def __init__(
@@ -918,7 +919,6 @@ class SpinnakerMainInterface(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["MemoryTransceiver"] = None
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
             else:
@@ -1196,17 +1196,19 @@ class SpinnakerMainInterface(SimulatorInterface):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph", "BufferManager"
+            "MemoryMachineGraph"
         ]
         if self._application_graph.n_vertices > 0:
             outputs.append("MemoryGraphMapper")
 
         # Create a buffer manager if there isn't one already
-        if self._buffer_manager is None:
-            inputs["WriteReloadFilesFlag"] = False
-            algorithms.append("FrontEndCommonBufferManagerCreator")
-        else:
-            inputs["BufferManager"] = self._buffer_manager
+        if not self._use_virtual_board:
+            if self._buffer_manager is None:
+                inputs["WriteReloadFilesFlag"] = False
+                algorithms.append("FrontEndCommonBufferManagerCreator")
+                outputs.append("BufferManager")
+            else:
+                inputs["BufferManager"] = self._buffer_manager
 
         # Get the executable targets
         optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
@@ -1227,8 +1229,10 @@ class SpinnakerMainInterface(SimulatorInterface):
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
-        self._buffer_manager = executor.get_item("BufferManager")
         self._executable_start_type = executor.get_item("ExecutableStartType")
+
+        if not self._use_virtual_board:
+            self._buffer_manager = executor.get_item("BufferManager")
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1332,12 +1336,14 @@ class SpinnakerMainInterface(SimulatorInterface):
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
 
-        inputs["CoresToExtractIOBufFrom"] = \
-            helpful_functions.translate_iobuf_extraction_elements(
-                self._config.get("Reports", "extract_iobuf_from_cores"),
-                self._config.get("Reports", "extract_iobuf_from_binary_types"),
-                self._load_outputs["ExecutableTargets"],
-                self._executable_finder)
+        if not self._use_virtual_board:
+            inputs["CoresToExtractIOBufFrom"] = \
+                helpful_functions.translate_iobuf_extraction_elements(
+                    self._config.get("Reports", "extract_iobuf_from_cores"),
+                    self._config.get(
+                        "Reports", "extract_iobuf_from_binary_types"),
+                    self._load_outputs["ExecutableTargets"],
+                    self._executable_finder)
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -1378,8 +1384,7 @@ class SpinnakerMainInterface(SimulatorInterface):
             logger.warn("Reload script is not supported in this version")
 
         outputs = [
-            "NoSyncChanges",
-            "BufferManager"
+            "NoSyncChanges"
         ]
 
         if not self._use_virtual_board:
@@ -1449,7 +1454,6 @@ class SpinnakerMainInterface(SimulatorInterface):
             self._shutdown()
             sys.exit(1)
         except Exception as e:
-
             ex_type, ex_value, ex_traceback = sys.exc_info()
 
             # If an exception occurs during a run, attempt to get
@@ -1546,15 +1550,6 @@ class SpinnakerMainInterface(SimulatorInterface):
             # Attempt to force the cores to write provenance and exit
             updater = FrontEndCommonChipProvenanceUpdater()
             updater(self._txrx, self._app_id, non_rte_core_subsets)
-
-            inputs = self._last_run_outputs
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._last_run_outputs["ExecutableTargets"],
-                    self._executable_finder)
 
             # Extract any written provenance data
             extracter = FrontEndCommonPlacementsProvenanceGatherer()
