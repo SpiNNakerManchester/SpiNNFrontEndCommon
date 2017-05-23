@@ -11,9 +11,6 @@ from spinn_front_end_common import mapping_algorithms
 # SpiNMachine imports
 from spinn_machine.core_subsets import CoreSubsets
 
-from spinn_utilities.helpful_functions\
-    import get_valid_components as utils_get_valid_components
-
 # general imports
 import os
 import logging
@@ -24,19 +21,6 @@ from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
-
-
-def get_valid_components(module, terminator):
-    """ Get possible components
-
-    :param module:
-    :param terminator:
-    :rtype: dict
-    """
-    logger.warning(
-        "get_valid_components has been deprecated - please use "
-        "spinn_utilities.helpful_functions.get_valid_components instead")
-    return utils_get_valid_components(module, terminator)
 
 
 def read_data(x, y, address, length, data_format, transceiver):
