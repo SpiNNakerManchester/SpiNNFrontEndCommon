@@ -1185,8 +1185,13 @@ class SpinnakerMainInterface(object):
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
 
-        algorithms.extend(self._config.get(
-            "Mapping", "machine_graph_to_machine_algorithms").split(","))
+        if self._use_virtual_board:
+            algorithms.extend(self._config.get(
+                "Mapping", "machine_graph_to_virtual_machine_algorithms").
+                split(","))
+        else:
+            algorithms.extend(self._config.get(
+                "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
