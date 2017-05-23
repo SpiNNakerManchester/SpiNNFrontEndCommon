@@ -3,10 +3,10 @@ import math
 
 
 class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
-    """ algorithm that builds an agenda for transmissions. It uses a TDMA (
-    Time division multiple access) system and graph colouring to deduce the
-    agenda set up. Ensures parallel transmissions so that the destination
-    should never be overloaded
+    """ algorithm that builds an agenda for transmissions. It uses a TDMA \
+        (Time division multiple access) system and graph colouring to deduce\
+        the agenda set up. Ensures parallel transmissions so that the\
+        destination should never be overloaded
     """
 
     CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK = 40
@@ -29,7 +29,7 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
             time_scale_factor, n_packets_per_time_window, max_in_edges,
             safety_factor, other_cpu_demands_in_cpu_cycles)
 
-        # do graph colouring to ensure tdma is meet
+        # do graph colouring to ensure TDMA is met
         time_offset = self._handle_colouring(
             max_in_edges, machine_graph, time_offset)
 
@@ -46,13 +46,14 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         """ builds the TDMA system
 
         :param machine_graph: the machine graph of the application
-        :param cpu_cycles_needed_per_window: how long the receive function
-        takes
+        :param cpu_cycles_needed_per_window:\
+            how long the receive function takes
         :param time_offset: the colouring offsets
-        :param n_packets_per_time_window: the packets expected to be sent
-        per window
-        :return: the agenda for each vertex on its time window and its
-        offset between spike transmissions
+        :param n_packets_per_time_window:\
+            the packets expected to be sent per window
+        :return:\
+            the agenda for each vertex on its time window and its offset\
+            between spike transmissions
         """
 
         agenda = dict()
@@ -72,8 +73,8 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         """ deduces the max incoming edges for any vertex
 
         :param machine_graph: the machine graph of the application
-        :return: the max number of incoming edges to any vertex in the
-        application
+        :return:\
+            the max number of incoming edges to any vertex in the application
         """
         max_in_edges = 0
         for vertex in machine_graph.vertices:
@@ -87,10 +88,10 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         """ operates the graph colouring greedy code.
 
         :param max_in_edges: the number of colours to colour the graph
-        :param machine_graph: the machine graph representation of the
-        application
+        :param machine_graph:\
+            the machine graph representation of the application
         :param time_offset: the dict holding vertex to time offset mapping
-        :return:  the dict holding vertex to time offset mapping
+        :return: the dict holding vertex to time offset mapping
         """
         colours = list()
         for colour in range(0, max_in_edges + 1):  # plus 1 to include myself
@@ -108,8 +109,8 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         """ cycles though available colours
 
         :param vertex: the vertex in question
-        :param machine_graph: the machine graph representation of the
-        application
+        :param machine_graph:\
+            the machine graph representation of the application
         :param colours: the available colours for the graph colouring
         :param colour_mapping: the mapping between vertex and colour
         :return: the colour of this vertex
@@ -126,10 +127,10 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
 
         :param colour: the colour to verify against
         :param vertex: the vertex in question
-        :param machine_graph: the machine graph representation of the
-        application
+        :param machine_graph:\
+            the machine graph representation of the application
         :param colour_mapping: the mapping between vertex and colour
-        :return: bool saying yep or no
+        :return: bool saying yes or no
         """
         edges = machine_graph.get_edges_ending_at_vertex(vertex)
         for edge in edges:
@@ -143,24 +144,25 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
             self, number_of_cpu_cycles_per_receive, machine_time_step,
             time_scale_factor, n_packets_per_time_window, max_in_edges,
             safety_factor, other_cpu_demands_in_cpu_cycles):
-        """ calculates the cpu cycles per window, and therefore verifies if
-        there is enough time to do so with a end user safety margin
+        """ calculates the cpu cycles per window, and therefore verifies if\
+            there is enough time to do so with a end user safety margin
 
-        :param number_of_cpu_cycles_per_receive: how long the packet reception
-        callback takes in cpu cycles
+        :param number_of_cpu_cycles_per_receive:\
+            how long the packet reception callback takes in cpu cycles
         :param machine_time_step: the timer tick in micro seconds
-        :param time_scale_factor: the multiplicative factor on the machine
-        time step.
-        :param n_packets_per_time_window: how many packets are to be sent
-        per time window
-        :param max_in_edges: the max number of edges going into any vertex
-        in the machine graph
-        :param safety_factor: the end user safely factor. a fudge factor
-        :param other_cpu_demands_in_cpu_cycles: extra costs (say timer tick
-        callback etc)
+        :param time_scale_factor:\
+            the multiplicative factor on the machine time step.
+        :param n_packets_per_time_window:\
+            how many packets are to be sent per time window
+        :param max_in_edges:\
+            the max number of edges going into any vertex in the machine graph
+        :param safety_factor: the end user safely factor
+        :param other_cpu_demands_in_cpu_cycles:\
+            extra costs (e.g. timer tick callback etc.)
         :return: cpu cycles available per window.
-        :raises ConfigurationException: if the overall time is below what is
-        possible to receive packets with
+        :raises ConfigurationException:\
+            if the overall time is below what is possible to receive packets\
+            with
         """
 
         # figure out if its feasible for window to work
@@ -169,9 +171,10 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
             self.CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES
 
         cpu_cycles_needed_per_window = \
-            math.ceil((number_of_cpu_cycles_per_receive +
-                       self.CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK) * (
-                          n_packets_per_time_window + safety_factor))
+            math.ceil(
+                (number_of_cpu_cycles_per_receive +
+                 self.CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK) *
+                (n_packets_per_time_window + safety_factor))
 
         time_needed_per_epoch = \
             (cpu_cycles_needed_per_window * max_in_edges) + \
