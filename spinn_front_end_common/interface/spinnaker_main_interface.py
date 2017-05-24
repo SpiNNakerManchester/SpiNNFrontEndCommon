@@ -32,7 +32,6 @@ from spinn_front_end_common.abstract_models.abstract_changable_after_run \
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.utility_models.command_sender import CommandSender
-
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_provenance_xml_writer \
     import FrontEndCommonProvenanceXMLWriter
@@ -1492,6 +1491,7 @@ class SpinnakerMainInterface(SimulatorInterface):
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
         """
+        writer = None
         if self._provenance_format == "xml":
             writer = FrontEndCommonProvenanceXMLWriter()
         elif self._provenance_format == "json":
@@ -2067,4 +2067,8 @@ class SpinnakerMainInterface(SimulatorInterface):
 
     @property
     def config(self):
+        """ helper method for the  front end impls till we remove config
+
+        :return:
+        """
         return self._config
