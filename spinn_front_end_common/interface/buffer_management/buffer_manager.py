@@ -680,6 +680,9 @@ class BufferManager(object):
 
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
+                if length < 0:
+                    raise exceptions.ConfigurationException(
+                        "The amount of data to read is negative, WTF")
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(

@@ -16,6 +16,9 @@ class ChannelBufferState(object):
         # address where data was last written (32 bits)
         "_current_write",
 
+        # address where the dma write got up to (32 bits)
+        "_current_dma_write",
+
         # address where data was last read (32 bits)
         "_current_read",
 
@@ -31,13 +34,19 @@ class ChannelBufferState(object):
         # Last operation performed on the buffer - read or write (8 bits)
         "_last_buffer_operation",
 
-        #
+        # bool check for if its extracted data from machine
         "_update_completed",
     ]
 
+    # 4 for _start_address, 4 for _current_write, 4 for current_dma_write,
+    # 4 for _current_read, 4 for _end_address, 1 for _region_id,
+    # 1 for _missing_info, 1 for _last_buffer_operation,
+    ChannelBufferStateSize = 24
+
     def __init__(
-            self, start_address, current_write, current_read, end_address,
-            region_id, missing_info, last_buffer_operation):
+            self, start_address, current_write, current_dma_write,
+            current_read, end_address, region_id, missing_info,
+            last_buffer_operation):
         """
 
         :param start_address: start buffering area memory address (32 bits)
@@ -53,6 +62,7 @@ class ChannelBufferState(object):
         """
         self._start_address = start_address
         self._current_write = current_write
+        self._current_dma_write = current_dma_write
         self._current_read = current_read
         self._end_address = end_address
         self._region_id = region_id
@@ -103,9 +113,9 @@ class ChannelBufferState(object):
 
     @staticmethod
     def create_from_bytearray(data):
-        (start_address, current_write, current_read, end_address,
-         region_id, missing_info, last_buffer_operation) = struct.unpack_from(
-            "<IIIIBBBx", data)
+        (start_address, current_write, current_dma_write, current_read,
+         end_address, region_id, missing_info, last_buffer_operation) = \
+            struct.unpack_from("<IIIIIBBBx", data)
         if last_buffer_operation == 0:
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_READ.value
@@ -113,10 +123,10 @@ class ChannelBufferState(object):
             last_buffer_operation = \
                 constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value
         buffer_state = ChannelBufferState(
-            start_address, current_write, current_read, end_address,
-            region_id, missing_info, last_buffer_operation)
+            start_address, current_write, current_dma_write, current_read,
+            end_address, region_id, missing_info, last_buffer_operation)
         return buffer_state
 
     @staticmethod
     def size_of_channel_state():
-        return 20
+        return ChannelBufferState.ChannelBufferStateSize
