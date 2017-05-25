@@ -6,7 +6,7 @@ from spinn_front_end_common.utilities.simulator_interface \
     import SimulatorInterface
 
 
-class SimulatorInterfaceStub(SimulatorInterface):
+class FakeFailedState(object):
 
     @property
     def config(self):
@@ -35,10 +35,10 @@ class TestFailedState(unittest.TestCase):
         self.assertTrue(isinstance(sim, FailedState))
 
     def test_set_failed_State(self):
-        fs_new = SimulatorInterfaceStub()
+        fs_new = FakeFailedState()
         globals_variables.set_failed_state(fs_new)
         sim = globals_variables.get_simulator()
-        self.assertTrue(isinstance(sim, SimulatorInterfaceStub))
+        self.assertTrue(isinstance(sim, FakeFailedState))
 
     def test_set_sim(self):
         globals_variables.set_failed_state(FailedState())

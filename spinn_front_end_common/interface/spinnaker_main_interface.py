@@ -2031,7 +2031,7 @@ class SpinnakerMainInterface(SimulatorInterface):
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
-    def _add_socket_address(self, socket_address):
+    def add_socket_address(self, socket_address):
         """
 
         :param socket_address:
