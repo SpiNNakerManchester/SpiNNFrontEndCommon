@@ -278,6 +278,10 @@ class SpinnakerMainInterface(object):
         #
         "_executable_start_type",
 
+        # mapping between parameters and the vertices which need to talk to
+        # them
+        "_live_packet_recorders"
+
     ]
 
     def __init__(
@@ -305,6 +309,9 @@ class SpinnakerMainInterface(object):
 
         # command sender vertex
         self._command_sender = None
+
+        # store for lpg demands
+        self._live_packet_recorders = dict()
 
         # update graph label if needed
         if graph_label is None:
@@ -423,6 +430,21 @@ class SpinnakerMainInterface(object):
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
+
+    def add_live_packet_gatherer_parameters(
+            self, live_packet_gatherer_params, vertex_to_record_from):
+        """ adds params for a new LPG if needed, or adds to the tracker for 
+        same params.
+        
+        :param live_packet_gatherer_params: params to look for a LPG 
+        :param vertex_to_record_from: the vertex that needs to send to a 
+        given LPG
+        :rtype: None
+        """
+        if live_packet_gatherer_params not in simulator.live_packet_recorders:
+            self._live_spike_recorders[live_packet_gatherer_params] = list()
+        self._live_spike_recorders[live_packet_gatherer_params].append(
+            vertex_to_record_from)
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
@@ -973,13 +995,16 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonVirtualMachineGenerator")
                 algorithms.append("MallocBasedChipIDAllocator")
 
+                # add the live packet gathering algorithms if needed
+                self._add_live_packet_gatherers_handling_algorithms(
+                    algorithms, inputs)
+
                 # If we are using an allocation server, and we need a virtual
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
                 # the graph
                 if self._application_graph.n_vertices != 0:
-                    inputs["MemoryApplicationGraph"] = \
-                        self._application_graph
+                    inputs["MemoryApplicationGraph"] = self._application_graph
                     algorithms.extend(self._config.get(
                         "Mapping",
                         "application_to_machine_graph_algorithms").split(","))
@@ -1193,11 +1218,15 @@ class SpinnakerMainInterface(object):
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
+        self._add_live_packet_gatherers_handling_algorithms(algorithms, inputs)
+
+        # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
             "MemoryMachineGraph"
         ]
+
         if self._application_graph.n_vertices > 0:
             outputs.append("MemoryGraphMapper")
 
@@ -1212,6 +1241,7 @@ class SpinnakerMainInterface(object):
 
         # Get the executable targets
         optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
+
         outputs.append("ExecutableTargets")
         outputs.append("ExecutableStartType")
 
@@ -1233,6 +1263,17 @@ class SpinnakerMainInterface(object):
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
+
+    def _add_live_packet_gatherers_handling_algorithms(
+            self, algorithms, inputs):
+        # add algorithms for handling LPG placement and edge insertion
+        if len(self._live_packet_recorders) != 0:
+            algorithms.insert(
+                0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
+            algorithms.insert(
+                1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorders
 
     def _do_data_generation(self, n_machine_time_steps):
 
