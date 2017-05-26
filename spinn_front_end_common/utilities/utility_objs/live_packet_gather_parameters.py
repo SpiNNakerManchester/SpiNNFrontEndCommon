@@ -9,7 +9,7 @@ class LivePacketGatherParameters(object):
             self, port, hostname, tag, board_address, strip_sdp, use_prefix,
             key_prefix, prefix_type, message_type, right_shift,
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
-            payload_right_shift, number_of_packets_sent_per_time_step):
+            payload_right_shift, number_of_packets_sent_per_time_step, label):
 
         self._port = port
         self._hostname = hostname
@@ -27,10 +27,15 @@ class LivePacketGatherParameters(object):
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
+        self._label = label
 
     @property
     def port(self):
         return self._port
+
+    @property
+    def label(self):
+        return self._label
 
     @property
     def hostname(self):
@@ -104,7 +109,8 @@ class LivePacketGatherParameters(object):
                 self._payload_prefix == other.payload_prefix and
                 self._payload_right_shift == other.payload_right_shift and
                 self._number_of_packets_sent_per_time_step ==
-                other.number_of_packets_sent_per_time_step):
+                other.number_of_packets_sent_per_time_step and
+                self._label == other.label):
             return True
         else:
             return False
