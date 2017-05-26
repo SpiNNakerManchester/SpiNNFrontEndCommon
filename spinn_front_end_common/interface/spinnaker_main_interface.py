@@ -995,10 +995,6 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonVirtualMachineGenerator")
                 algorithms.append("MallocBasedChipIDAllocator")
 
-                # add the live packet gathering algorithms if needed
-                self._add_live_packet_gatherers_handling_algorithms(
-                    algorithms, inputs)
-
                 # If we are using an allocation server, and we need a virtual
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
@@ -1024,6 +1020,14 @@ class SpinnakerMainInterface(object):
                 algorithms.append("FrontEndCommonSpallocAllocator")
             elif self._remote_spinnaker_url is not None:
                 algorithms.append("FrontEndCommonHBPAllocator")
+
+            # add algorithms for handling LPG placement and edge insertion
+            if len(self._live_packet_recorders) != 0:
+                algorithms.insert(
+                    0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
+                inputs['LivePacketRecorderParameters'] = \
+                    self._live_packet_recorders
+
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
 
@@ -1218,7 +1222,17 @@ class SpinnakerMainInterface(object):
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
-        self._add_live_packet_gatherers_handling_algorithms(algorithms, inputs)
+        if (self._spalloc_server is not None or
+                self._remote_spinnaker_url is not None):
+            algorithms.insert(
+                0, "FrontEndCommonInsertEdgesToLivePacketGatherers")
+        else:
+            algorithms.insert(
+                0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
+            algorithms.insert(
+                1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorders
 
         # handle outputs
         outputs = [
@@ -1263,17 +1277,6 @@ class SpinnakerMainInterface(object):
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
-
-    def _add_live_packet_gatherers_handling_algorithms(
-            self, algorithms, inputs):
-        # add algorithms for handling LPG placement and edge insertion
-        if len(self._live_packet_recorders) != 0:
-            algorithms.insert(
-                0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
-            algorithms.insert(
-                1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
-            inputs['LivePacketRecorderParameters'] = \
-                self._live_packet_recorders
 
     def _do_data_generation(self, n_machine_time_steps):
 
