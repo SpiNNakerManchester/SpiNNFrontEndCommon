@@ -441,9 +441,9 @@ class SpinnakerMainInterface(object):
         given LPG
         :rtype: None
         """
-        if live_packet_gatherer_params not in simulator.live_packet_recorders:
-            self._live_spike_recorders[live_packet_gatherer_params] = list()
-        self._live_spike_recorders[live_packet_gatherer_params].append(
+        if live_packet_gatherer_params not in self._live_packet_recorders:
+            self._live_packet_recorders[live_packet_gatherer_params] = list()
+        self._live_packet_recorders[live_packet_gatherer_params].append(
             vertex_to_record_from)
 
     def _set_up_output_folders(self):
