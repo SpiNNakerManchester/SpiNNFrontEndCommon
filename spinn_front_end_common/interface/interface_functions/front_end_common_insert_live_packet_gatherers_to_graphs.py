@@ -1,8 +1,13 @@
+# spinn front end common imports
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.utility_models.live_packet_gather \
     import LivePacketGather
 from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex\
     import LivePacketGatherMachineVertex
+
+# pacman imports
+from pacman.model.constraints.placer_constraints\
+    .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
 
 
 class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
@@ -103,7 +108,7 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
             prefix_type=params.prefix_type,
             message_type=params.message_type,
             right_shift=params.right_shift,
-            payload_as_time_stamps=params.payload_as_time_steps,
+            payload_as_time_stamps=params.payload_as_time_stamps,
             use_payload_prefix= params.use_payload_prefix,
             payload_prefix=params.payload_prefix,
             payload_right_shift=params.payload_right_shift,
