@@ -4,6 +4,7 @@ from spinn_front_end_common.utilities.simulator_interface \
 
 FAILED_STATE_MSG = "This call is only valid between setup and end/stop"
 
+
 class FailedState(SimulatorInterface):
 
     @staticmethod
@@ -16,10 +17,6 @@ class FailedState(SimulatorInterface):
 
     @property
     def config(self):
-        raise exceptions.ConfigurationException(FAILED_STATE_MSG)
-
-    @property
-    def graph_mapper(self):
         raise exceptions.ConfigurationException(FAILED_STATE_MSG)
 
     @property
@@ -67,5 +64,4 @@ class FailedState(SimulatorInterface):
     @property
     def use_virtual_board(self):
         raise exceptions.ConfigurationException(FAILED_STATE_MSG)
-
 

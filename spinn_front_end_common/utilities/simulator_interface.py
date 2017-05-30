@@ -27,10 +27,6 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
-    def graph_mapper(self):
-        pass
-
-    @abstractproperty
     def has_ran(self):
         pass
 
@@ -74,5 +70,3 @@ class SimulatorInterface(object):
     @abstractproperty
     def use_virtual_board(self):
         pass
-
-
