@@ -64,4 +64,3 @@ class FailedState(SimulatorInterface):
     @property
     def use_virtual_board(self):
         raise exceptions.ConfigurationException(FAILED_STATE_MSG)
-

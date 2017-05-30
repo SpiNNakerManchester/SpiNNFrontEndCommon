@@ -50,11 +50,11 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         return config
 
     def test_min_init(self):
-        SpinnakerMainInterface(
+        AbstractSpinnakerBase(
             self.default_config(), ExecutableFinder())
 
     def test_stop_init(self):
-        interface = SpinnakerMainInterface(
+        interface = AbstractSpinnakerBase(
             self.default_config(), ExecutableFinder())
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
@@ -68,7 +68,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
     def test_temp_defaultApplicationDataFilePath(self):
         config = self.default_config()
         config.set("Reports", "defaultApplicationDataFilePath", value="TEMP")
-        SpinnakerMainInterface(
+        AbstractSpinnakerBase(
             config, ExecutableFinder())
 
 
