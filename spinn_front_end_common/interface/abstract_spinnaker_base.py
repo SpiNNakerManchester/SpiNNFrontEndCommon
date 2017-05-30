@@ -1226,17 +1226,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
-        if (self._spalloc_server is not None or
-                self._remote_spinnaker_url is not None):
-            algorithms.insert(
-                0, "FrontEndCommonInsertEdgesToLivePacketGatherers")
-        else:
-            algorithms.insert(
-                0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
-            algorithms.insert(
-                1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
-            inputs['LivePacketRecorderParameters'] = \
-                self._live_packet_recorders
+        if len(self._live_packet_recorders) != 0:
+            if (self._spalloc_server is not None or
+                    self._remote_spinnaker_url is not None):
+                algorithms.insert(
+                    0, "FrontEndCommonInsertEdgesToLivePacketGatherers")
+            else:
+                algorithms.insert(
+                    0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
+                algorithms.insert(
+                    1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
+                inputs['LivePacketRecorderParameters'] = \
+                    self._live_packet_recorders
 
         # handle outputs
         outputs = [
