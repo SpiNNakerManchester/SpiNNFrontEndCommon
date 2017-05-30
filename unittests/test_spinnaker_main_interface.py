@@ -2,8 +2,8 @@ import unittest
 
 import ConfigParser
 
-from spinn_front_end_common.interface.spinnaker_main_interface import \
-    SpinnakerMainInterface
+from spinn_front_end_common.interface.abstract_spinnaker_base \
+    import AbstractSpinnakerBase
 from spinn_front_end_common.utilities.utility_objs.executable_finder \
     import ExecutableFinder
 from spinn_front_end_common.utilities import globals_variables
