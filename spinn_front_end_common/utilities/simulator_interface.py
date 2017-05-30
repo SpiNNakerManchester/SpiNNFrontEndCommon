@@ -35,11 +35,11 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
-    def has_ran(self):
+    def increment_none_labelled_vertex_count(self):
         pass
 
     @abstractproperty
-    def increment_none_labelled_vertex_count(self):
+    def machine(self):
         pass
 
     @abstractproperty
@@ -47,7 +47,20 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
+    def no_machine_time_steps(self):
+        pass
+
+    # declared in base and used in common (and GFE)
+    @abstractproperty
+    def none_labelled_vertex_count(self):
+        pass
+
+    @abstractproperty
     def placements(self):
+        pass
+
+    @abstractproperty
+    def run(self, run_time):
         pass
 
     @abstractmethod
@@ -56,6 +69,10 @@ class SimulatorInterface(object):
 
     @abstractproperty
     def transceiver(self):
+        pass
+
+    @abstractproperty
+    def use_virtual_board(self):
         pass
 
 
