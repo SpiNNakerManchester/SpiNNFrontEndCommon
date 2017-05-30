@@ -291,7 +291,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # global params
         self._config = config
-        print "Config set to ", type(self._config)
 
         self._executable_finder = executable_finder
 
@@ -1874,7 +1873,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
-        print type(self)
         # if not a virtual machine then shut down stuff on the board
         if not self._use_virtual_board:
 
@@ -2073,5 +2071,4 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         :return:
         """
-        print "config property", type(self)
         return self._config

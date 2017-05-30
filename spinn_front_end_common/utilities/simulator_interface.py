@@ -46,7 +46,6 @@ class SimulatorInterface(object):
     def no_machine_time_steps(self):
         pass
 
-    # declared in base and used in common (and GFE)
     @abstractproperty
     def none_labelled_vertex_count(self):
         pass
