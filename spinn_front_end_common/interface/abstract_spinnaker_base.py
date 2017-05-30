@@ -19,6 +19,9 @@ from spinn_front_end_common.abstract_models.\
     AbstractVertexWithEdgeToDependentVertices
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.utilities.simulator_interface \
+    import SimulatorInterface
 from spinn_front_end_common.interface.buffer_management\
     .buffer_models.abstract_receive_buffers_to_host \
     import AbstractReceiveBuffersToHost
@@ -29,7 +32,6 @@ from spinn_front_end_common.abstract_models.abstract_changable_after_run \
 from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.utility_models.command_sender import CommandSender
-
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_provenance_xml_writer \
     import FrontEndCommonProvenanceXMLWriter
@@ -70,7 +72,7 @@ import signal
 logger = logging.getLogger(__name__)
 
 
-class SpinnakerMainInterface(object):
+class AbstractSpinnakerBase(SimulatorInterface):
     """ Main interface into the tools logic flow
     """
 
@@ -430,6 +432,8 @@ class SpinnakerMainInterface(object):
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
+
+        globals_variables.set_simulator(self)
 
     def add_live_packet_gatherer_parameters(
             self, live_packet_gatherer_params, vertex_to_record_from):
@@ -1531,6 +1535,7 @@ class SpinnakerMainInterface(object):
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
         """
+        writer = None
         if self._provenance_format == "xml":
             writer = FrontEndCommonProvenanceXMLWriter()
         elif self._provenance_format == "json":
@@ -2070,7 +2075,7 @@ class SpinnakerMainInterface(object):
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
-    def _add_socket_address(self, socket_address):
+    def add_socket_address(self, socket_address):
         """
 
         :param socket_address:
