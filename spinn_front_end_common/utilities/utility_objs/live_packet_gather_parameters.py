@@ -5,11 +5,20 @@ class LivePacketGatherParameters(object):
     
     """
 
+    __slots__ = [
+        '_port', '_hostname', "_tag", "_board_address", "_strip_sdp",
+        "_use_prefix", "_key_prefix", "_prefix_type", "_message_type",
+        "_right_shift", "_payload_as_time_stamps", "_use_payload_prefix",
+        "_payload_prefix",  "_payload_right_shift",
+        "_number_of_packets_sent_per_time_step", "_label", "_partition_id"
+    ]
+
     def __init__(
             self, port, hostname, tag, board_address, strip_sdp, use_prefix,
             key_prefix, prefix_type, message_type, right_shift,
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
-            payload_right_shift, number_of_packets_sent_per_time_step, label):
+            payload_right_shift, number_of_packets_sent_per_time_step, label,
+            partition_id):
 
         self._port = port
         self._hostname = hostname
@@ -28,6 +37,7 @@ class LivePacketGatherParameters(object):
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
         self._label = label
+        self._partition_id = partition_id
 
     @property
     def port(self):
@@ -93,6 +103,10 @@ class LivePacketGatherParameters(object):
     def number_of_packets_sent_per_time_step(self):
         return self._number_of_packets_sent_per_time_step
 
+    @property
+    def partition_id(self):
+        return self._partition_id
+
     def __eq__(self, other):
         if (self._port == other.port and self._hostname == other.hostname and
                 self._tag == other.tag and
@@ -110,7 +124,8 @@ class LivePacketGatherParameters(object):
                 self._payload_right_shift == other.payload_right_shift and
                 self._number_of_packets_sent_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
-                self._label == other.label):
+                self._label == other.label and
+                self._partition_id == other.partition_id):
             return True
         else:
             return False
