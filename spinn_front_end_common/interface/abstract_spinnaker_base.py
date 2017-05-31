@@ -7,8 +7,10 @@ from pacman.model.graphs import AbstractVirtualVertex
 from pacman.model.placements import Placements
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
-from pacman.model.graphs.application import ApplicationGraph, ApplicationEdge
-from pacman.model.graphs.machine import MachineGraph
+from pacman.model.graphs.application import ApplicationGraph
+from pacman.model.graphs.application import ApplicationEdge
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.machine import MachineGraph, MachineVertex
 
 # common front end imports
 from pacman.model.resources.pre_allocated_resource_container import \
@@ -284,7 +286,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # mapping between parameters and the vertices which need to talk to
         # them
-        "_live_packet_recorders"
+        "_live_packet_recorders",
+
+        # place holder for checking the vertices being added to the recorders
+        # tracker are all of the same vertex type.
+        "_live_packet_recorders_associated_vertex_type"
 
     ]
 
@@ -316,6 +322,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # store for lpg demands
         self._live_packet_recorders = dict()
+        self._live_packet_recorders_associated_vertex_type = None
 
         # update graph label if needed
         if graph_label is None:
@@ -451,6 +458,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._live_packet_recorders[live_packet_gatherer_params] = list()
         self._live_packet_recorders[live_packet_gatherer_params].append(
             vertex_to_record_from)
+
+        # verify that the vertices being added are of one vertex type.
+        if self._live_packet_recorders_associated_vertex_type is None:
+            if isinstance(vertex_to_record_from, ApplicationVertex):
+                self._live_packet_recorders_associated_vertex_type = \
+                    ApplicationVertex
+            else:
+                self._live_packet_recorders_associated_vertex_type = \
+                    MachineVertex
+        else:
+            if not isinstance(
+                    vertex_to_record_from,
+                    self._live_packet_recorders_associated_vertex_type):
+                raise common_exceptions.ConfigurationException(
+                    "Only one type of graph can be used during live output. "
+                    "Please fix and try again")
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
@@ -1241,6 +1264,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorders
+            inputs['LivePacketRecorderRecordedVertexType'] = \
+                self._live_packet_recorders_associated_vertex_type
 
         # handle outputs
         outputs = [
