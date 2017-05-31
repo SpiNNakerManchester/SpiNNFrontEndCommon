@@ -63,8 +63,9 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
                 board_specific_lpg_params, chip)
 
             # update mapping
-            lpg_params_to_vertex_mapping[board_specific_lpg_params] = \
-                machine_live_packet_gatherer_vertex
+            lpg_params_to_vertex_mapping[board_specific_lpg_params] = list()
+            lpg_params_to_vertex_mapping[board_specific_lpg_params].append(
+                machine_live_packet_gatherer_vertex)
 
             # remove from working copy
             del working_live_packet_gatherers_parameters[
@@ -87,8 +88,17 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
                     self._create_and_add_vertex(
                         machine_graph, LivePacketGatherMachineVertex,
                         live_packet_gatherer_param, chip)
-                lpg_params_to_vertex_mapping[live_packet_gatherer_param] = \
-                    machine_live_packet_gatherer_vertex
+
+                # create list for this lpg param set
+                if live_packet_gatherer_param not in \
+                        lpg_params_to_vertex_mapping:
+                    lpg_params_to_vertex_mapping[
+                        live_packet_gatherer_param] = list()
+
+                # add to the list for this param set
+                lpg_params_to_vertex_mapping[
+                    live_packet_gatherer_param].append(
+                        machine_live_packet_gatherer_vertex)
 
                 # update app graph and graph mapper if required
                 self._update_app_graph_if_needed(
