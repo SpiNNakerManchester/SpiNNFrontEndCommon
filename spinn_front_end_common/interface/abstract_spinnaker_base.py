@@ -11,6 +11,8 @@ from pacman.model.graphs.application import ApplicationGraph, ApplicationEdge
 from pacman.model.graphs.machine import MachineGraph
 
 # common front end imports
+from pacman.model.resources.pre_allocated_resource_container import \
+    PreAllocatedResourceContainer
 from spinn_front_end_common.abstract_models.\
     abstract_send_me_multicast_commands_vertex import \
     AbstractSendMeMulticastCommandsVertex
@@ -837,7 +839,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "is not currently supported")
         return total_run_timesteps
 
-    def _run_machine_algorithms(
+    def _run_algorithms(
             self, inputs, algorithms, outputs, optional_algorithms=None):
         """ runs getting a spinnaker machine logic
 
@@ -882,6 +884,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms = list()
         outputs = list()
 
+        inputs["MemoryPreviousAllocatedResources"] = \
+            PreAllocatedResourceContainer()
+
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
             inputs["MemoryApplicationGraph"] = self._application_graph
@@ -920,7 +925,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("MemoryExtendedMachine")
             outputs.append("MemoryTransceiver")
 
-            executor = self._run_machine_algorithms(
+            executor = self._run_algorithms(
                 inputs, algorithms, outputs)
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
@@ -950,7 +955,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             outputs.append("MemoryExtendedMachine")
 
-            executor = self._run_machine_algorithms(
+            executor = self._run_algorithms(
                 inputs, algorithms, outputs)
             self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
@@ -1028,7 +1033,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # add algorithms for handling LPG placement and edge insertion
             if len(self._live_packet_recorders) != 0:
                 algorithms.insert(
-                    0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
+                    0,
+                    "FrontEndCommonPreAllocateResourcesForLivePacketGatherers")
                 inputs['LivePacketRecorderParameters'] = \
                     self._live_packet_recorders
 
@@ -1040,7 +1046,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("MemoryTransceiver")
             outputs.append("MachineAllocationController")
 
-            executor = self._run_machine_algorithms(
+            executor = self._run_algorithms(
                 inputs, algorithms, outputs)
 
             self._machine_outputs = executor.get_items()
@@ -1217,6 +1223,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(self._config.get(
                 "Mapping",
                 "application_to_machine_graph_algorithms").split(","))
+            inputs['MemoryPreviousAllocatedResources'] = \
+                PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
             algorithms.extend(self._config.get(
@@ -1227,17 +1235,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
         if len(self._live_packet_recorders) != 0:
-            if (self._spalloc_server is not None or
-                    self._remote_spinnaker_url is not None):
-                algorithms.insert(
-                    0, "FrontEndCommonInsertEdgesToLivePacketGatherers")
-            else:
-                algorithms.insert(
-                    0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
-                algorithms.insert(
-                    1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
-                inputs['LivePacketRecorderParameters'] = \
-                    self._live_packet_recorders
+            algorithms.insert(
+                0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
+            algorithms.insert(
+                1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorders
 
         # handle outputs
         outputs = [
@@ -1265,7 +1268,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs.append("ExecutableStartType")
 
         # Execute the mapping algorithms
-        executor = self._run_machine_algorithms(
+        executor = self._run_algorithms(
             inputs, algorithms, outputs, optional_algorithms)
 
         # get result objects from the pacman executor
@@ -1300,7 +1303,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("FrontEndCommonGraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
 
-        executor = self._run_machine_algorithms(inputs, algorithms, outputs)
+        executor = self._run_algorithms(inputs, algorithms, outputs)
         self._mapping_outputs = executor.get_items()
 
         # write provenance to file if necessary
@@ -1356,7 +1359,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "LoadedApplicationDataToken"
         ]
 
-        executor = self._run_machine_algorithms(
+        executor = self._run_algorithms(
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
 
