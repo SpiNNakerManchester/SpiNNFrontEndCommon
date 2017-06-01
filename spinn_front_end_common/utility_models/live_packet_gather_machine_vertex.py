@@ -48,7 +48,7 @@ class LivePacketGatherMachineVertex(
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0,
-            ip_address=None, port=None, strip_sdp=None, board_address=None,
+            hostname=None, port=None, strip_sdp=None, board_address=None,
             tag=None, constraints=None):
         # inheritance
         MachineVertex.__init__(self, label, constraints=constraints)
@@ -58,7 +58,7 @@ class LivePacketGatherMachineVertex(
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
             iptags=[IPtagResource(
-                ip_address=ip_address, port=port,
+                ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,
                 traffic_identifier="LPG_EVENT_STREAM")])
 

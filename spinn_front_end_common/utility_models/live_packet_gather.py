@@ -109,7 +109,7 @@ class LivePacketGather(
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
             self._number_of_packets_sent_per_time_step,
-            ip_address=self._ip_address, port=self._port,
+            hostname=self._ip_address, port=self._port,
             strip_sdp=self._strip_sdp, board_address=self._board_address,
             constraints=constraints)
 
