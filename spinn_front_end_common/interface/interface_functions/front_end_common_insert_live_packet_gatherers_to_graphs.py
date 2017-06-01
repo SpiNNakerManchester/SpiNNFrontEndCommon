@@ -153,7 +153,7 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
         """
         live_packet_gatherer_vertex = lpg_vertex(
             label=params.label,
-            ip_address=params.hostname,
+            hostname=params.hostname,
             port=params.port,
             tag=params.tag,
             board_address=params.board_address,

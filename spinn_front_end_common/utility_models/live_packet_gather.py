@@ -35,7 +35,7 @@ class LivePacketGather(
     """
 
     def __init__(
-            self, ip_address, port, board_address=None, tag=None,
+            self, hostname, port, board_address=None, tag=None,
             strip_sdp=True, use_prefix=False, key_prefix=None,
             prefix_type=None, message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
@@ -76,7 +76,7 @@ class LivePacketGather(
         self._iptags = None
 
         # tag info
-        self._ip_address = ip_address
+        self._ip_address = hostname
         self._port = port
         self._board_address = board_address
         self._tag = tag

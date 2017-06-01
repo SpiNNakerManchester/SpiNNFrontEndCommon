@@ -1,6 +1,4 @@
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.constraints.placer_constraints\
-    import PlacerBoardConstraint, PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
@@ -61,12 +59,6 @@ class LivePacketGatherMachineVertex(
                 ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,
                 traffic_identifier="LPG_EVENT_STREAM")])
-
-        # implementation for where constraints are stored
-        self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
-        if board_address is not None:
-            # Try to place this near the Ethernet
-            self.add_constraint(PlacerBoardConstraint(board_address))
 
         # app specific data items
         self._use_prefix = use_prefix
