@@ -982,7 +982,7 @@ bool initialise(uint32_t *timer_period) {
     }
 
     // set up recording data structures
-    if(!initialise_recording()){
+    if (!initialise_recording()) {
          return false;
     }
 
