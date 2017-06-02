@@ -34,3 +34,5 @@ class FrontEndCommonBufferExtractor(object):
                     placement, recording_region_id)
                 progress.update()
         progress.end()
+
+        return True

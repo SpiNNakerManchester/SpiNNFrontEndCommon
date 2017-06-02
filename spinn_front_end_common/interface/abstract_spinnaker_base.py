@@ -1359,7 +1359,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # run
         if (self._has_ran and not self._has_reset_last and
                 not self._use_virtual_board):
-            algorithms.append("FrontEndCommonBufferExtractor")
+            algorithms.insert(0, "FrontEndCommonBufferExtractor")
 
             # check if we need to clear the iobuf during runs
             if self._config.getboolean("Reports", "clear_iobuf_during_run"):

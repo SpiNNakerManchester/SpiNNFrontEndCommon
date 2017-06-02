@@ -1364,5 +1364,8 @@
             <param_name>buffer_manager</param_name>
             <param_name>ran_token</param_name>
         </required_inputs>
+        <outputs>
+            <param_type>ReadBuffersToken</param_type>
+        </outputs>
     </algorithm>
 </algorithms>
