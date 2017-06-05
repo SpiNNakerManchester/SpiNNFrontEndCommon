@@ -24,7 +24,7 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
         :param machine_graph: the machine graph
         :param application_graph:  the app graph
         :param graph_mapper: the graph mapper between app and machine graph
-        :rtype: None 
+        :rtype: None
         """
 
         progress_bar = ProgressBar(
@@ -97,7 +97,7 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
         :param placements: the placements object
         :param machine_graph: the machine graph object
         :param partition_id: the partition id to add to the edge
-        :return: 
+        :return: machine edge and the LPG vertex
         """
 
         # locate the LPG that's closest to this vertex

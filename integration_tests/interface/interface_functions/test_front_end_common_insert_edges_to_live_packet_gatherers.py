@@ -417,7 +417,7 @@ class TestInsertLPGEdges(object):
             live_packet_gatherers=live_packet_gatherers, placements=placements,
             live_packet_recorder_recorded_vertex_type=ApplicationVertex,
             live_packet_gatherers_to_vertex_mapping=(
-            live_packet_gatherers_to_vertex_mapping),
+                live_packet_gatherers_to_vertex_mapping),
             machine=machine, machine_graph=graph, application_graph=app_graph,
             graph_mapper=app_graph_mapper)
 

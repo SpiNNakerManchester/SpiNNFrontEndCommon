@@ -19,7 +19,7 @@ class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
             self, live_packet_gatherers, previous_allocated_resources,
             machine):
         """ call that adds LPG vertices on ethernet connected chips as\
-         required. 
+         required.
 
         :param live_packet_gatherers: the LPG parameters requested by the\
          script

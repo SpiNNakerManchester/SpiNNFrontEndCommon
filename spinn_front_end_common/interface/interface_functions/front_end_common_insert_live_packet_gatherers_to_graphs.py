@@ -20,7 +20,7 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
             self, live_packet_gatherers, machine, machine_graph,
             application_graph=None, graph_mapper=None):
         """ call that adds LPG vertices on ethernet connected chips as\
-         required. 
+         required.
 
         :param live_packet_gatherers: the LPG parameters requested by the \
         script
@@ -124,7 +124,7 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
         :param machine_live_packet_gatherer_vertex: the machine vertex LPG
         :param board_specific_lpg_params: the LPG params
         :param chip:  the chip it resides on
-        :rtype: None 
+        :rtype: None
         """
         if application_graph is not None:
             app_live_packet_gatherer_vertex = self._create_and_add_vertex(
@@ -133,10 +133,10 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
             graph_mapper.add_vertex_mapping(
                 machine_live_packet_gatherer_vertex, Slice(0, 0),
                 app_live_packet_gatherer_vertex)
-                
+
     @staticmethod
     def _create_and_add_vertex(graph, lpg_vertex, params, chip):
-        """ creates a given LPG vertex and adds it to the graph with a \ 
+        """ creates a given LPG vertex and adds it to the graph with a \
         placement constraint stating to place it on the chip provided.
 
         :param graph: the graph to place the vertex into
