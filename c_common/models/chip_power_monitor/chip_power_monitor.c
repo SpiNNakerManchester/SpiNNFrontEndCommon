@@ -4,6 +4,8 @@
 
 #define NUM_CORES 18
 
+#define NUM_RANDOM_BITS 12
+
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count, sample_count_limit;
 
@@ -12,10 +14,10 @@ static uint32_t get_sample(void)
     return sc[SC_SLEEP] & ((1<<NUM_CORES) - 1);
 }
 
+// Length of busy loop used to break up chance periodicities in sampling
 static uint32_t get_random_busy(void)
 {
-    // TODO Actually get a random value instead of value chosen by XKCD
-    return 4;
+    return (spin1_rand() >> 4) & ((1 << NUM_RANDOM_BITS) - 1);
 }
 
 static void record_aggregate_sample(void)
@@ -43,7 +45,7 @@ static void sample_in_slot(uint unused0, uint unused1)
     uint32_t sample = get_sample();
 
     int i, j;
-    for (i=0,j=1 ; i<NUM_CORES ; i++,j<<=1) {
+    for (i=0, j=1 ; i<NUM_CORES ; i++, j<<=1) {
 	if (sample & j) {
 	    core_counters[i]++;
 	}
