@@ -1,13 +1,22 @@
 #include <spin1_api.h>
 #include <simulation.h>
 #include <spinnaker.h>
+#include <data_specification.h>
 
 #define NUM_CORES 18
 
 #define NUM_RANDOM_BITS 12
 
+typedef enum {
+    SYSTEM, PARAMS, PROVENANCE
+} region;
+typedef enum {
+    SAMPLE_COUNT_LIMIT
+} parameter_layout;
+
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count, sample_count_limit;
+uint32_t recording_flags, simulation_ticks, infinite_run;
 
 static uint32_t get_sample(void)
 {
@@ -22,7 +31,7 @@ static uint32_t get_random_busy(void)
 
 static void record_aggregate_sample(void)
 {
-    // TODO Store values to the area that will be read later
+    recording_record(0, core_counters, sizeof core_counters);
 }
 
 static void reset_core_counters(void)
@@ -57,9 +66,30 @@ static void sample_in_slot(uint unused0, uint unused1)
     }
 }
 
+bool read_parameters(address_t address)
+{
+    sample_count_limit = address[SAMPLE_COUNT_LIMIT];
+    //TODO anything else that needs to be read here?
+    return true;
+}
+
 static bool initialize(uint32_t *timer)
 {
-    //TODO Do the needful
+    address_t address = data_specification_get_data_address();
+    if (!simulation_initialise(
+            data_specification_get_region(SYSTEM, address),
+            APPLICATION_NAME_HASH, timer, &simulation_ticks,
+            &infinite_run, 1)) {
+        return false;
+    }
+    if (!read_parameters(
+            data_specification_get_region(PARAMS, address))) {
+        return false;
+    }
+    address_t recording_region =
+	    data_specification_get_region(PROVENANCE, address);
+    bool success = recording_initialize(recording_region, &recording_flags);
+    return true;
 }
 
 void c_main(void)
@@ -73,6 +103,6 @@ void c_main(void)
     reset_core_counters();
 
     spin1_set_timer_tick(timer);
-    spin1_callback_on(TIMER_TICK, sample_in_slot, 2);
+    spin1_callback_on(TIMER_TICK, sample_in_slot, 0);
     simulation_run();
 }
