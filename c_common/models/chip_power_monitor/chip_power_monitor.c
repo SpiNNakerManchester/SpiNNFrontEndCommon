@@ -14,6 +14,9 @@ typedef enum {
     SAMPLE_COUNT_LIMIT
 } parameter_layout;
 
+static uint32_t simulation_ticks = 0;
+static uint32_t infinite_run = 0;
+
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count, sample_count_limit;
 uint32_t recording_flags, simulation_ticks, infinite_run;
@@ -45,6 +48,16 @@ static void reset_core_counters(void)
 
 static void sample_in_slot(uint unused0, uint unused1)
 {
+
+    // check if the simulation has run to completion
+    if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+        simulation_handle_pause_resume(NULL);
+
+        // Subtract 1 from the time so this tick gets done again on the next
+        // run
+        time -= 1;
+    }
+
     unit32_t sc = ++sample_count;
     uint32_t offset = get_random_busy();
     while (offset --> 0) {
