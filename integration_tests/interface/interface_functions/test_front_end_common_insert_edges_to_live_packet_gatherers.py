@@ -18,7 +18,8 @@ from spinn_front_end_common.utility_models.\
     LivePacketGatherMachineVertex
 from spinn_machine.virtual_machine import VirtualMachine
 from spinnman.messages.eieio.eieio_type import EIEIOType
-from uinit_test_objects.test_vertex import TestVertex
+from integration_tests.interface.interface_functions.test_vertex import \
+    TestVertex
 
 
 class TestInsertLPGEdges(object):
