@@ -70,7 +70,6 @@ class TestLPGPreAllocateRes(object):
         if len(locs) != 0:
             raise Exception
 
-
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
@@ -275,12 +274,13 @@ class TestLPGPreAllocateRes(object):
         live_packet_gatherers = dict()
         pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
         try:
-            pre_res = pre_alloc(
+            pre_alloc(
                 live_packet_gatherers=live_packet_gatherers, machine=machine,
                 previous_allocated_resources=None)
             raise Exception
         except Exception:
             pass
+
 
 if __name__ == "__main__":
     test = TestLPGPreAllocateRes()
@@ -289,4 +289,3 @@ if __name__ == "__main__":
     test.test_added_pre_res()
     test.test_none()
     test.test_fail()
-

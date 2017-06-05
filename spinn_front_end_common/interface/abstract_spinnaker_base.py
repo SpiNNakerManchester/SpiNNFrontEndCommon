@@ -448,7 +448,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self, live_packet_gatherer_params, vertex_to_record_from):
         """ adds params for a new LPG if needed, or adds to the tracker for\
          same params.
-        
+
         :param live_packet_gatherer_params: params to look for a LPG
         :param vertex_to_record_from: the vertex that needs to send to a\
          given LPG

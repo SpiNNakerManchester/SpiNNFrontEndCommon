@@ -300,11 +300,10 @@ class TestInsertLPGs(object):
         if len(app_verts) != 6:
             raise Exception
 
+
 if __name__ == "__main__":
     test = TestInsertLPGs()
     test.test_that_3_lpgs_are_generated_on_3_board()
     test.test_that_6_lpgs_are_generated_2_on_each_eth_chip()
     test.test_that_3_lpgs_are_generated_on_3_board_app_graph()
     test.test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph()
-
-

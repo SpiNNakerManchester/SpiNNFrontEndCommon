@@ -24,7 +24,6 @@ from integration_tests.interface.interface_functions.test_vertex import \
 
 class TestInsertLPGEdges(object):
     """ tests the interaction of the EDGE INSERTION OF LPGS
-    
     """
 
     def test_local_verts_go_to_local_lpgs(self):
@@ -116,8 +115,8 @@ class TestInsertLPGEdges(object):
         edge_inserter(
             live_packet_gatherers=live_packet_gatherers, placements=placements,
             live_packet_recorder_recorded_vertex_type=MachineVertex,
-            live_packet_gatherers_to_vertex_mapping=
-            live_packet_gatherers_to_vertex_mapping,
+            live_packet_gatherers_to_vertex_mapping=(
+                live_packet_gatherers_to_vertex_mapping),
             machine=machine, machine_graph=graph, application_graph=None,
             graph_mapper=None)
 
@@ -262,8 +261,8 @@ class TestInsertLPGEdges(object):
         edge_inserter(
             live_packet_gatherers=live_packet_gatherers, placements=placements,
             live_packet_recorder_recorded_vertex_type=MachineVertex,
-            live_packet_gatherers_to_vertex_mapping=
-            live_packet_gatherers_to_vertex_mapping,
+            live_packet_gatherers_to_vertex_mapping=(
+                live_packet_gatherers_to_vertex_mapping),
             machine=machine, machine_graph=graph, application_graph=None,
             graph_mapper=None)
 
@@ -404,7 +403,8 @@ class TestInsertLPGEdges(object):
             graph.add_vertex(mac_vertex)
             vertex = TestVertex(1)
             app_graph.add_vertex(vertex)
-            app_graph_mapper.add_vertex_mapping(mac_vertex, Slice(0,0), vertex)
+            app_graph_mapper.add_vertex_mapping(
+                mac_vertex, Slice(0, 0), vertex)
             live_packet_gatherers[default_params_holder].append(vertex)
             positions[index][2].append(mac_vertex)
             placements.add_placement(Placement(
@@ -416,14 +416,12 @@ class TestInsertLPGEdges(object):
         edge_inserter(
             live_packet_gatherers=live_packet_gatherers, placements=placements,
             live_packet_recorder_recorded_vertex_type=ApplicationVertex,
-            live_packet_gatherers_to_vertex_mapping=
-            live_packet_gatherers_to_vertex_mapping,
+            live_packet_gatherers_to_vertex_mapping=(
+            live_packet_gatherers_to_vertex_mapping),
             machine=machine, machine_graph=graph, application_graph=app_graph,
             graph_mapper=app_graph_mapper)
 
         verts2_expected_0_0 = list(verts_expected_0_0)
-        verts2_expected_4_8 = list(verts_expected_4_8)
-        verts2_expected_8_4 = list(verts_expected_8_4)
 
         # verify edges are in the right place
         # check 0 0 lpg
@@ -460,10 +458,10 @@ class TestInsertLPGEdges(object):
             if edges[0].post_vertex != lpg_app:
                 raise Exception
 
+
 if __name__ == "__main__":
 
     test = TestInsertLPGEdges()
     test.test_local_verts_go_to_local_lpgs()
     test.test_local_verts_when_multiple_lpgs_are_local()
     test.test_local_verts_go_to_local_lpgs_app_graph()
-

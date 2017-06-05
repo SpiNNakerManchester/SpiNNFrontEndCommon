@@ -18,24 +18,25 @@ class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
     def __call__(
             self, live_packet_gatherers, previous_allocated_resources,
             machine):
-        """ call that adds LPG vertices on ethernet connected chips as 
-        required. 
+        """ call that adds LPG vertices on ethernet connected chips as\
+         required. 
 
-        :param live_packet_gatherers: the LPG parameters requested by the \
-        script
+        :param live_packet_gatherers: the LPG parameters requested by the\
+         script
         :param previous_allocated_resources: other pre-allocated resources
         :param machine: the spinnaker machine as discovered
-        :return: pre allocated resources 
+        :return: pre allocated resources
         """
 
         sdram_requirements = dict()
         core_requirements = dict()
 
         progress_bar = ProgressBar(
-            total_number_of_things_to_do=
-            len(live_packet_gatherers) * len(machine.ethernet_connected_chips),
-            string_describing_what_being_progressed=
-            "pre allocating LPG resources")
+            total_number_of_things_to_do=len(
+                live_packet_gatherers) * len(
+                machine.ethernet_connected_chips),
+            string_describing_what_being_progressed=(
+                "pre allocating LPG resources"))
 
         # clone the live_packet_gatherer parameters holder for usage
         working_live_packet_gatherers_parameters = dict(live_packet_gatherers)
@@ -98,12 +99,12 @@ class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
             sdram_requirements, core_requirements, chip,
             lpg_sdram_requirement):
         """ allocates resources for lpg
-        
+
         :param sdram_requirements: sdram holder
         :param core_requirements: core holder
         :param chip:  chip to allocate on
         :param lpg_sdram_requirement: the sdram requirements of a LPG
-        :rtype: None 
+        :rtype: None
         """
         if chip in sdram_requirements:
             sdram_requirements[chip] += lpg_sdram_requirement
@@ -116,10 +117,10 @@ class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
 
     @staticmethod
     def _get_ethernet_chip(machine, board_address):
-        """ locate the chip which supports a given board address (aka its 
-        ip_address)
+        """ locate the chip which supports a given board address (aka its\
+         ip_address)
 
-        :param machine: the spinnaker machine 
+        :param machine: the spinnaker machine
         :param board_address:  the board address to locate the chip of.
         :return: The chip that supports that board address
         :raises ConfigurationException: when that board address has no chip\

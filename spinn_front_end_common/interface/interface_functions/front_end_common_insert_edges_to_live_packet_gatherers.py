@@ -6,7 +6,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
     """ adds edges from the recorded vertices to the local LPGs
-    
+
     """
 
     def __call__(
@@ -15,8 +15,8 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
             live_packet_gatherers_to_vertex_mapping, machine,
             machine_graph, application_graph=None, graph_mapper=None):
         """ adds edges from the recorded vertices to the local LPGs
-        
-        :param live_packet_gatherers: the set of params and vertices to link to 
+
+        :param live_packet_gatherers: the set of params and vertices to link to
         :param placements: the placements object
         :param live_packet_gatherers_to_vertex_mapping: the mapping of LPG
          parameters and the machine vertex associated with it
@@ -29,10 +29,10 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
 
         progress_bar = ProgressBar(
             total_number_of_things_to_do=len(live_packet_gatherers),
-            string_describing_what_being_progressed=
-            "Adding edges to the machine graph between the vertices to which "
-            "live output has been requested and its local Live Packet "
-            "Gatherer")
+            string_describing_what_being_progressed=(
+                "Adding edges to the machine graph between the vertices to "
+                "which live output has been requested and its local Live "
+                "Packet Gatherer"))
 
         for live_packet_gatherers_param in live_packet_gatherers:
 
@@ -89,10 +89,10 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
             self, machine_vertex, machine_live_packet_gatherers, machine,
             placements, machine_graph, partition_id):
         """ locates and places an edge for a machine vertex
-        
+
         :param machine_vertex: the machine vertex that needs an edge to a LPG
-        :param machine_live_packet_gatherers: list of LPGs that are 
-        associated with the live_packet_gatherers_param
+        :param machine_live_packet_gatherers: list of LPGs that are\
+         associated with the live_packet_gatherers_param
         :param machine: the spinnaker machine object
         :param placements: the placements object
         :param machine_graph: the machine graph object
@@ -117,14 +117,14 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
             application_graph, graph_mapper, machine_lpg, vertex_to_connect,
             partition_id, machine_edge, app_graph_edge):
         """ handles changes to the app graph and graph mapper.
-        
+
         :param application_graph: the app graph
         :param graph_mapper: the graph mapper
         :param machine_lpg: the machine LPG
-        :param vertex_to_connect: the app vertex to link to 
+        :param vertex_to_connect: the app vertex to link to
         :param partition_id: the partition id to put the edge on
         :return the application edge for this vertex and LPG
-        :rtype: ApplicationEdge 
+        :rtype: ApplicationEdge
         """
 
         # locate app vertex for LPG
@@ -146,17 +146,17 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
     @staticmethod
     def _find_closest_live_packet_gatherer(
             machine_vertex, machine_lpgs, machine, placements):
-        """ locates the LPG on the nearest ethernet connected chip to the 
-        machine vertex in question
-        
+        """ locates the LPG on the nearest ethernet connected chip to the\
+         machine vertex in question
+
         :param machine_vertex: the machine vertex to locate the nearest LPG to
-        :param machine_lpgs: the LPG's that could be nearest to the machine 
-        vertex
+        :param machine_lpgs: the LPG's that could be nearest to the machine\
+         vertex
         :param machine: the spinn machine object
         :param placements: the placements object
-        :return: the local LPG 
-        :raises ConfigurationException: when no LPG is located on the nearest 
-        ethernet chip with the correct params space.
+        :return: the local LPG
+        :raises ConfigurationException: when no LPG is located on the nearest\
+         ethernet chip with the correct params space.
         """
 
         # locate location of vertex in machine
