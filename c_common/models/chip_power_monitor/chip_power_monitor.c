@@ -8,10 +8,10 @@
 #define NUM_RANDOM_BITS 12
 
 typedef enum {
-    SYSTEM, PARAMS, PROVENANCE
+    SYSTEM, CONFIG, RECORDING
 } region;
 typedef enum {
-    SAMPLE_COUNT_LIMIT
+    SAMPLE_COUNT_LIMIT = 0, SAMPLE_FREQUENCY = 1
 } parameter_layout;
 
 static uint32_t simulation_ticks = 0;
@@ -20,6 +20,7 @@ static uint32_t infinite_run = 0;
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count, sample_count_limit;
 uint32_t recording_flags, simulation_ticks, infinite_run;
+uint32_t sample_samply_frequency;
 
 static uint32_t get_sample(void)
 {
@@ -82,6 +83,7 @@ static void sample_in_slot(uint unused0, uint unused1)
 bool read_parameters(address_t address)
 {
     sample_count_limit = address[SAMPLE_COUNT_LIMIT];
+    samply_frequency = address[SAMPLE_FREQUENCY];
     //TODO anything else that needs to be read here?
     return true;
 }
@@ -96,11 +98,11 @@ static bool initialize(uint32_t *timer)
         return false;
     }
     if (!read_parameters(
-            data_specification_get_region(PARAMS, address))) {
+            data_specification_get_region(CONFIG, address))) {
         return false;
     }
     address_t recording_region =
-	    data_specification_get_region(PROVENANCE, address);
+	    data_specification_get_region(RECORDING, address);
     bool success = recording_initialize(recording_region, &recording_flags);
     return true;
 }
