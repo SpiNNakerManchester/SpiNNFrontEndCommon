@@ -907,7 +907,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms = list()
         outputs = list()
 
-        inputs["MemoryPreviousAllocatedResources"] = \
+        inputs["MemoryPreAllocatedResources"] = \
             PreAllocatedResourceContainer()
 
         # add the application and machine graphs as needed

@@ -84,7 +84,7 @@ class TestLPGPreAllocateRes(object):
             raise Exception
 
         # verify specific cores
-        if len(pre_res.specific_cores_resource) != 0:
+        if len(pre_res.specific_core_resources) != 0:
             raise Exception
 
     def test_one_lpg_params_and_3_specific(self):
@@ -158,7 +158,7 @@ class TestLPGPreAllocateRes(object):
             raise Exception
 
         # verify specific cores
-        if len(pre_res.specific_cores_resource) != 0:
+        if len(pre_res.specific_core_resources) != 0:
             raise Exception
 
     def test_added_pre_res(self):
@@ -253,7 +253,7 @@ class TestLPGPreAllocateRes(object):
             raise Exception
 
         # verify specific cores
-        if len(pre_res.specific_cores_resource) != 0:
+        if len(pre_res.specific_core_resources) != 0:
             raise Exception
 
     def test_none(self):
@@ -264,7 +264,7 @@ class TestLPGPreAllocateRes(object):
         pre_res = pre_alloc(
             live_packet_gatherers=live_packet_gatherers, machine=machine,
             previous_allocated_resources=PreAllocatedResourceContainer())
-        if (len(pre_res.specific_cores_resource) != 0 or
+        if (len(pre_res.specific_core_resources) != 0 or
                 len(pre_res.core_resources) != 0 or
                 len(pre_res.specific_sdram_usage) != 0):
             raise Exception
