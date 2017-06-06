@@ -430,15 +430,15 @@ void recording_finalise() {
 
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
-            if (g_recording_channels[channel].missing_info)
+            if (g_recording_channels[channel].missing_info) {
                 log_info(
                     "\tFinalising channel %u - dropped information while"
                     "buffering - state info stored in SDRAM", channel);
-            else
+            } else {
                 log_info(
                     "\tFinalising channel %u - state info stored in SDRAM",
                     channel);
-
+            }
             if (!_close_channel(channel)) {
                 log_error("could not close channel %u.", channel);
             } else {
