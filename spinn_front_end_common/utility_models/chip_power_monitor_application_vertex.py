@@ -21,11 +21,11 @@ class ChipPowerMonitorApplicationVertex(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
         """
-        
-        :param label: 
-        :param constraints: 
-        :param n_samples_per_recording: 
-        :param sampling_frequency: 
+
+        :param label:
+        :param constraints:
+        :param n_samples_per_recording:
+        :param sampling_frequency:
         """
         ApplicationVertex.__init__(self, label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording

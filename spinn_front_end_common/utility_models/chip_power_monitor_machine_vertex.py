@@ -46,9 +46,9 @@ class ChipPowerMonitorMachineVertex(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
         """
-        
-        :param label: 
-        :param constraints: 
+
+        :param label:
+        :param constraints:
         :param n_samples_per_recording: how may samples between recording entry
         :type n_samples_per_recording: int
         :param sampling_frequency: how often to sample
@@ -76,8 +76,8 @@ class ChipPowerMonitorMachineVertex(
             n_machine_time_steps, time_step, time_scale_factor,
             n_samples_per_recording, sampling_frequency):
         """
-        
-        :return: 
+
+        :return:
         """
         # get config
         config = globals_variables.get_simulator().config
@@ -122,7 +122,7 @@ class ChipPowerMonitorMachineVertex(
     @staticmethod
     def sdram_calculation():
         """ calculates the sdram requirements of the vertex
-        
+
         :return: int
         """
         return constants.SYSTEM_BYTES_REQUIREMENT + \
@@ -137,8 +137,8 @@ class ChipPowerMonitorMachineVertex(
     @staticmethod
     def binary_file_name():
         """ returns the string binary file name
-        
-        :return: 
+
+        :return:
         """
         return "chip_power_monitor.aplx"
 
@@ -158,9 +158,9 @@ class ChipPowerMonitorMachineVertex(
 
     def _write_configuration_region(self, spec):
         """ writes the data needed by the c code to configure itself
-        
+
         :param spec: spec object
-        :rtype: None 
+        :rtype: None
         """
         spec.switch_write_focus(
             region=ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
@@ -171,11 +171,11 @@ class ChipPowerMonitorMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ writes the system data as required
-        
+
         :param spec: the dsg spec writer
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
-        :rtype: None 
+        :rtype: None
         """
         spec.switch_write_focus(
             region=(
@@ -186,9 +186,9 @@ class ChipPowerMonitorMachineVertex(
 
     def _reserve_memory_regions(self, spec):
         """ reserve the dsg memory regions as required
-        
+
         :param spec: the dsg specification to reserve in
-        :rtype: None 
+        :rtype: None
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 
@@ -217,8 +217,8 @@ class ChipPowerMonitorMachineVertex(
     @staticmethod
     def binary_start_type():
         """ static method to allow app verts to use this
-        
-        :return: 
+
+        :return:
         """
         return ExecutableStartType.USES_SIMULATION_INTERFACE
 
