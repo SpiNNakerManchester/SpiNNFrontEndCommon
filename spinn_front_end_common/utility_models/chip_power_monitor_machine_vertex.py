@@ -60,12 +60,15 @@ class ChipPowerMonitorMachineVertex(
 
     @property
     @overrides(MachineVertex.resources_required)
+    def resources_required(self):
+        return self._resources_required()
+
     @inject_items({
         "n_machine_time_steps": "TotalMachineTimeSteps",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"
     })
-    def resources_required(self, n_machine_time_steps, machine_time_step,
+    def _resources_required(self, n_machine_time_steps, machine_time_step,
                            time_scale_factor):
         return self.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
