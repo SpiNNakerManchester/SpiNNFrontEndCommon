@@ -69,7 +69,7 @@ class ChipPowerMonitorMachineVertex(
         "time_scale_factor": "TimeScaleFactor"
     })
     def _resources_required(self, n_machine_time_steps, machine_time_step,
-                           time_scale_factor):
+                            time_scale_factor):
         return self.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
