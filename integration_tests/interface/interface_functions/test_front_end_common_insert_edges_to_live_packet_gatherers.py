@@ -335,8 +335,8 @@ class TestInsertLPGEdges(unittest.TestCase):
         # check app graph
         for chip in machine.ethernet_connected_chips:
             app_verts_expected = [
-                app_graph_mapper.get_application_vertex(vertex)
-                for vertex in verts_expected[chip.x, chip.y]]
+                app_graph_mapper.get_application_vertex(vert)
+                for vert in verts_expected[chip.x, chip.y]]
             lpg_machine = live_packet_gatherers_to_vertex_mapping[
                 default_params_holder][chip.x, chip.y]
             lpg_app = app_graph_mapper.get_application_vertex(lpg_machine)
