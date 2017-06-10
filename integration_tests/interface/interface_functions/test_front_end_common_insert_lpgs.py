@@ -10,9 +10,11 @@ from spinn_front_end_common.utilities.utility_objs. \
 from spinn_machine.virtual_machine import VirtualMachine
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
+import unittest
 
-class TestInsertLPGs(object):
-    """ tests the interaction of the LPG inserters
+
+class TestInsertLPGs(unittest.TestCase):
+    """ tests the LPG insert functions
 
     """
 
@@ -36,7 +38,7 @@ class TestInsertLPGs(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -48,30 +50,26 @@ class TestInsertLPGs(object):
         # run edge inserter that should go boom
         edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
-            live_packet_gatherers=live_packet_gatherers,
+            live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=None,
             graph_mapper=None)
 
-        if len(lpg_verts_mapping[default_params_holder]) != 3:
-            raise Exception
+        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder]:
+        for vertex in lpg_verts_mapping[default_params_holder].itervalues():
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
             locs.remove(key)
 
-        if len(locs) != 0:
-            raise Exception
+        self.assertEqual(len(locs), 0)
 
-        verts = lpg_verts_mapping[default_params_holder]
+        verts = lpg_verts_mapping[default_params_holder].values()
         for vertex in graph.vertices:
-            verts.remove(vertex)
-        if len(verts) != 0:
-            raise Exception
+            self.assertIn(vertex, verts)
 
     def test_that_3_lpgs_are_generated_on_3_board_app_graph(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
@@ -95,7 +93,7 @@ class TestInsertLPGs(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -107,41 +105,34 @@ class TestInsertLPGs(object):
         # run edge inserter that should go boom
         edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
-            live_packet_gatherers=live_packet_gatherers,
+            live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=app_graph,
             graph_mapper=app_graph_mapper)
 
-        if len(lpg_verts_mapping[default_params_holder]) != 3:
-            raise Exception
+        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder]:
+        for vertex in lpg_verts_mapping[default_params_holder].itervalues():
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
             locs.remove(key)
 
-        if len(locs) != 0:
-            raise Exception
+        self.assertEqual(len(locs), 0)
 
-        verts = list(lpg_verts_mapping[default_params_holder])
+        verts = lpg_verts_mapping[default_params_holder].values()
         for vertex in graph.vertices:
-            verts.remove(vertex)
-        if len(verts) != 0:
-            raise Exception
+            self.assertIn(vertex, verts)
 
         app_verts = set()
-        for vertex in lpg_verts_mapping[default_params_holder]:
+        for vertex in lpg_verts_mapping[default_params_holder].itervalues():
             app_vertex = app_graph_mapper.get_application_vertex(vertex)
-            if not isinstance(app_vertex, ApplicationVertex):
-                raise Exception
-            if app_vertex is None:
-                raise Exception
+            self.assertNotEqual(app_vertex, None)
+            self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
-        if len(app_verts) != 3:
-            raise Exception
+        self.assertEqual(len(app_verts), 3)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
@@ -163,7 +154,7 @@ class TestInsertLPGs(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -172,11 +163,11 @@ class TestInsertLPGs(object):
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
-        # and special LPG on ethernet connected chips
+        # and special LPG on Ethernet connected chips
         index = 1
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
-            extended['label'] = "bupkis{}".format(index)
+            extended['label'] = "test{}".format(index)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -185,29 +176,18 @@ class TestInsertLPGs(object):
         # run edge inserter that should go boom
         edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
-            live_packet_gatherers=live_packet_gatherers,
+            live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=None,
             graph_mapper=None)
 
-        if len(lpg_verts_mapping[default_params_holder]) != 3:
-            raise Exception
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder]:
-            locs.remove((list(vertex.constraints)[0].x,
-                         list(vertex.constraints)[0].y))
+        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
 
         for eth_chip in chip_special:
             params = chip_special[eth_chip]
-            if len(lpg_verts_mapping[params]) != 1:
-                raise Exception
-            vertex = lpg_verts_mapping[params][0]
-            if eth_chip[0] != list(vertex.constraints)[0].x:
-                raise Exception
-            if eth_chip[1] != list(vertex.constraints)[0].y:
-                raise Exception
+            self.assertEqual(len(lpg_verts_mapping[params]), 1)
+            vertex = lpg_verts_mapping[params][eth_chip]
+            self.assertEqual(eth_chip[0], list(vertex.constraints)[0].x)
+            self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
 
     def test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
@@ -231,7 +211,7 @@ class TestInsertLPGs(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -240,11 +220,11 @@ class TestInsertLPGs(object):
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
-        # and special LPG on ethernet connected chips
+        # and special LPG on Ethernet connected chips
         index = 1
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
-            extended['label'] = "bupkis{}".format(index)
+            extended['label'] = "test{}".format(index)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -253,57 +233,34 @@ class TestInsertLPGs(object):
         # run edge inserter that should go boom
         edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
-            live_packet_gatherers=live_packet_gatherers,
+            live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=app_graph,
             graph_mapper=app_graph_mapper)
 
-        if len(lpg_verts_mapping[default_params_holder]) != 3:
-            raise Exception
-        locs = list()
-        locs.append((0, 0))
-        locs.append((4, 8))
-        locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder]:
-            locs.remove((list(vertex.constraints)[0].x,
-                         list(vertex.constraints)[0].y))
+        self.assertEqual(len(lpg_verts_mapping[default_params_holder]), 3)
 
         for eth_chip in chip_special:
             params = chip_special[eth_chip]
-            if len(lpg_verts_mapping[params]) != 1:
-                raise Exception
-            vertex = lpg_verts_mapping[params][0]
-            if eth_chip[0] != list(vertex.constraints)[0].x:
-                raise Exception
-            if eth_chip[1] != list(vertex.constraints)[0].y:
-                raise Exception
+            self.assertEqual(len(lpg_verts_mapping[params]), 1)
+            vertex = lpg_verts_mapping[params][eth_chip]
+            self.assertEqual(eth_chip[0], list(vertex.constraints)[0].x)
+            self.assertEqual(eth_chip[1], list(vertex.constraints)[0].y)
 
-        verts = list(lpg_verts_mapping[default_params_holder])
-        for eth_chip in chip_special:
-            params = chip_special[eth_chip]
-            verts.append(lpg_verts_mapping[params][0])
-
-        verts2 = list(verts)
+        verts = list(lpg_verts_mapping[default_params_holder].values())
+        for params in chip_special.values():
+            verts.extend(lpg_verts_mapping[params].values())
 
         for vertex in graph.vertices:
-            verts.remove(vertex)
-        if len(verts) != 0:
-            raise Exception
+            self.assertIn(vertex, verts)
 
         app_verts = set()
-        for vertex in verts2:
+        for vertex in verts:
             app_vertex = app_graph_mapper.get_application_vertex(vertex)
-            if not isinstance(app_vertex, ApplicationVertex):
-                raise Exception
-            if app_vertex is None:
-                raise Exception
+            self.assertNotEqual(app_vertex, None)
+            self.assertIsInstance(app_vertex, ApplicationVertex)
             app_verts.add(app_vertex)
-        if len(app_verts) != 6:
-            raise Exception
+        self.assertEqual(len(app_verts), 6)
 
 
 if __name__ == "__main__":
-    test = TestInsertLPGs()
-    test.test_that_3_lpgs_are_generated_on_3_board()
-    test.test_that_6_lpgs_are_generated_2_on_each_eth_chip()
-    test.test_that_3_lpgs_are_generated_on_3_board_app_graph()
-    test.test_that_6_lpgs_are_generated_2_on_each_eth_chip_app_graph()
+    unittest.main()

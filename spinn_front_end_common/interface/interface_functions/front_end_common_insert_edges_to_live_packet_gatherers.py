@@ -1,25 +1,24 @@
-from pacman.model.graphs.application import ApplicationVertex, ApplicationEdge
+from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities import exceptions
 from spinn_utilities.progress_bar import ProgressBar
 
 
 class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
-    """ adds edges from the recorded vertices to the local LPGs
-
+    """ Add edges from the recorded vertices to the local Live PacketGatherers
     """
 
     def __call__(
-            self, live_packet_gatherers, placements,
-            live_packet_recorder_recorded_vertex_type,
+            self, live_packet_gatherer_parameters, placements,
             live_packet_gatherers_to_vertex_mapping, machine,
             machine_graph, application_graph=None, graph_mapper=None):
-        """ adds edges from the recorded vertices to the local LPGs
+        """
 
-        :param live_packet_gatherers: the set of params and vertices to link to
+        :param live_packet_gatherer_parameters: the set of parameters
         :param placements: the placements object
-        :param live_packet_gatherers_to_vertex_mapping: the mapping of LPG
-         parameters and the machine vertex associated with it
+        :param live_packet_gatherers_to_vertex_mapping:\
+            the mapping of LPG parameters and the machine vertices associated\
+            with it
         :param machine: the SpiNNaker machine
         :param machine_graph: the machine graph
         :param application_graph:  the app graph
@@ -28,28 +27,26 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
         """
 
         progress_bar = ProgressBar(
-            total_number_of_things_to_do=len(live_packet_gatherers),
+            total_number_of_things_to_do=len(live_packet_gatherer_parameters),
             string_describing_what_being_progressed=(
                 "Adding edges to the machine graph between the vertices to "
                 "which live output has been requested and its local Live "
                 "Packet Gatherer"))
 
-        for live_packet_gatherers_param in live_packet_gatherers:
+        for live_packet_gatherers_params in live_packet_gatherer_parameters:
 
             # locate vertices needed to be connected to a LPG with these params
-            vertices_to_connect = live_packet_gatherers[
-                live_packet_gatherers_param]
+            vertices_to_connect = live_packet_gatherer_parameters[
+                live_packet_gatherers_params]
             for vertex_to_connect in vertices_to_connect:
 
-                # locate correct LPG to wire to
+                # Find all Live Gatherer machine vertices
                 machine_live_packet_gatherers = \
                     live_packet_gatherers_to_vertex_mapping[
-                        live_packet_gatherers_param]
+                        live_packet_gatherers_params]
 
-                # if its a app vertex, find the bastard machine vertices for it
-                if issubclass(
-                        live_packet_recorder_recorded_vertex_type,
-                        ApplicationVertex):
+                # If it is an application graph, find the machine vertices
+                if application_graph is not None:
 
                     # flag for ensuring we don't add the edge to the app
                     # graph many times
@@ -65,14 +62,14 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
                             self._process_machine_vertex(
                                 machine_vertex, machine_live_packet_gatherers,
                                 machine, placements, machine_graph,
-                                live_packet_gatherers_param.partition_id)
+                                live_packet_gatherers_params.partition_id)
 
                         # update the app graph and graph mapper
                         app_graph_edge = \
                             self._update_application_graph_and_graph_mapper(
                                 application_graph, graph_mapper, machine_lpg,
                                 vertex_to_connect,
-                                live_packet_gatherers_param.partition_id,
+                                live_packet_gatherers_params.partition_id,
                                 machine_edge, app_graph_edge)
 
                 else:
@@ -80,7 +77,7 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
                     self._process_machine_vertex(
                         vertex_to_connect, machine_live_packet_gatherers,
                         machine, placements, machine_graph,
-                        live_packet_gatherers_param.partition_id)
+                        live_packet_gatherers_params.partition_id)
 
             progress_bar.update()
         progress_bar.end()
@@ -91,8 +88,9 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
         """ locates and places an edge for a machine vertex
 
         :param machine_vertex: the machine vertex that needs an edge to a LPG
-        :param machine_live_packet_gatherers: list of LPGs that are\
-         associated with the live_packet_gatherers_param
+        :param machine_live_packet_gatherers:\
+            dict of chip placed on to gatherers that are associated with the\
+            parameters
         :param machine: the spinnaker machine object
         :param placements: the placements object
         :param machine_graph: the machine graph object
@@ -146,34 +144,32 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
     @staticmethod
     def _find_closest_live_packet_gatherer(
             machine_vertex, machine_lpgs, machine, placements):
-        """ locates the LPG on the nearest ethernet connected chip to the\
-         machine vertex in question
+        """ locates the LPG on the nearest Ethernet connected chip to the\
+            machine vertex in question, or the LPG on 0, 0 if a closer one\
+            can't be found
 
         :param machine_vertex: the machine vertex to locate the nearest LPG to
-        :param machine_lpgs: the LPG's that could be nearest to the machine\
-         vertex
+        :param machine_lpgs: dict of gatherers by chip placed on
         :param machine: the spinn machine object
         :param placements: the placements object
         :return: the local LPG
-        :raises ConfigurationException: when no LPG is located on the nearest\
-         ethernet chip with the correct params space.
+        :raise ConfigurationException: if a local gatherer cannot be found
         """
 
         # locate location of vertex in machine
-        vertex_placement = placements.get_placement_of_vertex(machine_vertex)
-        vertex_chip = machine.get_chip_at(vertex_placement.x,
-                                          vertex_placement.y)
-        # locate closest LPG
-        for machine_lpg in machine_lpgs:
-            lpg_placement = placements.get_placement_of_vertex(machine_lpg)
-            lpg_chip = machine.get_chip_at(lpg_placement.x, lpg_placement.y)
+        placement = placements.get_placement_of_vertex(machine_vertex)
+        chip = machine.get_chip_at(placement.x, placement.y)
 
-            if (vertex_chip.nearest_ethernet_x == lpg_chip.x or
-                    vertex_chip.nearest_ethernet_y == lpg_chip.y):
-                return machine_lpg
+        # locate closest LPG
+        if (chip.nearest_ethernet_x, chip.nearest_ethernet_y) in machine_lpgs:
+            return machine_lpgs[
+                (chip.nearest_ethernet_x, chip.nearest_ethernet_y)]
+
+        if (0, 0) in machine_lpgs:
+            return machine_lpgs[0, 0]
 
         # if got through all LPG vertices and not found the right one. go BOOM
         raise exceptions.ConfigurationException(
-            "Cannot find the LPG that resides on the nearest ethernet "
-            "connected chip to the vertex {} located {}:{}".format(
-                machine_vertex, vertex_chip.x, vertex_chip.y))
+            "Cannot find a Live Packet Gatherer from {} for the vertex {}"
+            " located {}:{}".format(
+                machine_lpgs, machine_vertex, chip.x, chip.y))

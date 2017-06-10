@@ -15,9 +15,11 @@ from spinn_front_end_common.utility_models. \
 from spinn_machine.virtual_machine import VirtualMachine
 from spinnman.messages.eieio.eieio_type import EIEIOType
 
+import unittest
 
-class TestLPGPreAllocateRes(object):
-    """ tests the interaction of the pre resource calcs
+
+class TestLPGPreAllocateRes(unittest.TestCase):
+    """ tests the interaction of the pre resource calculations
 
     """
 
@@ -40,7 +42,7 @@ class TestLPGPreAllocateRes(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -52,8 +54,8 @@ class TestLPGPreAllocateRes(object):
         # run  pre allocator
         pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
-            live_packet_gatherers=live_packet_gatherers, machine=machine,
-            previous_allocated_resources=PreAllocatedResourceContainer())
+            live_packet_gatherer_parameters=live_packet_gatherers,
+            machine=machine)
 
         locs = list()
         locs.append((0, 0))
@@ -64,11 +66,10 @@ class TestLPGPreAllocateRes(object):
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
-            if sdram.sdram_usage != \
-                    LivePacketGatherMachineVertex.get_sdram_usage():
-                raise Exception
-        if len(locs) != 0:
-            raise Exception
+            self.assertEqual(
+                sdram.sdram_usage,
+                LivePacketGatherMachineVertex.get_sdram_usage())
+        self.assertEqual(len(locs), 0)
 
         locs = list()
         locs.append((0, 0))
@@ -78,14 +79,11 @@ class TestLPGPreAllocateRes(object):
         cores = pre_res.core_resources
         for core in cores:
             locs.remove((core.chip.x, core.chip.y))
-            if core.n_cores != 1:
-                raise Exception
-        if len(locs) != 0:
-            raise Exception
+            self.assertEqual(core.n_cores, 1)
+        self.assertEqual(len(locs), 0)
 
         # verify specific cores
-        if len(pre_res.specific_core_resources) != 0:
-            raise Exception
+        self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_one_lpg_params_and_3_specific(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
@@ -106,7 +104,7 @@ class TestLPGPreAllocateRes(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -115,20 +113,18 @@ class TestLPGPreAllocateRes(object):
         default_params_holder = LivePacketGatherParameters(**extended)
         live_packet_gatherers[default_params_holder] = list()
 
-        # and special LPG on ethernet connected chips
+        # and special LPG on Ethernet connected chips
         index = 1
-        specific_data_holders = dict()
         for chip in machine.ethernet_connected_chips:
-            extended['label'] = "bupkis{}".format(index)
+            extended['label'] = "test{}".format(index)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
-            specific_data_holders[(chip.x, chip.y)] = default_params_holder2
             live_packet_gatherers[default_params_holder2] = list()
 
         pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
-            live_packet_gatherers=live_packet_gatherers, machine=machine,
-            previous_allocated_resources=PreAllocatedResourceContainer())
+            live_packet_gatherer_parameters=live_packet_gatherers,
+            machine=machine)
 
         locs = list()
         locs.append((0, 0))
@@ -139,27 +135,26 @@ class TestLPGPreAllocateRes(object):
         sdrams = pre_res.specific_sdram_usage
         for sdram in sdrams:
             locs.remove((sdram.chip.x, sdram.chip.y))
-            if sdram.sdram_usage != \
-                    LivePacketGatherMachineVertex.get_sdram_usage() * 2:
-                raise Exception
-        if len(locs) != 0:
-            raise Exception
+            self.assertEqual(
+                sdram.sdram_usage,
+                LivePacketGatherMachineVertex.get_sdram_usage() * 2)
+        self.assertEqual(len(locs), 0)
 
         locs = dict()
         locs[(0, 0)] = 0
         locs[(4, 8)] = 0
         locs[(8, 4)] = 0
+
         # verify cores
         cores = pre_res.core_resources
         for core in cores:
             locs[(core.chip.x, core.chip.y)] += core.n_cores
 
-        if locs[(0, 0)] != 2 or locs[(4, 8)] != 2 or locs[(8, 4)] != 2:
-            raise Exception
+        for (x, y) in [(0, 0), (4, 8), (8, 4)]:
+            self.assertEqual(locs[x, y], 2)
 
         # verify specific cores
-        if len(pre_res.specific_core_resources) != 0:
-            raise Exception
+        self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_added_pre_res(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
@@ -180,7 +175,7 @@ class TestLPGPreAllocateRes(object):
             'strip_sdp': None,
             'board_address': None,
             'tag': None,
-            'label': "bupkis"}
+            'label': "test"}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -207,8 +202,8 @@ class TestLPGPreAllocateRes(object):
         # run  pre allocator
         pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
-            live_packet_gatherers=live_packet_gatherers, machine=machine,
-            previous_allocated_resources=pre_pre_res)
+            live_packet_gatherer_parameters=live_packet_gatherers,
+            machine=machine, pre_allocated_resources=pre_pre_res)
 
         locs = list()
         locs.append((0, 0))
@@ -223,38 +218,33 @@ class TestLPGPreAllocateRes(object):
             locs.remove((sdram.chip.x, sdram.chip.y))
             if sdram.sdram_usage != \
                     LivePacketGatherMachineVertex.get_sdram_usage():
+                self.assertIn(sdram.chip.x, (2, 7))
+                self.assertIn(sdram.chip.y, (2, 7))
+                self.assertEqual(sdram.chip.x, sdram.chip.y)
                 if sdram.chip.x == 2 and sdram.chip.y == 2:
-                    if sdram.sdram_usage != 30000:
-                        raise Exception
+                    self.assertEqual(sdram.sdram_usage, 30000)
                 elif sdram.chip.x == 7 and sdram.chip.y == 7:
-                    if sdram.sdram_usage != 50000:
-                        raise Exception
-                else:
-                    raise Exception
-        if len(locs) != 0:
-            raise Exception
+                    self.assertEqual(sdram.sdram_usage, 50000)
+        self.assertEqual(len(locs), 0)
 
         locs = list()
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
         locs.append((3, 3))
+
         # verify cores
         cores = pre_res.core_resources
         for core in cores:
             locs.remove((core.chip.x, core.chip.y))
             if core.n_cores != 1:
-                if core.chip.x == 3 and core.chip.y == 3:
-                    if core.n_cores != 2:
-                        raise Exception
-                else:
-                    raise Exception
-        if len(locs) != 0:
-            raise Exception
+                self.assertEqual(core.chip.x, 3)
+                self.assertEqual(core.chip.y, 3)
+                self.assertEqual(core.n_cores, 2)
+        self.assertEqual(len(locs), 0)
 
         # verify specific cores
-        if len(pre_res.specific_core_resources) != 0:
-            raise Exception
+        self.assertEqual(len(pre_res.specific_core_resources), 0)
 
     def test_none(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
@@ -262,30 +252,21 @@ class TestLPGPreAllocateRes(object):
         # run  pre allocator
         pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
-            live_packet_gatherers=live_packet_gatherers, machine=machine,
-            previous_allocated_resources=PreAllocatedResourceContainer())
-        if (len(pre_res.specific_core_resources) != 0 or
-                len(pre_res.core_resources) != 0 or
-                len(pre_res.specific_sdram_usage) != 0):
-            raise Exception
+            live_packet_gatherer_parameters=live_packet_gatherers,
+            machine=machine)
+        self.assertEqual(len(pre_res.specific_core_resources), 0)
+        self.assertEqual(len(pre_res.core_resources), 0)
+        self.assertEqual(len(pre_res.specific_sdram_usage), 0)
 
     def test_fail(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
         pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
-        try:
-            pre_alloc(
-                live_packet_gatherers=live_packet_gatherers, machine=machine,
-                previous_allocated_resources=None)
-            raise Exception
-        except Exception:
-            pass
+        self.assertRaises(
+            Exception, pre_alloc(
+                live_packet_gatherer_parameters=live_packet_gatherers,
+                machine=machine))
 
 
 if __name__ == "__main__":
-    test = TestLPGPreAllocateRes()
-    test.test_one_lpg_params()
-    test.test_one_lpg_params_and_3_specific()
-    test.test_added_pre_res()
-    test.test_none()
-    test.test_fail()
+    unittest.main()

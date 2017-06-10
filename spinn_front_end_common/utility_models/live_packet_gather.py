@@ -3,7 +3,6 @@ from pacman.model.constraints.placer_constraints\
     import PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.executor.injection_decorator import inject_items
 
 # spinn front end imports
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
@@ -95,13 +94,9 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @inject_items({"machine_time_step": "MachineTimeStep"})
-    @overrides(
-        ApplicationVertex.create_machine_vertex,
-        additional_arguments={"machine_time_step"}
-    )
+    @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, machine_time_step,
+            self, vertex_slice, resources_required,
             label=None, constraints=None):
         return LivePacketGatherMachineVertex(
             label, self._use_prefix, self._key_prefix, self._prefix_type,

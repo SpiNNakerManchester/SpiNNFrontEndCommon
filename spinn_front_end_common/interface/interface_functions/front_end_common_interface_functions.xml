@@ -6,7 +6,7 @@
         <python_class>FrontEndCommonPreAllocateResourcesForLivePacketGatherers</python_class>
         <input_definitions>
             <parameter>
-                <param_name>live_packet_gatherers</param_name>
+                <param_name>live_packet_gatherer_parameters</param_name>
                 <param_type>LivePacketRecorderParameters</param_type>
             </parameter>
             <parameter>
@@ -14,17 +14,19 @@
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
-                <param_name>previous_allocated_resources</param_name>
-                <param_type>MemoryPreviousAllocatedResources</param_type>
+                <param_name>pre_allocated_resources</param_name>
+                <param_type>MemoryPreAllocatedResources</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>live_packet_gatherers</param_name>
-            <param_name>previous_allocated_resources</param_name>
+            <param_name>live_packet_gatherer_parameters</param_name>
             <param_name>machine</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>pre_allocated_resources</param_name>
+        </optional_inputs>
         <outputs>
-            <param_type>MemoryPreviousAllocatedResources</param_type>
+            <param_type>MemoryPreAllocatedResources</param_type>
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonInsertEdgesToLivePacketGatherers">
@@ -34,12 +36,8 @@
         <python_class>FrontEndCommonInsertEdgesToLivePacketGatherers</python_class>
         <input_definitions>
             <parameter>
-                <param_name>live_packet_gatherers</param_name>
+                <param_name>live_packet_gatherer_parameters</param_name>
                 <param_type>LivePacketRecorderParameters</param_type>
-            </parameter>
-            <parameter>
-                <param_name>live_packet_recorder_recorded_vertex_type</param_name>
-                <param_type>LivePacketRecorderRecordedVertexType</param_type>
             </parameter>
             <parameter>
                 <param_name>live_packet_gatherers_to_vertex_mapping</param_name>
@@ -67,8 +65,7 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>live_packet_recorder_recorded_vertex_type</param_name>
-            <param_name>live_packet_gatherers</param_name>
+            <param_name>live_packet_gatherer_parameters</param_name>
             <param_name>live_packet_gatherers_to_vertex_mapping</param_name>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
@@ -92,7 +89,7 @@
                 <param_type>MemoryApplicationGraph</param_type>
             </parameter>
             <parameter>
-                <param_name>live_packet_gatherers</param_name>
+                <param_name>live_packet_gatherer_parameters</param_name>
                 <param_type>LivePacketRecorderParameters</param_type>
             </parameter>
             <parameter>
@@ -109,14 +106,13 @@
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>live_packet_gatherers</param_name>
+            <param_name>live_packet_gatherer_parameters</param_name>
             <param_name>machine_graph</param_name>
             <param_name>machine</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
             <param_name>application_graph</param_name>
-
         </optional_inputs>
         <outputs>
             <param_type>LivePacketRecorderParametersToVertexMapping</param_type>

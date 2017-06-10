@@ -286,7 +286,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # mapping between parameters and the vertices which need to talk to
         # them
-        "_live_packet_recorders",
+        "_live_packet_recorder_params",
 
         # place holder for checking the vertices being added to the recorders
         # tracker are all of the same vertex type.
@@ -320,8 +320,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # command sender vertex
         self._command_sender = None
 
-        # store for lpg demands
-        self._live_packet_recorders = dict()
+        # store for Live Packet Gatherers
+        self._live_packet_recorder_params = defaultdict(list)
         self._live_packet_recorders_associated_vertex_type = None
 
         # update graph label if needed
@@ -454,9 +454,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
          given LPG
         :rtype: None
         """
-        if live_packet_gatherer_params not in self._live_packet_recorders:
-            self._live_packet_recorders[live_packet_gatherer_params] = list()
-        self._live_packet_recorders[live_packet_gatherer_params].append(
+        self._live_packet_recorder_params[live_packet_gatherer_params].append(
             vertex_to_record_from)
 
         # verify that the vertices being added are of one vertex type.
@@ -907,8 +905,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms = list()
         outputs = list()
 
-        inputs["MemoryPreAllocatedResources"] = \
-            PreAllocatedResourceContainer()
+        # add algorithms for handling LPG placement and edge insertion
+        if len(self._live_packet_recorder_params) != 0:
+            algorithms.append(
+                "FrontEndCommonPreAllocateResourcesForLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorder_params
 
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
@@ -1053,14 +1055,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             elif self._remote_spinnaker_url is not None:
                 algorithms.append("FrontEndCommonHBPAllocator")
 
-            # add algorithms for handling LPG placement and edge insertion
-            if len(self._live_packet_recorders) != 0:
-                algorithms.insert(
-                    0,
-                    "FrontEndCommonPreAllocateResourcesForLivePacketGatherers")
-                inputs['LivePacketRecorderParameters'] = \
-                    self._live_packet_recorders
-
             algorithms.append("FrontEndCommonMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
 
@@ -1188,11 +1182,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["FileConstraintsFilePath"] = os.path.join(
             self._json_folder, "constraints.json")
 
+        algorithms = list()
+
+        if len(self._live_packet_recorder_params) != 0:
+            algorithms.append(
+                "FrontEndCommonInsertLivePacketGatherersToGraphs")
+            algorithms.append(
+                "FrontEndCommonInsertEdgesToLivePacketGatherers")
+            inputs['LivePacketRecorderParameters'] = \
+                self._live_packet_recorder_params
+
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
-            algorithms = list(self._extra_mapping_algorithms)
-        else:
-            algorithms = list()
+            algorithms.extend(self._extra_mapping_algorithms)
 
         optional_algorithms = list()
 
@@ -1256,16 +1258,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
-
-        if len(self._live_packet_recorders) != 0:
-            algorithms.insert(
-                0, "FrontEndCommonInsertLivePacketGatherersToGraphs")
-            algorithms.insert(
-                1, "FrontEndCommonInsertEdgesToLivePacketGatherers")
-            inputs['LivePacketRecorderParameters'] = \
-                self._live_packet_recorders
-            inputs['LivePacketRecorderRecordedVertexType'] = \
-                self._live_packet_recorders_associated_vertex_type
 
         # handle outputs
         outputs = [
@@ -2140,8 +2132,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     @property
     def config(self):
-        """ helper method for the  front end impls till we remove config
-
-        :return:
+        """ helper method for the front end implementations until we remove\
+            config
         """
         return self._config
