@@ -634,8 +634,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # Reset the machine if the machine is a spalloc machine and the
             # graph has changed
-            if (application_graph_changed and self._hostname is None and
-                    not self._use_virtual_board):
+            if (self._has_ran and application_graph_changed and
+                    self._hostname is None and not self._use_virtual_board):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
