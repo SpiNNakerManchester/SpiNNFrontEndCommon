@@ -455,7 +455,7 @@ void recording_finalise() {
     log_debug("Finalising recording channels");
 
     // wait till all DMA's have been finished
-    while(circular_buffer_size(dma_complete_buffer) != 0){
+    while (circular_buffer_size(dma_complete_buffer) != 0) {
         spin1_wfi();
     }
 
@@ -491,15 +491,17 @@ void recording_finalise() {
 }
 
 //! \brief updates host read point as dma has finished
-void _recording_dma_finished(uint unused, uint tag){
+void _recording_dma_finished(uint unused, uint tag) {
+
     // pop region and write pointer from circular queue
     uint32_t channel_id;
     uint32_t dma_current_write;
     circular_buffer_get_next(dma_complete_buffer, &channel_id);
     circular_buffer_get_next(dma_complete_buffer, &dma_current_write);
+
     // update recording region dma_current_write
     g_recording_channels[(uint8_t) channel_id].dma_current_write =
-        (uint8_t) dma_current_write;
+        (uint8_t *) dma_current_write;
 }
 
 bool recording_initialize(

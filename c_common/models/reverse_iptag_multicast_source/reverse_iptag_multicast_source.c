@@ -16,7 +16,7 @@
 
 //! \brief human readable versions of the different priorities and usages.
 typedef enum callback_priorities {
-    SDP_CALLBACK = 0, TIMER = 3, DMA=2
+    SDP_CALLBACK = 0, TIMER = 3, DMA = 2
 }callback_priorities;
 
 typedef enum eieio_data_message_types {

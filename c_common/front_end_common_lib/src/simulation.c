@@ -215,10 +215,9 @@ void _simulation_sdp_callback_handler(uint mailbox, uint port) {
 }
 
 bool simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
-    if (sdp_callback[sdp_port] == NULL){
+    if (sdp_callback[sdp_port] == NULL) {
         sdp_callback[sdp_port] = callback;
-    }
-    else{
+    } else {
         log_error("Cannot allocate sdp callback on port %d as its already "
                   "been allocated.", sdp_port);
         return false;
@@ -230,33 +229,34 @@ void simulation_sdp_callback_off(uint sdp_port) {
 }
 
 //! \brief handles the dma transfer done callbacks interface.
-void _simulation_dma_transfer_done_callback(uint unused, uint tag){
-    if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL){
+void _simulation_dma_transfer_done_callback(uint unused, uint tag) {
+    if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
         dma_complete_callbacks[tag](unused, tag);
     }
 }
 
-bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback){
+bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback) {
 
     // ensure that tag being allocated is less than max tag
-    if (tag >= MAX_DMA_CALLBACK_TAG){
+    if (tag >= MAX_DMA_CALLBACK_TAG) {
         log_error("Cannot handle tag value above %d, please reduce the tag "
                   "value accordingly.", MAX_DMA_CALLBACK_TAG - 1);
         return false;
     }
 
     // allocate tag callback if not already allocated
-    if (dma_complete_callbacks[tag] == NULL){
+    if (dma_complete_callbacks[tag] == NULL) {
         dma_complete_callbacks[tag] = callback;
-    }
-    else{ // if allocated already, raise error
+    } else { 
+        
+        // if allocated already, raise error
         log_error("Cannot allocate dma transfer callback on tag %d as its "
                   "already been allocated.", tag);
         return false;
     }
 }
 
-void simulation_dma_transfer_done_callback_off(uint tag){
+void simulation_dma_transfer_done_callback_off(uint tag) {
     dma_complete_callbacks[tag] = NULL;
 }
 
