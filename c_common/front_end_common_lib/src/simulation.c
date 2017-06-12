@@ -247,8 +247,8 @@ bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback) {
     // allocate tag callback if not already allocated
     if (dma_complete_callbacks[tag] == NULL) {
         dma_complete_callbacks[tag] = callback;
-    } else { 
-        
+    } else {
+
         // if allocated already, raise error
         log_error("Cannot allocate dma transfer callback on tag %d as its "
                   "already been allocated.", tag);
