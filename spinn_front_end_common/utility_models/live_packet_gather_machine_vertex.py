@@ -244,8 +244,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
-        spec.write_value(struct.unpack("<I", struct.pack(
-            "<HH", iptag.destination_y, iptag.destination_x))[0])
+        spec.write_value(struct.unpack("<H", struct.pack(
+            "<BB", iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
