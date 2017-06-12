@@ -1,6 +1,4 @@
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.constraints.placer_constraints\
-    import PlacerBoardConstraint, PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
@@ -48,7 +46,7 @@ class LivePacketGatherMachineVertex(
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0,
-            ip_address=None, port=None, strip_sdp=None, board_address=None,
+            hostname=None, port=None, strip_sdp=None, board_address=None,
             tag=None, constraints=None):
         # inheritance
         MachineVertex.__init__(self, label, constraints=constraints)
@@ -58,15 +56,9 @@ class LivePacketGatherMachineVertex(
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
             iptags=[IPtagResource(
-                ip_address=ip_address, port=port,
+                ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,
                 traffic_identifier="LPG_EVENT_STREAM")])
-
-        # implementation for where constraints are stored
-        self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
-        if board_address is not None:
-            # Try to place this near the Ethernet
-            self.add_constraint(PlacerBoardConstraint(board_address))
 
         # app specific data items
         self._use_prefix = use_prefix
@@ -252,8 +244,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
-        spec.write_value(struct.unpack("<I", struct.pack(
-            "<HH", iptag.destination_y, iptag.destination_x))[0])
+        spec.write_value(struct.unpack("<H", struct.pack(
+            "<BB", iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)

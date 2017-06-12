@@ -64,7 +64,7 @@ static uint32_t payload_prefix;
 // Right payload shift (for the sender)
 static uint32_t payload_right_shift;
 static uint32_t sdp_tag;
-static uint32_t sdp_dest;
+static uint16_t sdp_dest;
 static uint32_t packets_per_timestamp;
 
 //! human readable definitions of each region in SDRAM
@@ -379,7 +379,7 @@ void read_parameters(address_t region_address) {
     log_info("payload_prefix: %08x\n", payload_prefix);
     log_info("payload_right_shift: %d\n", payload_right_shift);
     log_info("sdp_tag: %d\n", sdp_tag);
-    log_info("sdp_dest: 0x%08x\n", sdp_dest);
+    log_info("sdp_dest: 0x%04x\n", sdp_dest);
     log_info("packets_per_timestamp: %d\n", packets_per_timestamp);
 }
 
@@ -442,13 +442,13 @@ bool configure_sdp_msg(void) {
 
     // check incompatible options
     if (payload_timestamp && payload_apply_prefix
-    		&& HAVE_PAYLOAD(packet_type)) {
+            && HAVE_PAYLOAD(packet_type)) {
         log_error("Timestamp can either be included as payload prefix or as"
                   "payload to each key, not both\n");
         return false;
     }
     if (payload_timestamp && !payload_apply_prefix
-    		&& !HAVE_PAYLOAD(packet_type)) {
+            && !HAVE_PAYLOAD(packet_type)) {
         log_error("Timestamp can either be included as payload prefix or as"
                   "payload to each key, but current configuration does not"
                   "specify either of these\n");
