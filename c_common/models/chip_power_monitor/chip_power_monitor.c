@@ -1,6 +1,7 @@
 #include <spin1_api.h>
 #include <simulation.h>
 #include <spinnaker.h>
+#include <debug.h>
 #include <data_specification.h>
 
 #define NUM_CORES 18
@@ -14,13 +15,19 @@ typedef enum {
     SAMPLE_COUNT_LIMIT = 0, SAMPLE_FREQUENCY = 1
 } parameter_layout;
 
+//! values for the priority for each callback
+typedef enum callback_priorities{
+    SDP = 1, TIMER = 0, DMA=2
+} callback_priorities;
+
 static uint32_t simulation_ticks = 0;
 static uint32_t infinite_run = 0;
+static uint32_t time;
 
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count, sample_count_limit;
-uint32_t recording_flags, simulation_ticks, infinite_run;
-uint32_t sample_samply_frequency;
+uint32_t recording_flags;
+uint32_t samply_frequency;
 
 static uint32_t get_sample(void)
 {
@@ -59,7 +66,7 @@ static void sample_in_slot(uint unused0, uint unused1)
         time -= 1;
     }
 
-    unit32_t sc = ++sample_count;
+    uint32_t sc = ++sample_count;
     uint32_t offset = get_random_busy();
     while (offset --> 0) {
 	// Do nothing
@@ -94,7 +101,7 @@ static bool initialize(uint32_t *timer)
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer, &simulation_ticks,
-            &infinite_run, 1)) {
+            &infinite_run, SDP, DMA)) {
         return false;
     }
     if (!read_parameters(
@@ -118,6 +125,7 @@ void c_main(void)
     reset_core_counters();
 
     spin1_set_timer_tick(timer);
-    spin1_callback_on(TIMER_TICK, sample_in_slot, 0);
+    spin1_callback_on(TIMER_TICK, sample_in_slot, TIMER);
+    time = UINT32_MAX;
     simulation_run();
 }
