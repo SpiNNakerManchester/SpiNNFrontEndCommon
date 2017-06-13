@@ -10,6 +10,9 @@ class EndBufferingState(object):
         #  a list of channel state, where each channel is stored in a
         # ChannelBufferState object
         "_list_channel_buffer_state",
+
+        # the final state stuff
+        "_buffering_out_fsm_state"
     ]
 
     def __init__(

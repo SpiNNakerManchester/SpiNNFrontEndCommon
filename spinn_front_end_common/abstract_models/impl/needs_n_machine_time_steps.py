@@ -1,13 +1,18 @@
-from pacman.executor.injection_decorator import inject_items
+from six import add_metaclass
+
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
+from pacman.executor.injection_decorator import supports_injection, inject
 
 
+@supports_injection
+@add_metaclass(AbstractBase)
 class NeedsNMachineTimeSteps(object):
     """ A class that uses the number of machine time steps
     """
 
     __slots__ = ()
 
-    @property
-    @inject_items({"total_machine_time_steps": "TotalMachineTimeSteps"})
-    def _n_machine_time_steps(self, total_machine_time_steps):
-        return total_machine_time_steps
+    @inject("TotalMachineTimeSteps")
+    @abstractmethod
+    def set_n_machine_time_steps(self, n_machine_time_steps):
+        pass

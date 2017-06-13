@@ -7,8 +7,13 @@
 #include <recording.h>
 #include <simulation.h>
 #include <buffered_eieio_defs.h>
-
+#include <simulation.h>
 #include <sark.h>
+#include <circular_buffer.h>
+#include <spin1_api_params.h>
+
+// Declare wfi function
+extern void spin1_wfi();
 
 // Standard includes
 #include <string.h>
@@ -32,6 +37,7 @@ enum recording_data_e {
 typedef struct recording_channel_t {
     uint8_t *start;
     uint8_t *current_write;
+    uint8_t *dma_current_write;
     uint8_t *current_read;
     uint8_t *end;
     uint8_t region_id;
@@ -42,6 +48,10 @@ typedef struct recording_channel_t {
 //---------------------------------------
 // Globals
 //---------------------------------------
+
+//! circular queue for dma complete addresses
+static circular_buffer dma_complete_buffer;
+
 //! array containing all possible channels.
 static recording_channel_t *g_recording_channels = NULL;
 static address_t *region_addresses = NULL;
@@ -204,7 +214,16 @@ static inline bool _recording_write_memory(
 
         if (final_space >= length) {
             log_debug("Packet fits in final space of %u", final_space);
-            spin1_memcpy(write_pointer, data, length);
+
+            // add to dma complete tracker
+            circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+            circular_buffer_add(
+                dma_complete_buffer, (uint32_t) write_pointer + length);
+
+            // set off dma
+            spin1_dma_transfer(
+                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
+                length);
             write_pointer += length;
             if (write_pointer >= end_of_buffer_region) {
                 write_pointer = buffer_region;
@@ -227,13 +246,32 @@ static inline bool _recording_write_memory(
 
             log_debug(
                 "Copying first %d bytes to final space of %u", final_space);
-            spin1_memcpy(write_pointer, data, final_space);
+
+            // add to dma complete tracker
+            circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+            circular_buffer_add(dma_complete_buffer, (uint32_t) buffer_region);
+
+            // set off dma
+            spin1_dma_transfer(
+                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
+                final_space);
+
             write_pointer = buffer_region;
             data += final_space;
 
             uint32_t final_len = length - final_space;
             log_debug("Copying remaining %u bytes", final_len);
-            spin1_memcpy(write_pointer, data, final_len);
+
+            // add to dma complete tracker
+            circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+            circular_buffer_add(
+                dma_complete_buffer, (uint32_t) write_pointer + final_len);
+
+            // set off dma
+            spin1_dma_transfer(
+                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
+                final_len);
+
             write_pointer += final_len;
             if (write_pointer == end_of_buffer_region) {
                 write_pointer = buffer_region;
@@ -302,7 +340,8 @@ static inline void _recording_send_buffering_out_trigger_message(
                      buffer_size_before_trigger)) {
             uint8_t *buffer_region = g_recording_channels[channel].start;
             uint8_t *end_of_buffer_region = g_recording_channels[channel].end;
-            uint8_t *write_pointer = g_recording_channels[channel].current_write;
+            uint8_t *write_pointer =
+                g_recording_channels[channel].dma_current_write;
             uint8_t *read_pointer = g_recording_channels[channel].current_read;
             buffered_operations last_buffer_operation =
                 g_recording_channels[channel].last_buffer_operation;
@@ -418,6 +457,12 @@ void recording_finalise() {
 
     log_debug("Finalising recording channels");
 
+    // wait till all DMA's have been finished
+    while (circular_buffer_size(dma_complete_buffer) != 0) {
+        spin1_wfi();
+    }
+
+    // update buffer state data write
     _recording_buffer_state_data_write();
 
     // Loop through channels
@@ -430,15 +475,15 @@ void recording_finalise() {
 
             // Calculate the number of bytes that have been written and write
             // back to SDRAM counter
-            if (g_recording_channels[channel].missing_info)
+            if (g_recording_channels[channel].missing_info) {
                 log_info(
                     "\tFinalising channel %u - dropped information while"
                     "buffering - state info stored in SDRAM", channel);
-            else
+            } else {
                 log_info(
                     "\tFinalising channel %u - state info stored in SDRAM",
                     channel);
-
+            }
             if (!_close_channel(channel)) {
                 log_error("could not close channel %u.", channel);
             } else {
@@ -448,8 +493,25 @@ void recording_finalise() {
     }
 }
 
+//! \brief updates host read point as dma has finished
+void _recording_dma_finished(uint unused, uint tag) {
+
+    // pop region and write pointer from circular queue
+    uint32_t channel_id;
+    uint32_t dma_current_write;
+    circular_buffer_get_next(dma_complete_buffer, &channel_id);
+    circular_buffer_get_next(dma_complete_buffer, &dma_current_write);
+
+    // update recording region dma_current_write
+    g_recording_channels[(uint8_t) channel_id].dma_current_write =
+        (uint8_t *) dma_current_write;
+}
+
 bool recording_initialize(
         address_t recording_data_address, uint32_t *recording_flags) {
+
+    // build dma address circular queue
+    dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 2);
 
     // Read in the parameters
     n_recording_regions = recording_data_address[N_REGIONS];
@@ -536,6 +598,10 @@ bool recording_initialize(
     msg.dest_addr = buffering_destination;
     msg.srce_addr = spin1_get_chip_id();
 
+    // register dma transfer done callback
+    simulation_dma_transfer_done_callback_on(
+        RECORDING_DMA_COMPLETE_TAG_ID, _recording_dma_finished);
+
     return true;
 }
 
@@ -559,6 +625,8 @@ void recording_reset() {
                 (uint8_t*) region_address_offset;
             g_recording_channels[i].current_write =
                 (uint8_t*) region_address_offset;
+            g_recording_channels[i].dma_current_write =
+                (uint8_t*) region_address_offset;
             g_recording_channels[i].current_read =
                 (uint8_t*) region_address_offset;
             g_recording_channels[i].end =
@@ -577,6 +645,7 @@ void recording_reset() {
         } else {
             g_recording_channels[i].start = NULL;
             g_recording_channels[i].current_write = NULL;
+            g_recording_channels[i].dma_current_write = NULL;
             g_recording_channels[i].current_read = NULL;
             g_recording_channels[i].end = NULL;
             g_recording_channels[i].last_buffer_operation =

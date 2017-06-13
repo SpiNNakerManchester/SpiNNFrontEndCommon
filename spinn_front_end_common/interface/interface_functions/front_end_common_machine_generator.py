@@ -18,7 +18,7 @@ class FrontEndCommonMachineGenerator(object):
 
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
-            board_version, auto_detect_bmp, enable_reinjection,
+            downed_links, board_version, auto_detect_bmp, enable_reinjection,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             max_sdram_size=None, max_core_id=None):
         """
@@ -53,7 +53,8 @@ class FrontEndCommonMachineGenerator(object):
         txrx = create_transceiver_from_hostname(
             hostname=hostname, bmp_connection_data=bmp_connection_data,
             version=board_version, ignore_chips=downed_chips,
-            ignore_cores=downed_cores, auto_detect_bmp=auto_detect_bmp,
+            ignore_cores=downed_cores, ignored_links=downed_links,
+            auto_detect_bmp=auto_detect_bmp,
             boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
             max_sdram_size=max_sdram_size, max_core_id=max_core_id)

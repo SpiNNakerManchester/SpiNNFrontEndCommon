@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/SpiNNakerManchester/SpiNNFrontEndCommon.svg?branch=master)](https://travis-ci.org/SpiNNakerManchester/SpiNNFrontEndCommon)
+
 This package provides functionality which are common to front ends that
 translate application level programs into executables which run on a SpiNNaker
 machine.
@@ -63,4 +65,6 @@ Documentation
 =============
 [SpiNNFrontEndCommon Python documentation](http://spinnakergraphfrontend.readthedocs.io)
 
-[Combined python documentation](http://spinnakermanchester.readthedocs.io)
+[Combined PyNN7 python documentation](http://spinnaker7manchester.readthedocs.io)
+
+[Combined PyNN8 python documentation](http://spinnaker8manchester.readthedocs.io)

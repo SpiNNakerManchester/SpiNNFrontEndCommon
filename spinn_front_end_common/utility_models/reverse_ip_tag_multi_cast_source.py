@@ -1,22 +1,18 @@
 # pacman imports
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.constraints.placer_constraints.placer_board_constraint\
-    import PlacerBoardConstraint
-from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
-from pacman.model.resources.iptag_resource import IPtagResource
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ReverseIPtagResource, IPtagResource
+from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
 
 
 # front end common imports
 from spinn_front_end_common.abstract_models.\
     abstract_provides_outgoing_partition_constraints \
     import AbstractProvidesOutgoingPartitionConstraints
+from spinn_front_end_common.abstract_models.impl\
+    .provides_key_to_atom_mapping_impl import ProvidesKeyToAtomMappingImpl
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utility_models\
     .reverse_ip_tag_multicast_source_machine_vertex \
@@ -38,7 +34,8 @@ import sys
 class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
-        AbstractProvidesOutgoingPartitionConstraints):
+        AbstractProvidesOutgoingPartitionConstraints,
+        ProvidesKeyToAtomMappingImpl):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -120,6 +117,7 @@ class ReverseIpTagMultiCastSource(
         """
         ApplicationVertex.__init__(
             self, label, constraints, max_atoms_per_core)
+        ProvidesKeyToAtomMappingImpl.__init__(self)
 
         # basic items
         self._n_atoms = n_keys
@@ -279,3 +277,6 @@ class ReverseIpTagMultiCastSource(
                 self._record_time_between_requests)
         self._machine_vertices.append((vertex_slice, vertex))
         return vertex
+
+    def __repr__(self):
+        return self._label

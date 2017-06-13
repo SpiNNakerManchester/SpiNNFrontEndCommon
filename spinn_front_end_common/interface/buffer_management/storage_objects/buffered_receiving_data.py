@@ -335,3 +335,17 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+
+    def clear(self, x, y, p, region_id):
+        """ clears the data from a given data region (only clears things\
+            associated with a given data recording region).
+
+        :param x: placement x coord
+        :param y: placement y coord
+        :param p: placement p coord
+        :param region_id: the recording region id to clear data from
+        :return: None
+        """
+        del self._end_buffering_state[x, y, p, region_id]
+        del self._data[x, y, p, region_id]
+        del self._is_flushed[x, y, p, region_id]

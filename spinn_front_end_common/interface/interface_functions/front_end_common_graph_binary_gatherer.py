@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary\
@@ -14,11 +14,10 @@ class FrontEndCommonGraphBinaryGatherer(object):
 
     def __call__(
             self, placements, graph, executable_finder, graph_mapper=None):
-
         executable_targets = ExecutableTargets()
         binary_start_type = None
-        progress_bar = ProgressBar(graph.n_vertices, "Finding binaries")
-        for vertex in graph.vertices:
+        progress = ProgressBar(graph.n_vertices, "Finding binaries")
+        for vertex in progress.over(graph.vertices):
             placement = placements.get_placement_of_vertex(vertex)
             placement_binary_start_type = self._get_binary(
                 placement, vertex, executable_targets, executable_finder)
@@ -39,17 +38,15 @@ class FrontEndCommonGraphBinaryGatherer(object):
                     " type {}".format(
                         binary_start_type, placement,
                         placement_binary_start_type))
-            binary_start_type = placement_binary_start_type
-            progress_bar.update()
-        progress_bar.end()
+            if placement_binary_start_type is not None:
+                binary_start_type = placement_binary_start_type
 
         return executable_targets, binary_start_type
 
     def _get_binary(
             self, placement, associated_vertex, executable_targets,
             executable_finder):
-
-        # if the vertex can generate a DSG, call it
+        # if the vertex cannot generate a DSG, ignore it
         if not isinstance(associated_vertex, AbstractHasAssociatedBinary):
             return None
 
