@@ -1315,8 +1315,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = []
         algorithms = [self._dsg_algorithm]
 
-        if (self._config.get("Reports", "reportsEnabled") and
-                self._config.get("Reports", "writeProvenanceData")):
+        if (self._config.getboolean("Reports", "reportsEnabled") and
+                self._config.getboolean("Reports", "writeProvenanceData")):
             algorithms.append("FrontEndCommonGraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
 
@@ -1324,8 +1324,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._mapping_outputs = executor.get_items()
 
         # write provenance to file if necessary
-        if (self._config.get("Reports", "reportsEnabled") and
-                self._config.get("Reports", "writeProvenanceData") and
+        if (self._config.getboolean("Reports", "reportsEnabled") and
+                self._config.getboolean("Reports", "writeProvenanceData") and
                 not self._use_virtual_board):
             prov_items = executor.get_item("ProvenanceItems")
             self._write_provenance(prov_items)
@@ -1408,8 +1408,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             inputs["CoresToExtractIOBufFrom"] = \
                 helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
+                    self._config.getboolean(
+                        "Reports", "extract_iobuf_from_cores"),
+                    self._config.getboolean(
                         "Reports", "extract_iobuf_from_binary_types"),
                     self._load_outputs["ExecutableTargets"],
                     self._executable_finder)
@@ -1473,8 +1474,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("IOBuffers")
 
         # add extractor of provenance if needed
-        if (self._config.get("Reports", "reportsEnabled") and
-                self._config.get("Reports", "writeProvenanceData") and
+        if (self._config.getboolean("Reports", "reportsEnabled") and
+                self._config.getboolean("Reports", "writeProvenanceData") and
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
@@ -1500,8 +1501,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._write_iobuf(executor.get_item("IOBuffers"))
 
             # write provenance to file if necessary
-            if (self._config.get("Reports", "reportsEnabled") and
-                    self._config.get("Reports", "writeProvenanceData") and
+            if (self._config.getboolean("Reports", "reportsEnabled") and
+                    self._config.getboolean(
+                        "Reports", "writeProvenanceData") and
                     not self._use_virtual_board and
                     n_machine_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
@@ -2034,8 +2036,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 outputs.append("IOBuffers")
 
             # add extractor of provenance if needed
-            if (self._config.get("Reports", "reportsEnabled") and
-                    self._config.get("Reports", "writeProvenanceData")):
+            if (self._config.getboolean("Reports", "reportsEnabled") and
+                    self._config.getboolean("Reports", "writeProvenanceData")):
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
                 algorithms.append("FrontEndCommonRouterProvenanceGatherer")
                 outputs.append("ProvenanceItems")
@@ -2058,8 +2060,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._write_iobuf(executor.get_item("IOBuffers"))
 
                 # write provenance to file if necessary
-                if (self._config.get("Reports", "reportsEnabled") and
-                        self._config.get("Reports", "writeProvenanceData")):
+                if (self._config.getboolean("Reports", "reportsEnabled") and
+                        self._config.getboolean(
+                            "Reports", "writeProvenanceData")):
                     prov_items = executor.get_item("ProvenanceItems")
                     prov_items.extend(self._pacman_provenance.data_items)
                     self._pacman_provenance.clear()
