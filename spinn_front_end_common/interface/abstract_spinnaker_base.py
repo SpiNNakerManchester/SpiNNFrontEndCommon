@@ -1408,9 +1408,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             inputs["CoresToExtractIOBufFrom"] = \
                 helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.getboolean(
+                    self._config.get(
                         "Reports", "extract_iobuf_from_cores"),
-                    self._config.getboolean(
+                    self._config.get(
                         "Reports", "extract_iobuf_from_binary_types"),
                     self._load_outputs["ExecutableTargets"],
                     self._executable_finder)
