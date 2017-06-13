@@ -12,6 +12,8 @@
 #include <spin1_api.h>
 #include <buffered_eieio_defs.h>
 
+#define RECORDING_DMA_COMPLETE_TAG_ID 15
+
 typedef struct {
     uint16_t eieio_header_command;
     uint16_t chip_id;
