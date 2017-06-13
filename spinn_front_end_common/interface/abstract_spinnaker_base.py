@@ -1408,8 +1408,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("IOBuffers")
 
         # add extractor of provenance if needed
-        if (self._config.get("Reports", "reportsEnabled") and
-                self._config.get("Reports", "writeProvenanceData") and
+        if (self._config.getboolean("Reports", "reportsEnabled") and
+                self._config.getboolean("Reports", "writeProvenanceData") and
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
@@ -1435,8 +1435,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._write_iobuf(executor.get_item("IOBuffers"))
 
             # write provenance to file if necessary
-            if (self._config.get("Reports", "reportsEnabled") and
-                    self._config.get("Reports", "writeProvenanceData") and
+            if (self._config.getboolean("Reports", "reportsEnabled") and
+                    self._config.getboolean("Reports", "writeProvenanceData") and
                     not self._use_virtual_board and
                     n_machine_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
