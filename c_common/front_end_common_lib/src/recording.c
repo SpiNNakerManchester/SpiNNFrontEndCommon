@@ -12,6 +12,9 @@
 #include <circular_buffer.h>
 #include <spin1_api_params.h>
 
+// Declare wfi function
+extern void spin1_wfi();
+
 // Standard includes
 #include <string.h>
 #include <debug.h>
