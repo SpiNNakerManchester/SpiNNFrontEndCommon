@@ -4,7 +4,8 @@ import logging
 import struct
 
 from data_specification.enums.data_type import DataType
-from pacman.executor.injection_decorator import inject_items
+from pacman.executor.injection_decorator import inject_items, \
+    supports_injection
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     CPUCyclesPerTickResource, DTCMResource
@@ -32,7 +33,7 @@ from spinn_utilities.overrides import overrides
 
 logger = logging.getLogger(__name__)
 
-
+@supports_injection
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
@@ -65,17 +66,15 @@ class ChipPowerMonitorMachineVertex(
         self._sampling_frequency = sampling_frequency
 
     @property
-    @overrides(MachineVertex.resources_required)
-    def resources_required(self):
-        return self._resources_required()
-
-    @inject_items({
-        "n_machine_time_steps": "TotalMachineTimeSteps",
-        "machine_time_step": "MachineTimeStep",
-        "time_scale_factor": "TimeScaleFactor"
-    })
-    def _resources_required(self, n_machine_time_steps, machine_time_step,
-                            time_scale_factor):
+    @inject_items({"machine_time_step": "MachineTimeStep",
+                   "n_machine_time_steps": "TotalMachineTimeSteps",
+                   "time_scale_factor": "TimeScaleFactor"})
+    @overrides(MachineVertex.resources_required,
+               additional_arguments={
+                   'machine_time_step', 'n_machine_time_steps',
+                   'time_scale_factor'})
+    def resources_required(
+            self, n_machine_time_steps, machine_time_step, time_scale_factor):
         return self.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
@@ -247,9 +246,31 @@ class ChipPowerMonitorMachineVertex(
         return recording_utilities.get_n_timesteps_in_buffer_space(
             buffer_space, [self._buffered_sdram_per_timestep])
 
-    @overrides(AbstractReceiveBuffersToHost.get_minimum_buffer_sdram_usage)
-    def get_minimum_buffer_sdram_usage(self):
-        return self._minimum_buffer_sdram
+    @inject_items({"machine_time_step": "MachineTimeStep",
+                   "n_machine_time_steps": "TotalMachineTimeSteps",
+                   "time_scale_factor": "TimeScaleFactor"})
+    @overrides(AbstractReceiveBuffersToHost.get_minimum_buffer_sdram_usage,
+               additional_arguments={
+                   'machine_time_step', 'n_machine_time_steps',
+                   'time_scale_factor'})
+    def get_minimum_buffer_sdram_usage(
+            self, n_machine_time_steps, machine_time_step, time_scale_factor):
+        return recording_utilities.get_minimum_buffer_sdram(
+            [self._deduce_sdram_requirements_per_timer_tick(
+                machine_time_step, time_scale_factor)],
+            n_machine_time_steps, self._minimum_buffer_sdram)[0]
+
+    def _deduce_sdram_requirements_per_timer_tick(
+            self, machine_time_step, time_scale_factor):
+        """ deduce sdram usage pepr timer tick
+        
+        :param machine_time_step: the machine time step
+        :param time_scale_factor: the time scale factor
+        :return: the sdram usage
+        """
+
+
+
 
     def get_recorded_data(self, placement, buffer_manager):
         # for buffering output info is taken form the buffer manager

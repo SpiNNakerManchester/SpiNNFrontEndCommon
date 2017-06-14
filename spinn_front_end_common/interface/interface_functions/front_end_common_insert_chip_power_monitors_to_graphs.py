@@ -32,12 +32,16 @@ class FrontEndCommonInsertChipPowerMonitorsToGraphs(object):
 
         # create progress bar
         progress_bar = ProgressBar(
-            len(machine.chips),
+            len(list(machine.chips)),
             string_describing_what_being_progressed=(
                 "Adding Chip power monitors to Graph"))
 
-        for chip in progress_bar.over(machine.chips()):
+        for chip in progress_bar.over(machine.chips):
+
+            # build constraint
             constraint = PlacerChipAndCoreConstraint(chip.x, chip.y)
+
+            # build machine vert
             machine_vertex = ChipPowerMonitorMachineVertex(
                 label="chip_power_monitor_machine_vertex_for_chip({}:{})".
                     format(chip.x, chip.y),
@@ -45,7 +49,13 @@ class FrontEndCommonInsertChipPowerMonitorsToGraphs(object):
                 n_samples_per_recording=n_samples_per_recording,
                 constraints=[constraint])
 
+            # add vert to graph
+            machine_graph.add_vertex(machine_vertex)
+
+            # deal with app graphs if needed
             if application_graph is not None:
+
+                # build app vertex
                 vertex_slice = Slice(0, 0)
                 application_vertex = \
                     ChipPowerMonitorApplicationVertex(
@@ -54,12 +64,10 @@ class FrontEndCommonInsertChipPowerMonitorsToGraphs(object):
                         constraints=[constraint],
                         sampling_frequency=sampling_frequency,
                         n_samples_per_recording=n_samples_per_recording)
+
+                # add to graph
                 application_graph.add_vertex(application_vertex)
+
+                # update graph mapper
                 graph_mapper.add_vertex_mapping(
                     machine_vertex, vertex_slice, application_vertex)
-
-            # update progress bar
-            progress_bar.update()
-
-        # update progress bar
-        progress_bar.end()

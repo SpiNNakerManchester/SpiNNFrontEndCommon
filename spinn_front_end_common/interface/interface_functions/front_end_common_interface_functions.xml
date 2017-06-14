@@ -7,8 +7,9 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type><parameter>
+                <param_type>MemoryExtendedMachine</param_type>
             </parameter>
+            <parameter>
                 <param_name>pre_allocated_resources</param_name>
                 <param_type>MemoryPreAllocatedResources</param_type>
             </parameter>
@@ -48,11 +49,11 @@
             <param_type>MemoryPreAllocatedResources</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonInsertChipPowerMonitorsToGraph">
+    <algorithm name="FrontEndCommonInsertChipPowerMonitorsToGraphs">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_insert_chip_power_monitors_to_graph
+            spinn_front_end_common.interface.interface_functions.front_end_common_insert_chip_power_monitors_to_graphs
         </python_module>
-        <python_class>FrontEndCommonInsertChipPowerMonitorsToGraph</python_class>
+        <python_class>FrontEndCommonInsertChipPowerMonitorsToGraphs</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>

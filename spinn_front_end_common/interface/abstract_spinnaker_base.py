@@ -3,6 +3,7 @@ main interface for the spinnaker tools
 """
 
 # pacman imports
+from pacman.executor.injection_decorator import provide_injectables
 from pacman.model.graphs import AbstractVirtualVertex
 from pacman.model.placements import Placements
 from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
@@ -786,6 +787,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         for placement in self._placements.placements:
             vertex = placement.vertex
             if isinstance(vertex, AbstractReceiveBuffersToHost):
+
+                # horrible hack. This needs to be fixed somehow
+                provide_injectables(
+                    {"MachineTimeStep": self._machine_time_step,
+                     "TotalMachineTimeSteps": n_machine_time_steps,
+                     "TimeScaleFactor": self._time_scale_factor})
+
                 resources = vertex.resources_required
                 if (placement.x, placement.y) not in sdram_tracker:
                     sdram_tracker[placement.x, placement.y] = \
@@ -911,7 +919,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "FrontEndCommonPreAllocateResourcesForLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
-        if (self._config.getboolean("Reports", "Enabled") and
+        if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
             algorithms.append(
                 "FrontEndCommonPreAllocateResourcesForChipPowerMonitor")
@@ -939,6 +947,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalRunTime"] = total_run_time
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["MachineTimeStep"] = self._machine_time_step
+        inputs["TimeScaleFactor"] = self._time_scale_factor
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
@@ -1201,10 +1210,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
 
-        if (self._config.getboolean("Reports", "enables") and
+        if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
             algorithms.append(
-                "FrontEndCommonInsertChipPowerMonitorsToGraph")
+                "FrontEndCommonInsertChipPowerMonitorsToGraphs")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \

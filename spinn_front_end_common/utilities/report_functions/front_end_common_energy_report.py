@@ -147,7 +147,17 @@ class FrontEndCommonEnergyReport(object):
                 chip, router_provenance, output)
 
         # figure FPGA cost
+        fpga_cost = self._calulcate_fpga_cost(machine)
 
+        # figure load time cost
+        load_time_cost = self._calculate_load_time_cost(pacman_provenance)
+
+        # figure extraction time cost
+        extraction_time_cost = \
+            self._calculate_data_extraction_time_cost(pacman_provenance)
+
+        return machine_active_cost, machine_idle_chips_cost, \
+               fpga_cost, packet_cost, load_time_cost, extraction_time_cost
 
 
     def _write_warning(self, output):
@@ -171,10 +181,26 @@ class FrontEndCommonEnergyReport(object):
                 self.JULES_PER_MILLISECOND_PER_IDLE_CHIP,
                 self.JULES_PER_SPIKE, self.JULES_PER_MILLISECOND_PER_FPGA))
 
+    @staticmethod
+    def _calculate_load_time_cost(pacman_provenance):
+        return 0
+
+    @staticmethod
+    def _calculate_data_extraction_time_cost(pacman_provenance):
+        return 0
+
+    @staticmethod
+    def _calulcate_fpga_cost(machine):
+        return 0
+
     def _calculate_chips_active_cost(
             self, chip, machine_graph, placements, machine_time_step,
             time_scale_factor, runtime, output):
         return 0
 
     def _router_packet_cost(self, chip, router_provenance, output):
+         # Group data by the first name
+        items = sorted(router_provenance, key=lambda item: item.names[0])
+        for name, group in itertools.groupby(
+                items, lambda item: item.names[0]):
         return 0

@@ -35,7 +35,7 @@ class FrontEndCommonPreAllocateResourcesForChipPowerMonitor(object):
         """
 
         progress_bar = ProgressBar(
-            len(machine.chips),
+            len(list(machine.chips)),
             "Preallocating resources for chip power monitor")
 
         # store how much SDRAM the LPG uses per core
@@ -53,7 +53,7 @@ class FrontEndCommonPreAllocateResourcesForChipPowerMonitor(object):
         for chip in progress_bar.over(machine.chips):
             sdrams.append(
                 SpecificChipSDRAMResource(chip, resources.sdram.get_value()))
-            cores.append(cores.append(CoreResource(chip, 1)))
+            cores.append(CoreResource(chip, 1))
 
         # create pre allocated resource container
         cpm_pre_allocated_resource_container = PreAllocatedResourceContainer(
