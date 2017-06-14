@@ -1,13 +1,13 @@
-from data_specification import utility_calls
+from collections import defaultdict
 
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
+
+from data_specification import utility_calls
 
 from spinn_front_end_common.abstract_models.\
     abstract_generates_data_specification import \
     AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities import exceptions
-
-from collections import defaultdict
 
 
 class FrontEndCommonGraphDataSpecificationWriter(object):
@@ -15,13 +15,10 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
     """
 
     __slots__ = (
-
         # Dict of sdram usage by chip coordinates
         "_sdram_usage",
-
         # Dict of list of region sizes by vertex
         "_region_sizes",
-
         # Dict of list of vertices by chip coordinates
         "_vertices_by_chip"
     )
@@ -55,10 +52,9 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         # vertex
         dsg_targets = dict()
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             placements.n_placements, "Generating data specifications")
-        for placement in placements.placements:
-
+        for placement in progress.over(placements.placements):
             # Try to generate the data spec for the placement
             generated = self._generate_data_spec_for_vertices(
                 placement, placement.vertex, dsg_targets, hostname,
@@ -74,8 +70,6 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
                     placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder, machine)
-            progress_bar.update()
-        progress_bar.end()
 
         return dsg_targets
 

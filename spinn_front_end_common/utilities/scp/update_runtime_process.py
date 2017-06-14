@@ -1,4 +1,4 @@
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.scp.scp_update_runtime_request \
     import SCPUpdateRuntimeRequest
 from spinn_front_end_common.utilities import constants
@@ -7,7 +7,6 @@ from spinnman.processes.abstract_multi_connection_process \
 
 
 class UpdateRuntimeProcess(AbstractMultiConnectionProcess):
-
     def __init__(self, connection_selector):
         AbstractMultiConnectionProcess.__init__(self, connection_selector)
         self._progress_bar = None

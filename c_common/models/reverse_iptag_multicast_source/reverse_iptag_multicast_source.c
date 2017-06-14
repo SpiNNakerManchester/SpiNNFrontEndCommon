@@ -16,7 +16,7 @@
 
 //! \brief human readable versions of the different priorities and usages.
 typedef enum callback_priorities {
-    SDP_CALLBACK = 0, TIMER = 2
+    SDP_CALLBACK = 0, TIMER = 3, DMA = 2
 }callback_priorities;
 
 typedef enum eieio_data_message_types {
@@ -968,7 +968,7 @@ bool initialise(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK)) {
+            &infinite_run, SDP_CALLBACK, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
@@ -982,7 +982,7 @@ bool initialise(uint32_t *timer_period) {
     }
 
     // set up recording data structures
-    if(!initialise_recording()){
+    if (!initialise_recording()) {
          return false;
     }
 

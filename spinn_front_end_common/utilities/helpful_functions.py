@@ -13,29 +13,14 @@ from spinn_machine.core_subsets import CoreSubsets
 
 # general imports
 import os
+import logging
+import struct
 import datetime
 import shutil
-import logging
-import re
-import inspect
-import struct
 from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
-
-
-def get_valid_components(module, terminator):
-    """ Get possible components
-
-    :param module:
-    :param terminator:
-    :rtype: dict
-    """
-    terminator = re.compile(terminator + '$')
-    return dict(map(lambda (name, router): (terminator.sub('', name),
-                                            router),
-                inspect.getmembers(module, inspect.isclass)))
 
 
 def read_data(x, y, address, length, data_format, transceiver):
@@ -301,7 +286,7 @@ def convert_string_into_chip_and_core_subset(cores):
     if cores is not None and cores != "None":
         for downed_core in cores.split(":"):
             x, y, processor_id = downed_core.split(",")
-            ignored_cores.add_processor((int(x), int(y), int(processor_id)))
+            ignored_cores.add_processor(int(x), int(y), int(processor_id))
     return ignored_cores
 
 
@@ -362,7 +347,7 @@ def translate_iobuf_extraction_elements(
 
     # some hard coded cores
     if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        _, ignored_cores = convert_string_into_chip_and_core_subset(
+        ignored_cores = convert_string_into_chip_and_core_subset(
             hard_coded_cores)
         return ignored_cores
 
@@ -379,7 +364,7 @@ def translate_iobuf_extraction_elements(
     if hard_coded_cores != "None" and hard_coded_model_binary != "None":
         model_core_subsets = _handle_model_binaries(
             hard_coded_model_binary, executable_targets, executable_finder)
-        _, hard_coded_core_core_subsets = \
+        hard_coded_core_core_subsets = \
             convert_string_into_chip_and_core_subset(hard_coded_cores)
         for core_subset in hard_coded_core_core_subsets:
             model_core_subsets.add_core_subset(core_subset)
@@ -457,3 +442,20 @@ def generate_unique_folder_name(folder, filename, extension):
             folder, "{}_{}{}".format(filename, count, extension))
         count += 1
     return new_file_path
+
+
+def get_ethernet_chip(machine, board_address):
+    """ locate the chip with the given board IP address
+
+    :param machine: the spinnaker machine
+    :param board_address: the board address to locate the chip of.
+    :return: The chip that supports that board address
+    :raises ConfigurationException:\
+        when that board address has no chip associated with it
+    """
+    for chip in machine.ethernet_connected_chips:
+        if chip.ip_address == board_address:
+            return chip
+    raise exceptions.ConfigurationException(
+        "cannot find the Ethernet connected chip with the board address {}"
+        .format(board_address))
