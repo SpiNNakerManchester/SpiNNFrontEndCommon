@@ -1,5 +1,7 @@
 from enum import Enum
 import math
+import logging
+import struct
 
 from data_specification.enums.data_type import DataType
 from pacman.executor.injection_decorator import inject_items
@@ -28,6 +30,8 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 
 from spinn_utilities.overrides import overrides
 
+logger = logging.getLogger(__name__)
+
 
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
@@ -41,6 +45,8 @@ class ChipPowerMonitorMachineVertex(
     DEFAULT_MALLOCS_USED = 3
     CONFIG_SIZE_IN_BYTES = 8
     RECORDING_SIZE_PER_ENTRY = 18 * 4
+    SAMPLE_RECORDING_REGION = 0
+    MAX_CORES_PER_CHIP = 18
 
     def __init__(
             self, label, constraints, n_samples_per_recording,
@@ -244,3 +250,31 @@ class ChipPowerMonitorMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_minimum_buffer_sdram_usage)
     def get_minimum_buffer_sdram_usage(self):
         return self._minimum_buffer_sdram
+
+    def get_recorded_data(self, placement, buffer_manager):
+        # for buffering output info is taken form the buffer manager
+        samples, data_missing = \
+            buffer_manager.get_data_for_vertex(
+                placement,
+                ChipPowerMonitorMachineVertex.SAMPLE_RECORDING_REGION)
+        if data_missing:
+            logger.warn(
+                "Chip Power monitor has lost data on chip({}, {})"
+                .format(placement.x, placement.y))
+
+        # get raw data as a byte array
+        record_raw = samples.read_all()
+
+        # convert into sets of ints
+        n_sets_of_recordings = (
+            len(record_raw) /
+            ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
+        results = list()
+
+        # convert into idle times
+        for index in range(0, n_sets_of_recordings):
+            idle_times = struct.unpack_from(
+                record_raw, "<18I",
+                index * ChipPowerMonitorMachineVertex.MAX_CORES_PER_CHIP)
+            results.append(idle_times)
+        return results
