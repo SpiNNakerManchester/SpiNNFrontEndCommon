@@ -26,4 +26,5 @@ class FrontEndCommonHBPMaxMachineGenerator(object):
             params={'runTime': total_run_time})
         max_machine = max_machine_request.json()
 
-        return max_machine["width"], max_machine["height"]
+        # Return the width and height and assume that it has wrap arounds
+        return max_machine["width"], max_machine["height"], True

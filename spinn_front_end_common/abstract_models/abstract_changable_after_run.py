@@ -1,14 +1,16 @@
 from six import add_metaclass
-from abc import ABCMeta
-from abc import abstractmethod
-from abc import abstractproperty
+
+from spinn_utilities.abstract_base import \
+    AbstractBase, abstractmethod, abstractproperty
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractChangableAfterRun(object):
     """ An item that can be changed after a call to run, the changes to which\
         might or might not require mapping
     """
+
+    __slots__ = ()
 
     @abstractproperty
     def requires_mapping(self):

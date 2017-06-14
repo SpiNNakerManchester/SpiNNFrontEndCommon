@@ -1,19 +1,13 @@
 # pacman imports
 from pacman.model.constraints.placer_constraints\
-    .placer_radial_placement_from_chip_constraint import \
-    PlacerRadialPlacementFromChipConstraint
+    import PlacerRadialPlacementFromChipConstraint
 from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
-from pacman.executor.injection_decorator import inject_items
+from pacman.model.graphs.application import ApplicationVertex
 
 # spinn front end imports
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import IPtagResource, ResourceContainer
+from pacman.model.resources import SDRAMResource
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utility_models\
     .live_packet_gather_machine_vertex \
@@ -40,7 +34,7 @@ class LivePacketGather(
     """
 
     def __init__(
-            self, ip_address, port, board_address=None, tag=None,
+            self, hostname, port, board_address=None, tag=None,
             strip_sdp=True, use_prefix=False, key_prefix=None,
             prefix_type=None, message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
@@ -81,7 +75,7 @@ class LivePacketGather(
         self._iptags = None
 
         # tag info
-        self._ip_address = ip_address
+        self._ip_address = hostname
         self._port = port
         self._board_address = board_address
         self._tag = tag
@@ -100,13 +94,9 @@ class LivePacketGather(
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
 
-    @inject_items({"machine_time_step": "MachineTimeStep"})
-    @overrides(
-        ApplicationVertex.create_machine_vertex,
-        additional_arguments={"machine_time_step"}
-    )
+    @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, machine_time_step,
+            self, vertex_slice, resources_required,
             label=None, constraints=None):
         return LivePacketGatherMachineVertex(
             label, self._use_prefix, self._key_prefix, self._prefix_type,
@@ -114,7 +104,7 @@ class LivePacketGather(
             self._payload_as_time_stamps, self._use_payload_prefix,
             self._payload_prefix, self._payload_right_shift,
             self._number_of_packets_sent_per_time_step,
-            ip_address=self._ip_address, port=self._port,
+            hostname=self._ip_address, port=self._port,
             strip_sdp=self._strip_sdp, board_address=self._board_address,
             constraints=constraints)
 

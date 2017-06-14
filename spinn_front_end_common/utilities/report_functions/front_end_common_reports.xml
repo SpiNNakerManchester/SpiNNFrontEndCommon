@@ -53,6 +53,34 @@
             <param_name>processor_to_app_data_base_address</param_name>
         </required_inputs>
     </algorithm>
+    <algorithm name="FrontEndCommonMemoryMapOnHostChipReport">
+        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_memory_map_on_host_chip_report</python_module>
+        <python_class>FrontEndCommonMemoryMapOnHostChipReport</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>report_default_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>loaded_app_data_token</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>report_default_directory</param_name>
+            <param_name>dsg_targets</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>loaded_app_data_token</param_name>
+        </required_inputs>
+    </algorithm>
     <algorithm name="FrontEndCommonMemoryMapOnChipReport">
         <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_memory_map_on_chip_report</python_module>
         <python_class>FrontEndCommonMemoryMapOnChipReport</python_class>
@@ -69,57 +97,16 @@
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
+            <parameter>
+                <param_name>loaded_app_data_token</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>report_default_directory</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
-        </required_inputs>
-    </algorithm>
-    <algorithm name="FrontEndCommonApplicationGraphNetworkSpecificationReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_application_graph_network_specification</python_module>
-        <python_class>FrontEndCommonApplicationGraphNetworkSpecification</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>report_folder</param_name>
-            <param_name>graph</param_name>
-            <param_name>hostname</param_name>
-        </required_inputs>
-    </algorithm>
-    <algorithm name="FrontEndCommonMachineGraphNetworkSpecificationReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_machine_graph_network_specification_report</python_module>
-        <python_class>FrontEndCommonMachineGraphNetworkSpecificationReport</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>partitioned_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>report_folder</param_name>
-            <param_name>partitioned_graph</param_name>
-            <param_name>hostname</param_name>
+            <param_name>loaded_app_data_token</param_name>
         </required_inputs>
     </algorithm>
 </algorithms>
