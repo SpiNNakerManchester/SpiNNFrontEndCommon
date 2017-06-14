@@ -36,7 +36,7 @@ class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
         # live packet gatherers
         sdrams = list()
         cores = list()
-        for chip in machine.ethernet_connected_chips:
+        for chip in progress_bar.over(machine.ethernet_connected_chips):
             sdram_requirements = 0
             core_requirements = 0
 
@@ -51,8 +51,6 @@ class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
                     SpecificChipSDRAMResource(chip, sdram_requirements))
             if core_requirements > 0:
                 cores.append(CoreResource(chip, core_requirements))
-
-            progress_bar.update()
 
         # create pre allocated resource container
         lpg_pre_allocated_resource_container = PreAllocatedResourceContainer(

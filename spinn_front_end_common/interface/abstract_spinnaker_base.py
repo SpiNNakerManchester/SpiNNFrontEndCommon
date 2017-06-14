@@ -897,7 +897,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
+    def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
 
@@ -911,6 +911,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "FrontEndCommonPreAllocateResourcesForLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
+        if (self._config.getboolean("Reports", "Enabled") and
+                self._config.getboolean("Reports", "write_energy_report")):
+            algorithms.append(
+                "FrontEndCommonPreAllocateResourcesForChipPowerMonitor")
+            inputs['MemorySamplingFrequency'] = self._config.getfloat(
+                "EnergyMonitor", "sampling_frequency")
+            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
+                self._config.getfloat(
+                    "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
@@ -1191,6 +1200,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "FrontEndCommonInsertEdgesToLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
+
+        if (self._config.getboolean("Reports", "enables") and
+                self._config.getboolean("Reports", "write_energy_report")):
+            algorithms.append(
+                "FrontEndCommonInsertChipPowerMonitorsToGraph")
+            inputs['MemorySamplingFrequency'] = self._config.getfloat(
+                "EnergyMonitor", "sampling_frequency")
+            inputs['MemoryNumberSamplesPerRecordingEntry'] = \
+                self._config.getfloat(
+                    "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
