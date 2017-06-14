@@ -26,6 +26,9 @@ from spinn_front_end_common.abstract_models.\
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.utilities.report_functions.\
+    front_end_common_energy_report import \
+    FrontEndCommonEnergyReport
 from spinn_front_end_common.utilities.simulator_interface \
     import SimulatorInterface
 from spinn_front_end_common.interface.buffer_management\
@@ -1549,7 +1552,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # move data around
             self._last_run_outputs = executor.get_items()
             self._current_run_timesteps = total_run_timesteps
-            self._last_run_outputs = executor.get_items()
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
@@ -2074,7 +2076,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._config.getboolean("Reports", "writeProvenanceData")):
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
                 algorithms.append("FrontEndCommonRouterProvenanceGatherer")
-                algorithms.append("FrontEndCommonEnergyReport")
                 outputs.append("ProvenanceItems")
 
             # Run the algorithms
@@ -2118,6 +2119,27 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 except Exception:
                     logger.error("Error when attempting to recover from error")
                     traceback.print_exc()
+
+        if (self._config.getboolean("Reports", "reportsEnabled") and
+                self._config.getboolean("Reports", "write_energy_report")):
+            energy_report = FrontEndCommonEnergyReport()
+            prov_items = self._last_run_outputs["ProvenanceItems"]
+
+            grouped_items = sorted(prov_items, key=lambda item: item.names[0])
+            #for name, group in itertools.groupby(
+            #        item, lambda item: item.names[0]):
+            #    pass
+
+            print prov_items
+
+            energy_report(
+                self._placements, self._machine,
+                self._report_default_directory,
+                self.read_config(self.config, "Machine", "version"),
+                self._spalloc_server, self._remote_spinnaker_url,
+                self._time_scale_factor, self._machine_time_step,
+                pacman_provenance, router_provenance, self._machine_graph,
+                self._current_run_timesteps)
 
         # shut down the machine properly
         self._shutdown(

@@ -21,14 +21,17 @@ class FrontEndCommonEnergyReport(object):
 
     def __call__(
             self, placements, machine, report_default_directory, version,
-            time_scale_factor, machine_time_step, pacman_provenance,
-            router_provenance, machine_graph, runtime):
+            spalloc_server, remote_spinnaker_url, time_scale_factor,
+            machine_time_step, pacman_provenance, router_provenance,
+            machine_graph, runtime):
         """
         
         :param placements: 
         :param machine: 
         :param report_default_directory: 
         :param version: 
+        :param spalloc_server:
+        :param remote_spinnaker_url:
         :param time_scale_factor: 
         :param machine_time_step: 
         :param pacman_provenance: 
@@ -54,9 +57,10 @@ class FrontEndCommonEnergyReport(object):
         with open(detailed_report, "w") as output:
             active_chip_cost, idle_chip_cost, fpga_cost, packet_cost, \
             load_time_cost, data_extraction_cost = self._write_detailed_report(
-                placements, machine, version,
-                time_scale_factor, machine_time_step, pacman_provenance,
-                router_provenance, machine_graph, runtime, output)
+                placements, machine, version, spalloc_server,
+                remote_spinnaker_url, time_scale_factor, machine_time_step,
+                pacman_provenance, router_provenance, machine_graph, runtime,
+                output)
 
         load_time_in_milliseconds = pacman_provenance
         data_extraction_time_in_milliseconds = pacman_provenance
@@ -101,15 +105,17 @@ class FrontEndCommonEnergyReport(object):
                 total_watts))
 
     def _write_detailed_report(
-            self, placements, machine, version,
-            time_scale_factor, machine_time_step, pacman_provenance,
-            router_provenance, machine_graph, runtime, output):
+            self, placements, machine, version, spalloc_server,
+            remote_spinnaker_url, time_scale_factor, machine_time_step,
+            pacman_provenance, router_provenance, machine_graph, runtime,
+            output):
         """
         
         :param placements: 
         :param machine: 
-        :param report_default_directory: 
         :param version: 
+        :param spalloc_server:
+        :param remote_spinnaker_url:
         :param time_scale_factor: 
         :param machine_time_step: 
         :param pacman_provenance: 
@@ -147,7 +153,8 @@ class FrontEndCommonEnergyReport(object):
                 chip, router_provenance, output)
 
         # figure FPGA cost
-        fpga_cost = self._calulcate_fpga_cost(machine)
+        fpga_cost = self._calulcate_fpga_cost(
+            machine, version, spalloc_server, remote_spinnaker_url)
 
         # figure load time cost
         load_time_cost = self._calculate_load_time_cost(pacman_provenance)
@@ -190,7 +197,8 @@ class FrontEndCommonEnergyReport(object):
         return 0
 
     @staticmethod
-    def _calulcate_fpga_cost(machine):
+    def _calulcate_fpga_cost(
+            machine, version, spalloc_server, remote_spinnaker_url):
         return 0
 
     def _calculate_chips_active_cost(
@@ -199,8 +207,8 @@ class FrontEndCommonEnergyReport(object):
         return 0
 
     def _router_packet_cost(self, chip, router_provenance, output):
-         # Group data by the first name
-        items = sorted(router_provenance, key=lambda item: item.names[0])
-        for name, group in itertools.groupby(
-                items, lambda item: item.names[0]):
+        # Group data by the first name
+        #items = sorted(router_provenance, key=lambda item: item.names[0])
+        #for name, group in itertools.groupby(
+        #        items, lambda item: item.names[0]):
         return 0
