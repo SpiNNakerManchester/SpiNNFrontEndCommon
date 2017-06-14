@@ -15,14 +15,6 @@
 #define PROFILER_ENTER          (1 << 31)
 #define PROFILER_EXIT           0
 
-// Profiler tags
-#define PROFILER_TIMER                    0
-#define PROFILER_DMA_READ                 1
-#define PROFILER_INCOMING_SPIKE           2
-#define PROFILER_PROCESS_FIXED_SYNAPSES   3
-#define PROFILER_PROCESS_PLASTIC_SYNAPSES 4
-
-
 //---------------------------------------
 // Externals
 //---------------------------------------

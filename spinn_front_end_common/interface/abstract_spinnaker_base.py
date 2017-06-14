@@ -1471,7 +1471,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("FrontEndCommonChipIOBufExtractor")
-            outputs.append("IOBuffers")
 
         # add extractor of provenance if needed
         if (self._config.getboolean("Reports", "reportsEnabled") and
@@ -1491,14 +1490,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             run_complete = True
-
-            # write iobuf to file if necessary
-            if (self._config.getboolean("Reports", "extract_iobuf") and
-                    self._config.getboolean(
-                        "Reports", "extract_iobuf_during_run") and
-                    not self._use_virtual_board and
-                    n_machine_time_steps is not None):
-                self._write_iobuf(executor.get_item("IOBuffers"))
 
             # write provenance to file if necessary
             if (self._config.getboolean("Reports", "reportsEnabled") and
@@ -1635,9 +1626,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Read IOBUF where possible (that should be everywhere)
         iobuf = FrontEndCommonChipIOBufExtractor()
-        iobufs, errors, warnings = iobuf(
+        errors, warnings = iobuf(
             self._txrx, True, unsuccessful_core_subset)
-        self._write_iobuf(iobufs)
 
         # Print the details of error cores
         for (x, y, p), core_info in unsuccessful_cores.iteritems():
@@ -1661,21 +1651,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Print the IOBUFs
         self._print_iobuf(errors, warnings)
-
-    def _write_iobuf(self, io_buffers):
-        for iobuf in io_buffers:
-            file_name = os.path.join(
-                self._provenance_file_path,
-                "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
-
-            # set mode of the file based off if the file already exists
-            mode = "w"
-            if os.path.exists(file_name):
-                mode = "a"
-
-            # write iobuf to file.
-            with open(file_name, mode) as writer:
-                writer.write(iobuf.iobuf)
 
     @staticmethod
     def _print_iobuf(errors, warnings):
@@ -2033,7 +2008,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._config.getboolean(
                         "Reports", "extract_iobuf_during_run")):
                 algorithms.append("FrontEndCommonChipIOBufExtractor")
-                outputs.append("IOBuffers")
 
             # add extractor of provenance if needed
             if (self._config.getboolean("Reports", "reportsEnabled") and
@@ -2052,12 +2026,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 executor.execute_mapping()
                 self._pacman_provenance.extract_provenance(executor)
                 run_complete = True
-
-                # write iobuf to file if necessary
-                if (self._config.getboolean("Reports", "extract_iobuf") and
-                        self._config.getboolean(
-                            "Reports", "extract_iobuf_during_run")):
-                    self._write_iobuf(executor.get_item("IOBuffers"))
 
                 # write provenance to file if necessary
                 if (self._config.getboolean("Reports", "reportsEnabled") and

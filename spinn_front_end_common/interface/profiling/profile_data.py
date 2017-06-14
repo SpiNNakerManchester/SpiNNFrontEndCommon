@@ -24,29 +24,16 @@ class ProfileData(object):
         "_tags",
 
         # A list of tag labels indexed by the tag id
-        "_tag_labels",
-
-        # The machine time step in milliseconds
-        "_machine_time_step_ms",
-
-        # The run time in milliseconds
-        "_run_time_ms"
+        "_tag_labels"
     )
 
-    def __init__(self, tag_labels, machine_time_step, run_time_ms):
+    def __init__(self, tag_labels):
         """
 
         :param tag_labels: A list of labels indexed by tag id
         :type tag_labels: list(str)
-        :param machine_time_step:\
-            The time step of the simulation in microseconds
-        :type machine_time_step: int
-        :param run_time_ms: The run time of the simulation in milliseconds
-        :type run_time_ms: float
         """
         self._tag_labels = tag_labels
-        self._machine_time_step_ms = (float(machine_time_step) / 1000.0)
-        self._run_time_ms = float(run_time_ms)
         self._tags = dict()
 
     def add_data(self, data):
@@ -144,40 +131,37 @@ class ProfileData(object):
         """
         return self._tags[tag][_DURATION].size
 
-    def get_mean_n_calls_per_ts(self, tag):
+    def get_mean_n_calls_per_ts(self, tag, run_time_ms, machine_time_step_ms):
         """ Get the mean number of times the given tag was recorded per\
             timestep
 
         :param tag: The tag to get the data for
         :type tag: str
+        :param machine_time_step_ms:\
+            The time step of the simulation in microseconds
+        :type machine_time_step_ms: int
+        :param run_time_ms: The run time of the simulation in milliseconds
+        :type run_time_ms: float
         :rtype: float
         """
-        n_bins = self._run_time_ms / self._machine_time_step_ms
+        n_bins = run_time_ms / machine_time_step_ms
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], n_bins)[0])
 
-    def get_mean_ms_per_ts(self, tag):
+    def get_mean_ms_per_ts(self, tag, run_time_ms, machine_time_step_ms):
         """ Get the mean time in milliseconds spent on operations with the\
             given tag per timestep
 
         :param tag: The tag to get the data for
         :type tag: str
+        :param machine_time_step_ms:\
+            The time step of the simulation in microseconds
+        :type machine_time_step_ms: int
+        :param run_time_ms: The run time of the simulation in milliseconds
+        :type run_time_ms: float
         :rtype: float
         """
-        bins = numpy.arange(0, self._run_time_ms, self._machine_time_step_ms)
+        bins = numpy.arange(0, run_time_ms, machine_time_step_ms)
         bin_positions = numpy.digitize(self._tags[tag][_START_TIME], bins)
         binned_durations = self._tags[tag][_DURATION][bin_positions]
         return numpy.average(numpy.sum(binned_durations, axis=1))
-
-    def print_stats(self):
-        """ Print a summary of profile data
-        """
-        print "{: <10s} {: <7s} {: <7s} {: <14s} {: <14s}".format(
-            "tag", "n_calls", "mean_ms", "n_calls_per_ts", "mean_ms_per_ts")
-        print "{:-<10s} {:-<7s} {:-<7s} {:-<14s} {:-<14s}".format(
-            "", "", "", "", "")
-        for tag in self.tags:
-            print "{: <10s} {: >7d} {: >7.2f} {: >14.2f} {: >14.2f}".format(
-                tag, self.get_n_calls(tag), self.get_mean_ms(tag),
-                self.get_mean_n_calls_per_ts(tag),
-                self.get_mean_ms_per_ts(tag))

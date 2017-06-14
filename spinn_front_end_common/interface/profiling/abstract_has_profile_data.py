@@ -9,7 +9,7 @@ class AbstractHasProfileData(object):
     """
 
     @abstractmethod
-    def get_profile_data(self, transceiver, placements, graph_mapper):
+    def get_profile_data(self, transceiver, placement):
         """ Get the profile data recorded during simulation
 
         :rtype:\

@@ -1,6 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import exceptions
 import re
+import os
 
 
 ERROR_ENTRY = re.compile("\[ERROR\]\s+\((.*)\):\s+(.*)")
@@ -16,19 +17,18 @@ class FrontEndCommonChipIOBufExtractor(object):
 
     __slots__ = []
 
-    def __call__(self, transceiver, has_ran, core_subsets=None):
+    def __call__(
+            self, transceiver, has_ran, core_subsets, provenance_file_path):
         if not has_ran:
             raise exceptions.ConfigurationException(
                 "The simulation needs to have tried to run before asking for"
                 "iobuf. Please fix and try again")
-        if core_subsets is None:
-            raise exceptions.ConfigurationException(
-                "The FrontEndCommonIOBufExtractor requires a core sets "
-                "object to be able to execute")
 
-        return self._run_for_core_subsets(core_subsets, transceiver)
+        return self._run_for_core_subsets(
+            core_subsets, transceiver, provenance_file_path)
 
-    def _run_for_core_subsets(self, core_subsets, transceiver):
+    def _run_for_core_subsets(
+            self, core_subsets, transceiver, provenance_file_path):
         progress = ProgressBar(
             len(core_subsets), "Extracting IOBUF from the machine")
         error_entries = list()
@@ -37,10 +37,25 @@ class FrontEndCommonChipIOBufExtractor(object):
         # extract iobuf
         io_buffers = list(transceiver.get_iobuf(core_subsets))
 
+        # write iobuf
+        for iobuf in io_buffers:
+            file_name = os.path.join(
+                provenance_file_path,
+                "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
+
+            # set mode of the file based off if the file already exists
+            mode = "w"
+            if os.path.exists(file_name):
+                mode = "a"
+
+            # write iobuf to file.
+            with open(file_name, mode) as writer:
+                writer.write(iobuf.iobuf)
+
         # check iobuf for errors
         for io_buffer in progress.over(io_buffers):
             self._check_iobuf_for_error(io_buffer, error_entries, warn_entries)
-        return io_buffers, error_entries, warn_entries
+        return error_entries, warn_entries
 
     def _check_iobuf_for_error(self, iobuf, error_entries, warn_entries):
         lines = iobuf.iobuf.split("\n")
