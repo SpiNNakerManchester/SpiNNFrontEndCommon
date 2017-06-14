@@ -1,7 +1,6 @@
 # pacman imports
-from pacman.model.routing_info.\
-    dict_based_machine_partition_n_keys_map import \
-    DictBasedMachinePartitionNKeysMap
+from pacman.model.routing_info \
+    import DictBasedMachinePartitionNKeysMap
 
 # spinnMachine imports
 from spinn_machine.utilities.progress_bar import ProgressBar
@@ -36,7 +35,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
             # generate progress bar
             progress_bar = ProgressBar(
-                len(machine_graph.vertices),
+                machine_graph.n_vertices,
                 "Getting the number of keys required by each edge using the"
                 "application graph")
 
@@ -62,7 +61,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
 
             # generate progress bar
             progress_bar = ProgressBar(
-                len(machine_graph.vertices),
+                machine_graph.n_vertices,
                 "Getting the number of keys required by each edge using the"
                 "machine graph")
 

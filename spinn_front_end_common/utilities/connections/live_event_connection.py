@@ -57,7 +57,7 @@ class LiveEventConnection(DatabaseConnection):
         """
 
         DatabaseConnection.__init__(
-            self, self._start_callback,
+            self, self._start_resume_callback, self._stop_pause_callback,
             local_host=local_host, local_port=local_port)
 
         self.add_database_callback(self._read_database_callback)
@@ -71,16 +71,19 @@ class LiveEventConnection(DatabaseConnection):
         self._atom_id_to_key = dict()
         self._key_to_atom_id_and_label = dict()
         self._live_event_callbacks = list()
-        self._start_callbacks = dict()
+        self._start_resume_callbacks = dict()
+        self._pause_stop_callbacks = dict()
         self._init_callbacks = dict()
         if receive_labels is not None:
             for label in receive_labels:
                 self._live_event_callbacks.append(list())
-                self._start_callbacks[label] = list()
+                self._start_resume_callbacks[label] = list()
+                self._pause_stop_callbacks[label] = list()
                 self._init_callbacks[label] = list()
         if send_labels is not None:
             for label in send_labels:
-                self._start_callbacks[label] = list()
+                self._start_resume_callbacks[label] = list()
+                self._pause_stop_callbacks[label] = list()
                 self._init_callbacks[label] = list()
         self._receivers = dict()
         self._listeners = dict()
@@ -127,7 +130,31 @@ class LiveEventConnection(DatabaseConnection):
         :param label: the label of the function to be sent
         :type label: str
         """
-        self._start_callbacks[label].append(start_callback)
+        logger.warning(
+            "the method \"add_start_callback(label, start_callback)\" is in "
+            "deprecation, and will be replaced with the method "
+            "\"add_start_resume_callback(label, start_resume_callback)\" in a "
+            "future release.")
+        self.add_start_resume_callback(label, start_callback)
+
+    def add_start_resume_callback(self, label, start_resume_callback):
+        self._start_resume_callbacks[label].append(start_resume_callback)
+
+    def add_pause_stop_callback(self, label, pause_stop_callback):
+        """ Add a callback for the pause and stop state of the simulation
+
+        :param label: the label of the function to be sent
+        :type label: str
+        :param pause_stop_callback: A function to be called when the pause\
+                    or stop message has been received.
+                    This function should take the\
+                    label of the referenced vertex, and an instance of\
+                    this class, which can be used to send events
+        :type pause_stop_callback: function(str, \
+                    :py:class:`SpynnakerLiveEventConnection`) -> None
+        :return: None
+        """
+        self._pause_stop_callbacks[label].append(pause_stop_callback)
 
     def _read_database_callback(self, database_reader):
         self._handle_possible_rerun_state()
@@ -225,13 +252,25 @@ class LiveEventConnection(DatabaseConnection):
             self._listeners[port].close()
         self._listeners = dict()
 
-    def _start_callback(self):
-        for (label, callbacks) in self._start_callbacks.iteritems():
+    def _start_resume_callback(self):
+        for (label, callbacks) in self._start_resume_callbacks.iteritems():
             for callback in callbacks:
                 callback_thread = Thread(
                     target=callback, args=(label, self),
                     verbose=True,
-                    name="start callback thread for live_event_connection"
+                    name="start_resume callback thread for "
+                         "live_event_connection"
+                         "{}:{}".format(
+                             self._local_port, self._local_ip_address))
+                callback_thread.start()
+
+    def _stop_pause_callback(self):
+        for (label, callbacks) in self._pause_stop_callbacks.iteritems():
+            for callback in callbacks:
+                callback_thread = Thread(
+                    target=callback, args=(label, self),
+                    verbose=True,
+                    name="pause_stop callback thread for live_event_connection"
                          "{}:{}".format(
                              self._local_port, self._local_ip_address))
                 callback_thread.start()

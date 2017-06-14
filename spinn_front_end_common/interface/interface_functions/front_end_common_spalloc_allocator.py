@@ -117,6 +117,6 @@ class FrontEndCommonSpallocAllocator(object):
         machine_allocation_controller.start()
 
         return (
-            hostname, self._MACHINE_VERSION, None, None, None, False,
+            hostname, self._MACHINE_VERSION, None, None, None, None, False,
             False, None, None, None, machine_allocation_controller
         )

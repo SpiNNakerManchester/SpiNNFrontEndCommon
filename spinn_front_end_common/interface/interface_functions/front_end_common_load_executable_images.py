@@ -2,16 +2,13 @@
 # pacman imports
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-# spinnman imports
-from spinn_storage_handlers.file_data_reader import FileDataReader
-
 # front end common imports
-from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
 # general imports
 import logging
-import os
+from spinnman.messages.scp.enums.scp_signal import SCPSignal
+from spinnman.model.enums.cpu_state import CPUState
 
 logger = logging.getLogger(__name__)
 
@@ -33,44 +30,21 @@ class FrontEndCommonLoadExecutableImages(object):
                 " to false and therefore I cannot run. Please fix and try "
                 "again")
 
-        progress_bar = ProgressBar(executable_targets.total_processors,
-                                   "Loading executables onto the machine")
-        for executable_target_key in executable_targets.binaries:
-            file_reader = FileDataReader(executable_target_key)
-            core_subset = executable_targets.get_cores_for_binary(
-                executable_target_key)
+        progress_bar = ProgressBar(
+            executable_targets.total_processors + 1,
+            "Loading executables onto the machine")
 
-            statinfo = os.stat(executable_target_key)
-            size = statinfo.st_size
+        transceiver.execute_application(executable_targets, app_id)
 
-            # TODO there is a need to parse the binary and see if its
-            # ITCM and DTCM requirements are within acceptable params for
-            # operating on spinnaker. Currently there just a few safety
-            # checks which may not be accurate enough.
-            if size > constants.MAX_SAFE_BINARY_SIZE:
-                logger.warn(
-                    "The size of {} is large enough that its"
-                    " possible that the binary may be larger than what is"
-                    " supported by spinnaker currently. Please reduce the"
-                    " binary size if it starts to behave strangely, or goes"
-                    " into the WDOG state before starting.".format(
-                        executable_target_key))
-                if size > constants.MAX_POSSIBLE_BINARY_SIZE:
-                    raise exceptions.ConfigurationException(
-                        "The size of {} is too large and therefore"
-                        " will very likely cause a WDOG state. Until a more"
-                        " precise measurement of ITCM and DTCM can be produced"
-                        " this is deemed as an error state. Please reduce the"
-                        " size of your binary or circumvent this error check."
-                        .format(executable_target_key))
+        for binary in executable_targets.binaries:
+            core_subset = executable_targets.get_cores_for_binary(binary)
+            transceiver.execute_flood(
+                core_subset, binary, app_id, wait=True, is_filename=True)
+            progress_bar.update(len(core_subset))
 
-            transceiver.execute_flood(core_subset, file_reader, app_id, size)
-
-            acutal_cores_loaded = 0
-            for chip_based in core_subset.core_subsets:
-                for _ in chip_based.processor_ids:
-                    acutal_cores_loaded += 1
-            progress_bar.update(amount_to_add=acutal_cores_loaded)
+        transceiver.wait_for_cores_to_be_in_state(
+            executable_targets.all_core_subsets, app_id, [CPUState.READY])
+        transceiver.send_signal(app_id, SCPSignal.START)
         progress_bar.end()
 
         return True

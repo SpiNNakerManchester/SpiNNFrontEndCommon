@@ -7,13 +7,13 @@ class FrontEndCommonVirtualMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, width=None, height=None, virtual_has_wrap_arounds=False,
+            self, width=None, height=None, virtual_has_wrap_arounds=None,
             version=None, n_cpus_per_chip=18, with_monitors=True,
             down_chips=None, down_cores=None, down_links=None):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
-        :param virtual_has_wrap_arounds: True if the machine is virtual and\
+        :param virtual_has_wrap_arounds: True if the machine\
                 should be created with wrap_arounds
         :param version: The version of board to create
         :param n_cpus_per_chip: The number of cores to put on each chip

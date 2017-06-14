@@ -7,6 +7,10 @@ from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import exceptions
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class FrontEndCommonRouterProvenanceGatherer(object):
     """
@@ -99,13 +103,18 @@ class FrontEndCommonRouterProvenanceGatherer(object):
             x = router_table.x
             y = router_table.y
             if not machine.get_chip_at(x, y).virtual:
-                router_diagnostic = txrx.get_router_diagnostics(x, y)
-                seen_chips.add((x, y))
-                reinjector_status = txrx.get_reinjection_status(x, y)
-                items.extend(self._write_router_diagnostics(
-                    x, y, router_diagnostic, reinjector_status, True,
-                    router_table))
-                self._add_totals(router_diagnostic, reinjector_status)
+                try:
+                    router_diagnostic = txrx.get_router_diagnostics(x, y)
+                    seen_chips.add((x, y))
+                    reinjector_status = txrx.get_reinjection_status(x, y)
+                    items.extend(self._write_router_diagnostics(
+                        x, y, router_diagnostic, reinjector_status, True,
+                        router_table))
+                    self._add_totals(router_diagnostic, reinjector_status)
+                except Exception as e:
+                    logger.warn(
+                        "Could not read routing diagnostics from {}, {}: {}"
+                        .format(x, y, e))
             progress.update()
 
         for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):

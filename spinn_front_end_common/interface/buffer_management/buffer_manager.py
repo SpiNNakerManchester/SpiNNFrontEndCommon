@@ -229,6 +229,10 @@ class BufferManager(object):
         """ Add listeners for buffered data for the given vertex
         """
 
+        # If using virtual board, no listeners can be set up
+        if self._transceiver is None:
+            return
+
         # Find a tag for receiving buffer data
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
@@ -325,6 +329,18 @@ class BufferManager(object):
 
         # update the received data items
         self._received_data.resume()
+
+    def clear_recorded_data(self, x, y, p, recording_region_id):
+        """ Removes the recorded data stored in memory.
+
+        :param x: placement x coord
+        :param y: placement y coord
+        :param p: placement p coord
+        :param recording_region_id: the recording region id
+
+        :return:
+        """
+        self._received_data.clear(x, y, p, recording_region_id)
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):
@@ -744,12 +760,12 @@ class BufferManager(object):
             if last_packet_sent is not None:
                 self._transceiver.send_sdp_message(last_packet_sent)
             else:
-                raise Exception("Something somewhere went terribly wrong - "
-                                "The packet sequence numbers have gone wrong "
-                                "somewhere: the packet sent from the board "
-                                "has incorrect sequence number, but the host "
-                                "never sent one acknowledge - how is this "
-                                "possible?")
+                raise Exception(
+                    "{}, {}, {}: Something somewhere went terribly wrong - "
+                    "The packet sequence numbers have gone wrong "
+                    "somewhere: the packet sent from the board "
+                    "has incorrect sequence number, but the host "
+                    "never sent one acknowledge".format(x, y, p))
             return
 
         # read data from memory, store it and create data for return ACK packet
