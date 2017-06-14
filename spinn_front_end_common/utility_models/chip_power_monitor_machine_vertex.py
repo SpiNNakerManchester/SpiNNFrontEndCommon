@@ -150,10 +150,17 @@ class ChipPowerMonitorMachineVertex(
         """
         return "chip_power_monitor.aplx"
 
+    @inject_items({"time_scale_factor": "TimeScaleFactor",
+                   "machine_time_step": "MachineTimeStep"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={"machine_time_step", "time_scale_factor"})
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor):
+        self._generate_data_specification(
+            spec, machine_time_step, time_scale_factor)
+
+    def _generate_data_specification(
+            self, spec, machine_time_step, time_scale_factor):
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -241,10 +248,15 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_region_ids(self):
         return [0]
 
-    @overrides(AbstractReceiveBuffersToHost.get_n_timesteps_in_buffer_space)
-    def get_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
+    @inject_items({"time_scale_factor": "TimeScaleFactor"})
+    @overrides(AbstractReceiveBuffersToHost.get_n_timesteps_in_buffer_space,
+               additional_arguments={"time_scale_factor"})
+    def get_n_timesteps_in_buffer_space(
+            self, buffer_space, machine_time_step, time_scale_factor):
         return recording_utilities.get_n_timesteps_in_buffer_space(
-            buffer_space, [self._buffered_sdram_per_timestep])
+            buffer_space,
+            [self._deduce_sdram_requirements_per_timer_tick(
+                machine_time_step, time_scale_factor)])
 
     @inject_items({"machine_time_step": "MachineTimeStep",
                    "n_machine_time_steps": "TotalMachineTimeSteps",
@@ -258,7 +270,9 @@ class ChipPowerMonitorMachineVertex(
         return recording_utilities.get_minimum_buffer_sdram(
             [self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor)],
-            n_machine_time_steps, self._minimum_buffer_sdram)[0]
+            n_machine_time_steps,
+            globals_variables.get_simulator().config.getint(
+                "Buffers", "minimum_buffer_sdram"))[0]
 
     def _deduce_sdram_requirements_per_timer_tick(
             self, machine_time_step, time_scale_factor):
@@ -268,7 +282,12 @@ class ChipPowerMonitorMachineVertex(
         :param time_scale_factor: the time scale factor
         :return: the sdram usage
         """
-
+        timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
+        recording_time = \
+            self._sampling_frequency * self._n_samples_per_recording
+        n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
+        return (n_entries *
+                ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
 
 
 
