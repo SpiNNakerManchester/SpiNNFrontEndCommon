@@ -31,6 +31,9 @@ static address_t stored_provenance_data_address = NULL;
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
 
+//! the list of DMA callbacks for dma complete callbacks
+static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
+
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
 static address_t _simulation_store_provenance_data() {
@@ -196,6 +199,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
     }
 }
 
+//! \brief handles the sdp callbacks interface.
 void _simulation_sdp_callback_handler(uint mailbox, uint port) {
 
     if (sdp_callback[port] != NULL) {
@@ -210,18 +214,57 @@ void _simulation_sdp_callback_handler(uint mailbox, uint port) {
     }
 }
 
-void simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
-    sdp_callback[sdp_port] = callback;
+bool simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
+    if (sdp_callback[sdp_port] == NULL) {
+        sdp_callback[sdp_port] = callback;
+    } else {
+        log_error("Cannot allocate sdp callback on port %d as its already "
+                  "been allocated.", sdp_port);
+        return false;
+    }
 }
 
 void simulation_sdp_callback_off(uint sdp_port) {
     sdp_callback[sdp_port] = NULL;
 }
 
+//! \brief handles the dma transfer done callbacks interface.
+void _simulation_dma_transfer_done_callback(uint unused, uint tag) {
+    if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
+        dma_complete_callbacks[tag](unused, tag);
+    }
+}
+
+bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback) {
+
+    // ensure that tag being allocated is less than max tag
+    if (tag >= MAX_DMA_CALLBACK_TAG) {
+        log_error("Cannot handle tag value above %d, please reduce the tag "
+                  "value accordingly.", MAX_DMA_CALLBACK_TAG - 1);
+        return false;
+    }
+
+    // allocate tag callback if not already allocated
+    if (dma_complete_callbacks[tag] == NULL) {
+        dma_complete_callbacks[tag] = callback;
+    } else {
+
+        // if allocated already, raise error
+        log_error("Cannot allocate dma transfer callback on tag %d as its "
+                  "already been allocated.", tag);
+        return false;
+    }
+}
+
+void simulation_dma_transfer_done_callback_off(uint tag) {
+    dma_complete_callbacks[tag] = NULL;
+}
+
 bool simulation_initialise(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority) {
+        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
+        int dma_transfer_done_callback_priority) {
 
     // handle the timing reading
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
@@ -254,6 +297,9 @@ bool simulation_initialise(
     simulation_sdp_callback_on(
         address[SIMULATION_CONTROL_SDP_PORT],
         _simulation_control_scp_callback);
+    spin1_callback_on(
+        DMA_TRANSFER_DONE, _simulation_dma_transfer_done_callback,
+        dma_transfer_done_callback_priority);
 
     // if all simulation initialisation complete return true,
     return true;
