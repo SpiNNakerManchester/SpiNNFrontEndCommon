@@ -66,6 +66,14 @@ class ChipPowerMonitorMachineVertex(
         self._sampling_frequency = sampling_frequency
 
     @property
+    def sampling_frequency(self):
+        return self._sampling_frequency
+
+    @property
+    def n_samples_per_recording(self):
+        return self._n_samples_per_recording
+
+    @property
     @inject_items({"machine_time_step": "MachineTimeStep",
                    "n_machine_time_steps": "TotalMachineTimeSteps",
                    "time_scale_factor": "TimeScaleFactor"})
@@ -241,8 +249,8 @@ class ChipPowerMonitorMachineVertex(
     def get_recording_region_base_address(self, txrx, placement):
         return helpful_functions.locate_memory_region_for_placement(
             placement,
-            self._CHIP_POWER_MONITOR_REGIONS.RECORDING.value,
-            txrx)
+            ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
+            RECORDING.value, txrx)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):

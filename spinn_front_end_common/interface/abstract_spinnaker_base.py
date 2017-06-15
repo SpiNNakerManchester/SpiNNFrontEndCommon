@@ -76,6 +76,7 @@ import os
 import sys
 import traceback
 import signal
+import itertools
 
 
 logger = logging.getLogger(__name__)
@@ -2123,23 +2124,30 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
             energy_report = FrontEndCommonEnergyReport()
+
+            # acquire provenance items
             prov_items = self._last_run_outputs["ProvenanceItems"]
+            pacman_provenance = None
+            router_provenance = None
 
+            # group them by name type
             grouped_items = sorted(prov_items, key=lambda item: item.names[0])
-            #for name, group in itertools.groupby(
-            #        item, lambda item: item.names[0]):
-            #    pass
+            for name, group in itertools.groupby(
+                    grouped_items, lambda item: item.names[0]):
+                if name == 'pacman':
+                    pacman_provenance = group
+                if name == 'router_provenance':
+                    router_provenance = group
 
-            print prov_items
-
+            # run energy report
             energy_report(
                 self._placements, self._machine,
                 self._report_default_directory,
-                self.read_config(self.config, "Machine", "version"),
+                self._read_config("Machine", "version"),
                 self._spalloc_server, self._remote_spinnaker_url,
                 self._time_scale_factor, self._machine_time_step,
                 pacman_provenance, router_provenance, self._machine_graph,
-                self._current_run_timesteps)
+                self._current_run_timesteps, self._buffer_manager)
 
         # shut down the machine properly
         self._shutdown(

@@ -1,5 +1,9 @@
 import os
 
+from spinn_front_end_common.utility_models.\
+    chip_power_monitor_machine_vertex import \
+    ChipPowerMonitorMachineVertex
+from spinn_front_end_common.utilities import exceptions
 
 class FrontEndCommonEnergyReport(object):
 
@@ -23,7 +27,7 @@ class FrontEndCommonEnergyReport(object):
             self, placements, machine, report_default_directory, version,
             spalloc_server, remote_spinnaker_url, time_scale_factor,
             machine_time_step, pacman_provenance, router_provenance,
-            machine_graph, runtime):
+            machine_graph, runtime, buffer_manager):
         """
         
         :param placements: 
@@ -37,9 +41,9 @@ class FrontEndCommonEnergyReport(object):
         :param pacman_provenance: 
         :param router_provenance: 
         :param machine_graph: 
+        :param buffer_manager:
         :return: 
         """
-
 
         detailed_report = os.path.join(
             report_default_directory, self.ENERGY_DETAILED_FILENAME)
@@ -56,11 +60,12 @@ class FrontEndCommonEnergyReport(object):
 
         with open(detailed_report, "w") as output:
             active_chip_cost, idle_chip_cost, fpga_cost, packet_cost, \
-            load_time_cost, data_extraction_cost = self._write_detailed_report(
-                placements, machine, version, spalloc_server,
-                remote_spinnaker_url, time_scale_factor, machine_time_step,
-                pacman_provenance, router_provenance, machine_graph, runtime,
-                output)
+                load_time_cost, data_extraction_cost = \
+                self._write_detailed_report(
+                    placements, machine, version, spalloc_server,
+                    remote_spinnaker_url, time_scale_factor, machine_time_step,
+                    pacman_provenance, router_provenance, machine_graph,
+                    runtime, buffer_manager, output)
 
         load_time_in_milliseconds = pacman_provenance
         data_extraction_time_in_milliseconds = pacman_provenance
@@ -87,8 +92,7 @@ class FrontEndCommonEnergyReport(object):
         # deduce wattage from the runtime
         total_watts = total_jules / (
             (runtime + load_time_in_milliseconds +
-             data_extraction_time_in_milliseconds)
-            / 1000)
+             data_extraction_time_in_milliseconds) / 1000)
 
         output.write(
             "Summary energy file\n\n"
@@ -108,7 +112,7 @@ class FrontEndCommonEnergyReport(object):
             self, placements, machine, version, spalloc_server,
             remote_spinnaker_url, time_scale_factor, machine_time_step,
             pacman_provenance, router_provenance, machine_graph, runtime,
-            output):
+            buffer_manager, output):
         """
         
         :param placements: 
@@ -121,6 +125,7 @@ class FrontEndCommonEnergyReport(object):
         :param pacman_provenance: 
         :param router_provenance: 
         :param machine_graph: 
+        :param buffer_manager:
         :param output: 
         :return: 
         """
@@ -132,19 +137,19 @@ class FrontEndCommonEnergyReport(object):
             active_chips.add(machine.get_chip_at(placement.x, placement.y))
 
         # figure out active chips idle time
-        machine_active_cost = 0.0
-        for chip in active_chips:
-            machine_active_cost += self._calculate_chips_active_cost(
-                chip, machine_graph, placements, machine_time_step,
-                time_scale_factor, runtime, output)
+        #machine_active_cost = 0.0
+        #for chip in active_chips:
+        #    machine_active_cost += self._calculate_chips_active_cost(
+        #        chip, machine_graph, placements, machine_time_step,
+        #        time_scale_factor, runtime, buffer_manager, output)
 
         # figure out idle chips
-        machine_idle_chips_cost = 0.0
-        for chip in machine.chips():
-            if chip not in active_chips:
-                machine_idle_chips_cost += self._calculate_chips_active_cost(
-                    chip, machine_graph, placements, machine_time_step,
-                    time_scale_factor, runtime, output)
+        #machine_idle_chips_cost = 0.0
+        #for chip in machine.chips():
+        #    if chip not in active_chips:
+        #        machine_idle_chips_cost += self._calculate_chips_active_cost(
+        #            chip, machine_graph, placements, machine_time_step,
+        #            time_scale_factor, runtime, buffer_manager, output)
 
         # figure out packet cost
         packet_cost = 0.0
@@ -154,7 +159,8 @@ class FrontEndCommonEnergyReport(object):
 
         # figure FPGA cost
         fpga_cost = self._calulcate_fpga_cost(
-            machine, version, spalloc_server, remote_spinnaker_url)
+            machine, version, spalloc_server, remote_spinnaker_url, runtime,
+            machine_time_step, time_scale_factor, output)
 
         # figure load time cost
         load_time_cost = self._calculate_load_time_cost(pacman_provenance)
@@ -166,8 +172,13 @@ class FrontEndCommonEnergyReport(object):
         return machine_active_cost, machine_idle_chips_cost, \
                fpga_cost, packet_cost, load_time_cost, extraction_time_cost
 
-
     def _write_warning(self, output):
+        """ writes the warning about this being only an estimate
+        
+        :param output: the writer
+        :rtype: None 
+        """
+
         output.write(
             "This report is based off energy estimates for individual "
             "components of the SpiNNaker machine. It is not meant to be "
@@ -196,19 +207,107 @@ class FrontEndCommonEnergyReport(object):
     def _calculate_data_extraction_time_cost(pacman_provenance):
         return 0
 
-    @staticmethod
     def _calulcate_fpga_cost(
-            machine, version, spalloc_server, remote_spinnaker_url):
+            self, machine, version, spalloc_server, remote_spinnaker_url,
+            runtime, machine_time_step, time_scale_factor, output):
+
+        # if not spalloc, then could be any type of board
+        if spalloc_server is None and remote_spinnaker_url is None:
+            if version in range(2, 3):
+                output.write(
+                    "A Spinn {} board does not contain any FPGA's, and so "
+                    "its energy cost is 0".format(version))
+                return 0
+            elif version in range(4, 5):
+                if self._has_wrap_arounds(machine):
+                    power_usage = (
+                        runtime * machine_time_step * time_scale_factor *
+                        self.JULES_PER_MILLISECOND_PER_FPGA)
+                    output.write(
+                        "The FPGA's on the Spinn {} board are turned on and "
+                        "therefore the energy used by the FPGA is {}".format(
+                            version, power_usage))
+                    return power_usage
+                else:
+                    output.write(
+                    "The FPGA's on the Spinn {} board are turned off and "
+                    "therefore the energy used by the FPGA is 0".format(
+                        version))
+                    return 0
+            else:
+                raise exceptions.ConfigurationException(
+                    "Do not know what the FPGA setup is for this version of "
+                    "SpiNNaker machine.")
+        else:
+
         return 0
+
+    @staticmethod
+    def _has_wrap_arounds(machine):
+        pass
 
     def _calculate_chips_active_cost(
             self, chip, machine_graph, placements, machine_time_step,
-            time_scale_factor, runtime, output):
-        return 0
+            time_scale_factor, runtime, buffer_manager, output):
+        """
+        
+        :param chip: 
+        :param machine_graph: 
+        :param placements: 
+        :param machine_time_step: 
+        :param time_scale_factor: 
+        :param runtime: 
+        :param buffer_manager: 
+        :param output: 
+        :return: 
+        """
+
+        # locate chip power monitor
+        chip_power_monitor = None
+
+        # start at top, as more likely it was placed on the top
+        processor_id = 18
+        while chip_power_monitor is None:
+            processor = chip.get_processor_with_id(processor_id)
+            if (processor is not None and
+                    placements.is_processor_occupied(
+                        chip.x, chip.y, processor_id)):
+
+                # check if vertex is a chip pwoer monitor
+                vertex = placements.get_vertex_on_processor(
+                    chip.x, chip.y, processor_id)
+                if isinstance(vertex, ChipPowerMonitorMachineVertex):
+                    chip_power_monitor = vertex
+            processor_id -= 1
+
+        # get recordings from the chip power monitor
+        recorded_measurements = chip_power_monitor.get_recorded_data(
+            placement=placements.get_placement_of_vertex(chip_power_monitor),
+            buffer_manager=buffer_manager)
+        time_for_recorded_sample = (
+            chip_power_monitor.sampling_frequency *
+            chip_power_monitor.n_samples_per_recording) / 1000
+        cores_power_cost = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0,
+                            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        for recorded_measurement in recorded_measurements:
+            for core in range(0, 18):
+                cores_power_cost[core] += (
+                    recorded_measurement[core] * time_for_recorded_sample *
+                    self.JULES_PER_MILLISECOND_PER_CHIP)
+
+        for core in range(0, 18):
+            output.write(
+                "processor {}:{}:{} used {} Jules of energy during the"
+                " execution of the simulation".format(
+                    chip.x, chip.y, core, cores_power_cost[core]))
+
+        total_energy_cost = 0.0
+        for core in cores_power_cost:
+            total_energy_cost += cores_power_cost[core]
+        return total_energy_cost
 
     def _router_packet_cost(self, chip, router_provenance, output):
-        # Group data by the first name
-        #items = sorted(router_provenance, key=lambda item: item.names[0])
-        #for name, group in itertools.groupby(
-        #        items, lambda item: item.names[0]):
+
+        for element in router_provenance:
+            print element
         return 0
