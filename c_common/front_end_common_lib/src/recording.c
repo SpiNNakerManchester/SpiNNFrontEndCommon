@@ -190,6 +190,22 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
     }
 }
 
+static void _recording_dma_write(
+        uint8_t channel, void *data, void *write_pointer, uint32_t length,
+        void *finished_write_pointer) {
+
+    // set off DMA - if not accepted, wait until another DMA is done
+    while (!spin1_dma_transfer(
+            RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
+            length)) {
+        spin1_wfi();
+    }
+
+    // add to DMA complete tracker
+    circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+    circular_buffer_add(dma_complete_buffer, (uint32_t) finished_write_pointer);
+}
+
 // Add a packet to the SDRAM
 static inline bool _recording_write_memory(
         uint8_t channel, void *data, uint32_t length) {
@@ -215,15 +231,9 @@ static inline bool _recording_write_memory(
         if (final_space >= length) {
             log_debug("Packet fits in final space of %u", final_space);
 
-            // add to dma complete tracker
-            circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
-            circular_buffer_add(
-                dma_complete_buffer, (uint32_t) write_pointer + length);
+            _recording_dma_write(
+                channel, data, write_pointer, length, write_pointer + length);
 
-            // set off dma
-            spin1_dma_transfer(
-                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
-                length);
             write_pointer += length;
             if (write_pointer >= end_of_buffer_region) {
                 write_pointer = buffer_region;
@@ -247,14 +257,8 @@ static inline bool _recording_write_memory(
             log_debug(
                 "Copying first %d bytes to final space of %u", final_space);
 
-            // add to dma complete tracker
-            circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
-            circular_buffer_add(dma_complete_buffer, (uint32_t) buffer_region);
-
-            // set off dma
-            spin1_dma_transfer(
-                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
-                final_space);
+            _recording_dma_write(
+                channel, data, write_pointer, final_space, buffer_region);
 
             write_pointer = buffer_region;
             data += final_space;
@@ -262,15 +266,9 @@ static inline bool _recording_write_memory(
             uint32_t final_len = length - final_space;
             log_debug("Copying remaining %u bytes", final_len);
 
-            // add to dma complete tracker
-            circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
-            circular_buffer_add(
-                dma_complete_buffer, (uint32_t) write_pointer + final_len);
-
-            // set off dma
-            spin1_dma_transfer(
-                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
-                final_len);
+            _recording_dma_write(
+                channel, data, write_pointer, final_len,
+                write_pointer + final_len);
 
             write_pointer += final_len;
             if (write_pointer == end_of_buffer_region) {
@@ -291,7 +289,8 @@ static inline bool _recording_write_memory(
             return false;
         } else {
             log_debug("Packet fits in middle space of %u", middle_space);
-            spin1_memcpy(write_pointer, data, length);
+            _recording_dma_write(
+                channel, data, write_pointer, length, write_pointer + length);
             write_pointer += length;
             if (write_pointer == end_of_buffer_region) {
                 write_pointer = buffer_region;
