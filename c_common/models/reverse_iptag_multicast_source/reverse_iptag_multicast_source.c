@@ -524,6 +524,18 @@ static inline void process_32_bit_packets(
     }
 }
 
+static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
+    if (recording_flags > 0) {
+        uint32_t recording_length = 4 * ((length + 3) / 4);
+        log_debug(
+            "recording a eieio message with length %u", recording_length);
+        recording_record(
+            SPIKE_HISTORY_CHANNEL, &recording_length, 4);
+        recording_record(
+            SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length);
+    }
+}
+
 static inline bool eieio_data_parse_packet(
         eieio_msg_t eieio_msg_ptr, uint32_t length) {
     log_debug("eieio_data_process_data_packet");
@@ -623,19 +635,13 @@ static inline bool eieio_data_parse_packet(
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_flags > 0) {
-            log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
-        }
+        record_packet(eieio_msg_ptr, length);
         return true;
     } else {
         process_32_bit_packets(
             event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_flags > 0) {
-            log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
-        }
+        record_packet(eieio_msg_ptr, length);
         return false;
     }
 }
