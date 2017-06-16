@@ -1,4 +1,6 @@
 import os
+from datetime import datetime
+import dateutil.parser
 
 from spinn_front_end_common.utility_models.\
     chip_power_monitor_machine_vertex import \
@@ -140,22 +142,17 @@ class FrontEndCommonEnergyReport(object):
         #machine_active_cost = 0.0
         #for chip in active_chips:
         #    machine_active_cost += self._calculate_chips_active_cost(
-        #        chip, machine_graph, placements, machine_time_step,
-        #        time_scale_factor, runtime, buffer_manager, output)
+        #        chip, placements, buffer_manager, output)
 
         # figure out idle chips
         #machine_idle_chips_cost = 0.0
         #for chip in machine.chips():
         #    if chip not in active_chips:
         #        machine_idle_chips_cost += self._calculate_chips_active_cost(
-        #            chip, machine_graph, placements, machine_time_step,
-        #            time_scale_factor, runtime, buffer_manager, output)
+        #            chip, placements, buffer_manager, output)
 
         # figure out packet cost
-        packet_cost = 0.0
-        for chip in machine.chips():
-            packet_cost += self._router_packet_cost(
-                chip, router_provenance, output)
+        packet_cost = self._router_packet_cost(router_provenance, output)
 
         # figure FPGA cost
         fpga_cost = self._calulcate_fpga_cost(
@@ -199,64 +196,128 @@ class FrontEndCommonEnergyReport(object):
                 self.JULES_PER_MILLISECOND_PER_IDLE_CHIP,
                 self.JULES_PER_SPIKE, self.JULES_PER_MILLISECOND_PER_FPGA))
 
-    @staticmethod
-    def _calculate_load_time_cost(pacman_provenance):
-        return 0
-
-    @staticmethod
-    def _calculate_data_extraction_time_cost(pacman_provenance):
-        return 0
-
     def _calulcate_fpga_cost(
             self, machine, version, spalloc_server, remote_spinnaker_url,
             runtime, machine_time_step, time_scale_factor, output):
 
         # if not spalloc, then could be any type of board
         if spalloc_server is None and remote_spinnaker_url is None:
+
+            # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
             if version in range(2, 3):
                 output.write(
                     "A Spinn {} board does not contain any FPGA's, and so "
                     "its energy cost is 0".format(version))
                 return 0
+
+            # if the spinn4 or spinn5 board, need to verify if wrap arounds
+            # are there, if not then assume fppga's are turned off.
             elif version in range(4, 5):
-                if self._has_wrap_arounds(machine):
-                    power_usage = (
-                        runtime * machine_time_step * time_scale_factor *
-                        self.JULES_PER_MILLISECOND_PER_FPGA)
+
+                # how many fpgas are active
+                n_operational_fpgas = self._board_n_operational_fpgas(
+                    machine, machine.ethernet_connected_chips()[0])
+
+                # active fpgas
+                if n_operational_fpgas > 0:
+                    return self._print_out_fpga_cost(
+                        runtime, machine_time_step, time_scale_factor,
+                        n_operational_fpgas, output, version)
+                else:  # no active fpgas
                     output.write(
-                        "The FPGA's on the Spinn {} board are turned on and "
-                        "therefore the energy used by the FPGA is {}".format(
-                            version, power_usage))
-                    return power_usage
-                else:
-                    output.write(
-                    "The FPGA's on the Spinn {} board are turned off and "
-                    "therefore the energy used by the FPGA is 0".format(
-                        version))
+                        "The FPGA's on the Spinn {} board are turned off and "
+                        "therefore the energy used by the FPGA is 0".format(
+                            version))
                     return 0
-            else:
+            else:  # no idea where we are
                 raise exceptions.ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "
                     "SpiNNaker machine.")
-        else:
+        else:  # spalloc machine, need to check each board
+            total_fpgas = 0
+            for ethernet_connected_chip in machine.ethernet_connected_chips:
+                total_fpgas += self._board_n_operational_fpgas(
+                    machine, ethernet_connected_chip)
+            return self._print_out_fpga_cost(
+                runtime, machine_time_step, time_scale_factor, total_fpgas,
+                output, version)
 
-        return 0
+    def _print_out_fpga_cost(
+            self, runtime, machine_time_step, time_scale_factor,
+            n_operational_fpgas, output, version):
+        """
+        
+        :param runtime: 
+        :param machine_time_step: 
+        :param time_scale_factor: 
+        :param n_operational_fpgas: 
+        :param output: 
+        :param version: 
+        :return: 
+        """
+        power_usage = (
+            runtime * machine_time_step * time_scale_factor *
+            self.JULES_PER_MILLISECOND_PER_FPGA * n_operational_fpgas)
+        output.write(
+            "{} FPGA's on the Spinn {} board are turned on and "
+            "therefore the energy used by the FPGA is {}".format(
+                n_operational_fpgas, version, power_usage))
+        return power_usage
+
+    def _board_n_operational_fpgas(self, machine, ethernet_connected_chip):
+        # positions to check for active links
+        left_additions = [[0, 0], [0, 1], [0, 2], [0, 3]]
+        right_additions = [[7, 3], [7, 4], [7, 5], [7, 6], [7, 7]]
+        top_additions = [[4, 7], [5, 7], [6, 7], [7, 7]]
+        bottom_additions = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]
+        top_right_additions = [[0, 3], [1, 4], [2, 5], [3, 6], [4, 7]]
+        bottom_left_additions = [[4, 0], [5, 1], [6, 2], [7, 3]]
+
+        fpga_0 = 0 # bottom left, bottom
+        fpga_1 = 0 # left, and top right
+        fpga_2 = 0 # top and right
+
+        machine_max_x = machine.max_chip_x
+        machine_max_y = machine.max_chip_y
+
+        ethernet_chip_x = ethernet_connected_chip.x
+        ethernet_chip_y = ethernet_connected_chip.y
+
+        fpga_0 = self._deduce_fpga(
+            [bottom_additions, bottom_left_additions], [[5, 4], [5, 0]],
+            machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
+            machine)
+        fpga_1 = self._deduce_fpga(
+            [left_additions, top_right_additions], [[3, 4], [3, 2]],
+            machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
+            machine)
+        fpga2 = self._deduce_fpga(
+            [top_additions, right_additions], [[2, 1], [0, 1]],
+            machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
+            machine)
+        return fpga_1 + fpga_0 + fpga_2
 
     @staticmethod
-    def _has_wrap_arounds(machine):
-        pass
+    def _deduce_fpga(
+            shifts, overall_link_ids, machine_max_x, machine_max_y,
+            ethernet_chip_x, ethernet_chip_y, machine):
+        for shift_group, link_ids in zip(shifts, overall_link_ids):
+            for shift in shift_group:
+                new_x = (ethernet_chip_x + shift[0]) % machine_max_x
+                new_y = (ethernet_chip_y + shift[1]) % machine_max_y
+                chip = machine.get_chip_at(new_x, new_y)
+                for link_id in link_ids:
+                    link = chip.router.get_link(link_id)
+                    if link is not None:
+                        return 1
+        return 0
 
     def _calculate_chips_active_cost(
-            self, chip, machine_graph, placements, machine_time_step,
-            time_scale_factor, runtime, buffer_manager, output):
+            self, chip, placements, buffer_manager, output):
         """
         
         :param chip: 
-        :param machine_graph: 
         :param placements: 
-        :param machine_time_step: 
-        :param time_scale_factor: 
-        :param runtime: 
         :param buffer_manager: 
         :param output: 
         :return: 
@@ -306,8 +367,25 @@ class FrontEndCommonEnergyReport(object):
             total_energy_cost += cores_power_cost[core]
         return total_energy_cost
 
-    def _router_packet_cost(self, chip, router_provenance, output):
+    def _router_packet_cost(self, router_provenance, output):
 
+        energy_cost = 0.0
         for element in router_provenance:
-            print element
+            packet_count = float(element.value) * self.JULES_PER_SPIKE
+            energy_cost += packet_count
+        return energy_cost
+
+    @staticmethod
+    def _calculate_load_time_cost(pacman_provenance):
+        energy_usage = 0.0
+        for element in pacman_provenance:
+            if element.names[1] == "run_time_of_MundyOnChipRouterCompression":
+                energy_usage += dateutil.parser.parse(element.value)
+            if element.names[1] == "run_time_of_FrontEndCommonTagsLoader":
+                energy_usage += dateutil.parser.parse(element.value)
+
+        return pacman_provenance
+
+    @staticmethod
+    def _calculate_data_extraction_time_cost(pacman_provenance):
         return 0

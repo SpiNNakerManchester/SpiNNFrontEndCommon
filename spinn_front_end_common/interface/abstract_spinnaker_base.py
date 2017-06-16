@@ -2127,17 +2127,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # acquire provenance items
             prov_items = self._last_run_outputs["ProvenanceItems"]
-            pacman_provenance = None
-            router_provenance = None
+            pacman_provenance = list()
+            router_provenance = list()
 
             # group them by name type
             grouped_items = sorted(prov_items, key=lambda item: item.names[0])
-            for name, group in itertools.groupby(
-                    grouped_items, lambda item: item.names[0]):
-                if name == 'pacman':
-                    pacman_provenance = group
-                if name == 'router_provenance':
-                    router_provenance = group
+            for element in grouped_items:
+                if element.names[0] == 'pacman':
+                    pacman_provenance.append(element)
+                if element.names[0] == 'router_provenance':
+                    router_provenance.append(element)
+
+            print "pac"
+            for thing in pacman_provenance:
+                print thing
+
+
 
             # run energy report
             energy_report(

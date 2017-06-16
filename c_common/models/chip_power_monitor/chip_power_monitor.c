@@ -11,6 +11,7 @@
 typedef enum {
     SYSTEM, CONFIG, RECORDING
 } region;
+
 typedef enum {
     SAMPLE_COUNT_LIMIT = 0, SAMPLE_FREQUENCY = 1
 } parameter_layout;
@@ -49,7 +50,7 @@ static void reset_core_counters(void)
 {
     int i;
     for (i=0 ; i<NUM_CORES ; i++) {
-	core_counters[i] = 0;
+	    core_counters[i] = 0;
     }
     sample_count = 0;
 }
@@ -69,21 +70,21 @@ static void sample_in_slot(uint unused0, uint unused1)
     uint32_t sc = ++sample_count;
     uint32_t offset = get_random_busy();
     while (offset --> 0) {
-	// Do nothing
+	    // Do nothing
     }
 
     uint32_t sample = get_sample();
 
     int i, j;
     for (i=0, j=1 ; i<NUM_CORES ; i++, j<<=1) {
-	if (sample & j) {
-	    core_counters[i]++;
-	}
+        if (sample & j) {
+            core_counters[i]++;
+        }
     }
 
     if (sc >= sample_count_limit) {
-	record_aggregate_sample();
-	reset_core_counters();
+        record_aggregate_sample();
+        reset_core_counters();
     }
 }
 
@@ -108,6 +109,10 @@ static bool initialize(uint32_t *timer)
             data_specification_get_region(CONFIG, address))) {
         return false;
     }
+
+    // change simulation ticks to be a number related to sampling frequency
+    simulation_ticks = (simulation_ticks * timer) / samply_frequency;
+
     address_t recording_region =
 	    data_specification_get_region(RECORDING, address);
     bool success = recording_initialize(recording_region, &recording_flags);
@@ -118,13 +123,13 @@ void c_main(void)
 {
     uint32_t timer = 0;
     if (!initialize(&timer)) {
-	log_error("failed to initialise");
-	rt_error(RTE_SWERR);
+        log_error("failed to initialise");
+        rt_error(RTE_SWERR);
     }
 
     reset_core_counters();
 
-    spin1_set_timer_tick(timer);
+    spin1_set_timer_tick(samply_frequency);
     spin1_callback_on(TIMER_TICK, sample_in_slot, TIMER);
     time = UINT32_MAX;
     simulation_run();
