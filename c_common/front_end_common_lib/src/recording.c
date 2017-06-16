@@ -194,6 +194,11 @@ static void _recording_dma_write(
         uint8_t channel, void *data, void *write_pointer, uint32_t length,
         void *finished_write_pointer, recording_complete_callback_t callback) {
 
+    // add to DMA complete tracker
+    circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+    circular_buffer_add(dma_complete_buffer, (uint32_t) finished_write_pointer);
+    circular_buffer_add(dma_complete_buffer, (uint32_t) callback);
+
     // set off DMA - if not accepted, wait until another DMA is done
     while (!spin1_dma_transfer(
             RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
@@ -201,10 +206,6 @@ static void _recording_dma_write(
         spin1_wfi();
     }
 
-    // add to DMA complete tracker
-    circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
-    circular_buffer_add(dma_complete_buffer, (uint32_t) finished_write_pointer);
-    circular_buffer_add(dma_complete_buffer, (uint32_t) callback);
 }
 
 // Add a packet to the SDRAM
@@ -509,10 +510,13 @@ void _recording_dma_finished(uint unused, uint tag) {
     // pop region and write pointer from circular queue
     uint32_t channel_id;
     uint32_t dma_current_write;
-    recording_complete_callback_t callback;
+    uint32_t callback_address;
     circular_buffer_get_next(dma_complete_buffer, &channel_id);
     circular_buffer_get_next(dma_complete_buffer, &dma_current_write);
-    circular_buffer_get_next(dma_complete_buffer, (uint32_t *) &callback);
+    circular_buffer_get_next(dma_complete_buffer, &callback_address);
+
+    recording_complete_callback_t callback =
+        (recording_complete_callback_t) callback_address;
 
     // update recording region dma_current_write
     g_recording_channels[(uint8_t) channel_id].dma_current_write =
@@ -527,7 +531,7 @@ bool recording_initialize(
         address_t recording_data_address, uint32_t *recording_flags) {
 
     // build dma address circular queue
-    dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 2);
+    dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 4);
 
     // Read in the parameters
     n_recording_regions = recording_data_address[N_REGIONS];
@@ -614,6 +618,9 @@ bool recording_initialize(
     msg.dest_addr = buffering_destination;
     msg.srce_addr = spin1_get_chip_id();
 
+    // register the SDP handler
+    simulation_sdp_callback_on(sdp_port, _buffering_in_handler);
+
     // register dma transfer done callback
     simulation_dma_transfer_done_callback_on(
         RECORDING_DMA_COMPLETE_TAG_ID, _recording_dma_finished);
@@ -656,8 +663,6 @@ void recording_reset() {
                 "Recording channel %u configured to use %u byte memory block"
                 " starting at 0x%08x", i, region_size,
                 g_recording_channels[i].start);
-
-            simulation_sdp_callback_on(sdp_port, _buffering_in_handler);
         } else {
             g_recording_channels[i].start = NULL;
             g_recording_channels[i].current_write = NULL;

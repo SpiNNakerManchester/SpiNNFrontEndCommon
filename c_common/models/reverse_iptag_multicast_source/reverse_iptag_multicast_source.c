@@ -539,12 +539,19 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
             spin1_wfi();
         }
 
+        // Ensure that the recorded data size is a multiple of 4
         uint32_t recording_length = 4 * ((length + 3) / 4);
         log_debug(
             "recording a eieio message with length %u", recording_length);
         recording_in_progress = true;
         recording_record(
             SPIKE_HISTORY_CHANNEL, &recording_length, 4);
+
+        // NOTE: recording_length could be bigger than the length of the valid
+        // data in eieio_msg_ptr.  This is OK as the data pointed to by
+        // eieio_msg_ptr is always big enough to have extra space in it.  The
+        // bytes in this data will be random, but are also ignored by
+        // whatever reads the data.
         recording_record_and_notify(
             SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length,
             recording_done_callback);
