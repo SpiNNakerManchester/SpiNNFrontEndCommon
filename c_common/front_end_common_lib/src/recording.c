@@ -192,7 +192,7 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
 
 static void _recording_dma_write(
         uint8_t channel, void *data, void *write_pointer, uint32_t length,
-        void *finished_write_pointer) {
+        void *finished_write_pointer, recording_complete_callback_t callback) {
 
     // set off DMA - if not accepted, wait until another DMA is done
     while (!spin1_dma_transfer(
@@ -204,11 +204,13 @@ static void _recording_dma_write(
     // add to DMA complete tracker
     circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
     circular_buffer_add(dma_complete_buffer, (uint32_t) finished_write_pointer);
+    circular_buffer_add(dma_complete_buffer, (uint32_t) callback);
 }
 
 // Add a packet to the SDRAM
 static inline bool _recording_write_memory(
-        uint8_t channel, void *data, uint32_t length) {
+        uint8_t channel, void *data, uint32_t length,
+        recording_complete_callback_t callback) {
     uint8_t *buffer_region = g_recording_channels[channel].start;
     uint8_t *end_of_buffer_region = g_recording_channels[channel].end;
     uint8_t *write_pointer = g_recording_channels[channel].current_write;
@@ -232,7 +234,8 @@ static inline bool _recording_write_memory(
             log_debug("Packet fits in final space of %u", final_space);
 
             _recording_dma_write(
-                channel, data, write_pointer, length, write_pointer + length);
+                channel, data, write_pointer, length, write_pointer + length,
+                callback);
 
             write_pointer += length;
             if (write_pointer >= end_of_buffer_region) {
@@ -258,7 +261,8 @@ static inline bool _recording_write_memory(
                 "Copying first %d bytes to final space of %u", final_space);
 
             _recording_dma_write(
-                channel, data, write_pointer, final_space, buffer_region);
+                channel, data, write_pointer, final_space, buffer_region,
+                NULL);
 
             write_pointer = buffer_region;
             data += final_space;
@@ -268,7 +272,7 @@ static inline bool _recording_write_memory(
 
             _recording_dma_write(
                 channel, data, write_pointer, final_len,
-                write_pointer + final_len);
+                write_pointer + final_len, callback);
 
             write_pointer += final_len;
             if (write_pointer == end_of_buffer_region) {
@@ -290,7 +294,8 @@ static inline bool _recording_write_memory(
         } else {
             log_debug("Packet fits in middle space of %u", middle_space);
             _recording_dma_write(
-                channel, data, write_pointer, length, write_pointer + length);
+                channel, data, write_pointer, length, write_pointer + length,
+                callback);
             write_pointer += length;
             if (write_pointer == end_of_buffer_region) {
                 write_pointer = buffer_region;
@@ -404,7 +409,9 @@ static void _buffering_in_handler(uint mailbox, uint port) {
     log_debug("Done freeing message");
 }
 
-bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+bool recording_record_and_notify(
+        uint8_t channel, void *data, uint32_t size_bytes,
+        recording_complete_callback_t callback) {
 
     if (_has_been_initialsed(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
@@ -414,7 +421,7 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
         if (space_available >= size_bytes) {
 
             // Copy data into recording channel
-            _recording_write_memory(channel, data, size_bytes);
+            _recording_write_memory(channel, data, size_bytes, callback);
 
             return true;
         } else {
@@ -427,6 +434,10 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     } else {
         return false;
     }
+}
+
+bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+    recording_record_and_notify(channel, data, size_bytes, NULL);
 }
 
 //! brief this writes the state data to the regions
@@ -498,12 +509,18 @@ void _recording_dma_finished(uint unused, uint tag) {
     // pop region and write pointer from circular queue
     uint32_t channel_id;
     uint32_t dma_current_write;
+    recording_complete_callback_t callback;
     circular_buffer_get_next(dma_complete_buffer, &channel_id);
     circular_buffer_get_next(dma_complete_buffer, &dma_current_write);
+    circular_buffer_get_next(dma_complete_buffer, (uint32_t *) &callback);
 
     // update recording region dma_current_write
     g_recording_channels[(uint8_t) channel_id].dma_current_write =
         (uint8_t *) dma_current_write;
+
+    if (callback != NULL) {
+        callback();
+    }
 }
 
 bool recording_initialize(

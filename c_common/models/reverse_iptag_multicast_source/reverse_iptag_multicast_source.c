@@ -7,6 +7,9 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
+// Declare wfi function
+extern void spin1_wfi();
+
 #ifndef APPLICATION_NAME_HASH
 #define APPLICATION_NAME_HASH 0
 #error APPLICATION_NAME_HASH must be defined
@@ -127,6 +130,8 @@ static uint32_t last_space;
 static uint32_t last_request_tick;
 
 static bool stopped = false;
+
+static bool recording_in_progress = false;
 
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
@@ -524,15 +529,25 @@ static inline void process_32_bit_packets(
     }
 }
 
+void recording_done_callback() {
+    recording_in_progress = false;
+}
+
 static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
     if (recording_flags > 0) {
+        while (recording_in_progress) {
+            spin1_wfi();
+        }
+
         uint32_t recording_length = 4 * ((length + 3) / 4);
         log_debug(
             "recording a eieio message with length %u", recording_length);
+        recording_in_progress = true;
         recording_record(
             SPIKE_HISTORY_CHANNEL, &recording_length, 4);
-        recording_record(
-            SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length);
+        recording_record_and_notify(
+            SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length,
+            recording_done_callback);
     }
 }
 
