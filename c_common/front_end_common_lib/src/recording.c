@@ -438,7 +438,15 @@ bool recording_record_and_notify(
 }
 
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
-    recording_record_and_notify(channel, data, size_bytes, NULL);
+    if (!recording_record_and_notify(channel, data, size_bytes, NULL)) {
+        return false;
+    }
+
+    // wait till all DMA's have been finished
+    while (circular_buffer_size(dma_complete_buffer) != 0) {
+        spin1_wfi();
+    }
+    return true;
 }
 
 //! brief this writes the state data to the regions
