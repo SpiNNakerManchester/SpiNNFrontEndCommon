@@ -1,11 +1,11 @@
 import os
-from datetime import datetime
 import dateutil.parser
 
 from spinn_front_end_common.utility_models.\
     chip_power_monitor_machine_vertex import \
     ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities import exceptions
+
 
 class FrontEndCommonEnergyReport(object):
 
@@ -85,6 +85,20 @@ class FrontEndCommonEnergyReport(object):
             load_time_cost, data_extraction_cost, runtime,
             load_time_in_milliseconds, data_extraction_time_in_milliseconds,
             output):
+        """
+        
+        :param active_chip_cost: 
+        :param idle_chip_cost: 
+        :param fpga_cost: 
+        :param packet_cost: 
+        :param load_time_cost: 
+        :param data_extraction_cost: 
+        :param runtime: 
+        :param load_time_in_milliseconds: 
+        :param data_extraction_time_in_milliseconds: 
+        :param output: 
+        :return: 
+        """
 
         # total the energy costs
         total_jules = (
@@ -138,19 +152,6 @@ class FrontEndCommonEnergyReport(object):
         for placement in placements:
             active_chips.add(machine.get_chip_at(placement.x, placement.y))
 
-        # figure out active chips idle time
-        #machine_active_cost = 0.0
-        #for chip in active_chips:
-        #    machine_active_cost += self._calculate_chips_active_cost(
-        #        chip, placements, buffer_manager, output)
-
-        # figure out idle chips
-        #machine_idle_chips_cost = 0.0
-        #for chip in machine.chips():
-        #    if chip not in active_chips:
-        #        machine_idle_chips_cost += self._calculate_chips_active_cost(
-        #            chip, placements, buffer_manager, output)
-
         # figure out packet cost
         packet_cost = self._router_packet_cost(router_provenance, output)
 
@@ -160,14 +161,29 @@ class FrontEndCommonEnergyReport(object):
             machine_time_step, time_scale_factor, output)
 
         # figure load time cost
-        load_time_cost = self._calculate_load_time_cost(pacman_provenance)
+        load_time_cost = self._calculate_load_time_cost(
+            pacman_provenance, machine, output)
 
         # figure extraction time cost
         extraction_time_cost = \
-            self._calculate_data_extraction_time_cost(pacman_provenance)
+            self._calculate_data_extraction_time_cost(
+                pacman_provenance, machine, output)
+
+        # figure out active chips idle time
+        machine_active_cost = 0.0
+        for chip in active_chips:
+            machine_active_cost += self._calculate_chips_active_cost(
+                chip, placements, buffer_manager, output)
+
+        # figure out idle chips
+        machine_idle_chips_cost = 0.0
+        for chip in machine.chips():
+            if chip not in active_chips:
+                machine_idle_chips_cost += self._calculate_chips_active_cost(
+                    chip, placements, buffer_manager, output)
 
         return machine_active_cost, machine_idle_chips_cost, \
-               fpga_cost, packet_cost, load_time_cost, extraction_time_cost
+            fpga_cost, packet_cost, load_time_cost, extraction_time_cost
 
     def _write_warning(self, output):
         """ writes the warning about this being only an estimate
@@ -199,6 +215,18 @@ class FrontEndCommonEnergyReport(object):
     def _calulcate_fpga_cost(
             self, machine, version, spalloc_server, remote_spinnaker_url,
             runtime, machine_time_step, time_scale_factor, output):
+        """
+        
+        :param machine: 
+        :param version: 
+        :param spalloc_server: 
+        :param remote_spinnaker_url: 
+        :param runtime: 
+        :param machine_time_step: 
+        :param time_scale_factor: 
+        :param output: 
+        :return: 
+        """
 
         # if not spalloc, then could be any type of board
         if spalloc_server is None and remote_spinnaker_url is None:
@@ -265,6 +293,13 @@ class FrontEndCommonEnergyReport(object):
         return power_usage
 
     def _board_n_operational_fpgas(self, machine, ethernet_connected_chip):
+        """
+        
+        :param machine: 
+        :param ethernet_connected_chip: 
+        :return: 
+        """
+
         # positions to check for active links
         left_additions = [[0, 0], [0, 1], [0, 2], [0, 3]]
         right_additions = [[7, 3], [7, 4], [7, 5], [7, 6], [7, 7]]
@@ -273,9 +308,9 @@ class FrontEndCommonEnergyReport(object):
         top_right_additions = [[0, 3], [1, 4], [2, 5], [3, 6], [4, 7]]
         bottom_left_additions = [[4, 0], [5, 1], [6, 2], [7, 3]]
 
-        fpga_0 = 0 # bottom left, bottom
-        fpga_1 = 0 # left, and top right
-        fpga_2 = 0 # top and right
+        fpga_0 = 0.0  # bottom left, bottom
+        fpga_1 = 0.0  # left, and top right
+        fpga_2 = 0.0  # top and right
 
         machine_max_x = machine.max_chip_x
         machine_max_y = machine.max_chip_y
@@ -291,7 +326,7 @@ class FrontEndCommonEnergyReport(object):
             [left_additions, top_right_additions], [[3, 4], [3, 2]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
             machine)
-        fpga2 = self._deduce_fpga(
+        fpga_2 = self._deduce_fpga(
             [top_additions, right_additions], [[2, 1], [0, 1]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
             machine)
@@ -301,15 +336,29 @@ class FrontEndCommonEnergyReport(object):
     def _deduce_fpga(
             shifts, overall_link_ids, machine_max_x, machine_max_y,
             ethernet_chip_x, ethernet_chip_y, machine):
+        """
+        
+        :param shifts: 
+        :param overall_link_ids: 
+        :param machine_max_x: 
+        :param machine_max_y: 
+        :param ethernet_chip_x: 
+        :param ethernet_chip_y: 
+        :param machine: 
+        :return: 
+        """
         for shift_group, link_ids in zip(shifts, overall_link_ids):
             for shift in shift_group:
-                new_x = (ethernet_chip_x + shift[0]) % machine_max_x
-                new_y = (ethernet_chip_y + shift[1]) % machine_max_y
+                new_x = (ethernet_chip_x + shift[0]) % machine_max_x - 1
+                new_y = (ethernet_chip_y + shift[1]) % machine_max_y - 1
                 chip = machine.get_chip_at(new_x, new_y)
-                for link_id in link_ids:
-                    link = chip.router.get_link(link_id)
-                    if link is not None:
-                        return 1
+                if chip is not None:
+                    for link_id in link_ids:
+                        link = chip.router.get_link(link_id)
+                        if link is not None:
+                            return 1
+                else:
+                    print "missing chip at {}:{}".format(new_x, new_y)
         return 0
 
     def _calculate_chips_active_cost(
@@ -368,24 +417,82 @@ class FrontEndCommonEnergyReport(object):
         return total_energy_cost
 
     def _router_packet_cost(self, router_provenance, output):
+        """
+        
+        :param router_provenance: 
+        :param output: 
+        :return: 
+        """
 
+        print router_provenance
         energy_cost = 0.0
         for element in router_provenance:
             packet_count = float(element.value) * self.JULES_PER_SPIKE
             energy_cost += packet_count
+        output.write("The packet cost is {} Jules".format(energy_cost))
         return energy_cost
 
-    @staticmethod
-    def _calculate_load_time_cost(pacman_provenance):
-        energy_usage = 0.0
+    def _calculate_load_time_cost(self, pacman_provenance, machine, output):
+        """
+        
+        :param pacman_provenance: 
+        :param machine: 
+        :param output: 
+        :return: 
+        """
+
+        time_period = 0.0
         for element in pacman_provenance:
             if element.names[1] == "run_time_of_MundyOnChipRouterCompression":
-                energy_usage += dateutil.parser.parse(element.value)
+                time_period += dateutil.parser.parse(element.value)
             if element.names[1] == "run_time_of_FrontEndCommonTagsLoader":
-                energy_usage += dateutil.parser.parse(element.value)
+                time_period += dateutil.parser.parse(element.value)
+            if element.names[1] == \
+                    "run_time_of_FrontEndCommonHostExecuteDataSpecification":
+                time_period += dateutil.parser.parse(element.value)
+            if element.names[1] == \
+                    "run_time_of_FrontEndCommonLoadExecutableImages":
+                time_period += dateutil.parser.parse(element.value)
 
-        return pacman_provenance
+        total_milliseconds = time_period.total_seconds() * 1000
+        energy_cost = (total_milliseconds * len(list(machine.chips)) *
+                       self.JULES_PER_MILLISECOND_PER_CHIP)
 
-    @staticmethod
-    def _calculate_data_extraction_time_cost(pacman_provenance):
-        return 0
+        output.write(
+            "The amount of time used during the loading process is {} "
+            "milliseconds.\n Assumed only monitor core is executing that this"
+            " point, so the energy usage is {} Jules \n".format(
+                total_milliseconds, energy_cost))
+
+        return energy_cost
+
+    def _calculate_data_extraction_time_cost(
+            self, pacman_provenance, machine, output):
+        """
+        
+        :param pacman_provenance: 
+        :param machine: 
+        :param output: 
+        :return: 
+        """
+
+        time_period = 0.0
+        for element in pacman_provenance:
+            if element.names[1] == \
+                    "run_time_of_FrontEndCommonPlacementsProvenanceGatherer":
+                time_period += dateutil.parser.parse(element.value)
+            if element.names[1] == \
+                    "run_time_of_FrontEndCommonRouterProvenanceGatherer":
+                time_period += dateutil.parser.parse(element.value)
+
+        total_milliseconds = time_period.total_seconds() * 1000
+        energy_cost = (total_milliseconds * len(list(machine.chips)) *
+                       self.JULES_PER_MILLISECOND_PER_CHIP)
+
+        output.write(
+            "The amount of time used during the data extraction process is {} "
+            "milliseconds.\n Assumed only monitor core is executing that this"
+            " point, so the energy usage is {} Jules \n".format(
+                total_milliseconds, energy_cost))
+
+        return energy_cost
