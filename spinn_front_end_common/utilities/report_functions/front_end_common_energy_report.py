@@ -1,7 +1,4 @@
 import os
-import dateutil.parser
-import re
-from datetime import timedelta
 
 from spinn_front_end_common.utility_models.\
     chip_power_monitor_machine_vertex import \
@@ -68,8 +65,8 @@ class FrontEndCommonEnergyReport(object):
                 self._write_detailed_report(
                     placements, machine, version, spalloc_server,
                     remote_spinnaker_url, time_scale_factor, machine_time_step,
-                    pacman_provenance, router_provenance, machine_graph,
-                    runtime, buffer_manager, output)
+                    pacman_provenance, router_provenance, runtime,
+                    buffer_manager, output)
 
         load_time_in_milliseconds = pacman_provenance
         data_extraction_time_in_milliseconds = pacman_provenance
@@ -129,7 +126,7 @@ class FrontEndCommonEnergyReport(object):
     def _write_detailed_report(
             self, placements, machine, version, spalloc_server,
             remote_spinnaker_url, time_scale_factor, machine_time_step,
-            pacman_provenance, router_provenance, machine_graph, runtime,
+            pacman_provenance, router_provenance, runtime,
             buffer_manager, output):
         """
         
@@ -142,7 +139,6 @@ class FrontEndCommonEnergyReport(object):
         :param machine_time_step: 
         :param pacman_provenance: 
         :param router_provenance: 
-        :param machine_graph: 
         :param buffer_manager:
         :param output: 
         :return: 
@@ -397,7 +393,7 @@ class FrontEndCommonEnergyReport(object):
         time_for_recorded_sample = (
             chip_power_monitor.sampling_frequency *
             chip_power_monitor.n_samples_per_recording) / 1000
-        cores_power_cost = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0, 0.0, 0.0, 0.0,
+        cores_power_cost = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                             0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         for recorded_measurement in recorded_measurements:
             for core in range(0, 18):
