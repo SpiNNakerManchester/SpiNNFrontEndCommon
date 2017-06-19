@@ -10,9 +10,11 @@ class PacmanProvenanceExtractor(object):
         self._data_items = list()
 
     def extract_provenance(self, executor):
-        for (algorithm, run_time) in executor.algorithm_timings:
-            names = ["pacman", "run_time_of_{}".format(algorithm)]
-            self._data_items.append(ProvenanceDataItem(names, str(run_time)))
+        for (algorithm, run_time, exec_names) in executor.algorithm_timings:
+            names = ["pacman"]
+            names.append(exec_names)
+            names.extend(["run_time_of_{}".format(algorithm)])
+            self._data_items.append(ProvenanceDataItem(names, run_time))
 
     @property
     def data_items(self):

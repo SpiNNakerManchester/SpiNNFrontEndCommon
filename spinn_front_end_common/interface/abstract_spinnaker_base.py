@@ -879,13 +879,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return total_run_timesteps
 
     def _run_algorithms(
-            self, inputs, algorithms, outputs, optional_algorithms=None):
+            self, inputs, algorithms, outputs, provenance_name,
+            optional_algorithms=None):
         """ runs getting a spinnaker machine logic
 
         :param inputs: the inputs
         :param algorithms: algorithms to call
         :param outputs: outputs to get
         :param optional_algorithms: optional algorithms to use
+        :param provenance_name: the name for provenance
         :return:  None
         """
 
@@ -897,7 +899,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=algorithms, optional_algorithms=optional,
             inputs=inputs, xml_paths=self._xml_paths, required_outputs=outputs,
-            do_timings=self._do_timings, print_timings=self._print_timings)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_name=provenance_name)
 
         try:
             executor.execute_mapping()
@@ -979,7 +982,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("MemoryTransceiver")
 
             executor = self._run_algorithms(
-                inputs, algorithms, outputs)
+                inputs, algorithms, outputs, "machine_generation")
             self._machine = executor.get_item("MemoryExtendedMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_outputs = executor.get_items()
@@ -1009,7 +1012,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("MemoryExtendedMachine")
 
             executor = self._run_algorithms(
-                inputs, algorithms, outputs)
+                inputs, algorithms, outputs, "machine_generation")
             self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
 
@@ -1092,7 +1095,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("MachineAllocationController")
 
             executor = self._run_algorithms(
-                inputs, algorithms, outputs)
+                inputs, algorithms, outputs, "machine_generation")
 
             self._machine_outputs = executor.get_items()
             self._machine = executor.get_item("MemoryExtendedMachine")
@@ -1324,7 +1327,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
-            inputs, algorithms, outputs, optional_algorithms)
+            inputs, algorithms, outputs, "mapping", optional_algorithms)
 
         # get result objects from the pacman executor
         self._mapping_outputs = executor.get_items()
@@ -1358,7 +1361,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("FrontEndCommonGraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
 
-        executor = self._run_algorithms(inputs, algorithms, outputs)
+        executor = self._run_algorithms(
+            inputs, algorithms, outputs, "data_generation")
         self._mapping_outputs = executor.get_items()
 
         # write provenance to file if necessary
@@ -1415,7 +1419,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         ]
 
         executor = self._run_algorithms(
-            inputs, algorithms, outputs, optional_algorithms)
+            inputs, algorithms, outputs, "loading", optional_algorithms)
         self._load_outputs = executor.get_items()
 
     def _do_run(self, n_machine_time_steps, loading_done):
@@ -1524,7 +1528,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=algorithms, optional_algorithms=[], inputs=inputs,
             xml_paths=self._xml_paths, required_outputs=outputs,
-            do_timings=self._do_timings, print_timings=self._print_timings)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_name="Execution")
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -2083,7 +2088,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executor = PACMANAlgorithmExecutor(
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,
                 xml_paths=self._xml_paths, required_outputs=outputs,
-                do_timings=self._do_timings, print_timings=self._print_timings)
+                do_timings=self._do_timings, print_timings=self._print_timings,
+                provenance_name="stopping")
             run_complete = False
             try:
                 executor.execute_mapping()

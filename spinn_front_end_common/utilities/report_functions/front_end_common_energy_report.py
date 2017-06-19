@@ -1,5 +1,7 @@
 import os
 import dateutil.parser
+import re
+from datetime import timedelta
 
 from spinn_front_end_common.utility_models.\
     chip_power_monitor_machine_vertex import \
@@ -401,7 +403,7 @@ class FrontEndCommonEnergyReport(object):
             for core in range(0, 18):
                 cores_power_cost[core] += (
                     recorded_measurement[core] * time_for_recorded_sample *
-                    self.JULES_PER_MILLISECOND_PER_CHIP)
+                    (self.JULES_PER_MILLISECOND_PER_CHIP / 18))
 
         for core in range(0, 18):
             output.write(
@@ -439,22 +441,32 @@ class FrontEndCommonEnergyReport(object):
         :return: 
         """
 
-        time_period = 0.0
+        total_milliseconds = None
+        loading_algorithms = list()
         for element in pacman_provenance:
-            if element.names[1] == "run_time_of_MundyOnChipRouterCompression":
-                time_period += dateutil.parser.parse(element.value)
-            if element.names[1] == "run_time_of_FrontEndCommonTagsLoader":
-                time_period += dateutil.parser.parse(element.value)
-            if element.names[1] == \
-                    "run_time_of_FrontEndCommonHostExecuteDataSpecification":
-                time_period += dateutil.parser.parse(element.value)
-            if element.names[1] == \
-                    "run_time_of_FrontEndCommonLoadExecutableImages":
-                time_period += dateutil.parser.parse(element.value)
+            if element.names[1] == "loading":
+                loading_algorithms.append(element)
 
-        total_milliseconds = time_period.total_seconds() * 1000
+        for element in loading_algorithms:
+            if total_milliseconds is None:
+                total_milliseconds = (
+                    (element.value.total_seconds() * 1000) +
+                    element.value.microseconds)
+            else:
+                total_milliseconds += (
+                    (element.value.total_seconds() * 1000) +
+                    element.value.microseconds)
+
+        # if for some reason, no loading algorithms are loaded, return 0
+        if total_milliseconds is None:
+            total_milliseconds = 0.0
+
+        # handle monitor core active cost
         energy_cost = (total_milliseconds * len(list(machine.chips)) *
-                       self.JULES_PER_MILLISECOND_PER_CHIP)
+                       (self.JULES_PER_MILLISECOND_PER_CHIP / 18))
+        energy_cost += (
+            total_milliseconds * machine.maximum_user_cores_on_chip * (
+                self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18))
 
         output.write(
             "The amount of time used during the loading process is {} "
@@ -474,18 +486,33 @@ class FrontEndCommonEnergyReport(object):
         :return: 
         """
 
-        time_period = 0.0
+        total_milliseconds = None
+        extraction_algorithms = list()
         for element in pacman_provenance:
-            if element.names[1] == \
-                    "run_time_of_FrontEndCommonPlacementsProvenanceGatherer":
-                time_period += dateutil.parser.parse(element.value)
-            if element.names[1] == \
-                    "run_time_of_FrontEndCommonRouterProvenanceGatherer":
-                time_period += dateutil.parser.parse(element.value)
+            if element.names[1] == "Execution":
+                if not (element.names[2] ==
+                        "run_time_of_FrontEndCommonApplicationRunner"):
+                    extraction_algorithms.append(element)
 
-        total_milliseconds = time_period.total_seconds() * 1000
+        for element in extraction_algorithms:
+            if total_milliseconds is None:
+                total_milliseconds = (
+                    (element.value.total_seconds() * 1000) +
+                    element.value.microseconds)
+            else:
+                total_milliseconds += (
+                    (element.value.total_seconds() * 1000) +
+                    element.value.microseconds)
+
+        # if no algorithm was used, return 0 jules
+        if total_milliseconds is None:
+            total_milliseconds = 0.0
+
         energy_cost = (total_milliseconds * len(list(machine.chips)) *
-                       self.JULES_PER_MILLISECOND_PER_CHIP)
+                       (self.JULES_PER_MILLISECOND_PER_CHIP / 18))
+        energy_cost += (
+            total_milliseconds * machine.maximum_user_cores_on_chip * (
+                self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18))
 
         output.write(
             "The amount of time used during the data extraction process is {} "
