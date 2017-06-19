@@ -76,7 +76,6 @@ import os
 import sys
 import traceback
 import signal
-import itertools
 
 
 logger = logging.getLogger(__name__)
@@ -2147,8 +2146,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             print "pac"
             for thing in pacman_provenance:
                 print thing
-
-
 
             # run energy report
             energy_report(

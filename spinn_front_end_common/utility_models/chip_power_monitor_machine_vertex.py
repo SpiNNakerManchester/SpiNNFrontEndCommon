@@ -33,6 +33,7 @@ from spinn_utilities.overrides import overrides
 
 logger = logging.getLogger(__name__)
 
+
 @supports_injection
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
@@ -284,8 +285,8 @@ class ChipPowerMonitorMachineVertex(
 
     def _deduce_sdram_requirements_per_timer_tick(
             self, machine_time_step, time_scale_factor):
-        """ deduce sdram usage pepr timer tick
-        
+        """ deduce sdram usage per timer tick
+
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
         :return: the sdram usage
@@ -296,8 +297,6 @@ class ChipPowerMonitorMachineVertex(
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
         return (n_entries *
                 ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
-
-
 
     def get_recorded_data(self, placement, buffer_manager):
         # for buffering output info is taken form the buffer manager

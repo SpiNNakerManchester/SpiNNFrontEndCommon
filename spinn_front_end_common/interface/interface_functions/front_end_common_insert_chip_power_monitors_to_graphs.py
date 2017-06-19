@@ -44,7 +44,7 @@ class FrontEndCommonInsertChipPowerMonitorsToGraphs(object):
             # build machine vert
             machine_vertex = ChipPowerMonitorMachineVertex(
                 label="chip_power_monitor_machine_vertex_for_chip({}:{})".
-                    format(chip.x, chip.y),
+                format(chip.x, chip.y),
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording,
                 constraints=[constraint])
