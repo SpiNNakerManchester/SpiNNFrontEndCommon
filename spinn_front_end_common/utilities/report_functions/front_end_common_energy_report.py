@@ -349,16 +349,14 @@ class FrontEndCommonEnergyReport(object):
         """
         for shift_group, link_ids in zip(shifts, overall_link_ids):
             for shift in shift_group:
-                new_x = (ethernet_chip_x + shift[0]) % machine_max_x - 1
-                new_y = (ethernet_chip_y + shift[1]) % machine_max_y - 1
+                new_x = (ethernet_chip_x + shift[0]) % machine_max_x
+                new_y = (ethernet_chip_y + shift[1]) % machine_max_y
                 chip = machine.get_chip_at(new_x, new_y)
                 if chip is not None:
                     for link_id in link_ids:
                         link = chip.router.get_link(link_id)
                         if link is not None:
                             return 1
-                else:
-                    print "missing chip at {}:{}".format(new_x, new_y)
         return 0
 
     def _calculate_chips_active_cost(
