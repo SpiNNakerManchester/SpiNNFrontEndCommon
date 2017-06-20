@@ -7,8 +7,7 @@ from spinn_front_end_common.utilities.notification_protocol\
 
 from spinnman.connections.udp_packet_connections.udp_eieio_connection \
     import UDPEIEIOConnection
-from spinnman.messages.eieio.command_messages.eieio_command_message \
-    import EIEIOCommandMessage
+from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
 from spinnman import constants
 
 

@@ -1,6 +1,6 @@
 from spinn_front_end_common.utilities import exceptions
 
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.scp.update_runtime_process \
     import UpdateRuntimeProcess
 

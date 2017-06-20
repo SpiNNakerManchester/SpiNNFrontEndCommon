@@ -4,7 +4,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.core_subsets import CoreSubsets
 
 # spinnman imports
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 
 # front end common imports
 from spinn_front_end_common.utilities import constants

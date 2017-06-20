@@ -1,7 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.utilities import exceptions
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
@@ -55,19 +55,9 @@ class MundyOnChipRouterCompression(object):
         # figure size of sdram needed for each chip for storing the routing
         # table
         for routing_table in routing_tables:
-            data = self._build_data(
-                routing_table, app_id, compress_only_when_needed,
-                compress_as_much_as_possible)
-
-            # go to spinnman and ask for a memory region of that size per chip.
-            base_address = transceiver.malloc_sdram(
-                routing_table.x, routing_table.y, len(data),
-                compressor_app_id, _SDRAM_TAG)
-
-            # write sdram requirements per chip
-            transceiver.write_memory(
-                routing_table.x, routing_table.y, base_address, data)
-
+            self._load_routing_table(
+                routing_table, transceiver, app_id, compressor_app_id,
+                compress_only_when_needed, compress_as_much_as_possible)
             # update progress bar
             progress.update()
 
@@ -109,6 +99,20 @@ class MundyOnChipRouterCompression(object):
 
         # return loaded routing tables flag
         return True
+
+    def _load_routing_table(
+            self, table, txrx, app_id, compressor_app_id,
+            compress_only_when_needed, compress_as_much_as_possible):
+        data = self._build_data(
+            table, app_id, compress_only_when_needed,
+            compress_as_much_as_possible)
+
+        # go to spinnman and ask for a memory region of that size per chip.
+        base_address = txrx.malloc_sdram(
+            table.x, table.y, len(data), compressor_app_id, _SDRAM_TAG)
+
+        # write sdram requirements per chip
+        txrx.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(
             self, executable_targets, transceiver, provenance_file_path,
@@ -184,9 +188,8 @@ class MundyOnChipRouterCompression(object):
                     "{}_{}_{}_compressor-{}.txt".format(
                         iobuf.x, iobuf.y, iobuf.p, count))
                 count += 1
-            writer = open(file_name, "w")
-            writer.write(iobuf.iobuf)
-            writer.close()
+            with open(file_name, "w") as writer:
+                writer.write(iobuf.iobuf)
 
     def _load_executables(
             self, routing_tables, compressor_app_id, transceiver, machine):

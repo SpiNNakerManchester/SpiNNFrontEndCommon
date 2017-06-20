@@ -11,7 +11,7 @@ from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 

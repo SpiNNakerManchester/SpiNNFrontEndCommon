@@ -5,36 +5,27 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman import constants
 from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
     UDPEIEIOConnection
-from spinnman.messages.eieio.command_messages.eieio_command_message import \
-    EIEIOCommandMessage
-from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinnman.messages.eieio.command_messages \
+    import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData
+from spinnman.messages.eieio.command_messages \
+    import HostDataRead, SpinnakerRequestBuffers, PaddingRequest
+from spinnman.messages.eieio.command_messages \
+    import HostSendSequencedData, EventStopRequest
 from spinnman.utilities import utility_functions
-from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
-    import SpinnakerRequestReadData
-from spinnman.messages.eieio.command_messages.host_data_read \
-    import HostDataRead
 from spinnman.messages.sdp.sdp_header import SDPHeader
 from spinnman.messages.sdp.sdp_message import SDPMessage
 from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.eieio.data_messages.eieio_32bit\
-    .eieio_32bit_timed_payload_prefix_data_message\
-    import EIEIO32BitTimedPayloadPrefixDataMessage
+from spinnman.messages.eieio.data_messages.specialized_message_types \
+    import EIEIO32BitTimedPayloadPrefixDataMessage as EIEIOMessage
 from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.exceptions import SpinnmanInvalidPacketException
-from spinnman.messages.eieio.data_messages.eieio_data_message \
+from spinnman.messages.eieio.data_messages \
     import EIEIODataMessage
-from spinnman.messages.eieio.command_messages.spinnaker_request_buffers \
-    import SpinnakerRequestBuffers
-from spinnman.messages.eieio.command_messages.padding_request\
-    import PaddingRequest
-from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
-    import HostSendSequencedData
-from spinnman.messages.eieio.command_messages.event_stop_request \
-    import EventStopRequest
 from spinnman.messages.eieio import create_eieio_command
 
 # front end common imports
-from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities.helpful_functions \
+    import locate_memory_region_for_placement
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.\
     storage_objects.buffers_sent_deque import BuffersSentDeque
@@ -58,8 +49,7 @@ import re
 logger = logging.getLogger(__name__)
 
 # The minimum size of any message - this is the headers plus one entry
-_MIN_MESSAGE_SIZE = (EIEIO32BitTimedPayloadPrefixDataMessage
-                     .get_min_packet_length())
+_MIN_MESSAGE_SIZE = EIEIOMessage(timestamp=0).get_min_packet_length()
 
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
@@ -365,7 +355,7 @@ class BufferManager(object):
 
         # Create a new message
         next_timestamp = vertex.get_next_timestamp(region)
-        message = EIEIO32BitTimedPayloadPrefixDataMessage(next_timestamp)
+        message = EIEIOMessage(next_timestamp)
 
         # If there is no room for the message, return None
         if message.size + _N_BYTES_PER_KEY > size:
@@ -400,10 +390,9 @@ class BufferManager(object):
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        region_base_address = \
-            helpful_functions.locate_memory_region_for_placement(
-                self._placements.get_placement_of_vertex(vertex), region,
-                self._transceiver)
+        region_base_address = locate_memory_region_for_placement(
+            self._placements.get_placement_of_vertex(vertex), region,
+            self._transceiver)
         placement = self._placements.get_placement_of_vertex(vertex)
 
         # Add packets until out of space
@@ -417,8 +406,7 @@ class BufferManager(object):
         if vertex.is_empty(region):
             sent_message = True
         else:
-            min_size_of_packet = \
-                EIEIO32BitTimedPayloadPrefixDataMessage.get_min_packet_length()
+            min_size_of_packet = _MIN_MESSAGE_SIZE
             while (vertex.is_next_timestamp(region) and
                     bytes_to_go > min_size_of_packet):
                 space_available = min(bytes_to_go, 280)

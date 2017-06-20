@@ -1,8 +1,6 @@
 # spinnman imports
-from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
-    import HostSendSequencedData
-from spinnman.messages.eieio.command_messages.event_stop_request\
-    import EventStopRequest
+from spinnman.messages.eieio.command_messages \
+    import EventStopRequest, HostSendSequencedData
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions

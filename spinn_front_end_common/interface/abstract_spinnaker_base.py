@@ -58,7 +58,7 @@ from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 
 # spinnman imports
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 
 # spinnmachine imports
 from spinn_machine.core_subsets import CoreSubsets

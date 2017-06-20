@@ -1,12 +1,9 @@
 import struct
 
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import constants, exceptions
 
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
+from spinnman.model.enums import CPUState
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -54,23 +51,27 @@ class FrontEndCommonApplicationFinisher(object):
                 for processor in core_subset.processor_ids:
                     if not successful_cores_finished.is_core(
                             core_subset.x, core_subset.y, processor):
-                        byte_data = struct.pack(
-                            "<I",
-                            constants.SDP_RUNNING_MESSAGE_CODES
-                            .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
-
-                        txrx.send_sdp_message(SDPMessage(
-                            sdp_header=SDPHeader(
-                                flags=SDPFlag.REPLY_NOT_EXPECTED,
-                                destination_port=(
-                                    constants.SDP_PORTS
-                                    .RUNNING_COMMAND_SDP_PORT.value),
-                                destination_cpu=processor,
-                                destination_chip_x=core_subset.x,
-                                destination_chip_y=core_subset.y),
-                            data=byte_data))
+                        self._update_provenance_and_exit(
+                            txrx, processor, core_subset)
 
             processors_finished = txrx.get_core_state_count(
                 app_id, CPUState.FINISHED)
 
         progress.end()
+
+    @staticmethod
+    def _update_provenance_and_exit(txrx, processor, core_subset):
+        byte_data = struct.pack(
+            "<I",
+            constants.SDP_RUNNING_MESSAGE_CODES
+            .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
+
+        txrx.send_sdp_message(SDPMessage(
+            sdp_header=SDPHeader(
+                flags=SDPFlag.REPLY_NOT_EXPECTED,
+                destination_port=(
+                    constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
+                destination_cpu=processor,
+                destination_chip_x=core_subset.x,
+                destination_chip_y=core_subset.y),
+            data=byte_data))

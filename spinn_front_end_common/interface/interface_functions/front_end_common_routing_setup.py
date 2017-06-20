@@ -1,13 +1,10 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman import constants
+from spinnman.constants import ROUTER_REGISTER_REGISTERS
 
 from spinnman.model.diagnostic_filter import DiagnosticFilter
-from spinnman.model.enums.diagnostic_filter_default_routing_status import \
-    DiagnosticFilterDefaultRoutingStatus
-from spinnman.model.enums.diagnostic_filter_packet_type import \
-    DiagnosticFilterPacketType
-from spinnman.model.enums.diagnostic_filter_source \
-    import DiagnosticFilterSource
+from spinnman.model.enums \
+    import DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType
+from spinnman.model.enums import DiagnosticFilterSource
 
 
 class FrontEndCommonRoutingSetup(object):
@@ -36,8 +33,7 @@ class FrontEndCommonRoutingSetup(object):
     @staticmethod
     def _set_router_diagnostic_filters(x, y, transceiver):
         transceiver.set_router_diagnostic_filter(
-            x, y,
-            constants.ROUTER_REGISTER_REGISTERS.USER_3.value,
+            x, y, ROUTER_REGISTER_REGISTERS.USER_3.value,
             DiagnosticFilter(
                 enable_interrupt_on_counter_event=False,
                 match_emergency_routing_status_to_incoming_packet=False,
@@ -50,8 +46,7 @@ class FrontEndCommonRoutingSetup(object):
                 packet_types=[DiagnosticFilterPacketType.MULTICAST]))
 
         transceiver.set_router_diagnostic_filter(
-            x, y,
-            constants.ROUTER_REGISTER_REGISTERS.USER_2.value,
+            x, y, ROUTER_REGISTER_REGISTERS.USER_2.value,
             DiagnosticFilter(
                 enable_interrupt_on_counter_event=False,
                 match_emergency_routing_status_to_incoming_packet=False,

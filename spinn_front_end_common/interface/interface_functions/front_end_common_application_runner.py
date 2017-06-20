@@ -6,7 +6,7 @@ from spinnman.messages.scp.enums.scp_signal import SCPSignal
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 

@@ -6,7 +6,7 @@ from spinn_front_end_common.utilities import exceptions
 # general imports
 import logging
 from spinnman.messages.scp.enums.scp_signal import SCPSignal
-from spinnman.model.enums.cpu_state import CPUState
+from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 
