@@ -1,5 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman import constants as spinnman_constants
+from spinnman.constants import MAX_TAG_ID
 
 
 class FrontEndCommonTagsLoader(object):
@@ -20,11 +20,9 @@ class FrontEndCommonTagsLoader(object):
         # clear all the tags from the Ethernet connection, as nothing should
         # be allowed to use it (no two apps should use the same Ethernet
         # connection at the same time
-        progress = ProgressBar(
-            spinnman_constants.MAX_TAG_ID,
-            "Clearing tags")
+        progress = ProgressBar(MAX_TAG_ID, "Clearing tags")
 
-        for tag_id in progress.over(range(spinnman_constants.MAX_TAG_ID)):
+        for tag_id in progress.over(range(MAX_TAG_ID)):
             transceiver.clear_ip_tag(tag_id)
 
         progress = None

@@ -44,7 +44,7 @@ from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 
-from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
+from spinnman.messages.eieio import EIEIOPrefix
 
 from enum import Enum
 import math

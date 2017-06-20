@@ -19,8 +19,7 @@ from spinn_front_end_common.utilities.reload.reload_buffered_vertex \
 from spinn_front_end_common.utilities.reload.reload import Reload
 
 # spinnman imports
-from spinnman.model.executable_targets \
-    import ExecutableTargets
+from spinnman.model import ExecutableTargets
 
 # general imports
 import os

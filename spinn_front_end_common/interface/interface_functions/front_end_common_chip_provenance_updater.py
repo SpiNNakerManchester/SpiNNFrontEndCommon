@@ -4,14 +4,11 @@ import struct
 
 from spinn_utilities.progress_bar import ProgressBar
 
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_message import SDPMessage
+from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
+from spinnman.model.enums import CPUState
 
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
-
-from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 

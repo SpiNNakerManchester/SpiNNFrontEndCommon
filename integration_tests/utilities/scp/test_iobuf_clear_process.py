@@ -1,12 +1,9 @@
 import unittest
 import struct
 
-from spinnman.processes\
-    .multi_connection_process_round_robin_connection_selector \
-    import MultiConnectionProcessRoundRobinConnectionSelector
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.connections.udp_packet_connections.udp_scamp_connection \
-    import UDPSCAMPConnection
+from spinnman.processes import RoundRobinConnectionSelector
+from spinnman.messages.sdp import SDPHeader
+from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.core_subset import CoreSubset
@@ -27,8 +24,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         # Set up a connection to the "machine"
         connection = UDPSCAMPConnection(
             0, 0, remote_host="127.0.0.1", remote_port=receiver.local_port)
-        selector = MultiConnectionProcessRoundRobinConnectionSelector(
-            [connection])
+        selector = RoundRobinConnectionSelector([connection])
 
         # Create the process and run it
         process = ClearIOBUFProcess(selector)

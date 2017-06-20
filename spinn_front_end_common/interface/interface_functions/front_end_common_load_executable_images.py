@@ -3,10 +3,11 @@ from spinn_utilities.progress_bar import ProgressBar
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
 
+from spinnman.messages.scp.enums import SCPSignal
+from spinnman.model.enums import CPUState
+
 # general imports
 import logging
-from spinnman.messages.scp.enums.scp_signal import SCPSignal
-from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 

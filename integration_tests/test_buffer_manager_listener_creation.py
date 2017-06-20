@@ -6,10 +6,8 @@ from pacman.model.tags.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.decorators.overrides import overrides
 from spinnman.transceiver import Transceiver
-from spinnman.connections.udp_packet_connections.udp_scamp_connection \
-    import UDPSCAMPConnection
-from spinnman.connections.udp_packet_connections.udp_eieio_connection \
-    import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
+from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
 from spinn_machine.tags.iptag import IPTag
 
 

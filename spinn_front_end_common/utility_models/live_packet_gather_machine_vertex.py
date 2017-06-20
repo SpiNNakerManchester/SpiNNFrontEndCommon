@@ -20,7 +20,7 @@ from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinnman.messages.eieio import EIEIOType
 
 from enum import Enum
 import struct

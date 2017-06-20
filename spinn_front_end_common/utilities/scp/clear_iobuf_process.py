@@ -3,8 +3,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.scp.scp_clear_iobuf_request import \
     SCPClearIOBUFRequest
 from spinn_front_end_common.utilities import constants
-from spinnman.processes.abstract_multi_connection_process \
-    import AbstractMultiConnectionProcess
+from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class ClearIOBUFProcess(AbstractMultiConnectionProcess):
@@ -13,7 +12,7 @@ class ClearIOBUFProcess(AbstractMultiConnectionProcess):
         AbstractMultiConnectionProcess.__init__(self, connection_selector)
         self._progress_bar = None
 
-    def receive_response(self, response):
+    def receive_response(self, response):  # @UnusedVariable
         if self._progress_bar is not None:
             self._progress_bar.update()
 

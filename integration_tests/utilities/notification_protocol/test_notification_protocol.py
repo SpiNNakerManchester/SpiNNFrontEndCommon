@@ -5,10 +5,9 @@ from spinn_utilities.socket_address import SocketAddress
 from spinn_front_end_common.utilities.notification_protocol\
     .notification_protocol import NotificationProtocol
 
-from spinnman.connections.udp_packet_connections.udp_eieio_connection \
-    import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
-from spinnman import constants
+from spinnman.constants import EIEIO_COMMAND_IDS
 
 
 class TestNotificationProtocol(unittest.TestCase):
@@ -26,7 +25,7 @@ class TestNotificationProtocol(unittest.TestCase):
         self.assertIsInstance(message, EIEIOCommandMessage)
         self.assertEqual(
             message.eieio_header.command,
-            constants.EIEIO_COMMAND_IDS.START_RESUME_NOTIFICATION.value)
+            EIEIO_COMMAND_IDS.START_RESUME_NOTIFICATION.value)
 
 
 if __name__ == '__main__':

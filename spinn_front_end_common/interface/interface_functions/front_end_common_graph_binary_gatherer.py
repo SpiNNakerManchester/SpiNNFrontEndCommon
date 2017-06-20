@@ -3,7 +3,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models.abstract_has_associated_binary\
     import AbstractHasAssociatedBinary
-from spinnman.model.executable_targets import ExecutableTargets
+from spinnman.model import ExecutableTargets
 
 
 class FrontEndCommonGraphBinaryGatherer(object):

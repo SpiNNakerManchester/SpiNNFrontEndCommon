@@ -2,9 +2,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
-from spinnman import constants
-from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
-    UDPEIEIOConnection
+from spinnman.constants import UDP_MESSAGE_MAX_SIZE
+from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages \
     import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages \
@@ -12,16 +11,15 @@ from spinnman.messages.eieio.command_messages \
 from spinnman.messages.eieio.command_messages \
     import HostSendSequencedData, EventStopRequest
 from spinnman.utilities import utility_functions
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.messages.sdp.sdp_flag import SDPFlag
+from spinnman.messages.sdp import SDPHeader
+from spinnman.messages.sdp import SDPMessage
+from spinnman.messages.sdp import SDPFlag
 from spinnman.messages.eieio.data_messages.specialized_message_types \
     import EIEIO32BitTimedPayloadPrefixDataMessage as EIEIOMessage
-from spinnman.messages.eieio.eieio_type import EIEIOType
 from spinnman.exceptions import SpinnmanInvalidPacketException
-from spinnman.messages.eieio.data_messages \
-    import EIEIODataMessage
+from spinnman.messages.eieio import EIEIOType
 from spinnman.messages.eieio import create_eieio_command
+from spinnman.messages.eieio.data_messages import EIEIODataMessage
 
 # front end common imports
 from spinn_front_end_common.utilities.helpful_functions \
@@ -483,7 +481,7 @@ class BufferManager(object):
 
             space_available = min(
                 bytes_to_go,
-                constants.UDP_MESSAGE_MAX_SIZE -
+                UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
             # logger.debug(
             #     "Bytes to go {}, space available {}".format(

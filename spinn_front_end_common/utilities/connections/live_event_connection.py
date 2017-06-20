@@ -1,20 +1,16 @@
 from threading import Thread
 import traceback
 from collections import OrderedDict
-from spinnman.utilities import utility_functions
 
 from spinn_front_end_common.utilities.database.database_connection \
     import DatabaseConnection
 
-from spinnman.messages.eieio.data_messages.eieio_16bit\
-    .eieio_16bit_data_message import EIEIO16BitDataMessage
-from spinnman.messages.eieio.data_messages.eieio_32bit\
-    .eieio_32bit_data_message import EIEIO32BitDataMessage
-from spinnman.connections.connection_listener import ConnectionListener
-from spinnman.connections.udp_packet_connections.udp_eieio_connection \
-    import UDPEIEIOConnection
-from spinnman.messages.eieio.data_messages.eieio_key_payload_data_element \
-    import EIEIOKeyPayloadDataElement
+from spinnman.utilities.utility_functions import send_port_trigger_message
+from spinnman.messages.eieio.data_messages.specialized_message_types \
+    import EIEIO16DataMessage, EIEIO32DataMessage
+from spinnman.connections import ConnectionListener
+from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
+from spinnman.messages.eieio.data_messages import EIEIOKeyPayloadDataElement
 
 import logging
 
@@ -202,22 +198,20 @@ class LiveEventConnection(DatabaseConnection):
                     host, port, strip_sdp, board_address = \
                         database_reader.get_live_output_details(
                             receive_label, self._live_packet_gather_label)
-                if strip_sdp:
-                    if port not in self._receivers:
-                        receiver = UDPEIEIOConnection(local_port=port)
-                        utility_functions.send_port_trigger_message(
-                            receiver, board_address)
-                        listener = ConnectionListener(receiver)
-                        listener.add_callback(self._receive_packet_callback)
-                        listener.start()
-                        self._receivers[port] = receiver
-                        self._listeners[port] = listener
-                    logger.info(
-                        "Listening for traffic from {} on {}:{}".format(
-                            receive_label, host, port))
-                else:
+                if not strip_sdp:
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
+                if port not in self._receivers:
+                    receiver = UDPEIEIOConnection(local_port=port)
+                    send_port_trigger_message(receiver, board_address)
+                    listener = ConnectionListener(receiver)
+                    listener.add_callback(self._receive_packet_callback)
+                    listener.start()
+                    self._receivers[port] = receiver
+                    self._listeners[port] = listener
+                logger.info(
+                    "Listening for traffic from {} on {}:{}".format(
+                        receive_label, host, port))
 
                 if self._machine_vertices:
                     key, _ = database_reader.get_machine_live_output_key(
@@ -353,9 +347,9 @@ class LiveEventConnection(DatabaseConnection):
         while pos < len(atom_ids):
 
             if send_full_keys:
-                message = EIEIO32BitDataMessage()
+                message = EIEIO32DataMessage()
             else:
-                message = EIEIO16BitDataMessage()
+                message = EIEIO16DataMessage()
 
             events_in_packet = 0
             while pos < len(atom_ids) and events_in_packet < max_keys:

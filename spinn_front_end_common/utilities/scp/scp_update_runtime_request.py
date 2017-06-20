@@ -1,5 +1,5 @@
-from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPHeader, SDPFlag
+from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.impl import SCPCheckOKResponse
 from spinn_front_end_common.utilities.constants \

@@ -1,14 +1,14 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.utilities import exceptions
-from spinnman.model.enums import CPUState
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_chip_iobuf_extractor import \
     FrontEndCommonChipIOBufExtractor
 
-from spinnman.model.executable_targets import ExecutableTargets
+from spinnman.model.enums import CPUState
+from spinnman.model import ExecutableTargets
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router

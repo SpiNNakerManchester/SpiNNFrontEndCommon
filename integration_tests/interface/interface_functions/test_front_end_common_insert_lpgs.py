@@ -8,7 +8,7 @@ from spinn_front_end_common.utilities.utility_objs. \
     live_packet_gather_parameters import \
     LivePacketGatherParameters
 from spinn_machine.virtual_machine import VirtualMachine
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinnman.messages.eieio import EIEIOType
 
 import unittest
 

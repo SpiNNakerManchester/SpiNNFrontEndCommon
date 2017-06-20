@@ -1,7 +1,7 @@
 # spinnman imports
-from spinnman.connections.socket_address_with_chip import SocketAddressWithChip
+from spinnman.connections import SocketAddressWithChip
 from spinnman.transceiver import create_transceiver_from_hostname
-from spinnman.model.bmp_connection_data import BMPConnectionData
+from spinnman.model import BMPConnectionData
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions

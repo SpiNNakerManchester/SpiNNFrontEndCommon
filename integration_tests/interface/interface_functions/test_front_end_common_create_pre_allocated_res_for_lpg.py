@@ -13,7 +13,7 @@ from spinn_front_end_common.utility_models. \
     live_packet_gather_machine_vertex import \
     LivePacketGatherMachineVertex
 from spinn_machine.virtual_machine import VirtualMachine
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinnman.messages.eieio import EIEIOType
 
 import unittest
 
