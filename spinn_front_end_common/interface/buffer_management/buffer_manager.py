@@ -1,5 +1,5 @@
-# spinn_machine imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+# spinn_utilites imports
+from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman import constants
@@ -113,7 +113,10 @@ class BufferManager(object):
         "_thread_lock_buffer_in",
 
         # bool flag
-        "_finished"
+        "_finished",
+
+        # listener port
+        "_listener_port"
     ]
 
     def __init__(self, placements, tags, transceiver, write_reload_files,
@@ -157,6 +160,8 @@ class BufferManager(object):
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
+
+        self._listener_port = None
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -212,46 +217,44 @@ class BufferManager(object):
             traceback.print_exc()
 
     def _create_connection(self, tag):
-        if self._transceiver is not None:
-            connection = self._transceiver.register_udp_listener(
-                self.receive_buffer_command_message, UDPEIEIOConnection,
-                local_port=tag.port, local_host=tag.ip_address)
-            self._seen_tags.add((tag.ip_address, connection.local_port))
-            utility_functions.send_port_trigger_message(
-                connection, tag.board_address)
-            logger.info(
-                "Listening for packets using tag {} on {}:{}".format(
-                    tag.tag, connection.local_ip_address,
-                    connection.local_port))
-            return connection
+        connection = self._transceiver.register_udp_listener(
+            self.receive_buffer_command_message, UDPEIEIOConnection,
+            local_port=tag.port, local_host=tag.ip_address)
+        self._seen_tags.add((tag.ip_address, connection.local_port))
+        utility_functions.send_port_trigger_message(
+            connection, tag.board_address)
+        logger.info(
+            "Listening for packets using tag {} on {}:{}".format(
+                tag.tag, connection.local_ip_address,
+                connection.local_port))
+        return connection
 
     def _add_buffer_listeners(self, vertex):
         """ Add listeners for buffered data for the given vertex
         """
 
-        # If using virtual board, no listeners can be set up
-        if self._transceiver is None:
-            return
-
         # Find a tag for receiving buffer data
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
-
-            # locate the tag that is associated with the buffer manager
-            # traffic
+            # locate tag associated with the buffer manager traffic
             for tag in tags:
                 if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
-
-                    # If the tag port is not assigned, create a connection and
-                    # assign the port.  Note that this *should* update the port
-                    # number in any tags being shared
+                    # If the tag port is not assigned create a connection\
+                    # and assign the port.  Note that this *should* \
+                    # update the port number in any tags being shared
                     if tag.port is None:
-                        connection = self._create_connection(tag)
-                        tag.port = connection.local_port
+                        # If connection already setup, ensure subsequent
+                        # boards use same listener port in their tag
+                        if self._listener_port is None:
+                            connection = self._create_connection(tag)
+                            tag.port = connection.local_port
+                            self._listener_port = connection.local_port
+                        else:
+                            tag.port = self._listener_port
 
-                    # In case we have tags with different specified ports, also
-                    # allow the tag to be created here
+                    # In case we have tags with different specified ports,\
+                    # also allow the tag to be created here
                     elif (tag.ip_address, tag.port) not in self._seen_tags:
                         self._create_connection(tag)
 
@@ -285,16 +288,6 @@ class BufferManager(object):
                     self._reload_buffer_file_paths[vertex] = dict()
                 self._reload_buffer_file_paths[vertex][region] = file_path
 
-                # If there is no transceiver, push all the output to the file
-                if self._transceiver is None:
-                    while vertex.is_next_timestamp(region):
-                        next_timestamp = vertex.get_next_timestamp(region)
-                        while vertex.is_next_key(region, next_timestamp):
-                            key = vertex.get_next_key(region)
-                            self._reload_buffer_file[(vertex, region)].write(
-                                "{}:{}\n".format(next_timestamp, key))
-                    self._reload_buffer_file[(vertex, region)].close()
-
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
         """
@@ -303,12 +296,12 @@ class BufferManager(object):
             for region in vertex.get_regions():
                 total_data += vertex.get_region_buffer_size(region)
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                self._send_initial_messages(vertex, region, progress_bar)
-        progress_bar.end()
+                self._send_initial_messages(vertex, region, progress)
+        progress.end()
 
     def reset(self):
         """ Resets the buffered regions to start transmitting from the\
@@ -392,7 +385,7 @@ class BufferManager(object):
                     "{}:{}\n".format(next_timestamp, key))
         return message
 
-    def _send_initial_messages(self, vertex, region, progress_bar):
+    def _send_initial_messages(self, vertex, region, progress):
         """ Send the initial set of messages
 
         :param vertex: The vertex to get the keys from
@@ -441,7 +434,7 @@ class BufferManager(object):
 
                 # Update the positions
                 bytes_to_go -= len(data)
-                progress_bar.update(len(data))
+                progress.update(len(data))
 
         if not sent_message:
             raise exceptions.BufferableRegionTooSmall(
@@ -458,7 +451,7 @@ class BufferManager(object):
             #         placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
-            progress_bar.update(len(data))
+            progress.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
 
@@ -687,6 +680,9 @@ class BufferManager(object):
 
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
+                if length < 0:
+                    raise exceptions.ConfigurationException(
+                        "The amount of data to read is negative!")
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(

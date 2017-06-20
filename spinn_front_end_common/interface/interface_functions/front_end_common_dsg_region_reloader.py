@@ -1,10 +1,9 @@
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.sdram import SDRAM
-from spinn_machine.utilities.progress_bar import ProgressBar
 
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
-from data_specification import utility_calls
-from data_specification import constants
+from data_specification import utility_calls, constants
 
 from spinn_front_end_common.abstract_models\
     .abstract_rewrites_data_specification \
@@ -55,9 +54,10 @@ class FrontEndCommonDSGRegionReloader(object):
         if not os.path.exists(reloaded_dsg_report_files_file_path):
             os.makedirs(reloaded_dsg_report_files_file_path)
 
-        progress_bar = ProgressBar(
-            placements.n_placements, "Reloading data")
-        for placement in placements.placements:
+        application_vertices_to_reset = set()
+
+        progress = ProgressBar(placements.n_placements, "Reloading data")
+        for placement in progress.over(placements.placements):
 
             # Try to generate the data spec for the placement
             generated = self._regenerate_data_spec_for_vertices(
@@ -65,17 +65,29 @@ class FrontEndCommonDSGRegionReloader(object):
                 reloaded_dsg_report_files_file_path, write_text_specs,
                 reloaded_dsg_data_files_file_path)
 
+            # If the region was regenerated, mark it reloaded
+            if generated:
+                placement.vertex.mark_regions_reloaded()
+
             # If the spec wasn't generated directly, and there is an
             # application vertex, try with that
             if not generated and graph_mapper is not None:
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
-                self._regenerate_data_spec_for_vertices(
+                generated = self._regenerate_data_spec_for_vertices(
                     transceiver, placement, associated_vertex, hostname,
                     reloaded_dsg_report_files_file_path, write_text_specs,
                     reloaded_dsg_data_files_file_path)
-            progress_bar.update()
-        progress_bar.end()
+
+                # If the region was regenerated, remember the application
+                # vertex for resetting later
+                if generated:
+                    application_vertices_to_reset.add(associated_vertex)
+
+        # Only reset the application vertices here, otherwise only one
+        # machine vertices data will be updated
+        for vertex in application_vertices_to_reset:
+            vertex.mark_regions_reloaded()
 
     @staticmethod
     def _regenerate_data_spec_for_vertices(
@@ -99,7 +111,6 @@ class FrontEndCommonDSGRegionReloader(object):
 
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)
-        vertex.mark_regions_reloaded()
 
         # get report writer if needed
         report_writer = FrontEndCommonHostExecuteDataSpecification.\
