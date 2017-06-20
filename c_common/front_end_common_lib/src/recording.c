@@ -190,20 +190,28 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
     }
 }
 
-static void _recording_dma_write(
+static void _recording_write(
         uint8_t channel, void *data, void *write_pointer, uint32_t length,
         void *finished_write_pointer, recording_complete_callback_t callback) {
 
-    // add to DMA complete tracker
-    circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
-    circular_buffer_add(dma_complete_buffer, (uint32_t) finished_write_pointer);
-    circular_buffer_add(dma_complete_buffer, (uint32_t) callback);
+    if (callback != NULL) {
 
-    // set off DMA - if not accepted, wait until another DMA is done
-    while (!spin1_dma_transfer(
-            RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
-            length)) {
-        spin1_wfi();
+        // add to DMA complete tracker
+        circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+        circular_buffer_add(
+            dma_complete_buffer, (uint32_t) finished_write_pointer);
+        circular_buffer_add(dma_complete_buffer, (uint32_t) callback);
+
+        // set off DMA - if not accepted, wait until another DMA is done
+        while (!spin1_dma_transfer(
+                RECORDING_DMA_COMPLETE_TAG_ID, write_pointer, data, DMA_WRITE,
+                length)) {
+            spin1_wfi();
+        }
+    } else {
+        spin1_memcpy(write_pointer, data, length);
+        g_recording_channels[(uint8_t) channel].dma_current_write =
+                (uint8_t *) finished_write_pointer;
     }
 
 }
@@ -234,7 +242,7 @@ static inline bool _recording_write_memory(
         if (final_space >= length) {
             log_debug("Packet fits in final space of %u", final_space);
 
-            _recording_dma_write(
+            _recording_write(
                 channel, data, write_pointer, length, write_pointer + length,
                 callback);
 
@@ -261,7 +269,7 @@ static inline bool _recording_write_memory(
             log_debug(
                 "Copying first %d bytes to final space of %u", final_space);
 
-            _recording_dma_write(
+            _recording_write(
                 channel, data, write_pointer, final_space, buffer_region,
                 NULL);
 
@@ -271,7 +279,7 @@ static inline bool _recording_write_memory(
             uint32_t final_len = length - final_space;
             log_debug("Copying remaining %u bytes", final_len);
 
-            _recording_dma_write(
+            _recording_write(
                 channel, data, write_pointer, final_len,
                 write_pointer + final_len, callback);
 
@@ -294,7 +302,7 @@ static inline bool _recording_write_memory(
             return false;
         } else {
             log_debug("Packet fits in middle space of %u", middle_space);
-            _recording_dma_write(
+            _recording_write(
                 channel, data, write_pointer, length, write_pointer + length,
                 callback);
             write_pointer += length;
@@ -438,13 +446,10 @@ bool recording_record_and_notify(
 }
 
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+
+    // Because callback is NULL, spin1_memcpy will be used
     if (!recording_record_and_notify(channel, data, size_bytes, NULL)) {
         return false;
-    }
-
-    // wait till all DMA's have been finished
-    while (circular_buffer_size(dma_complete_buffer) != 0) {
-        spin1_wfi();
     }
     return true;
 }
@@ -461,8 +466,8 @@ void _recording_buffer_state_data_write(){
              &g_recording_channels[recording_region_id],
              sizeof(recording_channel_t));
         log_debug(
-             "Storing channel state info starting at 0x%08x",
-             recording_region_address);
+             "Storing channel %d state info starting at 0x%08x",
+             recording_region_id, recording_region_address);
     }
 
     // store info related to the state of the transmission to avoid possible
