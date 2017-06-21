@@ -1,7 +1,6 @@
 import unittest
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_chip_iobuf_extractor \
-    import FrontEndCommonChipIOBufExtractor
+    .chip_iobuf_extractor import FrontEndCommonChipIOBufExtractor
 from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model import IOBuffer
 from spinn_machine.core_subset import CoreSubset

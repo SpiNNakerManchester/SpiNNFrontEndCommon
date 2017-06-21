@@ -5,7 +5,7 @@ from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
 from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_insert_edges_to_live_packet_gatherers import \
+    insert_edges_to_live_packet_gatherers import \
     FrontEndCommonInsertEdgesToLivePacketGatherers
 from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters

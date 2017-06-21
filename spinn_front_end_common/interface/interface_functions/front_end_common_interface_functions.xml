@@ -1,7 +1,7 @@
 <algorithms>
     <algorithm name="FrontEndCommonPreAllocateResourcesForLivePacketGatherers">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_pre_allocate_resources_for_live_packet_gatherers
+            spinn_front_end_common.interface.interface_functions.pre_allocate_resources_for_live_packet_gatherers
         </python_module>
         <python_class>FrontEndCommonPreAllocateResourcesForLivePacketGatherers</python_class>
         <input_definitions>
@@ -31,7 +31,7 @@
     </algorithm>
     <algorithm name="FrontEndCommonInsertEdgesToLivePacketGatherers">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_insert_edges_to_live_packet_gatherers
+            spinn_front_end_common.interface.interface_functions.insert_edges_to_live_packet_gatherers
         </python_module>
         <python_class>FrontEndCommonInsertEdgesToLivePacketGatherers</python_class>
         <input_definitions>
@@ -80,7 +80,7 @@
     </algorithm>
     <algorithm name="FrontEndCommonInsertLivePacketGatherersToGraphs">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_insert_live_packet_gatherers_to_graphs
+            spinn_front_end_common.interface.interface_functions.insert_live_packet_gatherers_to_graphs
         </python_module>
         <python_class>FrontEndCommonInsertLivePacketGatherersToGraphs</python_class>
         <input_definitions>
@@ -120,7 +120,7 @@
     </algorithm>
     <algorithm name="SpiNNFrontEndCommonTDMAAgendaBuilder">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_tdma_agenda_builder
+            spinn_front_end_common.interface.interface_functions.tdma_agenda_builder
         </python_module>
         <python_class>SpiNNFrontEndCommonTDMAAgendaBuilder</python_class>
         <input_definitions>
@@ -171,7 +171,7 @@
     </algorithm>
     <algorithm name="FrontEndCommonDSGRegionReloader">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_dsg_region_reloader
+            spinn_front_end_common.interface.interface_functions.dsg_region_reloader
         </python_module>
         <python_class>FrontEndCommonDSGRegionReloader</python_class>
         <input_definitions>
@@ -217,7 +217,7 @@
         </optional_inputs>
     </algorithm>
     <algorithm name="FrontEndCommonPortConnectionAllocator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_port_connection_allocator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.port_connection_allocator</python_module>
         <python_class>FrontEndCommonPortConnectionAllocator</python_class>
         <input_definitions>
             <parameter>
@@ -245,7 +245,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonApplicationDataLoader">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_data_loader</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.application_data_loader</python_module>
         <python_class>FrontEndCommonApplicationDataLoader</python_class>
         <input_definitions>
             <parameter>
@@ -281,7 +281,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonHostExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_host_execute_data_specification</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.host_execute_data_specification</python_module>
         <python_class>FrontEndCommonHostExecuteDataSpecification</python_class>
         <input_definitions>
             <parameter>
@@ -333,7 +333,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonMachineExecuteDataSpecification">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_execute_data_specification</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.machine_execute_data_specification</python_module>
         <python_class>FrontEndCommonMachineExecuteDataSpecification</python_class>
         <input_definitions>
             <parameter>
@@ -364,7 +364,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonLoadExecutableImages">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_load_executable_images</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.load_executable_images</python_module>
         <python_class>FrontEndCommonLoadExecutableImages</python_class>
         <input_definitions>
             <parameter>
@@ -395,7 +395,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonMachineGenerator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_generator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.machine_generator</python_module>
         <python_class>FrontEndCommonMachineGenerator</python_class>
         <input_definitions>
             <parameter>
@@ -474,7 +474,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonRoutingTableLoader">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_routing_table_loader</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.routing_table_loader</python_module>
         <python_class>FrontEndCommonRoutingTableLoader</python_class>
         <input_definitions>
             <parameter>
@@ -506,7 +506,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonRoutingSetup">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_routing_setup</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.routing_setup</python_module>
         <python_class>FrontEndCommonRoutingSetup</python_class>
         <input_definitions>
             <parameter>
@@ -537,7 +537,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonTagsLoader">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_tags_loader</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.tags_loader</python_module>
         <python_class>FrontEndCommonTagsLoader</python_class>
         <input_definitions>
             <parameter>
@@ -559,7 +559,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonTagsLoaderSeparateLists">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_tags_loader</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.tags_loader</python_module>
         <python_class>FrontEndCommonTagsLoader</python_class>
         <input_definitions>
             <parameter>
@@ -586,7 +586,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonVirtualMachineGenerator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_virtual_machine_generator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.virtual_machine_generator</python_module>
         <python_class>FrontEndCommonVirtualMachineGenerator</python_class>
         <input_definitions>
             <parameter>
@@ -642,7 +642,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonGraphDataSpecificationWriter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_graph_data_specification_writer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.graph_data_specification_writer</python_module>
         <python_class>FrontEndCommonGraphDataSpecificationWriter</python_class>
         <input_definitions>
             <parameter>
@@ -690,7 +690,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonGraphBinaryGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_graph_binary_gatherer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.graph_binary_gatherer</python_module>
         <python_class>FrontEndCommonGraphBinaryGatherer</python_class>
         <input_definitions>
             <parameter>
@@ -725,7 +725,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonBufferManagerCreator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_buffer_manager_creator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.buffer_manager_creator</python_module>
         <python_class>FrontEndCommonBufferManagerCreator</python_class>
         <input_definitions>
             <parameter>
@@ -761,7 +761,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonApplicationRunner">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_runner</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.application_runner</python_module>
         <python_class>FrontEndCommonApplicationRunner</python_class>
         <input_definitions>
             <parameter>
@@ -863,7 +863,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPlacementsProvenanceGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_placements_provenance_gatherer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.placements_provenance_gatherer</python_module>
         <python_class>FrontEndCommonPlacementsProvenanceGatherer</python_class>
         <input_definitions>
             <parameter>
@@ -896,7 +896,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonGraphProvenanceGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_graph_provenance_gatherer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.graph_provenance_gatherer</python_module>
         <python_class>FrontEndCommonGraphProvenanceGatherer</python_class>
         <input_definitions>
             <parameter>
@@ -926,7 +926,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonRouterProvenanceGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_router_provenance_gatherer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.router_provenance_gatherer</python_module>
         <python_class>FrontEndCommonRouterProvenanceGatherer</python_class>
         <input_definitions>
             <parameter>
@@ -964,7 +964,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonProvenanceXMLWriter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_xml_writer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.provenance_xml_writer</python_module>
         <python_class>FrontEndCommonProvenanceXMLWriter</python_class>
         <input_definitions>
             <parameter>
@@ -984,7 +984,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonProvenanceJSONWriter">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_json_writer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.provenance_json_writer</python_module>
         <python_class>FrontEndCommonProvenanceJSONWriter</python_class>
         <input_definitions>
             <parameter>
@@ -1004,7 +1004,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonDatabaseInterface">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_database_interface</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.database_interface</python_module>
         <python_class>FrontEndCommonDatabaseInterface</python_class>
         <input_definitions>
             <parameter>
@@ -1091,7 +1091,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonNotificationProtocol">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_notification_protocol</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.notification_protocol</python_module>
         <python_class>FrontEndCommonNotificationProtocol</python_class>
         <input_definitions>
             <parameter>
@@ -1117,7 +1117,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonApplicationFinisher">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_application_finisher</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.application_finisher</python_module>
         <python_class>FrontEndCommonApplicationFinisher</python_class>
         <input_definitions>
             <parameter>
@@ -1145,7 +1145,7 @@
         </required_inputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipRuntimeUpdater">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_runtime_updater</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.chip_runtime_updater</python_module>
         <python_class>FrontEndCommonChipRuntimeUpdater</python_class>
         <input_definitions>
             <parameter>
@@ -1181,7 +1181,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipProvenanceUpdater">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_provenance_updater</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.chip_provenance_updater</python_module>
         <python_class>FrontEndCommonChipProvenanceUpdater</python_class>
         <input_definitions>
             <parameter>
@@ -1204,7 +1204,7 @@
         </required_inputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipIOBufClearer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_iobuf_clearer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.chip_iobuf_clearer</python_module>
         <python_class>FrontEndCommonChipIOBufClearer</python_class>
         <input_definitions>
             <parameter>
@@ -1232,7 +1232,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonChipIOBufExtractor">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_chip_iobuf_extractor</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.chip_iobuf_extractor</python_module>
         <python_class>FrontEndCommonChipIOBufExtractor</python_class>
         <input_definitions>
             <parameter>
@@ -1260,7 +1260,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonEdgeToNKeysMapper">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_edge_to_n_keys_mapper</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.edge_to_n_keys_mapper</python_module>
         <python_class>FrontEndCommonEdgeToNKeysMapper</python_class>
         <input_definitions>
             <parameter>
@@ -1295,7 +1295,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonSpallocAllocator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_spalloc_allocator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.spalloc_allocator</python_module>
         <python_class>FrontEndCommonSpallocAllocator</python_class>
         <input_definitions>
             <parameter>
@@ -1346,7 +1346,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonHBPAllocator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_hbp_allocator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.hbp_allocator</python_module>
         <python_class>FrontEndCommonHBPAllocator</python_class>
         <input_definitions>
             <parameter>
@@ -1382,7 +1382,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonSpallocMaxMachineGenerator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_spalloc_max_machine_generator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.spalloc_max_machine_generator</python_module>
         <python_class>FrontEndCommonSpallocMaxMachineGenerator</python_class>
         <input_definitions>
             <parameter>
@@ -1413,7 +1413,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonHBPMaxMachineGenerator">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_hbp_max_machine_generator</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.hbp_max_machine_generator</python_module>
         <python_class>FrontEndCommonHBPMaxMachineGenerator</python_class>
         <input_definitions>
             <parameter>
@@ -1436,7 +1436,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonPartitionedGraphMeasurer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_machine_graph_measurer</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.machine_graph_measurer</python_module>
         <python_class>FrontEndCommonPartitionedGraphMeasurer</python_class>
         <input_definitions>
             <parameter>
@@ -1457,7 +1457,7 @@
         </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonBufferExtractor">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_buffer_extractor</python_module>
+        <python_module>spinn_front_end_common.interface.interface_functions.buffer_extractor</python_module>
         <python_class>FrontEndCommonBufferExtractor</python_class>
         <input_definitions>
             <parameter>

@@ -2,7 +2,7 @@ from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from pacman.model.graphs.common.graph_mapper import GraphMapper
 from pacman.model.graphs.machine import MachineGraph
 from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_insert_live_packet_gatherers_to_graphs import \
+    insert_live_packet_gatherers_to_graphs import \
     FrontEndCommonInsertLivePacketGatherersToGraphs
 from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters

@@ -11,10 +11,10 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-
-# common front end imports
 from pacman.model.resources.pre_allocated_resource_container import \
     PreAllocatedResourceContainer
+
+# common front end imports
 from spinn_front_end_common.abstract_models import \
     AbstractSendMeMulticastCommandsVertex, AbstractRecordable
 from spinn_front_end_common.abstract_models import \
@@ -29,23 +29,18 @@ from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_provenance_xml_writer \
-    import FrontEndCommonProvenanceXMLWriter
+    .provenance_xml_writer import FrontEndCommonProvenanceXMLWriter
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_provenance_json_writer \
-    import FrontEndCommonProvenanceJSONWriter
+    .provenance_json_writer import FrontEndCommonProvenanceJSONWriter
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_chip_provenance_updater \
-    import FrontEndCommonChipProvenanceUpdater
+    .chip_provenance_updater import FrontEndCommonChipProvenanceUpdater
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_placements_provenance_gatherer \
+    .placements_provenance_gatherer \
     import FrontEndCommonPlacementsProvenanceGatherer
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_router_provenance_gatherer\
-    import FrontEndCommonRouterProvenanceGatherer
+    .router_provenance_gatherer import FrontEndCommonRouterProvenanceGatherer
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_chip_iobuf_extractor \
-    import FrontEndCommonChipIOBufExtractor
+    .chip_iobuf_extractor import FrontEndCommonChipIOBufExtractor
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 # spinnman imports

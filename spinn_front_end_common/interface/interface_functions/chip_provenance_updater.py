@@ -1,11 +1,9 @@
-import logging
 import struct
+import logging
 
 from spinn_utilities.progress_bar import ProgressBar
-
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
-
 from spinn_front_end_common.utilities.constants \
     import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -72,9 +70,9 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_to_do_cores = left_over_now
             if to_update != 0:
                 progress.update(to_update)
-
         if attempts >= 10:
             logger.error("Unable to Finish getting provenance data. "
                          "Abandoned after too many retries. "
                          "Board may be left in an unstable state!")
+
         progress.end()

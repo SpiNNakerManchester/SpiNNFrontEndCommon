@@ -3,7 +3,7 @@ import socket
 from threading import Thread
 import json
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_spalloc_max_machine_generator \
+    .spalloc_max_machine_generator \
     import FrontEndCommonSpallocMaxMachineGenerator
 
 

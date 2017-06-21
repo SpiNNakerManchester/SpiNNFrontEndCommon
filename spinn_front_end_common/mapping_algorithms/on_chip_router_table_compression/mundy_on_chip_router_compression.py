@@ -4,8 +4,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_chip_iobuf_extractor import \
-    FrontEndCommonChipIOBufExtractor
+    chip_iobuf_extractor import FrontEndCommonChipIOBufExtractor
 
 from spinnman.model.enums import CPUState
 from spinnman.model import ExecutableTargets

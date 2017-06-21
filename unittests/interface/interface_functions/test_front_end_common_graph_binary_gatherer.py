@@ -7,8 +7,7 @@ from pacman.model.placements.placement import Placement
 from pacman.model.graphs.machine.machine_graph import MachineGraph
 
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_graph_binary_gatherer \
-    import FrontEndCommonGraphBinaryGatherer
+    .graph_binary_gatherer import FrontEndCommonGraphBinaryGatherer
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary

@@ -1,6 +1,5 @@
 from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_load_executable_images \
-    import FrontEndCommonLoadExecutableImages
+    .load_executable_images import FrontEndCommonLoadExecutableImages
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from collections import defaultdict

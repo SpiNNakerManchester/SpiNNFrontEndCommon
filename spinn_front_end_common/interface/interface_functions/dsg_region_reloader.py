@@ -8,7 +8,7 @@ from data_specification import utility_calls, constants
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
 from spinn_front_end_common.interface.interface_functions. \
-    front_end_common_host_execute_data_specification import \
+    host_execute_data_specification import \
     FrontEndCommonHostExecuteDataSpecification
 from spinn_front_end_common.utilities import helpful_functions
 
