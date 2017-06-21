@@ -5,8 +5,7 @@ from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import IPtagResource, ResourceContainer
 from pacman.model.resources import SDRAMResource
 
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl \
+from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.abstract_models\

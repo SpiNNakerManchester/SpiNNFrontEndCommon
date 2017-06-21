@@ -6,8 +6,7 @@ from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models.\
     abstract_has_associated_binary import \
     AbstractHasAssociatedBinary
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl \
+from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinn_front_end_common.utilities import constants

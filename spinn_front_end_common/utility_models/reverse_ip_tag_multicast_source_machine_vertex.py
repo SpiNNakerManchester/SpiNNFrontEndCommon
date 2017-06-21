@@ -30,9 +30,8 @@ from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
     import AbstractHasAssociatedBinary
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl import \
-    ProvidesProvenanceDataFromMachineImpl
+from spinn_front_end_common.interface.provenance \
+    import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \

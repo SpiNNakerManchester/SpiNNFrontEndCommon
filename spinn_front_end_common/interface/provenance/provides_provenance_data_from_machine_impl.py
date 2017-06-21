@@ -2,8 +2,7 @@ from six import add_metaclass
 
 from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 
-from spinn_front_end_common.interface.provenance\
-    .abstract_provides_provenance_data_from_machine \
+from .abstract_provides_provenance_data_from_machine \
     import AbstractProvidesProvenanceDataFromMachine
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem

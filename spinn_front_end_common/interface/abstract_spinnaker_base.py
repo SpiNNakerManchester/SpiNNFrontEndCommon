@@ -32,7 +32,7 @@ from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
 from spinn_front_end_common.abstract_models.abstract_changable_after_run \
     import AbstractChangableAfterRun
-from spinn_front_end_common.interface.provenance.pacman_provenance_extractor \
+from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.utility_models.command_sender import CommandSender
 from spinn_front_end_common.interface.interface_functions\

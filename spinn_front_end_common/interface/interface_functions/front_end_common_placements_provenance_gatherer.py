@@ -2,8 +2,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.interface.provenance\
-    .abstract_provides_provenance_data_from_machine \
+from spinn_front_end_common.interface.provenance \
     import AbstractProvidesProvenanceDataFromMachine
 
 
