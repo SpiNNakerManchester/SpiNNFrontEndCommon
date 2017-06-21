@@ -3,12 +3,8 @@ from pacman.model.abstract_classes.abstract_has_global_max_atoms import \
     AbstractHasGlobalMaxAtoms
 from spinn_front_end_common.abstract_models \
     import AbstractProvidesKeyToAtomMapping, AbstractRecordable
-from spinn_front_end_common.utility_models.\
-    live_packet_gather_machine_vertex import \
-    LivePacketGatherMachineVertex
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multicast_source_machine_vertex import \
-    ReverseIPTagMulticastSourceMachineVertex
+from spinn_front_end_common.utility_models import \
+    LivePacketGatherMachineVertex, ReverseIPTagMulticastSourceMachineVertex
 
 # general imports
 import logging

@@ -9,9 +9,7 @@ from pacman.model.resources import SDRAMResource
 
 # spinn front end imports
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utility_models\
-    .live_packet_gather_machine_vertex \
-    import LivePacketGatherMachineVertex
+from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \

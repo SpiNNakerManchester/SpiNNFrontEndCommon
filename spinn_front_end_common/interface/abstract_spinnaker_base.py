@@ -28,7 +28,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
-from spinn_front_end_common.utility_models.command_sender import CommandSender
+from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_provenance_xml_writer \
     import FrontEndCommonProvenanceXMLWriter

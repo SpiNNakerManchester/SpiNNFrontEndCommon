@@ -13,8 +13,7 @@ from spinn_front_end_common.abstract_models \
 from spinn_front_end_common.abstract_models.impl\
     import ProvidesKeyToAtomMappingImpl
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utility_models\
-    .reverse_ip_tag_multicast_source_machine_vertex \
+from .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
