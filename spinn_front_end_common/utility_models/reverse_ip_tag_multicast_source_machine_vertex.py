@@ -14,14 +14,11 @@ from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.interface.buffer_management.buffer_manager \
     import BufferManager
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .sends_buffers_from_host_pre_buffered_impl \
-    import SendsBuffersFromHostPreBufferedImpl
+from spinn_front_end_common.interface.buffer_management.buffer_models \
+    import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     .buffered_sending_region import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models\
     .abstract_provides_outgoing_partition_constraints \

@@ -1,6 +1,6 @@
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.buffer_management.buffer_models \
+    import AbstractReceiveBuffersToHost
 from spinn_utilities.progress_bar import ProgressBar
 
 

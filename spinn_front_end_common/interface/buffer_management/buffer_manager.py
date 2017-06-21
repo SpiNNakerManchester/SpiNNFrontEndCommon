@@ -11,14 +11,11 @@ from spinnman.messages.eieio.command_messages \
 from spinnman.messages.eieio.command_messages \
     import HostSendSequencedData, EventStopRequest
 from spinnman.utilities import utility_functions
-from spinnman.messages.sdp import SDPHeader
-from spinnman.messages.sdp import SDPMessage
-from spinnman.messages.sdp import SDPFlag
+from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio.data_messages.specialized_message_types \
     import EIEIO32BitTimedPayloadPrefixDataMessage as EIEIOMessage
 from spinnman.exceptions import SpinnmanInvalidPacketException
-from spinnman.messages.eieio import EIEIOType
-from spinnman.messages.eieio import create_eieio_command
+from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 
 # front end common imports
@@ -258,7 +255,7 @@ class BufferManager(object):
 
         :param vertex: the vertex to be managed
         :type vertex:\
-                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
+                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
@@ -339,7 +336,7 @@ class BufferManager(object):
         :type size: int
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         :param region: The region of the vertex to get keys from
         :type region: int
         :return: A new message, or None if no keys can be added
@@ -378,7 +375,7 @@ class BufferManager(object):
 
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         :param region: The region to get the keys from
         :type region: int
         :return: A list of messages
@@ -550,7 +547,7 @@ class BufferManager(object):
         :return: pointer to a class which inherits from\
                 AbstractBufferedDataStorage
         :rtype:\
-                py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
+                :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
         """
 
         recording_data_address = \

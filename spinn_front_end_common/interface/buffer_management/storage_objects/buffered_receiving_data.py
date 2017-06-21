@@ -237,7 +237,7 @@ class BufferedReceivingData(object):
         :return: all the data received during the simulation,\
                 and a flag indicating if any data was lost
         :rtype:\
-            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`,
+            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
              bool)
         """
         missing = False

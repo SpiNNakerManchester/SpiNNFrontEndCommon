@@ -26,8 +26,7 @@ from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.simulator_interface \
     import SimulatorInterface
-from spinn_front_end_common.interface.buffer_management\
-    .buffer_models.abstract_receive_buffers_to_host \
+from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.abstract_models.abstract_recordable \
     import AbstractRecordable
