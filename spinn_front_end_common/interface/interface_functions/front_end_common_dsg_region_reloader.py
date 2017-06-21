@@ -5,8 +5,7 @@ from data_specification.data_specification_executor import \
     DataSpecificationExecutor
 from data_specification import utility_calls, constants
 
-from spinn_front_end_common.abstract_models\
-    .abstract_rewrites_data_specification \
+from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
 from spinn_front_end_common.interface.interface_functions. \
     front_end_common_host_execute_data_specification import \

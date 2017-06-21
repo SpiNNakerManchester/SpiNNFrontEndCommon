@@ -8,22 +8,18 @@ from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
 
 
 # front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_partition_constraints \
+from spinn_front_end_common.abstract_models \
     import AbstractProvidesOutgoingPartitionConstraints
 from spinn_front_end_common.abstract_models.impl\
-    .provides_key_to_atom_mapping_impl import ProvidesKeyToAtomMappingImpl
+    import ProvidesKeyToAtomMappingImpl
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utility_models\
     .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 

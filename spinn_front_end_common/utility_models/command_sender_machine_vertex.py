@@ -3,8 +3,7 @@ from collections import Counter
 
 from pacman.model.decorators.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.abstract_models.\
-    abstract_has_associated_binary import \
+from spinn_front_end_common.abstract_models import \
     AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl

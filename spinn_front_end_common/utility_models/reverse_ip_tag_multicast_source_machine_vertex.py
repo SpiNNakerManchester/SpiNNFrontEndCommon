@@ -19,17 +19,12 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.abstract_models\
-    .abstract_provides_outgoing_partition_constraints \
-    import AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models.abstract_recordable \
-    import AbstractRecordable
+from spinn_front_end_common.abstract_models \
+    import AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
 from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
@@ -573,7 +568,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 

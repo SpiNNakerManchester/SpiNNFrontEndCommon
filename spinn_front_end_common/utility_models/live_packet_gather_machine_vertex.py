@@ -7,12 +7,10 @@ from pacman.model.resources import SDRAMResource
 
 from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
     import ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
@@ -256,10 +254,9 @@ class LivePacketGatherMachineVertex(
 
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
-            region=(
-                LivePacketGatherMachineVertex.
-                _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+            region=(LivePacketGatherMachineVertex.
+                    _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
     @staticmethod

@@ -12,8 +12,7 @@ from spinn_front_end_common.interface.interface_functions\
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
 class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):

@@ -1,11 +1,8 @@
 # spinn front end common
 from pacman.model.abstract_classes.abstract_has_global_max_atoms import \
     AbstractHasGlobalMaxAtoms
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_key_to_atom_mapping import \
-    AbstractProvidesKeyToAtomMapping
-from spinn_front_end_common.abstract_models.abstract_recordable import \
-    AbstractRecordable
+from spinn_front_end_common.abstract_models \
+    import AbstractProvidesKeyToAtomMapping, AbstractRecordable
 from spinn_front_end_common.utility_models.\
     live_packet_gather_machine_vertex import \
     LivePacketGatherMachineVertex

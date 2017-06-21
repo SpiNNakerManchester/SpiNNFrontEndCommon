@@ -15,12 +15,10 @@ from pacman.model.graphs.machine import MachineGraph, MachineVertex
 # common front end imports
 from pacman.model.resources.pre_allocated_resource_container import \
     PreAllocatedResourceContainer
-from spinn_front_end_common.abstract_models.\
-    abstract_send_me_multicast_commands_vertex import \
-    AbstractSendMeMulticastCommandsVertex
-from spinn_front_end_common.abstract_models.\
-    abstract_vertex_with_dependent_vertices import \
-    AbstractVertexWithEdgeToDependentVertices
+from spinn_front_end_common.abstract_models import \
+    AbstractSendMeMulticastCommandsVertex, AbstractRecordable
+from spinn_front_end_common.abstract_models import \
+    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import globals_variables
@@ -28,10 +26,6 @@ from spinn_front_end_common.utilities.simulator_interface \
     import SimulatorInterface
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.abstract_models.abstract_recordable \
-    import AbstractRecordable
-from spinn_front_end_common.abstract_models.abstract_changable_after_run \
-    import AbstractChangableAfterRun
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.utility_models.command_sender import CommandSender

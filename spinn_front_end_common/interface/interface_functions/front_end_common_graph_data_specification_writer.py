@@ -4,8 +4,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 from data_specification import utility_calls
 
-from spinn_front_end_common.abstract_models.\
-    abstract_generates_data_specification import \
+from spinn_front_end_common.abstract_models import \
     AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities import exceptions
 

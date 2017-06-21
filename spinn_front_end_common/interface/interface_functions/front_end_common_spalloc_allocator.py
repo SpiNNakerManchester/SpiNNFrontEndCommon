@@ -6,8 +6,7 @@ from threading import Thread
 from spalloc import Job
 from spalloc.states import JobState
 
-from spinn_front_end_common.abstract_models\
-    .abstract_machine_allocation_controller \
+from spinn_front_end_common.abstract_models \
     import AbstractMachineAllocationController
 
 

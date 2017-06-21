@@ -6,16 +6,11 @@ from pacman.model.routing_info \
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_incoming_partition_constraints import \
-    AbstractProvidesIncomingPartitionConstraints
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_n_keys_for_partition import \
-    AbstractProvidesNKeysForPartition
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_partition_constraints import \
+from spinn_front_end_common.abstract_models import \
+    AbstractProvidesIncomingPartitionConstraints, \
+    AbstractProvidesNKeysForPartition, \
     AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class FrontEndCommonEdgeToNKeysMapper(object):
@@ -30,11 +25,11 @@ class FrontEndCommonEdgeToNKeysMapper(object):
         n_keys_map = DictBasedMachinePartitionNKeysMap()
 
         if machine_graph is None:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "A machine graph is required for this mapper. "
                 "Please choose and try again")
         if (application_graph is None) != (graph_mapper is None):
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Can only do one graph. semantically doing 2 graphs makes no "
                 "sense. Please choose and try again")
 
@@ -93,7 +88,7 @@ class FrontEndCommonEdgeToNKeysMapper(object):
         """
         for constraint in constraints:
             if constraint not in stored_constraints:
-                raise exceptions.ConfigurationException(
+                raise ConfigurationException(
                     "Two edges within the same partition have different "
                     "constraints")
 
