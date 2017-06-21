@@ -28,7 +28,7 @@ static uint32_t time;
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count, sample_count_limit;
 uint32_t recording_flags;
-uint32_t samply_frequency;
+uint32_t sample_frequency;
 
 static uint32_t get_sample(void)
 {
@@ -43,7 +43,7 @@ static uint32_t get_random_busy(void)
 
 static void record_aggregate_sample(void)
 {
-    recording_record(0, core_counters, sizeof core_counters);
+    recording_record(0, core_counters, sizeof(core_counters));
 }
 
 static void reset_core_counters(void)
@@ -60,6 +60,8 @@ static void sample_in_slot(uint unused0, uint unused1)
 
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
+
+        recording_finalise();
         simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
@@ -86,12 +88,14 @@ static void sample_in_slot(uint unused0, uint unused1)
         record_aggregate_sample();
         reset_core_counters();
     }
+
+    recording_do_timestep_update(time);
 }
 
 bool read_parameters(address_t address)
 {
     sample_count_limit = address[SAMPLE_COUNT_LIMIT];
-    samply_frequency = address[SAMPLE_FREQUENCY];
+    sample_frequency = address[SAMPLE_FREQUENCY];
     //TODO anything else that needs to be read here?
     return true;
 }
@@ -111,7 +115,8 @@ static bool initialize(uint32_t *timer)
     }
 
     // change simulation ticks to be a number related to sampling frequency
-    simulation_ticks = (simulation_ticks * timer) / samply_frequency;
+    simulation_ticks = (simulation_ticks * *timer) / sample_frequency;
+    log_info("total_sim_ticks = %d", simulation_ticks);
 
     address_t recording_region =
 	    data_specification_get_region(RECORDING, address);
@@ -129,7 +134,7 @@ void c_main(void)
 
     reset_core_counters();
 
-    spin1_set_timer_tick(samply_frequency);
+    spin1_set_timer_tick(sample_frequency);
     spin1_callback_on(TIMER_TICK, sample_in_slot, TIMER);
     time = UINT32_MAX;
     simulation_run();

@@ -2131,31 +2131,33 @@ class AbstractSpinnakerBase(SimulatorInterface):
             energy_report = FrontEndCommonEnergyReport()
 
             # acquire provenance items
-            prov_items = self._last_run_outputs["ProvenanceItems"]
-            pacman_provenance = list()
-            router_provenance = list()
+            if self._last_run_outputs is not None:
+                prov_items = self._last_run_outputs["ProvenanceItems"]
+                pacman_provenance = list()
+                router_provenance = list()
 
-            # group them by name type
-            grouped_items = sorted(prov_items, key=lambda item: item.names[0])
-            for element in grouped_items:
-                if element.names[0] == 'pacman':
-                    pacman_provenance.append(element)
-                if element.names[0] == 'router_provenance':
-                    router_provenance.append(element)
+                # group them by name type
+                grouped_items = sorted(
+                    prov_items, key=lambda item: item.names[0])
+                for element in grouped_items:
+                    if element.names[0] == 'pacman':
+                        pacman_provenance.append(element)
+                    if element.names[0] == 'router_provenance':
+                        router_provenance.append(element)
 
-            print "pac"
-            for thing in pacman_provenance:
-                print thing
+                print "pac"
+                for thing in pacman_provenance:
+                    print thing
 
-            # run energy report
-            energy_report(
-                self._placements, self._machine,
-                self._report_default_directory,
-                self._read_config("Machine", "version"),
-                self._spalloc_server, self._remote_spinnaker_url,
-                self._time_scale_factor, self._machine_time_step,
-                pacman_provenance, router_provenance, self._machine_graph,
-                self._current_run_timesteps, self._buffer_manager)
+                # run energy report
+                energy_report(
+                    self._placements, self._machine,
+                    self._report_default_directory,
+                    self._read_config("Machine", "version"),
+                    self._spalloc_server, self._remote_spinnaker_url,
+                    self._time_scale_factor, self._machine_time_step,
+                    pacman_provenance, router_provenance, self._machine_graph,
+                    self._current_run_timesteps, self._buffer_manager)
 
         # shut down the machine properly
         self._shutdown(
