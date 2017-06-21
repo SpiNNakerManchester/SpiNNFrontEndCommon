@@ -22,14 +22,10 @@ from spinnman.messages.eieio.data_messages import EIEIODataMessage
 from spinn_front_end_common.utilities.helpful_functions \
     import locate_memory_region_for_placement
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.interface.buffer_management.\
-    storage_objects.buffers_sent_deque import BuffersSentDeque
-from spinn_front_end_common.interface.buffer_management.\
-    storage_objects.buffered_receiving_data import BufferedReceivingData
-from spinn_front_end_common.utilities import constants as \
-    spinn_front_end_constants
-from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    channel_buffer_state import ChannelBufferState
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BuffersSentDeque, BufferedReceivingData, ChannelBufferState
+from spinn_front_end_common.utilities.constants \
+    import SDP_PORTS, BUFFERING_OPERATIONS
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
 
@@ -520,8 +516,7 @@ class BufferManager(object):
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=spinn_front_end_constants.SDP_PORTS.
-            INPUT_BUFFERING_SDP_PORT.value)
+            destination_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
 
@@ -634,8 +629,7 @@ class BufferManager(object):
                                 (read_ptr == end_ptr and
                                  write_ptr == start_ptr)):
                             end_state.update_last_operation(
-                                spinn_front_end_constants.BUFFERING_OPERATIONS.
-                                BUFFER_READ.value)
+                                BUFFERING_OPERATIONS.BUFFER_READ.value)
                         if read_ptr == end_ptr:
                             read_ptr = start_ptr
                         elif read_ptr > end_ptr:
@@ -680,8 +674,7 @@ class BufferManager(object):
                     data)
 
             elif (read_ptr == write_ptr and
-                    last_operation == spinn_front_end_constants.
-                    BUFFERING_OPERATIONS.BUFFER_WRITE.value):
+                    last_operation == BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
@@ -697,8 +690,7 @@ class BufferManager(object):
                     data)
 
             elif (read_ptr == write_ptr and
-                    last_operation == spinn_front_end_constants.
-                    BUFFERING_OPERATIONS.BUFFER_READ.value):
+                    last_operation == BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
@@ -776,9 +768,7 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=(
-                spinn_front_end_constants.SDP_PORTS
-                .OUTPUT_BUFFERING_SDP_PORT.value),
+            destination_port=SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value,
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)

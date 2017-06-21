@@ -1,5 +1,5 @@
-from spinn_front_end_common.interface.buffer_management.\
-    storage_objects.channel_buffer_state import ChannelBufferState
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import ChannelBufferState
 
 
 class EndBufferingState(object):

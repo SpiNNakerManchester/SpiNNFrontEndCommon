@@ -1,8 +1,8 @@
 # front end common imports
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import SendsBuffersFromHostPreBufferedImpl
-from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    buffered_sending_region import BufferedSendingRegion
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
 
 _MAX_MEMORY_USAGE = constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP
