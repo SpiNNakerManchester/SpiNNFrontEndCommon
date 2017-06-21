@@ -5,8 +5,7 @@ from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.constants import EIEIO_COMMAND_IDS
 
 # FrontEndCommon imports
-from spinn_front_end_common.utilities.database.database_reader \
-    import DatabaseReader
+from .database_reader import DatabaseReader
 
 # general imports
 from threading import Thread

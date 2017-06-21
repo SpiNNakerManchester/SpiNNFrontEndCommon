@@ -1,7 +1,6 @@
-from spinn_front_end_common.utilities.scp.clear_iobuf_process import \
-    ClearIOBUFProcess
+from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class FrontEndCommonChipIOBufClearer(object):
@@ -11,9 +10,8 @@ class FrontEndCommonChipIOBufClearer(object):
     __slots__ = []
 
     def __call__(self, transceiver, executable_targets, ran_token):
-
         if not ran_token:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "The simulation has to have ran before running this system")
 
         process = ClearIOBUFProcess(transceiver._scamp_connection_selector)

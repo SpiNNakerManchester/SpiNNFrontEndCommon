@@ -1,14 +1,14 @@
 import logging
 import struct
 
-
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
 
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.constants \
+    import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
         if (len(error_cores) != 0 or len(watchdog_cores) != 0 or
                 len(idle_cores) != 0):
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
                 " idle cores {}".format(
                     error_cores.values(), watchdog_cores.values(),
@@ -55,14 +55,13 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
             for (x, y, p) in unsuccessful_cores.iterkeys():
                 data = struct.pack(
-                    "<I", constants.SDP_RUNNING_MESSAGE_CODES.
+                    "<I", SDP_RUNNING_MESSAGE_CODES.
                     SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
                 txrx.send_sdp_message(SDPMessage(SDPHeader(
                     flags=SDPFlag.REPLY_NOT_EXPECTED,
                     destination_cpu=p,
                     destination_chip_x=x,
-                    destination_port=(
-                        constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
+                    destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
                     destination_chip_y=y), data=data))
 
             processors_completed = txrx.get_core_state_count(

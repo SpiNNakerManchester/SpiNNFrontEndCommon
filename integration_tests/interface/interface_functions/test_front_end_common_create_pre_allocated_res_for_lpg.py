@@ -6,8 +6,7 @@ from pacman.model.resources.specific_chip_sdram_resource import \
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_pre_allocate_resources_for_live_packet_gatherers import \
     FrontEndCommonPreAllocateResourcesForLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs. \
-    live_packet_gather_parameters import \
+from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
 from spinn_front_end_common.utility_models import \
     LivePacketGatherMachineVertex

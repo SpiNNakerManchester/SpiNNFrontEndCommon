@@ -3,7 +3,7 @@ from pacman.model.routing_tables.multicast_routing_table import \
     MulticastRoutingTable
 from pacman.operations.algorithm_reports import reports
 
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
 import os
@@ -16,7 +16,7 @@ class FrontEndCommonRoutingTableFromMachineReport(object):
             self, report_default_directory, routing_tables, transceiver,
             app_id, has_loaded_routing_tables_flag):
         if not has_loaded_routing_tables_flag:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "This report needs the routing tables to be loaded onto the "
                 "machine before being executed.")
 
@@ -35,10 +35,9 @@ class FrontEndCommonRoutingTableFromMachineReport(object):
                 transceiver, routing_table, app_id)
             reports._generate_routing_table(machine_routing_table, folder_name)
 
-    def _read_routing_table(self, txrx, routing_table, app_id):
-        machine_routing_table = \
-            MulticastRoutingTable(routing_table.x, routing_table.y)
+    def _read_routing_table(self, txrx, table, app_id):
+        machine_routing_table = MulticastRoutingTable(table.x, table.y)
         for routing_entry in txrx.get_multicast_routes(
-                routing_table.x, routing_table.y, app_id):
+                table.x, table.y, app_id):
             machine_routing_table.add_multicast_routing_entry(routing_entry)
         return machine_routing_table

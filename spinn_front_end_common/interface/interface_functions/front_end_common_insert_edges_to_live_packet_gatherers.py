@@ -1,6 +1,6 @@
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -169,7 +169,7 @@ class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
             return machine_lpgs[0, 0]
 
         # if got through all LPG vertices and not found the right one. go BOOM
-        raise exceptions.ConfigurationException(
+        raise ConfigurationException(
             "Cannot find a Live Packet Gatherer from {} for the vertex {}"
             " located {}:{}".format(
                 machine_lpgs, machine_vertex, chip.x, chip.y))

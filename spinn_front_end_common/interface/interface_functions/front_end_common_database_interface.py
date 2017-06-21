@@ -2,8 +2,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.utilities.database.database_writer import \
-    DatabaseWriter
+from spinn_front_end_common.utilities.database import DatabaseWriter
 
 
 class FrontEndCommonDatabaseInterface(object):

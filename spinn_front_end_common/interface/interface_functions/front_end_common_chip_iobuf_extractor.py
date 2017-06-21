@@ -1,5 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import re
 
 
@@ -18,11 +18,11 @@ class FrontEndCommonChipIOBufExtractor(object):
 
     def __call__(self, transceiver, has_ran, core_subsets=None):
         if not has_ran:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "The simulation needs to have tried to run before asking for"
                 "iobuf. Please fix and try again")
         if core_subsets is None:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "The FrontEndCommonIOBufExtractor requires a core sets "
                 "object to be able to execute")
 

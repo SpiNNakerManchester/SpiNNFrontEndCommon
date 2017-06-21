@@ -19,11 +19,10 @@ from spinn_front_end_common.abstract_models import \
     AbstractSendMeMulticastCommandsVertex, AbstractRecordable
 from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
-from spinn_front_end_common.utilities import exceptions as common_exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.simulator_interface \
-    import SimulatorInterface
+from spinn_front_end_common.utilities import SimulatorInterface
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance \
@@ -47,8 +46,7 @@ from spinn_front_end_common.interface.interface_functions\
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_chip_iobuf_extractor \
     import FrontEndCommonChipIOBufExtractor
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 # spinnman imports
 from spinnman.model.enums import CPUState
@@ -462,7 +460,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if not isinstance(
                     vertex_to_record_from,
                     self._live_packet_recorders_associated_vertex_type):
-                raise common_exceptions.ConfigurationException(
+                raise ConfigurationException(
                     "Only one type of graph can be used during live output. "
                     "Please fix and try again")
 
@@ -671,7 +669,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._minimum_step_generated is not None and
                     (self._minimum_step_generated < n_machine_time_steps or
                         n_machine_time_steps is None)):
-                raise common_exceptions.ConfigurationException(
+                raise ConfigurationException(
                     "Second and subsequent run time must be less than or equal"
                     " to the first run time")
 
@@ -842,13 +840,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             for vertex in self._application_graph.vertices:
                 if (isinstance(vertex, AbstractRecordable) and
                         vertex.is_recording()):
-                    raise common_exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "recording a vertex when set to infinite runtime "
                         "is not currently supported")
             for vertex in self._machine_graph.vertices:
                 if (isinstance(vertex, AbstractRecordable) and
                         vertex.is_recording()):
-                    raise common_exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "recording a vertex when set to infinite runtime "
                         "is not currently supported")
         return total_run_timesteps
@@ -1007,7 +1005,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if (self._application_graph.n_vertices == 0 and
                     self._machine_graph.n_vertices == 0 and
                     need_virtual_board):
-                raise common_exceptions.ConfigurationException(
+                raise ConfigurationException(
                     "A allocated machine has been requested but there are no"
                     " vertices to work out the size of the machine required"
                     " and n_chips_required has not been set")
@@ -1133,7 +1131,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
         else:
-            raise common_exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "There needs to be a graph which contains at least one vertex"
                 " for the tool chain to map anything.")
 
@@ -1878,12 +1876,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         if (self._machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
-            raise common_exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         if (isinstance(vertex_to_add, AbstractVirtualVertex) and
                 self._machine is not None):
-            raise common_exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
         self._application_graph.add_vertex(vertex_to_add)
@@ -1897,12 +1895,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         # check that there's no application vertices added so far
         if self._application_graph.n_vertices > 0:
-            raise common_exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
         if (isinstance(vertex, AbstractVirtualVertex) and
                 self._machine is not None):
-            raise common_exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
         self._machine_graph.add_vertex(vertex)

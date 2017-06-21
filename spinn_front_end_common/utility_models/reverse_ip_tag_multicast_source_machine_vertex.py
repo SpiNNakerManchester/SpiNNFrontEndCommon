@@ -11,7 +11,8 @@ from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 
-from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities.helpful_functions \
+    import locate_memory_region_for_placement
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
@@ -29,10 +30,8 @@ from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs \
+    import ProvenanceDataItem, ExecutableStartType
 
 from spinnman.messages.eieio import EIEIOPrefix
 
@@ -663,7 +662,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
-        return helpful_functions.locate_memory_region_for_placement(
+        return locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING.value, txrx)
 
     @property

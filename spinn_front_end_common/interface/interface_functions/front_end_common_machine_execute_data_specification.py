@@ -7,7 +7,7 @@ from spinn_machine.core_subsets import CoreSubsets
 from spinnman.model.enums import CPUState
 
 # front end common imports
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import DSE_DATA_STRUCT_SIZE
 
 import os
 import logging
@@ -55,7 +55,7 @@ class FrontEndCommonMachineExecuteDataSpecification(object):
             core_subset.add_processor(x, y, p)
 
             dse_data_struct_address = transceiver.malloc_sdram(
-                x, y, constants.DSE_DATA_STRUCT_SIZE, dse_app_id)
+                x, y, DSE_DATA_STRUCT_SIZE, dse_app_id)
 
             data_spec_file_path = dsg_targets[x, y, p, label]
             data_spec_file_size = os.path.getsize(data_spec_file_path)

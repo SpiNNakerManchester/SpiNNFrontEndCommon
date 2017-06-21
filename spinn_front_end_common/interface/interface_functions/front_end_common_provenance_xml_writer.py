@@ -1,4 +1,5 @@
-from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities.helpful_functions \
+    import generate_unique_folder_name
 
 # general imports
 from lxml import etree
@@ -27,12 +28,11 @@ class FrontEndCommonProvenanceXMLWriter(object):
         items = sorted(provenance_data_items, key=lambda item: item.names[0])
         for name, group in itertools.groupby(
                 items, lambda item: item.names[0]):
-
             filename = "".join(
                 c if c in self.VALID_CHARS else '_' for c in name)
 
             # generate file path for xml
-            file_path = helpful_functions.generate_unique_folder_name(
+            file_path = generate_unique_folder_name(
                 provenance_data_path, filename, ".xml")
 
             # Create a root node
@@ -75,7 +75,5 @@ class FrontEndCommonProvenanceXMLWriter(object):
                 element.text = str(item.value)
 
             # write xml form into file provided
-            writer = open(file_path, "w")
-            writer.write(etree.tostring(root, pretty_print=True))
-            writer.flush()
-            writer.close()
+            with open(file_path, "w") as writer:
+                writer.write(etree.tostring(root, pretty_print=True))

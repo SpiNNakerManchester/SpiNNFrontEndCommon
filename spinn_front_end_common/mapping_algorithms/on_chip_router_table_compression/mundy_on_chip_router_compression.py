@@ -1,6 +1,6 @@
 from spinn_utilities.progress_bar import ProgressBar
 
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
@@ -141,7 +141,7 @@ class MundyOnChipRouterCompression(object):
                         executable_targets, transceiver, provenance_file_path,
                         compressor_app_id)
 
-                    raise exceptions.SpinnFrontEndException(
+                    raise SpinnFrontEndException(
                         "The router compressor on {}, {} failed to complete"
                         .format(x, y))
 

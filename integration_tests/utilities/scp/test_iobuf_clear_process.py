@@ -8,9 +8,9 @@ from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.core_subset import CoreSubset
 
-from spinn_front_end_common.utilities.scp.clear_iobuf_process \
-    import ClearIOBUFProcess
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
+from spinn_front_end_common.utilities.constants \
+    import SDP_RUNNING_MESSAGE_CODES
 
 from integration_tests.mock_machine import MockMachine
 
@@ -41,7 +41,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         command = struct.unpack_from("<H", data, 10)[0]
         self.assertEqual(
             command,
-            constants.SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
+            SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
 
 
 if __name__ == "__main__":

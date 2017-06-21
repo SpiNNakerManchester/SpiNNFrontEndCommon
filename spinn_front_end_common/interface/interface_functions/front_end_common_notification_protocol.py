@@ -1,5 +1,5 @@
-from spinn_front_end_common.utilities.notification_protocol.\
-    notification_protocol import NotificationProtocol
+from spinn_front_end_common.utilities.notification_protocol \
+    import NotificationProtocol
 
 import logging
 

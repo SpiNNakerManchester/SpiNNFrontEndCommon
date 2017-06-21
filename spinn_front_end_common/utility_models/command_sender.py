@@ -17,8 +17,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities import constants
 from .command_sender_machine_vertex import CommandSenderMachineVertex
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 
 class CommandSender(

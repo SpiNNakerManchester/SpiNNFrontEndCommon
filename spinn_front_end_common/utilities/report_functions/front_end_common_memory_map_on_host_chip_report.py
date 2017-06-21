@@ -1,6 +1,6 @@
 from spinn_utilities.progress_bar import ProgressBar
-from data_specification import constants
-from spinn_front_end_common.utilities import exceptions
+from data_specification.constants import MAX_MEM_REGIONS
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
 import os
@@ -29,7 +29,7 @@ class FrontEndCommonMemoryMapOnHostChipReport(object):
         """
 
         if not loaded_app_data_token:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Needs to have loaded app data for this to work.")
 
         directory_name = os.path.join(
@@ -55,13 +55,13 @@ class FrontEndCommonMemoryMapOnHostChipReport(object):
                             transceiver, x, y,
                             dsg_app_pointer_table_address_pointer)
 
-                    report_bytes = 4 * constants.MAX_MEM_REGIONS
+                    report_bytes = 4 * MAX_MEM_REGIONS
 
                     mem_map_report_data = buffer(transceiver.read_memory(
                         x, y, dsg_app_pointer_table_address, report_bytes))
 
                     offset = 0
-                    for i in xrange(constants.MAX_MEM_REGIONS):
+                    for i in xrange(MAX_MEM_REGIONS):
                         region_address = int(struct.unpack_from(
                             "<I", mem_map_report_data, offset)[0])
                         offset += 4

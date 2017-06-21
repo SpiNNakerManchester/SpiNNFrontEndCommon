@@ -1,8 +1,7 @@
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 from spinnman.model.enums import CPUState
-from spinn_front_end_common.utilities.scp.update_runtime_process \
-    import UpdateRuntimeProcess
+from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
 class FrontEndCommonChipRuntimeUpdater(object):
@@ -14,9 +13,8 @@ class FrontEndCommonChipRuntimeUpdater(object):
     def __call__(
             self, txrx, app_id, executable_targets,
             no_machine_timesteps, loaded_binaries_token):
-
         if not loaded_binaries_token:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "The binaries must be loaded before the run time updater is"
                 " called")
 

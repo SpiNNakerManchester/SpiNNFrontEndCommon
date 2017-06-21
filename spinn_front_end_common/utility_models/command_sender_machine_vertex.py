@@ -8,9 +8,9 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs.executable_start_type\
-    import ExecutableStartType
+from spinn_front_end_common.utilities.constants \
+    import SYSTEM_BYTES_REQUIREMENT
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 
 class CommandSenderMachineVertex(
@@ -182,7 +182,7 @@ class CommandSenderMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
-            size=constants.SYSTEM_BYTES_REQUIREMENT, label='system')
+            size=SYSTEM_BYTES_REQUIREMENT, label='system')
 
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SETUP.value,

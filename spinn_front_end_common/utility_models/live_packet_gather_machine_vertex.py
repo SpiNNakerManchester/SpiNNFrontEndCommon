@@ -11,11 +11,10 @@ from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs \
+    import ProvenanceDataItem, ExecutableStartType
+from spinn_front_end_common.utilities.constants \
+    import SYSTEM_BYTES_REQUIREMENT
 
 from spinnman.messages.eieio import EIEIOType
 
@@ -168,7 +167,7 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
-            size=constants.SYSTEM_BYTES_REQUIREMENT,
+            size=SYSTEM_BYTES_REQUIREMENT,
             label='system')
         spec.reserve_memory_region(
             region=(
@@ -274,11 +273,10 @@ class LivePacketGatherMachineVertex(
 
         """
         return (
-            constants.SYSTEM_BYTES_REQUIREMENT +
+            SYSTEM_BYTES_REQUIREMENT +
             LivePacketGatherMachineVertex._CONFIG_SIZE +
             LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex
-                .N_ADDITIONAL_PROVENANCE_ITEMS))
+                LivePacketGatherMachineVertex.N_ADDITIONAL_PROVENANCE_ITEMS))
 
     @staticmethod
     def get_dtcm_usage():

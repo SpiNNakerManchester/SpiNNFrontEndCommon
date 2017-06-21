@@ -4,10 +4,9 @@ from spinn_utilities.abstract_base import AbstractBase, abstractproperty
 
 from .abstract_provides_provenance_data_from_machine \
     import AbstractProvidesProvenanceDataFromMachine
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
-from data_specification import utility_calls as dsg_utility_calls
+from data_specification.utility_calls import get_region_base_address_offset
 
 import struct
 from enum import Enum
@@ -67,16 +66,11 @@ class ProvidesProvenanceDataFromMachineImpl(
             placement.x, placement.y, placement.p).user[0]
 
         # Get the provenance region base address
-        provenance_data_region_base_address_offset = \
-            dsg_utility_calls.get_region_base_address_offset(
-                app_data_base_address, self._provenance_region_id)
-        provenance_data_region_base_address_buff = buffer(
-            transceiver.read_memory(
-                placement.x, placement.y,
-                provenance_data_region_base_address_offset, 4))
-        provenance_data_region_base_address = struct.unpack(
-            "<I", provenance_data_region_base_address_buff)[0]
-        return provenance_data_region_base_address
+        base_address_offset = get_region_base_address_offset(
+            app_data_base_address, self._provenance_region_id)
+        base_address_buffer = buffer(transceiver.read_memory(
+            placement.x, placement.y, base_address_offset, 4))
+        return struct.unpack("<I", base_address_buffer)[0]
 
     def _read_provenance_data(self, transceiver, placement):
         provenance_address = self._get_provenance_region_address(

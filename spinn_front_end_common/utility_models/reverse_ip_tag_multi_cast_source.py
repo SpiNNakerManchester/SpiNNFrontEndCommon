@@ -19,8 +19,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 # general imports
 import sys

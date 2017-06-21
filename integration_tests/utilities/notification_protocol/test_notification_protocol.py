@@ -2,8 +2,8 @@ import unittest
 
 from spinn_utilities.socket_address import SocketAddress
 
-from spinn_front_end_common.utilities.notification_protocol\
-    .notification_protocol import NotificationProtocol
+from spinn_front_end_common.utilities.notification_protocol \
+    import NotificationProtocol
 
 from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage

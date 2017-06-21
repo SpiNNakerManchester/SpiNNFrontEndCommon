@@ -4,7 +4,7 @@ from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
 
 # front end common imports
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 # general imports
 import re
@@ -64,7 +64,7 @@ class FrontEndCommonMachineGenerator(object):
 
         # do auto boot if possible
         if board_version is None:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Please set a machine version number in the configuration "
                 "file (spynnaker.cfg or pacman.cfg)")
         txrx.ensure_board_is_ready(

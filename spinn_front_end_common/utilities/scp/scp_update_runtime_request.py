@@ -23,8 +23,7 @@ class SCPUpdateRuntimeRequest(AbstractSCPRequest):
                 flags=sdp_flags, destination_port=destination_port,
                 destination_cpu=p, destination_chip_x=x, destination_chip_y=y),
             SCPRequestHeader(
-                command=(SDP_RUNNING_MESSAGE_CODES
-                         .SDP_NEW_RUNTIME_ID_CODE)),
+                command=SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE),
             argument_1=run_time, argument_2=infinite_run, argument_3=arg3)
 
     def get_scp_response(self):

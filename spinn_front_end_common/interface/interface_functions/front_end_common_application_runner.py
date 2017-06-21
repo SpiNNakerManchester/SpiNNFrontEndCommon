@@ -1,9 +1,8 @@
 import logging
 import time
 
-from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 from spinnman.messages.scp.enums import SCPSignal
 from spinnman.model.enums import CPUState
@@ -31,7 +30,7 @@ class FrontEndCommonApplicationRunner(object):
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
                 not loaded_routing_tables_token or not loaded_binaries_token or
                 not loaded_application_data_token):
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Not all valid tokens have been given in the positive state")
 
         logger.info("*** Running simulation... *** ")
@@ -61,7 +60,7 @@ class FrontEndCommonApplicationRunner(object):
             no_sync_changes += 1
 
         if expected_states is None:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Unknown executable start type {}".format(
                     executable_start_type))
 

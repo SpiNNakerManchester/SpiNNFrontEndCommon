@@ -3,9 +3,8 @@ from data_specification import utility_calls
 
 # front end common imports
 from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions as \
-    front_end_common_report_functions
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import report_functions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common import mapping_algorithms
 
 # SpiNMachine imports
@@ -266,7 +265,7 @@ def get_front_end_common_pacman_xml_paths():
             os.path.dirname(interface_functions.__file__),
             "front_end_common_interface_functions.xml"),
         os.path.join(
-            os.path.dirname(front_end_common_report_functions.__file__),
+            os.path.dirname(report_functions.__file__),
             "front_end_common_reports.xml"),
         os.path.join(
             os.path.dirname(mapping_algorithms.__file__),
@@ -371,7 +370,7 @@ def translate_iobuf_extraction_elements(
         return model_core_subsets
 
     # should never get here,
-    raise exceptions.ConfigurationException("Something odd has happened")
+    raise ConfigurationException("Something odd has happened")
 
 
 def _handle_model_binaries(
@@ -456,6 +455,6 @@ def get_ethernet_chip(machine, board_address):
     for chip in machine.ethernet_connected_chips:
         if chip.ip_address == board_address:
             return chip
-    raise exceptions.ConfigurationException(
+    raise ConfigurationException(
         "cannot find the Ethernet connected chip with the board address {}"
         .format(board_address))

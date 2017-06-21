@@ -1,6 +1,6 @@
 from data_specification import constants
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
 import os
@@ -28,7 +28,7 @@ class FrontEndCommonMemoryMapOnChipReport(object):
         """
 
         if not loaded_app_data_token:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Needs to have loaded app data for this to work.")
 
         directory_name = os.path.join(

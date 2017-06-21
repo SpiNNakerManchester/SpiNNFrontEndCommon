@@ -1,9 +1,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
 
@@ -46,7 +45,7 @@ class FrontEndCommonRouterProvenanceGatherer(object):
         """
 
         if not has_ran:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "This function has been called before the simulation has ran."
                 " This is deemed an error, please rectify and try again")
 

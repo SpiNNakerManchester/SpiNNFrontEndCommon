@@ -7,8 +7,7 @@ from pacman.model.resources import ResourceContainer
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_insert_edges_to_live_packet_gatherers import \
     FrontEndCommonInsertEdgesToLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs.\
-    live_packet_gather_parameters import \
+from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
 from spinn_front_end_common.utility_models \
     import LivePacketGather, LivePacketGatherMachineVertex

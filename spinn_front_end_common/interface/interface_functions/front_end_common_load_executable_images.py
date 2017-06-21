@@ -1,7 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 from spinnman.messages.scp.enums import SCPSignal
 from spinnman.model.enums import CPUState
@@ -23,7 +23,7 @@ class FrontEndCommonLoadExecutableImages(object):
         """
 
         if not loaded_application_data_token:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "The token for having loaded the application data token is set"
                 " to false and therefore I cannot run. Please fix and try "
                 "again")

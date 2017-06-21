@@ -1,5 +1,8 @@
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import math
+
+_CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK = 40
+_CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES = 200
 
 
 class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
@@ -8,9 +11,6 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         the agenda set up. Ensures parallel transmissions so that the\
         destination should never be overloaded
     """
-
-    CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK = 40
-    CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES = 200
 
     def __call__(
             self, machine_graph, number_of_cpu_cycles_per_receive,
@@ -99,9 +99,8 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
 
         # use greedy colouring algorithm to colour graph
         for vertex in machine_graph.vertices:
-            time_offset[vertex] = \
-                self._get_colour_for_vertex(
-                    vertex, machine_graph, colours, time_offset)
+            time_offset[vertex] = self._get_colour_for_vertex(
+                vertex, machine_graph, colours, time_offset)
         return time_offset
 
     def _get_colour_for_vertex(
@@ -118,7 +117,7 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         for colour in colours:
             if self._available(colour, vertex, machine_graph, colour_mapping):
                 return colour
-        raise exceptions.ConfigurationException(
+        raise ConfigurationException(
             "cannot colour this edge. Something screwed up")
 
     @staticmethod
@@ -168,20 +167,19 @@ class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
         # figure out if its feasible for window to work
         total_cycles_available = \
             machine_time_step * time_scale_factor * \
-            self.CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES
+            _CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES
 
-        cpu_cycles_needed_per_window = \
-            math.ceil(
-                (number_of_cpu_cycles_per_receive +
-                 self.CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK) *
-                (n_packets_per_time_window + safety_factor))
+        cpu_cycles_needed_per_window = math.ceil(
+            (number_of_cpu_cycles_per_receive +
+                _CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK) *
+            (n_packets_per_time_window + safety_factor))
 
         time_needed_per_epoch = \
             (cpu_cycles_needed_per_window * max_in_edges) + \
             other_cpu_demands_in_cpu_cycles
 
         if total_cycles_available < time_needed_per_epoch:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "Cannot create a window for this simulation with its "
                 "combined machine_time_step, time_scale_factor, and time "
                 "needed per packet receive and the number of edges going to "

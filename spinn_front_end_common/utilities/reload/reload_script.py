@@ -12,11 +12,9 @@ from spinn_machine.tags.reverse_iptag import ReverseIPTag
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.utilities.reload.reload_routing_table import \
-    ReloadRoutingTable
-from spinn_front_end_common.utilities.reload.reload_buffered_vertex \
-    import ReloadBufferedVertex
-from spinn_front_end_common.utilities.reload.reload import Reload
+from .reload_routing_table import ReloadRoutingTable
+from .reload_buffered_vertex import ReloadBufferedVertex
+from .reload import Reload
 
 # spinnman imports
 from spinnman.model import ExecutableTargets

@@ -2,11 +2,12 @@ from collections import defaultdict
 
 from spinn_utilities.progress_bar import ProgressBar
 
-from data_specification import utility_calls
+from data_specification.utility_calls \
+    import get_data_spec_and_file_writer_filename
 
 from spinn_front_end_common.abstract_models import \
     AbstractGeneratesDataSpecification
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class FrontEndCommonGraphDataSpecificationWriter(object):
@@ -96,11 +97,10 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
             return False
 
         # build the writers for the reports and data
-        data_writer_filename, spec = \
-            utility_calls.get_data_spec_and_file_writer_filename(
-                placement.x, placement.y, placement.p, hostname,
-                report_default_directory,
-                write_text_specs, app_data_runtime_folder)
+        data_writer_filename, spec = get_data_spec_and_file_writer_filename(
+            placement.x, placement.y, placement.p, hostname,
+            report_default_directory,
+            write_text_specs, app_data_runtime_folder)
 
         # link dsg file to vertex
         dsg_targets[placement.x, placement.y, placement.p] = \
@@ -122,15 +122,14 @@ class FrontEndCommonGraphDataSpecificationWriter(object):
         # creating the error message which contains the memory usage of
         #  what each core within the chip uses and its original
         # estimate.
-        memory_usage = "\n".join([
+        memory_usage = "\n".join((
             "    {}: {} (total={}, estimated={})".format(
                 vert, self._region_sizes[vert],
                 sum(self._region_sizes[vert]),
                 vert.resources_required.sdram.get_value())
-            for vert in self._vertices_by_chip[
-                placement.x, placement.y]])
+            for vert in self._vertices_by_chip[placement.x, placement.y]))
 
-        raise exceptions.ConfigurationException(
+        raise ConfigurationException(
             "Too much SDRAM has been used on {}, {}.  Vertices and"
             " their usage on that chip is as follows:\n{}".format(
                 placement.x, placement.y, memory_usage))

@@ -2,8 +2,7 @@ from threading import Thread
 import traceback
 from collections import OrderedDict
 
-from spinn_front_end_common.utilities.database.database_connection \
-    import DatabaseConnection
+from spinn_front_end_common.utilities.database import DatabaseConnection
 
 from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.eieio.data_messages.specialized_message_types \
