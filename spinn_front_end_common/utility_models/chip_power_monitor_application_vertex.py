@@ -48,15 +48,21 @@ class ChipPowerMonitorApplicationVertex(
         return ChipPowerMonitorMachineVertex.binary_file_name()
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep"})
+                   "machine_time_step": "MachineTimeStep",
+                   "n_machine_time_steps": "TotalMachineTimeSteps",
+                   "ip_tags": "MemoryIpTags"})
     @overrides(
         AbstractGeneratesDataSpecification.generate_data_specification,
-        additional_arguments={"machine_time_step", "time_scale_factor"})
+        additional_arguments={
+            "machine_time_step", "time_scale_factor", "n_machine_time_steps",
+            "ip_tags"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor):
+            self, spec, placement, machine_time_step, time_scale_factor,
+            n_machine_time_steps, ip_tags):
         # generate spec for the machine vertex
         placement.vertex._generate_data_specification(
-            spec, machine_time_step, time_scale_factor)
+            spec, machine_time_step, time_scale_factor, n_machine_time_steps,
+            ip_tags)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

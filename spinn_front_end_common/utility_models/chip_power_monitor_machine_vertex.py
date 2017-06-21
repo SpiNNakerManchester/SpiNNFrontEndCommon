@@ -6,6 +6,7 @@ import struct
 from data_specification.enums.data_type import DataType
 from pacman.executor.injection_decorator import inject_items, \
     supports_injection
+from pacman.model.graphs.common.slice import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     CPUCyclesPerTickResource, DTCMResource
@@ -49,6 +50,7 @@ class ChipPowerMonitorMachineVertex(
     RECORDING_SIZE_PER_ENTRY = 18 * 4
     SAMPLE_RECORDING_REGION = 0
     MAX_CORES_PER_CHIP = 18
+    MAX_BUFFER_SIZE = 1048576
 
     def __init__(
             self, label, constraints, n_samples_per_recording,
@@ -160,21 +162,30 @@ class ChipPowerMonitorMachineVertex(
         return "chip_power_monitor.aplx"
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
-                   "machine_time_step": "MachineTimeStep"})
+                   "machine_time_step": "MachineTimeStep",
+                   "n_machine_time_steps": "TotalMachineTimeSteps",
+                   "ip_tags": "MemoryIpTags"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"machine_time_step", "time_scale_factor"})
+               additional_arguments={
+                   "machine_time_step", "time_scale_factor",
+                   "n_machine_time_steps", "ip_tags"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor):
+            self, spec, placement, machine_time_step, time_scale_factor,
+            n_machine_time_steps, ip_tags):
         self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor)
+            spec, machine_time_step, time_scale_factor, n_machine_time_steps,
+            ip_tags)
 
     def _generate_data_specification(
-            self, spec, machine_time_step, time_scale_factor):
+            self, spec, machine_time_step, time_scale_factor,
+            n_machine_time_steps, ip_tags):
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
-        self._write_setup_info(spec, machine_time_step, time_scale_factor)
+        self._write_setup_info(
+            spec, machine_time_step, time_scale_factor, n_machine_time_steps,
+            Slice(0, 1), ip_tags)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -193,7 +204,9 @@ class ChipPowerMonitorMachineVertex(
                          data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
-    def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
+    def _write_setup_info(
+            self, spec, machine_time_step, time_scale_factor,
+            n_machine_time_steps, vertex_slice, ip_tags):
         """ writes the system data as required
 
         :param spec: the dsg spec writer
@@ -207,6 +220,20 @@ class ChipPowerMonitorMachineVertex(
                 SYSTEM.value))
         spec.write_array(simulation_utilities.get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
+
+        spec.switch_write_focus(
+            ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
+            RECORDING.value)
+        recorded_region_sizes = recording_utilities.get_recorded_region_sizes(
+            n_machine_time_steps,
+            [self._deduce_sdram_requirements_per_timer_tick(
+                machine_time_step, time_scale_factor)],
+            [self.MAX_BUFFER_SIZE])
+        spec.write_array(recording_utilities.get_recording_header_array(
+            recorded_region_sizes,
+            globals_variables.get_simulator().config.getint(
+                "Buffers", "time_between_requests"),
+            None, ip_tags))
 
     def _reserve_memory_regions(self, spec):
         """ reserve the dsg memory regions as required
@@ -295,7 +322,7 @@ class ChipPowerMonitorMachineVertex(
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
-        return (n_entries *
+        return math.ceil(n_entries *
                 ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):

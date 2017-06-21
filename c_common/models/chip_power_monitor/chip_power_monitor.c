@@ -9,7 +9,7 @@
 #define NUM_RANDOM_BITS 12
 
 typedef enum {
-    SYSTEM, CONFIG, RECORDING
+    SYSTEM = 0, CONFIG = 1, RECORDING = 2
 } region;
 
 typedef enum {
@@ -26,7 +26,8 @@ static uint32_t infinite_run = 0;
 static uint32_t time;
 
 uint32_t core_counters[NUM_CORES];
-uint32_t sample_count, sample_count_limit;
+uint32_t sample_count;
+uint32_t sample_count_limit;
 uint32_t recording_flags;
 uint32_t sample_frequency;
 
@@ -121,7 +122,7 @@ static bool initialize(uint32_t *timer)
     address_t recording_region =
 	    data_specification_get_region(RECORDING, address);
     bool success = recording_initialize(recording_region, &recording_flags);
-    return true;
+    return success;
 }
 
 void c_main(void)
