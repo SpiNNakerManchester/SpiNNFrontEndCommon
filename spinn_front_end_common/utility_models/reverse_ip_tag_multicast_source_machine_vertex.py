@@ -12,8 +12,7 @@ from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.interface.buffer_management.buffer_manager \
-    import BufferManager
+from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects \

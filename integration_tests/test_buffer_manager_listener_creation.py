@@ -1,6 +1,5 @@
 import unittest
-from spinn_front_end_common.interface.buffer_management.buffer_manager \
-    import BufferManager
+from spinn_front_end_common.interface.buffer_management import BufferManager
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
