@@ -1,6 +1,5 @@
 from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.common.graph_mapper import GraphMapper
-from pacman.model.graphs.common.slice import Slice
+from pacman.model.graphs.common import GraphMapper, Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer

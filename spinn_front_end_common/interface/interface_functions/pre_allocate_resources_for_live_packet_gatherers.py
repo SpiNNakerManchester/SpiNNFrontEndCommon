@@ -1,9 +1,7 @@
 # spinn front end common imports
-from pacman.model.resources.core_resource import CoreResource
-from pacman.model.resources.pre_allocated_resource_container import \
-    PreAllocatedResourceContainer
-from pacman.model.resources.specific_chip_sdram_resource import \
-    SpecificChipSDRAMResource
+from pacman.model.resources import CoreResource
+from pacman.model.resources import PreAllocatedResourceContainer
+from pacman.model.resources import SpecificChipSDRAMResource
 from spinn_front_end_common.utility_models \
     import LivePacketGatherMachineVertex
 from spinn_utilities.progress_bar import ProgressBar

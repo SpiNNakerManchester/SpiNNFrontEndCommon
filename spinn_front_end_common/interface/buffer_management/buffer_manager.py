@@ -106,9 +106,9 @@ class BufferManager(object):
 
         :param placements: The placements of the vertices
         :type placements:\
-                    :py:class:`pacman.model.placements.placements.Placements`
+                    :py:class:`pacman.model.placements.Placements`
         :param tags: The tags assigned to the vertices
-        :type tags: :py:class:`pacman.model.tags.tags.Tags`
+        :type tags: :py:class:`pacman.model.tags.Tags`
         :param transceiver: The transceiver to use for sending and receiving\
                     information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
@@ -536,7 +536,7 @@ class BufferManager(object):
             during the simulation from a specific region area of a core
 
         :param placement: the placement to get the data from
-        :type placement: pacman.model.placements.placement.Placement
+        :type placement: pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: pointer to a class which inherits from\

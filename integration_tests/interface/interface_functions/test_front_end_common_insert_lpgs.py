@@ -1,5 +1,5 @@
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
-from pacman.model.graphs.common.graph_mapper import GraphMapper
+from pacman.model.graphs.common import GraphMapper
 from pacman.model.graphs.machine import MachineGraph
 from spinn_front_end_common.interface.interface_functions import \
     FrontEndCommonInsertLivePacketGatherersToGraphs

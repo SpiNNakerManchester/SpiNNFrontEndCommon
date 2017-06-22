@@ -1,6 +1,6 @@
-from pacman.model.decorators.overrides import overrides
-from pacman.executor.injection_decorator import supports_injection
-from pacman.executor.injection_decorator import inject_items
+from pacman.model.decorators import overrides
+from pacman.executor.injection_decorator \
+    import supports_injection, inject_items
 
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification

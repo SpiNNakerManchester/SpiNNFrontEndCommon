@@ -1,10 +1,8 @@
 import unittest
 
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
-from pacman.model.graphs.machine.machine_graph import MachineGraph
+from pacman.model.graphs.machine import MachineVertex, MachineGraph
+from pacman.model.resources import ResourceContainer
+from pacman.model.placements import Placements, Placement
 
 from spinn_front_end_common.interface.interface_functions \
     import FrontEndCommonGraphBinaryGatherer

@@ -1,7 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # pacman imports
-from pacman.utilities.utility_objs.resource_tracker import ResourceTracker
+from pacman.utilities.utility_objs import ResourceTracker
 from pacman.utilities.algorithm_utilities import placer_algorithm_utilities
 
 # general imports
@@ -20,7 +20,7 @@ class FrontEndCommonGraphMeasurer(object):
 
         :param machine_graph: The machine_graph to measure
         :type machine_graph:\
-                    :py:class:`pacman.model.graph.machine.machine_graph.MachineGraph`
+                    :py:class:`pacman.model.graph.machine.MachineGraph`
         :return: The size of the graph in number of chips
         :rtype: int
         """

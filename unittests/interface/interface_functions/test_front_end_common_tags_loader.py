@@ -1,8 +1,8 @@
 import unittest
 
-from pacman.model.tags.tags import Tags
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from pacman.model.resources.resource_container import ResourceContainer
+from pacman.model.tags import Tags
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.resources import ResourceContainer
 
 from spinn_machine.tags.iptag import IPTag
 from spinn_machine.tags.reverse_iptag import ReverseIPTag

@@ -1,6 +1,5 @@
 # spinn front end common
-from pacman.model.abstract_classes.abstract_has_global_max_atoms import \
-    AbstractHasGlobalMaxAtoms
+from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
 from spinn_front_end_common.abstract_models \
     import AbstractProvidesKeyToAtomMapping, AbstractRecordable
 from spinn_front_end_common.utility_models import \

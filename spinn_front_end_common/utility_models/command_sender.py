@@ -1,6 +1,6 @@
 # pacman imports
-from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.application_edge import ApplicationEdge
+from pacman.model.decorators import overrides
+from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.constraints.key_allocator_constraints \
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.graphs.application import ApplicationVertex

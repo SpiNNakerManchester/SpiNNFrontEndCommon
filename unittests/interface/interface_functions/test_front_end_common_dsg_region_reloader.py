@@ -6,14 +6,11 @@ import shutil
 from data_specification import constants
 from data_specification import utility_calls
 
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.graphs.common.slice import Slice
-from pacman.model.graphs.common.graph_mapper import GraphMapper
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
-from pacman.model.graphs.application.application_vertex \
-    import ApplicationVertex
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
+from pacman.model.resources import ResourceContainer
+from pacman.model.graphs.common import Slice, GraphMapper
+from pacman.model.placements import Placements, Placement
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification

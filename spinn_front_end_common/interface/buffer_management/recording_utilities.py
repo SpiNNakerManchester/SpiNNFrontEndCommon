@@ -149,7 +149,7 @@ def get_recording_resources(
         The tag to send buffering messages with, or None to use a default tag
     :type notification_tag: int
     :rtype:\
-        :py:class:`pacman.model.resources.resource_container.ResourceContainer`
+        :py:class:`pacman.model.resources.ResourceContainer`
     """
 
     ip_tags = list()

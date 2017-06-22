@@ -3,9 +3,9 @@ from spinn_front_end_common.utility_models \
     import LivePacketGather, LivePacketGatherMachineVertex
 
 # pacman imports
-from pacman.model.graphs.common.slice import Slice
+from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints\
-    .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
+    import PlacerChipAndCoreConstraint
 
 from spinn_utilities.progress_bar import ProgressBar
 

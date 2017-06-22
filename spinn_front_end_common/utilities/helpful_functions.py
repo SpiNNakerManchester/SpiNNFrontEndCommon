@@ -45,7 +45,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :param region: the region to locate the base address of
     :type region: int
     :param placement: the placement object to get the region address of
-    :type placement: pacman.model.placements.placement.Placement
+    :type placement: pacman.model.placements.Placement
     :param transceiver: the python interface to the spinnaker machine
     :type transceiver: spiNNMan.transciever.Transciever
     """

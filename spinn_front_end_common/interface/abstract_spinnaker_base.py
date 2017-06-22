@@ -5,14 +5,13 @@ main interface for the spinnaker tools
 # pacman imports
 from pacman.model.graphs import AbstractVirtualVertex
 from pacman.model.placements import Placements
-from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
+from pacman.executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources.pre_allocated_resource_container import \
-    PreAllocatedResourceContainer
+from pacman.model.resources import PreAllocatedResourceContainer
 
 # common front end imports
 from spinn_front_end_common.abstract_models import \

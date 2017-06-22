@@ -1,8 +1,7 @@
 from spinn_utilities.socket_address import SocketAddress
 
 # pacman imports
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
+from pacman.model.placements import Placements, Placement
 from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.model.tags import Tags
 

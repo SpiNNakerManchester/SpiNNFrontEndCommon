@@ -1,7 +1,7 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.executor.injection_decorator import supports_injection
 from pacman.executor.injection_decorator import inject
-from pacman.model.decorators.overrides import overrides
+from pacman.model.decorators import overrides
 from pacman.model.constraints.key_allocator_constraints \
     import KeyAllocatorFixedKeyAndMaskConstraint
 from pacman.model.constraints.placer_constraints import PlacerBoardConstraint

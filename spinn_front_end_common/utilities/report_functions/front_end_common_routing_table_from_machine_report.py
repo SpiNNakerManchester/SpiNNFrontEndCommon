@@ -1,6 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.routing_tables.multicast_routing_table import \
-    MulticastRoutingTable
+from pacman.model.routing_tables import MulticastRoutingTable
 from pacman.operations.algorithm_reports import reports
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
