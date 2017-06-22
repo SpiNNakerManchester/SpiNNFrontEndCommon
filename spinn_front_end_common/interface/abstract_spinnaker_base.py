@@ -1364,11 +1364,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._has_ran and not self._use_virtual_board:
             optional_algorithms.append("FrontEndCommonDSGRegionReloader")
 
-        # algorithms needed for loading the binaries to the SpiNNaker machine
-        optional_algorithms.append("FrontEndCommonLoadExecutableImages")
-
         # Get the executable targets
         optional_algorithms.append("FrontEndCommonGraphBinaryGatherer")
+
+        # algorithms needed for loading the binaries to the SpiNNaker machine
+        optional_algorithms.append("FrontEndCommonLoadExecutableImages")
 
         # expected outputs from this phase
         outputs = [
