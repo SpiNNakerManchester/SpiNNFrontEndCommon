@@ -1,9 +1,9 @@
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.sdram import SDRAM
 
-from data_specification.data_specification_executor import \
-    DataSpecificationExecutor
-from data_specification import utility_calls, constants
+from data_specification import DataSpecificationExecutor
+from data_specification import utility_calls
+from data_specification.constants import MAX_MEM_REGIONS
 
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
@@ -128,9 +128,9 @@ class FrontEndCommonDSGRegionReloader(object):
         start_region = utility_calls.get_region_base_address_offset(
             regions_base_address, 0)
         table_size = utility_calls.get_region_base_address_offset(
-            regions_base_address, constants.MAX_MEM_REGIONS) - start_region
+            regions_base_address, MAX_MEM_REGIONS) - start_region
         offsets = struct.unpack_from(
-            "<{}I".format(constants.MAX_MEM_REGIONS),
+            "<{}I".format(MAX_MEM_REGIONS),
             transceiver.read_memory(
                 placement.x, placement.y, start_region, table_size))
 

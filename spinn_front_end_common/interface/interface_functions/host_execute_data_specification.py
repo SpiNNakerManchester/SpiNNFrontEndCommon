@@ -1,9 +1,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # data spec imports
-from data_specification.data_specification_executor import \
-    DataSpecificationExecutor
-from data_specification import exceptions
+from data_specification import DataSpecificationExecutor
+from data_specification.exceptions import DataSpecificationException
 
 # spinn_storage_handlers import
 from spinn_storage_handlers.file_data_reader import FileDataReader
@@ -106,7 +105,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             try:
                 # bytes_used_by_spec, bytes_written_by_spec = \
                 host_based_data_spec_executor.execute()
-            except exceptions.DataSpecificationException as e:
+            except DataSpecificationException as e:
                 logger.error(
                     "Error executing data specification for {}, {}, {}".format(
                         x, y, p))
