@@ -348,7 +348,7 @@ class ChipPowerMonitorMachineVertex(
         # convert into idle times
         for index in range(0, n_sets_of_recordings):
             idle_times = struct.unpack_from(
-                record_raw, "<18I",
+                "<18I", record_raw,
                 index * ChipPowerMonitorMachineVertex.MAX_CORES_PER_CHIP)
             results.append(idle_times)
         return results

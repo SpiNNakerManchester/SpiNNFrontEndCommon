@@ -1,6 +1,7 @@
 #include <spin1_api.h>
 #include <simulation.h>
 #include <spinnaker.h>
+#include <recording.h>
 #include <debug.h>
 #include <data_specification.h>
 
@@ -16,6 +17,8 @@ typedef enum {
     SAMPLE_COUNT_LIMIT = 0, SAMPLE_FREQUENCY = 1
 } parameter_layout;
 
+static uint32_t RECORDING_REGION_ID = 0;
+
 //! values for the priority for each callback
 typedef enum callback_priorities{
     SDP = 1, TIMER = 0, DMA=2
@@ -24,6 +27,7 @@ typedef enum callback_priorities{
 static uint32_t simulation_ticks = 0;
 static uint32_t infinite_run = 0;
 static uint32_t time;
+static uint32_t timer = 0;
 
 uint32_t core_counters[NUM_CORES];
 uint32_t sample_count;
@@ -44,7 +48,8 @@ static uint32_t get_random_busy(void)
 
 static void record_aggregate_sample(void)
 {
-    recording_record(0, core_counters, sizeof(core_counters));
+    recording_record(
+        RECORDING_REGION_ID, core_counters, sizeof(core_counters));
 }
 
 static void reset_core_counters(void)
@@ -56,14 +61,28 @@ static void reset_core_counters(void)
     sample_count = 0;
 }
 
+//! \brief the function to call when resuming a simulation
+//! return None
+void resume_callback() {
+    // change simulation ticks to be a number related to sampling frequency
+    simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+}
+
 static void sample_in_slot(uint unused0, uint unused1)
 {
+    use(unused0);
+    use(unused1);
+    time += 1;
 
+    // handle the situation when the first time update is sent
+    if (time == 0){
+        simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+    }
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
 
         recording_finalise();
-        simulation_handle_pause_resume(NULL);
+        simulation_handle_pause_resume(resume_callback);
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
@@ -91,12 +110,15 @@ static void sample_in_slot(uint unused0, uint unused1)
     }
 
     recording_do_timestep_update(time);
+
 }
 
 bool read_parameters(address_t address)
 {
     sample_count_limit = address[SAMPLE_COUNT_LIMIT];
     sample_frequency = address[SAMPLE_FREQUENCY];
+    log_info("count limit %d", sample_count_limit);
+    log_info("sample frequency %d", sample_frequency);
     //TODO anything else that needs to be read here?
     return true;
 }
@@ -127,7 +149,6 @@ static bool initialize(uint32_t *timer)
 
 void c_main(void)
 {
-    uint32_t timer = 0;
     if (!initialize(&timer)) {
         log_error("failed to initialise");
         rt_error(RTE_SWERR);

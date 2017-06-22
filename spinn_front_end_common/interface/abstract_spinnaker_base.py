@@ -2145,10 +2145,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     if element.names[0] == 'router_provenance':
                         router_provenance.append(element)
 
-                print "pac"
-                for thing in pacman_provenance:
-                    print thing
-
                 # run energy report
                 energy_report(
                     self._placements, self._machine,

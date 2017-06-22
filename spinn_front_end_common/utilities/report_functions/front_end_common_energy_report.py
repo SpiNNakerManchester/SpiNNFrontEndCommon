@@ -21,8 +21,8 @@ class FrontEndCommonEnergyReport(object):
     JULES_PER_MILLISECOND_PER_IDLE_CHIP = 0.000360
 
     # energy report file name
-    ENERGY_DETAILED_FILENAME = "Detailed_energy_report"
-    ENERGY_SUMMARY_FILENAME = "energy_summary_report"
+    ENERGY_DETAILED_FILENAME = "Detailed_energy_report.rpt"
+    ENERGY_SUMMARY_FILENAME = "energy_summary_report.rpt"
 
     def __call__(
             self, placements, machine, report_default_directory, version,
@@ -50,7 +50,7 @@ class FrontEndCommonEnergyReport(object):
             report_default_directory, self.ENERGY_DETAILED_FILENAME)
 
         summary_report = os.path.join(
-            report_default_directory, self.ENERGY_DETAILED_FILENAME)
+            report_default_directory, self.ENERGY_SUMMARY_FILENAME)
 
         active_chip_cost = None
         idle_chip_cost = None
@@ -67,6 +67,8 @@ class FrontEndCommonEnergyReport(object):
                     remote_spinnaker_url, time_scale_factor, machine_time_step,
                     pacman_provenance, router_provenance, runtime,
                     buffer_manager, output)
+            output.flush()
+            output.close()
 
         load_time_in_milliseconds = pacman_provenance
         data_extraction_time_in_milliseconds = pacman_provenance
@@ -106,9 +108,10 @@ class FrontEndCommonEnergyReport(object):
             load_time_cost + data_extraction_cost)
 
         # deduce wattage from the runtime
-        total_watts = total_jules / (
-            (runtime + load_time_in_milliseconds +
-             data_extraction_time_in_milliseconds) / 1000)
+        #total_watts = total_jules / (
+        #    (runtime + load_time_in_milliseconds +
+        #     data_extraction_time_in_milliseconds) / 1000)
+        total_watts = 0.0
 
         output.write(
             "Summary energy file\n\n"
@@ -150,7 +153,8 @@ class FrontEndCommonEnergyReport(object):
         # figure active chips
         active_chips = set()
         for placement in placements:
-            active_chips.add(machine.get_chip_at(placement.x, placement.y))
+            if not isinstance(placement.vertex, ChipPowerMonitorMachineVertex):
+                active_chips.add(machine.get_chip_at(placement.x, placement.y))
 
         # figure out packet cost
         packet_cost = self._router_packet_cost(router_provenance, output)
@@ -177,7 +181,7 @@ class FrontEndCommonEnergyReport(object):
 
         # figure out idle chips
         machine_idle_chips_cost = 0.0
-        for chip in machine.chips():
+        for chip in machine.chips:
             if chip not in active_chips:
                 machine_idle_chips_cost += self._calculate_chips_active_cost(
                     chip, placements, buffer_manager, output)
@@ -232,7 +236,7 @@ class FrontEndCommonEnergyReport(object):
         if spalloc_server is None and remote_spinnaker_url is None:
 
             # if a spinn2 or spinn3 (4 chip boards) then they have no fpgas
-            if version in range(2, 3):
+            if int(version) == 2 or int(version) == 3:
                 output.write(
                     "A Spinn {} board does not contain any FPGA's, and so "
                     "its energy cost is 0".format(version))
@@ -240,11 +244,11 @@ class FrontEndCommonEnergyReport(object):
 
             # if the spinn4 or spinn5 board, need to verify if wrap arounds
             # are there, if not then assume fppga's are turned off.
-            elif version in range(4, 5):
+            elif int(version) == 4 or int(version) == 5:
 
                 # how many fpgas are active
                 n_operational_fpgas = self._board_n_operational_fpgas(
-                    machine, machine.ethernet_connected_chips()[0])
+                    machine, machine.ethernet_connected_chips[0])
 
                 # active fpgas
                 if n_operational_fpgas > 0:
@@ -301,12 +305,12 @@ class FrontEndCommonEnergyReport(object):
         """
 
         # positions to check for active links
-        left_additions = [[0, 0], [0, 1], [0, 2], [0, 3]]
+        left_additions = [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]]
         right_additions = [[7, 3], [7, 4], [7, 5], [7, 6], [7, 7]]
         top_additions = [[4, 7], [5, 7], [6, 7], [7, 7]]
         bottom_additions = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]
-        top_right_additions = [[0, 3], [1, 4], [2, 5], [3, 6], [4, 7]]
-        bottom_left_additions = [[4, 0], [5, 1], [6, 2], [7, 3]]
+        top_left_additions = [[0, 3], [1, 4], [2, 5], [3, 6], [4, 7]]
+        bottom_right_additions = [[0, 4], [1, 5], [2, 6], [3, 7]]
 
         fpga_0 = 0.0  # bottom left, bottom
         fpga_1 = 0.0  # left, and top right
@@ -319,11 +323,11 @@ class FrontEndCommonEnergyReport(object):
         ethernet_chip_y = ethernet_connected_chip.y
 
         fpga_0 = self._deduce_fpga(
-            [bottom_additions, bottom_left_additions], [[5, 4], [5, 0]],
+            [bottom_additions, bottom_right_additions], [[5, 4], [0, 5]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
             machine)
         fpga_1 = self._deduce_fpga(
-            [left_additions, top_right_additions], [[3, 4], [3, 2]],
+            [left_additions, top_left_additions], [[3, 4], [3, 2]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
             machine)
         fpga_2 = self._deduce_fpga(
@@ -349,8 +353,8 @@ class FrontEndCommonEnergyReport(object):
         """
         for shift_group, link_ids in zip(shifts, overall_link_ids):
             for shift in shift_group:
-                new_x = (ethernet_chip_x + shift[0]) % machine_max_x
-                new_y = (ethernet_chip_y + shift[1]) % machine_max_y
+                new_x = (ethernet_chip_x + shift[0]) % (machine_max_x + 1)
+                new_y = (ethernet_chip_y + shift[1]) % (machine_max_y + 1)
                 chip = machine.get_chip_at(new_x, new_y)
                 if chip is not None:
                     for link_id in link_ids:
@@ -406,12 +410,12 @@ class FrontEndCommonEnergyReport(object):
         for core in range(0, 18):
             output.write(
                 "processor {}:{}:{} used {} Jules of energy during the"
-                " execution of the simulation".format(
+                " execution of the simulation\n".format(
                     chip.x, chip.y, core, cores_power_cost[core]))
 
         total_energy_cost = 0.0
-        for core in cores_power_cost:
-            total_energy_cost += cores_power_cost[core]
+        for core_power_usage in cores_power_cost:
+            total_energy_cost += core_power_usage
         return total_energy_cost
 
     def _router_packet_cost(self, router_provenance, output):
@@ -422,7 +426,6 @@ class FrontEndCommonEnergyReport(object):
         :rtype: energy usage value
         """
 
-        print router_provenance
         energy_cost = 0.0
         for element in router_provenance:
             packet_count = float(element.value) * self.JULES_PER_SPIKE
