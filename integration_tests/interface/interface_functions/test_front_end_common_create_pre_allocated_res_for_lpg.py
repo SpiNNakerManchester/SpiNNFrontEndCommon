@@ -3,8 +3,7 @@ from pacman.model.resources.pre_allocated_resource_container import \
     PreAllocatedResourceContainer
 from pacman.model.resources.specific_chip_sdram_resource import \
     SpecificChipSDRAMResource
-from spinn_front_end_common.interface.interface_functions.\
-    pre_allocate_resources_for_live_packet_gatherers import \
+from spinn_front_end_common.interface.interface_functions import \
     FrontEndCommonPreAllocateResourcesForLivePacketGatherers
 from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters

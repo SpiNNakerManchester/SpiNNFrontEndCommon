@@ -3,8 +3,8 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
-from spinn_front_end_common.interface.interface_functions.\
-    chip_iobuf_extractor import FrontEndCommonChipIOBufExtractor
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonChipIOBufExtractor
 
 from spinnman.model.enums import CPUState
 from spinnman.model import ExecutableTargets

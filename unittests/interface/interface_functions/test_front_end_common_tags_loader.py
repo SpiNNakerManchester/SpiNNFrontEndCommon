@@ -7,7 +7,7 @@ from pacman.model.resources.resource_container import ResourceContainer
 from spinn_machine.tags.iptag import IPTag
 from spinn_machine.tags.reverse_iptag import ReverseIPTag
 
-from spinn_front_end_common.interface.interface_functions.tags_loader \
+from spinn_front_end_common.interface.interface_functions \
     import FrontEndCommonTagsLoader
 
 

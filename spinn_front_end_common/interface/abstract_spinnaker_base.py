@@ -20,28 +20,27 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities import SimulatorInterface
+from spinn_front_end_common.utilities \
+    import helpful_functions, globals_variables, SimulatorInterface
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
-from spinn_front_end_common.utility_models import CommandSender
-from spinn_front_end_common.interface.interface_functions\
-    .provenance_xml_writer import FrontEndCommonProvenanceXMLWriter
-from spinn_front_end_common.interface.interface_functions\
-    .provenance_json_writer import FrontEndCommonProvenanceJSONWriter
-from spinn_front_end_common.interface.interface_functions\
-    .chip_provenance_updater import FrontEndCommonChipProvenanceUpdater
-from spinn_front_end_common.interface.interface_functions\
-    .placements_provenance_gatherer \
+
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonProvenanceXMLWriter
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonProvenanceJSONWriter
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonChipProvenanceUpdater
+from spinn_front_end_common.interface.interface_functions \
     import FrontEndCommonPlacementsProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions\
-    .router_provenance_gatherer import FrontEndCommonRouterProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions\
-    .chip_iobuf_extractor import FrontEndCommonChipIOBufExtractor
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonRouterProvenanceGatherer
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonChipIOBufExtractor
 
 # spinnman imports
 from spinnman.model.enums import CPUState

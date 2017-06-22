@@ -2,8 +2,7 @@ import unittest
 import socket
 from threading import Thread
 import json
-from spinn_front_end_common.interface.interface_functions\
-    .spalloc_max_machine_generator \
+from spinn_front_end_common.interface.interface_functions \
     import FrontEndCommonSpallocMaxMachineGenerator
 
 

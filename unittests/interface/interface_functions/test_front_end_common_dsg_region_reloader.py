@@ -17,8 +17,8 @@ from pacman.model.graphs.machine.machine_vertex import MachineVertex
 
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
-from spinn_front_end_common.interface.interface_functions\
-    .dsg_region_reloader import FrontEndCommonDSGRegionReloader
+from spinn_front_end_common.interface.interface_functions \
+    import FrontEndCommonDSGRegionReloader
 
 
 class _TestMachineVertex(MachineVertex):
