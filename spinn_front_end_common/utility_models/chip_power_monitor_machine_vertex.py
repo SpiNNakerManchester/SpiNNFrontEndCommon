@@ -1,3 +1,4 @@
+import numpy
 from enum import Enum
 import math
 import logging
@@ -339,16 +340,6 @@ class ChipPowerMonitorMachineVertex(
         # get raw data as a byte array
         record_raw = samples.read_all()
 
-        # convert into sets of ints
-        n_sets_of_recordings = (
-            len(record_raw) /
-            ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
-        results = list()
-
-        # convert into idle times
-        for index in range(0, n_sets_of_recordings):
-            idle_times = struct.unpack_from(
-                "<18I", record_raw,
-                index * ChipPowerMonitorMachineVertex.MAX_CORES_PER_CHIP)
-            results.append(idle_times)
+        results = (numpy.asarray(record_raw, dtype="uint32").reshape(-1, 18) /
+                   self.n_samples_per_recording)
         return results

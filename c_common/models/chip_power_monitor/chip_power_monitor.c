@@ -48,6 +48,8 @@ static uint32_t get_random_busy(void)
 
 static void record_aggregate_sample(void)
 {
+    log_info("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d",
+                core_counters[0], core_counters[1], core_counters[2], core_counters[3], core_counters[4], core_counters[5], core_counters[6], core_counters[7], core_counters[8], core_counters[9], core_counters[10], core_counters[11], core_counters[12], core_counters[13], core_counters[14], core_counters[15], core_counters[16], core_counters[17]);
     recording_record(
         RECORDING_REGION_ID, core_counters, sizeof(core_counters));
 }

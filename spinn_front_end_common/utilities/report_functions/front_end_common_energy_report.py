@@ -82,16 +82,15 @@ class FrontEndCommonEnergyReport(object):
         with open(summary_report, "w") as output:
             self._write_summary_report(
                 active_chip_cost, idle_chip_cost, fpga_cost, packet_cost,
-                load_time_cost, data_extraction_cost, runtime,
-                load_time_in_milliseconds,
-                data_extraction_time_in_milliseconds, output)
+                load_time_cost, data_extraction_cost, runtime, output,
+                mapping_time, load_time, execute_time, dsg_time,
+                extraction_time)
 
     @staticmethod
     def _write_summary_report(
             active_chip_cost, idle_chip_cost, fpga_cost, packet_cost,
-            load_time_cost, data_extraction_cost, runtime,
-            load_time_in_milliseconds, data_extraction_time_in_milliseconds,
-            output):
+            load_time_cost, data_extraction_cost, runtime, output,
+            mapping_time, load_time, execute_time, dsg_time, extraction_time):
         """ write summary file
 
         :param active_chip_cost: active chip cost
@@ -114,6 +113,9 @@ class FrontEndCommonEnergyReport(object):
             load_time_cost + data_extraction_cost)
 
         # deduce wattage from the runtime
+        total_time = (
+            runtime + mapping_time + load_time + execute_time + dsg_time +
+            extraction_time)
         #total_watts = total_jules / (
         #    (runtime + load_time_in_milliseconds +
         #     data_extraction_time_in_milliseconds) / 1000)
@@ -121,13 +123,13 @@ class FrontEndCommonEnergyReport(object):
 
         output.write(
             "Summary energy file\n\n"
-            "Energy used by active chips during runtime is {} Jules\n"
-            "Energy used by inactive chipd during runtime is {} Jules\n"
-            "Energy used by active FPGAs is {} Jules\n"
-            "Energy used by packet transmissions is {} Jules\n"
-            "Energy used during the loading process is {} Jules\n"
+            "Energy used by active chips during runtime is {} Joules\n"
+            "Energy used by inactive chipd during runtime is {} Joules\n"
+            "Energy used by active FPGAs is {} Joules\n"
+            "Energy used by packet transmissions is {} Joules\n"
+            "Energy used during the loading process is {} Joules\n"
             "Energy used during the data extraction process is {} Jules\n"
-            "Total energy used by the simulation is {} Jules or estimated {} "
+            "Total energy used by the simulation is {} Joules or estimated {} "
             "Watts".format(
                 active_chip_cost, idle_chip_cost, fpga_cost, packet_cost,
                 load_time_cost, data_extraction_cost, total_jules,
