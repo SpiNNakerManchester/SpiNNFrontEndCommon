@@ -28,7 +28,8 @@ class FrontEndCommonEnergyReport(object):
             self, placements, machine, report_default_directory, version,
             spalloc_server, remote_spinnaker_url, time_scale_factor,
             machine_time_step, pacman_provenance, router_provenance,
-            machine_graph, runtime, buffer_manager):
+            machine_graph, runtime, buffer_manager, mapping_time, load_time,
+            execute_time, dsg_time, extraction_time):
         """ main call
 
         :param placements: the placements
@@ -43,6 +44,11 @@ class FrontEndCommonEnergyReport(object):
         :param router_provenance: the router provenance
         :param machine_graph: the machine graph
         :param buffer_manager: the buffer manager
+        :param mapping_time:
+        :param load_time:
+        :param execute_time:
+        :param dsg_time:
+        :param extraction_time:
         :rtype: None
         """
 

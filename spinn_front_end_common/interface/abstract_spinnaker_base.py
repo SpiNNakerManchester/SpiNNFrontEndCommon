@@ -63,6 +63,7 @@ from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
 
 # spinnman imports
+from spinn_utilities.timer import Timer
 from spinnman.model.enums.cpu_state import CPUState
 
 # spinnmachine imports
@@ -295,8 +296,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # place holder for checking the vertices being added to the recorders
         # tracker are all of the same vertex type.
-        "_live_packet_recorders_associated_vertex_type"
+        "_live_packet_recorders_associated_vertex_type",
 
+        # the time the process takes to do mapping
+        "_mapping_time",
+
+        # the time the process takes to do load
+        "_load_time",
+
+        # the time takes to execute the simulation
+        "_execute_time",
+
+        # time takes to do data generation
+        "_dsg_time",
+
+        # time taken by the front end extracting things
+        "_extraction_time"
     ]
 
     def __init__(
@@ -308,6 +323,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # global params
         self._config = config
+
+        # timings
+        self._mapping_time = 0.0
+        self._load_time = 0.0
+        self._execute_time = 0.0
+        self._dsg_time = 0.0
+        self._extraction_time = 0.0
 
         self._executable_finder = executable_finder
 
@@ -448,6 +470,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._raise_keyboard_interrupt = False
 
         globals_variables.set_simulator(self)
+
+    def add_extraction_timing(self, timing):
+        ms = self._convert_time_diff_to_total_milliseconds(timing)
+        self._extraction_time += ms
 
     def add_live_packet_gatherer_parameters(
             self, live_packet_gatherer_params, vertex_to_record_from):
@@ -1150,6 +1176,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
 
+        # time the time it takes to do all pacman stuff
+        mapping_total_timer = Timer()
+        mapping_total_timer.start_timing()
+
         # update inputs with extra mapping inputs if required
         inputs = dict(self._machine_outputs)
         if self._extra_mapping_inputs is not None:
@@ -1343,7 +1373,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
 
+        self._mapping_time += self._convert_time_diff_to_total_milliseconds(
+            mapping_total_timer.take_sample())
+
+    @staticmethod
+    def _convert_time_diff_to_total_milliseconds(sample):
+        """ converts between a time diff and total milliseconds
+        
+        :return: total milliseconds
+        """
+        return (sample.total_seconds() * 1000) + sample.microseconds
+
     def _do_data_generation(self, n_machine_time_steps):
+
+        # set up timing
+        data_gen_timer = Timer()
+        data_gen_timer.start_timing()
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
@@ -1371,8 +1416,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             prov_items = executor.get_item("ProvenanceItems")
             self._write_provenance(prov_items)
             self._check_provenance(prov_items)
+        self._dsg_time += self._convert_time_diff_to_total_milliseconds(
+            data_gen_timer.take_sample())
 
     def _do_load(self):
+        # set up timing
+        load_timer = Timer()
+        load_timer.start_timing()
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
@@ -1421,7 +1471,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs, algorithms, outputs, "loading", optional_algorithms)
         self._load_outputs = executor.get_items()
 
+        self._load_time += self._convert_time_diff_to_total_milliseconds(
+            load_timer.take_sample())
+
     def _do_run(self, n_machine_time_steps, loading_done):
+
+        # start timer
+        run_timer = Timer()
+        run_timer.start_timing()
 
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
@@ -1560,6 +1617,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._no_sync_changes = executor.get_item("NoSyncChanges")
             self._has_reset_last = False
             self._has_ran = True
+
+            self._execute_time += \
+                self._convert_time_diff_to_total_milliseconds(
+                    run_timer.take_sample())
 
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
@@ -2153,7 +2214,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._spalloc_server, self._remote_spinnaker_url,
                     self._time_scale_factor, self._machine_time_step,
                     pacman_provenance, router_provenance, self._machine_graph,
-                    self._current_run_timesteps, self._buffer_manager)
+                    self._current_run_timesteps, self._buffer_manager,
+                    self._mapping_time, self._load_time, self._execute_time,
+                    self._dsg_time, self._extraction_time)
 
         # shut down the machine properly
         self._shutdown(
