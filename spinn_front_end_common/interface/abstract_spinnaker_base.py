@@ -662,6 +662,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     is_buffered_recording = True
                     break
 
+        # Disable auto pause and resume if the binary can't do it
+        if (self._executable_start_type !=
+                ExecutableStartType.USES_SIMULATION_INTERFACE):
+            self._config.set(
+                "Buffers", "use_auto_pause_and_resume", "False")
+
         # Work out an array of timesteps to perform
         if (not self._config.getboolean(
                 "Buffers", "use_auto_pause_and_resume") or
@@ -713,12 +719,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if not self._use_virtual_board:
                 self._do_load()
                 loading_done = True
-
-        # Disable auto pause and resume if the binary can't do it
-        if (self._executable_start_type !=
-                ExecutableStartType.USES_SIMULATION_INTERFACE):
-            self._config.set("Buffers", "use_auto_pause_and_resume",
-                             "False")
 
         # Run for each of the given steps
         logger.info("Running for {} steps for a total of {} ms".format(
@@ -898,7 +898,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
+    def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
 
@@ -1185,6 +1185,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         algorithms = list()
 
+        # add check for algorithm start type
+        algorithms.append("FrontEndCommonLocateExecutableStartType")
+
         if len(self._live_packet_recorder_params) != 0:
             algorithms.append(
                 "FrontEndCommonInsertLivePacketGatherersToGraphs")
@@ -1264,7 +1267,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MemoryMachineGraph", "ExecutableStartType"
         ]
 
         if self._application_graph.n_vertices > 0:
@@ -1293,6 +1296,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
+        self._executable_start_type = executor.get_item("ExecutableStartType")
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
@@ -1370,11 +1374,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
             "LoadedRoutingTablesToken", "LoadBinariesToken",
-            "LoadedApplicationDataToken"
+            "LoadedApplicationDataToken", "ExecutableTargets"
         ]
-
-        outputs.append("ExecutableTargets")
-        outputs.append("ExecutableStartType")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, optional_algorithms)
