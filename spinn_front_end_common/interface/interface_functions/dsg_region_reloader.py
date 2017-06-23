@@ -11,7 +11,7 @@ from .host_execute_data_specification \
     import FrontEndCommonHostExecuteDataSpecification
 from spinn_front_end_common.utilities import helpful_functions
 
-from spinn_storage_handlers.file_data_reader import FileDataReader
+from spinn_storage_handlers import FileDataReader
 
 import os
 import struct

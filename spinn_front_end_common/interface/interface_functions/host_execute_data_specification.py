@@ -5,8 +5,7 @@ from data_specification import DataSpecificationExecutor
 from data_specification.exceptions import DataSpecificationException
 
 # spinn_storage_handlers import
-from spinn_storage_handlers.file_data_reader import FileDataReader
-from spinn_storage_handlers.file_data_writer import FileDataWriter
+from spinn_storage_handlers import FileDataReader, FileDataWriter
 
 import os
 import logging

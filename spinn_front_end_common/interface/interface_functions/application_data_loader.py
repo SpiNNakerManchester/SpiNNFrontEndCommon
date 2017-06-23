@@ -1,5 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_storage_handlers.file_data_reader import FileDataReader
+from spinn_storage_handlers import FileDataReader
 
 import logging
 

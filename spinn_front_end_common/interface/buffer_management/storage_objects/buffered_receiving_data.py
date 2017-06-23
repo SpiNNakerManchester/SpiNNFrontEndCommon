@@ -1,8 +1,6 @@
 from collections import defaultdict
-from spinn_storage_handlers.buffered_bytearray_data_storage \
-    import BufferedBytearrayDataStorage
-from spinn_storage_handlers.buffered_tempfile_data_storage \
-    import BufferedTempfileDataStorage
+from spinn_storage_handlers \
+    import BufferedBytearrayDataStorage, BufferedTempfileDataStorage
 
 
 class BufferedReceivingData(object):
