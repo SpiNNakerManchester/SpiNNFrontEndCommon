@@ -9,8 +9,7 @@ from spinn_front_end_common.interface.interface_functions \
 from spinnman.model.enums import CPUState
 from spinnman.model import ExecutableTargets
 
-from spinn_machine.core_subsets import CoreSubsets
-from spinn_machine.router import Router
+from spinn_machine import CoreSubsets, Router
 
 import logging
 import os

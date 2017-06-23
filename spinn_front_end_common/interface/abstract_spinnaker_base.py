@@ -45,7 +45,7 @@ from spinn_front_end_common.interface.interface_functions \
 from spinnman.model.enums import CPUState
 
 # spinnmachine imports
-from spinn_machine.core_subsets import CoreSubsets
+from spinn_machine import CoreSubsets
 
 # general imports
 from collections import defaultdict
@@ -1762,7 +1762,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def machine(self):
         """ The python machine object
 
-        :rtype: :py:class:`spinn_machine.machine.Machine`
+        :rtype: :py:class:`spinn_machine.Machine`
         """
         return self._get_machine()
 

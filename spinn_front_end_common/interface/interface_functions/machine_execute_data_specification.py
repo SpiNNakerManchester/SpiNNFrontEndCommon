@@ -1,7 +1,7 @@
 from data_specification import data_spec_sender
 
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine.core_subsets import CoreSubsets
+from spinn_machine import CoreSubsets
 
 # spinnman imports
 from spinnman.model.enums import CPUState

@@ -5,8 +5,7 @@ from spinnman.processes import RoundRobinConnectionSelector
 from spinnman.messages.sdp import SDPHeader
 from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
 
-from spinn_machine.core_subsets import CoreSubsets
-from spinn_machine.core_subset import CoreSubset
+from spinn_machine import CoreSubsets, CoreSubset
 
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 from spinn_front_end_common.utilities.constants \

@@ -7,7 +7,7 @@ from pacman.model.decorators import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
 from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
-from spinn_machine.tags.iptag import IPTag
+from spinn_machine.tags import IPTag
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):

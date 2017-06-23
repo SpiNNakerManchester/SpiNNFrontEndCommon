@@ -6,8 +6,7 @@ from pacman.model.routing_tables import MulticastRoutingTables
 from pacman.model.tags import Tags
 
 # spinnmachine imports
-from spinn_machine.tags.iptag import IPTag
-from spinn_machine.tags.reverse_iptag import ReverseIPTag
+from spinn_machine.tags import IPTag, ReverseIPTag
 
 # front end common imports
 from spinn_front_end_common.utilities import exceptions

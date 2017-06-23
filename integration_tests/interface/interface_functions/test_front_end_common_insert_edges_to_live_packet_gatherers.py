@@ -9,7 +9,7 @@ from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
 from spinn_front_end_common.utility_models \
     import LivePacketGather, LivePacketGatherMachineVertex
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine import VirtualMachine
 from spinnman.messages.eieio import EIEIOType
 from integration_tests.interface.interface_functions.test_vertex import \
     TestVertex

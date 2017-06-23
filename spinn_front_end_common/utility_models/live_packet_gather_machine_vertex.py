@@ -183,7 +183,7 @@ class LivePacketGatherMachineVertex(
         :type spec: \
                     :py:class:`spinn_storage_handlers.FileDataWriter`
         :param iptags: The set of ip tags assigned to the object
-        :type iptags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
+        :type iptags: iterable of :py:class:`spinn_machine.tags.IPTag`
         :raise DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """

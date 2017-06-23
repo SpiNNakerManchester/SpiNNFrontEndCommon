@@ -5,7 +5,7 @@ from spinn_front_end_common.interface.interface_functions import \
     FrontEndCommonInsertLivePacketGatherersToGraphs
 from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
-from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine import VirtualMachine
 from spinnman.messages.eieio import EIEIOType
 
 import unittest

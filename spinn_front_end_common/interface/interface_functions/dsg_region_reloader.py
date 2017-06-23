@@ -1,5 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine.sdram import SDRAM
+from spinn_machine import SDRAM
 
 from data_specification import DataSpecificationExecutor
 from data_specification import utility_calls
