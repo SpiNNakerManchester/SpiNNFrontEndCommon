@@ -1,6 +1,8 @@
 # spinn front end common imports
-from spinn_front_end_common.utility_models \
-    import LivePacketGather, LivePacketGatherMachineVertex
+from spinn_front_end_common.utility_models.live_packet_gather \
+    import LivePacketGather
+from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
+    import LivePacketGatherMachineVertex
 
 # pacman imports
 from pacman.model.graphs.common import Slice
@@ -31,52 +33,42 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
         """
 
         # create progress bar
-        progress_bar = ProgressBar(
-            len(machine.ethernet_connected_chips),
+        progress = ProgressBar(
+            machine.ethernet_connected_chips,
             string_describing_what_being_progressed=(
                 "Adding Live Packet Gatherers to Graph"))
 
         # Keep track of the vertices added by parameters and board address
-        lpg_params_to_vertex_mapping = defaultdict(dict)
+        lpg_params_to_vertices = defaultdict(dict)
 
         # for every Ethernet connected chip, add the gatherers required
-        for chip in machine.ethernet_connected_chips:
-            for live_packet_gatherer_params in live_packet_gatherer_parameters:
-                if (live_packet_gatherer_params.board_address is None or
-                    live_packet_gatherer_params.board_address ==
-                        chip.ip_address):
-                    machine_vertex = None
-                    if application_graph is not None:
-                        vertex_slice = Slice(0, 0)
-                        application_vertex = self._create_vertex(
-                            LivePacketGather, live_packet_gatherer_params)
-                        application_graph.add_vertex(application_vertex)
-                        resources_required = \
-                            application_vertex.get_resources_used_by_atoms(
-                                vertex_slice)
-                        machine_vertex = \
-                            application_vertex.create_machine_vertex(
-                                vertex_slice, resources_required)
-                        graph_mapper.add_vertex_mapping(
-                            machine_vertex, vertex_slice, application_vertex)
-                    else:
-                        machine_vertex = self._create_vertex(
-                            LivePacketGatherMachineVertex,
-                            live_packet_gatherer_params)
+        for chip in progress.over(machine.ethernet_connected_chips):
+            for lpg_params in live_packet_gatherer_parameters:
+                if (lpg_params.board_address is None or
+                        lpg_params.board_address == chip.ip_address):
+                    lpg_params_to_vertices[lpg_params][chip.x, chip.y] = \
+                        self._add_lpg_vertex(application_graph, graph_mapper,
+                                             machine_graph, chip, lpg_params)
 
-                    machine_vertex.add_constraint(PlacerChipAndCoreConstraint(
-                        x=chip.x, y=chip.y))
-                    machine_graph.add_vertex(machine_vertex)
-                    lpg_params_to_vertex_mapping[live_packet_gatherer_params][
-                        chip.x, chip.y] = machine_vertex
+        return lpg_params_to_vertices
 
-            # update progress bar
-            progress_bar.update()
+    def _add_lpg_vertex(self, app_graph, mapper, m_graph, chip, lpg_params):
+        if app_graph is not None:
+            vtx_slice = Slice(0, 0)
+            app_vtx = self._create_vertex(LivePacketGather, lpg_params)
+            app_graph.add_vertex(app_vtx)
+            resources_required = app_vtx.get_resources_used_by_atoms(
+                vtx_slice)
+            m_vtx = app_vtx.create_machine_vertex(
+                vtx_slice, resources_required)
+            mapper.add_vertex_mapping(m_vtx, vtx_slice, app_vtx)
+        else:
+            m_vtx = self._create_vertex(
+                LivePacketGatherMachineVertex, lpg_params)
 
-        # update progress bar
-        progress_bar.end()
-
-        return lpg_params_to_vertex_mapping
+        m_vtx.add_constraint(PlacerChipAndCoreConstraint(x=chip.x, y=chip.y))
+        m_graph.add_vertex(m_vtx)
+        return m_vtx
 
     @staticmethod
     def _create_vertex(lpg_vertex_class, params):

@@ -3,11 +3,11 @@ from collections import Counter
 
 from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.abstract_models import \
-    AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
 from spinn_front_end_common.utilities.constants \
     import SYSTEM_BYTES_REQUIREMENT
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
@@ -95,7 +95,7 @@ class CommandSenderMachineVertex(
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value)
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 

@@ -21,6 +21,7 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
+from spinn_front_end_common.utilities import function_list
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.interface.buffer_management.buffer_models \
@@ -1705,7 +1706,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             xml_paths = xml_paths.split(",")
 
         xml_paths.extend(
-            helpful_functions.get_front_end_common_pacman_xml_paths())
+            function_list.get_front_end_common_pacman_xml_paths())
 
         if extra_algorithm_xml_paths is not None:
             xml_paths.extend(extra_algorithm_xml_paths)

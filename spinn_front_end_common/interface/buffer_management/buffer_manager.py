@@ -19,15 +19,14 @@ from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 
 # front end common imports
-from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement
+from spinn_front_end_common.utilities import helpful_functions as funs
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BuffersSentDeque, BufferedReceivingData, ChannelBufferState
 from spinn_front_end_common.utilities.constants \
     import SDP_PORTS, BUFFERING_OPERATIONS
-from spinn_front_end_common.interface.buffer_management \
-    import recording_utilities
+from .recording_utilities import TRAFFIC_IDENTIFIER, \
+    get_last_sequence_number, get_region_pointer
 
 # general imports
 import threading
@@ -49,9 +48,6 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 class BufferManager(object):
     """ Manager of send buffers
     """
-
-    # Buffer manager traffic type
-    TRAFFIC_IDENTIFIER = recording_utilities.TRAFFIC_IDENTIFIER
 
     __slots__ = [
         # placements object
@@ -220,7 +216,7 @@ class BufferManager(object):
         if tags is not None:
             # locate tag associated with the buffer manager traffic
             for tag in tags:
-                if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
+                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                     # If the tag port is not assigned create a connection\
                     # and assign the port.  Note that this *should* \
                     # update the port number in any tags being shared
@@ -337,7 +333,7 @@ class BufferManager(object):
         :type region: int
         :return: A new message, or None if no keys can be added
         :rtype: None or\
-                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.eieio_32bit_timed_payload_prefix_data_message.EIEIO32BitTimedPayloadPrefixDataMessage`
+                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.EIEIO32BitTimedPayloadPrefixDataMessage`
         """
 
         # If there are no more messages to send, return None
@@ -376,12 +372,12 @@ class BufferManager(object):
         :type region: int
         :return: A list of messages
         :rtype: list of\
-                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.eieio_32bit_timed_payload_prefix_data_message.EIEIO32BitTimedPayloadPrefixDataMessage`
+                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.EIEIO32BitTimedPayloadPrefixDataMessage`
         """
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        region_base_address = locate_memory_region_for_placement(
+        region_base_address = funs.locate_memory_region_for_placement(
             self._placements.get_placement_of_vertex(vertex), region,
             self._transceiver)
         placement = self._placements.get_placement_of_vertex(vertex)
@@ -554,7 +550,7 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p):
             self._received_data.store_end_buffering_sequence_number(
                 placement.x, placement.y, placement.p,
-                recording_utilities.get_last_sequence_number(
+                get_last_sequence_number(
                     placement, self._transceiver, recording_data_address))
 
         # Read the data if not already received
@@ -567,7 +563,7 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p,
                     recording_region_id):
 
-                end_state_address = recording_utilities.get_region_pointer(
+                end_state_address = get_region_pointer(
                     placement, self._transceiver, recording_data_address,
                     recording_region_id)
                 end_state = self._generate_end_buffering_state_from_machine(

@@ -2,10 +2,7 @@
 from data_specification import utility_calls
 
 # front end common imports
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common import mapping_algorithms
 
 # SpiNMachine imports
 from spinn_machine import CoreSubsets
@@ -255,23 +252,6 @@ def _remove_excess_folders(max_to_keep, starting_directory):
         if files_not_closed > max_to_keep / 4:
             logger.warning("{} has {} old reports that have not been closed".
                            format(starting_directory, files_not_closed))
-
-
-def get_front_end_common_pacman_xml_paths():
-    """ Get the XML path for the front end common interface functions
-    """
-    return [
-        os.path.join(
-            os.path.dirname(interface_functions.__file__),
-            "front_end_common_interface_functions.xml"),
-        os.path.join(
-            os.path.dirname(report_functions.__file__),
-            "front_end_common_reports.xml"),
-        os.path.join(
-            os.path.dirname(mapping_algorithms.__file__),
-            "front_end_common_mapping_algorithms.xml"
-        )
-    ]
 
 
 def convert_string_into_chip_and_core_subset(cores):

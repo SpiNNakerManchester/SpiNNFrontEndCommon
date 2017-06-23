@@ -26,7 +26,7 @@ from spinn_front_end_common.abstract_models \
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.abstract_models \
-    import AbstractSupportsDatabaseInjection 
+    import AbstractSupportsDatabaseInjection
 from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 from spinn_front_end_common.interface.provenance \
