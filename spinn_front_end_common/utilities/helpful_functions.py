@@ -442,3 +442,20 @@ def generate_unique_folder_name(folder, filename, extension):
             folder, "{}_{}{}".format(filename, count, extension))
         count += 1
     return new_file_path
+
+
+def get_ethernet_chip(machine, board_address):
+    """ locate the chip with the given board IP address
+
+    :param machine: the spinnaker machine
+    :param board_address: the board address to locate the chip of.
+    :return: The chip that supports that board address
+    :raises ConfigurationException:\
+        when that board address has no chip associated with it
+    """
+    for chip in machine.ethernet_connected_chips:
+        if chip.ip_address == board_address:
+            return chip
+    raise exceptions.ConfigurationException(
+        "cannot find the Ethernet connected chip with the board address {}"
+        .format(board_address))
