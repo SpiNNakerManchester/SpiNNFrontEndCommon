@@ -526,7 +526,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
 
-    def signal_handler(self, signal, frame):
+    def signal_handler(self, signal, frame):  # @UnusedVariable
         """ handles closing down of script via keyboard interrupt
 
         :param signal: the signal received

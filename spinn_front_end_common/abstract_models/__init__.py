@@ -19,6 +19,8 @@ from .abstract_send_me_multicast_commands_vertex \
     import AbstractSendMeMulticastCommandsVertex
 from .abstract_vertex_with_dependent_vertices \
     import AbstractVertexWithEdgeToDependentVertices
+from .abstract_supports_database_injection \
+    import AbstractSupportsDatabaseInjection
 
 __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractHasAssociatedBinary",
@@ -29,4 +31,5 @@ __all__ = ["AbstractChangableAfterRun", "AbstractGeneratesDataSpecification",
            "AbstractProvidesOutgoingPartitionConstraints",
            "AbstractRecordable", "AbstractRewritesDataSpecification",
            "AbstractSendMeMulticastCommandsVertex",
+           "AbstractSupportsDatabaseInjection",
            "AbstractVertexWithEdgeToDependentVertices"]

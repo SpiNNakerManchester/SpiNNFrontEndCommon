@@ -10,7 +10,8 @@ from spinn_front_end_common.interface.provenance \
 from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
+    AbstractSupportsDatabaseInjection
 from spinn_front_end_common.utilities.utility_objs \
     import ProvenanceDataItem, ExecutableStartType
 from spinn_front_end_common.utilities.constants \
@@ -24,7 +25,8 @@ import struct
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+        AbstractSupportsDatabaseInjection):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -83,6 +85,11 @@ class LivePacketGatherMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self._resources_required
+
+    @property
+    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
+    def is_in_injection_mode(self):
+        return True
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                get_provenance_data_from_machine)

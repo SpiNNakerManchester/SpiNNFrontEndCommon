@@ -13,7 +13,8 @@ from pacman.model.graphs.machine import MachineVertex
 
 from spinn_front_end_common.utilities.helpful_functions \
     import locate_memory_region_for_placement
-from spinn_front_end_common.interface.buffer_management import BufferManager
+from spinn_front_end_common.interface.buffer_management.recording_utilities \
+    import TRAFFIC_IDENTIFIER
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects \
@@ -24,6 +25,8 @@ from spinn_front_end_common.abstract_models \
     import AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models \
+    import AbstractSupportsDatabaseInjection 
 from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 from spinn_front_end_common.interface.provenance \
@@ -46,7 +49,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary,
+        AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
@@ -181,7 +184,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 ip_address=buffer_notification_ip_address,
                 port=buffer_notification_port, strip_sdp=True,
                 tag=buffer_notification_tag,
-                traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
+                traffic_identifier=TRAFFIC_IDENTIFIER)]
             if board_address is not None:
                 self.add_constraint(PlacerBoardConstraint(board_address))
             self._send_buffers = {
@@ -514,7 +517,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             this_tag = None
 
             for tag in ip_tags:
-                if tag.traffic_identifier == BufferManager.TRAFFIC_IDENTIFIER:
+                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                     this_tag = tag
                     break
             if this_tag is None:
@@ -610,6 +613,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return self._mask
 
     @property
+    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self):
         return self._in_injection_mode
 
