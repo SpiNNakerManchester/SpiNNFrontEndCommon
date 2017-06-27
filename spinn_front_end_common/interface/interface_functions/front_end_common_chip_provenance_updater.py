@@ -79,6 +79,6 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
         if attempts >= 10:
             logger.error("Unable to Finish getting provenance data. "
-                         "Adandoned after too many retries. "
-                         "Board may be left in an unstable state")
+                         "Abandoned after too many retries. "
+                         "Board may be left in an unstable state!")
         progress.end()
