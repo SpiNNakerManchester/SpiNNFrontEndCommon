@@ -1,4 +1,6 @@
+import logging
 import struct
+
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -10,6 +12,8 @@ from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
 from spinnman.model.enums.cpu_state import CPUState
+
+logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
@@ -46,7 +50,9 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
-        while processors_completed != total_processors:
+        attempts = 0
+        while processors_completed != total_processors and attempts < 10:
+            attempts += 1
             unsuccessful_cores = txrx.get_cores_not_in_state(
                 all_core_subsets, CPUState.FINISHED)
 
@@ -70,4 +76,9 @@ class FrontEndCommonChipProvenanceUpdater(object):
             left_to_do_cores = left_over_now
             if to_update != 0:
                 progress.update(to_update)
+
+        if attempts >= 10:
+            logger.error("Unable to Finish getting provenance data. "
+                         "Adandoned after too many retries. "
+                         "Board may be left in an unstable state")
         progress.end()
