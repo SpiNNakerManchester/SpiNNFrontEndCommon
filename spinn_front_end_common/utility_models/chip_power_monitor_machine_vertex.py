@@ -323,8 +323,8 @@ class ChipPowerMonitorMachineVertex(
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
-        return math.ceil(n_entries *
-                ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
+        return math.ceil(
+            n_entries * ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):
         # for buffering output info is taken form the buffer manager
@@ -340,6 +340,7 @@ class ChipPowerMonitorMachineVertex(
         # get raw data as a byte array
         record_raw = samples.read_all()
 
-        results = (numpy.asarray(record_raw, dtype="uint32").reshape(-1, 18) /
-                   self.n_samples_per_recording)
+        results = (
+            numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /
+            self.n_samples_per_recording)
         return results

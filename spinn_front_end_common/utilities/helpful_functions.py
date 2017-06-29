@@ -459,3 +459,11 @@ def get_ethernet_chip(machine, board_address):
     raise exceptions.ConfigurationException(
         "cannot find the Ethernet connected chip with the board address {}"
         .format(board_address))
+
+
+def convert_time_diff_to_total_milliseconds(sample):
+    """ converts between a time diff and total milliseconds
+
+    :return: total milliseconds
+    """
+    return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)

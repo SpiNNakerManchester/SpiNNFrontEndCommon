@@ -472,7 +472,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         globals_variables.set_simulator(self)
 
     def add_extraction_timing(self, timing):
-        ms = self._convert_time_diff_to_total_milliseconds(timing)
+        ms = helpful_functions.convert_time_diff_to_total_milliseconds(timing)
         self._extraction_time += ms
 
     def add_live_packet_gatherer_parameters(
@@ -1373,16 +1373,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
 
-        self._mapping_time += self._convert_time_diff_to_total_milliseconds(
-            mapping_total_timer.take_sample())
-
-    @staticmethod
-    def _convert_time_diff_to_total_milliseconds(sample):
-        """ converts between a time diff and total milliseconds
-        
-        :return: total milliseconds
-        """
-        return (sample.total_seconds() * 1000) + sample.microseconds
+        self._mapping_time += \
+            helpful_functions.convert_time_diff_to_total_milliseconds(
+                mapping_total_timer.take_sample())
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1416,8 +1409,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             prov_items = executor.get_item("ProvenanceItems")
             self._write_provenance(prov_items)
             self._check_provenance(prov_items)
-        self._dsg_time += self._convert_time_diff_to_total_milliseconds(
-            data_gen_timer.take_sample())
+        self._dsg_time += \
+            helpful_functions.convert_time_diff_to_total_milliseconds(
+                data_gen_timer.take_sample())
 
     def _do_load(self):
         # set up timing
@@ -1471,8 +1465,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs, algorithms, outputs, "loading", optional_algorithms)
         self._load_outputs = executor.get_items()
 
-        self._load_time += self._convert_time_diff_to_total_milliseconds(
-            load_timer.take_sample())
+        self._load_time += \
+            helpful_functions.convert_time_diff_to_total_milliseconds(
+                load_timer.take_sample())
 
     def _do_run(self, n_machine_time_steps, loading_done):
 
@@ -1619,7 +1614,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._has_ran = True
 
             self._execute_time += \
-                self._convert_time_diff_to_total_milliseconds(
+                helpful_functions.convert_time_diff_to_total_milliseconds(
                     run_timer.take_sample())
 
         except KeyboardInterrupt:
