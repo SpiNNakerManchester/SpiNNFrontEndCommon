@@ -37,6 +37,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         config.set("Machine", "appID", value="1")
         config.set("Machine", "virtual_board", value="False")
         config.add_section("Reports")
+        config.set("Reports", "reportsEnabled", value="False")
         config.set("Reports", "defaultReportFilePath", value="DEFAULT")
         config.set("Reports", "max_reports_kept", value="1")
         config.set("Reports", "max_application_binaries_kept", value="1")
@@ -47,6 +48,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         config.set("Reports", "provenance_format", value="xml")
         config.add_section("SpecExecution")
         config.set("SpecExecution", "specExecOnHost", value="True")
+
         return config
 
     def test_min_init(self):
