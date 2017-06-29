@@ -2,7 +2,6 @@ import numpy
 from enum import Enum
 import math
 import logging
-import struct
 
 from data_specification.enums.data_type import DataType
 from pacman.executor.injection_decorator import inject_items, \
