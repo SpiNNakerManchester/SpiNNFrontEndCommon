@@ -6,14 +6,12 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class FrontEndCommonLocateExecutableStartType(object):
 
-    def __call__(
-            self, placements, graph, executable_finder, graph_mapper=None):
+    def __call__(self, graph, graph_mapper=None):
 
         progress = ProgressBar(
             graph.n_vertices, "Finding executable_start_types")
         binary_start_type = None
         for vertex in progress.over(graph.vertices):
-            placement = placements.get_placement_of_vertex(vertex)
             associated_vertex = graph_mapper.get_application_vertex(vertex)
 
             placement_binary_start_type = None
@@ -39,7 +37,7 @@ class FrontEndCommonLocateExecutableStartType(object):
                 raise exceptions.ConfigurationException(
                     "All binaries must be of the same start type -"
                     " existing binaries have start type {} but "
-                    "placement {} has start type {}".format(
-                        binary_start_type, placement,
+                    "vertex {} has start type {}".format(
+                        binary_start_type, vertex.label,
                         placement_binary_start_type))
         return binary_start_type
