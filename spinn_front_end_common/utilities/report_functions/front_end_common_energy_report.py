@@ -73,34 +73,37 @@ class FrontEndCommonEnergyReport(object):
         packet_cost = None
         load_time_cost = None
         data_extraction_cost = None
+        mapping_cost = None
 
         with open(detailed_report, "w") as output:
-            active_chip_cost, fpga_cost, packet_cost, \
+            active_chip_cost, fpga_cost, packet_cost, mapping_cost, \
                 load_time_cost, data_extraction_cost = \
                 self._write_detailed_report(
                     placements, machine, version, spalloc_server,
                     remote_spinnaker_url, time_scale_factor, machine_time_step,
                     pacman_provenance, router_provenance, runtime,
-                    buffer_manager, output, load_time, extraction_time)
+                    buffer_manager, output, load_time, mapping_time)
             output.flush()
             output.close()
 
         with open(summary_report, "w") as output:
             self._write_summary_report(
-                active_chip_cost, fpga_cost, packet_cost,
+                active_chip_cost, fpga_cost, packet_cost, mapping_cost,
                 load_time_cost, data_extraction_cost, runtime, output,
                 mapping_time, load_time, execute_time, dsg_time,
                 extraction_time)
 
     @staticmethod
     def _write_summary_report(
-            active_chip_cost, fpga_cost, packet_cost,
+            active_chip_cost, fpga_cost, packet_cost, mapping_cost,
             load_time_cost, data_extraction_cost, runtime, output,
             mapping_time, load_time, execute_time, dsg_time, extraction_time):
         """ write summary file
 
         :param active_chip_cost: active chip cost
         :param fpga_cost: fpga cost
+        :param mapping_time: the time taken by the mapping process in ms
+        :param mapping_cost: the energy used by the mapping process
         :param packet_cost: packet cost
         :param load_time_cost: load time cost
         :param data_extraction_cost: data extraction cost
@@ -114,7 +117,7 @@ class FrontEndCommonEnergyReport(object):
 
         # total the energy costs
         total_jules = (
-            active_chip_cost + fpga_cost + packet_cost +
+            active_chip_cost + fpga_cost + packet_cost + mapping_cost +
             load_time_cost + data_extraction_cost)
 
         # deduce wattage from the runtime
@@ -125,25 +128,31 @@ class FrontEndCommonEnergyReport(object):
 
         output.write(
             "Summary energy file\n\n"
-            "Energy used by active chips during runtime is {} Joules\n"
-            "Energy used by active FPGAs is {} Joules\n"
-            "Energy used by packet transmissions is {} Joules\n"
+            "Energy used by active chips during runtime is {} Joules over {} "
+            "milliseconds\n"
+            "Energy used by active FPGAs is {} Joules over {} milliseconds \n"
+            "Energy used by packet transmissions is {} Joules over {} "
+            "milliseconds\n"
+            "Energy used during the mapping process is {} Joules over {} "
+            "milliseconds\n"
             "Energy used during the loading process is {} Joules over {} "
             "milliseconds\n"
             "Energy used during the data extraction process is {} Jules over "
             "{} milliseconds\n"
-            "Total energy used by the simulation is {} Joules or estimated {} "
-            "average Watts over {} milliseconds or {} kWh".format(
-                active_chip_cost, fpga_cost, packet_cost,
-                load_time_cost, load_time, data_extraction_cost,
-                extraction_time, total_jules, total_watts, total_time,
-                killawatt_hour))
+            "Total energy used by the simulation over {} milliseconds is: \n"
+            "     {} Joules or \n"
+            "     {} estimated average Watts or \n"
+            "     {} kWh\n".format(
+                active_chip_cost, runtime, fpga_cost, runtime, packet_cost,
+                total_time, mapping_cost, mapping_time, load_time_cost,
+                load_time, data_extraction_cost, extraction_time, total_time,
+                total_jules, total_watts, killawatt_hour))
 
     def _write_detailed_report(
             self, placements, machine, version, spalloc_server,
             remote_spinnaker_url, time_scale_factor, machine_time_step,
             pacman_provenance, router_provenance, runtime,
-            buffer_manager, output, load_time):
+            buffer_manager, output, load_time, mapping_time):
         """ write detailed report and calculate costs
 
         :param placements: placements
@@ -180,6 +189,8 @@ class FrontEndCommonEnergyReport(object):
         load_time_cost = self._calculate_load_time_cost(
             pacman_provenance, machine, output, load_time, active_chips)
 
+        mapping_cost = self._calculate_idle_cost(mapping_time, machine)
+
         # figure extraction time cost
         extraction_time_cost = \
             self._calculate_data_extraction_time_cost(
@@ -191,8 +202,8 @@ class FrontEndCommonEnergyReport(object):
             machine_active_cost += self._calculate_chips_active_cost(
                 chip, placements, buffer_manager, output, machine)
 
-        return machine_active_cost, fpga_cost, packet_cost, load_time_cost, \
-            extraction_time_cost
+        return machine_active_cost, fpga_cost, packet_cost, mapping_cost, \
+               load_time_cost, extraction_time_cost
 
     def _write_warning(self, output):
         """ writes the warning about this being only an estimate
@@ -244,7 +255,7 @@ class FrontEndCommonEnergyReport(object):
             if int(version) == 2 or int(version) == 3:
                 output.write(
                     "A Spinn {} board does not contain any FPGA's, and so "
-                    "its energy cost is 0".format(version))
+                    "its energy cost is 0 \n".format(version))
                 return 0
 
             # if the spinn4 or spinn5 board, need to verify if wrap arounds
@@ -263,7 +274,7 @@ class FrontEndCommonEnergyReport(object):
                 else:  # no active fpgas
                     output.write(
                         "The FPGA's on the Spinn {} board are turned off and "
-                        "therefore the energy used by the FPGA is 0".format(
+                        "therefore the energy used by the FPGA is 0\n".format(
                             version))
                     return 0
             else:  # no idea where we are
@@ -415,8 +426,8 @@ class FrontEndCommonEnergyReport(object):
 
         for core in range(0, 18):
             output.write(
-                "processor {}:{}:{} used {} Jules of energy during the"
-                " execution of the simulation\n".format(
+                "processor {}:{}:{} used {} Jules of energy by being active "
+                "during the execution of the simulation\n".format(
                     chip.x, chip.y, core, cores_power_cost[core]))
 
         total_energy_cost = 0.0
@@ -424,15 +435,21 @@ class FrontEndCommonEnergyReport(object):
             total_energy_cost += core_power_usage
 
         # TAKE INTO ACCOUNT IDLE COST
-        total_energy_cost += (
+        idle_cost = (
             time_for_recorded_sample * len(recorded_measurements) *
             machine.total_cores * (
                 self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18))
 
+        total_energy_cost += idle_cost
+
+        output.write(
+            "The machine used {} Jules of energy by being idle "
+            "during the execution of the simulation".format(idle_cost))
+
         return total_energy_cost
 
     def _router_packet_cost(self, router_provenance, output):
-        """ packet cost
+        """ packet cost, includes MC, P2P, FR, NN packets
 
         :param router_provenance: the provenance gained from the router
         :param output: file writer
@@ -441,9 +458,35 @@ class FrontEndCommonEnergyReport(object):
 
         energy_cost = 0.0
         for element in router_provenance:
-            packet_count = float(element.value) * self.JULES_PER_SPIKE
-            energy_cost += packet_count
-        output.write("The packet cost is {} Jules".format(energy_cost))
+
+            # only get per chip counters, not summary counters.
+            if (element.names[1] == "expected_routers" or
+                    element.names[1] == "unexpected_routers"):
+
+                # process multicast packets
+                if (element.names[3] == "Local_Multicast_Packets" or
+                        element.names[3] == "External_Multicast_Packets" or
+                        element.names[3] == "Reinjected"):
+                    energy_cost += float(element.value) * self.JULES_PER_SPIKE
+
+                # process p2p packets
+                elif (element.names[3] == "Local_P2P_Packets" or
+                        element.names[3] == "External_P2P_Packets"):
+                    energy_cost += \
+                        float(element.value) * self.JULES_PER_SPIKE * 2
+
+                # process NN packets
+                elif (element.names[3] == "Local_NN_Packets" or
+                        element.names[3] == "External_NN_Packets"):
+                    energy_cost += float(element.value) * self.JULES_PER_SPIKE
+
+                elif (element.names[3] == "Local_FR_Packets" or
+                        element.names[3] == "External_FR_Packets"):
+                    energy_cost += \
+                        float(element.value) * self.JULES_PER_SPIKE * 2
+
+        # process
+        output.write("The packet cost is {} Jules\n".format(energy_cost))
         return energy_cost
 
     def _calculate_load_time_cost(
@@ -481,9 +524,7 @@ class FrontEndCommonEnergyReport(object):
             (self.JULES_PER_MILLISECOND_PER_CHIP_ACTIVE_OVERHEAD / 18))
 
         # handle all idle cores
-        energy_cost += (
-            total_milliseconds * machine.total_available_user_cores * (
-                self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18))
+        energy_cost += self._calculate_idle_cost(total_milliseconds, machine)
 
         diff_of_algorithms_and_boiler = total_milliseconds - load_time
         energy_cost += (
@@ -531,9 +572,8 @@ class FrontEndCommonEnergyReport(object):
             total_milliseconds *
             min(self.N_MONITORS_ACTIVE_DURING_COMMS, len(active_chips)) *
             (self.JULES_PER_MILLISECOND_PER_CHIP_ACTIVE_OVERHEAD / 18))
-        energy_cost += (
-            total_milliseconds * machine.total_available_user_cores * (
-                self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18))
+
+        energy_cost += self._calculate_idle_cost(total_milliseconds, machine)
 
         output.write(
             "The amount of time used during the data extraction process is {} "
@@ -542,3 +582,13 @@ class FrontEndCommonEnergyReport(object):
                 total_milliseconds, energy_cost))
 
         return energy_cost
+
+    def _calculate_idle_cost(self, time, machine):
+        """ calculate energy used by being idle
+        
+        :param machine: machine object
+        :param time: time machine was idle
+        :return: cost in jules
+        """
+        return time * machine.total_available_user_cores * (
+                self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18)
