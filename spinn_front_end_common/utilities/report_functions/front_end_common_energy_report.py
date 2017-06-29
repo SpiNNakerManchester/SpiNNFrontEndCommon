@@ -68,13 +68,6 @@ class FrontEndCommonEnergyReport(object):
         summary_report = os.path.join(
             report_default_directory, self.ENERGY_SUMMARY_FILENAME)
 
-        active_chip_cost = None
-        fpga_cost = None
-        packet_cost = None
-        load_time_cost = None
-        data_extraction_cost = None
-        mapping_cost = None
-
         with open(detailed_report, "w") as output:
             active_chip_cost, fpga_cost, packet_cost, mapping_cost, \
                 load_time_cost, data_extraction_cost = \
@@ -83,8 +76,6 @@ class FrontEndCommonEnergyReport(object):
                     remote_spinnaker_url, time_scale_factor, machine_time_step,
                     pacman_provenance, router_provenance, runtime,
                     buffer_manager, output, load_time, mapping_time)
-            output.flush()
-            output.close()
 
         with open(summary_report, "w") as output:
             self._write_summary_report(
@@ -203,7 +194,7 @@ class FrontEndCommonEnergyReport(object):
                 chip, placements, buffer_manager, output, machine)
 
         return machine_active_cost, fpga_cost, packet_cost, mapping_cost, \
-               load_time_cost, extraction_time_cost
+            load_time_cost, extraction_time_cost
 
     def _write_warning(self, output):
         """ writes the warning about this being only an estimate
@@ -328,24 +319,23 @@ class FrontEndCommonEnergyReport(object):
         top_left_additions = [[0, 3], [1, 4], [2, 5], [3, 6], [4, 7]]
         bottom_right_additions = [[0, 4], [1, 5], [2, 6], [3, 7]]
 
-        fpga_0 = 0.0  # bottom left, bottom
-        fpga_1 = 0.0  # left, and top right
-        fpga_2 = 0.0  # top and right
-
         machine_max_x = machine.max_chip_x
         machine_max_y = machine.max_chip_y
 
         ethernet_chip_x = ethernet_connected_chip.x
         ethernet_chip_y = ethernet_connected_chip.y
 
+        # bottom left, bottom
         fpga_0 = self._deduce_fpga(
             [bottom_additions, bottom_right_additions], [[5, 4], [0, 5]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
             machine)
+        # left, and top right
         fpga_1 = self._deduce_fpga(
             [left_additions, top_left_additions], [[3, 4], [3, 2]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
             machine)
+        # top and right
         fpga_2 = self._deduce_fpga(
             [top_additions, right_additions], [[2, 1], [0, 1]],
             machine_max_x, machine_max_y, ethernet_chip_x, ethernet_chip_y,
@@ -547,7 +537,7 @@ class FrontEndCommonEnergyReport(object):
         :param pacman_provenance: provenance items from the pacman set
         :param machine: machine rep
         :param output: file writer
-        :param active_chips: 
+        :param active_chips:
         :return: cost of data extraction
         """
 
@@ -585,7 +575,7 @@ class FrontEndCommonEnergyReport(object):
 
     def _calculate_idle_cost(self, time, machine):
         """ calculate energy used by being idle
-        
+
         :param machine: machine object
         :param time: time machine was idle
         :return: cost in jules
