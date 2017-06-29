@@ -128,9 +128,9 @@ class FrontEndCommonEnergyReport(object):
 
         output.write(
             "Summary energy file\n\n"
-            "Energy used by active chips during runtime is {} Joules over {} "
+            "Energy used by chips during runtime is {} Joules over {} "
             "milliseconds\n"
-            "Energy used by active FPGAs is {} Joules over {} milliseconds \n"
+            "Energy used by FPGAs is {} Joules over {} milliseconds \n"
             "Energy used by packet transmissions is {} Joules over {} "
             "milliseconds\n"
             "Energy used during the mapping process is {} Joules over {} "
