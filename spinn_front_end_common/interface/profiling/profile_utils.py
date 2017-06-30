@@ -1,26 +1,41 @@
 from data_specification import utility_calls
+from spinn_front_end_common.interface.profiling.profile_data \
+    import ProfileData
 
 import logging
 import struct
-from spinn_front_end_common.interface.profiling.profile_data import ProfileData
 
 logger = logging.getLogger(__name__)
+
+PROFILE_HEADER_SIZE_BYTES = 4
+SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 8
+BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 8
 
 
 def get_profile_header_size():
     """ Get the size of the header of the profiler
     """
-    return 4
+    return PROFILE_HEADER_SIZE_BYTES
 
 
 def get_profile_region_size(n_samples):
     """ Get the size of the region of the profile data
+    
+    :param n_samples: number of different samples to record
+    :return the size in bytes used by the profile region
     """
-    return (4 + (n_samples * 8))
+    return PROFILE_HEADER_SIZE_BYTES + (
+        n_samples * SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
 
 
 def reserve_profile_region(spec, region, n_samples):
     """ Reserves the profile region for recording the profile data
+    
+    :param spec: the dsg specification writer
+    :param region: region id for the profile data
+    :param n_samples: n elements being sampled
+    :rtype: None
+    
     """
     if n_samples != 0:
         size = get_profile_region_size(n_samples)
@@ -30,14 +45,24 @@ def reserve_profile_region(spec, region, n_samples):
 
 def write_profile_region_data(spec, region, n_samples):
     """ Writes the profile region data
+    
+    :param spec: the dsg specification writer
+    :param region: region id for the profile data
+    :param n_samples: n elements being sampled
+    :rtype: None
     """
     spec.switch_write_focus(region)
     spec.write_value(n_samples)
 
 
-def get_profiling_data(
-        self, profile_region, tag_labels, txrx, placement):
+def get_profiling_data(profile_region, tag_labels, txrx, placement):
     """ Utility function to get profile data from a profile region
+    
+    :param profile_region: dsg region to get profiling data out of sdram
+    :param tag_labels: labels for the profiling data
+    :param txrx:  transceiver code
+    :param placement: placement
+    :return: ProfileData
     """
 
     profile_data = ProfileData(tag_labels)
@@ -50,8 +75,7 @@ def get_profiling_data(
     # Get the position of the value buffer
     profiling_region_base_address_offset = \
         utility_calls.get_region_base_address_offset(
-            app_data_base_address,
-            self._profile_region)
+            app_data_base_address, profile_region)
     profiling_region_base_address_buf = buffer(txrx.read_memory(
         x, y, profiling_region_base_address_offset, 4))
     profiling_region_base_address = \
@@ -60,13 +84,16 @@ def get_profiling_data(
     # Read the profiling data size
     words_written_data =\
         buffer(txrx.read_memory(
-            x, y, profiling_region_base_address + 4, 4))
+            x, y,
+            profiling_region_base_address + PROFILE_HEADER_SIZE_BYTES, 4))
     words_written = \
         struct.unpack_from("<I", words_written_data)[0]
 
     # Read the profiling data
     profiling_data = txrx.read_memory(
-        x, y, profiling_region_base_address + 8, words_written * 4)
+        x, y,
+        profiling_region_base_address +
+        BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION, words_written * 4)
     profile_data.add_data(profiling_data)
 
     return profile_data
