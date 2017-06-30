@@ -32,7 +32,8 @@ class FrontEndCommonProfileDataGatherer(object):
             if isinstance(placement.vertex, AbstractHasProfileData):
 
                 # get data
-                profile_data = placement.vertex.get_profile_data(transceiver)
+                profile_data = placement.vertex.get_profile_data(
+                    transceiver, placement)
 
                 # write data
                 file_name = os.path.join(
