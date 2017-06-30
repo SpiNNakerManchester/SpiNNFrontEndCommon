@@ -7,6 +7,9 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
+// Declare wfi function
+extern void spin1_wfi();
+
 #ifndef APPLICATION_NAME_HASH
 #define APPLICATION_NAME_HASH 0
 #error APPLICATION_NAME_HASH must be defined
@@ -16,7 +19,7 @@
 
 //! \brief human readable versions of the different priorities and usages.
 typedef enum callback_priorities {
-    SDP_CALLBACK = 0, TIMER = 2
+    SDP_CALLBACK = 0, TIMER = 3, DMA = 2
 }callback_priorities;
 
 typedef enum eieio_data_message_types {
@@ -127,6 +130,8 @@ static uint32_t last_space;
 static uint32_t last_request_tick;
 
 static bool stopped = false;
+
+static bool recording_in_progress = false;
 
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
@@ -524,6 +529,35 @@ static inline void process_32_bit_packets(
     }
 }
 
+void recording_done_callback() {
+    recording_in_progress = false;
+}
+
+static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
+    if (recording_flags > 0) {
+        while (recording_in_progress) {
+            spin1_wfi();
+        }
+
+        // Ensure that the recorded data size is a multiple of 4
+        uint32_t recording_length = 4 * ((length + 3) / 4);
+        log_debug(
+            "recording a eieio message with length %u", recording_length);
+        recording_in_progress = true;
+        recording_record(
+            SPIKE_HISTORY_CHANNEL, &recording_length, 4);
+
+        // NOTE: recording_length could be bigger than the length of the valid
+        // data in eieio_msg_ptr.  This is OK as the data pointed to by
+        // eieio_msg_ptr is always big enough to have extra space in it.  The
+        // bytes in this data will be random, but are also ignored by
+        // whatever reads the data.
+        recording_record_and_notify(
+            SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length,
+            recording_done_callback);
+    }
+}
+
 static inline bool eieio_data_parse_packet(
         eieio_msg_t eieio_msg_ptr, uint32_t length) {
     log_debug("eieio_data_process_data_packet");
@@ -623,19 +657,13 @@ static inline bool eieio_data_parse_packet(
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_flags > 0) {
-            log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
-        }
+        record_packet(eieio_msg_ptr, length);
         return true;
     } else {
         process_32_bit_packets(
             event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_flags > 0) {
-            log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
-        }
+        record_packet(eieio_msg_ptr, length);
         return false;
     }
 }
@@ -968,7 +996,7 @@ bool initialise(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK)) {
+            &infinite_run, SDP_CALLBACK, DMA)) {
         return false;
     }
     simulation_set_provenance_function(
@@ -982,7 +1010,7 @@ bool initialise(uint32_t *timer_period) {
     }
 
     // set up recording data structures
-    if(!initialise_recording()){
+    if (!initialise_recording()) {
          return false;
     }
 

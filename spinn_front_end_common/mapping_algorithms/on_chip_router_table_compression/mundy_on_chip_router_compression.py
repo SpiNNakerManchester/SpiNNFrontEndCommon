@@ -1,18 +1,17 @@
+from spinn_utilities.progress_bar import ProgressBar
+
 from spinn_front_end_common.utilities import exceptions
 from spinnman.model.enums.cpu_state import CPUState
-import sys
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions.\
     front_end_common_chip_iobuf_extractor import \
     FrontEndCommonChipIOBufExtractor
 
-from spinnman.model.executable_targets import \
-    ExecutableTargets
+from spinnman.model.executable_targets import ExecutableTargets
 
 from spinn_machine.core_subsets import CoreSubsets
 from spinn_machine.router import Router
-from spinn_machine.utilities.progress_bar import ProgressBar
 
 import logging
 import os
@@ -48,7 +47,7 @@ class MundyOnChipRouterCompression(object):
         """
 
         # build progress bar
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             len(routing_tables.routing_tables) + 2,
             "Running routing table compression on chip")
         compressor_app_id = transceiver.app_id_tracker.get_new_id()
@@ -56,7 +55,6 @@ class MundyOnChipRouterCompression(object):
         # figure size of sdram needed for each chip for storing the routing
         # table
         for routing_table in routing_tables:
-
             data = self._build_data(
                 routing_table, app_id, compress_only_when_needed,
                 compress_as_much_as_possible)
@@ -71,29 +69,28 @@ class MundyOnChipRouterCompression(object):
                 routing_table.x, routing_table.y, base_address, data)
 
             # update progress bar
-            progress_bar.update()
+            progress.update()
 
         # load the router compressor executable
         executable_targets = self._load_executables(
             routing_tables, compressor_app_id, transceiver, machine)
 
         # update progress bar
-        progress_bar.update()
+        progress.update()
 
         # Wait for the executable to finish
+        succeeded = False
         try:
             transceiver.wait_for_cores_to_be_in_state(
                 executable_targets.all_core_subsets, compressor_app_id,
                 [CPUState.FINISHED])
-        except:
-
+            succeeded = True
+        finally:
             # get the debug data
-            self._handle_failure(
-                executable_targets, transceiver, provenance_file_path,
-                compressor_app_id)
-
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            raise exc_type, exc_value, exc_traceback
+            if not succeeded:
+                self._handle_failure(
+                    executable_targets, transceiver, provenance_file_path,
+                    compressor_app_id)
 
         # Check if any cores have not completed successfully
         self._check_for_success(
@@ -101,14 +98,14 @@ class MundyOnChipRouterCompression(object):
             provenance_file_path, compressor_app_id)
 
         # update progress bar
-        progress_bar.update()
+        progress.update()
 
         # stop anything that's associated with the compressor binary
         transceiver.stop_application(compressor_app_id)
         transceiver.app_id_tracker.free_id(compressor_app_id)
 
         # update the progress bar
-        progress_bar.end()
+        progress.end()
 
         # return loaded routing tables flag
         return True

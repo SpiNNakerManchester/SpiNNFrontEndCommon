@@ -1,3 +1,5 @@
+from spinn_utilities.socket_address import SocketAddress
+
 # pacman imports
 from pacman.model.placements.placements import Placements
 from pacman.model.placements.placement import Placement
@@ -14,8 +16,6 @@ from spinn_front_end_common.utilities.reload.reload_routing_table import \
     ReloadRoutingTable
 from spinn_front_end_common.utilities.reload.reload_buffered_vertex \
     import ReloadBufferedVertex
-from spinn_front_end_common.utilities.notification_protocol.socket_address \
-    import SocketAddress
 from spinn_front_end_common.utilities.reload.reload import Reload
 
 # spinnman imports

@@ -1,4 +1,8 @@
+import logging
 import struct
+
+
+from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.messages.sdp.sdp_flag import SDPFlag
 from spinnman.messages.sdp.sdp_header import SDPHeader
@@ -8,7 +12,8 @@ from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities import exceptions
 
 from spinnman.model.enums.cpu_state import CPUState
-from spinn_utilities.progress_bar import ProgressBar
+
+logger = logging.getLogger(__name__)
 
 
 class FrontEndCommonChipProvenanceUpdater(object):
@@ -18,14 +23,13 @@ class FrontEndCommonChipProvenanceUpdater(object):
     __slots__ = []
 
     def __call__(self, txrx, app_id, all_core_subsets):
-
         # check that the right number of processors are in sync
         processors_completed = txrx.get_core_state_count(
             app_id, CPUState.FINISHED)
         total_processors = len(all_core_subsets)
         left_to_do_cores = total_processors - processors_completed
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             left_to_do_cores,
             "Forcing error cores to generate provenance data")
 
@@ -46,7 +50,9 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
         # check that all cores are in the state FINISHED which shows that
         # the core has received the message and done provenance updating
-        while processors_completed != total_processors:
+        attempts = 0
+        while processors_completed != total_processors and attempts < 10:
+            attempts += 1
             unsuccessful_cores = txrx.get_cores_not_in_state(
                 all_core_subsets, CPUState.FINISHED)
 
@@ -67,6 +73,12 @@ class FrontEndCommonChipProvenanceUpdater(object):
 
             left_over_now = total_processors - processors_completed
             to_update = left_to_do_cores - left_over_now
+            left_to_do_cores = left_over_now
             if to_update != 0:
-                progress_bar.update(to_update)
-        progress_bar.end()
+                progress.update(to_update)
+
+        if attempts >= 10:
+            logger.error("Unable to Finish getting provenance data. "
+                         "Abandoned after too many retries. "
+                         "Board may be left in an unstable state!")
+        progress.end()

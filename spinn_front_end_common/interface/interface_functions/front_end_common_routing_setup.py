@@ -1,6 +1,6 @@
+from spinn_utilities.progress_bar import ProgressBar
 from spinnman import constants
 
-from spinn_machine.utilities.progress_bar import ProgressBar
 from spinnman.model.diagnostic_filter import DiagnosticFilter
 from spinnman.model.enums.diagnostic_filter_default_routing_status import \
     DiagnosticFilterDefaultRoutingStatus
@@ -14,13 +14,12 @@ class FrontEndCommonRoutingSetup(object):
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):
-        progress_bar = ProgressBar(
-            len(list(router_tables.routing_tables)),
-            "Preparing Routing Tables")
+        routing_tables = list(router_tables.routing_tables)
+        progress = ProgressBar(routing_tables, "Preparing Routing Tables")
 
         # Clear the routing table for each router that needs to be set up
         # and set up the diagnostics
-        for router_table in router_tables.routing_tables:
+        for router_table in progress.over(routing_tables):
             if not machine.get_chip_at(router_table.x, router_table.y).virtual:
                 transceiver.clear_multicast_routes(
                     router_table.x, router_table.y)
@@ -33,8 +32,6 @@ class FrontEndCommonRoutingSetup(object):
                 # dropped packet.
                 self._set_router_diagnostic_filters(
                     router_table.x, router_table.y, transceiver)
-            progress_bar.update()
-        progress_bar.end()
 
     @staticmethod
     def _set_router_diagnostic_filters(x, y, transceiver):

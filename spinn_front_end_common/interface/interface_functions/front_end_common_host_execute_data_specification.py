@@ -1,3 +1,4 @@
+from spinn_utilities.progress_bar import ProgressBar
 
 # data spec imports
 from data_specification.data_specification_executor import \
@@ -7,9 +8,6 @@ from data_specification import exceptions
 # spinn_storage_handlers import
 from spinn_storage_handlers.file_data_reader import FileDataReader
 from spinn_storage_handlers.file_data_writer import FileDataWriter
-
-# pacman imports
-from spinn_machine.utilities.progress_bar import ProgressBar
 
 import os
 import logging
@@ -45,12 +43,10 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         :return: map of placement and dsg data, and loaded data flag.
         """
 
-        data = self.host_based_data_specification_execution(
+        return self.host_based_data_specification_execution(
             hostname, transceiver, write_text_specs,
             runtime_application_data_folder, machine,
             report_default_directory, app_id, dsg_targets)
-
-        return data
 
     def host_based_data_specification_execution(
             self, hostname, transceiver, write_text_specs,
@@ -74,14 +70,14 @@ class FrontEndCommonHostExecuteDataSpecification(object):
         processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
-        progress_bar = ProgressBar(
-            len(list(dsg_targets)),
-            "Executing data specifications and loading data")
+        progress = ProgressBar(
+            dsg_targets, "Executing data specifications and loading data")
 
-        for ((x, y, p), data_spec_file_path) in dsg_targets.iteritems():
-
+        for ((x, y, p), data_spec_file_path) in progress.over(
+                dsg_targets.iteritems()):
             # build specification reader
             data_spec_file_path = dsg_targets[x, y, p]
+            # TODO: data_spec_file_path value extracted twice?
             data_spec_reader = FileDataReader(data_spec_file_path)
 
             # build application data writer
@@ -127,8 +123,7 @@ class FrontEndCommonHostExecuteDataSpecification(object):
 
             # the base address address needs to be passed to the DSE to
             # generate the pointer table with absolute addresses
-            host_based_data_spec_executor.write_dse_output_file(
-                start_address)
+            host_based_data_spec_executor.write_dse_output_file(start_address)
 
             # close the application data file writer
             data_writer.close()
@@ -150,14 +145,8 @@ class FrontEndCommonHostExecuteDataSpecification(object):
             processor_to_app_data_base_address[x, y, p] = {
                 'start_address': start_address,
                 'memory_used': bytes_used_by_spec,
-                'memory_written': bytes_written_by_spec
-            }
+                'memory_written': bytes_written_by_spec}
 
-            # update the progress bar
-            progress_bar.update()
-
-        # close the progress bar
-        progress_bar.end()
         return processor_to_app_data_base_address, True
 
     @staticmethod
