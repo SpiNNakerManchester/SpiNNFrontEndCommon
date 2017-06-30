@@ -1185,9 +1185,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         algorithms = list()
 
-        # add check for algorithm start type
-        algorithms.append("FrontEndCommonLocateExecutableStartType")
-
         if len(self._live_packet_recorder_params) != 0:
             algorithms.append(
                 "FrontEndCommonInsertLivePacketGatherersToGraphs")
@@ -1224,6 +1221,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "writePartitionerReports") and
                     self._application_graph.n_vertices != 0):
                 algorithms.append("PartitionerReport")
+
 
             # only add write placer report with application graph when
             # there's application vertices
@@ -1262,6 +1260,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
+
+        # add check for algorithm start type
+        algorithms.append("FrontEndCommonLocateExecutableStartType")
 
         # handle outputs
         outputs = [
