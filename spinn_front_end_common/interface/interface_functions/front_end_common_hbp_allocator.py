@@ -39,6 +39,15 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
     def close(self):
         self._exited = True
 
+    @property
+    def power(self):
+        #TODO NEEDS FIXING
+        return True
+
+    def set_power(self, power):
+        #TODO NEEDS FIXING
+        pass
+
     def run(self):
         job_allocated = True
         while job_allocated and not self._exited:

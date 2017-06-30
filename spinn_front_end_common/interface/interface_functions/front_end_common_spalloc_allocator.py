@@ -42,13 +42,20 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
         self._exited = True
         self._job.destroy()
 
+    @property
+    def power(self):
+        return self._job.power
+
+    def set_power(self, power):
+        self._job.set_power(power)
+
     def run(self):
         state = self._job.state
         while state != JobState.destroyed and not self._exited:
 
             try:
                 if self._job is not None:
-                    state = self._job.wait_for_state_change(state)
+                    state = self._job.wait_for_state_change(state, 1)
             except TypeError:
                 pass
 

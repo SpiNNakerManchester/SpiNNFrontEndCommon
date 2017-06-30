@@ -4,7 +4,7 @@ from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model.bmp_connection_data import BMPConnectionData
 
 # front end common imports
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import exceptions, helpful_functions
 
 # general imports
 import re
@@ -71,7 +71,6 @@ class FrontEndCommonMachineGenerator(object):
             enable_reinjector=enable_reinjection)
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()
-
         return machine, txrx
 
     @staticmethod

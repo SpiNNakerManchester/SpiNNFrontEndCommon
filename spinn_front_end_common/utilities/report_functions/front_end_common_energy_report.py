@@ -27,8 +27,11 @@ class FrontEndCommonEnergyReport(object):
     # converter between jules to Killiwatt hours
     JULES_TO_KILLIWATT_HOURS = 3600000
 
-    # base energy of power off machine
-    JULES_PER_MILLISECOND_PER_POWER_DOWN_BOARD = 000.0000
+    # base energy of power off machine (based off real measurements from
+    # Rowley) found in paper (Performance comparison of digital neuromorphic
+    # hardware (SpiNNaker) and neural network simulation software (NEST) on
+    # the example of a full-scale cortical microcircuit model)
+    JULES_PER_MILLISECOND_PER_POWER_DOWN_BOARD = 0.00000000906
 
     # TODO verify this is correct when doing multiboard comms
     N_MONITORS_ACTIVE_DURING_COMMS = 2

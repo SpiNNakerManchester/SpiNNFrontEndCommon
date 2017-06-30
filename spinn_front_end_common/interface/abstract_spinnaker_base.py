@@ -1138,6 +1138,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._txrx is not None and self._app_id is None:
             self._app_id = self._txrx.app_id_tracker.get_new_id()
 
+        if not self._use_virtual_board:
+            if helpful_functions.read_config_boolean(
+                    self._config, "EnergySavings",
+                    "turn_off_board_after_discovery"):
+                helpful_functions.turn_off_on_boards_for_energy_savings(
+                    self._txrx, self._machine_allocation_controller, False)
+
         return self._machine
 
     def _handle_machine_common_config(self, inputs):
@@ -1308,10 +1315,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "writeNetworkSpecificationReport")):
                 algorithms.append("NetworkSpecificationReport")
 
-        # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board:
-            algorithms.append("FrontEndCommonRoutingSetup")
-
         # only add the partitioner if there isn't already a machine graph
         if (self._application_graph.n_vertices > 0 and
                 self._machine_graph.n_vertices == 0):
@@ -1353,6 +1356,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         outputs.append("ExecutableTargets")
         outputs.append("ExecutableStartType")
+
+        # turn on/off machine for energy savings
+        if not self._use_virtual_board:
+            power_value = helpful_functions.read_config_boolean(
+                self._config, "EnergySavings", "turn_off_board_during_mapping")
+            helpful_functions.turn_off_on_boards_for_energy_savings(
+                self._txrx, self._machine_allocation_controller,
+                not power_value)
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1398,6 +1409,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("FrontEndCommonGraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
 
+        # turn on/off machine for energy savings
+        if not self._use_virtual_board:
+            power_value = helpful_functions.read_config_boolean(
+                self._config, "EnergySavings", "turn_off_board_during_dsg")
+            helpful_functions.turn_off_on_boards_for_energy_savings(
+                self._txrx, self._machine_allocation_controller,
+                not power_value)
+
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
         self._mapping_outputs = executor.get_items()
@@ -1418,6 +1437,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         load_timer = Timer()
         load_timer.start_timing()
 
+        # turn on machine for loading
+        if not self._use_virtual_board:
+            helpful_functions.turn_off_on_boards_for_energy_savings(
+                self._txrx, self._machine_allocation_controller, True)
+
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         inputs["WriteMemoryMapReportFlag"] = (
@@ -1425,9 +1449,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._config.getboolean("Reports", "writeMemoryMapReport")
         )
 
-        # add report for extracting routing table from machine report if needed
-        algorithms = list(self._extra_load_algorithms)
+        algorithms = list()
 
+        # add report for extracting routing table from machine report if needed
+        # Add algorithm to clear routing tables and set up routing
+        if not self._use_virtual_board:
+            algorithms.append("FrontEndCommonRoutingSetup")
+
+        if helpful_functions.read_config(
+                self._config, "Mapping", "loading_algorithms") is not None:
+            algorithms.extend(
+                self._config.get("Mapping", "loading_algorithms").split(","))
+        algorithms.extend(self._extra_load_algorithms)
+
+        # add optional algorithms
         optional_algorithms = list()
         optional_algorithms.append("FrontEndCommonRoutingTableLoader")
         optional_algorithms.append("FrontEndCommonTagsLoader")
