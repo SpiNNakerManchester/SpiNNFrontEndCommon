@@ -12,13 +12,16 @@ class FrontEndCommonLocateExecutableStartType(object):
             graph.n_vertices, "Finding executable_start_types")
         binary_start_type = None
         for vertex in progress.over(graph.vertices):
-            associated_vertex = graph_mapper.get_application_vertex(vertex)
 
             placement_binary_start_type = None
 
             if isinstance(vertex, AbstractHasAssociatedBinary):
-                placement_binary_start_type = \
-                    associated_vertex.get_binary_start_type()
+                placement_binary_start_type = vertex.get_binary_start_type()
+            else:
+                associated_vertex = graph_mapper.get_application_vertex(vertex)
+                if isinstance(associated_vertex, AbstractHasAssociatedBinary):
+                    placement_binary_start_type = \
+                        associated_vertex.get_binary_start_type()
 
             if (placement_binary_start_type is None and
                     graph_mapper is not None):

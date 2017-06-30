@@ -9,6 +9,8 @@ from pacman.model.graphs.machine.machine_graph import MachineGraph
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_graph_binary_gatherer \
     import FrontEndCommonGraphBinaryGatherer
+from spinn_front_end_common.interface.interface_functions.front_end_common_locate_executable_start_types import \
+    FrontEndCommonLocateExecutableStartType
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
     import ExecutableStartType
@@ -72,8 +74,10 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_4, 0, 0, 3)])
 
         gatherer = FrontEndCommonGraphBinaryGatherer()
-        targets, start_type = gatherer.__call__(
+        targets = gatherer.__call__(
             placements, graph, _TestExecutableFinder())
+        gatherer = FrontEndCommonLocateExecutableStartType()
+        start_type = gatherer.__call__(graph)
         self.assertEqual(start_type, ExecutableStartType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
@@ -101,9 +105,9 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_1, 0, 0, 0),
             Placement(vertex_2, 0, 0, 1)])
 
-        gatherer = FrontEndCommonGraphBinaryGatherer()
+        gatherer = FrontEndCommonLocateExecutableStartType()
         with self.assertRaises(ConfigurationException):
-            gatherer.__call__(placements, graph, _TestExecutableFinder())
+            gatherer.__call__(graph)
 
 
 if __name__ == '__main__':
