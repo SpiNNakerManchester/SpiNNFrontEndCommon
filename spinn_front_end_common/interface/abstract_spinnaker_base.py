@@ -372,8 +372,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
 
-        self._dsg_algorithm = \
-            "FrontEndCommonApplicationGraphDataSpecificationWriter"
+        self._dsg_algorithm = "FrontEndCommonGraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
         self._none_labelled_vertex_count = 0
