@@ -1,9 +1,7 @@
 from six import add_metaclass
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
-
-from pacman.executor.injection_decorator import supports_injection
-from pacman.executor.injection_decorator import inject
+from pacman.executor.injection_decorator import supports_injection, inject
 
 
 @supports_injection
