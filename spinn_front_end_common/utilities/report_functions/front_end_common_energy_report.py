@@ -193,9 +193,9 @@ class FrontEndCommonEnergyReport(object):
         load_time_cost = self._calculate_load_time_cost(
             pacman_provenance, machine, output, load_time, active_chips)
 
-        mapping_cost = self._calculate_idle_cost(mapping_time, machine)
+        mapping_cost = self._calculate_power_down_cost(mapping_time, machine)
 
-        dsg_cost = self._calculate_idle_cost(dsg_time, machine)
+        dsg_cost = self._calculate_power_down_cost(dsg_time, machine)
 
         # figure extraction time cost
         extraction_time_cost = \
@@ -534,7 +534,7 @@ class FrontEndCommonEnergyReport(object):
         # handle all idle cores
         energy_cost += self._calculate_idle_cost(total_milliseconds, machine)
 
-        diff_of_algorithms_and_boiler = total_milliseconds - load_time
+        diff_of_algorithms_and_boiler = load_time - total_milliseconds
         energy_cost += (
             diff_of_algorithms_and_boiler * (
                 len(list(machine.chips)) *
@@ -600,3 +600,13 @@ class FrontEndCommonEnergyReport(object):
         """
         return time * machine.total_available_user_cores * (
                 self.JULES_PER_MILLISECOND_PER_IDLE_CHIP / 18)
+
+    def _calculate_power_down_cost(self, time, machine):
+        """ calculate power down costs
+        
+        :param time: time pwoered down
+        :param machine: machine object
+        :return: power in jules
+        """
+        return (time * len(machine.ethernet_connected_chips) *
+                self.JULES_PER_MILLISECOND_PER_POWER_DOWN_BOARD)
