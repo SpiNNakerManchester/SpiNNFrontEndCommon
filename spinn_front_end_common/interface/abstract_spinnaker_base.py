@@ -1222,7 +1222,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._application_graph.n_vertices != 0):
                 algorithms.append("PartitionerReport")
 
-
             # only add write placer report with application graph when
             # there's application vertices
             if (self._config.getboolean(
