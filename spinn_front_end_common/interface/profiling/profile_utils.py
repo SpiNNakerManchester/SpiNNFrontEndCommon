@@ -5,6 +5,8 @@ from spinn_front_end_common.interface.profiling.profile_data \
 import logging
 import struct
 
+from spinn_front_end_common.utilities import helpful_functions
+
 logger = logging.getLogger(__name__)
 
 PROFILE_HEADER_SIZE_BYTES = 4
@@ -66,32 +68,22 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     """
 
     profile_data = ProfileData(tag_labels)
-    (x, y, p) = placement.x, placement.y, placement.p
 
-    # Get the App Data for the core
-    app_data_base_address = \
-        txrx.get_cpu_information_from_core(x, y, p).user[0]
-
-    # Get the position of the value buffer
-    profiling_region_base_address_offset = \
-        utility_calls.get_region_base_address_offset(
-            app_data_base_address, profile_region)
-    profiling_region_base_address_buf = buffer(txrx.read_memory(
-        x, y, profiling_region_base_address_offset, 4))
     profiling_region_base_address = \
-        struct.unpack_from("<I", profiling_region_base_address_buf)[0]
+        helpful_functions.locate_memory_region_for_placement(
+            placement=placement, region=profile_region, transceiver=txrx)
 
     # Read the profiling data size
     words_written_data =\
         buffer(txrx.read_memory(
-            x, y,
+            placement.x, placement.y,
             profiling_region_base_address + PROFILE_HEADER_SIZE_BYTES, 4))
     words_written = \
         struct.unpack_from("<I", words_written_data)[0]
 
     # Read the profiling data
     profiling_data = txrx.read_memory(
-        x, y,
+        placement.x, placement.y,
         profiling_region_base_address +
         BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION, words_written * 4)
     profile_data.add_data(profiling_data)
