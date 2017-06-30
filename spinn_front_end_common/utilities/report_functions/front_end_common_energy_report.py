@@ -27,6 +27,9 @@ class FrontEndCommonEnergyReport(object):
     # converter between jules to Killiwatt hours
     JULES_TO_KILLIWATT_HOURS = 3600000
 
+    # base energy of power off machine
+    JULES_PER_MILLISECOND_PER_POWER_DOWN_BOARD = 000.0000
+
     # TODO verify this is correct when doing multiboard comms
     N_MONITORS_ACTIVE_DURING_COMMS = 2
 
@@ -68,6 +71,10 @@ class FrontEndCommonEnergyReport(object):
         summary_report = os.path.join(
             report_default_directory, self.ENERGY_SUMMARY_FILENAME)
 
+        total_time = (
+            execute_time + load_time + extraction_time + dsg_time +
+            mapping_time)
+
         with open(detailed_report, "w") as output:
             active_chip_cost, fpga_cost, packet_cost, mapping_cost, \
                 load_time_cost, data_extraction_cost, dsg_cost = \
@@ -75,21 +82,22 @@ class FrontEndCommonEnergyReport(object):
                     placements, machine, version, spalloc_server,
                     remote_spinnaker_url, time_scale_factor, machine_time_step,
                     pacman_provenance, router_provenance, runtime, dsg_time,
-                    buffer_manager, output, load_time, mapping_time)
+                    buffer_manager, output, load_time, mapping_time,
+                    total_time)
 
         with open(summary_report, "w") as output:
             self._write_summary_report(
                 active_chip_cost, fpga_cost, packet_cost, mapping_cost,
                 load_time_cost, data_extraction_cost, runtime, output,
-                mapping_time, load_time, execute_time, dsg_time, dsg_cost,
-                extraction_time)
+                mapping_time, load_time, dsg_time, dsg_cost,
+                extraction_time, total_time)
 
     @staticmethod
     def _write_summary_report(
             active_chip_cost, fpga_cost, packet_cost, mapping_cost,
             load_time_cost, data_extraction_cost, runtime, output,
-            mapping_time, load_time, execute_time, dsg_time, dsg_cost,
-            extraction_time):
+            mapping_time, load_time, dsg_time, dsg_cost,
+            extraction_time, total_time):
         """ write summary file
 
         :param active_chip_cost: active chip cost
@@ -103,9 +111,6 @@ class FrontEndCommonEnergyReport(object):
         :param output: file writer
         :rtype: None
         """
-
-        total_time = (execute_time + load_time + extraction_time + dsg_time +
-                      mapping_time)
 
         # total the energy costs
         total_jules = (
@@ -147,7 +152,7 @@ class FrontEndCommonEnergyReport(object):
             self, placements, machine, version, spalloc_server,
             remote_spinnaker_url, time_scale_factor, machine_time_step,
             pacman_provenance, router_provenance, runtime, dsg_time,
-            buffer_manager, output, load_time, mapping_time):
+            buffer_manager, output, load_time, mapping_time, total_runtime):
         """ write detailed report and calculate costs
 
         :param placements: placements
@@ -177,8 +182,9 @@ class FrontEndCommonEnergyReport(object):
 
         # figure FPGA cost
         fpga_cost = self._calculate_fpga_cost(
-            machine, version, spalloc_server, remote_spinnaker_url, runtime,
-            machine_time_step, time_scale_factor, output)
+            machine, version, spalloc_server, remote_spinnaker_url,
+            total_runtime, runtime, machine_time_step, time_scale_factor,
+            output)
 
         # figure load time cost
         load_time_cost = self._calculate_load_time_cost(
@@ -231,14 +237,15 @@ class FrontEndCommonEnergyReport(object):
 
     def _calculate_fpga_cost(
             self, machine, version, spalloc_server, remote_spinnaker_url,
-            runtime, machine_time_step, time_scale_factor, output):
+            total_runtime, runtime, machine_time_step, time_scale_factor,
+            output):
         """ fpga cost calculation
 
         :param machine: machine rep
         :param version: machine version
         :param spalloc_server: spalloc server ip
         :param remote_spinnaker_url: remote spinnaker
-        :param runtime: runtime
+        :param total_runtime: runtime
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
         :param output: the file writer
@@ -266,8 +273,9 @@ class FrontEndCommonEnergyReport(object):
                 # active fpgas
                 if n_operational_fpgas > 0:
                     return self._print_out_fpga_cost(
-                        runtime, machine_time_step, time_scale_factor,
-                        n_operational_fpgas, output, version)
+                        total_runtime, runtime, machine_time_step,
+                        time_scale_factor, n_operational_fpgas, output,
+                        version)
                 else:  # no active fpgas
                     output.write(
                         "The FPGA's on the Spinn {} board are turned off and "
@@ -284,11 +292,11 @@ class FrontEndCommonEnergyReport(object):
                 total_fpgas += self._board_n_operational_fpgas(
                     machine, ethernet_connected_chip)
             return self._print_out_fpga_cost(
-                runtime, machine_time_step, time_scale_factor, total_fpgas,
-                output, version)
+                total_runtime, runtime, machine_time_step, time_scale_factor,
+                total_fpgas, output, version)
 
     def _print_out_fpga_cost(
-            self, runtime, machine_time_step, time_scale_factor,
+            self, total_runtime, runtime, machine_time_step, time_scale_factor,
             n_operational_fpgas, output, version):
         """ prints out to file and returns cost
 
@@ -301,8 +309,9 @@ class FrontEndCommonEnergyReport(object):
         :return: power usage
         """
         power_usage = (
-            runtime * machine_time_step * time_scale_factor *
-            self.JULES_PER_MILLISECOND_PER_FPGA * n_operational_fpgas)
+            ((runtime * machine_time_step * time_scale_factor) +
+             total_runtime) * self.JULES_PER_MILLISECOND_PER_FPGA *
+            n_operational_fpgas)
         output.write(
             "{} FPGA's on the Spinn {} board are turned on and "
             "therefore the energy used by the FPGA is {}".format(
