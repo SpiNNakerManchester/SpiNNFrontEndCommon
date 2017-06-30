@@ -70,25 +70,26 @@ class FrontEndCommonEnergyReport(object):
 
         with open(detailed_report, "w") as output:
             active_chip_cost, fpga_cost, packet_cost, mapping_cost, \
-                load_time_cost, data_extraction_cost = \
+                load_time_cost, data_extraction_cost, dsg_cost = \
                 self._write_detailed_report(
                     placements, machine, version, spalloc_server,
                     remote_spinnaker_url, time_scale_factor, machine_time_step,
-                    pacman_provenance, router_provenance, runtime,
+                    pacman_provenance, router_provenance, runtime, dsg_time,
                     buffer_manager, output, load_time, mapping_time)
 
         with open(summary_report, "w") as output:
             self._write_summary_report(
                 active_chip_cost, fpga_cost, packet_cost, mapping_cost,
                 load_time_cost, data_extraction_cost, runtime, output,
-                mapping_time, load_time, execute_time, dsg_time,
+                mapping_time, load_time, execute_time, dsg_time, dsg_cost,
                 extraction_time)
 
     @staticmethod
     def _write_summary_report(
             active_chip_cost, fpga_cost, packet_cost, mapping_cost,
             load_time_cost, data_extraction_cost, runtime, output,
-            mapping_time, load_time, execute_time, dsg_time, extraction_time):
+            mapping_time, load_time, execute_time, dsg_time, dsg_cost,
+            extraction_time):
         """ write summary file
 
         :param active_chip_cost: active chip cost
@@ -109,7 +110,7 @@ class FrontEndCommonEnergyReport(object):
         # total the energy costs
         total_jules = (
             active_chip_cost + fpga_cost + packet_cost + mapping_cost +
-            load_time_cost + data_extraction_cost)
+            load_time_cost + data_extraction_cost + dsg_cost)
 
         # deduce wattage from the runtime
         total_watts = total_jules / (total_time / 1000)
@@ -126,6 +127,8 @@ class FrontEndCommonEnergyReport(object):
             "milliseconds\n"
             "Energy used during the mapping process is {} Joules over {} "
             "milliseconds\n"
+            "Energy used by the data generation process is {} Joules over {} "
+            "milliseconds\n"
             "Energy used during the loading process is {} Joules over {} "
             "milliseconds\n"
             "Energy used during the data extraction process is {} Jules over "
@@ -135,14 +138,15 @@ class FrontEndCommonEnergyReport(object):
             "     {} estimated average Watts or \n"
             "     {} kWh\n".format(
                 active_chip_cost, runtime, fpga_cost, runtime, packet_cost,
-                total_time, mapping_cost, mapping_time, load_time_cost,
-                load_time, data_extraction_cost, extraction_time, total_time,
-                total_jules, total_watts, killawatt_hour))
+                total_time, mapping_cost, mapping_time, dsg_cost, dsg_time,
+                load_time_cost, load_time, data_extraction_cost,
+                extraction_time, total_time, total_jules, total_watts,
+                killawatt_hour))
 
     def _write_detailed_report(
             self, placements, machine, version, spalloc_server,
             remote_spinnaker_url, time_scale_factor, machine_time_step,
-            pacman_provenance, router_provenance, runtime,
+            pacman_provenance, router_provenance, runtime, dsg_time,
             buffer_manager, output, load_time, mapping_time):
         """ write detailed report and calculate costs
 
@@ -182,6 +186,8 @@ class FrontEndCommonEnergyReport(object):
 
         mapping_cost = self._calculate_idle_cost(mapping_time, machine)
 
+        dsg_cost = self._calculate_idle_cost(dsg_time, machine)
+
         # figure extraction time cost
         extraction_time_cost = \
             self._calculate_data_extraction_time_cost(
@@ -194,7 +200,7 @@ class FrontEndCommonEnergyReport(object):
                 chip, placements, buffer_manager, output, machine)
 
         return machine_active_cost, fpga_cost, packet_cost, mapping_cost, \
-            load_time_cost, extraction_time_cost
+            load_time_cost, extraction_time_cost, dsg_cost
 
     def _write_warning(self, output):
         """ writes the warning about this being only an estimate
