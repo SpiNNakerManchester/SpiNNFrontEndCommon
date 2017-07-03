@@ -48,6 +48,8 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
     def set_power(self, power):
         self._job.set_power(power)
+        if power:
+            self._job.wait_until_ready()
 
     def run(self):
         state = self._job.state
