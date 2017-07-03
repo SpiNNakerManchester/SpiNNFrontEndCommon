@@ -5,7 +5,7 @@ from pacman.model.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.decorators import overrides
 from spinnman.transceiver import Transceiver
-from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
 from spinn_machine.tags import IPTag
 
@@ -37,7 +37,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
 
         # Create board connections
         connections = []
-        connections.append(UDPSCAMPConnection(
+        connections.append(SCAMPConnection(
             remote_host=None))
         connections.append(UDPEIEIOConnection())
 

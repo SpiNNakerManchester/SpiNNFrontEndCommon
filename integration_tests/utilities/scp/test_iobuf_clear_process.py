@@ -3,7 +3,7 @@ import struct
 
 from spinnman.processes import RoundRobinConnectionSelector
 from spinnman.messages.sdp import SDPHeader
-from spinnman.connections.udp_packet_connections import UDPSCAMPConnection
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 
 from spinn_machine import CoreSubsets, CoreSubset
 
@@ -21,7 +21,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         receiver.start()
 
         # Set up a connection to the "machine"
-        connection = UDPSCAMPConnection(
+        connection = SCAMPConnection(
             0, 0, remote_host="127.0.0.1", remote_port=receiver.local_port)
         selector = RoundRobinConnectionSelector([connection])
 
