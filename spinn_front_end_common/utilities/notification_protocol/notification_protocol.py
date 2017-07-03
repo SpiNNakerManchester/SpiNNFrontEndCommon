@@ -1,6 +1,6 @@
 # spinnman imports
 from multiprocessing.pool import ThreadPool
-from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import DatabaseConfirmation
 from spinnman.messages.eieio.command_messages \
     import NotificationProtocolPauseStop, NotificationProtocolStartResume
@@ -31,7 +31,7 @@ class NotificationProtocol(object):
         self._wait_pool = ThreadPool(processes=1)
         self._data_base_message_connections = list()
         for socket_address in socket_addresses:
-            self._data_base_message_connections.append(UDPEIEIOConnection(
+            self._data_base_message_connections.append(EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
                 remote_port=socket_address.notify_port_no))

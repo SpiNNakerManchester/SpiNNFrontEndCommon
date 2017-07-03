@@ -5,7 +5,7 @@ from spinn_utilities.socket_address import SocketAddress
 from spinn_front_end_common.utilities.notification_protocol \
     import NotificationProtocol
 
-from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
 from spinnman.constants import EIEIO_COMMAND_IDS
 
@@ -16,7 +16,7 @@ class TestNotificationProtocol(unittest.TestCase):
         """ Test the sending of the start/resume message of the notification\
             protocol
         """
-        listener = UDPEIEIOConnection()
+        listener = EIEIOConnection()
         socket_addresses = [SocketAddress(
             "127.0.0.1", listener.local_port, None)]
         protocol = NotificationProtocol(socket_addresses, False)

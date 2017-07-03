@@ -8,7 +8,7 @@ from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.eieio.data_messages.specialized_message_types \
     import EIEIO16DataMessage, EIEIO32DataMessage
 from spinnman.connections import ConnectionListener
-from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.data_messages import EIEIOKeyPayloadDataElement
 
 import logging
@@ -162,7 +162,7 @@ class LiveEventConnection(DatabaseConnection):
                 "machine_time_step") / 1000.0
 
         if self._send_labels is not None:
-            self._sender_connection = UDPEIEIOConnection()
+            self._sender_connection = EIEIOConnection()
             for send_label in self._send_labels:
                 ip_address, port = None, None
                 if self._machine_vertices:
@@ -201,7 +201,7 @@ class LiveEventConnection(DatabaseConnection):
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
                 if port not in self._receivers:
-                    receiver = UDPEIEIOConnection(local_port=port)
+                    receiver = EIEIOConnection(local_port=port)
                     send_port_trigger_message(receiver, board_address)
                     listener = ConnectionListener(receiver)
                     listener.add_callback(self._receive_packet_callback)

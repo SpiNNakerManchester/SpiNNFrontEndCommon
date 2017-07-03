@@ -6,7 +6,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.decorators import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinn_machine.tags import IPTag
 
 
@@ -39,7 +39,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         connections = []
         connections.append(SCAMPConnection(
             remote_host=None))
-        connections.append(UDPEIEIOConnection())
+        connections.append(EIEIOConnection())
 
         # Create two placements and 'Placements' object
         pl1 = Placement(v1, 0, 1, 1)
@@ -50,7 +50,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         trnx = Transceiver(version=5, connections=connections)
         # Alternatively, one can register a udp listener for testing via:
         # trnx.register_udp_listener(callback=None,
-        #        connection_class=UDPEIEIOConnection)
+        #        connection_class=EIEIOConnection)
 
         # Create buffer manager
         bm = BufferManager(pl, t, trnx, False, None)
@@ -62,7 +62,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
 
         number_of_listeners = 0
         for i in bm._transceiver._udp_listenable_connections_by_class[
-                UDPEIEIOConnection]:
+                EIEIOConnection]:
             # Check if listener is registered on connection - we only expect
             # one listener to be registered, as all connections can use the
             # same listener for the buffer manager

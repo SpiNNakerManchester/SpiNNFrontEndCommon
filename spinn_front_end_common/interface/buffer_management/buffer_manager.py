@@ -3,7 +3,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
-from spinnman.connections.udp_packet_connections import UDPEIEIOConnection
+from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages \
     import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData
 from spinnman.messages.eieio.command_messages \
@@ -195,7 +195,7 @@ class BufferManager(object):
 
     def _create_connection(self, tag):
         connection = self._transceiver.register_udp_listener(
-            self.receive_buffer_command_message, UDPEIEIOConnection,
+            self.receive_buffer_command_message, EIEIOConnection,
             local_port=tag.port, local_host=tag.ip_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
         utility_functions.send_port_trigger_message(
