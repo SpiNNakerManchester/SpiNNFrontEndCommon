@@ -3,6 +3,16 @@
 
 #define PROFILER_N_HEADER_WORDS 1
 
+//---------------------------------------
+// Declared functions
+//---------------------------------------
+// Initialised the profiler from a SDRAM region
+void profiler_init(uint32_t* data_region);
+
+// Finalises profiling - potentially slow process of writing profiler_count to
+// SDRAM
+void profiler_finalise();
+
 #ifdef PROFILER_ENABLED
 
 #include <stdint.h>
@@ -21,16 +31,6 @@
 extern uint32_t *profiler_count;
 extern uint32_t profiler_samples_remaining;
 extern uint32_t *profiler_output;
-
-//---------------------------------------
-// Declared functions
-//---------------------------------------
-// Initialised the profiler from a SDRAM region
-void profiler_init(uint32_t* address, uint32_t* data_region);
-
-// Finalises profiling - potentially slow process of writing profiler_count to
-// SDRAM
-void profiler_finalise();
 
 //---------------------------------------
 // Inline functions
@@ -59,8 +59,6 @@ static inline void profiler_write_entry_disable_fiq(uint32_t tag) {
 
 static inline void profiler_skip (void) { return; }
 
-#define profiler_finalise() profiler_skip()
-#define profiler_init(address, data_region) profiler_skip()
 #define profiler_write_entry(tag) profiler_skip()
 #define profiler_write_entry_disable_irq_fiq(tag) profiler_skip()
 #define profiler_write_entry_disable_fiq(tag) profiler_skip()

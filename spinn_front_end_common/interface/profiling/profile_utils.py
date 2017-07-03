@@ -14,12 +14,6 @@ SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 8
 BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 8
 
 
-def get_profile_header_size():
-    """ Get the size of the header of the profiler
-    """
-    return PROFILE_HEADER_SIZE_BYTES
-
-
 def get_profile_region_size(n_samples):
     """ Get the size of the region of the profile data
     
@@ -39,10 +33,9 @@ def reserve_profile_region(spec, region, n_samples):
     :rtype: None
     
     """
-    if n_samples != 0:
-        size = get_profile_region_size(n_samples)
-        spec.reserve_memory_region(
-            region=region, size=size, label="profilerRegion", empty=True)
+    size = get_profile_region_size(n_samples)
+    spec.reserve_memory_region(
+        region=region, size=size, label="profilerRegion", empty=True)
 
 
 def write_profile_region_data(spec, region, n_samples):

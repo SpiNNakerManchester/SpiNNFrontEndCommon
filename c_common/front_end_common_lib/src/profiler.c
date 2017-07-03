@@ -13,8 +13,8 @@ uint32_t *profiler_output = NULL;
 //---------------------------------------
 // Functions
 //---------------------------------------
-void profiler_init(uint32_t* address, uint32_t* data_region) {
-    profiler_samples_remaining = address[0];
+void profiler_init(uint32_t* data_region) {
+    profiler_samples_remaining = data_region[0];
     profiler_count = &data_region[0];
     profiler_output = &data_region[1];
 
