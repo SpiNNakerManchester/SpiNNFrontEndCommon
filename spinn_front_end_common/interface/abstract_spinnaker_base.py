@@ -1,6 +1,7 @@
 """
 main interface for the spinnaker tools
 """
+import spinn_utilities.conf_loader as conf_loader
 
 # pacman imports
 from pacman.model.graphs import AbstractVirtualVertex
@@ -74,6 +75,8 @@ import signal
 
 
 logger = logging.getLogger(__name__)
+
+CONFIG_FILE = "spinnaker.cfg"
 
 
 class AbstractSpinnakerBase(SimulatorInterface):
@@ -295,14 +298,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
     ]
 
     def __init__(
-            self, config, executable_finder, graph_label=None,
+            self, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            extra_mapping_inputs=None, extra_mapping_algorithms=None,
-            extra_pre_run_algorithms=None, extra_post_run_algorithms=None,
-            n_chips_required=None, extra_load_algorithms=None):
+            n_chips_required=None,
+            additional_default_config_paths=None, old_configfile=None):
 
         # global params
-        self._config = config
+        default_config_paths = [os.path.join(os.path.dirname(__file__),
+                                             CONFIG_FILE)]
+        if additional_default_config_paths is not None:
+            default_config_paths.extend(additional_default_config_paths)
+
+        self._config = conf_loader.load_config(filename=CONFIG_FILE,
+                                               defaults=default_config_paths,
+                                               old_filename=old_configfile)
 
         self._executable_finder = executable_finder
 
@@ -356,21 +365,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # extra algorithms and inputs for runs, should disappear in future
         #  releases
         self._extra_mapping_algorithms = list()
-        if extra_mapping_algorithms is not None:
-            self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
         self._extra_mapping_inputs = dict()
-        if extra_mapping_inputs is not None:
-            self._extra_mapping_inputs.update(extra_mapping_inputs)
         self._extra_pre_run_algorithms = list()
-        if extra_pre_run_algorithms is not None:
-            self._extra_pre_run_algorithms = \
-                extra_pre_run_algorithms + self._extra_pre_run_algorithms
         self._extra_post_run_algorithms = list()
-        if extra_post_run_algorithms is not None:
-            self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
         self._extra_load_algorithms = list()
-        if extra_load_algorithms is not None:
-            self._extra_load_algorithms.extend(extra_load_algorithms)
 
         self._dsg_algorithm = \
             "FrontEndCommonApplicationGraphDataSpecificationWriter"
@@ -401,7 +399,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._infinite_run = False
 
         self._app_id = helpful_functions.read_config_int(
-            config, "Machine", "appID")
+            self._config, "Machine", "appID")
 
         # folders
         self._report_default_directory = None
@@ -443,6 +441,26 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._raise_keyboard_interrupt = False
 
         globals_variables.set_simulator(self)
+
+    def update_extra_mapping_inputs(self, extra_mapping_inputs):
+        if extra_mapping_inputs is not None:
+            self._extra_mapping_inputs.update(extra_mapping_inputs)
+
+    def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
+        if extra_mapping_algorithms is not None:
+            self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
+
+    def prepend_extra_pre_run_algorithms(self, extra_pre_run_algorithms):
+        if extra_pre_run_algorithms is not None:
+            self._extra_pre_run_algorithms[0:0] = extra_pre_run_algorithms
+
+    def extend_extra_post_run_algorithms(self, extra_post_run_algorithms):
+        if extra_post_run_algorithms is not None:
+            self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
+
+    def extend_extra_load_algorithms(self, extra_load_algorithms):
+        if extra_load_algorithms is not None:
+            self._extra_load_algorithms.extend(extra_load_algorithms)
 
     def add_live_packet_gatherer_parameters(
             self, live_packet_gatherer_params, vertex_to_record_from):
