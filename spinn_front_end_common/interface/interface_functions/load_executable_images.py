@@ -3,7 +3,7 @@ from spinn_utilities.progress_bar import ProgressBar
 # front end common imports
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
-from spinnman.messages.scp.enums import SCPSignal
+from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
 
 # general imports
@@ -51,4 +51,4 @@ class FrontEndCommonLoadExecutableImages(object):
     def _start_simulation(self, executable_targets, txrx, app_id):
         txrx.wait_for_cores_to_be_in_state(
             executable_targets.all_core_subsets, app_id, [CPUState.READY])
-        txrx.send_signal(app_id, SCPSignal.START)
+        txrx.send_signal(app_id, Signal.START)

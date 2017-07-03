@@ -4,7 +4,7 @@ import time
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
-from spinnman.messages.scp.enums import SCPSignal
+from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
@@ -44,16 +44,16 @@ class FrontEndCommonApplicationRunner(object):
                 CPUState.SYNC0, CPUState.SYNC1
             ]
         elif executable_start_type == ExecutableStartType.SYNC:
-            sync_signal = SCPSignal.SYNC0
+            sync_signal = Signal.SYNC0
             expected_states = [CPUState.SYNC0]
         elif (executable_start_type ==
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
             if no_sync_changes % 2 == 0:
                 expected_states = [CPUState.SYNC0]
-                sync_signal = SCPSignal.SYNC0
+                sync_signal = Signal.SYNC0
             else:
                 expected_states = [CPUState.SYNC1]
-                sync_signal = SCPSignal.SYNC1
+                sync_signal = Signal.SYNC1
 
             # when it falls out of the running, it'll be in a next sync state,
             # thus update needed
