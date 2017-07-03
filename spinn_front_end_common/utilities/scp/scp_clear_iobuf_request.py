@@ -1,7 +1,7 @@
 from spinnman.messages.sdp import SDPHeader, SDPFlag
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.scp import SCPRequestHeader
-from spinnman.messages.scp.impl import SCPCheckOKResponse
+from spinnman.messages.scp.impl import CheckOKResponse
 
 from spinn_front_end_common.utilities.constants \
     import SDP_RUNNING_MESSAGE_CODES
@@ -27,6 +27,6 @@ class SCPClearIOBUFRequest(AbstractSCPRequest):
             argument_3=arg3)
 
     def get_scp_response(self):
-        return SCPCheckOKResponse(
+        return CheckOKResponse(
             "clear iobuf",
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
