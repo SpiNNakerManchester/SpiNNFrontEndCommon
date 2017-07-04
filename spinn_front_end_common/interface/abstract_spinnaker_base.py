@@ -298,10 +298,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
     ]
 
     def __init__(
-            self, executable_finder, graph_label=None,
+            self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None,
-            default_config_paths=None, configfile=None):
+            default_config_paths=None):
 
         # global params
         if default_config_paths is None:
