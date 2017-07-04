@@ -9,7 +9,7 @@ from spinnman.messages.eieio.data_messages.specialized_message_types \
     import EIEIO16DataMessage, EIEIO32DataMessage
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.data_messages import EIEIOKeyPayloadDataElement
+from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
 
 import logging
 
@@ -300,7 +300,7 @@ class LiveEventConnection(DatabaseConnection):
                         (atom_id, label_id) = self._key_to_atom_id_and_label[
                             key]
                         for callback in self._live_event_callbacks[label_id]:
-                            if isinstance(element, EIEIOKeyPayloadDataElement):
+                            if isinstance(element, KeyPayloadDataElement):
                                 callback(
                                     self._receive_labels[label_id], atom_id,
                                     element.payload)
