@@ -889,12 +889,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            self._shutdown()
-            helpful_functions.write_finished_file(
-                self._app_data_top_simulation_folder,
-                self._report_simulation_top_directory)
-
             ex_type, ex_value, ex_traceback = sys.exc_info()
+            try:
+                self._shutdown()
+                helpful_functions.write_finished_file(
+                    self._app_data_top_simulation_folder,
+                    self._report_simulation_top_directory)
+            except:
+                traceback.print_exc()
             raise ex_type, ex_value, ex_traceback
 
     def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
