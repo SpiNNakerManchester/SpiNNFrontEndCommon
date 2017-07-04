@@ -70,15 +70,16 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
     words_written_data =\
         buffer(txrx.read_memory(
             placement.x, placement.y,
-            profiling_region_base_address + PROFILE_HEADER_SIZE_BYTES, 4))
+            profiling_region_base_address, 4))
     words_written = \
         struct.unpack_from("<I", words_written_data)[0]
 
     # Read the profiling data
-    profiling_data = txrx.read_memory(
-        placement.x, placement.y,
-        profiling_region_base_address +
-        BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION, words_written * 4)
-    profile_data.add_data(profiling_data)
+    if words_written != 0:
+        profiling_data = txrx.read_memory(
+            placement.x, placement.y,
+            profiling_region_base_address +
+            BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION, words_written * 4)
+        profile_data.add_data(profiling_data)
 
     return profile_data
