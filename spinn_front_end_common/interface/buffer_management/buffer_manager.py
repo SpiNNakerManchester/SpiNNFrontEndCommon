@@ -12,8 +12,6 @@ from spinnman.messages.eieio.command_messages \
     import HostSendSequencedData, EventStopRequest
 from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
-from spinnman.messages.eieio.data_messages.specialized_message_types \
-    import EIEIO32BitTimedPayloadPrefixDataMessage as EIEIOMessage
 from spinnman.exceptions import SpinnmanInvalidPacketException
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
@@ -39,7 +37,8 @@ import re
 logger = logging.getLogger(__name__)
 
 # The minimum size of any message - this is the headers plus one entry
-_MIN_MESSAGE_SIZE = EIEIOMessage(timestamp=0).get_min_packet_length()
+_MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
+    eieio_type=EIEIOType.KEY_PAYLOAD_32_BIT, is_timestamp=True)
 
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
@@ -333,7 +332,7 @@ class BufferManager(object):
         :type region: int
         :return: A new message, or None if no keys can be added
         :rtype: None or\
-                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.EIEIO32BitTimedPayloadPrefixDataMessage`
+                    :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
         """
 
         # If there are no more messages to send, return None
@@ -342,7 +341,8 @@ class BufferManager(object):
 
         # Create a new message
         next_timestamp = vertex.get_next_timestamp(region)
-        message = EIEIOMessage(next_timestamp)
+        message = EIEIODataMessage.create(
+            EIEIOType.KEY_PAYLOAD_32_BIT, timestamp=next_timestamp)
 
         # If there is no room for the message, return None
         if message.size + _N_BYTES_PER_KEY > size:
@@ -372,7 +372,7 @@ class BufferManager(object):
         :type region: int
         :return: A list of messages
         :rtype: list of\
-                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.EIEIO32BitTimedPayloadPrefixDataMessage`
+                    :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
         """
 
         # Get the vertex load details

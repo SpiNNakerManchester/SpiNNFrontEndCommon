@@ -5,8 +5,8 @@ from collections import OrderedDict
 from spinn_front_end_common.utilities.database import DatabaseConnection
 
 from spinnman.utilities.utility_functions import send_port_trigger_message
-from spinnman.messages.eieio.data_messages.specialized_message_types \
-    import EIEIO16DataMessage, EIEIO32DataMessage
+from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from spinnman.messages.eieio import EIEIOType
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
@@ -346,9 +346,9 @@ class LiveEventConnection(DatabaseConnection):
         while pos < len(atom_ids):
 
             if send_full_keys:
-                message = EIEIO32DataMessage()
+                message = EIEIODataMessage.create(EIEIOType.KEY_32_BIT)
             else:
-                message = EIEIO16DataMessage()
+                message = EIEIODataMessage.create(EIEIOType.KEY_16_BIT)
 
             events_in_packet = 0
             while pos < len(atom_ids) and events_in_packet < max_keys:
