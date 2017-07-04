@@ -48,15 +48,16 @@ class FrontEndCommonProfileDataGatherer(object):
                 # write profile data to file
                 with open(file_name, mode) as writer:
                     writer.write(
-                        "{: <10s} {: <7s} {: <7s} {: <14s} {: <14s}".format(
+                        "{: <10s} {: <7s} {: <7s} {: <14s} {: <14s}\n".format(
                             "tag", "n_calls", "mean_ms", "n_calls_per_ts",
                             "mean_ms_per_ts"))
                     writer.write(
-                        "{:-<10s} {:-<7s} {:-<7s} {:-<14s} {:-<14s}".format(
+                        "{:-<10s} {:-<7s} {:-<7s} {:-<14s} {:-<14s}\n".format(
                             "", "", "", "", ""))
                     for tag in profile_data.tags:
                         writer.write(
-                            "{: <10s} {: >7d} {: >7.2f} {: >14.2f} {: >14.2f}"
+                            "{: <10s} {: >7d} {: >7.2f} {: >14.2f} "
+                            "{: >14.2f}\n"
                             .format(
                                 tag, profile_data.get_n_calls(tag),
                                 profile_data.get_mean_ms(tag),
