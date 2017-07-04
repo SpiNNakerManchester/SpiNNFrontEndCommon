@@ -301,17 +301,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None,
-            additional_default_config_paths=None, old_configfile=None):
+            default_config_paths=None, configfile=None):
 
         # global params
-        default_config_paths = [os.path.join(os.path.dirname(__file__),
-                                             CONFIG_FILE)]
-        if additional_default_config_paths is not None:
-            default_config_paths.extend(additional_default_config_paths)
+        if default_config_paths is None:
+            default_config_paths = []
+        default_config_paths.insert(0, os.path.join(os.path.dirname(__file__),
+                                                    CONFIG_FILE))
 
-        self._config = conf_loader.load_config(filename=CONFIG_FILE,
-                                               defaults=default_config_paths,
-                                               old_filename=old_configfile)
+        self._config = conf_loader.load_config(filename=configfile,
+                                               defaults=default_config_paths)
 
         self._executable_finder = executable_finder
 
@@ -443,24 +442,45 @@ class AbstractSpinnakerBase(SimulatorInterface):
         globals_variables.set_simulator(self)
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
+        if self.has_ran:
+            msg = "Changing mapping inputs is not supported after run"
+            raise common_exceptions.ConfigurationException(msg)
         if extra_mapping_inputs is not None:
             self._extra_mapping_inputs.update(extra_mapping_inputs)
 
     def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
+        if self.has_ran:
+            msg = "Changing algorithms is not supported after run"
+            raise common_exceptions.ConfigurationException(msg)
         if extra_mapping_algorithms is not None:
             self._extra_mapping_algorithms.extend(extra_mapping_algorithms)
 
     def prepend_extra_pre_run_algorithms(self, extra_pre_run_algorithms):
+        if self.has_ran:
+            msg = "Changing algorithms is not supported after run"
+            raise common_exceptions.ConfigurationException(msg)
         if extra_pre_run_algorithms is not None:
             self._extra_pre_run_algorithms[0:0] = extra_pre_run_algorithms
 
     def extend_extra_post_run_algorithms(self, extra_post_run_algorithms):
+        if self.has_ran:
+            msg = "Changing algorithms is not supported after run"
+            raise common_exceptions.ConfigurationException(msg)
         if extra_post_run_algorithms is not None:
             self._extra_post_run_algorithms.extend(extra_post_run_algorithms)
 
     def extend_extra_load_algorithms(self, extra_load_algorithms):
+        if self.has_ran:
+            msg = "Changing algorithms is not supported after run"
+            raise common_exceptions.ConfigurationException(msg)
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
+
+    def set_n_chips_required(self, n_chips_required):
+        if self.has_ran:
+            msg = "Setting n_chips_required is not supported after run"
+            raise common_exceptions.ConfigurationException(msg)
+        self._n_chips_required = n_chips_required
 
     def add_live_packet_gatherer_parameters(
             self, live_packet_gatherer_params, vertex_to_record_from):
