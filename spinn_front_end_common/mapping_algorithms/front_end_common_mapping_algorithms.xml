@@ -1,4 +1,7 @@
-<algorithms>
+<algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="MundyOnChipRouterCompression">
         <python_module>spinn_front_end_common.mapping_algorithms.on_chip_router_table_compression.mundy_on_chip_router_compression</python_module>
         <python_class>MundyOnChipRouterCompression</python_class>

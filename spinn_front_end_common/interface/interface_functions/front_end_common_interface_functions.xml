@@ -1,4 +1,7 @@
-<algorithms>
+<algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="FrontEndCommonPreAllocateResourcesForLivePacketGatherers">
         <python_module>
             spinn_front_end_common.interface.interface_functions.front_end_common_pre_allocate_resources_for_live_packet_gatherers
@@ -238,8 +241,6 @@
             <param_name>buffer_ip_address</param_name>
             <param_name>machine_graph</param_name>
         </required_inputs>
-        <optional_inputs>
-        </optional_inputs>
         <outputs>
             <param_type>TrafficIdentifierToPortNumMap</param_type>
         </outputs>
@@ -533,8 +534,6 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
         </required_inputs>
-        <outputs>
-        </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonTagsLoader">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_tags_loader</python_module>
@@ -950,15 +949,15 @@
                 <param_type>ProvenanceItems</param_type>
             </parameter>
         </input_definitions>
-        <optional_inputs>
-            <param_name>provenance_data_objects</param_name>
-        </optional_inputs>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>router_tables</param_name>
             <param_name>has_ran</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>provenance_data_objects</param_name>
+        </optional_inputs>
         <outputs>
             <param_type>ProvenanceItems</param_type>
         </outputs>
@@ -980,8 +979,6 @@
             <param_name>provenance_data_items</param_name>
             <param_name>provenance_data_path</param_name>
         </required_inputs>
-        <outputs>
-        </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonProvenanceJSONWriter">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_provenance_json_writer</python_module>
@@ -1000,8 +997,6 @@
             <param_name>provenance_data_items</param_name>
             <param_name>provenance_data_path</param_name>
         </required_inputs>
-        <outputs>
-        </outputs>
     </algorithm>
     <algorithm name="FrontEndCommonDatabaseInterface">
         <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_database_interface</python_module>
@@ -1065,13 +1060,6 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
         </input_definitions>
-        <optional_inputs>
-            <all_of>
-                <param_name>create_atom_to_event_id_mapping</param_name>
-                <param_name>application_graph</param_name>
-                <param_name>graph_mapper</param_name>
-            </all_of>
-        </optional_inputs>
         <required_inputs>
             <param_name>machine_graph</param_name>
             <param_name>user_create_database</param_name>
@@ -1085,6 +1073,13 @@
             <param_name>routing_infos</param_name>
             <param_name>router_tables</param_name>
         </required_inputs>
+        <optional_inputs>
+            <all_of>
+                <param_name>create_atom_to_event_id_mapping</param_name>
+                <param_name>application_graph</param_name>
+                <param_name>graph_mapper</param_name>
+            </all_of>
+        </optional_inputs>
         <outputs>
             <param_type>DatabaseInterface</param_type>
             <param_type>DatabaseFilePath</param_type>
@@ -1225,8 +1220,6 @@
             <param_name>executable_targets</param_name>
             <param_name>ran_token</param_name>
         </required_inputs>
-        <optional_inputs>
-        </optional_inputs>
         <outputs>
             <param_type>ClearedIOBufToken</param_type>
         </outputs>
@@ -1288,8 +1281,6 @@
                 </all_of>
             </one_of>
         </optional_inputs>
-        <required_inputs>
-        </required_inputs>
         <outputs>
             <param_type>MemoryMachinePartitionNKeysMap</param_type>
         </outputs>
@@ -1319,17 +1310,17 @@
                 <param_type>SpallocMachine</param_type>
             </parameter>
         </input_definitions>
+        <required_inputs>
+            <param_name>spalloc_server</param_name>
+            <param_name>spalloc_user</param_name>
+            <param_name>n_chips</param_name>
+        </required_inputs>
         <optional_inputs>
             <all_of>
                 <param_name>spalloc_port</param_name>
                 <param_name>spalloc_machine</param_name>
             </all_of>
         </optional_inputs>
-        <required_inputs>
-            <param_name>spalloc_server</param_name>
-            <param_name>spalloc_user</param_name>
-            <param_name>n_chips</param_name>
-        </required_inputs>
         <outputs>
             <param_type>IPAddress</param_type>
             <param_type>BoardVersion</param_type>
@@ -1398,13 +1389,13 @@
                 <param_type>SpallocMachine</param_type>
             </parameter>
         </input_definitions>
+        <required_inputs>
+            <param_name>spalloc_server</param_name>
+        </required_inputs>
         <optional_inputs>
             <param_name>spalloc_port</param_name>
             <param_name>spalloc_machine</param_name>
         </optional_inputs>
-        <required_inputs>
-            <param_name>spalloc_server</param_name>
-        </required_inputs>
         <outputs>
             <param_type>MachineWidth</param_type>
             <param_type>MachineHeight</param_type>
