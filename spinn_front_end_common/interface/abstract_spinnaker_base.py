@@ -398,7 +398,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._infinite_run = False
 
         self._app_id = helpful_functions.read_config_int(
-            self._config, "Machine", "appID")
+            self._config, "Machine", "app_id")
 
         # folders
         self._report_default_directory = None
@@ -421,7 +421,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # timing provenance elements
         self._do_timings = self._config.getboolean(
-            "Reports", "writeAlgorithmTimings")
+            "Reports", "write_algorithm_timings")
         self._print_timings = self._config.getboolean(
             "Reports", "display_algorithm_timings")
         self._provenance_format = self._config.get(
@@ -430,7 +430,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise Exception("Unknown provenance format: {}".format(
                 self._provenance_format))
         self._exec_dse_on_host = self._config.getboolean(
-            "SpecExecution", "specExecOnHost")
+            "SpecExecution", "spec_exec_on_host")
 
         # set up machine targeted data
         self._use_virtual_board = self._config.getboolean(
@@ -523,7 +523,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
          self._this_run_time_string) = \
             helpful_functions.set_up_report_specifics(
                 default_report_file_path=self._config.get(
-                    "Reports", "defaultReportFilePath"),
+                    "Reports", "default_report_file_path"),
                 max_reports_kept=self._config.getint(
                     "Reports", "max_reports_kept"),
                 n_calls_to_run=self._n_calls_to_run,
@@ -535,7 +535,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 max_application_binaries_kept=self._config.getint(
                     "Reports", "max_application_binaries_kept"),
                 where_to_write_application_data_files=self._config.get(
-                    "Reports", "defaultApplicationDataFilePath"),
+                    "Reports", "default_application_data_file_path"),
                 n_calls_to_run=self._n_calls_to_run,
                 this_run_time_string=self._this_run_time_string)
 
@@ -550,7 +550,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             logger.warn("The machine name from setup call is overriding the "
                         "machine name defined in the config file")
         else:
-            self._hostname = self._read_config("Machine", "machineName")
+            self._hostname = self._read_config("Machine", "machine_name")
             self._spalloc_server = self._read_config(
                 "Machine", "spalloc_server")
             self._remote_spinnaker_url = self._read_config(
@@ -1195,7 +1195,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["WriteCheckerFlag"] = self._config.getboolean(
             "Mode", "verify_writes")
         inputs["WriteTextSpecsFlag"] = self._config.getboolean(
-            "Reports", "writeTextSpecs")
+            "Reports", "write_text_specs")
         inputs["ExecutableFinder"] = self._executable_finder
         inputs["UserCreateDatabaseFlag"] = self._config.get(
             "Database", "create_database")
@@ -1237,43 +1237,43 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms = list()
 
         # Add reports
-        if self._config.getboolean("Reports", "reportsEnabled"):
-            if self._config.getboolean("Reports", "writeTagAllocationReports"):
+        if self._config.getboolean("Reports", "reports_enabled"):
+            if self._config.getboolean("Reports", "write_tag_allocation_reports"):
                 algorithms.append("TagReport")
-            if self._config.getboolean("Reports", "writeRouterInfoReport"):
+            if self._config.getboolean("Reports", "write_router_info_report"):
                 algorithms.append("routingInfoReports")
-            if self._config.getboolean("Reports", "writeRouterReports"):
+            if self._config.getboolean("Reports", "write_router_reports"):
                 algorithms.append("RouterReports")
-            if self._config.getboolean("Reports", "writeRoutingTableReports"):
+            if self._config.getboolean("Reports", "write_routing_table_reports"):
                 optional_algorithms.append("unCompressedRoutingTableReports")
                 optional_algorithms.append("compressedRoutingTableReports")
                 optional_algorithms.append("comparisonOfRoutingTablesReport")
             if self._config.getboolean(
-                    "Reports", "writeRoutingTablesFromMachineReport"):
+                    "Reports", "write_routing_tables_from_machine_report"):
                 optional_algorithms.append(
                     "FrontEndCommonRoutingTableFromMachineReport")
 
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
-                    "Reports", "writePartitionerReports") and
+                    "Reports", "write_partitioner_reports") and
                     self._application_graph.n_vertices != 0):
                 algorithms.append("PartitionerReport")
 
             # only add write placer report with application graph when
             # there's application vertices
             if (self._config.getboolean(
-                    "Reports", "writeApplicationGraphPlacerReport") and
+                    "Reports", "write_application_graph_placer_report") and
                     self._application_graph.n_vertices != 0):
                 algorithms.append("PlacerReportWithApplicationGraph")
 
             if self._config.getboolean(
-                    "Reports", "writeMachineGraphPlacerReport"):
+                    "Reports", "write_machine_graph_placer_report"):
                 algorithms.append("PlacerReportWithoutApplicationGraph")
 
             # only add network specification report if there's
             # application vertices.
             if (self._config.getboolean(
-                    "Reports", "writeNetworkSpecificationReport")):
+                    "Reports", "write_network_specification_report")):
                 algorithms.append("NetworkSpecificationReport")
 
         # Add algorithm to clear routing tables and set up routing
@@ -1353,8 +1353,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = []
         algorithms = [self._dsg_algorithm]
 
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "writeProvenanceData")):
+        if (self._config.getboolean("Reports", "reports_enabled") and
+                self._config.getboolean("Reports", "write_provenance_data")):
             algorithms.append("FrontEndCommonGraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
 
@@ -1362,8 +1362,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._mapping_outputs = executor.get_items()
 
         # write provenance to file if necessary
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "writeProvenanceData") and
+        if (self._config.getboolean("Reports", "reports_enabled") and
+                self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board):
             prov_items = executor.get_item("ProvenanceItems")
             self._write_provenance(prov_items)
@@ -1374,8 +1374,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         inputs["WriteMemoryMapReportFlag"] = (
-            self._config.getboolean("Reports", "reportsEnabled") and
-            self._config.getboolean("Reports", "writeMemoryMapReport")
+            self._config.getboolean("Reports", "reports_enabled") and
+            self._config.getboolean("Reports", "write_memory_map_report")
         )
 
         # add report for extracting routing table from machine report if needed
@@ -1387,7 +1387,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._exec_dse_on_host:
             optional_algorithms.append(
                 "FrontEndCommonHostExecuteDataSpecification")
-            if self._config.getboolean("Reports", "writeMemoryMapReport"):
+            if self._config.getboolean("Reports", "write_memory_map_report"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnHostReport")
                 optional_algorithms.append(
@@ -1395,7 +1395,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             optional_algorithms.append(
                 "FrontEndCommonMachineExecuteDataSpecification")  # @IgnorePep8
-            if self._config.getboolean("Reports", "writeMemoryMapReport"):
+            if self._config.getboolean("Reports", "write_memory_map_report"):
                 optional_algorithms.append(
                     "FrontEndCommonMemoryMapOnChipReport")
 
@@ -1488,7 +1488,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("FrontEndCommonNotificationProtocol")
 
         # Sort out reload if needed
-        if self._config.getboolean("Reports", "writeReloadSteps"):
+        if self._config.getboolean("Reports", "write_reload_steps"):
             logger.warn("Reload script is not supported in this version")
 
         outputs = [
@@ -1512,8 +1512,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("IOBuffers")
 
         # add extractor of provenance if needed
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "writeProvenanceData") and
+        if (self._config.getboolean("Reports", "reports_enabled") and
+                self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
@@ -1539,9 +1539,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._write_iobuf(executor.get_item("IOBuffers"))
 
             # write provenance to file if necessary
-            if (self._config.getboolean("Reports", "reportsEnabled") and
+            if (self._config.getboolean("Reports", "reports_enabled") and
                     self._config.getboolean(
-                        "Reports", "writeProvenanceData") and
+                        "Reports", "write_provenance_data") and
                     not self._use_virtual_board and
                     n_machine_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
