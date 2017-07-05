@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 PROFILE_HEADER_SIZE_BYTES = 4
 SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 8
-BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 8
+BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 4
 
 
 def get_profile_region_size(n_samples):
@@ -79,7 +79,8 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
         profiling_data = txrx.read_memory(
             placement.x, placement.y,
             profiling_region_base_address +
-            BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION, words_written * 4)
+            BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION,
+            words_written * 4)
         profile_data.add_data(profiling_data)
 
     return profile_data

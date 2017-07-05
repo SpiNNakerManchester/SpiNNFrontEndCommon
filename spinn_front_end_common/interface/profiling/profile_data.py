@@ -1,5 +1,6 @@
 import numpy
 import logging
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +145,7 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        n_bins = run_time_ms / machine_time_step_ms
+        n_bins = int(math.ceil(run_time_ms / machine_time_step_ms))
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], n_bins)[0])
 
@@ -164,4 +165,4 @@ class ProfileData(object):
         bins = numpy.arange(0, run_time_ms, machine_time_step_ms)
         bin_positions = numpy.digitize(self._tags[tag][_START_TIME], bins)
         binned_durations = self._tags[tag][_DURATION][bin_positions]
-        return numpy.average(numpy.sum(binned_durations, axis=1))
+        return numpy.average(numpy.sum(binned_durations))

@@ -11,13 +11,19 @@ import os
 class FrontEndCommonProfileDataGatherer(object):
     __slots__ = []
 
-    def __call__(self, transceiver, placements, has_ran, provenance_file_path):
+    def __call__(
+            self, transceiver, placements, has_ran, provenance_file_path,
+            run_time_ms, machine_time_step):
         """
         :param transceiver: the SpiNNMan interface object
         :param placements: The placements of the vertices
         :param has_ran: token that states that the simulation has ran
         :param provenance_file_path: The location to store the profile data
+        :param run_time_ms: runtime in ms
+        :param machine_time_step: machine time step in ms
         """
+
+        machine_time_step_ms = machine_time_step / 1000
 
         if not has_ran:
             raise exceptions.ConfigurationException(
@@ -61,5 +67,7 @@ class FrontEndCommonProfileDataGatherer(object):
                             .format(
                                 tag, profile_data.get_n_calls(tag),
                                 profile_data.get_mean_ms(tag),
-                                profile_data.get_mean_n_calls_per_ts(tag),
-                                profile_data.get_mean_ms_per_ts(tag)))
+                                profile_data.get_mean_n_calls_per_ts(
+                                    tag, run_time_ms, machine_time_step_ms),
+                                profile_data.get_mean_ms_per_ts(
+                                    tag, run_time_ms, machine_time_step_ms)))

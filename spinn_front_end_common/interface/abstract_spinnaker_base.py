@@ -1482,6 +1482,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 n_machine_time_steps is not None):
             algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
             algorithms.append("FrontEndCommonRouterProvenanceGatherer")
+            algorithms.append("FrontEndCommonProfileDataGatherer")
             outputs.append("ProvenanceItems")
 
         run_complete = False
@@ -2017,6 +2018,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._config.getboolean("Reports", "writeProvenanceData")):
                 algorithms.append("FrontEndCommonPlacementsProvenanceGatherer")
                 algorithms.append("FrontEndCommonRouterProvenanceGatherer")
+                algorithms.append("FrontEndCommonProfileDataGatherer")
                 outputs.append("ProvenanceItems")
 
             # Run the algorithms
@@ -2054,11 +2056,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 except Exception:
                     logger.error("Error when attempting to recover from error")
                     traceback.print_exc()
-
-        # extract profiler data as required
-        profiler_gatherer = FrontEndCommonProfileDataGatherer()
-        profiler_gatherer(self._txrx, self._placements, self._has_ran,
-                          self._provenance_file_path)
 
         # shut down the machine properly
         self._shutdown(
