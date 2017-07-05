@@ -1,4 +1,7 @@
-<algorithms>
+<algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="FrontEndCommonPreAllocateResourcesForLivePacketGatherers">
         <python_module>
             spinn_front_end_common.interface.interface_functions.front_end_common_pre_allocate_resources_for_live_packet_gatherers
