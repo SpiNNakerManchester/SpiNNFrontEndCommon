@@ -9,7 +9,8 @@ from pacman.model.graphs.machine.machine_graph import MachineGraph
 from spinn_front_end_common.interface.interface_functions\
     .front_end_common_graph_binary_gatherer \
     import FrontEndCommonGraphBinaryGatherer
-from spinn_front_end_common.interface.interface_functions.front_end_common_locate_executable_start_types import \
+from spinn_front_end_common.interface.interface_functions.\
+    front_end_common_locate_executable_start_types import \
     FrontEndCommonLocateExecutableStartType
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs.executable_start_type \
@@ -100,10 +101,6 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
 
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
-
-        placements = Placements(placements=[
-            Placement(vertex_1, 0, 0, 0),
-            Placement(vertex_2, 0, 0, 1)])
 
         gatherer = FrontEndCommonLocateExecutableStartType()
         with self.assertRaises(ConfigurationException):
