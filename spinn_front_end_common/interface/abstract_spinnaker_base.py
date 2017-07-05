@@ -1238,13 +1238,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Add reports
         if self._config.getboolean("Reports", "reports_enabled"):
-            if self._config.getboolean("Reports", "write_tag_allocation_reports"):
+            if self._config.getboolean("Reports",
+                                       "write_tag_allocation_reports"):
                 algorithms.append("TagReport")
             if self._config.getboolean("Reports", "write_router_info_report"):
                 algorithms.append("routingInfoReports")
             if self._config.getboolean("Reports", "write_router_reports"):
                 algorithms.append("RouterReports")
-            if self._config.getboolean("Reports", "write_routing_table_reports"):
+            if self._config.getboolean("Reports",
+                                       "write_routing_table_reports"):
                 optional_algorithms.append("unCompressedRoutingTableReports")
                 optional_algorithms.append("compressedRoutingTableReports")
                 optional_algorithms.append("comparisonOfRoutingTablesReport")
