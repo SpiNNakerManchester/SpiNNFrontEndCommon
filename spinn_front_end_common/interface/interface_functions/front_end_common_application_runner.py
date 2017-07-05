@@ -25,7 +25,7 @@ class FrontEndCommonApplicationRunner(object):
             time_scale_factor, loaded_reverse_iptags_token,
             loaded_iptags_token, loaded_routing_tables_token,
             loaded_binaries_token, loaded_application_data_token,
-            no_sync_changes, time_threshold):
+            no_sync_changes, time_threshold, run_until_complete=False):
 
         # check all tokens are valid
         if (not loaded_reverse_iptags_token or not loaded_iptags_token or
@@ -92,18 +92,24 @@ class FrontEndCommonApplicationRunner(object):
             notification_interface.send_start_resume_notification()
 
         # Wait for the application to finish
-        if runtime is None:
+        if runtime is None and not run_until_complete:
             logger.info("Application is set to run forever - exiting")
         else:
-            time_to_wait = ((runtime * time_scale_factor) / 1000.0) + 0.1
-            logger.info(
-                "Application started - waiting {} seconds for it to stop"
-                .format(time_to_wait))
-            time.sleep(time_to_wait)
+            timeout = None
+            if not run_until_complete:
+                time_to_wait = ((runtime * time_scale_factor) / 1000.0) + 0.1
+                logger.info(
+                    "Application started - waiting {} seconds for it to stop"
+                    .format(time_to_wait))
+                time.sleep(time_to_wait)
+                timeout = time_threshold
+            else:
+                logger.info(
+                    "Application started - waiting until finished")
 
             txrx.wait_for_cores_to_be_in_state(
                 executable_targets.all_core_subsets, app_id,
-                [CPUState.FINISHED, CPUState.PAUSED], timeout=time_threshold)
+                [CPUState.FINISHED, CPUState.PAUSED], timeout=timeout)
 
         if (notification_interface is not None and
                 send_stop_notification and runtime is not None):
