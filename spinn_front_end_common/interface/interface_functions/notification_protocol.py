@@ -1,5 +1,5 @@
 from spinn_front_end_common.utilities.notification_protocol \
-    import NotificationProtocol
+    import NotificationProtocol as Notification
 
 import logging
 
@@ -21,7 +21,7 @@ class NotificationProtocol(object):
             socket_addresses, database_file_path):
 
         # notification protocol
-        self._notification_protocol = NotificationProtocol(
+        self._notification_protocol = Notification(
             socket_addresses, wait_for_read_confirmation)
         self.send_read_notification(database_file_path)
 
