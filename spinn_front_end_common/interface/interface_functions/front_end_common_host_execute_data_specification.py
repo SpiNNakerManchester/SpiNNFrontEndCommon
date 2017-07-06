@@ -4,6 +4,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from data_specification.data_specification_executor import \
     DataSpecificationExecutor
 from data_specification import exceptions
+from data_specification import constants
 
 # spinn_storage_handlers import
 from spinn_storage_handlers.file_data_reader import FileDataReader
@@ -13,7 +14,6 @@ import os
 import logging
 import struct
 import tempfile
-from data_specification import constants
 
 logger = logging.getLogger(__name__)
 
