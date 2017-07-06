@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 # The minimum size of any message - this is the headers plus one entry
 _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
-    eieio_type=EIEIOType.KEY_PAYLOAD_32_BIT, is_timestamp=True)
+    eieio_type=EIEIOType.KEY_32_BIT, is_timestamp=True)
 
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
@@ -308,7 +308,7 @@ class BufferManager(object):
         # Create a new message
         next_timestamp = vertex.get_next_timestamp(region)
         message = EIEIODataMessage.create(
-            EIEIOType.KEY_PAYLOAD_32_BIT, timestamp=next_timestamp)
+            EIEIOType.KEY_32_BIT, timestamp=next_timestamp)
 
         # If there is no room for the message, return None
         if message.size + _N_BYTES_PER_KEY > size:
