@@ -1,5 +1,5 @@
 from spinn_front_end_common.interface.interface_functions \
-    import FrontEndCommonLoadExecutableImages
+    import LoadExecutableImages
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from collections import defaultdict
@@ -36,7 +36,7 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
 
     def test_front_end_common_load_executable_images(self):
         transceiver = _MockTransceiver(self)
-        loader = FrontEndCommonLoadExecutableImages()
+        loader = LoadExecutableImages()
         targets = ExecutableTargets()
         targets.add_processor("test.aplx", 0, 0, 0)
         targets.add_processor("test.aplx", 0, 0, 1)

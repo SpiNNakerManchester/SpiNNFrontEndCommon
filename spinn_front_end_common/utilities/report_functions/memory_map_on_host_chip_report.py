@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
 
 
-class FrontEndCommonMemoryMapOnHostChipReport(object):
+class MemoryMapOnHostChipReport(object):
     """ Report on memory usage
     """
 

@@ -2,7 +2,7 @@
 from spinn_machine import VirtualMachine
 
 
-class FrontEndCommonVirtualMachineGenerator(object):
+class VirtualMachineGenerator(object):
 
     __slots__ = []
 

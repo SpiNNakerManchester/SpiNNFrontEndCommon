@@ -4,7 +4,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonBufferExtractor(object):
+class BufferExtractor(object):
     """ Extracts data in between runs
     """
 

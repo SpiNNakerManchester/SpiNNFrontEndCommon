@@ -10,7 +10,7 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
-class FrontEndCommonGraphDataSpecificationWriter(object):
+class GraphDataSpecificationWriter(object):
     """ Executes data specification generation
     """
 

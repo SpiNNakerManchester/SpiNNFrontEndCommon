@@ -6,7 +6,7 @@ from spinn_front_end_common.interface.provenance \
     import AbstractProvidesProvenanceDataFromMachine
 
 
-class FrontEndCommonPlacementsProvenanceGatherer(object):
+class PlacementsProvenanceGatherer(object):
     __slots__ = []
 
     def __call__(

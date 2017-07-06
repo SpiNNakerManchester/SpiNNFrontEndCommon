@@ -7,7 +7,7 @@ from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonPreAllocateResourcesForLivePacketGatherers(object):
+class PreAllocateResourcesForLivePacketGatherers(object):
     """ Adds Live Packet Gatherer resources as required for a machine
     """
 

@@ -13,7 +13,7 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
-class FrontEndCommonEdgeToNKeysMapper(object):
+class EdgeToNKeysMapper(object):
     """ Works out the number of keys needed for each edge
     """
 

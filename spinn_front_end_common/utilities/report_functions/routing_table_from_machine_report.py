@@ -10,7 +10,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonRoutingTableFromMachineReport(object):
+class RoutingTableFromMachineReport(object):
     def __call__(
             self, report_default_directory, routing_tables, transceiver,
             app_id, has_loaded_routing_tables_flag):

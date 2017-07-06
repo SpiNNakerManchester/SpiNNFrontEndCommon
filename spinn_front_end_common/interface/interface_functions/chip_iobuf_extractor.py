@@ -9,7 +9,7 @@ ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
 
-class FrontEndCommonChipIOBufExtractor(object):
+class ChipIOBufExtractor(object):
     """ Extract iobuf buffers from the machine, and separates lines based on\
         their prefix
     """

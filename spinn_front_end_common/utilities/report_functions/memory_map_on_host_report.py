@@ -5,7 +5,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonMemoryMapOnHostReport(object):
+class MemoryMapOnHostReport(object):
     """ Report on memory usage
     """
 

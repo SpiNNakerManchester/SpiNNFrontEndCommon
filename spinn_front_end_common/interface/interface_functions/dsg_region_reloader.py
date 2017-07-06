@@ -8,7 +8,7 @@ from data_specification.constants import MAX_MEM_REGIONS
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
 from .host_execute_data_specification \
-    import FrontEndCommonHostExecuteDataSpecification
+    import HostExecuteDataSpecification
 from spinn_front_end_common.utilities import helpful_functions
 
 from spinn_storage_handlers import FileDataReader
@@ -17,7 +17,7 @@ import os
 import struct
 
 
-class FrontEndCommonDSGRegionReloader(object):
+class DSGRegionReloader(object):
     """ Regenerates Data Specifications
     """
 
@@ -111,7 +111,7 @@ class FrontEndCommonDSGRegionReloader(object):
         vertex.regenerate_data_specification(spec, placement)
 
         # get report writer if needed
-        report_writer = FrontEndCommonHostExecuteDataSpecification.\
+        report_writer = HostExecuteDataSpecification.\
             generate_report_writer(
                 write_text_specs, reloaded_dsg_data_files_file_path,
                 hostname, placement.x, placement.y, placement.p)

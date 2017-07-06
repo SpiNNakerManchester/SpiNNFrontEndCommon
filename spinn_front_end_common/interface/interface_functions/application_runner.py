@@ -10,7 +10,7 @@ from spinnman.model.enums import CPUState
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonApplicationRunner(object):
+class ApplicationRunner(object):
     """ Ensures all cores are initialised correctly, ran, and completed\
         successfully.
     """

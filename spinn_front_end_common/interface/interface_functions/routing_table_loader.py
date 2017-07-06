@@ -7,7 +7,7 @@ from spinnman.model.enums \
 from spinnman.model.enums import DiagnosticFilterSource
 
 
-class FrontEndCommonRoutingTableLoader(object):
+class RoutingTableLoader(object):
     __slots__ = []
 
     def __call__(self, router_tables, app_id, transceiver, machine):

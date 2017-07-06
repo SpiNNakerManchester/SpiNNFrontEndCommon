@@ -5,7 +5,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities.database import DatabaseWriter
 
 
-class FrontEndCommonDatabaseInterface(object):
+class DatabaseInterface(object):
     """ Writes a database of the graph(s) and other information
     """
 

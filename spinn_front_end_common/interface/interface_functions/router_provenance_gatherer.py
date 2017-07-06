@@ -9,9 +9,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonRouterProvenanceGatherer(object):
+class RouterProvenanceGatherer(object):
     """
-    FrontEndCommonRouterProvenanceGatherer: gathers diagnostics from the
+    RouterProvenanceGatherer: gathers diagnostics from the
     routers.
     """
 

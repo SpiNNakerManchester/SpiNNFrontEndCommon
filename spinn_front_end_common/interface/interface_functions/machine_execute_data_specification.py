@@ -16,7 +16,7 @@ import struct
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonMachineExecuteDataSpecification(object):
+class MachineExecuteDataSpecification(object):
     """ Executes the machine based data specification
     """
 

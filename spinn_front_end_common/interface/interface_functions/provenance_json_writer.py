@@ -5,7 +5,7 @@ import json
 import string
 
 
-class FrontEndCommonProvenanceJSONWriter(object):
+class ProvenanceJSONWriter(object):
     """ Write provenance data into JSON
     """
 

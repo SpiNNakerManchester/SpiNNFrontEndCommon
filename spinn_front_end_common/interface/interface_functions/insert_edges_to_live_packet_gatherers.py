@@ -4,7 +4,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonInsertEdgesToLivePacketGatherers(object):
+class InsertEdgesToLivePacketGatherers(object):
     """ Add edges from the recorded vertices to the local Live PacketGatherers
     """
 

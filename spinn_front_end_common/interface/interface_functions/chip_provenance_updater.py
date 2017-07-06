@@ -11,7 +11,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonChipProvenanceUpdater(object):
+class ChipProvenanceUpdater(object):
     """ Forces all cores to generate provenance data, and then exit
     """
 

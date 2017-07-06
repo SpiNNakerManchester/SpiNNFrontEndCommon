@@ -7,7 +7,7 @@ import itertools
 import string
 
 
-class FrontEndCommonProvenanceXMLWriter(object):
+class ProvenanceXMLWriter(object):
     """ Write provenance data into XML
     """
 

@@ -14,7 +14,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from collections import defaultdict
 
 
-class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
+class InsertLivePacketGatherersToGraphs(object):
     """ function to add LPG's as required into a given graph
     """
 

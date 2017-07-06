@@ -15,7 +15,7 @@ from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
 from spinn_front_end_common.interface.interface_functions \
-    import FrontEndCommonDSGRegionReloader
+    import DSGRegionReloader
 
 
 class _TestMachineVertex(MachineVertex):
@@ -159,7 +159,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
         region_addresses = [i for i in range(constants.MAX_MEM_REGIONS)]
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
-        reloader = FrontEndCommonDSGRegionReloader()
+        reloader = DSGRegionReloader()
         reloader.__call__(
             transceiver, placements, "localhost", "test", False, "test",
             graph_mapper)

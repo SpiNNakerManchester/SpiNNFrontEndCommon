@@ -60,7 +60,7 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
             sys.exit(1)
 
 
-class FrontEndCommonSpallocAllocator(object):
+class SpallocAllocator(object):
     """ Request a machine from a SPALLOC server that will fit the given\
         number of chips
     """

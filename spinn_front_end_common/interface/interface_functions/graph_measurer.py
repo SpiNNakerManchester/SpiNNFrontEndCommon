@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonGraphMeasurer(object):
+class GraphMeasurer(object):
     """ Works out how many chips a machine graph needs
     """
 

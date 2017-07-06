@@ -4,7 +4,7 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
 from spinn_front_end_common.interface.interface_functions \
-    import FrontEndCommonChipIOBufExtractor
+    import ChipIOBufExtractor
 
 from spinnman.model.enums import CPUState
 from spinnman.model import ExecutableTargets
@@ -155,7 +155,7 @@ class MundyOnChipRouterCompression(object):
         :return:
         """
         logger.info("Router compressor has failed")
-        iobuf_extractor = FrontEndCommonChipIOBufExtractor()
+        iobuf_extractor = ChipIOBufExtractor()
         io_buffers, io_errors, io_warnings = iobuf_extractor(
             transceiver, True, executable_targets.all_core_subsets)
         self._write_iobuf(io_buffers, provenance_file_path)

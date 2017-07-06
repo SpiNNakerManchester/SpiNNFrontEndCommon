@@ -5,7 +5,7 @@ from spinn_front_end_common.interface.provenance \
     import AbstractProvidesLocalProvenanceData
 
 
-class FrontEndCommonGraphProvenanceGatherer(object):
+class GraphProvenanceGatherer(object):
     __slots__ = []
 
     def __call__(

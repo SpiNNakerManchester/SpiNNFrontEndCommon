@@ -15,7 +15,7 @@ import tempfile
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonHostExecuteDataSpecification(object):
+class HostExecuteDataSpecification(object):
     """ Executes the host based data specification
     """
 

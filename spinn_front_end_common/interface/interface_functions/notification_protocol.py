@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class FrontEndCommonNotificationProtocol(object):
+class NotificationProtocol(object):
     """ The notification protocol for external device interaction
     """
 

@@ -7,7 +7,7 @@ from spinnman.model.enums import CPUState
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonApplicationFinisher(object):
+class ApplicationFinisher(object):
     __slots__ = []
 
     def __call__(self, app_id, txrx, executable_targets, has_ran):

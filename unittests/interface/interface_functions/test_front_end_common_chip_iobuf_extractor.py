@@ -1,6 +1,6 @@
 import unittest
 from spinn_front_end_common.interface.interface_functions \
-    import FrontEndCommonChipIOBufExtractor
+    import ChipIOBufExtractor
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
 
@@ -30,7 +30,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         result_warning = "{}, {}, {}: {} ({})".format(
             x, y, p, warning, filename)
         text = "Test\n" + warning_text + error_text
-        extractor = FrontEndCommonChipIOBufExtractor()
+        extractor = ChipIOBufExtractor()
         core_subsets = CoreSubsets([CoreSubset(x, y, [p])])
         transceiver = _PretendTransceiver([IOBuffer(x, y, p, text)])
         iobuffers, error_entries, warn_entries = extractor(

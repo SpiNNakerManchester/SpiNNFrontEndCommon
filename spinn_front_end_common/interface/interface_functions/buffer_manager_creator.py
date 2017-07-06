@@ -5,7 +5,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost
 
 
-class FrontEndCommonBufferManagerCreator(object):
+class BufferManagerCreator(object):
     __slots__ = []
 
     def __call__(

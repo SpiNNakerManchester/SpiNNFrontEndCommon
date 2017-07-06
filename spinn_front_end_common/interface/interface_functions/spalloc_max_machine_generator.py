@@ -1,7 +1,7 @@
 from spalloc.protocol_client import ProtocolClient
 
 
-class FrontEndCommonSpallocMaxMachineGenerator(object):
+class SpallocMaxMachineGenerator(object):
     """ Generates the width and height of the maximum machine a given\
         allocation server can generate
     """

@@ -7,7 +7,7 @@ from pacman.model.resources import ResourceContainer
 from spinn_machine.tags import IPTag, ReverseIPTag
 
 from spinn_front_end_common.interface.interface_functions \
-    import FrontEndCommonTagsLoader
+    import TagsLoader
 
 
 class _MockTransceiver(object):
@@ -64,7 +64,7 @@ class TestFrontEndCommonTagsLoader(unittest.TestCase):
 
         txrx = _MockTransceiver()
 
-        loader = FrontEndCommonTagsLoader()
+        loader = TagsLoader()
         loader.__call__(txrx, tags)
         self.assertIn(tag_1, txrx.ip_tags)
         self.assertIn(tag_2, txrx.ip_tags)

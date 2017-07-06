@@ -3,7 +3,7 @@ from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
-class FrontEndCommonChipIOBufClearer(object):
+class ChipIOBufClearer(object):
     """ Updates the runtime of an application running on a spinnaker machine
     """
 

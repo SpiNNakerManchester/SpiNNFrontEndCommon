@@ -5,7 +5,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinnman.model import ExecutableTargets
 
 
-class FrontEndCommonGraphBinaryGatherer(object):
+class GraphBinaryGatherer(object):
     """ Extracts binaries to be executed
     """
 

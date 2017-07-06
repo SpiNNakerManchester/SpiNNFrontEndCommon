@@ -2,7 +2,7 @@ from spinn_utilities.progress_bar import ProgressBar
 from spinnman.constants import MAX_TAG_ID
 
 
-class FrontEndCommonTagsLoader(object):
+class TagsLoader(object):
     """ Loads tags onto the machine
     """
 

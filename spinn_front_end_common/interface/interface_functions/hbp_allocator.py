@@ -53,7 +53,7 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
             sys.exit(1)
 
 
-class FrontEndCommonHBPAllocator(object):
+class HBPAllocator(object):
     """ Request a machine from the HBP remote access server that will fit\
         a number of chips
     """

@@ -5,7 +5,7 @@ _CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK = 40
 _CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES = 200
 
 
-class SpiNNFrontEndCommonTDMAAgendaBuilder(object):
+class TDMAAgendaBuilder(object):
     """ algorithm that builds an agenda for transmissions. It uses a TDMA \
         (Time division multiple access) system and graph colouring to deduce\
         the agenda set up. Ensures parallel transmissions so that the\

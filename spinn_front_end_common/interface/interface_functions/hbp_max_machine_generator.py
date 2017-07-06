@@ -1,7 +1,7 @@
 import requests
 
 
-class FrontEndCommonHBPMaxMachineGenerator(object):
+class HBPMaxMachineGenerator(object):
 
     """ Generates the width and height of the maximum machine a given\
         HBP server can generate

@@ -4,7 +4,7 @@ from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
-class FrontEndCommonChipRuntimeUpdater(object):
+class ChipRuntimeUpdater(object):
     """ Updates the runtime of an application running on a spinnaker machine
     """
 
