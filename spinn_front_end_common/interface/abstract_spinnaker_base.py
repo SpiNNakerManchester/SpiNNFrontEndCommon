@@ -375,8 +375,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if extra_load_algorithms is not None:
             self._extra_load_algorithms.extend(extra_load_algorithms)
 
-        self._dsg_algorithm = \
-            "FrontEndCommonApplicationGraphDataSpecificationWriter"
+        self._dsg_algorithm = "FrontEndCommonGraphDataSpecificationWriter"
 
         # vertex label safety (used by reports mainly)
         self._none_labelled_vertex_count = 0
@@ -575,11 +574,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._shutdown()
         return sys.__excepthook__(exctype, value, traceback_obj)
 
+    def run_until_complete(self):
+        """ Run a simulation until it completes
+        """
+        self._run(None, run_until_complete=True)
+
     def run(self, run_time):
-        """ main call for running a simulation for a given time frame
+        """ Run a simulation for a fixed amount of time
 
         :param run_time: the run duration in milliseconds.
-        :rtype: None
+        """
+        self._run(run_time)
+
+    def _run(self, run_time, run_until_complete=False):
+        """ The main internal run function
+
+        :param run_time: the run duration in milliseconds.
         """
         if (self._has_ran and
                 self._executable_start_type !=
@@ -733,7 +743,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             len(steps), run_time))
         for i, step in enumerate(steps):
             logger.info("Run {} of {}".format(i + 1, len(steps)))
-            self._do_run(step, loading_done)
+            self._do_run(step, loading_done, run_until_complete)
 
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
@@ -1391,7 +1401,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
 
-    def _do_run(self, n_machine_time_steps, loading_done):
+    def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
 
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
@@ -1415,6 +1425,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalMachineTimeSteps"] = total_run_timesteps
         inputs["RunTime"] = run_time
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
+        if run_until_complete:
+            inputs["RunUntilCompleteFlag"] = True
 
         if not self._use_virtual_board:
             inputs["CoresToExtractIOBufFrom"] = \
