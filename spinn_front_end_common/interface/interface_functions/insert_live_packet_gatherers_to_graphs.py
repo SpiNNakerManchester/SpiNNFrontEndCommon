@@ -7,7 +7,7 @@ from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
 # pacman imports
 from pacman.model.graphs.common import Slice
 from pacman.model.constraints.placer_constraints\
-    import PlacerChipAndCoreConstraint
+    import ChipAndCoreConstraint
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -66,7 +66,7 @@ class FrontEndCommonInsertLivePacketGatherersToGraphs(object):
             m_vtx = self._create_vertex(
                 LivePacketGatherMachineVertex, lpg_params)
 
-        m_vtx.add_constraint(PlacerChipAndCoreConstraint(x=chip.x, y=chip.y))
+        m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
         m_graph.add_vertex(m_vtx)
         return m_vtx
 

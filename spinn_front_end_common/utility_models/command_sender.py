@@ -2,7 +2,7 @@
 from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.constraints.key_allocator_constraints \
-    import KeyAllocatorFixedKeyAndMaskConstraint
+    import FixedKeyAndMaskConstraint
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from pacman.model.routing_info import BaseKeyAndMask
@@ -162,7 +162,7 @@ class CommandSender(
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
-        return [KeyAllocatorFixedKeyAndMaskConstraint([
+        return [FixedKeyAndMaskConstraint([
             BaseKeyAndMask(
                 self._partition_id_to_keys[partition.identifier],
                 self._DEFAULT_COMMAND_MASK)

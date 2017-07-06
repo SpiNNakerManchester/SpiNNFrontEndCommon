@@ -4,7 +4,7 @@ from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from pacman.model.resources import ReverseIPtagResource, IPtagResource
-from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
+from pacman.model.constraints.placer_constraints import BoardConstraint
 
 
 # front end common imports
@@ -133,7 +133,7 @@ class ReverseIpTagMultiCastSource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
 
         # Store the send buffering details
         self._send_buffer_times = send_buffer_times
@@ -153,7 +153,7 @@ class ReverseIpTagMultiCastSource(
                 buffer_notification_ip_address, buffer_notification_port, True,
                 buffer_notification_tag)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
 
         # Store recording parameters
         self._record_buffer_size = 0

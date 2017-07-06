@@ -1,6 +1,6 @@
 # pacman imports
 from pacman.model.constraints.placer_constraints\
-    import PlacerRadialPlacementFromChipConstraint
+    import RadialPlacementFromChipConstraint
 from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
@@ -62,7 +62,7 @@ class LivePacketGather(
         ApplicationVertex.__init__(self, label, constraints, 1)
 
         # Try to place this near the Ethernet
-        self.add_constraint(PlacerRadialPlacementFromChipConstraint(0, 0))
+        self.add_constraint(RadialPlacementFromChipConstraint(0, 0))
 
         # storage objects
         self._iptags = None

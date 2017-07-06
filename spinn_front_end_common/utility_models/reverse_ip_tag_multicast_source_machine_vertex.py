@@ -3,8 +3,8 @@ from pacman.executor.injection_decorator import supports_injection
 from pacman.executor.injection_decorator import inject
 from pacman.model.decorators import overrides
 from pacman.model.constraints.key_allocator_constraints \
-    import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
+    import FixedKeyAndMaskConstraint
+from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import IPtagResource, ReverseIPtagResource
 from pacman.model.resources import ResourceContainer, DTCMResource
 from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
@@ -164,7 +164,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
         self._receive_rate = receive_rate
         self._receive_sdp_port = receive_sdp_port
 
@@ -186,7 +186,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 tag=buffer_notification_tag,
                 traffic_identifier=TRAFFIC_IDENTIFIER)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
             self._send_buffers = {
                 self._REGIONS.SEND_BUFFER.value:
                 self._send_buffer
@@ -600,7 +600,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
         if self._virtual_key is not None:
-            return list([KeyAllocatorFixedKeyAndMaskConstraint(
+            return list([FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])
         return list()
 
