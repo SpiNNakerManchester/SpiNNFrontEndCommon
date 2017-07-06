@@ -44,7 +44,7 @@ from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
 
 __all__ = [
-    "FrontEndCommonApplicationDataLoader", "ApplicationFinisher",
+    "ApplicationFinisher",
     "ApplicationRunner", "BufferExtractor",
     "BufferManagerCreator", "ChipIOBufClearer",
     "ChipIOBufExtractor", "ChipProvenanceUpdater",

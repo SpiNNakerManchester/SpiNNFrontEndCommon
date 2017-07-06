@@ -23,7 +23,7 @@ class ChipIOBufExtractor(object):
                 "iobuf. Please fix and try again")
         if core_subsets is None:
             raise ConfigurationException(
-                "The FrontEndCommonIOBufExtractor requires a core sets "
+                "The ChipIOBufExtractor requires a core sets "
                 "object to be able to execute")
 
         return self._run_for_core_subsets(core_subsets, transceiver)
