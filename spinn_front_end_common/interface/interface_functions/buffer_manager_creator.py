@@ -9,12 +9,11 @@ class FrontEndCommonBufferManagerCreator(object):
     __slots__ = []
 
     def __call__(
-            self, placements, tags, txrx, write_reload_files, app_data_folder):
+            self, placements, tags, txrx):
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager
-        buffer_manager = BufferManager(
-            placements, tags, txrx, write_reload_files, app_data_folder)
+        buffer_manager = BufferManager(placements, tags, txrx)
 
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):

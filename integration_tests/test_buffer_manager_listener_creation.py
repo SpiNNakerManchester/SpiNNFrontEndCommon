@@ -53,7 +53,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         #        connection_class=EIEIOConnection)
 
         # Create buffer manager
-        bm = BufferManager(pl, t, trnx, False, None)
+        bm = BufferManager(pl, t, trnx)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one

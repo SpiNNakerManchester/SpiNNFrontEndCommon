@@ -30,8 +30,6 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
 import threading
 import logging
 import traceback
-import os
-import re
 
 
 logger = logging.getLogger(__name__)
@@ -58,18 +56,6 @@ class BufferManager(object):
         # SpiNNMan instance
         "_transceiver",
 
-        # params used for reload purposes
-        "_write_reload_files",
-
-        # params used for reload purposes
-        "_application_folder_path",
-
-        # params used for reload purposes
-        "_reload_buffer_file",
-
-        # params used for reload purposes
-        "_reload_buffer_file_paths",
-
         # Set of (ip_address, port) that are being listened to for the tags
         "_seen_tags",
 
@@ -95,8 +81,7 @@ class BufferManager(object):
         "_listener_port"
     ]
 
-    def __init__(self, placements, tags, transceiver, write_reload_files,
-                 application_folder_path):
+    def __init__(self, placements, tags, transceiver):
         """
 
         :param placements: The placements of the vertices
@@ -112,12 +97,6 @@ class BufferManager(object):
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
-
-        # params used for reload purposes
-        self._write_reload_files = write_reload_files
-        self._application_folder_path = application_folder_path
-        self._reload_buffer_file = dict()
-        self._reload_buffer_file_paths = dict()
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -251,19 +230,6 @@ class BufferManager(object):
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
 
-        # if reload script is set up, store the buffers for future usage
-        if self._write_reload_files:
-            for region in vertex.get_regions():
-                filename = "{}_{}".format(
-                    re.sub("[\"':]", "_", vertex.label), region)
-                file_path = os.path.join(
-                    self._application_folder_path, filename)
-                self._reload_buffer_file[(vertex, region)] = \
-                    open(file_path, "w")
-                if vertex not in self._reload_buffer_file_paths:
-                    self._reload_buffer_file_paths[vertex] = dict()
-                self._reload_buffer_file_paths[vertex][region] = file_path
-
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
         """
@@ -357,9 +323,6 @@ class BufferManager(object):
             message.add_key(key)
             bytes_to_go -= _N_BYTES_PER_KEY
 
-            if self._write_reload_files:
-                self._reload_buffer_file[(vertex, region)].write(
-                    "{}:{}\n".format(next_timestamp, key))
         return message
 
     def _send_initial_messages(self, vertex, region, progress):
@@ -523,9 +486,6 @@ class BufferManager(object):
         with self._thread_lock_buffer_in:
             with self._thread_lock_buffer_out:
                 self._finished = True
-        if self._write_reload_files:
-            for buffer_file in self._reload_buffer_file.itervalues():
-                buffer_file.close()
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\

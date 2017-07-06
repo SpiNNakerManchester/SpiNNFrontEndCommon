@@ -1257,7 +1257,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
-                inputs["WriteReloadFilesFlag"] = False
                 algorithms.append("FrontEndCommonBufferManagerCreator")
                 outputs.append("BufferManager")
             else:
