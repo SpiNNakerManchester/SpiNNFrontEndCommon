@@ -1427,11 +1427,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._load_outputs["ExecutableTargets"],
                     self._executable_finder)
 
-        # update algorithm list with extra pre algorithms if needed
-        if self._extra_pre_run_algorithms is not None:
-            algorithms = list(self._extra_pre_run_algorithms)
-        else:
-            algorithms = list()
+        algorithms = list()
 
         # If we have run before, make sure to extract the data before the next
         # run
@@ -1439,9 +1435,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 not self._use_virtual_board):
             algorithms.append("FrontEndCommonBufferExtractor")
 
-            # check if we need to clear the iobuf during runs
-            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
-                algorithms.append("FrontEndCommonChipIOBufClearer")
+        # update algorithm list with extra pre algorithms if needed
+        if self._extra_pre_run_algorithms is not None:
+            algorithms = list(self._extra_pre_run_algorithms)
+
+        # If we have run before, clear iobuf
+        if (self._has_ran and not self._has_reset_last and
+                not self._use_virtual_board and
+                self._config.getboolean("Reports", "clear_iobuf_during_run")):
+            algorithms.append("FrontEndCommonChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
