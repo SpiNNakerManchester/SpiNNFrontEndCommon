@@ -1,19 +1,14 @@
 import unittest
 
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
-from pacman.model.graphs.machine.machine_graph import MachineGraph
+from pacman.model.graphs.machine import MachineVertex, MachineGraph
+from pacman.model.resources import ResourceContainer
+from pacman.model.placements import Placements, Placement
 
-from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_graph_binary_gatherer \
-    import FrontEndCommonGraphBinaryGatherer
+from spinn_front_end_common.interface.interface_functions \
+    import GraphBinaryGatherer
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
 class _TestVertexWithBinary(MachineVertex, AbstractHasAssociatedBinary):
@@ -71,7 +66,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_3, 0, 0, 2),
             Placement(vertex_4, 0, 0, 3)])
 
-        gatherer = FrontEndCommonGraphBinaryGatherer()
+        gatherer = GraphBinaryGatherer()
         targets, start_type = gatherer.__call__(
             placements, graph, _TestExecutableFinder())
         self.assertEqual(start_type, ExecutableStartType.RUNNING)
@@ -101,7 +96,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             Placement(vertex_1, 0, 0, 0),
             Placement(vertex_2, 0, 0, 1)])
 
-        gatherer = FrontEndCommonGraphBinaryGatherer()
+        gatherer = GraphBinaryGatherer()
         with self.assertRaises(ConfigurationException):
             gatherer.__call__(placements, graph, _TestExecutableFinder())
 
