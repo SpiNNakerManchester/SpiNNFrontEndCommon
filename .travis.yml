@@ -6,6 +6,7 @@ addons:
   apt:
     packages:
       - vera++
+      - libxml2-utils
       #- gcc-arm-none-eabi
       #- libnewlib-arm-none-eabi
 
@@ -36,6 +37,7 @@ script:
   - py.test integration_tests
   - flake8 spinn_front_end_common
   - flake8 unittests integration_tests
+  - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh 
   - support/run-vera.sh c_common
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json
