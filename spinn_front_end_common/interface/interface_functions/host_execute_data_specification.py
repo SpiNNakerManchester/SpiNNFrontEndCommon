@@ -134,9 +134,6 @@ class HostExecuteDataSpecification(object):
                 if region is not None:
 
                     max_pointer = region.max_write_pointer
-                    if not region.shrink or region.unfilled:
-                        max_pointer = region.allocated_size
-
                     if not region.unfilled and max_pointer > 0:
 
                         # Get the data up to what has been written
