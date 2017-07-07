@@ -121,30 +121,31 @@ class HostExecuteDataSpecification(object):
 
             # Write the header and pointer table and load it
             host_based_data_spec_executor.write_header()
-            host_based_data_spec_executor.write_pointer_table(start_address)
+            pointer_table = host_based_data_spec_executor.write_pointer_table(
+                start_address)
             data_writer.close()
             transceiver.write_memory(
                 x, y, start_address, app_data_file_path, is_filename=True)
-            file_length = os.stat(app_data_file_path).st_size
 
             # Write each region
-            position = start_address + file_length
-            bytes_written_by_spec = file_length
+            bytes_written_by_spec = os.stat(app_data_file_path).st_size
             for region_id in range(constants.MAX_MEM_REGIONS):
                 region = host_based_data_spec_executor.get_region(region_id)
                 if region is not None:
 
-                    if region.max_write_pointer > 0:
+                    max_pointer = region.max_write_pointer
+                    if not region.shrink or region.unfilled:
+                        max_pointer = region.allocated_size
+
+                    if not region.unfilled and max_pointer > 0:
 
                         # Get the data up to what has been written
-                        data = region.region_data[:region.max_write_pointer]
+                        data = region.region_data[:max_pointer]
 
                         # Write the data to the position
+                        position = pointer_table[region_id]
                         transceiver.write_memory(x, y, position, data)
                         bytes_written_by_spec += len(data)
-
-                    # Move on to the next region
-                    position += region.allocated_size
 
             # set user 0 register appropriately to the application data
             user_0_address = \
