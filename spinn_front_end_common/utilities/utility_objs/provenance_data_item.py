@@ -1,4 +1,3 @@
-
 class ProvenanceDataItem(object):
     """ Container for provenance data
     """

@@ -1,30 +1,23 @@
 # pacman imports
-from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.application_edge import ApplicationEdge
+from pacman.model.decorators import overrides
+from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.constraints.key_allocator_constraints \
-    import KeyAllocatorFixedKeyAndMaskConstraint
+    import FixedKeyAndMaskConstraint
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.executor.injection_decorator import inject_items
 
 # spinn front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_partition_constraints import \
-    AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.abstract_models.\
-    abstract_vertex_with_dependent_vertices import \
+from spinn_front_end_common.abstract_models import \
+    AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
+from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
-from spinn_front_end_common.utility_models.command_sender_machine_vertex \
-    import CommandSenderMachineVertex
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities import constants
+from .command_sender_machine_vertex import CommandSenderMachineVertex
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 
 class CommandSender(
@@ -169,7 +162,7 @@ class CommandSender(
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
-        return [KeyAllocatorFixedKeyAndMaskConstraint([
+        return [FixedKeyAndMaskConstraint([
             BaseKeyAndMask(
                 self._partition_id_to_keys[partition.identifier],
                 self._DEFAULT_COMMAND_MASK)

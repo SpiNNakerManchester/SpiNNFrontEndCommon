@@ -1,14 +1,12 @@
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
-from pacman.model.graphs.common.graph_mapper import GraphMapper
+from pacman.model.graphs.common import GraphMapper
 from pacman.model.graphs.machine import MachineGraph
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_insert_live_packet_gatherers_to_graphs import \
-    FrontEndCommonInsertLivePacketGatherersToGraphs
-from spinn_front_end_common.utilities.utility_objs. \
-    live_packet_gather_parameters import \
+from spinn_front_end_common.interface.interface_functions import \
+    InsertLivePacketGatherersToGraphs
+from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
-from spinn_machine.virtual_machine import VirtualMachine
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinn_machine import VirtualMachine
+from spinnman.messages.eieio import EIEIOType
 
 import unittest
 
@@ -48,7 +46,7 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
+        edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=None,
@@ -103,7 +101,7 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
+        edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=app_graph,
@@ -174,7 +172,7 @@ class TestInsertLPGs(unittest.TestCase):
             chip_special[(chip.x, chip.y)] = default_params_holder2
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
+        edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=None,
@@ -231,7 +229,7 @@ class TestInsertLPGs(unittest.TestCase):
             chip_special[(chip.x, chip.y)] = default_params_holder2
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertLivePacketGatherersToGraphs()
+        edge_inserter = InsertLivePacketGatherersToGraphs()
         lpg_verts_mapping = edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, machine_graph=graph, application_graph=app_graph,
