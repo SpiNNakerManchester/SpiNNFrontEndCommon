@@ -14,7 +14,7 @@ from pacman.model.constraints.placer_constraints.\
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonInsertChipPowerMonitorsToGraphs(object):
+class InsertChipPowerMonitorsToGraphs(object):
     """ function to add chip power monitors into a given graph
     """
 

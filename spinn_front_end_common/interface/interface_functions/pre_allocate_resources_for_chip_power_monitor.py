@@ -14,7 +14,7 @@ from spinn_front_end_common.utility_models.\
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonPreAllocateResourcesForChipPowerMonitor(object):
+class PreAllocateResourcesForChipPowerMonitor(object):
     """ Adds chip power monitor resources as required for a machine
     """
 

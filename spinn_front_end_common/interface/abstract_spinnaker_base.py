@@ -28,9 +28,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.utilities.report_functions.\
-    front_end_common_energy_report import \
-    FrontEndCommonEnergyReport
+from spinn_front_end_common.utilities.report_functions.energy_report import \
+    EnergyReport
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
 
@@ -926,7 +925,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             return executor
-        except:
+        except Exception as e:
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
@@ -954,7 +953,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
             algorithms.append(
-                "FrontEndCommonPreAllocateResourcesForChipPowerMonitor")
+                "PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
@@ -1254,7 +1253,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
             algorithms.append(
-                "FrontEndCommonInsertChipPowerMonitorsToGraphs")
+                "InsertChipPowerMonitorsToGraphs")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
@@ -2210,7 +2209,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
-            energy_report = FrontEndCommonEnergyReport()
+            energy_report = EnergyReport()
 
             # acquire provenance items
             if self._last_run_outputs is not None:

@@ -2,11 +2,11 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
 			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
-    <algorithm name="FrontEndCommonPreAllocateResourcesForChipPowerMonitor">
+    <algorithm name="PreAllocateResourcesForChipPowerMonitor">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_pre_allocate_resources_for_chip_power_monitor
+            spinn_front_end_common.interface.interface_functions.pre_allocate_resources_for_chip_power_monitor
         </python_module>
-        <python_class>FrontEndCommonPreAllocateResourcesForChipPowerMonitor</python_class>
+        <python_class>PreAllocateResourcesForChipPowerMonitor</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
@@ -52,11 +52,11 @@
             <param_type>MemoryPreAllocatedResources</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonInsertChipPowerMonitorsToGraphs">
+    <algorithm name="InsertChipPowerMonitorsToGraphs">
         <python_module>
-            spinn_front_end_common.interface.interface_functions.front_end_common_insert_chip_power_monitors_to_graphs
+            spinn_front_end_common.interface.interface_functions.insert_chip_power_monitors_to_graphs
         </python_module>
-        <python_class>FrontEndCommonInsertChipPowerMonitorsToGraphs</python_class>
+        <python_class>InsertChipPowerMonitorsToGraphs</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
