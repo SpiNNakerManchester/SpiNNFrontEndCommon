@@ -114,7 +114,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(len(regions[1][1]), 12)
 
         # Size of region 2
-        self.assertEqual(len(regions[2][1]), 8)
+        self.assertEqual(len(regions[2][1]), 4)
 
         # Size of user 0
         self.assertEqual(len(regions[3][1]), 4)
