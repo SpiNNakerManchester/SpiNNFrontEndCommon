@@ -7,8 +7,8 @@ from spinn_front_end_common.utility_models.\
 
 # pacman imports
 from pacman.model.graphs.common.slice import Slice
-from pacman.model.constraints.placer_constraints\
-    .placer_chip_and_core_constraint import PlacerChipAndCoreConstraint
+from pacman.model.constraints.placer_constraints.\
+    chip_and_core_constraint import ChipAndCoreConstraint
 
 # utils imports
 from spinn_utilities.progress_bar import ProgressBar
@@ -39,7 +39,7 @@ class FrontEndCommonInsertChipPowerMonitorsToGraphs(object):
         for chip in progress_bar.over(machine.chips):
 
             # build constraint
-            constraint = PlacerChipAndCoreConstraint(chip.x, chip.y)
+            constraint = ChipAndCoreConstraint(chip.x, chip.y)
 
             # build machine vert
             machine_vertex = ChipPowerMonitorMachineVertex(

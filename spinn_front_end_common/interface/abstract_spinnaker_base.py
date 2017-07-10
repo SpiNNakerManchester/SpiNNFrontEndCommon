@@ -1307,10 +1307,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "writeNetworkSpecificationReport")):
                 algorithms.append("NetworkSpecificationReport")
 
-        # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board:
-            algorithms.append("RoutingSetup")
-
         # only add the partitioner if there isn't already a machine graph
         if (self._application_graph.n_vertices > 0 and
                 self._machine_graph.n_vertices == 0):
@@ -1449,7 +1445,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board:
-            algorithms.append("FrontEndCommonRoutingSetup")
+            algorithms.append("RoutingSetup")
 
         if helpful_functions.read_config(
                 self._config, "Mapping", "loading_algorithms") is not None:
