@@ -1,21 +1,18 @@
 # spinnman imports
 from multiprocessing.pool import ThreadPool
-from spinnman.connections.udp_packet_connections.\
-    udp_eieio_connection import UDPEIEIOConnection
-from spinnman.messages.eieio.command_messages.database_confirmation import \
-    DatabaseConfirmation
+from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.messages.eieio.command_messages import DatabaseConfirmation
+from spinnman.messages.eieio.command_messages \
+    import NotificationProtocolPauseStop, NotificationProtocolStartResume
 
 # front end common imports
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.constants \
+    import MAX_DATABASE_PATH_LENGTH
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
 import traceback
 
-from spinnman.messages.eieio.command_messages.\
-    notification_protocol_pause_stop import NotificationProtocolPauseStop
-from spinnman.messages.eieio.command_messages.\
-    notification_protocol_start_resume import NotificationProtocolStartResume
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +31,7 @@ class NotificationProtocol(object):
         self._wait_pool = ThreadPool(processes=1)
         self._data_base_message_connections = list()
         for socket_address in socket_addresses:
-            self._data_base_message_connections.append(UDPEIEIOConnection(
+            self._data_base_message_connections.append(EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
                 remote_port=socket_address.notify_port_no))
@@ -106,8 +103,8 @@ class NotificationProtocol(object):
 
                 # add file path to database into command message.
                 number_of_chars = len(database_path)
-                if number_of_chars > constants.MAX_DATABASE_PATH_LENGTH:
-                    raise exceptions.ConfigurationException(
+                if number_of_chars > MAX_DATABASE_PATH_LENGTH:
+                    raise ConfigurationException(
                         "The file path to the database is too large to be "
                         "transmitted via the command packet, "
                         "please set the file path manually and "

@@ -1,19 +1,14 @@
-from pacman.model.resources.core_resource import CoreResource
-from pacman.model.resources.pre_allocated_resource_container import \
-    PreAllocatedResourceContainer
-from pacman.model.resources.specific_chip_sdram_resource import \
-    SpecificChipSDRAMResource
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_pre_allocate_resources_for_live_packet_gatherers import \
-    FrontEndCommonPreAllocateResourcesForLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs. \
-    live_packet_gather_parameters import \
+from pacman.model.resources import CoreResource
+from pacman.model.resources import PreAllocatedResourceContainer
+from pacman.model.resources import SpecificChipSDRAMResource
+from spinn_front_end_common.interface.interface_functions import \
+    PreAllocateResourcesForLivePacketGatherers
+from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
-from spinn_front_end_common.utility_models. \
-    live_packet_gather_machine_vertex import \
+from spinn_front_end_common.utility_models import \
     LivePacketGatherMachineVertex
-from spinn_machine.virtual_machine import VirtualMachine
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinn_machine import VirtualMachine
+from spinnman.messages.eieio import EIEIOType
 
 import unittest
 
@@ -52,7 +47,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # run  pre allocator
-        pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
+        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine)
@@ -121,7 +116,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
 
-        pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
+        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine)
@@ -200,7 +195,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             core_resources=cores, specific_sdram_usage=sdrams)
 
         # run  pre allocator
-        pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
+        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine, pre_allocated_resources=pre_pre_res)
@@ -250,7 +245,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
         # run  pre allocator
-        pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
+        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         pre_res = pre_alloc(
             live_packet_gatherer_parameters=live_packet_gatherers,
             machine=machine)
@@ -261,7 +256,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
     def test_fail(self):
         machine = VirtualMachine(width=12, height=12, with_wrap_arounds=True)
         live_packet_gatherers = dict()
-        pre_alloc = FrontEndCommonPreAllocateResourcesForLivePacketGatherers()
+        pre_alloc = PreAllocateResourcesForLivePacketGatherers()
         self.assertRaises(
             Exception, pre_alloc(
                 live_packet_gatherer_parameters=live_packet_gatherers,

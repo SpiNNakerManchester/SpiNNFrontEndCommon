@@ -1,5 +1,4 @@
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 
 class PacmanProvenanceExtractor(object):

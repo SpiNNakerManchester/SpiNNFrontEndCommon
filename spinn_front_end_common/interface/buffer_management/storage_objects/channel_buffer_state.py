@@ -1,4 +1,4 @@
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import BUFFERING_OPERATIONS
 
 import struct
 
@@ -117,11 +117,9 @@ class ChannelBufferState(object):
          end_address, region_id, missing_info, last_buffer_operation) = \
             struct.unpack_from("<IIIIIBBBx", data)
         if last_buffer_operation == 0:
-            last_buffer_operation = \
-                constants.BUFFERING_OPERATIONS.BUFFER_READ.value
+            last_buffer_operation = BUFFERING_OPERATIONS.BUFFER_READ.value
         else:
-            last_buffer_operation = \
-                constants.BUFFERING_OPERATIONS.BUFFER_WRITE.value
+            last_buffer_operation = BUFFERING_OPERATIONS.BUFFER_WRITE.value
         buffer_state = ChannelBufferState(
             start_address, current_write, current_dma_write, current_read,
             end_address, region_id, missing_info, last_buffer_operation)

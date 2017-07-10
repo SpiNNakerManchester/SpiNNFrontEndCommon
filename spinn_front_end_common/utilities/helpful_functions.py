@@ -2,14 +2,10 @@
 from data_specification import utility_calls
 
 # front end common imports
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions as \
-    front_end_common_report_functions
-from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common import mapping_algorithms
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 # SpiNMachine imports
-from spinn_machine.core_subsets import CoreSubsets
+from spinn_machine import CoreSubsets
 
 # general imports
 import os
@@ -46,7 +42,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :param region: the region to locate the base address of
     :type region: int
     :param placement: the placement object to get the region address of
-    :type placement: pacman.model.placements.placement.Placement
+    :type placement: pacman.model.placements.Placement
     :param transceiver: the python interface to the spinnaker machine
     :type transceiver: spiNNMan.transciever.Transciever
     """
@@ -258,23 +254,6 @@ def _remove_excess_folders(max_to_keep, starting_directory):
                            format(starting_directory, files_not_closed))
 
 
-def get_front_end_common_pacman_xml_paths():
-    """ Get the XML path for the front end common interface functions
-    """
-    return [
-        os.path.join(
-            os.path.dirname(interface_functions.__file__),
-            "front_end_common_interface_functions.xml"),
-        os.path.join(
-            os.path.dirname(front_end_common_report_functions.__file__),
-            "front_end_common_reports.xml"),
-        os.path.join(
-            os.path.dirname(mapping_algorithms.__file__),
-            "front_end_common_mapping_algorithms.xml"
-        )
-    ]
-
-
 def convert_string_into_chip_and_core_subset(cores):
     """ Translate a string list of cores into a core subset
 
@@ -371,7 +350,7 @@ def translate_iobuf_extraction_elements(
         return model_core_subsets
 
     # should never get here,
-    raise exceptions.ConfigurationException("Something odd has happened")
+    raise ConfigurationException("Something odd has happened")
 
 
 def _handle_model_binaries(
@@ -456,7 +435,7 @@ def get_ethernet_chip(machine, board_address):
     for chip in machine.ethernet_connected_chips:
         if chip.ip_address == board_address:
             return chip
-    raise exceptions.ConfigurationException(
+    raise ConfigurationException(
         "cannot find the Ethernet connected chip with the board address {}"
         .format(board_address))
 
