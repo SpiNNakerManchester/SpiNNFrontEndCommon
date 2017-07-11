@@ -1,4 +1,4 @@
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class MultiCastCommand(object):
@@ -30,13 +30,13 @@ class MultiCastCommand(object):
         """
 
         if repeat < 0 or repeat > 0xFFFF:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "repeat must be between 0 and 65535")
         if delay_between_repeats < 0 or delay_between_repeats > 0xFFFF:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "delay_between_repeats must be between 0 and 65535")
         if delay_between_repeats > 0 and repeat == 0:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "If repeat is 0, delay_betweeen_repeats must be 0")
 
         self._time = time

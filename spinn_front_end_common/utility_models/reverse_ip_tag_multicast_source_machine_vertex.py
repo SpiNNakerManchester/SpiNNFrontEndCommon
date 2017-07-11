@@ -1,50 +1,42 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.executor.injection_decorator import supports_injection
 from pacman.executor.injection_decorator import inject
-from pacman.model.decorators.overrides import overrides
+from pacman.model.decorators import overrides
 from pacman.model.constraints.key_allocator_constraints \
-    import KeyAllocatorFixedKeyAndMaskConstraint
-from pacman.model.constraints.placer_constraints import PlacerBoardConstraint
+    import FixedKeyAndMaskConstraint
+from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import IPtagResource, ReverseIPtagResource
 from pacman.model.resources import ResourceContainer, DTCMResource
 from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 
-from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.interface.buffer_management.buffer_manager \
-    import BufferManager
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .sends_buffers_from_host_pre_buffered_impl \
-    import SendsBuffersFromHostPreBufferedImpl
-from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .buffered_sending_region import BufferedSendingRegion
+from spinn_front_end_common.utilities.helpful_functions \
+    import locate_memory_region_for_placement
+from spinn_front_end_common.interface.buffer_management.recording_utilities \
+    import TRAFFIC_IDENTIFIER
+from spinn_front_end_common.interface.buffer_management.buffer_models \
+    import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BufferedSendingRegion
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.interface.buffer_management.buffer_models\
-    .abstract_receive_buffers_to_host import AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.abstract_models\
-    .abstract_provides_outgoing_partition_constraints \
-    import AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models.abstract_recordable \
-    import AbstractRecordable
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl import \
-    ProvidesProvenanceDataFromMachineImpl
+from spinn_front_end_common.abstract_models \
+    import AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models \
+    import AbstractSupportsDatabaseInjection
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
+from spinn_front_end_common.interface.provenance \
+    import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs \
+    import ProvenanceDataItem, ExecutableStartType
 
-from spinnman.messages.eieio.eieio_prefix import EIEIOPrefix
+from spinnman.messages.eieio import EIEIOPrefix
 
 from enum import Enum
 import math
@@ -57,7 +49,7 @@ _DEFAULT_MALLOC_REGIONS = 2
 @supports_injection
 class ReverseIPTagMulticastSourceMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary,
+        AbstractHasAssociatedBinary, AbstractSupportsDatabaseInjection,
         ProvidesProvenanceDataFromMachineImpl,
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
@@ -172,7 +164,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
         self._receive_rate = receive_rate
         self._receive_sdp_port = receive_sdp_port
 
@@ -192,9 +184,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 ip_address=buffer_notification_ip_address,
                 port=buffer_notification_port, strip_sdp=True,
                 tag=buffer_notification_tag,
-                traffic_identifier=BufferManager.TRAFFIC_IDENTIFIER)]
+                traffic_identifier=TRAFFIC_IDENTIFIER)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
             self._send_buffers = {
                 self._REGIONS.SEND_BUFFER.value:
                 self._send_buffer
@@ -525,7 +517,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             this_tag = None
 
             for tag in ip_tags:
-                if tag.traffic_identifier == BufferManager.TRAFFIC_IDENTIFIER:
+                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
                     this_tag = tag
                     break
             if this_tag is None:
@@ -578,7 +570,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # Write the system region
         spec.switch_write_focus(self._REGIONS.SYSTEM.value)
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 
@@ -608,7 +600,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):
         if self._virtual_key is not None:
-            return list([KeyAllocatorFixedKeyAndMaskConstraint(
+            return list([FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])
         return list()
 
@@ -621,6 +613,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         return self._mask
 
     @property
+    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
     def is_in_injection_mode(self):
         return self._in_injection_mode
 
@@ -673,7 +666,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
-        return helpful_functions.locate_memory_region_for_placement(
+        return locate_memory_region_for_placement(
             placement, self._REGIONS.RECORDING.value, txrx)
 
     @property
