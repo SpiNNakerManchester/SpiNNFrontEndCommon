@@ -1470,7 +1470,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
             algorithms.append("RouterProvenanceGatherer")
-            algorithms.append("FrontEndCommonProfileDataGatherer")
+            algorithms.append("ProfileDataGatherer")
             outputs.append("ProvenanceItems")
 
         run_complete = False
@@ -2006,7 +2006,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._config.getboolean("Reports", "writeProvenanceData")):
                 algorithms.append("PlacementsProvenanceGatherer")
                 algorithms.append("RouterProvenanceGatherer")
-                algorithms.append("FrontEndCommonProfileDataGatherer")
+                algorithms.append("ProfileDataGatherer")
                 outputs.append("ProvenanceItems")
 
             # Run the algorithms

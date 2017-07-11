@@ -1,7 +1,7 @@
 <algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
-			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+            https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="PreAllocateResourcesForLivePacketGatherers">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>PreAllocateResourcesForLivePacketGatherers</python_class>
@@ -1404,9 +1404,9 @@
             <param_name>ran_token</param_name>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonProfileDataGatherer">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_profile_data_gatherer</python_module>
-        <python_class>FrontEndCommonProfileDataGatherer</python_class>
+    <algorithm name="ProfileDataGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.profile_data_gatherer</python_module>
+        <python_class>ProfileDataGatherer</python_class>
         <input_definitions>
             <parameter>
                 <param_name>transceiver</param_name>

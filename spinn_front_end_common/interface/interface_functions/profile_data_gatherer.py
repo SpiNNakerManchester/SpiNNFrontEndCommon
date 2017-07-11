@@ -8,7 +8,7 @@ from spinn_front_end_common.interface.profiling.abstract_has_profile_data \
 import os
 
 
-class FrontEndCommonProfileDataGatherer(object):
+class ProfileDataGatherer(object):
     __slots__ = []
 
     def __call__(
