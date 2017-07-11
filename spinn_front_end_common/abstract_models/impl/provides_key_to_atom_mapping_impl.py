@@ -1,8 +1,7 @@
 from pacman.executor.injection_decorator import inject_items
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_key_to_atom_mapping import \
-    AbstractProvidesKeyToAtomMapping
-from pacman.model.decorators.overrides import overrides
+from spinn_front_end_common.abstract_models \
+    import AbstractProvidesKeyToAtomMapping
+from pacman.model.decorators import overrides
 
 
 class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):

@@ -1,6 +1,7 @@
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .channel_buffer_state import ChannelBufferState
-from spinn_front_end_common.utilities import constants
+    import ChannelBufferState
+from spinn_front_end_common.utilities.constants \
+    import SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS
 
 from pacman.model.resources \
     import ResourceContainer, IPtagResource, SDRAMResource
@@ -43,7 +44,6 @@ def get_recording_data_size(recorded_region_sizes):
     :rtype: int
     """
     return (
-
         # The total recording data size
         sum(recorded_region_sizes) +
 
@@ -52,8 +52,7 @@ def get_recording_data_size(recorded_region_sizes):
          ChannelBufferState.size_of_channel_state()) +
 
         # The SARK allocation of SDRAM overhead
-        (len(recorded_region_sizes) * constants.SARK_PER_MALLOC_SDRAM_USAGE)
-    )
+        (len(recorded_region_sizes) * SARK_PER_MALLOC_SDRAM_USAGE))
 
 
 def get_minimum_buffer_sdram(
@@ -150,7 +149,7 @@ def get_recording_resources(
         The tag to send buffering messages with, or None to use a default tag
     :type notification_tag: int
     :rtype:\
-        :py:class:`pacman.model.resources.resource_container.ResourceContainer`
+        :py:class:`pacman.model.resources.ResourceContainer`
     """
 
     ip_tags = list()
@@ -245,7 +244,7 @@ def get_recording_header_array(
     data.append(buffering_output_tag)
     data.append(struct.unpack("<I", struct.pack(
         "<HH", buffering_output_dest_y, buffering_output_dest_x))[0])
-    data.append(constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
+    data.append(SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
     if buffer_size_before_request is not None:
         data.append(buffer_size_before_request)
     else:
