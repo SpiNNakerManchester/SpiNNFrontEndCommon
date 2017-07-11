@@ -41,33 +41,39 @@ class FrontEndCommonProfileDataGatherer(object):
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
 
-                # write data
-                file_name = os.path.join(
-                    provenance_file_path, "{}_{}_{}_profile.txt".format(
-                        placement.x, placement.y, placement.p))
+                if len(profile_data.tags) > 0:
 
-                # set mode of the file based off if the file already exists
-                mode = "w"
-                if os.path.exists(file_name):
-                    mode = "a"
+                    # write data
+                    file_name = os.path.join(
+                        provenance_file_path, "{}_{}_{}_profile.txt".format(
+                            placement.x, placement.y, placement.p))
 
-                # write profile data to file
-                with open(file_name, mode) as writer:
-                    writer.write(
-                        "{: <10s} {: <7s} {: <7s} {: <14s} {: <14s}\n".format(
-                            "tag", "n_calls", "mean_ms", "n_calls_per_ts",
-                            "mean_ms_per_ts"))
-                    writer.write(
-                        "{:-<10s} {:-<7s} {:-<7s} {:-<14s} {:-<14s}\n".format(
-                            "", "", "", "", ""))
-                    for tag in profile_data.tags:
+                    # set mode of the file based off if the file already exists
+                    mode = "w"
+                    if os.path.exists(file_name):
+                        mode = "a"
+
+                    # write profile data to file
+                    with open(file_name, mode) as writer:
                         writer.write(
-                            "{: <10s} {: >7d} {: >7.2f} {: >14.2f} "
-                            "{: >14.2f}\n"
+                            "{: <10s} {: <7s} {: <7s} {: <14s} {: <14s}\n"
                             .format(
-                                tag, profile_data.get_n_calls(tag),
-                                profile_data.get_mean_ms(tag),
-                                profile_data.get_mean_n_calls_per_ts(
-                                    tag, run_time_ms, machine_time_step_ms),
-                                profile_data.get_mean_ms_per_ts(
-                                    tag, run_time_ms, machine_time_step_ms)))
+                                "tag", "n_calls", "mean_ms", "n_calls_per_ts",
+                                "mean_ms_per_ts"))
+                        writer.write(
+                            "{:-<10s} {:-<7s} {:-<7s} {:-<14s} {:-<14s}\n"
+                            .format(
+                                "", "", "", "", ""))
+                        for tag in profile_data.tags:
+                            writer.write(
+                                "{: <10s} {: >7d} {: >7.2f} {: >14.2f} "
+                                "{: >14.2f}\n"
+                                .format(
+                                    tag, profile_data.get_n_calls(tag),
+                                    profile_data.get_mean_ms(tag),
+                                    profile_data.get_mean_n_calls_per_ts(
+                                        tag, run_time_ms,
+                                        machine_time_step_ms),
+                                    profile_data.get_mean_ms_per_ts(
+                                        tag, run_time_ms,
+                                        machine_time_step_ms)))
