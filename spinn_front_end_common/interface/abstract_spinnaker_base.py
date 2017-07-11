@@ -21,9 +21,6 @@ from spinn_front_end_common.abstract_models.\
 from spinn_front_end_common.abstract_models.\
     abstract_vertex_with_dependent_vertices import \
     AbstractVertexWithEdgeToDependentVertices
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_profile_data_gatherer import \
-    FrontEndCommonProfileDataGatherer
 from spinn_front_end_common.utilities import exceptions as common_exceptions
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities import globals_variables

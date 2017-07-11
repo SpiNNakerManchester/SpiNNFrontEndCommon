@@ -1,4 +1,3 @@
-from data_specification import utility_calls
 from spinn_front_end_common.interface.profiling.profile_data \
     import ProfileData
 
@@ -16,7 +15,7 @@ BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 4
 
 def get_profile_region_size(n_samples):
     """ Get the size of the region of the profile data
-    
+
     :param n_samples: number of different samples to record
     :return the size in bytes used by the profile region
     """
@@ -26,12 +25,12 @@ def get_profile_region_size(n_samples):
 
 def reserve_profile_region(spec, region, n_samples):
     """ Reserves the profile region for recording the profile data
-    
+
     :param spec: the dsg specification writer
     :param region: region id for the profile data
     :param n_samples: n elements being sampled
     :rtype: None
-    
+
     """
     size = get_profile_region_size(n_samples)
     spec.reserve_memory_region(
@@ -40,7 +39,7 @@ def reserve_profile_region(spec, region, n_samples):
 
 def write_profile_region_data(spec, region, n_samples):
     """ Writes the profile region data
-    
+
     :param spec: the dsg specification writer
     :param region: region id for the profile data
     :param n_samples: n elements being sampled
@@ -52,7 +51,7 @@ def write_profile_region_data(spec, region, n_samples):
 
 def get_profiling_data(profile_region, tag_labels, txrx, placement):
     """ Utility function to get profile data from a profile region
-    
+
     :param profile_region: dsg region to get profiling data out of sdram
     :param tag_labels: labels for the profiling data
     :param txrx:  transceiver code
