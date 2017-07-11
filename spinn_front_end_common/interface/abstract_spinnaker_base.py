@@ -1462,7 +1462,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
-            outputs.append("IOBuffers")
 
         # add extractor of provenance if needed
         if (self._config.getboolean("Reports", "reportsEnabled") and
