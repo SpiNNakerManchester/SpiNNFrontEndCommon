@@ -34,7 +34,7 @@ def reserve_profile_region(spec, region, n_samples):
     """
     size = get_profile_region_size(n_samples)
     spec.reserve_memory_region(
-        region=region, size=size, label="profilerRegion", empty=True)
+        region=region, size=size, label="profilerRegion")
 
 
 def write_profile_region_data(spec, region, n_samples):
