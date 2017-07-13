@@ -19,3 +19,18 @@ virtual_board = False
 # Allowed values pairs are (2,2)  (8,8)   (n*12,m*12)  and (n*12+4, m*12+4)
 width = None
 height = None
+
+[Reports]
+# NOTE ***that for bespoke file paths, folders will not be automatically deleted***
+# options are DEFAULT or a file path
+# Note for hard coded locations a "reports" sub directory will be added
+default_report_file_path = DEFAULT
+
+# options are DEFAULT, or a file path
+# Note for hard coded locations an "application_generated_data_files" sub directory is created
+default_application_data_file_path = DEFAULT
+
+[Mode]
+# mode = Production or Debug
+# In Debug mode all report boolean config values are automitcally overwritten to True
+mode = Production

@@ -294,9 +294,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         default_config_paths.insert(0, os.path.join(os.path.dirname(__file__),
                                                     CONFIG_FILE))
 
-        self._config = conf_loader.load_config(filename=configfile,
-                                               defaults=default_config_paths,
-                                               validation_cfg=validation_cfg)
+        self._load_config(filename=configfile, defaults=default_config_paths,
+                          validation_cfg=validation_cfg)
 
         self._executable_finder = executable_finder
 
@@ -495,6 +494,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 raise ConfigurationException(
                     "Only one type of graph can be used during live output. "
                     "Please fix and try again")
+
+    def _load_config(self, filename, defaults, validation_cfg):
+        self._config = conf_loader.load_config(filename=filename,
+                                               defaults=defaults,
+                                               validation_cfg=validation_cfg)
+        if self._config.get("Mode", "mode") == "Debug":
+            logger.info("As mode == \"Debug\" all cfg [Reports] boolean values "
+                        "have been set to True")
+            for option in self._config.options("Reports"):
+                try:
+                    if self._config.getboolean("Reports", option) is False:
+                        self._config.set("Reports", option, "True")
+                except Exception as ex:
+                    # all checks for boolean depend on catching a exception
+                    # so just do it here
+                    pass
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
