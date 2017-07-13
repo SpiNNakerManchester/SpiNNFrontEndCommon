@@ -1619,7 +1619,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Read IOBUF where possible (that should be everywhere)
         iobuf = ChipIOBufExtractor()
         errors, warnings = iobuf(
-            self._txrx, True, unsuccessful_core_subset)
+            self._txrx, True, unsuccessful_core_subset,
+            self._provenance_file_path)
 
         # Print the details of error cores
         for (x, y, p), core_info in unsuccessful_cores.iteritems():
