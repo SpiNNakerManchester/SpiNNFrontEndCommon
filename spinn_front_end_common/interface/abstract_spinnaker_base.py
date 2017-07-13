@@ -285,8 +285,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None,
-            default_config_paths=None):
+            n_chips_required=None, default_config_paths=None,
+            validation_cfg=None):
 
         # global params
         if default_config_paths is None:
@@ -295,7 +295,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                                     CONFIG_FILE))
 
         self._config = conf_loader.load_config(filename=configfile,
-                                               defaults=default_config_paths)
+                                               defaults=default_config_paths,
+                                               validation_cfg=validation_cfg)
 
         self._executable_finder = executable_finder
 
