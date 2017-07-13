@@ -1277,19 +1277,23 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # only add the partitioner if there isn't already a machine graph
         if (self._application_graph.n_vertices > 0 and
                 self._machine_graph.n_vertices == 0):
-            algorithms.extend(self._config.get(
-                "Mapping",
-                "application_to_machine_graph_algorithms").split(","))
+            full = self._config.get(
+                "Mapping", "application_to_machine_graph_algorithms")
+            individual = full.replace(" ", "").split(",")
+            algorithms.extend(individual)
             inputs['MemoryPreviousAllocatedResources'] = \
                 PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
-            algorithms.extend(self._config.get(
-                "Mapping", "machine_graph_to_virtual_machine_algorithms").
-                split(","))
+            full = self._config.get(
+                "Mapping", "application_to_machine_graph_algorithms")
+            individual = full.replace(" ", "").split(",")
+            algorithms.extend(individual)
         else:
-            algorithms.extend(self._config.get(
-                "Mapping", "machine_graph_to_machine_algorithms").split(","))
+            full = self._config.get(
+                "Mapping", "machine_graph_to_machine_algorithms")
+            individual = full.replace(" ", "").split(",")
+            algorithms.extend(individual)
 
         # handle outputs
         outputs = [
