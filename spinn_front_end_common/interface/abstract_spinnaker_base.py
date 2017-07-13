@@ -500,13 +500,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                                defaults=defaults,
                                                validation_cfg=validation_cfg)
         if self._config.get("Mode", "mode") == "Debug":
-            logger.info("As mode == \"Debug\" all cfg [Reports] boolean values "
-                        "have been set to True")
+            logger.info("As mode == \"Debug\" all cfg [Reports] "
+                        "boolean values have been set to True")
             for option in self._config.options("Reports"):
                 try:
                     if self._config.getboolean("Reports", option) is False:
                         self._config.set("Reports", option, "True")
-                except Exception as ex:
+                except Exception:
                     # all checks for boolean depend on catching a exception
                     # so just do it here
                     pass
