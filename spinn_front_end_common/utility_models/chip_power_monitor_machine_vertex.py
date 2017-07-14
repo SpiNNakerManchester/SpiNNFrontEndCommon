@@ -132,7 +132,7 @@ class ChipPowerMonitorMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         recording_sizes = recording_utilities.get_recording_region_sizes(
-            [recording_size, 1], n_machine_time_steps, minimum_buffer_sdram,
+            [int(recording_size)], n_machine_time_steps, minimum_buffer_sdram,
             maximum_sdram_for_buffering, using_auto_pause_and_resume)
         container.extend(recording_utilities.get_recording_resources(
             recording_sizes, receive_buffer_host, receive_buffer_port))
