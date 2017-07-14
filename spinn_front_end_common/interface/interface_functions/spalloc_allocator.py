@@ -50,6 +50,9 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
         if power:
             self._job.wait_until_ready()
 
+    def where_is_machine(self, chip_x, chip_y):
+        return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
+
     def run(self):
         state = self._job.state
         while state != JobState.destroyed and not self._exited:

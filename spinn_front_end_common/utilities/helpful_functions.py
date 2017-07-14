@@ -467,6 +467,8 @@ def turn_off_on_boards_for_energy_savings(
         # if going on, boot and ensure ready
         if power_state:
             transceiver.ensure_board_is_ready()
+        else:
+            transceiver.power_off_machine()
     else:
         if not power_state:  # turn off
             transceiver.power_off_machine()

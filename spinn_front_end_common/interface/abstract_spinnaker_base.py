@@ -2230,13 +2230,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 energy_report(
                     self._placements, self._machine,
                     self._report_default_directory,
-                    self._read_config("Machine", "version"),
+                    self._read_config_int("Machine", "version"),
                     self._spalloc_server, self._remote_spinnaker_url,
                     self._time_scale_factor, self._machine_time_step,
                     pacman_provenance, router_provenance, self._machine_graph,
                     self._current_run_timesteps, self._buffer_manager,
                     self._mapping_time, self._load_time, self._execute_time,
-                    self._dsg_time, self._extraction_time)
+                    self._dsg_time, self._extraction_time,
+                    self._machine_allocation_controller)
 
         # shut down the machine properly
         self._shutdown(

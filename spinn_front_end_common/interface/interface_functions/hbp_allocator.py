@@ -40,11 +40,15 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
 
     @property
     def power(self):
-        #TODO NEEDS FIXING
+        # TODO NEEDS FIXING
         return True
 
     def set_power(self, power):
-        #TODO NEEDS FIXING
+        # TODO NEEDS FIXING
+        pass
+
+    def where_is_machine(self, chip_x, chip_y):
+        # TODO NEEDS FIXING
         pass
 
     def run(self):
