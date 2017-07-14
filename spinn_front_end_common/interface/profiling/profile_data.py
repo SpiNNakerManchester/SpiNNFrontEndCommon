@@ -1,11 +1,12 @@
 import numpy
 import logging
-import math
+
+import scipy.stats
 
 logger = logging.getLogger(__name__)
 
 # Define profiler time scale
-_MS_SCALE = (1.0 / 200032.4)
+_MS_SCALE = (1.0 / 200000.0)
 
 # Define the positions in tags
 _START_TIME = 0
@@ -145,9 +146,10 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        n_bins = int(math.ceil(run_time_ms / machine_time_step_ms))
+        max_start_time = max(self._tags[tag][_START_TIME])
+        bins = numpy.arange(0, max_start_time, machine_time_step_ms)
         return numpy.average(numpy.histogram(
-            self._tags[tag][_START_TIME], n_bins)[0])
+            self._tags[tag][_START_TIME], bins)[0])
 
     def get_mean_ms_per_ts(self, tag, run_time_ms, machine_time_step_ms):
         """ Get the mean time in milliseconds spent on operations with the\
@@ -162,7 +164,11 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        bins = numpy.arange(0, run_time_ms, machine_time_step_ms)
-        bin_positions = numpy.digitize(self._tags[tag][_START_TIME], bins)
-        binned_durations = self._tags[tag][_DURATION][bin_positions]
-        return numpy.average(numpy.sum(binned_durations))
+        max_start_time = max(self._tags[tag][_START_TIME])
+        bins = numpy.arange(0, max_start_time, machine_time_step_ms)
+        mean_per_ts = scipy.stats.binned_statistic(
+            self._tags[tag][_START_TIME], self._tags[tag][_DURATION],
+            "mean", bins).statistic
+        mean_per_ts[numpy.isnan(mean_per_ts)] = 0
+        return numpy.average(
+            mean_per_ts[numpy.logical_not(numpy.isnan(mean_per_ts))])

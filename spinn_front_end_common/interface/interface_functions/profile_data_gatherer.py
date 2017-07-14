@@ -43,6 +43,8 @@ class ProfileDataGatherer(object):
 
                 if len(profile_data.tags) > 0:
 
+                    max_tag_len = max([len(tag) for tag in profile_data.tags])
+
                     # write data
                     file_name = os.path.join(
                         provenance_file_path, "{}_{}_{}_profile.txt".format(
@@ -56,20 +58,21 @@ class ProfileDataGatherer(object):
                     # write profile data to file
                     with open(file_name, mode) as writer:
                         writer.write(
-                            "{: <10s} {: <7s} {: <7s} {: <14s} {: <14s}\n"
+                            "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
                             .format(
-                                "tag", "n_calls", "mean_ms", "n_calls_per_ts",
-                                "mean_ms_per_ts"))
+                                "tag", max_tag_len, "n_calls", "mean_ms",
+                                "n_calls_per_ts", "mean_ms_per_ts"))
                         writer.write(
-                            "{:-<10s} {:-<7s} {:-<7s} {:-<14s} {:-<14s}\n"
+                            "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
                             .format(
-                                "", "", "", "", ""))
+                                "", max_tag_len, "", "", "", ""))
                         for tag in profile_data.tags:
                             writer.write(
-                                "{: <10s} {: >7d} {: >7.2f} {: >14.2f} "
-                                "{: >14.2f}\n"
+                                "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} "
+                                "{: >14.6f}\n"
                                 .format(
-                                    tag, profile_data.get_n_calls(tag),
+                                    tag, max_tag_len,
+                                    profile_data.get_n_calls(tag),
                                     profile_data.get_mean_ms(tag),
                                     profile_data.get_mean_n_calls_per_ts(
                                         tag, run_time_ms,
