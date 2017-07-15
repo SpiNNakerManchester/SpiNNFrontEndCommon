@@ -5,7 +5,7 @@ import scipy.stats
 
 logger = logging.getLogger(__name__)
 
-# Define profiler time scale
+# Define profiler time scale in ms
 _MS_SCALE = (1.0 / 200000.0)
 
 # Define the positions in tags
@@ -26,7 +26,10 @@ class ProfileData(object):
         "_tags",
 
         # A list of tag labels indexed by the tag id
-        "_tag_labels"
+        "_tag_labels",
+
+        # The maximum time recorded
+        "_max_time"
     )
 
     def __init__(self, tag_labels):
@@ -106,6 +109,9 @@ class ProfileData(object):
             # Add entry times and durations to dictionary
             self._tags[tag_label] = (tag_entry_times_ms, tag_durations_ms)
 
+            # Keep track of the maximum time
+            self._max_time = numpy.max(tag_entry_times_ms + tag_durations_ms)
+
     @property
     def tags(self):
         """ The tags recorded as labels
@@ -146,8 +152,8 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        max_start_time = max(self._tags[tag][_START_TIME])
-        bins = numpy.arange(0, max_start_time, machine_time_step_ms)
+        bins = numpy.arange(
+            0, self._max_time + machine_time_step_ms, machine_time_step_ms)
         return numpy.average(numpy.histogram(
             self._tags[tag][_START_TIME], bins)[0])
 
@@ -164,8 +170,8 @@ class ProfileData(object):
         :type run_time_ms: float
         :rtype: float
         """
-        max_start_time = max(self._tags[tag][_START_TIME])
-        bins = numpy.arange(0, max_start_time, machine_time_step_ms)
+        bins = numpy.arange(
+            0, self._max_time + machine_time_step_ms, machine_time_step_ms)
         mean_per_ts = scipy.stats.binned_statistic(
             self._tags[tag][_START_TIME], self._tags[tag][_DURATION],
             "mean", bins).statistic
