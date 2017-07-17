@@ -648,6 +648,29 @@
         </optional_inputs>
         <outputs>
             <param_type>ExecutableTargets</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="LocateExecutableStartType">
+        <python_module>spinn_front_end_common.interface.interface_functions.locate_executable_start_type</python_module>
+        <python_class>LocateExecutableStartType</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>graph</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
+        <outputs>
             <param_type>ExecutableStartType</param_type>
         </outputs>
     </algorithm>

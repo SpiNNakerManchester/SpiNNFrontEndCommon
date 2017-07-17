@@ -1251,11 +1251,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
+        # add check for algorithm start type
+        algorithms.append("LocateExecutableStartType")
+
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MemoryMachineGraph", "ExecutableStartType"
         ]
 
         if self._application_graph.n_vertices > 0:
@@ -1268,12 +1271,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 outputs.append("BufferManager")
             else:
                 inputs["BufferManager"] = self._buffer_manager
-
-        # Get the executable targets
-        optional_algorithms.append("GraphBinaryGatherer")
-
-        outputs.append("ExecutableTargets")
-        outputs.append("ExecutableStartType")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1354,6 +1351,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # run and not using a virtual board
         if self._has_ran and not self._use_virtual_board:
             optional_algorithms.append("DSGRegionReloader")
+
+        # Get the executable targets
+        optional_algorithms.append("GraphBinaryGatherer")
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
