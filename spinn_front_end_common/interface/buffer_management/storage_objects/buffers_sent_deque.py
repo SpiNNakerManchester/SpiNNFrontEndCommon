@@ -1,11 +1,9 @@
 # spinnman imports
-from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
-    import HostSendSequencedData
-from spinnman.messages.eieio.command_messages.event_stop_request\
-    import EventStopRequest
+from spinnman.messages.eieio.command_messages \
+    import EventStopRequest, HostSendSequencedData
 
 # front end common imports
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 # general imports
 from collections import deque
@@ -70,7 +68,7 @@ class BuffersSentDeque(object):
         self._sequence_lock = Lock()
 
         # The last sequence number to be received on the machine
-        self._last_received_sequence_number = (_N_SEQUENCES - 1)
+        self._last_received_sequence_number = _N_SEQUENCES - 1
 
         # True if the stop message has been sent
         self._sent_stop_message = sent_stop_message
@@ -112,14 +110,13 @@ class BuffersSentDeque(object):
 
         # If full, raise an exception
         if self.is_full:
-            raise exceptions.SpinnFrontEndException("The buffer is full")
+            raise SpinnFrontEndException("The buffer is full")
 
         # Create a sequenced message and update the sequence number
         self._sequence_lock.acquire()
         sequenced_message = HostSendSequencedData(
             self._region, self._sequence_number, message)
-        self._sequence_number = ((self._sequence_number + 1) %
-                                 _N_SEQUENCES)
+        self._sequence_number = (self._sequence_number + 1) % _N_SEQUENCES
         self._sequence_lock.release()
 
         # Add the sequenced message to the buffers
@@ -152,9 +149,9 @@ class BuffersSentDeque(object):
         # the last received + window size, taking account that the end
         # of the window might wrap
         min_seq_no_acceptable = self._last_received_sequence_number
-        max_seq_no_acceptable = ((min_seq_no_acceptable +
-                                  self._n_sequences_per_transmission) %
-                                 _N_SEQUENCES)
+        max_seq_no_acceptable = (
+            (min_seq_no_acceptable + self._n_sequences_per_transmission)
+            % _N_SEQUENCES)
 
         if (min_seq_no_acceptable <= last_received_sequence_no <=
                 max_seq_no_acceptable):

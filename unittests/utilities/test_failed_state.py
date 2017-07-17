@@ -1,6 +1,6 @@
 import unittest
 
-from spinn_front_end_common.utilities.failed_state import FailedState
+from spinn_front_end_common.utilities import FailedState
 from spinn_front_end_common.utilities import globals_variables
 
 

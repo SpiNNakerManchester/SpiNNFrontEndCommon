@@ -2,9 +2,8 @@ import unittest
 import socket
 from threading import Thread
 import json
-from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_spalloc_max_machine_generator \
-    import FrontEndCommonSpallocMaxMachineGenerator
+from spinn_front_end_common.interface.interface_functions \
+    import SpallocMaxMachineGenerator
 
 
 class _MockSpallocServer(Thread):
@@ -45,7 +44,7 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server = _MockSpallocServer(
             "test", 1, 1, [(0, 0, 1), (0, 0, 2)], [], ["default"])
         server.start()
-        generator = FrontEndCommonSpallocMaxMachineGenerator()
+        generator = SpallocMaxMachineGenerator()
         max_width, max_height, _, _ = generator.__call__(
             "localhost", server.port)
         self.assertEqual(max_width, 8)
@@ -55,7 +54,7 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server = _MockSpallocServer(
             "test", 1, 1, [], [], ["default"])
         server.start()
-        generator = FrontEndCommonSpallocMaxMachineGenerator()
+        generator = SpallocMaxMachineGenerator()
         max_width, max_height, _, _ = generator.__call__(
             "localhost", server.port)
         self.assertEqual(max_width, 12)
@@ -65,7 +64,7 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
         server = _MockSpallocServer(
             "test", 3, 2, [], [], ["test"])
         server.start()
-        generator = FrontEndCommonSpallocMaxMachineGenerator()
+        generator = SpallocMaxMachineGenerator()
         max_width, max_height, _, _ = generator.__call__(
             "localhost", server.port, "test")
         self.assertEqual(max_width, 12 * 3)

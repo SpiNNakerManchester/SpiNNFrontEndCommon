@@ -3,8 +3,7 @@ import logging
 from six import add_metaclass
 
 # spinn front end common imports
-from spinn_front_end_common.interface.buffer_management.buffer_models.\
-    abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
+from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
 
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod, \
     abstractproperty
@@ -13,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @add_metaclass(AbstractBase)
-class SendsBuffersFromHostPreBufferedImpl(
-        AbstractSendsBuffersFromHost):
+class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     """ Implementation of the AbstractSendsBuffersFromHost\
         which uses an existing set of buffers for the details
     """

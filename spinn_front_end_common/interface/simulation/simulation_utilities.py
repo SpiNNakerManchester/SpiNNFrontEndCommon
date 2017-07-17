@@ -1,6 +1,6 @@
 import os
 import hashlib
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 
 def get_simulation_header_array(
@@ -25,6 +25,6 @@ def get_simulation_header_array(
     data.append(machine_time_step * time_scale_factor)
 
     # add SDP port number for receiving synchronisations and new run times
-    data.append(constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
+    data.append(SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value)
 
     return data
