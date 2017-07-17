@@ -215,6 +215,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #
         "_report_default_directory",
 
+        # If not None path to append pacman exutor provenance info to
+        "_pacman_executor_provenance_path",
+
         #
         "_app_data_runtime_folder",
 
@@ -392,7 +395,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._report_simulation_top_directory = None
         self._app_data_runtime_folder = None
         self._app_data_top_simulation_folder = None
-
+        self._pacman_executor_provenance_path = None
         self._set_up_output_folders()
 
         self._json_folder = os.path.join(
@@ -484,6 +487,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "defaultApplicationDataFilePath"),
                 n_calls_to_run=self._n_calls_to_run,
                 this_run_time_string=self._this_run_time_string)
+
+        if self._read_config_boolean("Reports",
+                                     "writePacmanExecutorProvenance"):
+            self._pacman_executor_provenance_path = os.path.join(
+                self._report_default_directory,
+                "pacman_executor_provenance.rpt")
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
@@ -874,7 +883,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=algorithms, optional_algorithms=optional,
             inputs=inputs, xml_paths=self._xml_paths, required_outputs=outputs,
-            do_timings=self._do_timings, print_timings=self._print_timings)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path)
 
         try:
             executor.execute_mapping()
@@ -1108,7 +1118,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=[], optional_algorithms=[], inputs=inputs,
             xml_paths=self._xml_paths, required_outputs=outputs,
-            do_timings=self._do_timings, print_timings=self._print_timings)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
@@ -1477,7 +1488,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=algorithms, optional_algorithms=[], inputs=inputs,
             xml_paths=self._xml_paths, required_outputs=outputs,
-            do_timings=self._do_timings, print_timings=self._print_timings)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path)
         try:
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
@@ -2037,7 +2049,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executor = PACMANAlgorithmExecutor(
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,
                 xml_paths=self._xml_paths, required_outputs=outputs,
-                do_timings=self._do_timings, print_timings=self._print_timings)
+                do_timings=self._do_timings, print_timings=self._print_timings,
+                provenance_path=self._pacman_executor_provenance_path)
             run_complete = False
             try:
                 executor.execute_mapping()
