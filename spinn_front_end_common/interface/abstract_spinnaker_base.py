@@ -567,7 +567,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         :param run_time: the run duration in milliseconds.
         """
-        if (self._has_ran and self._executable_start_type !=
+        if (self._has_ran and
+                self._executable_start_type !=
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
@@ -659,8 +660,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Disable auto pause and resume if the binary can't do it
         if (self._executable_start_type !=
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
-            self._config.set(
-                "Buffers", "use_auto_pause_and_resume", "False")
+            self._config.set("Buffers", "use_auto_pause_and_resume", "False")
 
         # Work out an array of timesteps to perform
         if (not self._config.getboolean(
@@ -892,7 +892,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             ex_type, ex_value, ex_traceback = sys.exc_info()
             raise ex_type, ex_value, ex_traceback
 
-    def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
+    def _get_machine(self, total_run_time=0, n_machine_time_steps=None):
         if self._machine is not None:
             return self._machine
 
@@ -1362,14 +1362,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
             "LoadedRoutingTablesToken", "LoadBinariesToken",
-            "LoadedApplicationDataToken", "ExecutableTargets",
-            "ExecutableStartType"
+            "LoadedApplicationDataToken"
         ]
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, optional_algorithms)
         self._load_outputs = executor.get_items()
-        self._executable_start_type = executor.get_item("ExecutableStartType")
 
     def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
 
