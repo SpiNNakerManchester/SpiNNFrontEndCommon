@@ -1,19 +1,15 @@
 import unittest
 import struct
 
-from spinnman.processes\
-    .multi_connection_process_round_robin_connection_selector \
-    import MultiConnectionProcessRoundRobinConnectionSelector
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.connections.udp_packet_connections.udp_scamp_connection \
-    import UDPSCAMPConnection
+from spinnman.processes import RoundRobinConnectionSelector
+from spinnman.messages.sdp import SDPHeader
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 
-from spinn_machine.core_subsets import CoreSubsets
-from spinn_machine.core_subset import CoreSubset
+from spinn_machine import CoreSubsets, CoreSubset
 
-from spinn_front_end_common.utilities.scp.clear_iobuf_process \
-    import ClearIOBUFProcess
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
+from spinn_front_end_common.utilities.constants \
+    import SDP_RUNNING_MESSAGE_CODES
 
 from integration_tests.mock_machine import MockMachine
 
@@ -25,10 +21,9 @@ class TestIOBufClearProcess(unittest.TestCase):
         receiver.start()
 
         # Set up a connection to the "machine"
-        connection = UDPSCAMPConnection(
+        connection = SCAMPConnection(
             0, 0, remote_host="127.0.0.1", remote_port=receiver.local_port)
-        selector = MultiConnectionProcessRoundRobinConnectionSelector(
-            [connection])
+        selector = RoundRobinConnectionSelector([connection])
 
         # Create the process and run it
         process = ClearIOBUFProcess(selector)
@@ -45,7 +40,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         command = struct.unpack_from("<H", data, 10)[0]
         self.assertEqual(
             command,
-            constants.SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
+            SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)
 
 
 if __name__ == "__main__":

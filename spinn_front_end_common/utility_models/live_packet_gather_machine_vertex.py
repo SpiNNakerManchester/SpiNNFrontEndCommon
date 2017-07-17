@@ -1,26 +1,23 @@
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.decorators.overrides import overrides
+from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import IPtagResource, ResourceContainer
 from pacman.model.resources import SDRAMResource
 
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl \
+from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
+    AbstractSupportsDatabaseInjection
+from spinn_front_end_common.utilities.utility_objs \
+    import ProvenanceDataItem, ExecutableStartType
+from spinn_front_end_common.utilities.constants \
+    import SYSTEM_BYTES_REQUIREMENT
 
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinnman.messages.eieio import EIEIOType
 
 from enum import Enum
 import struct
@@ -28,7 +25,8 @@ import struct
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+        AbstractSupportsDatabaseInjection):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -87,6 +85,11 @@ class LivePacketGatherMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self._resources_required
+
+    @property
+    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
+    def is_in_injection_mode(self):
+        return True
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                get_provenance_data_from_machine)
@@ -171,7 +174,7 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
-            size=constants.SYSTEM_BYTES_REQUIREMENT,
+            size=SYSTEM_BYTES_REQUIREMENT,
             label='system')
         spec.reserve_memory_region(
             region=(
@@ -185,9 +188,9 @@ class LivePacketGatherMachineVertex(
 
         :param spec: the spec object for the dsg
         :type spec: \
-                    :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
+                    :py:class:`spinn_storage_handlers.FileDataWriter`
         :param iptags: The set of ip tags assigned to the object
-        :type iptags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
+        :type iptags: iterable of :py:class:`spinn_machine.tags.IPTag`
         :raise DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """
@@ -257,10 +260,9 @@ class LivePacketGatherMachineVertex(
 
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
-            region=(
-                LivePacketGatherMachineVertex.
-                _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+            region=(LivePacketGatherMachineVertex.
+                    _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
     @staticmethod
@@ -278,11 +280,10 @@ class LivePacketGatherMachineVertex(
 
         """
         return (
-            constants.SYSTEM_BYTES_REQUIREMENT +
+            SYSTEM_BYTES_REQUIREMENT +
             LivePacketGatherMachineVertex._CONFIG_SIZE +
             LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex
-                .N_ADDITIONAL_PROVENANCE_ITEMS))
+                LivePacketGatherMachineVertex.N_ADDITIONAL_PROVENANCE_ITEMS))
 
     @staticmethod
     def get_dtcm_usage():
