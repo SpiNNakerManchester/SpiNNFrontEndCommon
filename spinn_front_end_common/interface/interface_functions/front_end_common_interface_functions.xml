@@ -1,7 +1,7 @@
 <algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
-			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+            https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="PreAllocateResourcesForLivePacketGatherers">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>PreAllocateResourcesForLivePacketGatherers</python_class>
@@ -650,9 +650,9 @@
             <param_type>ExecutableTargets</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="FrontEndCommonLocateExecutableStartType">
-        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_locate_executable_start_types</python_module>
-        <python_class>FrontEndCommonLocateExecutableStartType</python_class>
+    <algorithm name="LocateExecutableStartType">
+        <python_module>spinn_front_end_common.interface.interface_functions.locate_executable_start_type</python_module>
+        <python_class>LocateExecutableStartType</python_class>
         <input_definitions>
             <parameter>
                 <param_name>graph_mapper</param_name>

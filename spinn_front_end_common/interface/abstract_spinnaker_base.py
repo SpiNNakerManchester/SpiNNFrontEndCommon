@@ -1253,7 +1253,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
         # add check for algorithm start type
-        algorithms.append("FrontEndCommonLocateExecutableStartType")
+        algorithms.append("LocateExecutableStartType")
 
         # handle outputs
         outputs = [

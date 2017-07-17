@@ -4,7 +4,7 @@ from spinn_front_end_common.utilities import exceptions
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class FrontEndCommonLocateExecutableStartType(object):
+class LocateExecutableStartType(object):
 
     def __call__(self, graph, graph_mapper=None):
 
@@ -33,7 +33,7 @@ class FrontEndCommonLocateExecutableStartType(object):
             if binary_start_type is None:
                 binary_start_type = placement_binary_start_type
 
-            # check all verts have the same sim type
+            # check all vertices have the same start type
             if (placement_binary_start_type is not None and
                     binary_start_type is not None and
                     placement_binary_start_type != binary_start_type):

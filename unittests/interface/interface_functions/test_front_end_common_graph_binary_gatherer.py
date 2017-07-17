@@ -6,9 +6,8 @@ from pacman.model.placements import Placements, Placement
 
 from spinn_front_end_common.interface.interface_functions \
     import GraphBinaryGatherer
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_locate_executable_start_types import \
-    FrontEndCommonLocateExecutableStartType
+from spinn_front_end_common.interface.interface_functions \
+    import LocateExecutableStartType
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
@@ -72,7 +71,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         gatherer = GraphBinaryGatherer()
         targets = gatherer.__call__(
             placements, graph, _TestExecutableFinder())
-        gatherer = FrontEndCommonLocateExecutableStartType()
+        gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph)
         self.assertEqual(start_type, ExecutableStartType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
@@ -97,7 +96,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
 
-        gatherer = FrontEndCommonLocateExecutableStartType()
+        gatherer = LocateExecutableStartType()
         with self.assertRaises(ConfigurationException):
             gatherer.__call__(graph)
 
