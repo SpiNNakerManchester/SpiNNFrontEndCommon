@@ -231,7 +231,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_do_timings",
 
         #
-        "_print_timings7",
+        "_print_timings",
 
         #
         "_provenance_format",
