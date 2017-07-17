@@ -25,7 +25,7 @@ class MemoryMapOnHostChipReport(object):
         :param dsg_targets: the map between placement and file writer
         :param transceiver: the spinnMan instance
         :param loaded_app_data_token: flag that app data has been loaded
-        :return: None
+        :rtype: None
         """
 
         if not loaded_app_data_token:

@@ -217,9 +217,6 @@ class CommandSenderMachineVertex(
 
     @staticmethod
     def get_n_command_bytes(commands):
-        """
-        :return:
-        """
         n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
         n_bytes += (
             CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE *
@@ -229,9 +226,9 @@ class CommandSenderMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """ Return a string representation of the models binary
+        """
+        Return a string representation of the models binary
 
-        :return:
         """
         return 'command_sender_multicast_source.aplx'
 
