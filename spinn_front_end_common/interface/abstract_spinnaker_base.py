@@ -567,8 +567,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         :param run_time: the run duration in milliseconds.
         """
-        if (self._has_ran and not self._use_virtual_board and
-                self._executable_start_type !=
+        if (self._has_ran and self._executable_start_type !=
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
@@ -1363,7 +1362,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
             "LoadedRoutingTablesToken", "LoadBinariesToken",
-            "LoadedApplicationDataToken", "ExecutableTargets"
+            "LoadedApplicationDataToken", "ExecutableTargets",
+            "ExecutableStartType"
         ]
 
         executor = self._run_algorithms(
