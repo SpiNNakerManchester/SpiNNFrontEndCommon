@@ -316,7 +316,7 @@ class EnergyReport(object):
                 output.write(
                     "A Spinn {} board does not contain any FPGA's, and so "
                     "its energy cost is 0 \n".format(version))
-                return 0
+                return 0, 0
 
             # if the spinn4 or spinn5 board, need to verify if wrap arounds
             # are there, if not then assume fppga's are turned off.
@@ -336,7 +336,7 @@ class EnergyReport(object):
                         "The FPGA's on the Spinn {} board are turned off and "
                         "therefore the energy used by the FPGA is 0\n".format(
                             version))
-                    return 0
+                    return 0, 0
             else:  # no idea where we are
                 raise exceptions.ConfigurationException(
                     "Do not know what the FPGA setup is for this version of "
