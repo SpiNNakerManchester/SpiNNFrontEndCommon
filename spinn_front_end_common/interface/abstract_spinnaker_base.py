@@ -928,8 +928,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms=algorithms, optional_algorithms=optional,
             inputs=inputs, xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
-            provenance_name=provenance_name)
-            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_name=provenance_name,
             provenance_path=self._pacman_executor_provenance_path)
 
         try:
@@ -1625,8 +1624,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms=algorithms, optional_algorithms=[], inputs=inputs,
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
-            provenance_path=self._pacman_executor_provenance_path)
-            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path,
             provenance_name="Execution")
         try:
             executor.execute_mapping()
@@ -2191,9 +2189,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms=algorithms, optional_algorithms=[], inputs=inputs,
                 xml_paths=self._xml_paths, required_outputs=outputs,
                 do_timings=self._do_timings, print_timings=self._print_timings,
+                provenance_path=self._pacman_executor_provenance_path,
                 provenance_name="stopping")
-                do_timings=self._do_timings, print_timings=self._print_timings,
-                provenance_path=self._pacman_executor_provenance_path)
             run_complete = False
             try:
                 executor.execute_mapping()
