@@ -56,7 +56,7 @@ class HostExecuteDataSpecification(object):
         :param report_default_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
-        :param runtime_application_data_folder:\
+        :param application_data_runtime_folder:\
             Folder where data specifications should be written to
         :param machine: the python representation of the spinnaker machine
         :param transceiver: the spinnman instance
