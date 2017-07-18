@@ -18,6 +18,7 @@ class AbstractHasAssociatedBinary(object):
     @abstractmethod
     def get_binary_start_type(self):
         """ Get the start type of the binary to be run
+
         :rtype:\
             :py:class:`spinn_front_end_common.utilities.utility_objs.executable_start_type.ExecutableStartType`
         """

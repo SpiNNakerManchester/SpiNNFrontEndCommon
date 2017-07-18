@@ -220,6 +220,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #
         "_report_default_directory",
 
+        # If not None path to append pacman exutor provenance info to
+        "_pacman_executor_provenance_path",
+
         #
         "_app_data_runtime_folder",
 
@@ -418,7 +421,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._report_simulation_top_directory = None
         self._app_data_runtime_folder = None
         self._app_data_top_simulation_folder = None
-
+        self._pacman_executor_provenance_path = None
         self._set_up_output_folders()
 
         self._json_folder = os.path.join(
@@ -514,6 +517,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "defaultApplicationDataFilePath"),
                 n_calls_to_run=self._n_calls_to_run,
                 this_run_time_string=self._this_run_time_string)
+
+        if self._read_config_boolean("Reports",
+                                     "writePacmanExecutorProvenance"):
+            self._pacman_executor_provenance_path = os.path.join(
+                self._report_default_directory,
+                "pacman_executor_provenance.rpt")
 
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
@@ -920,6 +929,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs=inputs, xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_name=provenance_name)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path)
 
         try:
             executor.execute_mapping()
@@ -929,12 +940,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            self._shutdown()
-            helpful_functions.write_finished_file(
-                self._app_data_top_simulation_folder,
-                self._report_simulation_top_directory)
-
             ex_type, ex_value, ex_traceback = sys.exc_info()
+            try:
+                self._shutdown()
+                helpful_functions.write_finished_file(
+                    self._app_data_top_simulation_folder,
+                    self._report_simulation_top_directory)
+            except:
+                traceback.print_exc()
             raise ex_type, ex_value, ex_traceback
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
@@ -1170,7 +1183,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=[], optional_algorithms=[], inputs=inputs,
             xml_paths=self._xml_paths, required_outputs=outputs,
-            do_timings=self._do_timings, print_timings=self._print_timings)
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
 
     def _do_mapping(self, run_time, n_machine_time_steps, total_run_time):
@@ -1323,11 +1337,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms").split(","))
 
+        # add check for algorithm start type
+        algorithms.append("LocateExecutableStartType")
+
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph"
+            "MemoryMachineGraph", "ExecutableStartType"
         ]
 
         if self._application_graph.n_vertices > 0:
@@ -1474,6 +1491,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._has_ran and not self._use_virtual_board:
             optional_algorithms.append("DSGRegionReloader")
 
+        # Get the executable targets
+        optional_algorithms.append("GraphBinaryGatherer")
+
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
@@ -1604,6 +1624,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=algorithms, optional_algorithms=[], inputs=inputs,
             xml_paths=self._xml_paths, required_outputs=outputs,
+            do_timings=self._do_timings, print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path)
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_name="Execution")
         try:
@@ -2170,6 +2192,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 xml_paths=self._xml_paths, required_outputs=outputs,
                 do_timings=self._do_timings, print_timings=self._print_timings,
                 provenance_name="stopping")
+                do_timings=self._do_timings, print_timings=self._print_timings,
+                provenance_path=self._pacman_executor_provenance_path)
             run_complete = False
             try:
                 executor.execute_mapping()

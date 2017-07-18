@@ -45,6 +45,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         config.set("Reports", "writeAlgorithmTimings", value="False")
         config.set("Reports", "display_algorithm_timings", value="False")
         config.set("Reports", "provenance_format", value="xml")
+        config.set("Reports", "writePacmanExecutorProvenance", value="True")
         config.add_section("SpecExecution")
         config.set("SpecExecution", "specExecOnHost", value="True")
 
