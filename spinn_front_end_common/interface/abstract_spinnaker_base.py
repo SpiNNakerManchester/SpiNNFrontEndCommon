@@ -1427,8 +1427,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         load_timer = Timer()
         load_timer.start_timing()
 
-        # turn on machine for loading
-        if not self._use_virtual_board:
+        # turn off and then on machine for loading
+        if not self._use_virtual_board and not self.has_reset_last:
             helpful_functions.turn_off_on_boards_for_energy_savings(
                 self._txrx, self._machine_allocation_controller, True)
 
