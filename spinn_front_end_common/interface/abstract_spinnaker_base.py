@@ -2068,64 +2068,69 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
-        # if not a virtual machine then shut down stuff on the board
-        if not self._use_virtual_board:
+        # if on a virtual machine then shut down not needed
+        if self._use_virtual_board:
+            return
 
-            if turn_off_machine is None:
-                turn_off_machine = self._config.getboolean(
-                    "Machine", "turn_off_machine")
+        if self._power_save_mode:
+            logger.info("Shutdown skipped as board is off for power save")
+            return
 
-            if clear_routing_tables is None:
-                clear_routing_tables = self._config.getboolean(
-                    "Machine", "clear_routing_tables")
+        if turn_off_machine is None:
+            turn_off_machine = self._config.getboolean(
+                "Machine", "turn_off_machine")
 
-            if clear_tags is None:
-                clear_tags = self._config.getboolean(
-                    "Machine", "clear_tags")
+        if clear_routing_tables is None:
+            clear_routing_tables = self._config.getboolean(
+                "Machine", "clear_routing_tables")
 
-            if self._txrx is not None:
+        if clear_tags is None:
+            clear_tags = self._config.getboolean(
+                "Machine", "clear_tags")
 
-                if self._config.getboolean("Machine", "enable_reinjection"):
-                    self._txrx.enable_reinjection(multicast=False)
+        if self._txrx is not None:
 
-                # if stopping on machine, clear iptags and
-                if clear_tags:
-                    for ip_tag in self._tags.ip_tags:
-                        self._txrx.clear_ip_tag(
-                            ip_tag.tag, board_address=ip_tag.board_address)
-                    for reverse_ip_tag in self._tags.reverse_ip_tags:
-                        self._txrx.clear_ip_tag(
-                            reverse_ip_tag.tag,
-                            board_address=reverse_ip_tag.board_address)
+            if self._config.getboolean("Machine", "enable_reinjection"):
+                self._txrx.enable_reinjection(multicast=False)
 
-                # if clearing routing table entries, clear
-                if clear_routing_tables:
-                    for router_table in self._router_tables.routing_tables:
-                        if not self._machine.get_chip_at(
-                                router_table.x, router_table.y).virtual:
-                            self._txrx.clear_multicast_routes(
-                                router_table.x, router_table.y)
+            # if stopping on machine, clear iptags and
+            if clear_tags:
+                for ip_tag in self._tags.ip_tags:
+                    self._txrx.clear_ip_tag(
+                        ip_tag.tag, board_address=ip_tag.board_address)
+                for reverse_ip_tag in self._tags.reverse_ip_tags:
+                    self._txrx.clear_ip_tag(
+                        reverse_ip_tag.tag,
+                        board_address=reverse_ip_tag.board_address)
 
-                # clear values
-                self._no_sync_changes = 0
+            # if clearing routing table entries, clear
+            if clear_routing_tables:
+                for router_table in self._router_tables.routing_tables:
+                    if not self._machine.get_chip_at(
+                            router_table.x, router_table.y).virtual:
+                        self._txrx.clear_multicast_routes(
+                            router_table.x, router_table.y)
 
-                # app stop command
-                self._txrx.stop_application(self._app_id)
+            # clear values
+            self._no_sync_changes = 0
 
-            if self._buffer_manager is not None:
-                self._buffer_manager.stop()
+            # app stop command
+            self._txrx.stop_application(self._app_id)
 
-            # stop the transceiver
-            if self._txrx is not None:
-                if turn_off_machine:
-                    logger.info("Turning off machine")
+        if self._buffer_manager is not None:
+            self._buffer_manager.stop()
 
-                self._txrx.close(power_off_machine=turn_off_machine)
-                self._txrx = None
+        # stop the transceiver
+        if self._txrx is not None:
+            if turn_off_machine:
+                logger.info("Turning off machine")
 
-            if self._machine_allocation_controller is not None:
-                self._machine_allocation_controller.close()
-                self._machine_allocation_controller = None
+            self._txrx.close(power_off_machine=turn_off_machine)
+            self._txrx = None
+
+        if self._machine_allocation_controller is not None:
+            self._machine_allocation_controller.close()
+            self._machine_allocation_controller = None
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
