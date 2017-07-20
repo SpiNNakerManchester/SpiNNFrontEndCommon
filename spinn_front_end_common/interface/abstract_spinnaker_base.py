@@ -298,7 +298,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_dsg_time",
 
         # time taken by the front end extracting things
-        "_extraction_time"
+        "_extraction_time",
+
+        # power save mode. Only True if power saver has turned off board
+        "_power_save_mode"
     ]
 
     def __init__(
@@ -454,6 +457,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
+
+        # By default board is kept on once started later
+        self._power_save_mode = False
 
         globals_variables.set_simulator(self)
 
@@ -1142,12 +1148,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._txrx is not None and self._app_id is None:
             self._app_id = self._txrx.app_id_tracker.get_new_id()
 
-        if not self._use_virtual_board:
-            if helpful_functions.read_config_boolean(
-                    self._config, "EnergySavings",
-                    "turn_off_board_after_discovery"):
-                helpful_functions.turn_off_on_boards_for_energy_savings(
-                    self._txrx, self._machine_allocation_controller, False)
+        self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
 
         return self._machine
 
@@ -1363,13 +1364,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs.append("ExecutableTargets")
         outputs.append("ExecutableStartType")
 
-        # turn on/off machine for energy savings
-        if not self._use_virtual_board:
-            power_value = helpful_functions.read_config_boolean(
-                self._config, "EnergySavings", "turn_off_board_during_mapping")
-            helpful_functions.turn_off_on_boards_for_energy_savings(
-                self._txrx, self._machine_allocation_controller,
-                not power_value)
+        self._turn_off_on_board_to_save_power("turn_off_board_during_mapping")
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -1415,13 +1410,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("GraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
 
-        # turn on/off machine for energy savings
-        if not self._use_virtual_board:
-            power_value = helpful_functions.read_config_boolean(
-                self._config, "EnergySavings", "turn_off_board_during_dsg")
-            helpful_functions.turn_off_on_boards_for_energy_savings(
-                self._txrx, self._machine_allocation_controller,
-                not power_value)
+        self._turn_off_on_board_to_save_power("turn_off_board_during_dsg")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
@@ -1443,10 +1432,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         load_timer = Timer()
         load_timer.start_timing()
 
-        # turn off and then on machine for loading
-        if not self._use_virtual_board and not self.has_reset_last:
-            helpful_functions.turn_off_on_boards_for_energy_savings(
-                self._txrx, self._machine_allocation_controller, True)
+        self._turn_on_board_if_saving_power()
 
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
@@ -2304,6 +2290,50 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def _read_config_boolean(self, section, item):
         return helpful_functions.read_config_boolean(
             self._config, section, item)
+
+    def _turn_off_on_board_to_save_power(self, config_flag):
+        # check if machine should be turned off
+        turn_off = helpful_functions.read_config_boolean(self._config,
+            "EnergySavings", config_flag)
+
+        if turn_off is None:
+            return
+        if turn_off:
+            if self._turn_off_board_to_save_power():
+                logger.info("Board turned of based on: {}".format(config_flag))
+        else:
+            if self._turn_on_board_if_saving_power():
+                logger.info("Board turned on based on: {}".format(config_flag))
+
+    def _turn_off_board_to_save_power(self):
+        # already off or no machine to turn off
+        if self._power_save_mode or self._use_virtual_board:
+            return False
+
+        if self._machine_allocation_controller is not None:
+            # switch power state if needed
+            if self._machine_allocation_controller.power:
+                self._machine_allocation_controller.set_power(False)
+
+        self._txrx.power_off_machine()
+
+        self._power_save_mode = True
+        return True
+
+    def _turn_on_board_if_saving_power(self):
+        # Only required if previously turned off which never happens on virtual machine
+        if not self._power_save_mode:
+            return False
+
+        if self._machine_allocation_controller is not None:
+            # switch power state if needed
+            if not self._machine_allocation_controller.power:
+                self._machine_allocation_controller.set_power(True)
+        else:
+            self._txrx.power_on_machine()
+
+        self._txrx.ensure_board_is_ready()
+        return True
 
     @property
     def has_reset_last(self):
