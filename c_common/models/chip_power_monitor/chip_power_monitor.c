@@ -66,6 +66,9 @@ static void reset_core_counters(void)
 void resume_callback() {
     // change simulation ticks to be a number related to sampling frequency
     simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+    log_info("total_sim_ticks = %d", simulation_ticks);
+    recording_reset();
+    log_info("resume_callback");
 }
 
 static void sample_in_slot(uint unused0, uint unused1)
@@ -77,6 +80,7 @@ static void sample_in_slot(uint unused0, uint unused1)
     // handle the situation when the first time update is sent
     if (time == 0){
         simulation_ticks = (simulation_ticks * timer) / sample_frequency;
+        log_info("total_sim_ticks = %d", simulation_ticks);
     }
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
