@@ -140,7 +140,7 @@ class CommandSender(
         """ Return a string representation of the models binary
 
         """
-        return CommandSenderMachineVertex.get_binary_file_name()
+        return CommandSenderMachineVertex.BINARY_FILE_NAME
 
     @overrides(AbstractVertexWithEdgeToDependentVertices.dependent_vertices)
     def dependent_vertices(self):
