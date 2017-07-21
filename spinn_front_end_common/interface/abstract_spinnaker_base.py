@@ -1315,7 +1315,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if self._use_virtual_board:
             full = self._config.get(
-                "Mapping", "application_to_machine_graph_algorithms")
+                "Mapping", "machine_graph_to_virtual_machine_algorithms")
             individual = full.replace(" ", "").split(",")
             algorithms.extend(individual)
         else:
