@@ -48,6 +48,9 @@ class CommandSenderMachineVertex(
     # the number of malloc requests used by the dsg
     TOTAL_REQUIRED_MALLOCS = 5
 
+    # The name of the binary file
+    BINARY_FILE_NAME = 'command_sender_multicast_source.aplx'
+
     def __init__(
             self, constraints, resources_required, label,
             commands_at_start_resume, commands_at_pause_stop, timed_commands):
@@ -230,7 +233,7 @@ class CommandSenderMachineVertex(
         Return a string representation of the models binary
 
         """
-        return 'command_sender_multicast_source.aplx'
+        return self.BINARY_FILE_NAME
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
