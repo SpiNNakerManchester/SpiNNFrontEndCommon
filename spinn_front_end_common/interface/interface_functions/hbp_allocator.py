@@ -1,22 +1,23 @@
-from threading import Thread
-import requests
 import logging
+import requests
 import sys
+from threading import Thread
 
+from spinn_utilities import overrides
 from spinn_front_end_common.abstract_models \
-    import AbstractMachineAllocationController
+    import AbstractMachineAllocationController as AllocationController
 
 logger = logging.getLogger(__name__)
 
 
-class _HBPJobController(Thread, AbstractMachineAllocationController):
-
+class _HBPJobController(Thread, AllocationController):
     __slots__ = [
         # thread flag to allow it to be killed when the main thread dies
         "daemon",
 
-        # the URL to call the HBP system
-        "_url",
+        # the URLs to call the HBP system
+        "_extend_lease_url"
+        "_check_lease_url",
 
         # boolean flag for telling this thread when the system has ended
         "_exited"
@@ -27,24 +28,27 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
     def __init__(self, url):
         Thread.__init__(self, name="HBPJobController")
         self.daemon = True
-        self._url = url
+        self._extend_lease_url = "{}/extendLease".format(url)
+        self._check_lease_url = "{}/checkLease".format(url)
         self._exited = False
 
+    @overrides(super_class_method=AllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
-        requests.get(
-            "{}/extendLease".format(self._url),
-            params={"runTime": new_total_run_time})
+        requests.get(self._extend_lease_url, params={
+            "runTime": new_total_run_time})
 
+    def _check_lease(self, wait_time):
+        return requests.get(self._check_lease_url, params={
+            "waitTime": wait_time}).json()
+
+    @overrides(super_class_method=AllocationController.close)
     def close(self):
         self._exited = True
 
     def run(self):
         job_allocated = True
         while job_allocated and not self._exited:
-            job_allocated_request = requests.get(
-                "{}/checkLease".format(self._url),
-                params={"waitTime": self._WAIT_TIME_MS})
-            job_allocated = job_allocated_request.json()["allocated"]
+            job_allocated = self._check_lease(self._WAIT_TIME_MS)["allocated"]
 
         if not self._exited:
             logger.error(
@@ -72,11 +76,9 @@ class HBPAllocator(object):
         if url.endswith("/"):
             url = url[:-1]
 
-        get_machine_request = requests.get(
-            url, params={"nChips": n_chips, "runTime": total_run_time})
-        machine = get_machine_request.json()
-        machine_allocation_controller = _HBPJobController(url)
-        machine_allocation_controller.start()
+        machine = self._get_machine(url, n_chips, total_run_time)
+        hbp_job_controller = _HBPJobController(url)
+        hbp_job_controller.start()
 
         bmp_details = None
         if "bmp_details" in machine:
@@ -85,5 +87,10 @@ class HBPAllocator(object):
         return (
             machine["machineName"], int(machine["version"]), None, None,
             bmp_details, False, False, None, None, None,
-            machine_allocation_controller
+            hbp_job_controller
         )
+
+    def _get_machine(self, url, n_chips, total_run_time):
+        get_machine_request = requests.get(
+            url, params={"nChips": n_chips, "runTime": total_run_time})
+        return get_machine_request.json()

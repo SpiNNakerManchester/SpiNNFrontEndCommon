@@ -1,4 +1,4 @@
-from spalloc.protocol_client import ProtocolClient
+from spalloc import ProtocolClient
 
 
 class SpallocMaxMachineGenerator(object):

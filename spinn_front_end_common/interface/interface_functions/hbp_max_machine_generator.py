@@ -17,14 +17,14 @@ class HBPMaxMachineGenerator(object):
         :param total_run_time: The total run time to request
         """
 
-        url = hbp_server_url
-        if url.endswith("/"):
-            url = url[:-1]
-
-        max_machine_request = requests.get(
-            "{}/max".format(url),
-            params={'runTime': total_run_time})
-        max_machine = max_machine_request.json()
+        max_machine = self._max_machine(hbp_server_url, total_run_time)
 
         # Return the width and height and assume that it has wrap arounds
         return max_machine["width"], max_machine["height"], True
+
+    def _max_machine_request(self, url, total_run_time):
+        if url.endswith("/"):
+            url = url[:-1]
+        return requests.get(
+            "{}/max".format(url),
+            params={'runTime': total_run_time}).json()
