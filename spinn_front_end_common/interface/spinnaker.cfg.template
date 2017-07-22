@@ -14,7 +14,7 @@ spalloc_server = None
 spalloc_port = 22244
 spalloc_user = None
 
-# If using virtual_board bot width and height must be set
+# If using virtual_board both width and height must be set
 virtual_board = False
 # Allowed values pairs are (2,2)  (8,8)   (n*12,m*12)  and (n*12+4, m*12+4)
 width = None
@@ -32,5 +32,5 @@ default_application_data_file_path = DEFAULT
 
 [Mode]
 # mode = Production or Debug
-# In Debug mode all report boolean config values are automitcally overwritten to True
+# In Debug mode all report boolean config values are automatically overwritten to True
 mode = Production
