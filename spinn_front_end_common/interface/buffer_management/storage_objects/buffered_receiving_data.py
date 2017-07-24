@@ -342,7 +342,7 @@ class BufferedReceivingData(object):
         :param y: placement y coord
         :param p: placement p coord
         :param region_id: the recording region id to clear data from
-        :return: None
+        :rtype: None
         """
         del self._end_buffering_state[x, y, p, region_id]
         del self._data[x, y, p, region_id]
