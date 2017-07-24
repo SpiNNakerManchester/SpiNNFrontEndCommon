@@ -574,8 +574,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if time_scale_factor is None:
             self._time_scale_factor = self._read_config_int(
                 "Machine", "time_scale_factor")
-            if self._time_scale_factor is None:
-                self._time_scale_factor = 1
         else:
             self._time_scale_factor = time_scale_factor
 

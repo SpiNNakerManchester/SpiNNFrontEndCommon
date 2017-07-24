@@ -7,8 +7,6 @@ from data_specification.constants import MAX_MEM_REGIONS
 
 from spinn_front_end_common.abstract_models \
     import AbstractRewritesDataSpecification
-from .host_execute_data_specification \
-    import HostExecuteDataSpecification
 from spinn_front_end_common.utilities import helpful_functions
 
 from spinn_storage_handlers import FileDataReader
@@ -110,16 +108,10 @@ class DSGRegionReloader(object):
         # Execute the regeneration
         vertex.regenerate_data_specification(spec, placement)
 
-        # get report writer if needed
-        report_writer = HostExecuteDataSpecification.\
-            generate_report_writer(
-                write_text_specs, reloaded_dsg_data_files_file_path,
-                hostname, placement.x, placement.y, placement.p)
-
         # execute the spec
         spec_reader = FileDataReader(spec_file)
         data_spec_executor = DataSpecificationExecutor(
-            spec_reader, None, SDRAM.DEFAULT_SDRAM_BYTES, report_writer)
+            spec_reader, SDRAM.DEFAULT_SDRAM_BYTES)
         data_spec_executor.execute()
 
         # Read the region table for the placement
