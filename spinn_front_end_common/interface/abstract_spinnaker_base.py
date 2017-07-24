@@ -192,6 +192,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_has_ran",
 
         #
+        "_is_running",
+
+        #
         "_has_reset_last",
 
         #
@@ -373,6 +376,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # holder for timing related values
         self._has_ran = False
+        self._is_running = False
         self._has_reset_last = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
@@ -642,6 +646,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._shutdown()
         return sys.__excepthook__(exctype, value, traceback_obj)
 
+    def verify_not_running(self):
+        if self._is_running:
+            msg = "Illegal call while a simulation is already running"
+            raise ConfigurationException(msg)
+
     def run_until_complete(self):
         """ Run a simulation until it completes
         """
@@ -659,12 +668,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         :param run_time: the run duration in milliseconds.
         """
+        self.verify_not_running()
         if (self._has_ran and
                 self._executable_start_type !=
                 ExecutableStartType.USES_SIMULATION_INTERFACE):
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
                 " more than once")
+        self._is_running = True
 
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -765,6 +776,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._minimum_step_generated is not None and
                     (self._minimum_step_generated < n_machine_time_steps or
                         n_machine_time_steps is None)):
+                self._is_running = False
                 raise ConfigurationException(
                     "Second and subsequent run time must be less than or equal"
                     " to the first run time")
@@ -774,6 +786,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
 
             if run_time is None:
+                self._is_running = False
                 raise Exception(
                     "Cannot use automatic pause and resume with an infinite "
                     "run time")
@@ -819,6 +832,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
+        if run_time is not None:
+            self._is_running = False
 
     def _add_commands_to_command_sender(self):
         for vertex in self._application_graph.vertices:
@@ -2074,6 +2089,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if self._machine_allocation_controller is not None:
                 self._machine_allocation_controller.close()
                 self._machine_allocation_controller = None
+        self._is_running = False
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
