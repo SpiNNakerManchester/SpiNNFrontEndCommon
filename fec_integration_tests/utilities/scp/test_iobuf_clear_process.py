@@ -11,7 +11,7 @@ from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
 from spinn_front_end_common.utilities.constants \
     import SDP_RUNNING_MESSAGE_CODES
 
-from integration_tests.mock_machine import MockMachine
+from fec_integration_tests.mock_machine import MockMachine
 
 
 class TestIOBufClearProcess(unittest.TestCase):
