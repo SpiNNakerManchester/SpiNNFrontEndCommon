@@ -548,6 +548,37 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._report_default_directory,
                 "pacman_executor_provenance.rpt")
 
+    def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
+        """ Set up timings of the machine
+
+        :param machine_time_step:\
+            An explicitly specified time step for the machine.  If None,\
+            the value is read from the config
+        :param time_scale_factor:\
+            An explicitly specified time scale factor for the simulation.\
+            If None, the value is read from the config
+        """
+
+        # set up timings
+        if machine_time_step is None:
+            self._machine_time_step = \
+                self._config.getint("Machine", "machine_time_step")
+        else:
+            self._machine_time_step = machine_time_step
+
+        if self._machine_time_step <= 0:
+            raise ConfigurationException(
+                "invalid machine_time_step {}: must greater than zero".format(
+                    self._machine_time_step))
+
+        if time_scale_factor is None:
+            self._time_scale_factor = self._read_config_int(
+                "Machine", "time_scale_factor")
+            if self._time_scale_factor is None:
+                self._time_scale_factor = 1
+        else:
+            self._time_scale_factor = time_scale_factor
+
     def set_up_machine_specifics(self, hostname):
         """ Adds machine specifics for the different modes of execution
 

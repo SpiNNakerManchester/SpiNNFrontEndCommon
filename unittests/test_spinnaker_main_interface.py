@@ -24,6 +24,14 @@ class Close_Once(object):
             self.closed = True
 
 
+class MainInterfaceTimingImpl(AbstractSpinnakerBase):
+
+    def __init__(self, machine_time_step=None, time_scale_factor=None):
+        AbstractSpinnakerBase.__init__(
+            self, base.CONFIG_FILE, ExecutableFinder())
+        self.set_up_timings(machine_time_step, time_scale_factor)
+
+
 class TestSpinnakerMainInterface(unittest.TestCase):
 
     def setUp(self):
@@ -48,6 +56,18 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         self.assertTrue(mock_contoller.closed)
         interface.stop(turn_off_machine=False, clear_routing_tables=False,
                        clear_tags=False)
+
+    def test_timings(self):
+
+        # Test defaults
+        interface = MainInterfaceTimingImpl()
+        assert interface.machine_time_step == 1000
+        assert interface.timescale_factor == 1
+
+        # Test specified
+        interface = MainInterfaceTimingImpl(200, 10)
+        assert interface.machine_time_step == 200
+        assert interface.timescale_factor == 10
 
 
 if __name__ == "__main__":
