@@ -724,7 +724,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # Reset the machine if the machine is a spalloc machine and the
             # graph has changed
             if (self._has_ran and application_graph_changed and
-                    self._hostname is None and not self._use_virtual_board):
+                    not self._use_virtual_board):
 
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
@@ -734,6 +734,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._buffer_manager = None
                 if self._txrx is not None:
                     self._txrx.close()
+                    self._app_id = None
                 if self._machine_allocation_controller is not None:
                     self._machine_allocation_controller.close()
 
@@ -1794,9 +1795,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # Stop the application
             self._txrx.stop_application(self._app_id)
-
-            # deallocate my app id
-            self._app_id = None
 
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
