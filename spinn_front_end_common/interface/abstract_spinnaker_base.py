@@ -721,8 +721,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
 
-            # Reset the machine if the machine is a spalloc machine and the
-            # graph has changed
+            # Reset the machine if the graph has changed
             if (self._has_ran and application_graph_changed and
                     not self._use_virtual_board):
 
