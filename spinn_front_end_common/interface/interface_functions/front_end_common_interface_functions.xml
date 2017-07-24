@@ -1168,14 +1168,18 @@
                 <param_name>core_subsets</param_name>
                 <param_type>CoresToExtractIOBufFrom</param_type>
             </parameter>
+            <parameter>
+                <param_name>provenance_file_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>has_ran</param_name>
             <param_name>core_subsets</param_name>
+            <param_name>provenance_file_path</param_name>
         </required_inputs>
         <outputs>
-            <param_type>IOBuffers</param_type>
             <param_type>ErrorMessages</param_type>
             <param_type>WarnMessages</param_type>
         </outputs>
@@ -1401,6 +1405,44 @@
             <param_name>placements</param_name>
             <param_name>buffer_manager</param_name>
             <param_name>ran_token</param_name>
+        </required_inputs>
+    </algorithm>
+    <algorithm name="ProfileDataGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.profile_data_gatherer</python_module>
+        <python_class>ProfileDataGatherer</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>has_ran</param_name>
+                <param_type>RanToken</param_type>
+            </parameter>
+            <parameter>
+                <param_name>provenance_file_path</param_name>
+                <param_type>ProvenanceFilePath</param_type>
+            </parameter>
+            <parameter>
+                <param_name>run_time_ms</param_name>
+                <param_type>RunTime</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>placements</param_name>
+            <param_name>has_ran</param_name>
+            <param_name>provenance_file_path</param_name>
+            <param_name>run_time_ms</param_name>
+            <param_name>machine_time_step</param_name>
         </required_inputs>
     </algorithm>
 </algorithms>
