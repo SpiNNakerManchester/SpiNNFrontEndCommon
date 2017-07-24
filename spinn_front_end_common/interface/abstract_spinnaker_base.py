@@ -1699,6 +1699,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # Stop the application
             self._txrx.stop_application(self._app_id)
 
+            # deallocate my app id
+            self._app_id = None
+
         # rewind the buffers from the buffer manager, to start at the beginning
         # of the simulation again and clear buffered out
         if self._buffer_manager is not None:
