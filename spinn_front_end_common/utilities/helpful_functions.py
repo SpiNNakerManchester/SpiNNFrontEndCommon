@@ -102,8 +102,13 @@ def set_up_output_application_data_specifics(
 
     else:
         # add time stamped folder for this run
-        this_run_time_folder = \
+        application_generated_data_file_folder = \
             os.path.join(where_to_write_application_data_files,
+                         'application_generated_data_files')
+        if not os.path.exists(application_generated_data_file_folder):
+            os.makedirs(application_generated_data_file_folder)
+        this_run_time_folder = \
+            os.path.join(application_generated_data_file_folder,
                          this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)

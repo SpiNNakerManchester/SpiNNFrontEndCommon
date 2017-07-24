@@ -23,6 +23,7 @@ from .insert_edges_to_live_packet_gatherers \
 from .insert_live_packet_gatherers_to_graphs \
     import InsertLivePacketGatherersToGraphs
 from .load_executable_images import LoadExecutableImages
+from .locate_executable_start_type import LocateExecutableStartType
 from .machine_execute_data_specification \
     import MachineExecuteDataSpecification
 from .machine_generator import MachineGenerator
@@ -58,6 +59,7 @@ __all__ = [
     "InsertEdgesToLivePacketGatherers",
     "InsertLivePacketGatherersToGraphs",
     "LoadExecutableImages",
+    "LocateExecutableStartType",
     "MachineExecuteDataSpecification",
     "MachineGenerator", "NotificationProtocol",
     "PlacementsProvenanceGatherer",
