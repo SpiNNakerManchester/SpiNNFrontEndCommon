@@ -3,6 +3,8 @@ from spinn_front_end_common.interface.interface_functions \
     import ChipIOBufExtractor
 from spinn_machine import CoreSubsets, CoreSubset
 from spinnman.model import IOBuffer
+import os
+import tempfile
 
 
 class _PretendTransceiver(object):
@@ -33,11 +35,16 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         extractor = ChipIOBufExtractor()
         core_subsets = CoreSubsets([CoreSubset(x, y, [p])])
         transceiver = _PretendTransceiver([IOBuffer(x, y, p, text)])
-        iobuffers, error_entries, warn_entries = extractor(
-            transceiver, has_ran=True, core_subsets=core_subsets)
-        self.assertEqual(iobuffers[0].iobuf, text)
+        folder = tempfile.mkdtemp()
+        error_entries, warn_entries = extractor(
+            transceiver, has_ran=True, core_subsets=core_subsets,
+            provenance_file_path=folder)
+        testfile = os.path.join(folder, "0_0_1.txt")
+        self.assertTrue(os.path.exists(testfile))
         self.assertEqual(error_entries[0], result_error)
         self.assertEqual(warn_entries[0], result_warning)
+        os.unlink(testfile)
+        os.rmdir(folder)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
+import os
+import sys
 import unittest
 
-import ConfigParser
-
+import spinn_front_end_common.interface.abstract_spinnaker_base as base
 from spinn_front_end_common.interface.abstract_spinnaker_base \
     import AbstractSpinnakerBase
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
@@ -23,39 +24,30 @@ class Close_Once(object):
             self.closed = True
 
 
+class MainInterfaceTimingImpl(AbstractSpinnakerBase):
+
+    def __init__(self, machine_time_step=None, time_scale_factor=None):
+        AbstractSpinnakerBase.__init__(
+            self, base.CONFIG_FILE, ExecutableFinder())
+        self.set_up_timings(machine_time_step, time_scale_factor)
+
+
 class TestSpinnakerMainInterface(unittest.TestCase):
 
     def setUp(self):
         globals_variables.set_failed_state(FailedState())
 
-    def default_config(self):
-        config = ConfigParser.RawConfigParser()
-        config.add_section("Mapping")
-        config.set("Mapping", "extra_xmls_paths", value="")
-        config.add_section("Machine")
-        config.set("Machine", "appID", value="1")
-        config.set("Machine", "virtual_board", value="False")
-        config.add_section("Reports")
-        config.set("Reports", "defaultReportFilePath", value="DEFAULT")
-        config.set("Reports", "max_reports_kept", value="1")
-        config.set("Reports", "max_application_binaries_kept", value="1")
-        config.set("Reports", "defaultApplicationDataFilePath",
-                   value="DEFAULT")
-        config.set("Reports", "writeAlgorithmTimings", value="False")
-        config.set("Reports", "display_algorithm_timings", value="False")
-        config.set("Reports", "provenance_format", value="xml")
-        config.set("Reports", "writePacmanExecutorProvenance", value="True")
-        config.add_section("SpecExecution")
-        config.set("SpecExecution", "specExecOnHost", value="True")
-        return config
-
     def test_min_init(self):
-        AbstractSpinnakerBase(
-            self.default_config(), ExecutableFinder())
+        class_file = sys.modules[self.__module__].__file__
+        path = os.path.dirname(os.path.abspath(class_file))
+        os.chdir(path)
+        AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
 
     def test_stop_init(self):
-        interface = AbstractSpinnakerBase(
-            self.default_config(), ExecutableFinder())
+        class_file = sys.modules[self.__module__].__file__
+        path = os.path.dirname(os.path.abspath(class_file))
+        os.chdir(path)
+        interface = AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -65,11 +57,17 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         interface.stop(turn_off_machine=False, clear_routing_tables=False,
                        clear_tags=False)
 
-    def test_temp_defaultApplicationDataFilePath(self):
-        config = self.default_config()
-        config.set("Reports", "defaultApplicationDataFilePath", value="TEMP")
-        AbstractSpinnakerBase(
-            config, ExecutableFinder())
+    def test_timings(self):
+
+        # Test defaults
+        interface = MainInterfaceTimingImpl()
+        assert interface.machine_time_step == 1000
+        assert interface.timescale_factor is None
+
+        # Test specified
+        interface = MainInterfaceTimingImpl(200, 10)
+        assert interface.machine_time_step == 200
+        assert interface.timescale_factor == 10
 
 
 if __name__ == "__main__":
