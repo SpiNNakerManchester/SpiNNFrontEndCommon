@@ -3,20 +3,19 @@ import requests
 import sys
 from threading import Thread
 
-from spinn_utilities import overrides
 from spinn_front_end_common.abstract_models \
-    import AbstractMachineAllocationController as AllocationController
+    import AbstractMachineAllocationController
 
 logger = logging.getLogger(__name__)
 
 
-class _HBPJobController(Thread, AllocationController):
+class _HBPJobController(Thread, AbstractMachineAllocationController):
     __slots__ = [
         # thread flag to allow it to be killed when the main thread dies
         "daemon",
 
         # the URLs to call the HBP system
-        "_extend_lease_url"
+        "_extend_lease_url",
         "_check_lease_url",
 
         # boolean flag for telling this thread when the system has ended
@@ -32,7 +31,6 @@ class _HBPJobController(Thread, AllocationController):
         self._check_lease_url = "{}/checkLease".format(url)
         self._exited = False
 
-    @overrides(super_class_method=AllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
         requests.get(self._extend_lease_url, params={
             "runTime": new_total_run_time})
@@ -41,7 +39,6 @@ class _HBPJobController(Thread, AllocationController):
         return requests.get(self._check_lease_url, params={
             "waitTime": wait_time}).json()
 
-    @overrides(super_class_method=AllocationController.close)
     def close(self):
         self._exited = True
 

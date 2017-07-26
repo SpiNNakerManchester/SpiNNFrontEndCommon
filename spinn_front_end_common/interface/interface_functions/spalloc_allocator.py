@@ -5,14 +5,13 @@ from threading import Thread
 
 from spalloc import Job
 from spalloc.states import JobState
-from spinn_utilities import overrides
 from spinn_front_end_common.abstract_models \
-    import AbstractMachineAllocationController as AllocationController
+    import AbstractMachineAllocationController
 
 logger = logging.getLogger(__name__)
 
 
-class _SpallocJobController(Thread, AllocationController):
+class _SpallocJobController(Thread, AbstractMachineAllocationController):
 
     __slots__ = [
         # thread flag to allow it to be killed when the main thread dies
@@ -31,12 +30,10 @@ class _SpallocJobController(Thread, AllocationController):
         self._job = job
         self._exited = False
 
-    @overrides(super_class_method=AllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
-    @overrides(super_class_method=AllocationController.close)
     def close(self):
         self._exited = True
         self._job.destroy()
