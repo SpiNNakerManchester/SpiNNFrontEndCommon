@@ -17,23 +17,15 @@ class SpallocMaxMachineGenerator(object):
             # being rerun in this process any time soon.
         max_width = None
         max_height = None
+        max_area = -1
 
         for machine in self._filter(machines, spalloc_machine):
-            # Get the width and height in chips
-            width = machine["width"] * 12
-            height = machine["height"] * 12
-
-            # A specific exception is the 1-board machine, which is represented
-            # as a 3 board machine with 2 dead boards. In this case the width
-            # and height is 8.
-            if (machine["width"] == 1 and machine["height"] == 1
-                    and len(machine["dead_boards"]) == 2):
-                width = 8
-                height = 8
+            # Get the width and height in chips, and logical area in chips**2
+            width, height, area = self._get_size(machine)
 
             # The "biggest" board is the one with the most chips
-            if ((max_width is None and max_height is None) or
-                    (width * height > max_width * max_height)):
+            if area > max_area:
+                max_area = area
                 max_width = width
                 max_height = height
 
@@ -47,3 +39,20 @@ class SpallocMaxMachineGenerator(object):
             return (m for m in machines if "default" in m["tags"])
         else:
             return (m for m in machines if m["name"] == filter)
+
+    @staticmethod
+    def _get_size(machine):
+        # Get the width and height in chips
+        width = machine["width"] * 12
+        height = machine["height"] * 12
+
+        # A specific exception is the 1-board machine, which is represented as
+        # a 3 board machine with 2 dead boards. In this case the width and
+        # height are 8.
+        if (machine["width"] == 1 and
+                machine["height"] == 1 and
+                len(machine["dead_boards"]) == 2):
+            width = 8
+            height = 8
+
+        return width, height, width * height
