@@ -7,3 +7,5 @@
 /dist/
 /SpiNNFrontEndCommon.egg-info/
 /.settings/
+/.cproject
+Debug
