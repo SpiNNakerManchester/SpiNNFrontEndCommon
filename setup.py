@@ -46,5 +46,6 @@ setup(
                       'SpiNNaker_DataSpecification >= 1!4.0.0a5, < 1!5.0.0',
                       'spalloc >= 0.2.2, < 1.0.0',
                       'requests >= 2.4.1',
+                      'scipy >= 0.16.0',
                       'numpy', 'six']
 )
