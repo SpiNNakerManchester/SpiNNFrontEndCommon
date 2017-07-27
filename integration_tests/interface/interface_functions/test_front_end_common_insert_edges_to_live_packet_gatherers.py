@@ -1,22 +1,16 @@
 from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.common.graph_mapper import GraphMapper
-from pacman.model.graphs.common.slice import Slice
+from pacman.model.graphs.common import GraphMapper, Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_insert_edges_to_live_packet_gatherers import \
-    FrontEndCommonInsertEdgesToLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs.\
-    live_packet_gather_parameters import \
+from spinn_front_end_common.interface.interface_functions import \
+    InsertEdgesToLivePacketGatherers
+from spinn_front_end_common.utilities.utility_objs import \
     LivePacketGatherParameters
-from spinn_front_end_common.utility_models.live_packet_gather import \
-    LivePacketGather
-from spinn_front_end_common.utility_models.\
-    live_packet_gather_machine_vertex import \
-    LivePacketGatherMachineVertex
-from spinn_machine.virtual_machine import VirtualMachine
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinn_front_end_common.utility_models \
+    import LivePacketGather, LivePacketGatherMachineVertex
+from spinn_machine import VirtualMachine
+from spinnman.messages.eieio import EIEIOType
 from integration_tests.interface.interface_functions.test_vertex import \
     TestVertex
 
@@ -98,7 +92,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertEdgesToLivePacketGatherers()
+        edge_inserter = InsertEdgesToLivePacketGatherers()
         edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
@@ -204,7 +198,7 @@ class TestInsertLPGEdges(unittest.TestCase):
             placements.add_placement(Placement(x=x, y=y, p=5, vertex=vertex))
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertEdgesToLivePacketGatherers()
+        edge_inserter = InsertEdgesToLivePacketGatherers()
         edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,
@@ -315,7 +309,7 @@ class TestInsertLPGEdges(unittest.TestCase):
                 Placement(x=x, y=y, p=5, vertex=mac_vertex))
 
         # run edge inserter that should go boom
-        edge_inserter = FrontEndCommonInsertEdgesToLivePacketGatherers()
+        edge_inserter = InsertEdgesToLivePacketGatherers()
         edge_inserter(
             live_packet_gatherer_parameters=live_packet_gatherers,
             placements=placements,

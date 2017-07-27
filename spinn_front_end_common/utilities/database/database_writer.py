@@ -1,17 +1,8 @@
 # spinn front end common
-from pacman.model.abstract_classes.abstract_has_global_max_atoms import \
-    AbstractHasGlobalMaxAtoms
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_key_to_atom_mapping import \
-    AbstractProvidesKeyToAtomMapping
-from spinn_front_end_common.abstract_models.abstract_recordable import \
-    AbstractRecordable
-from spinn_front_end_common.utility_models.\
-    live_packet_gather_machine_vertex import \
-    LivePacketGatherMachineVertex
-from spinn_front_end_common.utility_models.\
-    reverse_ip_tag_multicast_source_machine_vertex import \
-    ReverseIPTagMulticastSourceMachineVertex
+from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
+from spinn_front_end_common.abstract_models \
+    import AbstractProvidesKeyToAtomMapping, AbstractRecordable, \
+    AbstractSupportsDatabaseInjection
 
 # general imports
 import logging
@@ -66,11 +57,8 @@ class DatabaseWriter(object):
         :return: a bool which represents if the database is needed
         """
         for vertex in machine_graph.vertices:
-            if (isinstance(vertex, LivePacketGatherMachineVertex) or
-                    (isinstance(
-                        vertex,
-                        ReverseIPTagMulticastSourceMachineVertex) and
-                     vertex.is_in_injection_mode)):
+            if (isinstance(vertex, AbstractSupportsDatabaseInjection) and
+                    vertex.is_in_injection_mode):
                 return True
         else:
             return False
@@ -651,7 +639,7 @@ class DatabaseWriter(object):
         :param vertex_id:
         :param routing_info:
         :param cur:
-        :return:
+        :rtype: None
         """
         if isinstance(vertex, AbstractProvidesKeyToAtomMapping):
             mapping = vertex.routing_key_partition_atom_mapping(

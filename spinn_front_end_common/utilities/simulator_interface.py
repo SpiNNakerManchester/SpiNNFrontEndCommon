@@ -30,6 +30,10 @@ class SimulatorInterface(object):
     def has_ran(self):
         pass
 
+    @abstractmethod
+    def verify_not_running(self):
+        pass
+
     @abstractproperty
     def increment_none_labelled_vertex_count(self):
         pass
