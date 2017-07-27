@@ -455,13 +455,13 @@ def convert_time_diff_to_total_milliseconds(sample):
 
 def turn_off_on_boards_for_energy_savings(
         transceiver, machine_allocation_controller, power_state):
-    """ helpful function for turning off the machine based off interface 
+    """ helpful function for turning off the machine based off interface
     to machine. should work on local board, spalloc and HBP portal
 
     :param transceiver: the spinnMan interface
     :param machine_allocation_controller: spalloc job
     :param power_state: what power state to turn the machine into
-    :rtype: None 
+    :rtype: None
     """
     if machine_allocation_controller is not None:
 

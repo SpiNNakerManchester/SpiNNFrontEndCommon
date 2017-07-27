@@ -1039,7 +1039,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executor.execute_mapping()
             self._pacman_provenance.extract_provenance(executor)
             return executor
-        except Exception as e:
+        except Exception:
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
@@ -2382,8 +2382,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def _turn_off_on_board_to_save_power(self, config_flag):
         # check if machine should be turned off
-        turn_off = helpful_functions.read_config_boolean(self._config,
-            "EnergySavings", config_flag)
+        turn_off = helpful_functions.read_config_boolean(
+            self._config, "EnergySavings", config_flag)
 
         if turn_off is None:
             return
@@ -2410,7 +2410,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return True
 
     def _turn_on_board_if_saving_power(self):
-        # Only required if previously turned off which never happens on virtual machine
+        # Only required if previously turned off which never happens
+        # on virtual machine
         if not self._power_save_mode:
             return False
 

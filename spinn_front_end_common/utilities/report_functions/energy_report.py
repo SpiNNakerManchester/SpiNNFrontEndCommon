@@ -38,7 +38,7 @@ class EnergyReport(object):
     # for a day powered off
     JULES_PER_MILLISECOND_FOR_BOXED_48_CHIP_FRAME_IDLE_COST = 0.0045833333
 
-    #TODO needs filling in
+    # TODO needs filling in
     JULES_PER_MILLISECOND_PER_UNBOXED_48_CHIP_FRAME_IDLE_COST = 0.01666667
 
     # TODO verify this is correct when doing multiboard comms
@@ -92,7 +92,7 @@ class EnergyReport(object):
             execute_time + load_time + extraction_time + dsg_time +
             mapping_time)
 
-        #total time the machine was booted
+        # total time the machine was booted
         total_booted_time = execute_time + load_time + extraction_time
 
         # figure runtime in milliseconds with time scale factor
@@ -136,8 +136,8 @@ class EnergyReport(object):
         :param packet_cost: packet cost
         :param load_time_cost: load time cost
         :param data_extraction_cost: data extraction cost
-        :param runtime_total_milliseconds: runtime with time scale factor 
-        taken into account
+        :param runtime_total_milliseconds: runtime with time scale factor
+            taken into account
         :param output: file writer
         :rtype: None
         """
@@ -204,7 +204,7 @@ class EnergyReport(object):
         :param buffer_manager: buffer manager
         :param output: file writer
         :param total_booted_time: time in milliseconds where machine is booted
-        :param runtime_total_milliseconds: total runtime with time scale 
+        :param runtime_total_milliseconds: total runtime with time scale
         factor taken into account
         :return: machine_active_cost, machine_idle_chips_cost, \
             fpga_cost, packet_cost, load_time_cost, extraction_time_cost
@@ -302,7 +302,7 @@ class EnergyReport(object):
         :param version: machine version
         :param spalloc_server: spalloc server ip
         :param remote_spinnaker_url: remote spinnaker
-        :param total_runtime: runtime: 
+        :param total_runtime: runtime:
         :param output: the file writer:
         :param runtime_total_milliseconds:
         :return: power usage of fpgas
@@ -354,7 +354,7 @@ class EnergyReport(object):
             self, total_runtime, n_operational_fpgas, output, version,
             runtime_total_milliseconds):
         """ prints out to file and returns cost
-        
+
         :param total_runtime:
         :param n_operational_fpgas: n operational fpgas
         :param output: file writer
@@ -700,7 +700,7 @@ class EnergyReport(object):
             self, time, machine, machine_allocation_controller, version,
             n_frames):
         """ calculate power down costs
-        
+
         :param time: time powered down
         :param n_frames: number of frames used by this machine
         :return: power in jules
@@ -728,8 +728,8 @@ class EnergyReport(object):
         key of cabinate frame will be used to identify unique frame.
 
         :param machine: the machine object
-        :param machine_allocation_controller: the spalloc job object 
-        :return: 
+        :param machine_allocation_controller: the spalloc job object
+        :return:
         """
 
         # if not spalloc, then could be any type of board, but unknown cooling
