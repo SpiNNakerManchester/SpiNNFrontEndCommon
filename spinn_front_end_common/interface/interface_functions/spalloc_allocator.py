@@ -5,10 +5,8 @@ from threading import Thread
 
 from spalloc import Job
 from spalloc.states import JobState
-
 from spinn_front_end_common.abstract_models \
     import AbstractMachineAllocationController
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +31,6 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
         self._exited = False
 
     def extend_allocation(self, new_total_run_time):
-
         # Does Nothing in this allocator - machines are held until exit
         pass
 
@@ -41,15 +38,18 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
         self._exited = True
         self._job.destroy()
 
+    def _wait_for_state_change(self, old_state):
+        try:
+            if self._job is not None:
+                return self._job.wait_for_state_change(old_state)
+        except TypeError:
+            pass
+        return old_state
+
     def run(self):
         state = self._job.state
         while state != JobState.destroyed and not self._exited:
-
-            try:
-                if self._job is not None:
-                    state = self._job.wait_for_state_change(state)
-            except TypeError:
-                pass
+            state = self._wait_for_state_change(state)
 
         self._job.close()
 
@@ -74,8 +74,8 @@ class SpallocAllocator(object):
             spalloc_machine=None):
         """
 
-        :param spalloc_server: The server from which the machine should be\
-                    requested
+        :param spalloc_server: \
+            The server from which the machine should be requested
         :param spalloc_port: The port of the SPALLOC server
         :param spalloc_user: The user to allocate the machine to
         :param n_chips: The number of chips required
@@ -86,7 +86,7 @@ class SpallocAllocator(object):
         # Work out how many boards are needed
         n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
 
-        # If the number of boards rounded up is less than 10% bigger than the\
+        # If the number of boards rounded up is less than 10% bigger than the
         # actual number of boards, add another board just in case
         if math.ceil(n_boards) - n_boards < 0.1:
             n_boards += 1
@@ -100,18 +100,8 @@ class SpallocAllocator(object):
             spalloc_kw_args['port'] = spalloc_port
         if spalloc_machine is not None:
             spalloc_kw_args['machine'] = spalloc_machine
-        job = Job(n_boards, **spalloc_kw_args)
 
-        try:
-            job.wait_until_ready()
-        except:
-            job.destroy()
-            ex_type, ex_value, ex_traceback = sys.exc_info()
-            raise ex_type, ex_value, ex_traceback
-
-        # get param from jobs before starting, so that hanging doesn't occur
-        hostname = job.hostname
-
+        job, hostname = self._launch_job(n_boards, spalloc_kw_args)
         machine_allocation_controller = _SpallocJobController(job)
         machine_allocation_controller.start()
 
@@ -119,3 +109,14 @@ class SpallocAllocator(object):
             hostname, self._MACHINE_VERSION, None, None, None, None, False,
             False, None, None, None, machine_allocation_controller
         )
+
+    def _launch_job(self, n_boards, spalloc_kw_args):
+        job = Job(n_boards, **spalloc_kw_args)
+        try:
+            job.wait_until_ready()
+            # get param from jobs before starting, so that hanging doesn't
+            # occur
+            return job, job.hostname
+        except:
+            job.destroy()
+            raise
