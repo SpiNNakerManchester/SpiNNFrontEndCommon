@@ -2201,7 +2201,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._no_sync_changes = 0
 
             # app stop command
-            self._txrx.stop_application(self._app_id)
+            if self._txrx is not None and self._app_id is not None:
+                self._txrx.stop_application(self._app_id)
 
         if self._buffer_manager is not None:
             self._buffer_manager.stop()
