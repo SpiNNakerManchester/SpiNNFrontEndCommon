@@ -1,18 +1,16 @@
 from enum import Enum
 from collections import Counter
 
-from pacman.model.decorators.overrides import overrides
+from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.abstract_models.\
-    abstract_has_associated_binary import \
-    AbstractHasAssociatedBinary
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl \
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs.executable_start_type\
-    import ExecutableStartType
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
+from spinn_front_end_common.utilities.constants \
+    import SYSTEM_BYTES_REQUIREMENT
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 
 class CommandSenderMachineVertex(
@@ -49,6 +47,9 @@ class CommandSenderMachineVertex(
 
     # the number of malloc requests used by the dsg
     TOTAL_REQUIRED_MALLOCS = 5
+
+    # The name of the binary file
+    BINARY_FILE_NAME = 'command_sender_multicast_source.aplx'
 
     def __init__(
             self, constraints, resources_required, label,
@@ -97,7 +98,7 @@ class CommandSenderMachineVertex(
         spec.comment("\n*** Spec for multicast source ***\n\n")
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value)
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 
@@ -184,7 +185,7 @@ class CommandSenderMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
-            size=constants.SYSTEM_BYTES_REQUIREMENT, label='system')
+            size=SYSTEM_BYTES_REQUIREMENT, label='system')
 
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SETUP.value,
@@ -219,9 +220,6 @@ class CommandSenderMachineVertex(
 
     @staticmethod
     def get_n_command_bytes(commands):
-        """
-        :return:
-        """
         n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
         n_bytes += (
             CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE *
@@ -231,11 +229,11 @@ class CommandSenderMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """ Return a string representation of the models binary
-
-        :return:
         """
-        return 'command_sender_multicast_source.aplx'
+        Return a string representation of the models binary
+
+        """
+        return self.BINARY_FILE_NAME
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

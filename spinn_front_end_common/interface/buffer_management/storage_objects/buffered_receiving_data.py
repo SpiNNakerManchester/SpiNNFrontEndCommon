@@ -1,8 +1,6 @@
 from collections import defaultdict
-from spinn_storage_handlers.buffered_bytearray_data_storage \
-    import BufferedBytearrayDataStorage
-from spinn_storage_handlers.buffered_tempfile_data_storage \
-    import BufferedTempfileDataStorage
+from spinn_storage_handlers \
+    import BufferedBytearrayDataStorage, BufferedTempfileDataStorage
 
 
 class BufferedReceivingData(object):
@@ -237,7 +235,7 @@ class BufferedReceivingData(object):
         :return: all the data received during the simulation,\
                 and a flag indicating if any data was lost
         :rtype:\
-            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`,
+            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
              bool)
         """
         missing = False
@@ -344,7 +342,7 @@ class BufferedReceivingData(object):
         :param y: placement y coord
         :param p: placement p coord
         :param region_id: the recording region id to clear data from
-        :return: None
+        :rtype: None
         """
         del self._end_buffering_state[x, y, p, region_id]
         del self._data[x, y, p, region_id]

@@ -1,14 +1,11 @@
 # spinnman imports
 from spinnman import exceptions
-from spinnman.messages.eieio.command_messages.eieio_command_header \
-    import EIEIOCommandHeader
-from spinnman.connections.udp_packet_connections.udp_connection \
-    import UDPConnection
-from spinnman import constants
+from spinnman.messages.eieio.command_messages import EIEIOCommandHeader
+from spinnman.connections.udp_packet_connections import UDPConnection
+from spinnman.constants import EIEIO_COMMAND_IDS
 
 # FrontEndCommon imports
-from spinn_front_end_common.utilities.database.database_reader \
-    import DatabaseReader
+from .database_reader import DatabaseReader
 
 # general imports
 from threading import Thread
@@ -77,65 +74,63 @@ class DatabaseConnection(UDPConnection, Thread):
                 "{}:{} Waiting for message to indicate that the database"
                 " is ready".format(self.local_ip_address, self.local_port))
             while self._running:
-
                 data, address = self._retrieve_database_address()
-
                 if data is not None:
-                    # Read the read packet confirmation
-                    logger.info("{}:{} Reading database".format(
-                        self.local_ip_address, self.local_port))
-                    database_path = str(data[2:])
-
-                    # Call the callback
-                    database_reader = DatabaseReader(database_path)
-                    for database_callback in self._database_callback_functions:
-                        database_callback(database_reader)
-                    database_reader.close()
-
-                    # Send the response
-                    logger.info(
-                        "Notifying the toolchain that the database has been"
-                        " read")
-                    self.send_to(EIEIOCommandHeader(1).bytestring, address)
-
-                    # Wait for the start of the simulation
-                    if self._start_resume_callback_function is not None:
-                        logger.info(
-                            "Waiting for message to indicate that the "
-                            "simulation has started or resumed")
-                        command_code = self.receive()
-                        command_code = EIEIOCommandHeader.from_bytestring(
-                            command_code, 0).command
-                        if (command_code == constants.EIEIO_COMMAND_IDS.
-                                START_RESUME_NOTIFICATION.value):
-                            # Call the callback
-                            self._start_resume_callback_function()
-                        else:
-                            raise exceptions.SpinnmanInvalidPacketException(
-                                "command_code",
-                                "expected a start resume command code now,"
-                                " and did not receive it.")
-
-                    if self._pause_and_stop_callback_function is not None:
-                        logger.info(
-                            "waiting for message to indicate that the "
-                            "simulation has stopped/ paused")
-                        command_code = self.receive()
-                        command_code = EIEIOCommandHeader.from_bytestring(
-                            command_code, 0).command
-                        if (command_code == constants.EIEIO_COMMAND_IDS.
-                                STOP_PAUSE_NOTIFICATION.value):
-                            # Call the callback
-                            self._pause_and_stop_callback_function()
-                        else:
-                            raise exceptions.SpinnmanInvalidPacketException(
-                                "command_code",
-                                "expected a pause and stop command code now,"
-                                " and did not receive it.")
-
+                    self._process_message(address, data)
         except Exception as e:
             traceback.print_exc()
             raise exceptions.SpinnmanIOException(str(e))
+
+    def _process_message(self, address, data):
+        # Read the read packet confirmation
+        logger.info("{}:{} Reading database".format(
+            self.local_ip_address, self.local_port))
+        database_path = str(data[2:])
+
+        # Call the callback
+        database_reader = DatabaseReader(database_path)
+        for database_callback in self._database_callback_functions:
+            database_callback(database_reader)
+        database_reader.close()
+
+        # Send the response
+        logger.info("Notifying the toolchain that the database has been read")
+        self._send_command(1, address)
+
+        # Wait for the start of the simulation
+        if self._start_resume_callback_function is not None:
+            logger.info(
+                "Waiting for message to indicate that the "
+                "simulation has started or resumed")
+            command_code = self._receive_command()
+            if (command_code != EIEIO_COMMAND_IDS.
+                    START_RESUME_NOTIFICATION.value):
+                raise exceptions.SpinnmanInvalidPacketException(
+                    "command_code",
+                    "expected a start resume command code now, and did not "
+                    "receive it")
+            # Call the callback
+            self._start_resume_callback_function()
+
+        if self._pause_and_stop_callback_function is not None:
+            logger.info(
+                "waiting for message to indicate that the simulation has "
+                "stopped/paused")
+            command_code = self._receive_command()
+            if (command_code != EIEIO_COMMAND_IDS.
+                    STOP_PAUSE_NOTIFICATION.value):
+                raise exceptions.SpinnmanInvalidPacketException(
+                    "command_code",
+                    "expected a pause and stop command code now, and did not "
+                    "receive it")
+            # Call the callback
+            self._pause_and_stop_callback_function()
+
+    def _send_command(self, command, address):
+        self.send_to(EIEIOCommandHeader(command).bytestring, address)
+
+    def _receive_command(self):
+        return EIEIOCommandHeader.from_bytestring(self.receive(), 0).command
 
     def _retrieve_database_address(self):
         try:

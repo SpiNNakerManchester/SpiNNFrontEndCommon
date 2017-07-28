@@ -1,11 +1,8 @@
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.messages.scp.scp_request_header import SCPRequestHeader
-from spinnman.messages.scp.enums.scp_result import SCPResult
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.connections.udp_packet_connections import udp_utils
-from spinnman.connections.udp_packet_connections.udp_connection \
-    import UDPConnection
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
+from spinnman.messages.scp import SCPRequestHeader
+from spinnman.messages.scp.enums import SCPResult
+from spinnman.connections.udp_packet_connections import utils
+from spinnman.connections.udp_packet_connections import UDPConnection
 
 from threading import Thread
 from collections import deque
@@ -20,7 +17,7 @@ class _SCPOKMessage(SDPMessage):
         sdp_header = SDPHeader(
             flags=SDPFlag.REPLY_NOT_EXPECTED, destination_port=0,
             destination_cpu=0, destination_chip_x=x, destination_chip_y=y)
-        udp_utils.update_sdp_header_for_udp_send(sdp_header, 0, 0)
+        utils.update_sdp_header_for_udp_send(sdp_header, 0, 0)
         SDPMessage.__init__(self, sdp_header, data=scp_header.bytestring)
 
 

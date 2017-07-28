@@ -13,6 +13,17 @@ def get_simulator():
     return _simulator
 
 
+def get_not_running_simulator():
+    global _simulator, _failed_state
+    if _simulator is None:
+        if _failed_state is None:
+            raise ValueError("You must import one of the simulator classes "
+                             "before calling get_simulator")
+        return _failed_state
+    _simulator.verify_not_running()
+    return _simulator
+
+
 def set_simulator(new_simulator):
     global _simulator, _failed_state
     if _failed_state is None:

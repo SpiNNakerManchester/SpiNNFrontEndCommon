@@ -1,5 +1,4 @@
-from spinn_front_end_common.interface.buffer_management.\
-    storage_objects.channel_buffer_state import ChannelBufferState
+from .channel_buffer_state import ChannelBufferState
 
 
 class EndBufferingState(object):
@@ -41,10 +40,7 @@ class EndBufferingState(object):
 
     def get_missing_info_for_region(self, region_id):
         state = self.get_state_for_region(region_id)
-        if state is not None:
-            return state.missing_info
-        else:
-            return None
+        return None if state is None else state.missing_info
 
     @staticmethod
     def size_of_region(n_regions_to_record):
