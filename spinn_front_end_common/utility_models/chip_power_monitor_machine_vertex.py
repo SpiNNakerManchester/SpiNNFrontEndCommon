@@ -39,12 +39,18 @@ logger = logging.getLogger(__name__)
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
+    """ machine vertex for c code representing functionality to record /
+            idle times in a machine graph
+    """
 
+    # data regions
     CHIP_POWER_MONITOR_REGIONS = Enum(
         value="CHIP_POWER_MONITOR_REGIONS",
         names=[('SYSTEM', 0),
                ('CONFIG', 1),
                ('RECORDING', 2)])
+
+    # default magic numbers
     DEFAULT_MALLOCS_USED = 3
     CONFIG_SIZE_IN_BYTES = 8
     RECORDING_SIZE_PER_ENTRY = 18 * 4
@@ -55,14 +61,14 @@ class ChipPowerMonitorMachineVertex(
     def __init__(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
-        """
+        """ constructor for idle power monitor c code for machine graphs
 
-        :param label:
-        :param constraints:
+        :param label: vertex label
+        :param constraints: constraints on this vertex
         :param n_samples_per_recording: how may samples between recording entry
         :type n_samples_per_recording: int
         :param sampling_frequency: how often to sample
-        :type sampling_frequency: ???????
+        :type sampling_frequency: microseconds
         """
         MachineVertex.__init__(self, label=label, constraints=constraints)
         self._n_samples_per_recording = n_samples_per_recording
@@ -94,9 +100,9 @@ class ChipPowerMonitorMachineVertex(
     def get_resources(
             n_machine_time_steps, time_step, time_scale_factor,
             n_samples_per_recording, sampling_frequency):
-        """
+        """ get resources used by this vertex
 
-        :return:
+        :return:Resource container
         """
         # get config
         config = globals_variables.get_simulator().config
@@ -157,7 +163,7 @@ class ChipPowerMonitorMachineVertex(
     def binary_file_name():
         """ returns the string binary file name
 
-        :return:
+        :return: basestring
         """
         return "chip_power_monitor.aplx"
 
@@ -179,6 +185,15 @@ class ChipPowerMonitorMachineVertex(
     def _generate_data_specification(
             self, spec, machine_time_step, time_scale_factor,
             n_machine_time_steps, ip_tags):
+        """ this is used to support application vertex calling this directly
+        
+        :param spec: data spec
+        :param machine_time_step: machine time step 
+        :param time_scale_factor: time scale factor
+        :param n_machine_time_steps: n_machine time steps
+        :param ip_tags: iptags
+        :rtype: None
+        """
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -269,7 +284,7 @@ class ChipPowerMonitorMachineVertex(
     def binary_start_type():
         """ static method to allow app verts to use this
 
-        :return:
+        :return: starttype enum
         """
         return ExecutableStartType.USES_SIMULATION_INTERFACE
 
@@ -326,6 +341,13 @@ class ChipPowerMonitorMachineVertex(
             n_entries * ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):
+        """ get data from sdram given placement and buffer manager
+        
+        :param placement: the location on machien to get data from
+        :param buffer_manager: the buffer manager that might have data
+        :return: results
+        :rtype: numpy array with 1 dimension
+        """
         # for buffering output info is taken form the buffer manager
         samples, data_missing = \
             buffer_manager.get_data_for_vertex(
