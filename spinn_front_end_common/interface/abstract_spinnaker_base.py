@@ -1468,8 +1468,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs.append("ExecutableTargets")
         outputs.append("ExecutableStartType")
 
-        self._turn_off_on_board_to_save_power("turn_off_board_during_mapping")
-
         # Execute the mapping algorithms
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "mapping", optional_algorithms)
@@ -1521,8 +1519,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getboolean("Reports", "write_provenance_data")):
             algorithms.append("GraphProvenanceGatherer")
             outputs.append("ProvenanceItems")
-
-        self._turn_off_on_board_to_save_power("turn_off_board_during_dsg")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
