@@ -64,7 +64,7 @@ class RouterProvenanceGatherer(object):
             router_tables, machine, transceiver))
 
         prov_items.append(ProvenanceDataItem(
-            ["router_provenance", "total_sent_packets"],
+            ["router_provenance", "total_multi_cast_sent_packets"],
             self._total_sent_packets))
         prov_items.append(ProvenanceDataItem(
             ["router_provenance", "total_created_packets"],
