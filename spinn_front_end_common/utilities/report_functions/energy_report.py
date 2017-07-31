@@ -98,6 +98,7 @@ class EnergyReport(object):
         # figure runtime in milliseconds with time scale factor
         runtime_total_milliseconds = runtime * time_scale_factor
 
+        # create detailed report
         with open(detailed_report, "w") as output:
             active_chip_cost, fpga_cost_total, fpga_cost_runtime, \
                 packet_cost, mapping_cost, load_time_cost, \
@@ -110,6 +111,7 @@ class EnergyReport(object):
                     total_booted_time, machine_allocation_controller,
                     runtime_total_milliseconds)
 
+        # create summary report
         with open(summary_report, "w") as output:
             self._write_summary_report(
                 active_chip_cost, fpga_cost_total, fpga_cost_runtime,
@@ -151,8 +153,10 @@ class EnergyReport(object):
         # deduce wattage from the runtime
         total_watts = total_jules / (total_time / 1000)
 
+        # figure total killawatt hour
         killawatt_hour = total_jules / EnergyReport.JULES_TO_KILLIWATT_HOURS
 
+        # write summary data
         output.write(
             "Summary energy file\n\n"
             "Energy used by chips during runtime is {} Joules over {} "
@@ -209,6 +213,8 @@ class EnergyReport(object):
         :return: machine_active_cost, machine_idle_chips_cost, \
             fpga_cost, packet_cost, load_time_cost, extraction_time_cost
         """
+
+        # write warning about accuracy etc
         self._write_warning(output)
 
         # figure active chips
@@ -262,6 +268,7 @@ class EnergyReport(object):
             runtime_total_milliseconds * n_frames *
             self.JULES_PER_MILLISECOND_FOR_FRAME_IDLE_COST)
 
+        # return all magic values
         return machine_active_cost, fpga_cost_total, fpga_cost_runtime, \
             packet_cost, mapping_cost, load_time_cost, extraction_time_cost, \
             dsg_cost, router_cooling_runtime_cost
@@ -355,7 +362,7 @@ class EnergyReport(object):
             runtime_total_milliseconds):
         """ prints out to file and returns cost
 
-        :param total_runtime:
+        :param total_runtime: all runtime
         :param n_operational_fpgas: n operational fpgas
         :param output: file writer
         :param version: machine version
@@ -729,7 +736,7 @@ class EnergyReport(object):
 
         :param machine: the machine object
         :param machine_allocation_controller: the spalloc job object
-        :return:
+        :return: n frames
         """
 
         # if not spalloc, then could be any type of board, but unknown cooling
