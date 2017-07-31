@@ -62,7 +62,6 @@ class NotificationProtocol(object):
         for connection in self._data_base_message_connections:
             connection.send_eieio_message(eieio_command_message)
 
-
     def send_stop_pause_notification(self):
         """ sends the pause / stop notifications when the script has either\
             finished or paused
