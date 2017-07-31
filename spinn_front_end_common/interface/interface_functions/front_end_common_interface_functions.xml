@@ -1394,6 +1394,7 @@
             <param_type>BootPortNum</param_type>
             <param_type>MaxSDRAMSize</param_type>
             <param_type>MachineAllocationController</param_type>
+            <param_type>DownedLinksDetails</param_type>
         </outputs>
     </algorithm>
     <algorithm name="SpallocMaxMachineGenerator">

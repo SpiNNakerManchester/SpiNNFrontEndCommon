@@ -97,7 +97,7 @@ class HBPAllocator(object):
         return (
             machine["machineName"], int(machine["version"]), None, None,
             bmp_details, False, False, None, None, None,
-            hbp_job_controller
+            hbp_job_controller, None
         )
 
     def _get_machine(self, url, n_chips, total_run_time):
