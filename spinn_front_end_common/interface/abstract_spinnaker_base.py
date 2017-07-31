@@ -307,7 +307,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_extraction_time",
 
         # power save mode. Only True if power saver has turned off board
-        "_power_save_mode"
+        "_machine_is_turned_off"
     ]
 
     def __init__(
@@ -460,7 +460,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._raise_keyboard_interrupt = False
 
         # By default board is kept on once started later
-        self._power_save_mode = False
+        self._machine_is_turned_off = False
 
         globals_variables.set_simulator(self)
 
@@ -1068,8 +1068,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._live_packet_recorder_params
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
-            algorithms.append(
-                "PreAllocateResourcesForChipPowerMonitor")
+
+            algorithms.append("PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
@@ -2158,7 +2158,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._use_virtual_board:
             return
 
-        if self._power_save_mode:
+        if self._machine_is_turned_off:
             logger.info("Shutdown skipped as board is off for power save")
             return
 
@@ -2217,9 +2217,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
-            if self._machine_allocation_controller is not None:
-                self._machine_allocation_controller.close()
-                self._machine_allocation_controller = None
         self._is_running = False
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
@@ -2305,6 +2302,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report")):
+
+            # create energy report
             energy_report = EnergyReport()
 
             # acquire provenance items
@@ -2381,22 +2380,36 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._config, section, item)
 
     def _turn_off_on_board_to_save_power(self, config_flag):
+        """ executes the power saving mode of either on or off of the/
+            spinnaker machine. 
+        
+        :param config_flag: config flag string
+        :rtype: None 
+        """
         # check if machine should be turned off
         turn_off = helpful_functions.read_config_boolean(
             self._config, "EnergySavings", config_flag)
 
-        if turn_off is None:
-            return
-        if turn_off:
-            if self._turn_off_board_to_save_power():
-                logger.info("Board turned of based on: {}".format(config_flag))
-        else:
-            if self._turn_on_board_if_saving_power():
-                logger.info("Board turned on based on: {}".format(config_flag))
+        # if a mode is set, execute
+        if turn_off is not None:
+            if turn_off:
+                if self._turn_off_board_to_save_power():
+                    logger.info(
+                        "Board turned off based on: {}".format(config_flag))
+            else:
+                if self._turn_on_board_if_saving_power():
+                    logger.info(
+                        "Board turned on based on: {}".format(config_flag))
 
     def _turn_off_board_to_save_power(self):
+        """ executes the power saving mode of turning off the spinnaker \
+            machine. 
+        
+        :return: bool when successful, flase otherwise
+        :rtype: bool
+        """
         # already off or no machine to turn off
-        if self._power_save_mode or self._use_virtual_board:
+        if self._machine_is_turned_off or self._use_virtual_board:
             return False
 
         if self._machine_allocation_controller is not None:
@@ -2406,13 +2419,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         self._txrx.power_off_machine()
 
-        self._power_save_mode = True
+        self._machine_is_turned_off = True
         return True
 
     def _turn_on_board_if_saving_power(self):
         # Only required if previously turned off which never happens
         # on virtual machine
-        if not self._power_save_mode:
+        if not self._machine_is_turned_off:
             return False
 
         if self._machine_allocation_controller is not None:
@@ -2423,6 +2436,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx.power_on_machine()
 
         self._txrx.ensure_board_is_ready()
+        self._machine_is_turned_off = False
         return True
 
     @property
