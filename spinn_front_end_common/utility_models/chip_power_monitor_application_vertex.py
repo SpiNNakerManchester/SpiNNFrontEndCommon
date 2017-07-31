@@ -17,7 +17,6 @@ class ChipPowerMonitorApplicationVertex(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
     """ class for representing idle time recording code in a application graph.
-    
     """
 
     def __init__(

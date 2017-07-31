@@ -2378,10 +2378,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def _turn_off_on_board_to_save_power(self, config_flag):
         """ executes the power saving mode of either on or off of the/
-            spinnaker machine. 
-        
+            spinnaker machine.
+
         :param config_flag: config flag string
-        :rtype: None 
+        :rtype: None
         """
         # check if machine should be turned off
         turn_off = helpful_functions.read_config_boolean(
@@ -2400,8 +2400,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def _turn_off_board_to_save_power(self):
         """ executes the power saving mode of turning off the spinnaker \
-            machine. 
-        
+            machine.
+
         :return: bool when successful, flase otherwise
         :rtype: bool
         """

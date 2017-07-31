@@ -186,9 +186,9 @@ class ChipPowerMonitorMachineVertex(
             self, spec, machine_time_step, time_scale_factor,
             n_machine_time_steps, ip_tags):
         """ this is used to support application vertex calling this directly
-        
+
         :param spec: data spec
-        :param machine_time_step: machine time step 
+        :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
         :param n_machine_time_steps: n_machine time steps
         :param ip_tags: iptags
@@ -342,7 +342,7 @@ class ChipPowerMonitorMachineVertex(
 
     def get_recorded_data(self, placement, buffer_manager):
         """ get data from sdram given placement and buffer manager
-        
+
         :param placement: the location on machien to get data from
         :param buffer_manager: the buffer manager that might have data
         :return: results
