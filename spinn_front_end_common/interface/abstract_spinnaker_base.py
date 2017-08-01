@@ -66,14 +66,12 @@ import signal
 
 logger = logging.getLogger(__name__)
 
+CONFIG_FILE = "spinnaker.cfg"
+
+
 class AbstractSpinnakerBase(SimulatorInterface):
     """ Main interface into the tools logic flow
     """
-
-    CONFIG_FILE = "spinnaker.cfg"
-    DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), CONFIG_FILE)
-    DEFAULT_CONFIG_PATHS = [DEFAULT_CONFIG_PATH]
-    VALIDATION_CONFIGS = []
 
     __slots__ = [
         # the interface to the cfg files. supports get get_int etc
@@ -315,11 +313,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
-            n_chips_required=None):
+            n_chips_required=None, default_config_paths=None,
+            validation_cfg=None):
 
         # global params
+        if default_config_paths is None:
+            default_config_paths = []
+        default_config_paths.insert(0, os.path.join(os.path.dirname(__file__),
+                                                    CONFIG_FILE))
 
-        self._config = self.load_config()
+        self._load_config(filename=configfile, defaults=default_config_paths,
+                          validation_cfg=validation_cfg)
 
         # timings
         self._mapping_time = 0.0
@@ -534,18 +538,21 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Only one type of graph can be used during live output. "
                     "Please fix and try again")
 
-    @classmethod
-    def load_config(cls):
-        """
-        Loads the configs based on the expected files
-
-        This is a class mthods so unit tests can load configs easier
-
-        :return: Configs
-        """
-        return conf_loader.load_config(filename=cls.CONFIG_FILE,
-                                       defaults=cls.DEFAULT_CONFIG_PATHS,
-                                       validation_cfg=cls.VALIDATION_CONFIGS)
+    def _load_config(self, filename, defaults, validation_cfg):
+        self._config = conf_loader.load_config(filename=filename,
+                                               defaults=defaults,
+                                               validation_cfg=validation_cfg)
+        if self._config.get("Mode", "mode") == "Debug":
+            logger.info("As mode == \"Debug\" all cfg [Reports] "
+                        "boolean values have been set to True")
+            for option in self._config.options("Reports"):
+                try:
+                    if self._config.getboolean("Reports", option) is False:
+                        self._config.set("Reports", option, "True")
+                except Exception:
+                    # all checks for boolean depend on catching a exception
+                    # so just do it here
+                    pass
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
