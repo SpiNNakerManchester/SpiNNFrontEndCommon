@@ -10,7 +10,7 @@ from spinnman.messages.eieio.command_messages import EIEIOCommandMessage
 from spinnman.constants import EIEIO_COMMAND_IDS
 
 
-class TestNotificationProtocol(unittest.TestCase):
+class TestStartResumeNotificationProtocol(unittest.TestCase):
 
     def test_send_start_resume_notification(self):
         """ Test the sending of the start/resume message of the notification\
