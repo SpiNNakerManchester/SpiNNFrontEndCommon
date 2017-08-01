@@ -24,7 +24,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         """
 
         progress = ProgressBar(
-            machine.ethernet_connected_chips,
+            len(machine.ethernet_connected_chips),
             "Preallocating resources for Live Recording")
 
         # store how much SDRAM the LPG uses per core
