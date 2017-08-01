@@ -2331,6 +2331,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._dsg_time, self._extraction_time,
                     self._machine_allocation_controller)
 
+        # handle iobuf extraction if never extracted it yet but requested to
+        if (self._config.getboolean("Reports", "extract_iobuf") and
+                not self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run") and
+                not self._config.getboolean(
+                    "Reports", "clear_iobuf_during_run")):
+            extractor = ChipIOBufExtractor()
+            extractor(
+                transceiver=self._txrx, has_ran=self._has_ran,
+                core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
+                provenance_file_path=self._provenance_file_path)
+
         # shut down the machine properly
         self._shutdown(
             turn_off_machine, clear_routing_tables, clear_tags)
