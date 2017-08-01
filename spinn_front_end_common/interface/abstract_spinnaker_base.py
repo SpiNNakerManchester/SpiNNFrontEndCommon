@@ -548,7 +548,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         Adjust and checks config based on runtime and mode
 
         :param runtime:
-        :type param: int or bool
+        :type runtime: int or bool
         :raises ConfigurationException
         """
         if runtime is None:
@@ -567,7 +567,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                         "[Reports] boolean values have been "
                                         "set to True")
                             informed_user = True
-                except Exception:
+                except ValueError:
                     # all checks for boolean depend on catching a exception
                     # so just do it here
                     pass
