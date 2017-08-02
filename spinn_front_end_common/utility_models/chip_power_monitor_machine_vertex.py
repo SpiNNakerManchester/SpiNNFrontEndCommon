@@ -116,18 +116,24 @@ class ChipPowerMonitorMachineVertex(
         receive_buffer_port = helpful_functions.read_config_int(
             config, "Buffers", "receive_buffer_port")
 
+        # figure recording size for max run
+        if not using_auto_pause_and_resume and n_machine_time_steps is None:
+            raise Exception(
+                "You cannot use the chip power montiors without auto pause "
+                "and resume and not allocating a n_machine_time_steps")
+
         # figure max buffer size
         max_buffer_size = 0
         if config.getboolean("Buffers", "enable_buffered_recording"):
             max_buffer_size = config.getint(
-                "Buffers", "spike_buffer_size")
+                "Buffers", "chip_power_monitor_buffer")
+
         maximum_sdram_for_buffering = [max_buffer_size]
 
-        # figure recording size for max run
-        n_recording_entries = math.ceil(
-            (sampling_frequency /
-             (n_machine_time_steps * time_step * time_scale_factor)) /
+        n_recording_entries = (math.ceil(
+            (sampling_frequency / (time_step * time_scale_factor))) /
             n_samples_per_recording)
+
         recording_size = (
             ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY *
             n_recording_entries)

@@ -2446,3 +2446,24 @@ class AbstractSpinnakerBase(SimulatorInterface):
             config
         """
         return self._config
+
+    @property
+    def get_number_of_available_cores_on_machine(self):
+        """ returns the number of available cores on the machine after taking
+        into account pre allocated resources
+        
+        :return: number of available cores
+        :rtype: int
+        """
+
+        # get machine if not got already
+        if self._machine is None:
+            self._get_machine()
+
+        # get cores of machine
+        cores = self._machine.total_available_user_cores
+        take_into_account_chip_power_monitor = self._read_config_boolean(
+            "Reports", "write_energy_report")
+        if take_into_account_chip_power_monitor:
+            cores -= self._machine.n_chips
+        return cores
