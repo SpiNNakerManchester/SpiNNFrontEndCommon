@@ -36,8 +36,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None,
-            'label': "test"}
+            'tag': None}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -98,8 +97,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None,
-            'label': "test"}
+            'tag': None}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
@@ -111,7 +109,6 @@ class TestLPGPreAllocateRes(unittest.TestCase):
         # and special LPG on Ethernet connected chips
         index = 1
         for chip in machine.ethernet_connected_chips:
-            extended['label'] = "test{}".format(index)
             extended['board_address'] = chip.ip_address
             default_params_holder2 = LivePacketGatherParameters(**extended)
             live_packet_gatherers[default_params_holder2] = list()
@@ -169,8 +166,7 @@ class TestLPGPreAllocateRes(unittest.TestCase):
             'port': None,
             'strip_sdp': None,
             'board_address': None,
-            'tag': None,
-            'label': "test"}
+            'tag': None}
 
         # data stores needed by algorithm
         live_packet_gatherers = dict()
