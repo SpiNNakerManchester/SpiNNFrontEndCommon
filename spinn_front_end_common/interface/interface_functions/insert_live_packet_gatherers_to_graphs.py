@@ -79,7 +79,6 @@ class InsertLivePacketGatherersToGraphs(object):
         :return the vertex built
         """
         return lpg_vertex_class(
-            label=params.label,
             hostname=params.hostname,
             port=params.port,
             tag=params.tag,
