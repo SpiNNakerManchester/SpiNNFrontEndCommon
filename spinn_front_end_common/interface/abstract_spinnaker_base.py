@@ -593,7 +593,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 logger.info("[EnergySavings]turn_off_board_after_discovery has"
                             " been set to False as s using virtual boards")
 
-
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
             a new timestamp folder for each and clearing
