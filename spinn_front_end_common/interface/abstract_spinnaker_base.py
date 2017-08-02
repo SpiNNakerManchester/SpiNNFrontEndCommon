@@ -7,6 +7,7 @@ import spinn_utilities.conf_loader as conf_loader
 from pacman.executor.injection_decorator import provide_injectables, \
     clear_injectables
 from pacman.model.graphs import AbstractVirtualVertex
+from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
@@ -1178,10 +1179,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if (self._application_graph.n_vertices == 0 and
                     self._machine_graph.n_vertices == 0 and
                     need_virtual_board):
-                raise ConfigurationException(
-                    "A allocated machine has been requested but there are no"
-                    " vertices to work out the size of the machine required"
-                    " and n_chips_required has not been set")
+                if self._config.getboolean(
+                        "Mode", "violate_no_vertex_in_graphs_restriction"):
+                    logger.warn(
+                        "you graph has no vertices in it, but you have "
+                        "requested that we still execute.")
+                else:
+                    raise ConfigurationException(
+                        "A allocated machine has been requested but there are "
+                        "no vertices to work out the size of the machine "
+                        "required and n_chips_required has not been set")
 
             if self._config.getboolean("Machine", "enable_reinjection"):
                 inputs["CPUsPerVirtualChip"] = 15
@@ -1197,7 +1204,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # board, we need to use the virtual board to get the number of
                 # chips to be allocated either by partitioning, or by measuring
                 # the graph
-                if self._application_graph.n_vertices != 0:
+
+                # if the end user has requested violating the no vertex check,
+                # add the app graph and let the rest work out.
+                if (self._application_graph.n_vertices != 0 or (
+                        self._config.getboolean(
+                            "Mode",
+                            "violate_no_vertex_in_graphs_restriction") and
+                        self._machine_graph.n_vertices == 0)):
                     inputs["MemoryApplicationGraph"] = self._application_graph
                     algorithms.extend(self._config.get(
                         "Mapping",
@@ -1205,6 +1219,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     outputs.append("MemoryMachineGraph")
                     outputs.append("MemoryGraphMapper")
                     do_partitioning = True
+
+                # only add machine graph is it has vertices. as the check for
+                # no vertices in both graphs is checked above.
                 elif self._machine_graph.n_vertices != 0:
                     inputs["MemoryMachineGraph"] = self._machine_graph
                     algorithms.append("GraphMeasurer")
@@ -1310,6 +1327,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['MemoryMachineGraph'] = self._machine_graph
             if self._graph_mapper is not None:
                 inputs["MemoryGraphMapper"] = self._graph_mapper
+        elif self._config.getboolean(
+                "Mode", "violate_no_vertex_in_graphs_restriction"):
+            logger.warn(
+                "you graph has no vertices in it, but you have requested that"
+                " we still execute.")
+            inputs["MemoryApplicationGraph"] = self._application_graph
+            inputs["MemoryGraphMapper"] = GraphMapper()
+            inputs['MemoryMachineGraph'] = self._machine_graph
         else:
             raise ConfigurationException(
                 "There needs to be a graph which contains at least one vertex"
