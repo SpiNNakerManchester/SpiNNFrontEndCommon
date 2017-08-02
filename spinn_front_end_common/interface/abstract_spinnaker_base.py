@@ -2339,7 +2339,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     traceback.print_exc()
 
         if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report")):
+                self._config.getboolean("Reports", "write_energy_report") and
+                self._buffer_manager is not None):
 
             # create energy report
             energy_report = EnergyReport()
