@@ -551,16 +551,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :type runtime: int or bool
         :raises ConfigurationException
         """
-        if runtime is None:
-            incompatiible = self.reports_not_compatible_with_run_forever()
-        else:
-            incompatiible = []
         if self._config.get("Mode", "mode") == "Debug":
             informed_user = False
             for option in self._config.options("Reports"):
                 try:
-                    if self._config.getboolean("Reports", option) is False \
-                            and option not in incompatiible:
+                    if self._config.getboolean("Reports", option) is False:
                         self._config.set("Reports", option, "True")
                         if not informed_user:
                             logger.info("As mode == \"Debug\" all cfg "
@@ -571,20 +566,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     # all checks for boolean depend on catching a exception
                     # so just do it here
                     pass
-        for option in incompatiible:
-            if self._config.getboolean("Reports", option) is True:
-                raise ConfigurationException(
-                    "Report {} is not supported when runtime is {}"
-                    "".format(option, runtime))
-
-    def reports_not_compatible_with_run_forever(self):
-        """
-        Provides a list of reports that can not be turned on running forever
-
-        :return: List of report config names incompatible with running forever
-        :rtype List of Str
-        """
-        return ["write_energy_report"]
+        if runtime is None:
+            if self._config.getboolean(
+                    "Reports", "write_energy_report") is True:
+                self._config.set("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as runtime is set to forever")
+            if self._config.get_bool(
+                    "EnergySavings", "turn_off_board_after_discovery") is True:
+                self._config.set(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as runtime is set to forever")
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
