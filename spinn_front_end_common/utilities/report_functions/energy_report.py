@@ -1,9 +1,12 @@
+import logging
 import os
 
 from spinn_front_end_common.utility_models.\
     chip_power_monitor_machine_vertex import \
     ChipPowerMonitorMachineVertex
 from spinn_front_end_common.utilities import exceptions, helpful_functions
+
+logger = logging.getLogger(__name__)
 
 
 class EnergyReport(object):
@@ -78,6 +81,10 @@ class EnergyReport(object):
         spalloc
         :rtype: None
         """
+
+        if buffer_manager is None:
+            logger.info("Skipping Energy report as no buffer_manager set")
+            return
 
         # detailed report path
         detailed_report = os.path.join(
