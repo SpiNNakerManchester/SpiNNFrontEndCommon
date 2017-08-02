@@ -15,16 +15,29 @@ class BufferExtractor(object):
             raise ConfigurationException("The ran token has not been set")
 
         # Count the regions to be read
+        n_regions_to_read, vertices = self._count_regions(machine_graph)
+
+        # Read back the regions
+        progress = ProgressBar(
+            n_regions_to_read, "Extracting buffers from the last run")
+        try:
+            self._read_regions(vertices, placements, buffer_manager, progress)
+        finally:
+            progress.end()
+
+    @staticmethod
+    def _count_regions(machine_graph):
+        # Count the regions to be read
         n_regions_to_read = 0
         vertices = list()
         for vertex in machine_graph.vertices:
             if isinstance(vertex, AbstractReceiveBuffersToHost):
                 n_regions_to_read += len(vertex.get_recorded_region_ids())
                 vertices.append(vertex)
+        return n_regions_to_read, vertices
 
-        progress = ProgressBar(
-            n_regions_to_read, "Extracting buffers from the last run")
-
+    @staticmethod
+    def _read_regions(vertices, placements, buffer_manager, progress):
         # Read back the regions
         for vertex in vertices:
             placement = placements.get_placement_of_vertex(vertex)
@@ -32,4 +45,3 @@ class BufferExtractor(object):
                 buffer_manager.get_data_for_vertex(
                     placement, recording_region_id)
                 progress.update()
-        progress.end()

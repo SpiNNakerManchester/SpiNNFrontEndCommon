@@ -114,7 +114,7 @@ class MundyOnChipRouterCompression(object):
         txrx.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(
-            self, executable_targets, transceiver, provenance_file_path,
+            self, executable_targets, txrx, provenance_file_path,
             compressor_app_id):
         """ goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
@@ -128,16 +128,16 @@ class MundyOnChipRouterCompression(object):
 
                 # Read the result from USER0 register
                 user_0_address = \
-                    transceiver.get_user_0_register_address_from_core(x, y, p)
+                    txrx.get_user_0_register_address_from_core(x, y, p)
 
                 result = struct.unpack(
-                    "<I", str(transceiver.read_memory(x, y, user_0_address, 4))
+                    "<I", str(txrx.read_memory(x, y, user_0_address, 4))
                 )[0]
 
                 # The result is 0 if success, otherwise failure
                 if result != 0:
                     self._handle_failure(
-                        executable_targets, transceiver, provenance_file_path,
+                        executable_targets, txrx, provenance_file_path,
                         compressor_app_id)
 
                     raise SpinnFrontEndException(
@@ -145,26 +145,26 @@ class MundyOnChipRouterCompression(object):
                         .format(x, y))
 
     def _handle_failure(
-            self, executable_targets, transceiver, provenance_file_path,
+            self, executable_targets, txrx, provenance_file_path,
             compressor_app_id):
         """
 
         :param executable_targets:
-        :param transceiver:
+        :param txrx:
         :param provenance_file_path:
         :rtype: None
         """
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_buffers, io_errors, io_warnings = iobuf_extractor(
-            transceiver, True, executable_targets.all_core_subsets)
+            txrx, True, executable_targets.all_core_subsets)
         self._write_iobuf(io_buffers, provenance_file_path)
         for warning in io_warnings:
             logger.warn(warning)
         for error in io_errors:
             logger.error(error)
-        transceiver.stop_application(compressor_app_id)
-        transceiver.app_id_tracker.free_id(compressor_app_id)
+        txrx.stop_application(compressor_app_id)
+        txrx.app_id_tracker.free_id(compressor_app_id)
 
     @staticmethod
     def _write_iobuf(io_buffers, provenance_file_path):
@@ -190,12 +190,12 @@ class MundyOnChipRouterCompression(object):
                 writer.write(iobuf.iobuf)
 
     def _load_executables(
-            self, routing_tables, compressor_app_id, transceiver, machine):
+            self, routing_tables, compressor_app_id, txrx, machine):
         """ loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
         :param compressor_app_id: the app id of the compressor compressor
-        :param transceiver: the spinnman interface
+        :param txrx: the spinnman interface
         :param machine: the spinnaker machine representation
         :return:\
             the executable targets that represent all cores/chips which have\
@@ -223,7 +223,7 @@ class MundyOnChipRouterCompression(object):
         executable_targets = ExecutableTargets()
         executable_targets.add_subsets(binary_path, core_subsets)
 
-        transceiver.execute_application(executable_targets, compressor_app_id)
+        txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets
 
     def _build_data(
