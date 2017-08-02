@@ -2451,7 +2451,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def get_number_of_available_cores_on_machine(self):
         """ returns the number of available cores on the machine after taking
         into account pre allocated resources
-        
+
         :return: number of available cores
         :rtype: int
         """
