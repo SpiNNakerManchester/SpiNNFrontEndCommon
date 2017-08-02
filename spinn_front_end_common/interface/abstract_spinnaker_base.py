@@ -566,6 +566,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     # all checks for boolean depend on catching a exception
                     # so just do it here
                     pass
+
         if runtime is None:
             if self._config.getboolean(
                     "Reports", "write_energy_report") is True:
@@ -578,6 +579,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergySavings", "turn_off_board_after_discovery", "False")
                 logger.info("[EnergySavings]turn_off_board_after_discovery has"
                             " been set to False as runtime is set to forever")
+
+        if self._use_virtual_board:
+            if self._config.getboolean(
+                    "Reports", "write_energy_report") is True:
+                self._config.set("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as using virtual boards")
+            if self._config.get_bool(
+                    "EnergySavings", "turn_off_board_after_discovery") is True:
+                self._config.set(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as s using virtual boards")
+
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
