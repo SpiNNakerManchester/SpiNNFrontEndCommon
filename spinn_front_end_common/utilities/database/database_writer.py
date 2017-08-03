@@ -20,7 +20,6 @@ class DatabaseWriter(object):
     """
 
     __slots__ = [
-
         # boolean flag for when the database writer has finished
         "_done",
 
@@ -29,6 +28,9 @@ class DatabaseWriter(object):
 
         # the path of the database
         "_database_path",
+
+        # the path of the initialisation SQL
+        "_init_sql_path",
 
         # the identifier for the SpiNNaker machine
         "_machine_id",
@@ -41,11 +43,12 @@ class DatabaseWriter(object):
     ]
 
     def __init__(self, database_directory):
-
         self._done = False
         self._database_directory = database_directory
         self._database_path = os.path.join(
             self._database_directory, "input_output_database.db")
+        self._init_sql_path = os.path.join(
+            os.path.dirname(__file__), "db.sql")
         self._connection = None
         self._machine_to_id = dict()
         self._vertex_to_id = dict()
@@ -93,131 +96,9 @@ class DatabaseWriter(object):
         return self._connection.cursor()
 
     def create_schema(self):
-        with self._connection as c:
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Machine_layout("
-                "  machine_id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                "  x_dimension INT, y_dimension INT)")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Machine_chip("
-                "  no_processors INT, chip_x INTEGER, chip_y INTEGER, "
-                "  machine_id INTEGER, avilableSDRAM INT, "
-                "PRIMARY KEY(chip_x, chip_y, machine_id), "
-                "FOREIGN KEY (machine_id) "
-                "  REFERENCES Machine_layout(machine_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Processor("
-                "  chip_x INTEGER, chip_y INTEGER, machine_id INTEGER, "
-                "  available_DTCM INT, available_CPU INT, "
-                "  physical_id INTEGER, "
-                "PRIMARY KEY(chip_x, chip_y, machine_id, physical_id), "
-                "FOREIGN KEY (chip_x, chip_y, machine_id) "
-                "  REFERENCES Machine_chip(chip_x, chip_y, machine_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Application_vertices("
-                "  vertex_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "  vertex_label TEXT, no_atoms INT, max_atom_constrant INT,"
-                "  recorded INT)")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Application_edges("
-                "  edge_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "  pre_vertex INTEGER, post_vertex INTEGER, edge_label TEXT, "
-                "FOREIGN KEY (pre_vertex)"
-                "  REFERENCES Application_vertices(vertex_id), "
-                "FOREIGN KEY (post_vertex)"
-                "  REFERENCES Application_vertices(vertex_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Application_graph("
-                "  vertex_id INTEGER, edge_id INTEGER, "
-                "FOREIGN KEY (vertex_id) "
-                "  REFERENCES Application_vertices(vertex_id), "
-                "FOREIGN KEY (edge_id) "
-                "  REFERENCES Application_edges(edge_id), "
-                "PRIMARY KEY (vertex_id, edge_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS configuration_parameters("
-                "  parameter_id TEXT, value REAL, "
-                "PRIMARY KEY (parameter_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Machine_vertices("
-                "  vertex_id INTEGER PRIMARY KEY AUTOINCREMENT, label TEXT, "
-                "  cpu_used INT, sdram_used INT, dtcm_used INT)")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Machine_edges("
-                "  edge_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                "  pre_vertex INTEGER, post_vertex INTEGER, label TEXT, "
-                "FOREIGN KEY (pre_vertex)"
-                "  REFERENCES Machine_vertices(vertex_id), "
-                "FOREIGN KEY (post_vertex)"
-                "  REFERENCES Machine_vertices(vertex_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Machine_graph("
-                "  vertex_id INTEGER, edge_id INTEGER, "
-                "PRIMARY KEY(vertex_id, edge_id), "
-                "FOREIGN KEY (vertex_id)"
-                "  REFERENCES Machine_vertices(vertex_id), "
-                "FOREIGN KEY (edge_id)"
-                "  REFERENCES Machine_edges(edge_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS graph_mapper_vertex("
-                "  application_vertex_id INTEGER, "
-                "  machine_vertex_id INTEGER, lo_atom INT, hi_atom INT, "
-                "PRIMARY KEY(application_vertex_id, machine_vertex_id), "
-                "FOREIGN KEY (machine_vertex_id)"
-                "  REFERENCES Machine_vertices(vertex_id), "
-                "FOREIGN KEY (application_vertex_id)"
-                "  REFERENCES Application_vertices(vertex_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS graph_mapper_edges("
-                "  application_edge_id INTEGER,"
-                "  machine_edge_id INTEGER, "
-                "PRIMARY KEY(application_edge_id, machine_edge_id), "
-                "FOREIGN KEY (machine_edge_id)"
-                "  REFERENCES Machine_edges(edge_id), "
-                "FOREIGN KEY (application_edge_id)"
-                "  REFERENCES Application_edges(edge_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Placements("
-                "  vertex_id INTEGER PRIMARY KEY, machine_id INTEGER, "
-                "  chip_x INT, chip_y INT, chip_p INT, "
-                "FOREIGN KEY (vertex_id) "
-                "  REFERENCES Machine_vertices(vertex_id), "
-                "FOREIGN KEY (chip_x, chip_y, chip_p, machine_id) "
-                "  REFERENCES Processor(chip_x, chip_y, physical_id, "
-                "    machine_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Routing_info("
-                "  edge_id INTEGER, key INT, mask INT, "
-                "PRIMARY KEY (edge_id, key, mask), "
-                "FOREIGN KEY (edge_id)"
-                "  REFERENCES Machine_edges(edge_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Routing_table("
-                "  chip_x INTEGER, chip_y INTEGER, position INTEGER, "
-                "  key_combo INT, mask INT, route INT, "
-                "PRIMARY KEY (chip_x, chip_y, position))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS IP_tags("
-                "  vertex_id INTEGER, tag INTEGER, "
-                "  board_address TEXT, ip_address TEXT, port INTEGER, "
-                "  strip_sdp BOOLEAN,"
-                "PRIMARY KEY ("
-                "  vertex_id, tag, board_address, ip_address, port,"
-                "  strip_sdp),"
-                "FOREIGN KEY (vertex_id)"
-                "  REFERENCES Machine_vertices(vertex_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS Reverse_IP_tags("
-                "  vertex_id INTEGER PRIMARY KEY, tag INTEGER, "
-                "  board_address TEXT, port INTEGER, "
-                "FOREIGN KEY (vertex_id)"
-                "  REFERENCES Machine_vertices(vertex_id))")
-            c.execute(
-                "CREATE TABLE IF NOT EXISTS event_to_atom_mapping("
-                "  vertex_id INTEGER, atom_id INTEGER, "
-                "  event_id INTEGER PRIMARY KEY, "
-                "FOREIGN KEY (vertex_id)"
-                "  REFERENCES Machine_vertices(vertex_id))")
+        with self._connection as c, open(self._init_sql_path) as f:
+            sql = f.read()
+            c.execute(sql)
 
     def add_machine_objects(self, machine):
         """ Store the machine object into the database
@@ -427,7 +308,7 @@ class DatabaseWriter(object):
                     for key_mask in rinfo.keys_and_masks:
                         c.execute(
                             "INSERT INTO Routing_info("
-                            "  edge_id, key, mask) "
+                            "  edge_id, \"key\", mask) "
                             "VALUES(?, ?, ?)", (
                                 self._edge_to_id[edge],
                                 key_mask.key, key_mask.mask))
