@@ -159,7 +159,6 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
-        index = 1
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
             extended['board_address'] = chip.ip_address
@@ -214,7 +213,6 @@ class TestInsertLPGs(unittest.TestCase):
         live_packet_gatherers[default_params_holder] = list()
 
         # and special LPG on Ethernet connected chips
-        index = 1
         chip_special = dict()
         for chip in machine.ethernet_connected_chips:
             extended['board_address'] = chip.ip_address
