@@ -1,4 +1,4 @@
-import sqlite3 as sqlite
+import sqlite3
 
 
 class DatabaseReader(object):
@@ -19,8 +19,8 @@ class DatabaseReader(object):
         :param database_path: The path to the database
         :type database_path: str
         """
-        self._connection = sqlite.connect(database_path)
-        self._connection.row_factory = sqlite.Row
+        self._connection = sqlite3.connect(database_path)
+        self._connection.row_factory = sqlite3.Row
         self._cursor = self._connection.cursor()
 
     @property

@@ -7,6 +7,7 @@ from spinn_front_end_common.abstract_models \
 # general imports
 import logging
 import os
+import sqlite3
 import sys
 
 logger = logging.getLogger(__name__)
@@ -61,8 +62,7 @@ class DatabaseWriter(object):
         self._machine_id = 0
 
     def __enter__(self):
-        import sqlite3 as sqlite
-        self._connection = sqlite.connect(self._database_path)
+        self._connection = sqlite3.connect(self._database_path)
         self.create_schema()
         return self
          
