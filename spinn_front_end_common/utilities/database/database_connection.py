@@ -1,15 +1,16 @@
 # spinnman imports
-from spinnman import exceptions
+from spinnman.exceptions \
+    import SpinnmanIOException, SpinnmanInvalidPacketException, \
+    SpinnmanTimeoutException
 from spinnman.messages.eieio.command_messages import EIEIOCommandHeader
 from spinnman.connections.udp_packet_connections import UDPConnection
-from spinnman.constants import EIEIO_COMMAND_IDS
+from spinnman.constants import EIEIO_COMMAND_IDS as CMDS
 
 # FrontEndCommon imports
 from .database_reader import DatabaseReader
 
 # general imports
 from threading import Thread
-import traceback
 import logging
 
 logger = logging.getLogger(__name__)
@@ -56,30 +57,30 @@ class DatabaseConnection(UDPConnection, Thread):
         """ Add a database callback to be called when the database is ready
 
         :param database_callback_function: A function to be called when the\
-                    database message has been received.  This function should\
-                    take a single parameter, which will be a DatabaseReader\
-                    object.  Once the function returns, it will be assumed\
-                    that the database has been read, and the return response\
-                    will be sent.
+            database message has been received.  This function should take \
+            a single parameter, which will be a DatabaseReader object. \
+            Once the function returns, it will be assumed that the database \
+            has been read, and the return response will be sent.
         :type database_callback_function: function(\
-                    :py:class:`spynnaker_external_devices.pyNN.connections.database_reader.DatabaseReader`)\
+            :py:class:`spynnaker_external_devices.pyNN.connections.database_reader.DatabaseReader`)\
                     -> None
         """
         self._database_callback_functions.append(database_callback_function)
 
     def run(self):
-        try:
-            self._running = True
-            logger.info(
-                "{}:{} Waiting for message to indicate that the database"
-                " is ready".format(self.local_ip_address, self.local_port))
-            while self._running:
+        self._running = True
+        logger.info(
+            "{}:{} Waiting for message to indicate that the database is "
+            "ready".format(self.local_ip_address, self.local_port))
+        while self._running:
+            try:
                 data, address = self._retrieve_database_address()
                 if data is not None:
                     self._process_message(address, data)
-        except Exception as e:
-            traceback.print_exc()
-            raise exceptions.SpinnmanIOException(str(e))
+            except Exception as e:
+                logger.error("Failure processing database callback",
+                             exc_info=True)
+                raise SpinnmanIOException(str(e))
 
     def _process_message(self, address, data):
         # Read the read packet confirmation
@@ -100,28 +101,26 @@ class DatabaseConnection(UDPConnection, Thread):
         # Wait for the start of the simulation
         if self._start_resume_callback_function is not None:
             logger.info(
-                "Waiting for message to indicate that the "
-                "simulation has started or resumed")
+                "Waiting for message to indicate that the simulation has "
+                "started or resumed")
             command_code = self._receive_command()
-            if (command_code != EIEIO_COMMAND_IDS.
-                    START_RESUME_NOTIFICATION.value):
-                raise exceptions.SpinnmanInvalidPacketException(
+            if command_code != CMDS.START_RESUME_NOTIFICATION.value:
+                raise SpinnmanInvalidPacketException(
                     "command_code",
-                    "expected a start resume command code now, and did not "
+                    "expected a start/resume command code now, and did not "
                     "receive it")
             # Call the callback
             self._start_resume_callback_function()
 
         if self._pause_and_stop_callback_function is not None:
             logger.info(
-                "waiting for message to indicate that the simulation has "
-                "stopped/paused")
+                "Waiting for message to indicate that the simulation has "
+                "stopped or paused")
             command_code = self._receive_command()
-            if (command_code != EIEIO_COMMAND_IDS.
-                    STOP_PAUSE_NOTIFICATION.value):
-                raise exceptions.SpinnmanInvalidPacketException(
+            if command_code != CMDS.STOP_PAUSE_NOTIFICATION.value:
+                raise SpinnmanInvalidPacketException(
                     "command_code",
-                    "expected a pause and stop command code now, and did not "
+                    "expected a pause/stop command code now, and did not "
                     "receive it")
             # Call the callback
             self._pause_and_stop_callback_function()
@@ -136,10 +135,10 @@ class DatabaseConnection(UDPConnection, Thread):
         try:
             data, address = self.receive_with_address(timeout=3)
             return data, address
-        except exceptions.SpinnmanTimeoutException:
+        except SpinnmanTimeoutException:
             return None, None
-        except exceptions.SpinnmanIOException as e:
-            raise e
+        except SpinnmanIOException:
+            raise
 
     def close(self):
         self._running = False
