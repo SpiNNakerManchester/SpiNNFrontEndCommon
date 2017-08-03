@@ -53,7 +53,7 @@ class DatabaseInterface(object):
                 p.update()
                 w.add_placements(placements)
                 p.update()
-                w.add_routing_infos( routing_infos, machine_graph)
+                w.add_routing_infos(routing_infos, machine_graph)
                 p.update()
                 w.add_routing_tables(router_tables)
                 p.update()

@@ -65,7 +65,7 @@ class DatabaseWriter(object):
         self._connection = sqlite3.connect(self._database_path)
         self.create_schema()
         return self
-         
+
     def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
         self._connection.close()
         self._connection = None
