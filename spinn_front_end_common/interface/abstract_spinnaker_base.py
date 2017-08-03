@@ -1503,10 +1503,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             else:
                 inputs["BufferManager"] = self._buffer_manager
 
-        # Get the executable targets
-        optional_algorithms.append("GraphBinaryGatherer")
-
-        outputs.append("ExecutableTargets")
         outputs.append("ExecutableStartType")
 
         # Execute the mapping algorithms
@@ -1596,6 +1592,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board:
             algorithms.append("RoutingSetup")
+            # Get the executable targets
+            algorithms.append("GraphBinaryGatherer")
 
         if helpful_functions.read_config(
                 self._config, "Mapping", "loading_algorithms") is not None:
