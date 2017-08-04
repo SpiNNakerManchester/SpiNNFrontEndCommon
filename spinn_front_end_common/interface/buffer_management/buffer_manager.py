@@ -12,7 +12,6 @@ from spinnman.messages.eieio.command_messages \
     import HostSendSequencedData, EventStopRequest
 from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
-from spinnman.exceptions import SpinnmanInvalidPacketException
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
 
@@ -29,7 +28,6 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
 # general imports
 import threading
 import logging
-
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +119,6 @@ class BufferManager(object):
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
-
         self._listener_port = None
 
     def receive_buffer_command_message(self, packet):
@@ -131,54 +128,39 @@ class BufferManager(object):
         :type packet:\
                     :py:class:`spinnman.messages.eieio.command_messages.eieio_command_message.EIEIOCommandMessage`
         """
-        try:
-            if not self._finished:
-                if isinstance(packet, SpinnakerRequestBuffers):
-                    with self._thread_lock_buffer_in:
-                        vertex = self._placements.get_vertex_on_processor(
-                            packet.x, packet.y, packet.p)
+        if not self._finished:
+            if isinstance(packet, SpinnakerRequestBuffers):
+                # noinspection PyBroadException
+                try:
+                    self.__request_buffers(packet)
+                except Exception:
+                    logger.error("problem when sending messages",
+                                 exc_info=True)
+            elif isinstance(packet, SpinnakerRequestReadData):
+                try:
+                    self.__request_read_data(packet)
+                except Exception:
+                    logger.error("problem when handling data", exc_info=True)
+            elif isinstance(packet, EIEIOCommandMessage):
+                logger.error(
+                    "The command packet is invalid for buffer management: "
+                    "command id %d", packet.eieio_header.command)
+            else:
+                logger.error(
+                    "The command packet is invalid for buffer management")
 
-                        if vertex in self._sender_vertices:
+    def __request_buffers(self, packet):
+        with self._thread_lock_buffer_in:
+            vertex = self._placements.get_vertex_on_processor(
+                packet.x, packet.y, packet.p)
+            if vertex in self._sender_vertices:
+                self._send_messages(
+                    packet.space_available, vertex,
+                    packet.region_id, packet.sequence_no)
 
-                            # logger.debug(
-                            #     "received send request with sequence: {1:d},"
-                            #     " space available: {0:d}".format(
-                            #         packet.space_available,
-                            #         packet.sequence_no))
-
-                            # noinspection PyBroadException
-                            try:
-                                self._send_messages(
-                                    packet.space_available, vertex,
-                                    packet.region_id, packet.sequence_no)
-                            except Exception:
-                                logger.warn("problem when sending messages",
-                                            exc_info=True)
-                elif isinstance(packet, SpinnakerRequestReadData):
-                    with self._thread_lock_buffer_out:
-
-                        # logger.debug(
-                        #     "received {} read request(s) with sequence: {},"
-                        #     " from chip ({},{}, core {}".format(
-                        #         packet.n_requests, packet.sequence_no,
-                        #         packet.x, packet.y, packet.p))
-                        try:
-                            self._retrieve_and_store_data(packet)
-                        except Exception:
-                            logger.warn("problem when handling data",
-                                        exc_info=True)
-                elif isinstance(packet, EIEIOCommandMessage):
-                    raise SpinnmanInvalidPacketException(
-                        str(packet.__class__),
-                        "The command packet is invalid for buffer management: "
-                        "command id {0:d}".format(packet.eieio_header.command))
-                else:
-                    raise SpinnmanInvalidPacketException(
-                        packet.__class__,
-                        "The command packet is invalid for buffer management")
-        except Exception:
-            logger.warn("problem when processing received packet",
-                        exc_info=True)
+    def __request_read_data(self, packet):
+        with self._thread_lock_buffer_out:
+            self._retrieve_and_store_data(packet)
 
     def _create_connection(self, tag):
         connection = self._transceiver.register_udp_listener(
@@ -204,9 +186,9 @@ class BufferManager(object):
             # locate tag associated with the buffer manager traffic
             for tag in tags:
                 if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
-                    # If the tag port is not assigned create a connection\
-                    # and assign the port.  Note that this *should* \
-                    # update the port number in any tags being shared
+                    # If the tag port is not assigned create a connection and
+                    # assign the port.  Note that this *should* update the
+                    # port number in any tags being shared.
                     if tag.port is None:
                         # If connection already setup, ensure subsequent
                         # boards use same listener port in their tag
@@ -217,7 +199,7 @@ class BufferManager(object):
                         else:
                             tag.port = self._listener_port
 
-                    # In case we have tags with different specified ports,\
+                    # In case we have tags with different specified ports,
                     # also allow the tag to be created here
                     elif (tag.ip_address, tag.port) not in self._seen_tags:
                         self._create_connection(tag)
@@ -229,12 +211,12 @@ class BufferManager(object):
         self._add_buffer_listeners(vertex)
 
     def add_sender_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices
+        """ Add a vertex into the managed list for vertices\
             which require buffers to be sent to them during runtime
 
         :param vertex: the vertex to be managed
         :type vertex:\
-                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
+            :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
@@ -301,12 +283,12 @@ class BufferManager(object):
         :type size: int
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
+            :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         :param region: The region of the vertex to get keys from
         :type region: int
         :return: A new message, or None if no keys can be added
         :rtype: None or\
-                    :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
+            :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
         """
 
         # If there are no more messages to send, return None
@@ -338,12 +320,12 @@ class BufferManager(object):
 
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
+            :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         :param region: The region to get the keys from
         :type region: int
         :return: A list of messages
         :rtype: list of\
-                    :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
+            :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
         """
 
         # Get the vertex load details
@@ -504,9 +486,9 @@ class BufferManager(object):
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: pointer to a class which inherits from\
-                AbstractBufferedDataStorage
+            AbstractBufferedDataStorage
         :rtype:\
-                :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
+            :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
         """
 
         recording_data_address = \
@@ -552,7 +534,7 @@ class BufferManager(object):
 
             # current read needs to be adjusted in case the last portion of the
             # memory has already been read, but the HostDataRead packet has not
-            # been processed by the chip before simulation finished
+            # been processed by the chip before simulation finished.
             # This situation is identified by the sequence number of the last
             # packet sent to this core and the core internal state of the
             # output buffering finite state machine
@@ -673,9 +655,9 @@ class BufferManager(object):
            technique
 
         :param packet: SpinnakerRequestReadData packet received from the\
-                SpiNNaker system
+            SpiNNaker system
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         :rtype: None
         """
         x = packet.x
@@ -687,20 +669,18 @@ class BufferManager(object):
         last_pkt_seq = self._received_data.last_sequence_no_for_core(x, y, p)
         next_pkt_seq = (last_pkt_seq + 1) % 256
         if pkt_seq != next_pkt_seq:
-
             # this sequence number is incorrect
             # re-sent last HostDataRead packet sent
             last_packet_sent = self._received_data.last_sent_packet_to_core(
                 x, y, p)
-            if last_packet_sent is not None:
-                self._transceiver.send_sdp_message(last_packet_sent)
-            else:
+            if last_packet_sent is None:
                 raise Exception(
                     "{}, {}, {}: Something somewhere went terribly wrong - "
-                    "The packet sequence numbers have gone wrong "
-                    "somewhere: the packet sent from the board "
-                    "has incorrect sequence number, but the host "
-                    "never sent one acknowledge".format(x, y, p))
+                    "The packet sequence numbers have gone wrong somewhere: "
+                    "the packet sent from the board has incorrect sequence "
+                    "number, but the host never sent one acknowledge".format(
+                        x, y, p))
+            self._transceiver.send_sdp_message(last_packet_sent)
             return
 
         # read data from memory, store it and create data for return ACK packet

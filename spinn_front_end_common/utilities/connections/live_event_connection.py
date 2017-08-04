@@ -184,9 +184,7 @@ class LiveEventConnection(DatabaseConnection):
                         self._atom_id_to_key[send_label])
 
         if self._receive_labels is not None:
-
-            label_id = 0
-            for receive_label in self._receive_labels:
+            for label_id, receive_label in enumerate(self._receive_labels):
                 host, port, strip_sdp = None, None, None
                 if self._machine_vertices:
                     host, port, strip_sdp, board_address = \
@@ -225,8 +223,6 @@ class LiveEventConnection(DatabaseConnection):
                         self._key_to_atom_id_and_label[key] = (
                             atom_id, label_id)
                     vertex_sizes[receive_label] = len(key_to_atom_id)
-
-                label_id += 1
 
         for (label, vertex_size) in vertex_sizes.iteritems():
             for init_callback in self._init_callbacks[label]:
