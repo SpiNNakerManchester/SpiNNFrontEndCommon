@@ -39,7 +39,8 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         error_entries, warn_entries = extractor(
             transceiver, has_ran=True, core_subsets=core_subsets,
             provenance_file_path=folder)
-        testfile = os.path.join(folder, "0_0_1.txt")
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
         self.assertEqual(error_entries[0], result_error)
         self.assertEqual(warn_entries[0], result_warning)
