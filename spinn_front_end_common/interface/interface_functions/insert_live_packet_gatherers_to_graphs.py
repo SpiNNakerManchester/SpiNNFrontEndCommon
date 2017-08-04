@@ -79,7 +79,6 @@ class InsertLivePacketGatherersToGraphs(object):
         :return the vertex built
         """
         return lpg_vertex_class(
-            label=params.label,
             hostname=params.hostname,
             port=params.port,
             tag=params.tag,
@@ -95,4 +94,5 @@ class InsertLivePacketGatherersToGraphs(object):
             payload_prefix=params.payload_prefix,
             payload_right_shift=params.payload_right_shift,
             number_of_packets_sent_per_time_step=(
-                params.number_of_packets_sent_per_time_step))
+                params.number_of_packets_sent_per_time_step),
+            label="LPG class")

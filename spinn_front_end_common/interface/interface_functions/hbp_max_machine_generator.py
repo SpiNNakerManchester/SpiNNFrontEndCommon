@@ -17,7 +17,7 @@ class HBPMaxMachineGenerator(object):
         :param total_run_time: The total run time to request
         """
 
-        max_machine = self._max_machine(hbp_server_url, total_run_time)
+        max_machine = self._max_machine_request(hbp_server_url, total_run_time)
 
         # Return the width and height and assume that it has wrap arounds
         return max_machine["width"], max_machine["height"], True

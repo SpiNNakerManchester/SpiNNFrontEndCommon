@@ -43,8 +43,9 @@ class ChipPowerMonitorApplicationVertex(
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
         return ChipPowerMonitorMachineVertex(
-            constraints, label, self._n_samples_per_recording,
-            self._sampling_frequency)
+            constraints=constraints, label=label,
+            n_samples_per_recording=self._n_samples_per_recording,
+            sampling_frequency=self._sampling_frequency)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

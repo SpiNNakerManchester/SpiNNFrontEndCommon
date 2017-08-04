@@ -34,54 +34,50 @@ class DatabaseInterface(object):
 
         self._writer = DatabaseWriter(database_directory)
         self._user_create_database = user_create_database
-
         # add database generation if requested
-        self._needs_database = \
-            self._writer.auto_detect_database(machine_graph)
-        if ((self._user_create_database == "None" and self._needs_database) or
-                self._user_create_database == "True"):
+        self._needs_database = self._writer.auto_detect_database(
+            machine_graph)
 
-            if application_graph is not None and application_graph.n_vertices:
-                database_progress = ProgressBar(11, "Creating database")
-            else:
-                database_progress = ProgressBar(10, "Creating database")
-
-            self._writer.add_system_params(
-                time_scale_factor, machine_time_step, runtime)
-            database_progress.update()
-            self._writer.add_machine_objects(machine)
-            database_progress.update()
-            if application_graph is not None and application_graph.n_vertices:
-                self._writer.add_application_vertices(application_graph)
-                database_progress.update()
-            self._writer.add_vertices(
-                machine_graph, graph_mapper, application_graph)
-            database_progress.update()
-            self._writer.add_placements(placements, machine_graph)
-            database_progress.update()
-            self._writer.add_routing_infos(
-                routing_infos, machine_graph)
-            database_progress.update()
-            self._writer.add_routing_tables(router_tables)
-            database_progress.update()
-            self._writer.add_tags(machine_graph, tags)
-            database_progress.update()
-            if (graph_mapper is not None and
-                    application_graph is not None and
-                    create_atom_to_event_id_mapping):
-                self._writer.create_atom_to_event_id_mapping(
-                    graph_mapper=graph_mapper,
-                    application_graph=application_graph,
-                    machine_graph=machine_graph,
-                    routing_infos=routing_infos)
-            database_progress.update()
-            database_progress.update()
-            database_progress.end()
+        if self.needs_database:
+            with self._writer as w, ProgressBar(9, "Creating database") as p:
+                w.add_system_params(
+                    time_scale_factor, machine_time_step, runtime)
+                p.update()
+                w.add_machine_objects(machine)
+                p.update()
+                if application_graph is not None \
+                        and application_graph.n_vertices:
+                    w.add_application_vertices(application_graph)
+                p.update()
+                w.add_vertices(machine_graph, graph_mapper, application_graph)
+                p.update()
+                w.add_placements(placements)
+                p.update()
+                w.add_routing_infos(routing_infos, machine_graph)
+                p.update()
+                w.add_routing_tables(router_tables)
+                p.update()
+                w.add_tags(machine_graph, tags)
+                p.update()
+                if (graph_mapper is not None
+                        and application_graph is not None
+                        and create_atom_to_event_id_mapping):
+                    w.create_atom_to_event_id_mapping(
+                        graph_mapper=graph_mapper,
+                        application_graph=application_graph,
+                        machine_graph=machine_graph,
+                        routing_infos=routing_infos)
+                p.update()
 
         return self, self.database_file_path
 
     @property
+    def needs_database(self):
+        return ((self._user_create_database == "None" and self._needs_database)
+                or self._user_create_database == "True")
+
+    @property
     def database_file_path(self):
-        if ((self._user_create_database == "None" and self._needs_database) or
-                self._user_create_database == "True"):
+        if self.needs_database:
             return self._writer.database_path
+        return None

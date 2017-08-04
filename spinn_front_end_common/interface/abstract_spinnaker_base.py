@@ -543,17 +543,56 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._config = conf_loader.load_config(filename=filename,
                                                defaults=defaults,
                                                validation_cfg=validation_cfg)
+
+    def _adjust_config(self, runtime):
+        """
+        Adjust and checks config based on runtime and mode
+
+        :param runtime:
+        :type runtime: int or bool
+        :raises ConfigurationException
+        """
         if self._config.get("Mode", "mode") == "Debug":
-            logger.info("As mode == \"Debug\" all cfg [Reports] "
-                        "boolean values have been set to True")
+            informed_user = False
             for option in self._config.options("Reports"):
                 try:
                     if self._config.getboolean("Reports", option) is False:
                         self._config.set("Reports", option, "True")
-                except Exception:
+                        if not informed_user:
+                            logger.info("As mode == \"Debug\" all cfg "
+                                        "[Reports] boolean values have been "
+                                        "set to True")
+                            informed_user = True
+                except ValueError:
                     # all checks for boolean depend on catching a exception
                     # so just do it here
                     pass
+
+        if runtime is None:
+            if self._config.getboolean(
+                    "Reports", "write_energy_report") is True:
+                self._config.set("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as runtime is set to forever")
+            if self._config.get_bool(
+                    "EnergySavings", "turn_off_board_after_discovery") is True:
+                self._config.set(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as runtime is set to forever")
+
+        if self._use_virtual_board:
+            if self._config.getboolean(
+                    "Reports", "write_energy_report") is True:
+                self._config.set("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as using virtual boards")
+            if self._config.get_bool(
+                    "EnergySavings", "turn_off_board_after_discovery") is True:
+                self._config.set(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as s using virtual boards")
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
@@ -713,6 +752,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Only binaries that use the simulation interface can be run"
                 " more than once")
         self._is_running = True
+
+        self._adjust_config(run_time)
 
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -1487,10 +1528,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             else:
                 inputs["BufferManager"] = self._buffer_manager
 
-        # Get the executable targets
-        optional_algorithms.append("GraphBinaryGatherer")
-
-        outputs.append("ExecutableTargets")
         outputs.append("ExecutableStartType")
 
         # Execute the mapping algorithms
@@ -1580,6 +1617,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board:
             algorithms.append("RoutingSetup")
+            # Get the executable targets
+            algorithms.append("GraphBinaryGatherer")
 
         if helpful_functions.read_config(
                 self._config, "Mapping", "loading_algorithms") is not None:
@@ -2323,7 +2362,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     traceback.print_exc()
 
         if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report")):
+                self._config.getboolean("Reports", "write_energy_report") and
+                self._buffer_manager is not None):
 
             # create energy report
             energy_report = EnergyReport()
@@ -2355,6 +2395,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._mapping_time, self._load_time, self._execute_time,
                     self._dsg_time, self._extraction_time,
                     self._machine_allocation_controller)
+
+        # handle iobuf extraction if never extracted it yet but requested to
+        if (self._config.getboolean("Reports", "extract_iobuf") and
+                not self._config.getboolean(
+                    "Reports", "extract_iobuf_during_run") and
+                not self._config.getboolean(
+                    "Reports", "clear_iobuf_during_run")):
+            extractor = ChipIOBufExtractor()
+            extractor(
+                transceiver=self._txrx, has_ran=self._has_ran,
+                core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
+                provenance_file_path=self._provenance_file_path)
 
         # shut down the machine properly
         self._shutdown(
@@ -2471,3 +2523,24 @@ class AbstractSpinnakerBase(SimulatorInterface):
             config
         """
         return self._config
+
+    @property
+    def get_number_of_available_cores_on_machine(self):
+        """ returns the number of available cores on the machine after taking
+        into account pre allocated resources
+
+        :return: number of available cores
+        :rtype: int
+        """
+
+        # get machine if not got already
+        if self._machine is None:
+            self._get_machine()
+
+        # get cores of machine
+        cores = self._machine.total_available_user_cores
+        take_into_account_chip_power_monitor = self._read_config_boolean(
+            "Reports", "write_energy_report")
+        if take_into_account_chip_power_monitor:
+            cores -= self._machine.n_chips
+        return cores
