@@ -746,8 +746,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         self.verify_not_running()
         if (self._has_ran and
-                self._executable_start_type !=
-                ExecutableStartType.USES_SIMULATION_INTERFACE):
+                self._executable_start_type not in [
+                    ExecutableStartType.USES_SIMULATION_INTERFACE,
+                    ExecutableStartType.NO_APPLICATION]):
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
                 " more than once")

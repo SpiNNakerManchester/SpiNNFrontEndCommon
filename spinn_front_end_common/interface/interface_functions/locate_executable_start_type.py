@@ -1,5 +1,7 @@
 from spinn_front_end_common.abstract_models.\
     abstract_has_associated_binary import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs.executable_start_type \
+    import ExecutableStartType
 from spinn_front_end_common.utilities import exceptions
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -11,6 +13,8 @@ class LocateExecutableStartType(object):
         progress = ProgressBar(
             graph.n_vertices, "Finding executable_start_types")
         binary_start_type = None
+        if len(graph.vertices) == 0:
+            return ExecutableStartType.NO_APPLICATION
         for vertex in progress.over(graph.vertices):
 
             placement_binary_start_type = None
