@@ -15,6 +15,7 @@ class ExecutableStartType(Enum):
         "simulation_handle_pause_resume()"),
     NO_APPLICATION = (3, "Situation where there user has supplied no "
                          "application but for some reason still wants to run")
+
     def __new__(cls, value, doc=""):
         obj = object.__new__(cls)
         obj._value_ = value
