@@ -60,7 +60,15 @@ class NotificationProtocol(object):
             self.wait_for_confirmation()
         eieio_command_message = NotificationProtocolStartResume()
         for connection in self._data_base_message_connections:
-            connection.send_eieio_message(eieio_command_message)
+            try:
+                connection.send_eieio_message(eieio_command_message)
+            except Exception:
+                logger.warning(
+                    "*** Failed to send start/resume notification to"
+                    " external application on"
+                    " {}:{} about the simulation ***".format(
+                        connection.remote_ip_address,
+                        connection.remote_port))
 
     def send_stop_pause_notification(self):
         """ sends the pause / stop notifications when the script has either\
@@ -72,7 +80,15 @@ class NotificationProtocol(object):
                     "to state the simulation has been paused or stopped. ***")
         eieio_command_message = NotificationProtocolPauseStop()
         for connection in self._data_base_message_connections:
-            connection.send_eieio_message(eieio_command_message)
+            try:
+                connection.send_eieio_message(eieio_command_message)
+            except Exception:
+                logger.warning(
+                    "*** Failed to send stop/pause notification to"
+                    " external application on"
+                    " {}:{} about the simulation ***".format(
+                        connection.remote_ip_address,
+                        connection.remote_port))
 
     # noinspection PyPep8
     def send_read_notification(self, database_path):

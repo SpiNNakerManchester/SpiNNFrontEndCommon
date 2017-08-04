@@ -2,6 +2,98 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="PreAllocateResourcesForChipPowerMonitor">
+        <python_module>
+            spinn_front_end_common.interface.interface_functions.pre_allocate_resources_for_chip_power_monitor
+        </python_module>
+        <python_class>PreAllocateResourcesForChipPowerMonitor</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>pre_allocated_resources</param_name>
+                <param_type>MemoryPreAllocatedResources</param_type>
+            </parameter>
+            <parameter>
+                <param_name>n_machine_time_steps</param_name>
+                <param_type>TotalMachineTimeSteps</param_type>
+            </parameter>
+            <parameter>
+                <param_name>n_samples_per_recording</param_name>
+                <param_type>MemoryNumberSamplesPerRecordingEntry</param_type>
+            </parameter>
+            <parameter>
+                <param_name>sampling_frequency</param_name>
+                <param_type>MemorySamplingFrequency</param_type>
+            </parameter>
+            <parameter>
+                <param_name>time_scale_factor</param_name>
+                <param_type>TimeScaleFactor</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_time_step</param_name>
+                <param_type>MachineTimeStep</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine</param_name>
+            <param_name>n_machine_time_steps</param_name>
+            <param_name>n_samples_per_recording</param_name>
+            <param_name>sampling_frequency</param_name>
+            <param_name>time_scale_factor</param_name>
+            <param_name>machine_time_step</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>pre_allocated_resources</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>MemoryPreAllocatedResources</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="InsertChipPowerMonitorsToGraphs">
+        <python_module>
+            spinn_front_end_common.interface.interface_functions.insert_chip_power_monitors_to_graphs
+        </python_module>
+        <python_class>InsertChipPowerMonitorsToGraphs</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>n_samples_per_recording</param_name>
+                <param_type>MemoryNumberSamplesPerRecordingEntry</param_type>
+            </parameter>
+            <parameter>
+                <param_name>sampling_frequency</param_name>
+                <param_type>MemorySamplingFrequency</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine</param_name>
+            <param_name>machine_graph</param_name>
+            <param_name>n_samples_per_recording</param_name>
+            <param_name>sampling_frequency</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>application_graph</param_name>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
+    </algorithm>
     <algorithm name="PreAllocateResourcesForLivePacketGatherers">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>PreAllocateResourcesForLivePacketGatherers</python_class>
@@ -1302,6 +1394,7 @@
             <param_type>BootPortNum</param_type>
             <param_type>MaxSDRAMSize</param_type>
             <param_type>MachineAllocationController</param_type>
+            <param_type>DownedLinksDetails</param_type>
         </outputs>
     </algorithm>
     <algorithm name="SpallocMaxMachineGenerator">

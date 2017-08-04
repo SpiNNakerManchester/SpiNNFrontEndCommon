@@ -41,7 +41,8 @@ class ChipIOBufExtractor(object):
         for iobuf in io_buffers:
             file_name = os.path.join(
                 provenance_file_path,
-                "{}_{}_{}.txt".format(iobuf.x, iobuf.y, iobuf.p))
+                "iobuf_for_chip_{}_{}_processor_id_{}.txt".format(
+                    iobuf.x, iobuf.y, iobuf.p))
 
             # set mode of the file based off if the file already exists
             mode = "w"

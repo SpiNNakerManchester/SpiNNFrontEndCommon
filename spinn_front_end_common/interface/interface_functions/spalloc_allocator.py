@@ -38,6 +38,18 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
         self._exited = True
         self._job.destroy()
 
+    @property
+    def power(self):
+        return self._job.power
+
+    def set_power(self, power):
+        self._job.set_power(power)
+        if power:
+            self._job.wait_until_ready()
+
+    def where_is_machine(self, chip_x, chip_y):
+        return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
+
     def _wait_for_state_change(self, old_state):
         try:
             if self._job is not None:

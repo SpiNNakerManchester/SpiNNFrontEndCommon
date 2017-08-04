@@ -71,7 +71,6 @@ class MachineGenerator(object):
             enable_reinjector=enable_reinjection)
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()
-
         return machine, txrx
 
     @staticmethod

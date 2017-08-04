@@ -42,6 +42,19 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
     def close(self):
         self._exited = True
 
+    @property
+    def power(self):
+        # TODO NEEDS FIXING
+        return True
+
+    def set_power(self, power):
+        # TODO NEEDS FIXING
+        pass
+
+    def where_is_machine(self, chip_x, chip_y):
+        # TODO NEEDS FIXING
+        pass
+
     def run(self):
         job_allocated = True
         while job_allocated and not self._exited:
@@ -84,7 +97,7 @@ class HBPAllocator(object):
         return (
             machine["machineName"], int(machine["version"]), None, None,
             bmp_details, False, False, None, None, None,
-            hbp_job_controller
+            hbp_job_controller, None
         )
 
     def _get_machine(self, url, n_chips, total_run_time):
