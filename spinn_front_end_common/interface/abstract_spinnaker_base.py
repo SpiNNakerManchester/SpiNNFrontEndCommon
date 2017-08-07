@@ -1750,7 +1750,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "NoSyncChanges"
         ]
 
-        if not self._use_virtual_board:
+        if self._use_virtual_board:
+            logger.warn(
+                "Application will not actually be run as on a virtual board")
+        elif self._executable_start_type == \
+                ExecutableStartType.NO_APPLICATION:
+            logger.warn(
+                "Application will not actually be run as there is nothing to "
+                "actually run")
+        else:
             algorithms.append("ApplicationRunner")
 
         # add any extra post algorithms as needed
