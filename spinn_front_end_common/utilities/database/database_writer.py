@@ -162,7 +162,7 @@ class DatabaseWriter(object):
                         "VALUES(?, ?, ?)",
                         self._vertex_to_id[edge.pre_vertex],
                         self._vertex_to_id[edge.post_vertex],
-                        edge.label)
+                        None if edge.label is None else str(edge.label))
 
             # update graph
             for vertex in application_graph.vertices:
@@ -180,7 +180,8 @@ class DatabaseWriter(object):
             "INSERT INTO Application_vertices("
             "  vertex_label, no_atoms, max_atom_constrant, recorded) "
             "VALUES(?, ?, ?, ?)",
-            vertex.label, vertex.n_atoms, max_atoms, int(is_recording))
+            str(vertex.label), int(vertex.n_atoms), int(max_atoms),
+            int(is_recording))
 
     def add_system_params(self, time_scale_factor, machine_time_step, runtime):
         """ Write system params into the database
@@ -216,15 +217,17 @@ class DatabaseWriter(object):
         :rtype: None
         """
         with self._connection:
+            extract = (lambda x: \
+                       None if x is None or x.get_value() is None \
+                       else int(x.get_value()))
             for vertex in machine_graph.vertices:
+                req = vertex.resources_required
                 self._vertex_to_id[vertex] = self._ins(
                     "INSERT INTO Machine_vertices ("
                     "  label, cpu_used, sdram_used, dtcm_used) "
                     "VALUES(?, ?, ?, ?)",
-                    vertex.label,
-                    vertex.resources_required.cpu_cycles.get_value(),
-                    vertex.resources_required.sdram.get_value(),
-                    vertex.resources_required.dtcm.get_value())
+                    str(vertex.label), extract(req.cpu_cycles),
+                    extract(req.sdram), extract(req.dtcm))
 
             # add machine edges
             for edge in machine_graph.edges:
@@ -233,7 +236,7 @@ class DatabaseWriter(object):
                     "  pre_vertex, post_vertex, label) "
                     "VALUES(?, ?, ?)",
                     self._vertex_to_id[edge.pre_vertex],
-                    self._vertex_to_id[edge.post_vertex], edge.label)
+                    self._vertex_to_id[edge.post_vertex], str(edge.label))
 
             # add to machine graph
             for vertex in machine_graph.vertices:
