@@ -280,8 +280,7 @@ class DatabaseWriter(object):
             self._machine_id += 1
             for chip in machine.chips:
                 self.__insert_machine_chip(
-                    len(list(chip.processors)), chip.x, chip.y,
-                    self._machine_id)
+                    len(list(chip.processors)), chip, self._machine_id)
                 for processor in chip.processors:
                     self.__insert_processor(
                         chip, self._machine_id,
