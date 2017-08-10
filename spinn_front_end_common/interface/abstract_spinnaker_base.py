@@ -556,7 +556,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             informed_user = False
             for option in self._config.options("Reports"):
                 try:
-                    if self._config.getboolean("Reports", option) is False:
+                    # Use String comparision to avoid 0 being picked up
+                    if self._config.get("Reports", option).lower == "false":
                         self._config.set("Reports", option, "True")
                         if not informed_user:
                             logger.info("As mode == \"Debug\" all cfg "
