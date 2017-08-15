@@ -25,7 +25,8 @@ class TestHBPAllocator(unittest.TestCase):
             result = controller._check_lease(0)
             assert result["allocated"] is True
             for record in l.records:
-                assert "Starting new HTTP connection" not in record.msg
+                if record.levelname == "INFO":
+                    assert "Starting new HTTP connection" not in record.msg
 
 
 if __name__ == "__main__":
