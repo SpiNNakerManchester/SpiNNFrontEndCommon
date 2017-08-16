@@ -557,7 +557,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # options names are all lower without _ inside config
                 if (option in ["reportsenabled", "displayalgorithmtimings",
                                "clear_iobuf_during_run",
-                               "extract_iobuf","extract_iobuf_during_run"]
+                               "extract_iobuf", "extract_iobuf_during_run"]
                         or option[:5] == "write"):
                     try:
                         if not self._config.get_bool("Reports", option):
