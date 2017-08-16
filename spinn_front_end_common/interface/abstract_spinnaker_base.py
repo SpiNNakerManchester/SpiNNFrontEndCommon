@@ -1846,9 +1846,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
             if not in_debug_mode:
-                self.stop(
-                    turn_off_machine=False, clear_routing_tables=False,
-                    clear_tags=False)
+                try:
+                    self.stop(
+                        turn_off_machine=False, clear_routing_tables=False,
+                        clear_tags=False)
+                except Exception:
+                    logger.error("Error when attempting to stop")
+                    traceback.print_exc()
 
             # raise exception
             raise ex_type, ex_value, ex_traceback
@@ -2340,6 +2344,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 provenance_path=self._pacman_executor_provenance_path,
                 provenance_name="stopping")
             run_complete = False
+            ex_type, ex_value, ex_traceback = None, None, None
             try:
                 executor.execute_mapping()
                 self._pacman_provenance.extract_provenance(executor)
@@ -2355,7 +2360,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._write_provenance(prov_items)
                     self._all_provenance_items.append(prov_items)
             except Exception as e:
-                _, _, ex_traceback = sys.exc_info()
+                ex_type, ex_value, ex_traceback = sys.exc_info()
 
                 # If an exception occurs during a run, attempt to get
                 # information out of the simulation before shutting down
@@ -2431,6 +2436,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         helpful_functions.write_finished_file(
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
+
+        if ex_type is not None:
+            raise ex_type, ex_value, ex_traceback
 
     def add_socket_address(self, socket_address):
         """
