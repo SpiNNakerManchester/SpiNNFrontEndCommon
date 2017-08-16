@@ -553,20 +553,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :raises ConfigurationException
         """
         if self._config.get("Mode", "mode") == "Debug":
-            informed_user = False
             for option in self._config.options("Reports"):
-                try:
-                    if self._config.getboolean("Reports", option) is False:
-                        self._config.set("Reports", option, "True")
-                        if not informed_user:
-                            logger.info("As mode == \"Debug\" all cfg "
-                                        "[Reports] boolean values have been "
-                                        "set to True")
-                            informed_user = True
-                except ValueError:
-                    # all checks for boolean depend on catching a exception
-                    # so just do it here
-                    pass
+                # options names are all lower without _ inside config
+                if (option in ["reportsenabled", "displayalgorithmtimings",
+                               "clear_iobuf_during_run",
+                               "extract_iobuf", "extract_iobuf_during_run"]
+                        or option[:5] == "write"):
+                    try:
+                        if not self._config.get_bool("Reports", option):
+                            self._config.set("Reports", option, "True")
+                            logger.info("As mode == \"Debug\" [Reports] {} "
+                                        "has been set to True".format(option))
+                    except ValueError:
+                        pass
 
         if runtime is None:
             if self._config.getboolean(
