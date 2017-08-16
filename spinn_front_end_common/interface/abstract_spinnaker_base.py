@@ -2309,6 +2309,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
 
+        # Keep track of any exception to be re-raised
+        ex_type, ex_value, ex_traceback = None, None, None
+
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board):
@@ -2344,7 +2347,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 provenance_path=self._pacman_executor_provenance_path,
                 provenance_name="stopping")
             run_complete = False
-            ex_type, ex_value, ex_traceback = None, None, None
             try:
                 executor.execute_mapping()
                 self._pacman_provenance.extract_provenance(executor)
