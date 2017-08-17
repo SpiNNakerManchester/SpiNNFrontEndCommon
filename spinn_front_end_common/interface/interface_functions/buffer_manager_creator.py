@@ -8,12 +8,12 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 class BufferManagerCreator(object):
     __slots__ = []
 
-    def __call__(
-            self, placements, tags, txrx):
+    def __call__(self, placements, tags, txrx, store_data_in_file):
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager
-        buffer_manager = BufferManager(placements, tags, txrx)
+        buffer_manager = BufferManager(
+            placements, tags, txrx, store_data_in_file)
 
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):

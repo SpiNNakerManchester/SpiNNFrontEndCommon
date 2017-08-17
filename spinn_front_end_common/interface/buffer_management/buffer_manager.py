@@ -81,7 +81,7 @@ class BufferManager(object):
         "_listener_port"
     ]
 
-    def __init__(self, placements, tags, transceiver):
+    def __init__(self, placements, tags, transceiver, store_to_file=False):
         """
 
         :param placements: The placements of the vertices
@@ -92,6 +92,9 @@ class BufferManager(object):
         :param transceiver: The transceiver to use for sending and receiving\
                     information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param store_to_file: True if the data should be temporarily stored\
+                    in a file instead of in RAM (default uses RAM)
+        :type store_to_file: bool
         """
 
         self._placements = placements
@@ -108,7 +111,8 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData()
+        self._received_data = BufferedReceivingData(store_to_file)
+        self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.Lock()
@@ -251,7 +255,7 @@ class BufferManager(object):
             files
         """
         # reset buffered out
-        self._received_data = BufferedReceivingData()
+        self._received_data = BufferedReceivingData(self._store_to_file)
 
         # rewind buffered in
         for vertex in self._sender_vertices:
