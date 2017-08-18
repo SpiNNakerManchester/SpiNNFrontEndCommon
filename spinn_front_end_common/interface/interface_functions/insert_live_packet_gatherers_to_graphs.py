@@ -95,4 +95,4 @@ class InsertLivePacketGatherersToGraphs(object):
             payload_right_shift=params.payload_right_shift,
             number_of_packets_sent_per_time_step=(
                 params.number_of_packets_sent_per_time_step),
-            label="LPG class")
+            label="LiveSpikeReceiver")
