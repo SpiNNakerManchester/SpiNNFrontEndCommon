@@ -1,5 +1,4 @@
 from threading import Thread
-import traceback
 from collections import OrderedDict
 
 from spinn_front_end_common.utilities.database import DatabaseConnection
@@ -308,7 +307,7 @@ class LiveEventConnection(DatabaseConnection):
                                 callback(
                                     self._receive_labels[label_id], atom_id)
         except:
-            traceback.print_exc()
+            logger.warn("problem handling received packet", exc_info=True)
 
     def send_event(self, label, atom_id, send_full_keys=False):
         """ Send an event from a single atom

@@ -60,9 +60,8 @@ from collections import defaultdict
 import logging
 import math
 import os
-import sys
-import traceback
 import signal
+import sys
 
 
 logger = logging.getLogger(__name__)
@@ -1092,7 +1091,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._app_data_top_simulation_folder,
                     self._report_simulation_top_directory)
             except:
-                traceback.print_exc()
+                logger.warn("problem when shutting down", exc_info=True)
             raise ex_type, ex_value, ex_traceback
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
@@ -1822,7 +1821,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._shutdown()
             sys.exit(1)
         except Exception as e:
-            ex_type, ex_value, ex_traceback = sys.exc_info()
+            e_inf = sys.exc_info()
 
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
@@ -1831,16 +1830,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     # Only do this if the error occurred in the run
                     if not run_complete and not self._use_virtual_board:
                         self._recover_from_error(
-                            e, ex_traceback, executor.get_item(
-                                "ExecutableTargets"))
+                            e, e_inf, executor.get_item("ExecutableTargets"))
                 else:
                     logger.error(
                         "The PACMAN executor crashing during initialisation,"
                         " please read previous error message to locate its"
                         " error")
             except Exception:
-                logger.error("Error when attempting to recover from error")
-                traceback.print_exc()
+                logger.error("Error when attempting to recover from error",
+                             exc_info=True)
 
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
@@ -1849,7 +1847,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     turn_off_machine=False, clear_routing_tables=False,
                     clear_tags=False)
 
-            # raise exception
+            # reraise exception
+            ex_type, ex_value, ex_traceback = e_inf
             raise ex_type, ex_value, ex_traceback
 
     def _write_provenance(self, provenance_data_items):
@@ -1862,18 +1861,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             writer = ProvenanceJSONWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
-    def _recover_from_error(self, exception, ex_traceback, executable_targets):
-
+    def _recover_from_error(self, exception, exc_info, executable_targets):
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
+        # Print the detail including the traceback
         if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
-            logger.error(exception.exception)
+            logger.error(exception.exception, exc_info=exc_info)
         else:
-            logger.error(exception)
-
-        # Now print the traceback
-        for line in traceback.format_tb(ex_traceback):
-            logger.error(line.strip())
+            logger.error(exception, exc_info=exc_info)
 
         logger.info("\n\nAttempting to extract data\n\n")
 
@@ -2366,8 +2361,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             e, ex_traceback, executor.get_item(
                                 "ExecutableTargets"))
                 except Exception:
-                    logger.error("Error when attempting to recover from error")
-                    traceback.print_exc()
+                    logger.error("Error when attempting to recover from error",
+                                 exc_info=True)
 
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report") and
