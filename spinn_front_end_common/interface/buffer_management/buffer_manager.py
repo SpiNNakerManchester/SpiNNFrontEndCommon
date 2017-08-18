@@ -78,7 +78,10 @@ class BufferManager(object):
         "_finished",
 
         # listener port
-        "_listener_port"
+        "_listener_port",
+
+        # Store to file flag
+        "_store_to_file"
     ]
 
     def __init__(self, placements, tags, transceiver, store_to_file=False):
