@@ -42,7 +42,10 @@ $(SPINN_COMMON_BUILD):
 	$(MKDIR) $@
 
 # Installing rules
-install: $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
+install: install-libraries install-headers install-makefiles
+install-libraries: $(INSTALL_LIBS)
+install-headers: $(INSTALL_HEADERS)
+install-makefiles: $(INSTALL_MAKEFILES)
 
 $(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
 	$(CP) $< $@
@@ -58,3 +61,5 @@ clean:
 
 install-clean:
 	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
+
+.PHONY: clean install install-libraries install-headers install-makefiles install-clean
