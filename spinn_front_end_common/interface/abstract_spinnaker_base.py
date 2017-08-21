@@ -1667,7 +1667,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 load_timer.take_sample())
 
     def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
-
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
@@ -1845,9 +1844,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
             if not in_debug_mode:
-                self.stop(
-                    turn_off_machine=False, clear_routing_tables=False,
-                    clear_tags=False)
+                try:
+                    self.stop(
+                        turn_off_machine=False, clear_routing_tables=False,
+                        clear_tags=False)
+                except Exception:
+                    logger.error("Error when attempting to stop",
+                                 exc_info=True)
+                    traceback.print_exc()
 
             # raise exception
             raise ex_type, ex_value, ex_traceback
@@ -2304,6 +2308,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
 
+        # Keep track of any exception to be re-raised
+        ex_type, ex_value, ex_traceback = None, None, None
+
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board):
@@ -2354,7 +2361,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._write_provenance(prov_items)
                     self._all_provenance_items.append(prov_items)
             except Exception as e:
-                _, _, ex_traceback = sys.exc_info()
+                ex_type, ex_value, ex_traceback = sys.exc_info()
 
                 # If an exception occurs during a run, attempt to get
                 # information out of the simulation before shutting down
@@ -2430,6 +2437,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         helpful_functions.write_finished_file(
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
+
+        if ex_type is not None:
+            raise ex_type, ex_value, ex_traceback
 
     def add_socket_address(self, socket_address):
         """
