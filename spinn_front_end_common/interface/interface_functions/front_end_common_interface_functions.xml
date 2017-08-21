@@ -771,6 +771,7 @@
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>
+            <param_name>store_data_in_file</param_name>
         </required_inputs>
         <outputs>
             <param_type>BufferManager</param_type>
