@@ -1668,7 +1668,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 load_timer.take_sample())
 
     def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
-
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
@@ -1851,7 +1850,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         turn_off_machine=False, clear_routing_tables=False,
                         clear_tags=False)
                 except Exception:
-                    logger.error("Error when attempting to stop")
+                    logger.error("Error when attempting to stop",
+                                 exc_info=True)
                     traceback.print_exc()
 
             # raise exception
