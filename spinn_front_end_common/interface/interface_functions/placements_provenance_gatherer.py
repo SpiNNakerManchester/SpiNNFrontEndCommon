@@ -1,9 +1,11 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.interface.provenance \
     import AbstractProvidesProvenanceDataFromMachine
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PlacementsProvenanceGatherer(object):
@@ -19,9 +21,9 @@ class PlacementsProvenanceGatherer(object):
         """
 
         if not has_ran:
-            raise ConfigurationException(
-                "This function has been called before the simulation has ran."
-                " This is deemed an error, please rectify and try again")
+            logger.warning("{} skipped as nothing has run "
+                           "".format(self.__class__.__name__))
+            return list()
 
         if provenance_data_objects is not None:
             prov_items = provenance_data_objects
