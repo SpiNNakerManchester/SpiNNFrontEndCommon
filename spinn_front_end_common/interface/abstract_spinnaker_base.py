@@ -1849,7 +1849,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 except Exception:
                     logger.error("Error when attempting to stop",
                                  exc_info=True)
-                    traceback.print_exc()
 
             # reraise exception
             ex_type, ex_value, ex_traceback = e_inf
