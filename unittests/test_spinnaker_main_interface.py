@@ -2,6 +2,7 @@ import os
 import sys
 import unittest
 
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import spinn_front_end_common.interface.abstract_spinnaker_base as base
 from spinn_front_end_common.interface.abstract_spinnaker_base \
     import AbstractSpinnakerBase
@@ -54,8 +55,9 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         interface.stop(turn_off_machine=False, clear_routing_tables=False,
                        clear_tags=False)
         self.assertTrue(mock_contoller.closed)
-        interface.stop(turn_off_machine=False, clear_routing_tables=False,
-                       clear_tags=False)
+        with self.assertRaises(ConfigurationException):
+            interface.stop(turn_off_machine=False, clear_routing_tables=False,
+                           clear_tags=False)
 
     def test_timings(self):
 
