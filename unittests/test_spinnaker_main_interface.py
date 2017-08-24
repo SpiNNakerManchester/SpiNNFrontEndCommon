@@ -38,12 +38,6 @@ class TestSpinnakerMainInterface(unittest.TestCase):
     def setUp(self):
         globals_variables.set_failed_state(FailedState())
 
-    def test_min_init(self):
-        class_file = sys.modules[self.__module__].__file__
-        path = os.path.dirname(os.path.abspath(class_file))
-        os.chdir(path)
-        AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
-
     def test_stop_init(self):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
@@ -58,6 +52,12 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         with self.assertRaises(ConfigurationException):
             interface.stop(turn_off_machine=False, clear_routing_tables=False,
                            clear_tags=False)
+
+    def test_min_init(self):
+        class_file = sys.modules[self.__module__].__file__
+        path = os.path.dirname(os.path.abspath(class_file))
+        os.chdir(path)
+        AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
 
     def test_timings(self):
 
