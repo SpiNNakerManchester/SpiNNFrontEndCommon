@@ -31,6 +31,9 @@ class _HBPJobController(Thread, AbstractMachineAllocationController):
         self._check_lease_url = "{}/checkLease".format(url)
         self._exited = False
 
+        # Lower the level of requests to WARNING to avoid extra messages
+        logging.getLogger("requests").setLevel(logging.WARNING)
+
     def extend_allocation(self, new_total_run_time):
         requests.get(self._extend_lease_url, params={
             "runTime": new_total_run_time})
