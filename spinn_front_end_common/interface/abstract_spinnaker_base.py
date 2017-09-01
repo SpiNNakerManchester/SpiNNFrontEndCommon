@@ -23,7 +23,8 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item import ProvenanceDataItem
+from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
+    import ProvenanceDataItem
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
