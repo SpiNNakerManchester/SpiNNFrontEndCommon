@@ -308,7 +308,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_extraction_time",
 
         # power save mode. Only True if power saver has turned off board
-        "_machine_is_turned_off"
+        "_machine_is_turned_off",
+
+        # Name of the front end (which might include the version)
+        "_front_end_name"
     ]
 
     def __init__(
