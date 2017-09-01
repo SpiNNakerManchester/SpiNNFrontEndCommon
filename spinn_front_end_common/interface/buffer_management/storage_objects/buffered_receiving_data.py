@@ -13,8 +13,6 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # boolean flag for if data is to be stored in memory or a file on disk
-        "_store_to_file",
 
         # the data to store
         "_data",
@@ -45,7 +43,6 @@ class BufferedReceivingData(object):
                 in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
         """
-        self._store_to_file = store_to_file
 
         self._data = None
         if store_to_file:
