@@ -2,6 +2,8 @@
 main interface for the spinnaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
+from spinn_utilities.timer import Timer
+from spinn_utilities import __version__ as spinn_utils_version
 
 # pacman imports
 from pacman.executor.injection_decorator import provide_injectables, \
@@ -16,6 +18,7 @@ from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import PreAllocatedResourceContainer
+from pacman import __version__ as pacman_version
 
 # common front end imports
 from spinn_front_end_common.abstract_models import \
@@ -49,13 +52,15 @@ from spinn_front_end_common.interface.interface_functions \
     import RouterProvenanceGatherer
 from spinn_front_end_common.interface.interface_functions \
     import ChipIOBufExtractor
+from spinn_front_end_common import __version__ as fec_version
 
 # spinnman imports
-from spinn_utilities.timer import Timer
 from spinnman.model.enums.cpu_state import CPUState
+from spinnman import __version__ as spinnman_version
 
 # spinnmachine imports
 from spinn_machine import CoreSubsets
+from spinn_machine import __version__ as spinn_machine_version
 
 # general imports
 from collections import defaultdict
@@ -64,6 +69,12 @@ import math
 import os
 import signal
 import sys
+
+from numpy import __version__ as numpy_version
+from scipy import __version__ as scipy_version
+from data_specification import __version__ as data_spec_version
+from spinn_storage_handlers import __version__ as spinn_storage_version
+from spalloc import __version__ as spalloc_version
 
 
 logger = logging.getLogger(__name__)
@@ -311,15 +322,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # power save mode. Only True if power saver has turned off board
         "_machine_is_turned_off",
 
-        # Name of the front end (which might include the version)
-        "_front_end_name"
+        # Version information from the front end
+        "_front_end_versions"
     ]
 
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, default_config_paths=None,
-            validation_cfg=None, front_end_name=None):
+            validation_cfg=None, front_end_versions=None):
 
         # global params
         if default_config_paths is None:
@@ -469,8 +480,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         globals_variables.set_simulator(self)
 
-        # Front End detail information
-        self._front_end_name = front_end_name
+        # Front End version information
+        self._front_end_versions = front_end_versions
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -1115,6 +1126,35 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs = dict()
         algorithms = list()
         outputs = list()
+
+        # Add the version information to the provenance data at the start
+        version_provenance = list()
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_utilities_version"], spinn_utils_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_machine_version"], spinn_machine_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_storage_handlers_version"],
+            spinn_storage_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spalloc_version"], spalloc_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinnman_version"], spinnman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "pacman_version"], pacman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "data_specification_version"], data_spec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "front_end_common_version"], fec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "numpy_version"], numpy_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "scipy_version"], scipy_version))
+        if self._front_end_versions is not None:
+            for name, value in self._front_end_versions:
+                version_provenance.append(ProvenanceDataItem(
+                    names=["version_data", name], value=value))
+        inputs["ProvenanceItems"] = version_provenance
 
         # add algorithms for handling LPG placement and edge insertion
         if len(self._live_packet_recorder_params) != 0:
@@ -1873,11 +1913,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
         """
-        # Add the front end to the provenance
-        if self._front_end_name is not None:
-            provenance_data_items.append(ProvenanceDataItem(
-                names=["front_end_data", "front_end_name"],
-                value=self._front_end_name))
         writer = None
         if self._provenance_format == "xml":
             writer = ProvenanceXMLWriter()
