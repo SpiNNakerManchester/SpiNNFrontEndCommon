@@ -1635,19 +1635,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if (self._config.getboolean("Reports", "reports_enabled") and
                 self._config.getboolean("Reports", "write_provenance_data")):
             algorithms.append("GraphProvenanceGatherer")
-            outputs.append("ProvenanceItems")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
         self._mapping_outputs = executor.get_items()
 
-        # write provenance to file if necessary
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data") and
-                not self._use_virtual_board):
-            prov_items = executor.get_item("ProvenanceItems")
-            self._write_provenance(prov_items)
-            self._check_provenance(prov_items)
         self._dsg_time += \
             helpful_functions.convert_time_diff_to_total_milliseconds(
                 data_gen_timer.take_sample())
