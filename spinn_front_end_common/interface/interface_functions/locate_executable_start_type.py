@@ -40,4 +40,8 @@ class LocateExecutableStartType(object):
                     "vertex {} has start type {}".format(
                         binary_start_type, vertex.label,
                         placement_binary_start_type))
+
+        if binary_start_type is None:
+            return ExecutableStartType.NO_APPLICATION
+
         return binary_start_type
