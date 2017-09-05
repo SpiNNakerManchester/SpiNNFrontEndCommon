@@ -16,7 +16,8 @@ import os
 import struct
 
 logger = logging.getLogger(__name__)
-
+_ONE_WORD = struct.Struct("<I")
+_FOUR_WORDS = struct.Struct("<IIII")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
 
@@ -248,20 +249,17 @@ class MundyOnChipRouterCompression(object):
         # results in sdram and the router table entries
 
         data = b''
-        data += struct.pack("<I", app_id)
-        data += struct.pack("<I", int(compress_only_when_needed))
-        data += struct.pack("<I", int(compress_as_much_as_possible))
-
-        # Write the size of the table
-        data += struct.pack("<I", routing_table.number_of_entries)
+        data += _FOUR_WORDS.pack(
+            app_id, int(compress_only_when_needed),
+            int(compress_as_much_as_possible),
+            # Write the size of the table
+            routing_table.number_of_entries)
 
         for entry in routing_table.multicast_routing_entries:
-            data += struct.pack("<I", entry.routing_entry_key)
-            data += struct.pack("<I", entry.mask)
-            data += struct.pack(
-                "<I",
-                Router.convert_routing_table_entry_to_spinnaker_route(entry))
-            data += struct.pack("<I", self._make_source_hack(entry))
+            data += _FOUR_WORDS.pack(
+                entry.routing_entry_key, entry.mask,
+                Router.convert_routing_table_entry_to_spinnaker_route(entry),
+                self._make_source_hack(entry))
         return bytearray(data)
 
     @staticmethod

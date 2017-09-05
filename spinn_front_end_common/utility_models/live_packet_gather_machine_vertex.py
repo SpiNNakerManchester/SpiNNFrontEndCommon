@@ -22,6 +22,9 @@ from spinnman.messages.eieio import EIEIOType
 from enum import Enum
 import struct
 
+_ONE_SHORT = struct.Struct("<H")
+_TWO_BYTES = struct.Struct("<BB")
+
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
@@ -247,8 +250,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
-        spec.write_value(struct.unpack("<H", struct.pack(
-            "<BB", iptag.destination_y, iptag.destination_x))[0])
+        spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
+            iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)

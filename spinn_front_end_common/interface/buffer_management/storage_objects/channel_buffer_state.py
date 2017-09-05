@@ -2,6 +2,8 @@ from spinn_front_end_common.utilities.constants import BUFFERING_OPERATIONS
 
 import struct
 
+_CHANNEL_BUFFER_PATTERN = struct.Struct("<IIIIIBBBx")
+
 
 class ChannelBufferState(object):
     """ Stores information related to a single channel output\
@@ -115,7 +117,7 @@ class ChannelBufferState(object):
     def create_from_bytearray(data):
         (start_address, current_write, current_dma_write, current_read,
          end_address, region_id, missing_info, last_buffer_operation) = \
-            struct.unpack_from("<IIIIIBBBx", data)
+            _CHANNEL_BUFFER_PATTERN.unpack_from(data)
         if last_buffer_operation == 0:
             last_buffer_operation = BUFFERING_OPERATIONS.BUFFER_READ.value
         else:

@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 PROFILE_HEADER_SIZE_BYTES = 4
 SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES = 8
 BYTE_OFFSET_OF_PROFILE_DATA_IN_PROFILE_REGION = 4
+_ONE_WORD = struct.Struct("<I")
 
 
 def get_profile_region_size(n_samples):
@@ -66,12 +67,9 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
             placement=placement, region=profile_region, transceiver=txrx)
 
     # Read the profiling data size
-    words_written_data =\
-        buffer(txrx.read_memory(
-            placement.x, placement.y,
-            profiling_region_base_address, 4))
-    words_written = \
-        struct.unpack_from("<I", words_written_data)[0]
+    words_written_data = buffer(txrx.read_memory(
+        placement.x, placement.y, profiling_region_base_address, 4))
+    words_written = _ONE_WORD.unpack_from(words_written_data)[0]
 
     # Read the profiling data
     if words_written != 0:

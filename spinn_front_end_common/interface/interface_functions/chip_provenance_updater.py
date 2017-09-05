@@ -9,6 +9,7 @@ from spinn_front_end_common.utilities.constants \
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = logging.getLogger(__name__)
+_ONE_WORD = struct.Struct("<I")
 
 
 class ChipProvenanceUpdater(object):
@@ -52,8 +53,8 @@ class ChipProvenanceUpdater(object):
                 all_core_subsets, CPUState.FINISHED)
 
             for (x, y, p) in unsuccessful_cores.iterkeys():
-                data = struct.pack(
-                    "<I", SDP_RUNNING_MESSAGE_CODES.
+                data = _ONE_WORD.pack(
+                    SDP_RUNNING_MESSAGE_CODES.
                     SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
                 txrx.send_sdp_message(SDPMessage(SDPHeader(
                     flags=SDPFlag.REPLY_NOT_EXPECTED,
