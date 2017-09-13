@@ -1,11 +1,13 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.profiling.abstract_has_profile_data \
     import AbstractHasProfileData
 
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProfileDataGatherer(object):
@@ -26,9 +28,9 @@ class ProfileDataGatherer(object):
         machine_time_step_ms = machine_time_step / 1000
 
         if not has_ran:
-            raise exceptions.ConfigurationException(
-                "This function has been called before the simulation has ran."
-                " This is deemed an error, please rectify and try again")
+            logger.warning("{} skipped as nothing has run "
+                           "".format(self.__class__.__name__))
+            return
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")

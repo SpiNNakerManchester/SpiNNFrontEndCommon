@@ -2,6 +2,8 @@
 main interface for the spinnaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
+from spinn_utilities.timer import Timer
+from spinn_utilities import __version__ as spinn_utils_version
 
 # pacman imports
 from pacman.executor.injection_decorator import provide_injectables, \
@@ -16,6 +18,7 @@ from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import PreAllocatedResourceContainer
+from pacman import __version__ as pacman_version
 
 # common front end imports
 from spinn_front_end_common.abstract_models import \
@@ -23,6 +26,8 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
+    import ProvenanceDataItem
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
@@ -34,7 +39,7 @@ from spinn_front_end_common.utilities.report_functions.energy_report import \
     EnergyReport
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
-
+from spinn_front_end_common.interface.simulator_state import Simulator_State
 from spinn_front_end_common.interface.interface_functions \
     import ProvenanceXMLWriter
 from spinn_front_end_common.interface.interface_functions \
@@ -47,22 +52,29 @@ from spinn_front_end_common.interface.interface_functions \
     import RouterProvenanceGatherer
 from spinn_front_end_common.interface.interface_functions \
     import ChipIOBufExtractor
+from spinn_front_end_common import __version__ as fec_version
 
 # spinnman imports
-from spinn_utilities.timer import Timer
 from spinnman.model.enums.cpu_state import CPUState
+from spinnman import __version__ as spinnman_version
 
 # spinnmachine imports
 from spinn_machine import CoreSubsets
+from spinn_machine import __version__ as spinn_machine_version
 
 # general imports
 from collections import defaultdict
 import logging
 import math
 import os
-import sys
-import traceback
 import signal
+import sys
+
+from numpy import __version__ as numpy_version
+from scipy import __version__ as scipy_version
+from data_specification import __version__ as data_spec_version
+from spinn_storage_handlers import __version__ as spinn_storage_version
+from spalloc import __version__ as spalloc_version
 
 
 logger = logging.getLogger(__name__)
@@ -198,7 +210,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_has_ran",
 
         #
-        "_is_running",
+        "_state",
 
         #
         "_has_reset_last",
@@ -308,14 +320,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_extraction_time",
 
         # power save mode. Only True if power saver has turned off board
-        "_machine_is_turned_off"
+        "_machine_is_turned_off",
+
+        # Version information from the front end
+        "_front_end_versions"
     ]
 
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, default_config_paths=None,
-            validation_cfg=None):
+            validation_cfg=None, front_end_versions=None):
 
         # global params
         if default_config_paths is None:
@@ -406,7 +421,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # holder for timing related values
         self._has_ran = False
-        self._is_running = False
+        self._state = Simulator_State.INIT
         self._has_reset_last = False
         self._n_calls_to_run = 1
         self._current_run_timesteps = 0
@@ -464,6 +479,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._machine_is_turned_off = False
 
         globals_variables.set_simulator(self)
+
+        # Front End version information
+        self._front_end_versions = front_end_versions
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -722,8 +740,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return sys.__excepthook__(exctype, value, traceback_obj)
 
     def verify_not_running(self):
-        if self._is_running:
+        if self._state in [Simulator_State.IN_RUN,
+                           Simulator_State.RUN_FOREVER]:
             msg = "Illegal call while a simulation is already running"
+            raise ConfigurationException(msg)
+        if self._state in [Simulator_State.SHUTDOWN]:
+            msg = "Illegal call after simulation is shutdown"
             raise ConfigurationException(msg)
 
     def run_until_complete(self):
@@ -751,7 +773,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
                 " more than once")
-        self._is_running = True
+        self._state = Simulator_State.IN_RUN
 
         self._adjust_config(run_time)
 
@@ -854,7 +876,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._minimum_step_generated is not None and
                     (self._minimum_step_generated < n_machine_time_steps or
                         n_machine_time_steps is None)):
-                self._is_running = False
+                self._state = Simulator_State.FINISHED
                 raise ConfigurationException(
                     "Second and subsequent run time must be less than or equal"
                     " to the first run time")
@@ -864,7 +886,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
 
             if run_time is None:
-                self._is_running = False
+                self._state = Simulator_State.FINISHED
                 raise Exception(
                     "Cannot use automatic pause and resume with an infinite "
                     "run time")
@@ -911,7 +933,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
         if run_time is not None:
-            self._is_running = False
+            self._state = Simulator_State.FINISHED
+        else:
+            self._state = Simulator_State.RUN_FOREVER
 
     def _add_commands_to_command_sender(self):
         for vertex in self._application_graph.vertices:
@@ -1092,7 +1116,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._app_data_top_simulation_folder,
                     self._report_simulation_top_directory)
             except:
-                traceback.print_exc()
+                logger.warn("problem when shutting down", exc_info=True)
             raise ex_type, ex_value, ex_traceback
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
@@ -1102,6 +1126,35 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs = dict()
         algorithms = list()
         outputs = list()
+
+        # Add the version information to the provenance data at the start
+        version_provenance = list()
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_utilities_version"], spinn_utils_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_machine_version"], spinn_machine_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinn_storage_handlers_version"],
+            spinn_storage_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spalloc_version"], spalloc_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "spinnman_version"], spinnman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "pacman_version"], pacman_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "data_specification_version"], data_spec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "front_end_common_version"], fec_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "numpy_version"], numpy_version))
+        version_provenance.append(ProvenanceDataItem(
+            ["version_data", "scipy_version"], scipy_version))
+        if self._front_end_versions is not None:
+            for name, value in self._front_end_versions:
+                version_provenance.append(ProvenanceDataItem(
+                    names=["version_data", name], value=value))
+        inputs["ProvenanceItems"] = version_provenance
 
         # add algorithms for handling LPG placement and edge insertion
         if len(self._live_packet_recorder_params) != 0:
@@ -1523,6 +1576,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
+                inputs["StoreBufferDataInFile"] = self._config.getboolean(
+                    "Buffers", "store_buffer_data_in_file")
                 algorithms.append("BufferManagerCreator")
                 outputs.append("BufferManager")
             else:
@@ -1580,19 +1635,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if (self._config.getboolean("Reports", "reports_enabled") and
                 self._config.getboolean("Reports", "write_provenance_data")):
             algorithms.append("GraphProvenanceGatherer")
-            outputs.append("ProvenanceItems")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
         self._mapping_outputs = executor.get_items()
 
-        # write provenance to file if necessary
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data") and
-                not self._use_virtual_board):
-            prov_items = executor.get_item("ProvenanceItems")
-            self._write_provenance(prov_items)
-            self._check_provenance(prov_items)
         self._dsg_time += \
             helpful_functions.convert_time_diff_to_total_milliseconds(
                 data_gen_timer.take_sample())
@@ -1667,7 +1714,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 load_timer.take_sample())
 
     def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
-
         # start timer
         run_timer = Timer()
         run_timer.start_timing()
@@ -1822,7 +1868,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._shutdown()
             sys.exit(1)
         except Exception as e:
-            ex_type, ex_value, ex_traceback = sys.exc_info()
+            e_inf = sys.exc_info()
 
             # If an exception occurs during a run, attempt to get
             # information out of the simulation before shutting down
@@ -1831,25 +1877,29 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     # Only do this if the error occurred in the run
                     if not run_complete and not self._use_virtual_board:
                         self._recover_from_error(
-                            e, ex_traceback, executor.get_item(
-                                "ExecutableTargets"))
+                            e, e_inf, executor.get_item("ExecutableTargets"))
                 else:
                     logger.error(
                         "The PACMAN executor crashing during initialisation,"
                         " please read previous error message to locate its"
                         " error")
             except Exception:
-                logger.error("Error when attempting to recover from error")
-                traceback.print_exc()
+                logger.error("Error when attempting to recover from error",
+                             exc_info=True)
 
             # if in debug mode, do not shut down machine
             in_debug_mode = self._config.get("Mode", "mode") == "Debug"
             if not in_debug_mode:
-                self.stop(
-                    turn_off_machine=False, clear_routing_tables=False,
-                    clear_tags=False)
+                try:
+                    self.stop(
+                        turn_off_machine=False, clear_routing_tables=False,
+                        clear_tags=False)
+                except Exception:
+                    logger.error("Error when attempting to stop",
+                                 exc_info=True)
 
-            # raise exception
+            # reraise exception
+            ex_type, ex_value, ex_traceback = e_inf
             raise ex_type, ex_value, ex_traceback
 
     def _write_provenance(self, provenance_data_items):
@@ -1862,18 +1912,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             writer = ProvenanceJSONWriter()
         writer(provenance_data_items, self._provenance_file_path)
 
-    def _recover_from_error(self, exception, ex_traceback, executable_targets):
-
+    def _recover_from_error(self, exception, exc_info, executable_targets):
         # if exception has an exception, print to system
         logger.error("An error has occurred during simulation")
+        # Print the detail including the traceback
         if isinstance(exception, PacmanAlgorithmFailedToCompleteException):
-            logger.error(exception.exception)
+            logger.error(exception.exception, exc_info=exc_info)
         else:
-            logger.error(exception)
-
-        # Now print the traceback
-        for line in traceback.format_tb(ex_traceback):
-            logger.error(line.strip())
+            logger.error(exception, exc_info=exc_info)
 
         logger.info("\n\nAttempting to extract data\n\n")
 
@@ -2222,6 +2268,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
 
+        self._state = Simulator_State.SHUTDOWN
+
         # if on a virtual machine then shut down not needed
         if self._use_virtual_board:
             return
@@ -2286,7 +2334,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
-        self._is_running = False
+        self._state = Simulator_State.SHUTDOWN
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
@@ -2303,6 +2351,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :type clear_tags: boolean
         :rtype: None
         """
+        if self._state in [Simulator_State.SHUTDOWN]:
+            msg = "Simulator has already been shutdown"
+            raise ConfigurationException(msg)
+        self._state = Simulator_State.SHUTDOWN
+
+        # Keep track of any exception to be re-raised
+        ex_type, ex_value, ex_traceback = None, None, None
 
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
@@ -2354,7 +2409,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._write_provenance(prov_items)
                     self._all_provenance_items.append(prov_items)
             except Exception as e:
-                _, _, ex_traceback = sys.exc_info()
+                ex_type, ex_value, ex_traceback = sys.exc_info()
 
                 # If an exception occurs during a run, attempt to get
                 # information out of the simulation before shutting down
@@ -2366,8 +2421,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             e, ex_traceback, executor.get_item(
                                 "ExecutableTargets"))
                 except Exception:
-                    logger.error("Error when attempting to recover from error")
-                    traceback.print_exc()
+                    logger.error("Error when attempting to recover from error",
+                                 exc_info=True)
 
         if (self._config.getboolean("Reports", "reportsEnabled") and
                 self._config.getboolean("Reports", "write_energy_report") and
@@ -2430,6 +2485,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         helpful_functions.write_finished_file(
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
+
+        if ex_type is not None:
+            raise ex_type, ex_value, ex_traceback
 
     def add_socket_address(self, socket_address):
         """

@@ -11,7 +11,6 @@ from spinn_front_end_common.utilities.constants \
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
-import traceback
 
 
 logger = logging.getLogger(__name__)
@@ -163,7 +162,8 @@ class NotificationProtocol(object):
                                     connection.remote_port))
 
             except Exception:
-                traceback.print_exc()
+                logger.warn("problem when sending DB notification",
+                            exc_info=True)
 
     def close(self):
         """ Closes the thread pool
