@@ -29,7 +29,6 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
 # general imports
 import threading
 import logging
-import traceback
 
 
 logger = logging.getLogger(__name__)
@@ -78,10 +77,13 @@ class BufferManager(object):
         "_finished",
 
         # listener port
-        "_listener_port"
+        "_listener_port",
+
+        # Store to file flag
+        "_store_to_file"
     ]
 
-    def __init__(self, placements, tags, transceiver):
+    def __init__(self, placements, tags, transceiver, store_to_file=False):
         """
 
         :param placements: The placements of the vertices
@@ -92,6 +94,9 @@ class BufferManager(object):
         :param transceiver: The transceiver to use for sending and receiving\
                     information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param store_to_file: True if the data should be temporarily stored\
+                    in a file instead of in RAM (default uses RAM)
+        :type store_to_file: bool
         """
 
         self._placements = placements
@@ -108,7 +113,8 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData()
+        self._received_data = BufferedReceivingData(store_to_file)
+        self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.Lock()
@@ -146,7 +152,8 @@ class BufferManager(object):
                                     packet.space_available, vertex,
                                     packet.region_id, packet.sequence_no)
                             except Exception:
-                                traceback.print_exc()
+                                logger.warn("problem when sending messages",
+                                            exc_info=True)
                 elif isinstance(packet, SpinnakerRequestReadData):
                     with self._thread_lock_buffer_out:
 
@@ -158,7 +165,8 @@ class BufferManager(object):
                         try:
                             self._retrieve_and_store_data(packet)
                         except Exception:
-                            traceback.print_exc()
+                            logger.warn("problem when handling data",
+                                        exc_info=True)
                 elif isinstance(packet, EIEIOCommandMessage):
                     raise SpinnmanInvalidPacketException(
                         str(packet.__class__),
@@ -169,7 +177,8 @@ class BufferManager(object):
                         packet.__class__,
                         "The command packet is invalid for buffer management")
         except Exception:
-            traceback.print_exc()
+            logger.warn("problem when processing received packet",
+                        exc_info=True)
 
     def _create_connection(self, tag):
         connection = self._transceiver.register_udp_listener(
@@ -251,7 +260,7 @@ class BufferManager(object):
             files
         """
         # reset buffered out
-        self._received_data = BufferedReceivingData()
+        self._received_data = BufferedReceivingData(self._store_to_file)
 
         # rewind buffered in
         for vertex in self._sender_vertices:
