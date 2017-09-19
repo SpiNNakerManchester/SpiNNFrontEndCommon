@@ -44,7 +44,7 @@ setup(
                       'SpiNNMan >= 1!4.0.0a5, < 1!5.0.0',
                       'SpiNNaker_PACMAN >= 1!4.0.0a5, < 1!5.0.0',
                       'SpiNNaker_DataSpecification >= 1!4.0.0a5, < 1!5.0.0',
-                      'spalloc >= v0.2.6, < c1.0.0',
+                      'spalloc >= v0.2.6, < 1.0.0',
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
