@@ -1,3 +1,5 @@
+import shutil
+
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine.sdram import SDRAM
 
@@ -88,6 +90,11 @@ class FrontEndCommonDSGRegionReloader(object):
         # machine vertices data will be updated
         for vertex in application_vertices_to_reset:
             vertex.mark_regions_reloaded()
+
+        if os.path.exists(reloaded_dsg_data_files_file_path):
+            shutil.rmtree(reloaded_dsg_data_files_file_path)
+        if os.path.exists(reloaded_dsg_report_files_file_path):
+            shutil.rmtree(reloaded_dsg_report_files_file_path)
 
     @staticmethod
     def _regenerate_data_spec_for_vertices(
