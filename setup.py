@@ -47,5 +47,6 @@ setup(
                       'spalloc >= 0.2.2, < 1.0.0',
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
-                      'numpy', 'six']
+                      'numpy',
+                      'six']
 )
