@@ -8,8 +8,8 @@ assert __version__
 
 # Build a list of all project modules, as well as supplementary files
 main_package = "spinn_front_end_common"
-data_extensions = {".aplx", ".boot", ".json", ".xml", ".xsd"}
-config_extensions = {".cfg", ".template"}
+extensions = {".aplx", ".boot", ".cfg", ".json", ".sql", ".template", ".xml",
+              ".xsd"}
 main_package_dir = os.path.join(os.path.dirname(__file__), main_package)
 start = len(main_package_dir)
 packages = []
@@ -19,19 +19,12 @@ for dirname, dirnames, filenames in os.walk(main_package_dir):
         package = "{}{}".format(
             main_package, dirname[start:].replace(os.sep, '.'))
         packages.append(package)
-    ext_set = set()
     for filename in filenames:
         _, ext = os.path.splitext(filename)
-        if ext in data_extensions:
-            ext_set.add(ext)
-        if ext in config_extensions:
+        if ext in extensions:
             package = "{}{}".format(
                 main_package, dirname[start:].replace(os.sep, '.'))
             package_data[package].append(filename)
-    for ext in ext_set:
-        package = "{}{}".format(
-            main_package, dirname[start:].replace(os.sep, '.'))
-        package_data[package].append("*{}".format(ext))
 
 setup(
     name="SpiNNFrontEndCommon",
