@@ -34,6 +34,9 @@
             <param_name>app_id</param_name>
             <param_name>has_loaded_routing_tables_flag</param_name>
         </required_inputs>
+        <outputs>
+            <param_type>MemoryCompressedRoutingTables</param_type>
+        </outputs>
     </algorithm>
     <algorithm name="MemoryMapOnHostReport">
         <python_module>spinn_front_end_common.utilities.report_functions</python_module>

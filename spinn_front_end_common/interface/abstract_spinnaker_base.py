@@ -1699,15 +1699,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
                 routing_tables_needed = True
-                optional_algorithms.append("unCompressedRoutingTableReports")
-                optional_algorithms.append("compressedRoutingTableReports")
-                optional_algorithms.append("comparisonOfRoutingTablesReport")
+                algorithms.append("unCompressedRoutingTableReports")
+                algorithms.append("compressedRoutingTableReports")
+                algorithms.append("comparisonOfRoutingTablesReport")
             if self._config.getboolean(
                     "Reports", "write_routing_compression_checker_report"):
                 routing_tables_needed = True
-                optional_algorithms.append("routingCompressionCheckerReport")
+                algorithms.append("routingCompressionCheckerReport")
             if routing_tables_needed:
-                algorithms.append("RoutingTableFromMachineReport")
+                optional_algorithms.append("RoutingTableFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
