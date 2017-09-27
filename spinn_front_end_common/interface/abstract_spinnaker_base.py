@@ -1506,11 +1506,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingInfoReports")
             if self._config.getboolean("Reports", "write_router_reports"):
                 algorithms.append("RouterReports")
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
-                optional_algorithms.append("unCompressedRoutingTableReports")
-                optional_algorithms.append("compressedRoutingTableReports")
-                optional_algorithms.append("comparisonOfRoutingTablesReport")
             if self._config.getboolean(
                     "Reports", "write_routing_tables_from_machine_report"):
                 optional_algorithms.append(
@@ -1697,6 +1692,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
+
+        # Add reports that depend on compression
+        if self._config.getboolean("Reports", "reports_enabled"):
+            routing_tables_needed = False
+            if self._config.getboolean("Reports",
+                                       "write_routing_table_reports"):
+                routing_tables_needed = True
+                optional_algorithms.append("unCompressedRoutingTableReports")
+                optional_algorithms.append("compressedRoutingTableReports")
+                optional_algorithms.append("comparisonOfRoutingTablesReport")
+            if self._config.getboolean(
+                    "Reports", "write_routing_compression_checker_report"):
+                routing_tables_needed = True
+                optional_algorithms.append("routingCompressionCheckerReport")
+            if routing_tables_needed:
+                algorithms.append("RoutingTableFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
