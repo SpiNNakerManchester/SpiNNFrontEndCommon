@@ -201,12 +201,13 @@ class LiveEventConnection(DatabaseConnection):
                                     " SDP headers are supported")
                 if port not in self._receivers:
                     receiver = EIEIOConnection(local_port=port)
-                    send_port_trigger_message(receiver, board_address)
                     listener = ConnectionListener(receiver)
                     listener.add_callback(self._receive_packet_callback)
                     listener.start()
                     self._receivers[port] = receiver
                     self._listeners[port] = listener
+
+                send_port_trigger_message(receiver, board_address)
                 logger.info(
                     "Listening for traffic from {} on {}:{}".format(
                         receive_label, host, port))
