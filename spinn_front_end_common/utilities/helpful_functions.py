@@ -17,6 +17,7 @@ from ConfigParser import RawConfigParser
 
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
+_ONE_WORD = struct.Struct("<I")
 
 
 def read_data(x, y, address, length, data_format, transceiver):
@@ -55,7 +56,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
             regions_base_address, region)
     region_address = buffer(transceiver.read_memory(
         placement.x, placement.y, region_offset_in_pointer_table, 4))
-    region_address_decoded = struct.unpack_from("<I", region_address)[0]
+    region_address_decoded = _ONE_WORD.unpack_from(region_address)[0]
     return region_address_decoded
 
 
