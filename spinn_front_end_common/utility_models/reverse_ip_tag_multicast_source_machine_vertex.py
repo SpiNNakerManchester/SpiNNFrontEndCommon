@@ -209,7 +209,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._buffer_notification_tag = buffer_notification_tag
 
         # set flag for checking if in injection mode
-        self._in_injection_mode = receive_port is not None
+        self._in_injection_mode = \
+            receive_port is not None or reserve_reverse_ip_tag
 
         # Sort out the keys to be used
         self._n_keys = n_keys
