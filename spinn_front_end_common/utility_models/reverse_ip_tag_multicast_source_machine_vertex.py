@@ -44,6 +44,8 @@ import sys
 import struct
 
 _DEFAULT_MALLOC_REGIONS = 2
+_ONE_WORD = struct.Struct("<I")
+_TWO_SHORTS = struct.Struct("<HH")
 
 
 @supports_injection
@@ -530,8 +532,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
-            spec.write_value(struct.unpack("<I", struct.pack(
-                "<HH", this_tag.destination_y, this_tag.destination_x))[0])
+            spec.write_value(_ONE_WORD.unpack(_TWO_SHORTS.pack(
+                this_tag.destination_y, this_tag.destination_x))[0])
         else:
             spec.write_value(data=0)
             spec.write_value(data=0)
