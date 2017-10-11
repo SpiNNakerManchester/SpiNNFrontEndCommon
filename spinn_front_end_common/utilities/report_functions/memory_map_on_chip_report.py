@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
 _FOUR_WORDS = struct.Struct("<IIII")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
+MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 
 
 class MemoryMapOnChipReport(object):
@@ -40,9 +41,7 @@ class MemoryMapOnChipReport(object):
         progress = ProgressBar(dsg_targets, "Writing memory map reports")
         for (x, y, p) in progress.over(dsg_targets):
             file_name = os.path.join(
-                directory_name,
-                "memory_map_from_processor"
-                "_{0:d}_{1:d}_{2:d}.txt".format(x, y, p))
+                directory_name, MEM_MAP_FILENAME.format(x, y, p))
             with open(file_name, "w") as output:
                 self._write_processor_memory_map(output, transceiver, x, y, p)
 

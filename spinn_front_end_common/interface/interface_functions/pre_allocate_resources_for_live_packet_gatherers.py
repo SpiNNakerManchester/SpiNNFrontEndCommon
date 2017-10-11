@@ -2,7 +2,7 @@
 from pacman.model.resources import CoreResource
 from pacman.model.resources import PreAllocatedResourceContainer
 from pacman.model.resources import SpecificChipSDRAMResource
-from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
+from spinn_front_end_common.utility_models \
     import LivePacketGatherMachineVertex as LPGVertex
 from spinn_utilities.progress_bar import ProgressBar
 

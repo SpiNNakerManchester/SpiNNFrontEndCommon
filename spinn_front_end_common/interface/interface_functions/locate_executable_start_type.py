@@ -1,7 +1,5 @@
-from spinn_front_end_common.abstract_models.\
-    abstract_has_associated_binary import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 from spinn_front_end_common.utilities import exceptions
 from spinn_utilities.progress_bar import ProgressBar
 

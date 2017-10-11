@@ -9,6 +9,7 @@ import struct
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
+MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 
 
 class MemoryMapOnHostChipReport(object):
@@ -18,7 +19,7 @@ class MemoryMapOnHostChipReport(object):
     def __call__(
             self, report_default_directory, dsg_targets, transceiver,
             loaded_app_data_token):
-        """ creates a report that states where in sdram each region is
+        """ creates a report that states where in SDRAM each region is \
         (read from machine)
 
         :param report_default_directory: the folder where reports are written
@@ -40,9 +41,7 @@ class MemoryMapOnHostChipReport(object):
         progress = ProgressBar(dsg_targets, "Writing memory map reports")
         for (x, y, p) in progress.over(dsg_targets):
             file_name = os.path.join(
-                directory_name,
-                "memory_map_from_processor"
-                "_{0:d}_{1:d}_{2:d}.txt".format(x, y, p))
+                directory_name, MEM_MAP_FILENAME.format(x, y, p))
             try:
                 with open(file_name, "w") as f:
                     f.write("On chip data specification executor\n\n")

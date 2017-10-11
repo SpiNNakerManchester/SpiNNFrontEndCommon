@@ -1,7 +1,8 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # data spec imports
-from data_specification import DataSpecificationExecutor, constants
+from data_specification import DataSpecificationExecutor
+from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
 
 # spinn_storage_handlers import
@@ -83,7 +84,7 @@ class HostExecuteDataSpecification(object):
         bytes_written_by_spec = len(data_to_write)
 
         # Write each region
-        for region_id in range(constants.MAX_MEM_REGIONS):
+        for region_id in xrange(MAX_MEM_REGIONS):
             region = executor.get_region(region_id)
             if region is not None:
                 max_pointer = region.max_write_pointer
