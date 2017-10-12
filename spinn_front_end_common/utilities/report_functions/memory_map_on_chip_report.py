@@ -7,7 +7,8 @@ import os
 import struct
 
 logger = logging.getLogger(__name__)
-
+_ONE_WORD = struct.Struct("<I")
+_FOUR_WORDS = struct.Struct("<IIII")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
 
 
@@ -83,7 +84,7 @@ class MemoryMapOnChipReport(object):
             x, y, p)
         data_address_encoded = txrx.read_memory(
             x, y, data_address_pointer, 4)
-        return struct.unpack_from("<I", buffer(data_address_encoded))[0]
+        return _ONE_WORD.unpack_from(buffer(data_address_encoded))[0]
 
 
 class _MemoryChannelState(object):
@@ -122,10 +123,9 @@ class _MemoryChannelState(object):
 
     @staticmethod
     def from_bytestring(data, offset=0):
-        start, size, unfilled, write = \
-            struct.unpack_from("<IIII", data, offset)
+        start, size, unfilled, write = _FOUR_WORDS.unpack_from(data, offset)
         return _MemoryChannelState(start, size, unfilled, write)
 
     def bytestring(self):
-        return struct.pack("<IIII", self._start_address, self._size,
-                           self._unfilled, self._write_pointer)
+        return _FOUR_WORDS.pack(self._start_address, self._size,
+                                self._unfilled, self._write_pointer)

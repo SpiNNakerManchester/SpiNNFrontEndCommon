@@ -6,6 +6,8 @@ from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
 from spinn_utilities.progress_bar import ProgressBar
 
+_ONE_WORD = struct.Struct("<I")
+
 
 class ApplicationFinisher(object):
     __slots__ = []
@@ -61,8 +63,7 @@ class ApplicationFinisher(object):
 
     @staticmethod
     def _update_provenance_and_exit(txrx, processor, core_subset):
-        byte_data = struct.pack(
-            "<I",
+        byte_data = _ONE_WORD.pack(
             constants.SDP_RUNNING_MESSAGE_CODES
             .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
 

@@ -23,6 +23,9 @@ _RECORDING_ELEMENTS_BEFORE_REGION_SIZES = 7
 # The Buffer traffic type
 TRAFFIC_IDENTIFIER = "BufferTraffic"
 
+_ONE_WORD = struct.Struct("<I")
+_TWO_SHORTS = struct.Struct("<HH")
+
 
 def get_recording_header_size(n_recorded_regions):
     """ Get the size of the data to be written for the recording header
@@ -242,8 +245,8 @@ def get_recording_header_array(
     # The parameters
     data.append(len(recorded_region_sizes))
     data.append(buffering_output_tag)
-    data.append(struct.unpack("<I", struct.pack(
-        "<HH", buffering_output_dest_y, buffering_output_dest_x))[0])
+    data.append(_ONE_WORD.unpack(_TWO_SHORTS.pack(
+        buffering_output_dest_y, buffering_output_dest_x))[0])
     data.append(SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
     if buffer_size_before_request is not None:
         data.append(buffer_size_before_request)
@@ -278,7 +281,7 @@ def get_last_sequence_number(placement, transceiver, recording_data_address):
     data = transceiver.read_memory(
         placement.x, placement.y,
         recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, 4)
-    return struct.unpack_from("<I", data)[0]
+    return _ONE_WORD.unpack_from(data)[0]
 
 
 def get_region_pointer(placement, transceiver, recording_data_address, region):
@@ -295,7 +298,7 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
         placement.x, placement.y,
         recording_data_address + _FIRST_REGION_ADDRESS_OFFSET + (region * 4),
         4)
-    return struct.unpack_from("<I", data)[0]
+    return _ONE_WORD.unpack_from(data)[0]
 
 
 def get_n_timesteps_in_buffer_space(buffer_space, buffered_sdram_per_timestep):
