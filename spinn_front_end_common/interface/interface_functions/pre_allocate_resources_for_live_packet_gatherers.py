@@ -2,8 +2,11 @@
 from pacman.model.resources import CoreResource
 from pacman.model.resources import PreAllocatedResourceContainer
 from pacman.model.resources import SpecificChipSDRAMResource
+from pacman.model.resources.specific_board_iptag_resource import \
+    SpecificBoardTagResource
 from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
-    import LivePacketGatherMachineVertex as LPGVertex
+    import LivePacketGatherMachineVertex as LPGVertex, \
+    LivePacketGatherMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -34,13 +37,16 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         # live packet gatherers
         sdrams = list()
         cores = list()
+        iptags = list()
         for chip in progress.over(machine.ethernet_connected_chips):
-            self._add_chip_lpg_reqs(live_packet_gatherer_parameters, chip,
-                                    lpg_sdram_requirement, sdrams, cores)
+            self._add_chip_lpg_reqs(
+                live_packet_gatherer_parameters, chip, lpg_sdram_requirement,
+                sdrams, cores, iptags)
 
         # create pre allocated resource container
         lpg_prealloc_resource_container = PreAllocatedResourceContainer(
-            specific_sdram_usage=sdrams, core_resources=cores)
+            specific_sdram_usage=sdrams, core_resources=cores,
+            specific_iptag_resources=iptags)
 
         # add other pre allocated resources
         if pre_allocated_resources is not None:
@@ -50,7 +56,8 @@ class PreAllocateResourcesForLivePacketGatherers(object):
         return lpg_prealloc_resource_container
 
     @staticmethod
-    def _add_chip_lpg_reqs(lpg_parameters, chip, lpg_sdram, sdrams, cores):
+    def _add_chip_lpg_reqs(
+            lpg_parameters, chip, lpg_sdram, sdrams, cores, iptags):
         sdram_reqs = 0
         core_reqs = 0
 
@@ -59,6 +66,12 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     lpg_params.board_address == chip.ip_address):
                 sdram_reqs += lpg_sdram
                 core_reqs += 1
+                iptags.append(SpecificBoardTagResource(
+                    board=chip.ip_address,
+                    ip_address=lpg_params.hostname, port=lpg_params.port,
+                    strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
+                    traffic_identifier=
+                    LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))
 
         if sdram_reqs > 0:
             sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))
