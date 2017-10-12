@@ -76,3 +76,6 @@ BUFFERING_OPERATIONS = Enum(
         # Host confirming data being read form SpiNNaker memory
         ("BUFFER_WRITE", 1)]
 )
+
+# partition ids pre allocated to functionality
+PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"
