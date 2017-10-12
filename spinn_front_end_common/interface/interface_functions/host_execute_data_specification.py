@@ -12,6 +12,7 @@ import struct
 import numpy
 
 logger = logging.getLogger(__name__)
+_ONE_WORD = struct.Struct("<I")
 
 
 class HostExecuteDataSpecification(object):
@@ -99,8 +100,7 @@ class HostExecuteDataSpecification(object):
             # set user 0 register appropriately to the application data
             user_0_address = \
                 transceiver.get_user_0_register_address_from_core(x, y, p)
-            start_address_encoded = \
-                buffer(struct.pack("<I", start_address))
+            start_address_encoded = buffer(_ONE_WORD.pack(start_address))
             transceiver.write_memory(
                 x, y, user_0_address, start_address_encoded)
 

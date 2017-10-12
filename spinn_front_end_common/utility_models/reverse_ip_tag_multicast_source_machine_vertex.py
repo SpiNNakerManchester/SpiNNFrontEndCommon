@@ -44,6 +44,8 @@ import sys
 import struct
 
 _DEFAULT_MALLOC_REGIONS = 2
+_ONE_WORD = struct.Struct("<I")
+_TWO_SHORTS = struct.Struct("<HH")
 
 
 @supports_injection
@@ -176,6 +178,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
+            if (len(send_buffer_times) > 0 and
+                    hasattr(send_buffer_times[0], "__len__")):
+                # Working with a list of lists so check length
+                if len(send_buffer_times) != n_keys:
+                    raise ConfigurationException(
+                        "The array or arrays of times {} does not have the "
+                        "expected length of {} "
+                        "".format(send_buffer_times, n_keys))
+
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
@@ -529,8 +540,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
-            spec.write_value(struct.unpack("<I", struct.pack(
-                "<HH", this_tag.destination_y, this_tag.destination_x))[0])
+            spec.write_value(_ONE_WORD.unpack(_TWO_SHORTS.pack(
+                this_tag.destination_y, this_tag.destination_x))[0])
         else:
             spec.write_value(data=0)
             spec.write_value(data=0)

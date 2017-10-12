@@ -7,7 +7,7 @@ import os
 import struct
 
 logger = logging.getLogger(__name__)
-
+_ONE_WORD = struct.Struct("<I")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
 
 
@@ -62,8 +62,8 @@ class MemoryMapOnHostChipReport(object):
 
                     offset = 0
                     for i in xrange(MAX_MEM_REGIONS):
-                        region_address = int(struct.unpack_from(
-                            "<I", mem_map_report_data, offset)[0])
+                        region_address = int(_ONE_WORD.unpack_from(
+                            mem_map_report_data, offset)[0])
                         offset += 4
                         f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\t"
                                 .format(i, region_address))
@@ -73,4 +73,4 @@ class MemoryMapOnHostChipReport(object):
 
     def _get_app_pointer_table(self, txrx, x, y, table_pointer):
         encoded_address = buffer(txrx.read_memory(x, y, table_pointer, 4))
-        return int(struct.unpack_from("<I", encoded_address)[0]) + 8
+        return int(_ONE_WORD.unpack_from(encoded_address)[0]) + 8
