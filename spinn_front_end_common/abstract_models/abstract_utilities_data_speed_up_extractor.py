@@ -3,10 +3,11 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.utilities import constants
 
 
-class AbstractUtilitiesDataSpeedUpExtractor(AbstractProvidesNKeysForPartition):
+class AbstractUtilitiesDataSpeedUpExtractor(
+        AbstractProvidesNKeysForPartition):
 
     def __init__(self):
-        pass
+        AbstractProvidesNKeysForPartition.__init__(self)
 
     def generate_speed_up_data(self, routing_info):
         """ generates data needed for the speed up functionality to work

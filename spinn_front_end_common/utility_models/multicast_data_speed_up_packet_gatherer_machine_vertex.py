@@ -1,9 +1,14 @@
+from pacman.model.constraints.key_allocator_constraints import \
+    FixedKeyAndMaskConstraint
 from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
+from pacman.model.routing_info import BaseKeyAndMask
 
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import \
+    AbstractProvidesIncomingPartitionConstraints
 from spinn_front_end_common.abstract_models.impl import \
     MachineDataSpecableVertex
 from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
@@ -21,7 +26,8 @@ from enum import Enum
 
 
 class MulticastDataSpeedUpPacketGatherMachineVertex(
-        MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary):
+        MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary,
+        AbstractProvidesIncomingPartitionConstraints):
 
     # dsg data regions
     DATA_REGIONS = Enum(
@@ -66,6 +72,10 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
     # what governs a end flag
     END_FLAG = 0xFFFFFFFF
 
+    # base key (really nasty hack)
+    BASE_KEY = 0xFFFFFFFD
+    BASE_MASK = 0xFFFFFFFC
+
     # the size in bytes of the end flag
     END_FLAG_SIZE = 4
 
@@ -75,10 +85,12 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
     # the amount of bytes the data length will take up
     LENGTH_OF_DATA_SIZE = 4
 
-    def __init__(self, connection=None):
-        MachineVertex.__init__(self, label="pg", constraints=None)
+    def __init__(self, connection=None, constraints=None):
+        MachineVertex.__init__(self, label="pg", constraints=constraints)
         MachineDataSpecableVertex.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
+        AbstractProvidesIncomingPartitionConstraints.__init__(self)
+
 
         # data holders for the output, and seq nums
         self._view = None
@@ -112,6 +124,13 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
             iptags=[IPtagResource(
                 port=connection.local_port, strip_sdp=True,
                 ip_address="localhost")])
+
+    @overrides(AbstractProvidesIncomingPartitionConstraints.
+               get_incoming_partition_constraints)
+    def get_incoming_partition_constraints(self, partition_id):
+        if partition_id == constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
+            return [FixedKeyAndMaskConstraint(
+                [BaseKeyAndMask(self.BASE_KEY, self.BASE_MASK)])]
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):

@@ -16,7 +16,6 @@ class MulticastDataSpeedUpPacketGatherApplicationVertex(
     def __init__(self):
         ApplicationVertex.__init__(
             self, "multicast speed up application vertex", None, 1)
-        self._connection = UDPConnection(local_host=None)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -31,7 +30,8 @@ class MulticastDataSpeedUpPacketGatherApplicationVertex(
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        return MulticastDataSpeedUpPacketGatherMachineVertex(self._connection)
+        connection = UDPConnection(local_host=None)
+        return MulticastDataSpeedUpPacketGatherMachineVertex(connection)
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
