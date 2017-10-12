@@ -127,8 +127,8 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractProvidesIncomingPartitionConstraints.
                get_incoming_partition_constraints)
-    def get_incoming_partition_constraints(self, partition_id):
-        if partition_id == constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
+    def get_incoming_partition_constraints(self, partition):
+        if partition == constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
             return [FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self.BASE_KEY, self.BASE_MASK)])]
 
@@ -144,7 +144,7 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         """
         return ExecutableStartType.USES_SIMULATION_INTERFACE
 
-    @overrides(MachineDataSpecableVertex.generate_data_specification)
+    @overrides(MachineDataSpecableVertex.generate_machine_data_specification)
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
             reverse_iptags, machine_time_step, time_scale_factor):

@@ -20,7 +20,8 @@ class InsertMCDataExtractorsVerticesToGraphs(object):
                  n_cores_to_allocate=1, graph_mapper=None,
                  application_graph=None):
         progress = ProgressBar(
-            len(machine.vertices) + len(machine.ethernet_connected_chips),
+            len(machine_graph.vertices) +
+            len(machine.ethernet_connected_chips),
             "Inserting multicast gatherers into graphs")
 
         # determine if the graph requires the vertices

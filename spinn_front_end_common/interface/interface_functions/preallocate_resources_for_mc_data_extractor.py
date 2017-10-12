@@ -44,7 +44,7 @@ class PreAllocateResourcesForMCDataExtractor(object):
             # do resources. sdram, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
-                sdram_usage=resources.sdram.size))
+                sdram_usage=resources.sdram.get_value))
             cores.append(CoreResource(
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
             tags.append(SpecificBoardTagResource(
