@@ -1,14 +1,9 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
 
-from spinn_front_end_common.abstract_models.\
-    abstract_generates_data_specification import \
-    AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.\
-    abstract_has_associated_binary import \
-    AbstractHasAssociatedBinary
-from spinn_front_end_common.utility_models.\
-    chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
+from spinn_front_end_common.abstract_models import \
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 from spinn_utilities.overrides import overrides
 
@@ -40,8 +35,10 @@ class ChipPowerMonitorApplicationVertex(
         return 1
 
     @overrides(ApplicationVertex.create_machine_vertex)
-    def create_machine_vertex(self, vertex_slice, resources_required,
-                              label=None, constraints=None):
+    def create_machine_vertex(
+            self,
+            vertex_slice, resources_required,  # @UnusedVariable
+            label=None, constraints=None):
         return ChipPowerMonitorMachineVertex(
             constraints=constraints, label=label,
             n_samples_per_recording=self._n_samples_per_recording,
@@ -81,7 +78,8 @@ class ChipPowerMonitorApplicationVertex(
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
     def _get_resources_used_by_atoms(
-            self, vertex_slice, n_machine_time_steps, time_scale_factor,
+            self, vertex_slice,  # @UnusedVariable
+            n_machine_time_steps, time_scale_factor,
             machine_time_step):
         return ChipPowerMonitorMachineVertex.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
