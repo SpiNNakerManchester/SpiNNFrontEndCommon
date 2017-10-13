@@ -27,6 +27,10 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = 8
 # 4 for application hash
 SIMULATION_N_BYTES = 12
 
+# the number of words used by the mc data speed up interface
+# 4 for the first key used by mc protocol
+MULTICAST_SPEEDUP_N_BYTES = 4
+
 # The number of bytes used by the dsg and simulation interfaces
 SYSTEM_BYTES_REQUIREMENT = \
     (DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES)

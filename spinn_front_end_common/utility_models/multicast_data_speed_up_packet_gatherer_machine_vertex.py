@@ -73,8 +73,8 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
     END_FLAG = 0xFFFFFFFF
 
     # base key (really nasty hack)
-    BASE_KEY = 0xFFFFFFFD
-    BASE_MASK = 0xFFFFFFFC
+    BASE_KEY =  0xFFFFFFF9
+    BASE_MASK = 0xFFFFFFFB
 
     # the size in bytes of the end flag
     END_FLAG_SIZE = 4
@@ -86,7 +86,9 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
     LENGTH_OF_DATA_SIZE = 4
 
     def __init__(self, connection=None, constraints=None):
-        MachineVertex.__init__(self, label="pg", constraints=constraints)
+        MachineVertex.__init__(
+            self, label="mc_data_speed_up_packet_gatherer",
+            constraints=constraints)
         MachineDataSpecableVertex.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
         AbstractProvidesIncomingPartitionConstraints.__init__(self)
@@ -128,9 +130,16 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
     @overrides(AbstractProvidesIncomingPartitionConstraints.
                get_incoming_partition_constraints)
     def get_incoming_partition_constraints(self, partition):
-        if partition == constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
+        return self.static_get_incoming_partition_constraints(partition)
+
+    @staticmethod
+    def static_get_incoming_partition_constraints(partition):
+        if partition.identifier == \
+                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
             return [FixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(self.BASE_KEY, self.BASE_MASK)])]
+                [BaseKeyAndMask(
+                    MulticastDataSpeedUpPacketGatherMachineVertex.BASE_KEY,
+                    MulticastDataSpeedUpPacketGatherMachineVertex.BASE_MASK)])]
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
