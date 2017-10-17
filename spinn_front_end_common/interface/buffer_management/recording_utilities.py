@@ -1,10 +1,10 @@
 from spinn_front_end_common.interface.buffer_management.storage_objects\
-    .channel_buffer_state import ChannelBufferState
-from spinn_front_end_common.utilities import constants
+    import ChannelBufferState
+from spinn_front_end_common.utilities.constants \
+    import SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS
 
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.resources \
+    import ResourceContainer, IPtagResource, SDRAMResource
 
 import struct
 import sys
@@ -22,6 +22,9 @@ _RECORDING_ELEMENTS_BEFORE_REGION_SIZES = 7
 
 # The Buffer traffic type
 TRAFFIC_IDENTIFIER = "BufferTraffic"
+
+_ONE_WORD = struct.Struct("<I")
+_TWO_SHORTS = struct.Struct("<HH")
 
 
 def get_recording_header_size(n_recorded_regions):
@@ -44,7 +47,6 @@ def get_recording_data_size(recorded_region_sizes):
     :rtype: int
     """
     return (
-
         # The total recording data size
         sum(recorded_region_sizes) +
 
@@ -53,8 +55,7 @@ def get_recording_data_size(recorded_region_sizes):
          ChannelBufferState.size_of_channel_state()) +
 
         # The SARK allocation of SDRAM overhead
-        (len(recorded_region_sizes) * constants.SARK_PER_MALLOC_SDRAM_USAGE)
-    )
+        (len(recorded_region_sizes) * SARK_PER_MALLOC_SDRAM_USAGE))
 
 
 def get_minimum_buffer_sdram(
@@ -151,7 +152,7 @@ def get_recording_resources(
         The tag to send buffering messages with, or None to use a default tag
     :type notification_tag: int
     :rtype:\
-        :py:class:`pacman.model.resources.resource_container.ResourceContainer`
+        :py:class:`pacman.model.resources.ResourceContainer`
     """
 
     ip_tags = list()
@@ -196,8 +197,8 @@ def get_recorded_region_sizes(
         n_machine_time_steps * sdram
         if (maximum_sdram_for_buffering is None or
             maximum_sdram_for_buffering[i] == 0 or
-            (n_machine_time_steps * sdram) > maximum_sdram_for_buffering[i])
-        else maximum_sdram_for_buffering
+            (n_machine_time_steps * sdram) < maximum_sdram_for_buffering[i])
+        else maximum_sdram_for_buffering[i]
         for i, sdram in enumerate(buffered_sdram_per_timestep)
     ]
 
@@ -244,9 +245,9 @@ def get_recording_header_array(
     # The parameters
     data.append(len(recorded_region_sizes))
     data.append(buffering_output_tag)
-    data.append(struct.unpack("<I", struct.pack(
-        "<HH", buffering_output_dest_y, buffering_output_dest_x))[0])
-    data.append(constants.SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
+    data.append(_ONE_WORD.unpack(_TWO_SHORTS.pack(
+        buffering_output_dest_y, buffering_output_dest_x))[0])
+    data.append(SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value)
     if buffer_size_before_request is not None:
         data.append(buffer_size_before_request)
     else:
@@ -280,7 +281,7 @@ def get_last_sequence_number(placement, transceiver, recording_data_address):
     data = transceiver.read_memory(
         placement.x, placement.y,
         recording_data_address + _LAST_SEQUENCE_NUMBER_OFFSET, 4)
-    return struct.unpack_from("<I", data)[0]
+    return _ONE_WORD.unpack_from(data)[0]
 
 
 def get_region_pointer(placement, transceiver, recording_data_address, region):
@@ -297,7 +298,7 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
         placement.x, placement.y,
         recording_data_address + _FIRST_REGION_ADDRESS_OFFSET + (region * 4),
         4)
-    return struct.unpack_from("<I", data)[0]
+    return _ONE_WORD.unpack_from(data)[0]
 
 
 def get_n_timesteps_in_buffer_space(buffer_space, buffered_sdram_per_timestep):

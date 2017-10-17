@@ -19,6 +19,9 @@ static uint32_t *pointer_to_infinite_run;
 //! the function call to run when extracting provenance data from the chip
 static prov_callback_t stored_provenance_function = NULL;
 
+//! the function call to run when received a exit command.
+static exit_callback_t stored_exit_function = NULL;
+
 //! the function call to run just before resuming a simulation
 static resume_callback_t stored_resume_function = NULL;
 
@@ -28,6 +31,8 @@ static address_t stored_provenance_data_address = NULL;
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
 
+//! the list of DMA callbacks for dma complete callbacks
+static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
 //! \brief handles the storing of basic provenance data
 //! \return the address after which new provenance data can be stored
@@ -121,11 +126,20 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
             // free the message to stop overload
             spin1_msg_free(msg);
+
+            // call any stored exit callbacks
+            if (stored_exit_function != NULL){
+                log_info("Calling pre-exit function");
+                stored_exit_function();
+            }
+            log_info("Exiting");
             spin1_exit(0);
             break;
 
         case CMD_RUNTIME:
             log_info("Setting the runtime of this model to %d", msg->arg1);
+            log_info("Setting the flag of infinite run for this model to %d",
+                     msg->arg2);
 
             // resetting the simulation time pointer
             *pointer_to_simulation_time = msg->arg1;
@@ -148,22 +162,17 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             spin1_msg_free(msg);
             break;
 
-        case SDP_SWITCH_STATE:
-
-            log_debug("Switching to state %d", msg->arg1);
-
-            // change the state of the cpu into what's requested from the host
-            sark_cpu_state(msg->arg1);
-
-            // free the message to stop overload
-            spin1_msg_free(msg);
-            break;
-
         case PROVENANCE_DATA_GATHERING:
             log_info("Forced provenance gathering");
 
             // force provenance to be executed and then exit
             _execute_provenance_storage();
+
+            // call any stored exit callbacks
+            if (stored_exit_function != NULL){
+                log_info("Calling pre-exit function");
+                stored_exit_function();
+            }
             spin1_msg_free(msg);
             spin1_exit(1);
             break;
@@ -190,6 +199,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
     }
 }
 
+//! \brief handles the sdp callbacks interface.
 void _simulation_sdp_callback_handler(uint mailbox, uint port) {
 
     if (sdp_callback[port] != NULL) {
@@ -204,20 +214,57 @@ void _simulation_sdp_callback_handler(uint mailbox, uint port) {
     }
 }
 
-void simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
-    sdp_callback[sdp_port] = callback;
+bool simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
+    if (sdp_callback[sdp_port] == NULL) {
+        sdp_callback[sdp_port] = callback;
+    } else {
+        log_error("Cannot allocate sdp callback on port %d as its already "
+                  "been allocated.", sdp_port);
+        return false;
+    }
 }
 
 void simulation_sdp_callback_off(uint sdp_port) {
     sdp_callback[sdp_port] = NULL;
 }
 
+//! \brief handles the dma transfer done callbacks interface.
+void _simulation_dma_transfer_done_callback(uint unused, uint tag) {
+    if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
+        dma_complete_callbacks[tag](unused, tag);
+    }
+}
+
+bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback) {
+
+    // ensure that tag being allocated is less than max tag
+    if (tag >= MAX_DMA_CALLBACK_TAG) {
+        log_error("Cannot handle tag value above %d, please reduce the tag "
+                  "value accordingly.", MAX_DMA_CALLBACK_TAG - 1);
+        return false;
+    }
+
+    // allocate tag callback if not already allocated
+    if (dma_complete_callbacks[tag] == NULL) {
+        dma_complete_callbacks[tag] = callback;
+    } else {
+
+        // if allocated already, raise error
+        log_error("Cannot allocate dma transfer callback on tag %d as its "
+                  "already been allocated.", tag);
+        return false;
+    }
+}
+
+void simulation_dma_transfer_done_callback_off(uint tag) {
+    dma_complete_callbacks[tag] = NULL;
+}
+
 bool simulation_initialise(
         address_t address, uint32_t expected_app_magic_number,
         uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
         uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
-        prov_callback_t provenance_function,
-        address_t provenance_data_address) {
+        int dma_transfer_done_callback_priority) {
 
     // handle the timing reading
     if (address[APPLICATION_MAGIC_NUMBER] != expected_app_magic_number) {
@@ -250,11 +297,25 @@ bool simulation_initialise(
     simulation_sdp_callback_on(
         address[SIMULATION_CONTROL_SDP_PORT],
         _simulation_control_scp_callback);
-
-    // handle the provenance setting up
-    stored_provenance_function = provenance_function;
-    stored_provenance_data_address = provenance_data_address;
+    spin1_callback_on(
+        DMA_TRANSFER_DONE, _simulation_dma_transfer_done_callback,
+        dma_transfer_done_callback_priority);
 
     // if all simulation initialisation complete return true,
     return true;
+}
+
+void simulation_set_provenance_data_address(address_t provenance_data_address) {
+    stored_provenance_data_address = provenance_data_address;
+}
+
+void simulation_set_provenance_function(
+        prov_callback_t provenance_function,
+        address_t provenance_data_address) {
+    stored_provenance_function = provenance_function;
+    stored_provenance_data_address = provenance_data_address;
+}
+
+void simulation_set_exit_function(exit_callback_t exit_function) {
+    stored_exit_function = exit_function;
 }

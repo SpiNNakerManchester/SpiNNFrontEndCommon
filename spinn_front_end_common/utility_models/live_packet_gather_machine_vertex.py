@@ -1,44 +1,35 @@
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.abstract_classes.impl.constrained_object import \
-    ConstrainedObject
-from pacman.model.constraints.placer_constraints.placer_board_constraint\
-    import PlacerBoardConstraint
-from pacman.model.constraints.placer_constraints\
-    .placer_radial_placement_from_chip_constraint \
-    import PlacerRadialPlacementFromChipConstraint
-from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.machine.impl.machine_vertex import MachineVertex
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.iptag_resource import IPtagResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
+from pacman.model.decorators import overrides
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import IPtagResource, ResourceContainer
+from pacman.model.resources import SDRAMResource
 
-from spinn_front_end_common.interface.provenance\
-    .provides_provenance_data_from_machine_impl \
+from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
+    AbstractSupportsDatabaseInjection
+from spinn_front_end_common.utilities.utility_objs \
+    import ProvenanceDataItem, ExecutableStartType
+from spinn_front_end_common.utilities.constants \
+    import SYSTEM_BYTES_REQUIREMENT
 
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinnman.messages.eieio import EIEIOType
 
 from enum import Enum
 import struct
 
+_ONE_SHORT = struct.Struct("<H")
+_TWO_BYTES = struct.Struct("<BB")
+
 
 class LivePacketGatherMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary):
+        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+        AbstractSupportsDatabaseInjection):
 
     _LIVE_DATA_GATHER_REGIONS = Enum(
         value="LIVE_DATA_GATHER_REGIONS",
@@ -56,28 +47,19 @@ class LivePacketGatherMachineVertex(
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0,
-            ip_address=None, port=None, strip_sdp=None, board_address=None,
-            tag=None,
-            constraints=None):
+            hostname=None, port=None, strip_sdp=None, board_address=None,
+            tag=None, constraints=None):
+        # inheritance
+        MachineVertex.__init__(self, label, constraints=constraints)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             dtcm=DTCMResource(self.get_dtcm_usage()),
             sdram=SDRAMResource(self.get_sdram_usage()),
             iptags=[IPtagResource(
-                ip_address=ip_address, port=port,
+                ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,
                 traffic_identifier="LPG_EVENT_STREAM")])
-
-        # implementation for where constraints are stored
-        self._constraints = ConstrainedObject()
-        self._add_constraints(board_address)
-
-        # inheritance
-        MachineVertex.__init__(self, label, constraints=constraints)
-        ProvidesProvenanceDataFromMachineImpl.__init__(
-            self, self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value,
-            self.N_ADDITIONAL_PROVENANCE_ITEMS)
 
         # app specific data items
         self._use_prefix = use_prefix
@@ -93,17 +75,24 @@ class LivePacketGatherMachineVertex(
             number_of_packets_sent_per_time_step
 
     @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
+    def _provenance_region_id(self):
+        return self._LIVE_DATA_GATHER_REGIONS.PROVENANCE.value
+
+    @property
+    @overrides(ProvidesProvenanceDataFromMachineImpl._n_additional_data_items)
+    def _n_additional_data_items(self):
+        return self.N_ADDITIONAL_PROVENANCE_ITEMS
+
+    @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self._resources_required
 
-    def _add_constraints(self, board_address):
-        # Try to place this near the Ethernet
-        self._constraints.add_constraint(
-            PlacerRadialPlacementFromChipConstraint(0, 0))
-        if board_address is not None:
-            self._constraints.add_constraint(
-                PlacerBoardConstraint(board_address))
+    @property
+    @overrides(AbstractSupportsDatabaseInjection.is_in_injection_mode)
+    def is_in_injection_mode(self):
+        return True
 
     @overrides(ProvidesProvenanceDataFromMachineImpl.
                get_provenance_data_from_machine)
@@ -188,7 +177,7 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
-            size=constants.SYSTEM_BYTES_REQUIREMENT,
+            size=SYSTEM_BYTES_REQUIREMENT,
             label='system')
         spec.reserve_memory_region(
             region=(
@@ -202,9 +191,9 @@ class LivePacketGatherMachineVertex(
 
         :param spec: the spec object for the dsg
         :type spec: \
-                    :py:class:`spinn_storage_handlers.file_data_writer.FileDataWriter`
+                    :py:class:`spinn_storage_handlers.FileDataWriter`
         :param iptags: The set of ip tags assigned to the object
-        :type iptags: iterable of :py:class:`spinn_machine.tags.ipTag.IPTag`
+        :type iptags: iterable of :py:class:`spinn_machine.tags.IPTag`
         :raise DataSpecificationException: when something goes wrong with the\
                     dsg generation
         """
@@ -261,8 +250,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
-        spec.write_value(struct.unpack("<I", struct.pack(
-            "<HH", iptag.destination_y, iptag.destination_x))[0])
+        spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
+            iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)
@@ -274,10 +263,9 @@ class LivePacketGatherMachineVertex(
 
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
-            region=(
-                LivePacketGatherMachineVertex.
-                _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+            region=(LivePacketGatherMachineVertex.
+                    _LIVE_DATA_GATHER_REGIONS.SYSTEM.value))
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
     @staticmethod
@@ -295,11 +283,10 @@ class LivePacketGatherMachineVertex(
 
         """
         return (
-            constants.SYSTEM_BYTES_REQUIREMENT +
+            SYSTEM_BYTES_REQUIREMENT +
             LivePacketGatherMachineVertex._CONFIG_SIZE +
             LivePacketGatherMachineVertex.get_provenance_data_size(
-                LivePacketGatherMachineVertex
-                .N_ADDITIONAL_PROVENANCE_ITEMS))
+                LivePacketGatherMachineVertex.N_ADDITIONAL_PROVENANCE_ITEMS))
 
     @staticmethod
     def get_dtcm_usage():

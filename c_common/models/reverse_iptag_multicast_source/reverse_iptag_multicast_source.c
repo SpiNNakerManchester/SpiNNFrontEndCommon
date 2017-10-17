@@ -7,6 +7,9 @@
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
+// Declare wfi function
+extern void spin1_wfi();
+
 #ifndef APPLICATION_NAME_HASH
 #define APPLICATION_NAME_HASH 0
 #error APPLICATION_NAME_HASH must be defined
@@ -16,7 +19,7 @@
 
 //! \brief human readable versions of the different priorities and usages.
 typedef enum callback_priorities {
-    SDP_CALLBACK = 0, TIMER = 2
+    SDP_CALLBACK = 0, TIMER = 2, DMA = 0
 }callback_priorities;
 
 typedef enum eieio_data_message_types {
@@ -43,6 +46,15 @@ typedef enum memory_regions{
     BUFFER_REGION,
     PROVENANCE_REGION,
 } memory_regions;
+
+//! The provenance data items
+typedef enum provenance_items {
+    N_RECEIVED_PACKETS,
+    N_SENT_PACKETS,
+    INCORRECT_KEYS,
+    INCORRECT_PACKETS,
+    LATE_PACKETS
+} provenance_items;
 
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
@@ -91,6 +103,8 @@ static uint32_t last_stop_notification_request;
 static eieio_prefix_types prefix_type;
 static uint32_t buffer_region_size;
 static uint32_t space_before_data_request;
+static uint32_t n_received_packets = 0;
+static uint32_t n_send_packets = 0;
 
 //! keeps track of which types of recording should be done to this model.
 static uint32_t recording_flags = 0;
@@ -116,6 +130,8 @@ static uint32_t last_space;
 static uint32_t last_request_tick;
 
 static bool stopped = false;
+
+static bool recording_in_progress = false;
 
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
@@ -440,6 +456,7 @@ static inline void process_16_bit_packets(
 
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
+                n_send_packets += 1;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug(
                         "mc packet 16-bit key=%d, payload=%d", key, payload);
@@ -491,6 +508,7 @@ static inline void process_32_bit_packets(
 
         if (has_key) {
             if (!check || (check && ((key & mask) == key_space))) {
+                n_send_packets += 1;
                 if (pkt_has_payload && !pkt_payload_is_timestamp) {
                     log_debug(
                         "mc packet 32-bit key=0x%08x , payload=0x%08x",
@@ -508,6 +526,35 @@ static inline void process_32_bit_packets(
                 incorrect_keys++;
             }
         }
+    }
+}
+
+void recording_done_callback() {
+    recording_in_progress = false;
+}
+
+static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
+    if (recording_flags > 0) {
+        while (recording_in_progress) {
+            spin1_wfi();
+        }
+
+        // Ensure that the recorded data size is a multiple of 4
+        uint32_t recording_length = 4 * ((length + 3) / 4);
+        log_debug(
+            "recording a eieio message with length %u", recording_length);
+        recording_in_progress = true;
+        recording_record(
+            SPIKE_HISTORY_CHANNEL, &recording_length, 4);
+
+        // NOTE: recording_length could be bigger than the length of the valid
+        // data in eieio_msg_ptr.  This is OK as the data pointed to by
+        // eieio_msg_ptr is always big enough to have extra space in it.  The
+        // bytes in this data will be random, but are also ignored by
+        // whatever reads the data.
+        recording_record_and_notify(
+            SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length,
+            recording_done_callback);
     }
 }
 
@@ -610,19 +657,13 @@ static inline bool eieio_data_parse_packet(
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_flags > 0) {
-            log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
-        }
+        record_packet(eieio_msg_ptr, length);
         return true;
     } else {
         process_32_bit_packets(
             event_pointer, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
-        if (recording_flags > 0) {
-            log_debug("recording a eieio message with length %u", length);
-            recording_record(SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, length);
-        }
+        record_packet(eieio_msg_ptr, length);
         return false;
     }
 }
@@ -933,6 +974,14 @@ static bool initialise_recording(){
     return success;
 }
 
+static void provenance_callback(address_t address) {
+    address[N_RECEIVED_PACKETS] = n_received_packets;
+    address[N_SENT_PACKETS] = n_send_packets;
+    address[INCORRECT_KEYS] = incorrect_keys;
+    address[INCORRECT_PACKETS] = incorrect_packets;
+    address[LATE_PACKETS] = late_packets;
+}
+
 bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
@@ -947,10 +996,12 @@ bool initialise(uint32_t *timer_period) {
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
-            &infinite_run, SDP_CALLBACK, NULL,
-            data_specification_get_region(PROVENANCE_REGION, address))) {
+            &infinite_run, SDP_CALLBACK, DMA)) {
         return false;
     }
+    simulation_set_provenance_function(
+        provenance_callback,
+        data_specification_get_region(PROVENANCE_REGION, address));
 
     // Read the parameters
     if (!read_parameters(
@@ -959,7 +1010,7 @@ bool initialise(uint32_t *timer_period) {
     }
 
     // set up recording data structures
-    if(!initialise_recording()){
+    if (!initialise_recording()) {
          return false;
     }
 
@@ -1012,11 +1063,8 @@ void timer_callback(uint unused0, uint unused1) {
             recording_finalise();
         }
 
-        log_info("Incorrect keys discarded: %d", incorrect_keys);
-        log_info("Incorrect packets discarded: %d", incorrect_packets);
-        log_info("Late packets: %d", late_packets);
-        log_info("Last time of stop notification request: %d",
-                 last_stop_notification_request);
+        log_debug("Last time of stop notification request: %d",
+                  last_stop_notification_request);
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
@@ -1051,6 +1099,8 @@ void sdp_packet_callback(uint mailbox, uint port) {
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
+
+    n_received_packets += 1;
 
     packet_handler_selector(eieio_msg_ptr, length - 8);
 

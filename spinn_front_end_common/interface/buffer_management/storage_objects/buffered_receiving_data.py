@@ -1,8 +1,6 @@
 from collections import defaultdict
-from spinn_storage_handlers.buffered_bytearray_data_storage \
-    import BufferedBytearrayDataStorage
-from spinn_storage_handlers.buffered_tempfile_data_storage \
-    import BufferedTempfileDataStorage
+from spinn_storage_handlers \
+    import BufferedBytearrayDataStorage, BufferedTempfileDataStorage
 
 
 class BufferedReceivingData(object):
@@ -15,8 +13,6 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # boolean flag for if data is to be stored in memory or a file on disk
-        "_store_to_file",
 
         # the data to store
         "_data",
@@ -47,7 +43,6 @@ class BufferedReceivingData(object):
                 in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
         """
-        self._store_to_file = store_to_file
 
         self._data = None
         if store_to_file:
@@ -237,7 +232,7 @@ class BufferedReceivingData(object):
         :return: all the data received during the simulation,\
                 and a flag indicating if any data was lost
         :rtype:\
-            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`,
+            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
              bool)
         """
         missing = False
@@ -335,3 +330,17 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+
+    def clear(self, x, y, p, region_id):
+        """ clears the data from a given data region (only clears things\
+            associated with a given data recording region).
+
+        :param x: placement x coord
+        :param y: placement y coord
+        :param p: placement p coord
+        :param region_id: the recording region id to clear data from
+        :rtype: None
+        """
+        del self._end_buffering_state[x, y, p, region_id]
+        del self._data[x, y, p, region_id]
+        del self._is_flushed[x, y, p, region_id]

@@ -1,65 +1,41 @@
-# spinn_machine imports
-from spinn_machine.utilities.progress_bar import ProgressBar
+# spinn_utilites imports
+from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
-from spinnman import constants
-from spinnman.connections.udp_packet_connections.udp_eieio_connection import \
-    UDPEIEIOConnection
-from spinnman.messages.eieio.command_messages.eieio_command_message import \
-    EIEIOCommandMessage
-from spinnman.messages.eieio.command_messages.stop_requests import StopRequests
+from spinnman.constants import UDP_MESSAGE_MAX_SIZE
+from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.messages.eieio.command_messages \
+    import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData
+from spinnman.messages.eieio.command_messages \
+    import HostDataRead, SpinnakerRequestBuffers, PaddingRequest
+from spinnman.messages.eieio.command_messages \
+    import HostSendSequencedData, EventStopRequest
 from spinnman.utilities import utility_functions
-from spinnman.messages.eieio.command_messages.spinnaker_request_read_data \
-    import SpinnakerRequestReadData
-from spinnman.messages.eieio.command_messages.host_data_read \
-    import HostDataRead
-from spinnman.messages.sdp.sdp_header import SDPHeader
-from spinnman.messages.sdp.sdp_message import SDPMessage
-from spinnman.messages.sdp.sdp_flag import SDPFlag
-from spinnman.messages.eieio.data_messages.eieio_32bit\
-    .eieio_32bit_timed_payload_prefix_data_message\
-    import EIEIO32BitTimedPayloadPrefixDataMessage
-from spinnman.messages.eieio.eieio_type import EIEIOType
+from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.exceptions import SpinnmanInvalidPacketException
-from spinnman.messages.eieio.data_messages.eieio_data_message \
-    import EIEIODataMessage
-from spinnman.messages.eieio.command_messages.spinnaker_request_buffers \
-    import SpinnakerRequestBuffers
-from spinnman.messages.eieio.command_messages.padding_request\
-    import PaddingRequest
-from spinnman.messages.eieio.command_messages.host_send_sequenced_data\
-    import HostSendSequencedData
-from spinnman.messages.eieio.command_messages.event_stop_request \
-    import EventStopRequest
-from spinnman.messages.eieio import create_eieio_command
+from spinnman.messages.eieio import EIEIOType, create_eieio_command
+from spinnman.messages.eieio.data_messages import EIEIODataMessage
 
 # front end common imports
-from spinn_front_end_common.utilities import helpful_functions
+from spinn_front_end_common.utilities import helpful_functions as funs
 from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.interface.buffer_management.\
-    storage_objects.buffers_sent_deque import BuffersSentDeque
-from spinn_front_end_common.interface.buffer_management.\
-    storage_objects.buffered_receiving_data import BufferedReceivingData
-from spinn_front_end_common.utilities import constants as \
-    spinn_front_end_constants
-from spinn_front_end_common.interface.buffer_management.storage_objects.\
-    channel_buffer_state import ChannelBufferState
-from spinn_front_end_common.interface.buffer_management \
-    import recording_utilities
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import BuffersSentDeque, BufferedReceivingData, ChannelBufferState
+from spinn_front_end_common.utilities.constants \
+    import SDP_PORTS, BUFFERING_OPERATIONS
+from .recording_utilities import TRAFFIC_IDENTIFIER, \
+    get_last_sequence_number, get_region_pointer
 
 # general imports
 import threading
 import logging
-import traceback
-import os
-import re
 
 
 logger = logging.getLogger(__name__)
 
 # The minimum size of any message - this is the headers plus one entry
-_MIN_MESSAGE_SIZE = (EIEIO32BitTimedPayloadPrefixDataMessage
-                     .get_min_packet_length())
+_MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
+    eieio_type=EIEIOType.KEY_32_BIT, is_timestamp=True)
 
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
@@ -68,9 +44,6 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 class BufferManager(object):
     """ Manager of send buffers
     """
-
-    # Buffer manager traffic type
-    TRAFFIC_IDENTIFIER = recording_utilities.TRAFFIC_IDENTIFIER
 
     __slots__ = [
         # placements object
@@ -81,18 +54,6 @@ class BufferManager(object):
 
         # SpiNNMan instance
         "_transceiver",
-
-        # params used for reload purposes
-        "_write_reload_files",
-
-        # params used for reload purposes
-        "_application_folder_path",
-
-        # params used for reload purposes
-        "_reload_buffer_file",
-
-        # params used for reload purposes
-        "_reload_buffer_file_paths",
 
         # Set of (ip_address, port) that are being listened to for the tags
         "_seen_tags",
@@ -113,32 +74,34 @@ class BufferManager(object):
         "_thread_lock_buffer_in",
 
         # bool flag
-        "_finished"
+        "_finished",
+
+        # listener port
+        "_listener_port",
+
+        # Store to file flag
+        "_store_to_file"
     ]
 
-    def __init__(self, placements, tags, transceiver, write_reload_files,
-                 application_folder_path):
+    def __init__(self, placements, tags, transceiver, store_to_file=False):
         """
 
         :param placements: The placements of the vertices
         :type placements:\
-                    :py:class:`pacman.model.placements.placements.Placements`
+                    :py:class:`pacman.model.placements.Placements`
         :param tags: The tags assigned to the vertices
-        :type tags: :py:class:`pacman.model.tags.tags.Tags`
+        :type tags: :py:class:`pacman.model.tags.Tags`
         :param transceiver: The transceiver to use for sending and receiving\
                     information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param store_to_file: True if the data should be temporarily stored\
+                    in a file instead of in RAM (default uses RAM)
+        :type store_to_file: bool
         """
 
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
-
-        # params used for reload purposes
-        self._write_reload_files = write_reload_files
-        self._application_folder_path = application_folder_path
-        self._reload_buffer_file = dict()
-        self._reload_buffer_file_paths = dict()
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -150,13 +113,16 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData()
+        self._received_data = BufferedReceivingData(store_to_file)
+        self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.Lock()
         self._thread_lock_buffer_in = threading.Lock()
 
         self._finished = False
+
+        self._listener_port = None
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -186,7 +152,8 @@ class BufferManager(object):
                                     packet.space_available, vertex,
                                     packet.region_id, packet.sequence_no)
                             except Exception:
-                                traceback.print_exc()
+                                logger.warn("problem when sending messages",
+                                            exc_info=True)
                 elif isinstance(packet, SpinnakerRequestReadData):
                     with self._thread_lock_buffer_out:
 
@@ -198,7 +165,8 @@ class BufferManager(object):
                         try:
                             self._retrieve_and_store_data(packet)
                         except Exception:
-                            traceback.print_exc()
+                            logger.warn("problem when handling data",
+                                        exc_info=True)
                 elif isinstance(packet, EIEIOCommandMessage):
                     raise SpinnmanInvalidPacketException(
                         str(packet.__class__),
@@ -209,21 +177,21 @@ class BufferManager(object):
                         packet.__class__,
                         "The command packet is invalid for buffer management")
         except Exception:
-            traceback.print_exc()
+            logger.warn("problem when processing received packet",
+                        exc_info=True)
 
     def _create_connection(self, tag):
-        if self._transceiver is not None:
-            connection = self._transceiver.register_udp_listener(
-                self.receive_buffer_command_message, UDPEIEIOConnection,
-                local_port=tag.port, local_host=tag.ip_address)
-            self._seen_tags.add((tag.ip_address, connection.local_port))
-            utility_functions.send_port_trigger_message(
-                connection, tag.board_address)
-            logger.info(
-                "Listening for packets using tag {} on {}:{}".format(
-                    tag.tag, connection.local_ip_address,
-                    connection.local_port))
-            return connection
+        connection = self._transceiver.register_udp_listener(
+            self.receive_buffer_command_message, EIEIOConnection,
+            local_port=tag.port, local_host=tag.ip_address)
+        self._seen_tags.add((tag.ip_address, connection.local_port))
+        utility_functions.send_port_trigger_message(
+            connection, tag.board_address)
+        logger.info(
+            "Listening for packets using tag {} on {}:{}".format(
+                tag.tag, connection.local_ip_address,
+                connection.local_port))
+        return connection
 
     def _add_buffer_listeners(self, vertex):
         """ Add listeners for buffered data for the given vertex
@@ -233,21 +201,24 @@ class BufferManager(object):
         tags = self._tags.get_ip_tags_for_vertex(vertex)
 
         if tags is not None:
-
-            # locate the tag that is associated with the buffer manager
-            # traffic
+            # locate tag associated with the buffer manager traffic
             for tag in tags:
-                if tag.traffic_identifier == self.TRAFFIC_IDENTIFIER:
-
-                    # If the tag port is not assigned, create a connection and
-                    # assign the port.  Note that this *should* update the port
-                    # number in any tags being shared
+                if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
+                    # If the tag port is not assigned create a connection\
+                    # and assign the port.  Note that this *should* \
+                    # update the port number in any tags being shared
                     if tag.port is None:
-                        connection = self._create_connection(tag)
-                        tag.port = connection.local_port
+                        # If connection already setup, ensure subsequent
+                        # boards use same listener port in their tag
+                        if self._listener_port is None:
+                            connection = self._create_connection(tag)
+                            tag.port = connection.local_port
+                            self._listener_port = connection.local_port
+                        else:
+                            tag.port = self._listener_port
 
-                    # In case we have tags with different specified ports, also
-                    # allow the tag to be created here
+                    # In case we have tags with different specified ports,\
+                    # also allow the tag to be created here
                     elif (tag.ip_address, tag.port) not in self._seen_tags:
                         self._create_connection(tag)
 
@@ -263,33 +234,10 @@ class BufferManager(object):
 
         :param vertex: the vertex to be managed
         :type vertex:\
-                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
+                    :py:class:`spinnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         """
         self._sender_vertices.add(vertex)
         self._add_buffer_listeners(vertex)
-
-        # if reload script is set up, store the buffers for future usage
-        if self._write_reload_files:
-            for region in vertex.get_regions():
-                filename = "{}_{}".format(
-                    re.sub("[\"':]", "_", vertex.label), region)
-                file_path = os.path.join(
-                    self._application_folder_path, filename)
-                self._reload_buffer_file[(vertex, region)] = \
-                    open(file_path, "w")
-                if vertex not in self._reload_buffer_file_paths:
-                    self._reload_buffer_file_paths[vertex] = dict()
-                self._reload_buffer_file_paths[vertex][region] = file_path
-
-                # If there is no transceiver, push all the output to the file
-                if self._transceiver is None:
-                    while vertex.is_next_timestamp(region):
-                        next_timestamp = vertex.get_next_timestamp(region)
-                        while vertex.is_next_key(region, next_timestamp):
-                            key = vertex.get_next_key(region)
-                            self._reload_buffer_file[(vertex, region)].write(
-                                "{}:{}\n".format(next_timestamp, key))
-                    self._reload_buffer_file[(vertex, region)].close()
 
     def load_initial_buffers(self):
         """ Load the initial buffers for the senders using mem writes
@@ -299,12 +247,12 @@ class BufferManager(object):
             for region in vertex.get_regions():
                 total_data += vertex.get_region_buffer_size(region)
 
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             total_data, "Loading buffers ({} bytes)".format(total_data))
         for vertex in self._sender_vertices:
             for region in vertex.get_regions():
-                self._send_initial_messages(vertex, region, progress_bar)
-        progress_bar.end()
+                self._send_initial_messages(vertex, region, progress)
+        progress.end()
 
     def reset(self):
         """ Resets the buffered regions to start transmitting from the\
@@ -312,7 +260,7 @@ class BufferManager(object):
             files
         """
         # reset buffered out
-        self._received_data = BufferedReceivingData()
+        self._received_data = BufferedReceivingData(self._store_to_file)
 
         # rewind buffered in
         for vertex in self._sender_vertices:
@@ -325,6 +273,17 @@ class BufferManager(object):
 
         # update the received data items
         self._received_data.resume()
+
+    def clear_recorded_data(self, x, y, p, recording_region_id):
+        """ Removes the recorded data stored in memory.
+
+        :param x: placement x coord
+        :param y: placement y coord
+        :param p: placement p coord
+        :param recording_region_id: the recording region id
+
+        """
+        self._received_data.clear(x, y, p, recording_region_id)
 
     def _generate_end_buffering_state_from_machine(
             self, placement, state_region_base_address):
@@ -342,12 +301,12 @@ class BufferManager(object):
         :type size: int
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         :param region: The region of the vertex to get keys from
         :type region: int
         :return: A new message, or None if no keys can be added
         :rtype: None or\
-                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.eieio_32bit_timed_payload_prefix_data_message.EIEIO32BitTimedPayloadPrefixDataMessage`
+                    :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
         """
 
         # If there are no more messages to send, return None
@@ -356,7 +315,8 @@ class BufferManager(object):
 
         # Create a new message
         next_timestamp = vertex.get_next_timestamp(region)
-        message = EIEIO32BitTimedPayloadPrefixDataMessage(next_timestamp)
+        message = EIEIODataMessage.create(
+            EIEIOType.KEY_32_BIT, timestamp=next_timestamp)
 
         # If there is no room for the message, return None
         if message.size + _N_BYTES_PER_KEY > size:
@@ -371,30 +331,26 @@ class BufferManager(object):
             message.add_key(key)
             bytes_to_go -= _N_BYTES_PER_KEY
 
-            if self._write_reload_files:
-                self._reload_buffer_file[(vertex, region)].write(
-                    "{}:{}\n".format(next_timestamp, key))
         return message
 
-    def _send_initial_messages(self, vertex, region, progress_bar):
+    def _send_initial_messages(self, vertex, region, progress):
         """ Send the initial set of messages
 
         :param vertex: The vertex to get the keys from
         :type vertex:\
-                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.abstract_sends_buffers_from_host.AbstractSendsBuffersFromHost`
+                    :py:class:`spynnaker.pyNN.models.abstract_models.buffer_models.AbstractSendsBuffersFromHost`
         :param region: The region to get the keys from
         :type region: int
         :return: A list of messages
         :rtype: list of\
-                    :py:class:`spinnman.messages.eieio.data_messages.eieio_32bit.eieio_32bit_timed_payload_prefix_data_message.EIEIO32BitTimedPayloadPrefixDataMessage`
+                    :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
         """
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        region_base_address = \
-            helpful_functions.locate_memory_region_for_placement(
-                self._placements.get_placement_of_vertex(vertex), region,
-                self._transceiver)
+        region_base_address = funs.locate_memory_region_for_placement(
+            self._placements.get_placement_of_vertex(vertex), region,
+            self._transceiver)
         placement = self._placements.get_placement_of_vertex(vertex)
 
         # Add packets until out of space
@@ -408,8 +364,7 @@ class BufferManager(object):
         if vertex.is_empty(region):
             sent_message = True
         else:
-            min_size_of_packet = \
-                EIEIO32BitTimedPayloadPrefixDataMessage.get_min_packet_length()
+            min_size_of_packet = _MIN_MESSAGE_SIZE
             while (vertex.is_next_timestamp(region) and
                     bytes_to_go > min_size_of_packet):
                 space_available = min(bytes_to_go, 280)
@@ -425,7 +380,7 @@ class BufferManager(object):
 
                 # Update the positions
                 bytes_to_go -= len(data)
-                progress_bar.update(len(data))
+                progress.update(len(data))
 
         if not sent_message:
             raise exceptions.BufferableRegionTooSmall(
@@ -442,7 +397,7 @@ class BufferManager(object):
             #         placement.x, placement.y, placement.p))
             all_data += data
             bytes_to_go -= len(data)
-            progress_bar.update(len(data))
+            progress.update(len(data))
             self._sent_messages[vertex] = BuffersSentDeque(
                 region, sent_stop_message=True)
 
@@ -486,7 +441,7 @@ class BufferManager(object):
 
             space_available = min(
                 bytes_to_go,
-                constants.UDP_MESSAGE_MAX_SIZE -
+                UDP_MESSAGE_MAX_SIZE -
                 HostSendSequencedData.get_min_packet_length())
             # logger.debug(
             #     "Bytes to go {}, space available {}".format(
@@ -528,8 +483,7 @@ class BufferManager(object):
         sdp_header = SDPHeader(
             destination_chip_x=placement.x, destination_chip_y=placement.y,
             destination_cpu=placement.p, flags=SDPFlag.REPLY_NOT_EXPECTED,
-            destination_port=spinn_front_end_constants.SDP_PORTS.
-            INPUT_BUFFERING_SDP_PORT.value)
+            destination_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value)
         sdp_message = SDPMessage(sdp_header, message.bytestring)
         self._transceiver.send_sdp_message(sdp_message)
 
@@ -540,22 +494,19 @@ class BufferManager(object):
         with self._thread_lock_buffer_in:
             with self._thread_lock_buffer_out:
                 self._finished = True
-        if self._write_reload_files:
-            for buffer_file in self._reload_buffer_file.itervalues():
-                buffer_file.close()
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
         :param placement: the placement to get the data from
-        :type placement: pacman.model.placements.placement.Placement
+        :type placement: pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: pointer to a class which inherits from\
                 AbstractBufferedDataStorage
         :rtype:\
-                py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.abstract_buffered_data_storage.AbstractBufferedDataStorage`
+                :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
         """
 
         recording_data_address = \
@@ -567,7 +518,7 @@ class BufferManager(object):
                 placement.x, placement.y, placement.p):
             self._received_data.store_end_buffering_sequence_number(
                 placement.x, placement.y, placement.p,
-                recording_utilities.get_last_sequence_number(
+                get_last_sequence_number(
                     placement, self._transceiver, recording_data_address))
 
         # Read the data if not already received
@@ -580,7 +531,7 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p,
                     recording_region_id):
 
-                end_state_address = recording_utilities.get_region_pointer(
+                end_state_address = get_region_pointer(
                     placement, self._transceiver, recording_data_address,
                     recording_region_id)
                 end_state = self._generate_end_buffering_state_from_machine(
@@ -642,8 +593,7 @@ class BufferManager(object):
                                 (read_ptr == end_ptr and
                                  write_ptr == start_ptr)):
                             end_state.update_last_operation(
-                                spinn_front_end_constants.BUFFERING_OPERATIONS.
-                                BUFFER_READ.value)
+                                BUFFERING_OPERATIONS.BUFFER_READ.value)
                         if read_ptr == end_ptr:
                             read_ptr = start_ptr
                         elif read_ptr > end_ptr:
@@ -671,6 +621,9 @@ class BufferManager(object):
 
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
+                if length < 0:
+                    raise exceptions.ConfigurationException(
+                        "The amount of data to read is negative!")
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
                 self._received_data.store_data_in_region_buffer(
@@ -685,8 +638,7 @@ class BufferManager(object):
                     data)
 
             elif (read_ptr == write_ptr and
-                    last_operation == spinn_front_end_constants.
-                    BUFFERING_OPERATIONS.BUFFER_WRITE.value):
+                    last_operation == BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
                 data = self._transceiver.read_memory(
                     placement.x, placement.y, read_ptr, length)
@@ -702,8 +654,7 @@ class BufferManager(object):
                     data)
 
             elif (read_ptr == write_ptr and
-                    last_operation == spinn_front_end_constants.
-                    BUFFERING_OPERATIONS.BUFFER_READ.value):
+                    last_operation == BUFFERING_OPERATIONS.BUFFER_READ.value):
                 data = bytearray()
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
@@ -744,12 +695,12 @@ class BufferManager(object):
             if last_packet_sent is not None:
                 self._transceiver.send_sdp_message(last_packet_sent)
             else:
-                raise Exception("Something somewhere went terribly wrong - "
-                                "The packet sequence numbers have gone wrong "
-                                "somewhere: the packet sent from the board "
-                                "has incorrect sequence number, but the host "
-                                "never sent one acknowledge - how is this "
-                                "possible?")
+                raise Exception(
+                    "{}, {}, {}: Something somewhere went terribly wrong - "
+                    "The packet sequence numbers have gone wrong "
+                    "somewhere: the packet sent from the board "
+                    "has incorrect sequence number, but the host "
+                    "never sent one acknowledge".format(x, y, p))
             return
 
         # read data from memory, store it and create data for return ACK packet
@@ -781,9 +732,7 @@ class BufferManager(object):
 
         # create SDP header and message
         return_message_header = SDPHeader(
-            destination_port=(
-                spinn_front_end_constants.SDP_PORTS
-                .OUTPUT_BUFFERING_SDP_PORT.value),
+            destination_port=SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value,
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
             flags=SDPFlag.REPLY_NOT_EXPECTED)
         return_message = SDPMessage(return_message_header, ack_packet_data)
