@@ -87,7 +87,8 @@ class DatabaseWriter(object):
             if (isinstance(vertex, AbstractSupportsDatabaseInjection) and
                     vertex.is_in_injection_mode):
                 return True
-        return False
+        else:
+            return False
 
     @property
     def database_path(self):
