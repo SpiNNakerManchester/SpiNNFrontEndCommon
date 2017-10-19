@@ -13,6 +13,11 @@ from spinn_front_end_common.abstract_models \
 from spinn_front_end_common.abstract_models.impl\
     import ProvidesKeyToAtomMappingImpl
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_socket_addresses import \
+    AbstractProvidesSocketAddresses
+from spinn_front_end_common.utilities.notification_protocol.\
+    socket_address import SocketAddress
 from .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
 from spinn_front_end_common.abstract_models \
@@ -29,7 +34,7 @@ class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints,
-        ProvidesKeyToAtomMappingImpl):
+        ProvidesKeyToAtomMappingImpl, AbstractProvidesSocketAddresses):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -62,6 +67,7 @@ class ReverseIpTagMultiCastSource(
             # Buffer parameters
             buffer_notification_ip_address=None,
             buffer_notification_port=None,
+            buffer_notification_ack_port=None,
             buffer_notification_tag=None,
 
             # Extra flag for input without a reserved port
@@ -146,6 +152,8 @@ class ReverseIpTagMultiCastSource(
         self._buffer_notification_port = buffer_notification_port
         self._buffer_notification_tag = buffer_notification_tag
         self._reserve_reverse_ip_tag = reserve_reverse_ip_tag
+        self._buffer_notification_ack_port = \
+            buffer_notification_ack_port
 
         self._iptags = None
         if send_buffer_times is not None:
@@ -190,6 +198,13 @@ class ReverseIpTagMultiCastSource(
             container.extend(recording_utilities.get_recording_resources(
                 [self._record_buffer_size]))
         return container
+
+    @property
+    def get_socket_addresses(self):
+        return SocketAddress(
+            listen_port=self._buffer_notification_ack_port,
+            notify_host_name=self._buffer_notification_ip_address,
+            notify_port_no=self._buffer_notification_port)
 
     @property
     def send_buffer_times(self):

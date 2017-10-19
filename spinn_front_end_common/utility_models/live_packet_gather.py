@@ -8,7 +8,12 @@ from pacman.model.resources import IPtagResource, ResourceContainer
 from pacman.model.resources import SDRAMResource
 
 # spinn front end imports
+from spinn_front_end_common.abstract_models.\
+    abstract_provides_socket_addresses import \
+    AbstractProvidesSocketAddresses
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.notification_protocol.\
+    socket_address import SocketAddress
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
@@ -20,16 +25,18 @@ from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 
 class LivePacketGather(
         AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        ApplicationVertex):
+        ApplicationVertex, AbstractProvidesSocketAddresses):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
     """
 
     def __init__(
-            self, hostname, port, board_address=None, tag=None,
-            strip_sdp=True, use_prefix=False, key_prefix=None,
-            prefix_type=None, message_type=EIEIOType.KEY_32_BIT, right_shift=0,
+            self, hostname, port, database_notification_port_number,
+            database_notify_host, database_ack_port_number,
+            board_address=None, tag=None, strip_sdp=True,
+            use_prefix=False, key_prefix=None, prefix_type=None,
+            message_type=EIEIOType.KEY_32_BIT, right_shift=0,
             payload_as_time_stamps=True, use_payload_prefix=True,
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, constraints=None,
@@ -86,6 +93,23 @@ class LivePacketGather(
         self._payload_right_shift = payload_right_shift
         self._number_of_packets_sent_per_time_step = \
             number_of_packets_sent_per_time_step
+
+        # store for notification protocol
+        self._database_notification_port_number = \
+            database_notification_port_number
+        self._database_notify_host = database_notify_host
+        self._database_ack_port_number = database_ack_port_number
+
+    @property
+    def get_socket_addresses(self):
+        """
+        method for getting socket addresses
+        :return:
+        """
+        return SocketAddress(
+            listen_port=self._database_ack_port_number,
+            notify_host_name=self._database_notify_host,
+            notify_port_no=self._database_notification_port_number)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(

@@ -2,7 +2,75 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
-    <algorithm name="PreAllocateResourcesForChipPowerMonitor">
+    <algorithm name="FrontEndCommonSocketAddressGatherer">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_socket_address_gatherer</python_module>
+        <python_class>FrontEndCommonSocketAddressGatherer</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>socket_addresses</param_name>
+                <param_type>DatabaseSocketAddresses</param_type>
+            </parameter>
+            <parameter>
+                <param_name>partitionable_graph</param_name>
+                <param_type>MemoryPartitionableGraph</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>socket_addresses</param_name>
+            <param_name>partitionable_graph</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>DatabaseSocketAddresses</param_type>
+        </outputs>
+    </algorithm>
+    <algorithm name="FrontEndCommonPortConnectionAllocator">
+        <python_module>spinn_front_end_common.interface.interface_functions.front_end_common_port_connection_allocator</python_module>
+        <python_class>FrontEndCommonPortConnectionAllocator</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>live_packet_gatherer_parameters</param_name>
+                <param_type>LivePacketRecorderParameters</param_type>
+            </parameter>
+            <parameter>
+                <param_name>live_packet_gatherers_to_vertex_mapping</param_name>
+                <param_type>LivePacketRecorderParametersToVertexMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>live_packet_gatherer_parameters</param_name>
+            <param_name>live_packet_gatherers_to_vertex_mapping</param_name>
+            <param_name>machine</param_name>
+            <param_name>machine_graph</param_name>
+            <param_name>placements</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>application_graph</param_name>
+            <param_name>graph_mapper</param_name>
+        </optional_inputs>
+        <outputs>
+        </outputs>
+    </algorithm>
+        <algorithm name="PreAllocateResourcesForChipPowerMonitor">
         <python_module>
             spinn_front_end_common.interface.interface_functions.pre_allocate_resources_for_chip_power_monitor
         </python_module>

@@ -1785,6 +1785,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Add the database writer in case it is needed
         algorithms.append("DatabaseInterface")
         if not self._use_virtual_board:
+            algorithms.append("FrontEndCommonSocketAddressGatherer")
             algorithms.append("NotificationProtocol")
 
         # Sort out reload if needed
