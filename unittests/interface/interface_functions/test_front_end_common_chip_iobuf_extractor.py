@@ -1,10 +1,10 @@
 import unittest
-from spinn_front_end_common.interface.interface_functions\
-    .front_end_common_chip_iobuf_extractor \
-    import FrontEndCommonChipIOBufExtractor
-from spinn_machine.core_subsets import CoreSubsets
-from spinnman.model.io_buffer import IOBuffer
-from spinn_machine.core_subset import CoreSubset
+from spinn_front_end_common.interface.interface_functions \
+    import ChipIOBufExtractor
+from spinn_machine import CoreSubsets, CoreSubset
+from spinnman.model import IOBuffer
+import os
+import tempfile
 
 
 class _PretendTransceiver(object):
@@ -32,14 +32,20 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         result_warning = "{}, {}, {}: {} ({})".format(
             x, y, p, warning, filename)
         text = "Test\n" + warning_text + error_text
-        extractor = FrontEndCommonChipIOBufExtractor()
+        extractor = ChipIOBufExtractor()
         core_subsets = CoreSubsets([CoreSubset(x, y, [p])])
         transceiver = _PretendTransceiver([IOBuffer(x, y, p, text)])
-        iobuffers, error_entries, warn_entries = extractor(
-            transceiver, has_ran=True, core_subsets=core_subsets)
-        self.assertEqual(iobuffers[0].iobuf, text)
+        folder = tempfile.mkdtemp()
+        error_entries, warn_entries = extractor(
+            transceiver, has_ran=True, core_subsets=core_subsets,
+            provenance_file_path=folder)
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_0_0_processor_id_1.txt")
+        self.assertTrue(os.path.exists(testfile))
         self.assertEqual(error_entries[0], result_error)
         self.assertEqual(warn_entries[0], result_warning)
+        os.unlink(testfile)
+        os.rmdir(folder)
 
 
 if __name__ == "__main__":

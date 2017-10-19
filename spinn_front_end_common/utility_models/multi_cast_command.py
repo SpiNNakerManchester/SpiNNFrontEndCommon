@@ -1,26 +1,22 @@
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class MultiCastCommand(object):
     """ A command to be sent to a vertex
     """
 
-    def __init__(self, time, key, payload=None, repeat=0,
-                 delay_between_repeats=0):
+    def __init__(
+            self, key, payload=None, time=None, repeat=0,
+            delay_between_repeats=0):
         """
 
-        :param time: The time within the simulation at which to send the\
-                    command.  0 or a positive value indicates the number of\
-                    timesteps after the start of the simulation at which\
-                    the command is to be sent.  A negative value indicates the\
-                    (number of timesteps - 1) before the end of simulation at\
-                    which the command is to be sent (thus -1 means the last\
-                    timestep of the simulation).
-        :type time: int
         :param key: The key of the command
         :type key: int
         :param payload: The payload of the command
         :type payload: int
+        :param time: The time within the simulation at which to send the\
+                    command, or None if this is not a timed command
+        :type time: int
         :param repeat: The number of times that the command should be\
                     repeated after sending it once.  This could be used to\
                     ensure that the command is sent despite lost packets.\
@@ -34,13 +30,13 @@ class MultiCastCommand(object):
         """
 
         if repeat < 0 or repeat > 0xFFFF:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "repeat must be between 0 and 65535")
         if delay_between_repeats < 0 or delay_between_repeats > 0xFFFF:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "delay_between_repeats must be between 0 and 65535")
         if delay_between_repeats > 0 and repeat == 0:
-            raise exceptions.ConfigurationException(
+            raise ConfigurationException(
                 "If repeat is 0, delay_betweeen_repeats must be 0")
 
         self._time = time
@@ -53,6 +49,10 @@ class MultiCastCommand(object):
     @property
     def time(self):
         return self._time
+
+    @property
+    def is_timed(self):
+        return self._time is not None
 
     @property
     def key(self):
@@ -75,6 +75,11 @@ class MultiCastCommand(object):
         """
         return self._payload
 
+    @payload.setter
+    def payload(self, payload):
+        self._payload = payload
+
+    @property
     def is_payload(self):
         """ Determine if this command has a payload.  By default, this returns\
             True if the payload passed in to the constructor is not None, but\

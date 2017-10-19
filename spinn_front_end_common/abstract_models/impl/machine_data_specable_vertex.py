@@ -1,16 +1,17 @@
-from pacman.model.decorators.overrides import overrides
-from pacman.executor.injection_decorator import supports_injection
-from pacman.executor.injection_decorator import inject_items
+from pacman.model.decorators import overrides
+from pacman.executor.injection_decorator \
+    import supports_injection, inject_items
 
-from spinn_front_end_common.abstract_models.\
-    abstract_generates_data_specification import\
-    AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification
 
 from abc import abstractmethod
 
 
 @supports_injection
 class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
+
+    __slots__ = ()
 
     @inject_items({
         "machine_graph": "MemoryMachineGraph",

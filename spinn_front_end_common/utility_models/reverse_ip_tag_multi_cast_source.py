@@ -1,40 +1,30 @@
 # pacman imports
-from pacman.model.decorators.overrides import overrides
-from pacman.model.graphs.application.impl.application_vertex import \
-    ApplicationVertex
-from pacman.model.resources.cpu_cycles_per_tick_resource import \
-    CPUCyclesPerTickResource
-from pacman.model.resources.dtcm_resource import DTCMResource
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.model.resources.sdram_resource import SDRAMResource
-from pacman.model.constraints.placer_constraints.placer_board_constraint\
-    import PlacerBoardConstraint
-from pacman.model.resources.reverse_iptag_resource import ReverseIPtagResource
-from pacman.model.resources.iptag_resource import IPtagResource
+from pacman.model.decorators import overrides
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ReverseIPtagResource, IPtagResource
+from pacman.model.constraints.placer_constraints import BoardConstraint
 
 
 # front end common imports
-from spinn_front_end_common.abstract_models.\
-    abstract_provides_outgoing_partition_constraints \
+from spinn_front_end_common.abstract_models \
     import AbstractProvidesOutgoingPartitionConstraints
+from spinn_front_end_common.abstract_models.impl\
+    import ProvidesKeyToAtomMappingImpl
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models.\
     abstract_provides_socket_addresses import \
     AbstractProvidesSocketAddresses
 from spinn_front_end_common.utilities.notification_protocol.\
     socket_address import SocketAddress
-from spinn_front_end_common.utility_models\
-    .reverse_ip_tag_multicast_source_machine_vertex \
+from .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
-from spinn_front_end_common.abstract_models\
-    .abstract_generates_data_specification \
-    import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
-from spinn_front_end_common.abstract_models.abstract_has_associated_binary \
-    import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs.executable_start_type \
-    import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
 
 # general imports
 import sys
@@ -44,7 +34,7 @@ class ReverseIpTagMultiCastSource(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints,
-        AbstractProvidesSocketAddresses):
+        ProvidesKeyToAtomMappingImpl, AbstractProvidesSocketAddresses):
     """ A model which will allow events to be injected into a spinnaker\
         machine and converted into multicast packets.
     """
@@ -127,6 +117,7 @@ class ReverseIpTagMultiCastSource(
         """
         ApplicationVertex.__init__(
             self, label, constraints, max_atoms_per_core)
+        ProvidesKeyToAtomMappingImpl.__init__(self)
 
         # basic items
         self._n_atoms = n_keys
@@ -148,12 +139,12 @@ class ReverseIpTagMultiCastSource(
                 port=receive_port, sdp_port=receive_sdp_port,
                 tag=receive_tag)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
 
         # Store the send buffering details
         self._send_buffer_times = send_buffer_times
-        self._partition_id = send_buffer_partition_id
-        self._buffer_max_space = send_buffer_max_space
+        self._send_buffer_partition_id = send_buffer_partition_id
+        self._send_buffer_max_space = send_buffer_max_space
         self._send_buffer_space_before_notify = send_buffer_space_before_notify
 
         # Store the buffering details
@@ -170,7 +161,7 @@ class ReverseIpTagMultiCastSource(
                 buffer_notification_ip_address, buffer_notification_port, True,
                 buffer_notification_tag)]
             if board_address is not None:
-                self.add_constraint(PlacerBoardConstraint(board_address))
+                self.add_constraint(BoardConstraint(board_address))
 
         # Store recording parameters
         self._record_buffer_size = 0
@@ -190,7 +181,7 @@ class ReverseIpTagMultiCastSource(
         container = ResourceContainer(
             sdram=SDRAMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                    self._send_buffer_times, self._buffer_max_space,
+                    self._send_buffer_times, self._send_buffer_max_space,
                     self._record_buffer_size > 0)),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
@@ -279,8 +270,8 @@ class ReverseIpTagMultiCastSource(
             virtual_key=self._virtual_key, prefix=self._prefix,
             prefix_type=self._prefix_type, check_keys=self._check_keys,
             send_buffer_times=send_buffer_times,
-            send_buffer_partition_id=self._partition_id,
-            send_buffer_max_space=self._buffer_max_space,
+            send_buffer_partition_id=self._send_buffer_partition_id,
+            send_buffer_max_space=self._send_buffer_max_space,
             send_buffer_space_before_notify=(
                 self._send_buffer_space_before_notify),
             buffer_notification_ip_address=(
@@ -295,3 +286,6 @@ class ReverseIpTagMultiCastSource(
                 self._record_time_between_requests)
         self._machine_vertices.append((vertex_slice, vertex))
         return vertex
+
+    def __repr__(self):
+        return self._label
