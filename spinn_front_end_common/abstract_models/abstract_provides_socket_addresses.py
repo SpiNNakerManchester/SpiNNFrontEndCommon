@@ -1,9 +1,8 @@
 from six import add_metaclass
-from abc import abstractmethod
-from abc import ABCMeta
+from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
-@add_metaclass(ABCMeta)
+@add_metaclass(AbstractBase)
 class AbstractProvidesSocketAddresses(object):
     """ Allows a vertex to provide a collection of socket addresses for the
     notification protocol.
