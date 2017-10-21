@@ -12,6 +12,11 @@
 #include <spin1_api.h>
 #include <buffered_eieio_defs.h>
 
+#define RECORDING_DMA_COMPLETE_TAG_ID 15
+
+//! \brief Callback for recording completion.
+typedef void (*recording_complete_callback_t) ();
+
 typedef struct {
     uint16_t eieio_header_command;
     uint16_t chip_id;
@@ -56,6 +61,18 @@ inline bool recording_is_channel_enabled(
 //!         False otherwise.
 bool recording_record(
     uint8_t channel, void *data, uint32_t size_bytes);
+
+//! \brief records some data into a specific recording channel, calling a
+//!        callback function once complete
+//! \param[in] channel the channel to store the data into.
+//! \param[in] data the data to store into the channel.
+//! \param[in] size_bytes the number of bytes that this data will take up.
+//! \param[in] callback callback to call when the recording has completed
+//! \return boolean which is True if the data has been stored in the channel,
+//!         False otherwise.
+bool recording_record_and_notify(
+    uint8_t channel, void *data, uint32_t size_bytes,
+    recording_complete_callback_t callback);
 
 //! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0

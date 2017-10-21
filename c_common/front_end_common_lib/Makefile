@@ -15,11 +15,11 @@ CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects
-OBJS = data_specification.o simulation.o recording.o
+OBJS = data_specification.o simulation.o recording.o profiler.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers
-HEADERS = common-typedefs.h data_specification.h simulation.h recording.h buffered_eieio_defs.h
+HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
@@ -42,7 +42,10 @@ $(SPINN_COMMON_BUILD):
 	$(MKDIR) $@
 
 # Installing rules
-install: $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
+install: install-libraries install-headers install-makefiles
+install-libraries: $(INSTALL_LIBS)
+install-headers: $(INSTALL_HEADERS)
+install-makefiles: $(INSTALL_MAKEFILES)
 
 $(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
 	$(CP) $< $@
@@ -58,3 +61,5 @@ clean:
 
 install-clean:
 	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
+
+.PHONY: clean install install-libraries install-headers install-makefiles install-clean

@@ -1,25 +1,23 @@
-from spinn_front_end_common.utilities import exceptions
-from spinnman.model.enums.cpu_state import CPUState
-import sys
+from spinn_utilities.progress_bar import ProgressBar
+
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.mapping_algorithms \
     import on_chip_router_table_compression
-from spinn_front_end_common.interface.interface_functions.\
-    front_end_common_chip_iobuf_extractor import \
-    FrontEndCommonChipIOBufExtractor
+from spinn_front_end_common.interface.interface_functions \
+    import ChipIOBufExtractor
 
-from spinnman.model.executable_targets import \
-    ExecutableTargets
+from spinnman.model.enums import CPUState
+from spinnman.model import ExecutableTargets
 
-from spinn_machine.core_subsets import CoreSubsets
-from spinn_machine.router import Router
-from spinn_machine.utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets, Router
 
 import logging
 import os
 import struct
 
 logger = logging.getLogger(__name__)
-
+_ONE_WORD = struct.Struct("<I")
+_FOUR_WORDS = struct.Struct("<IIII")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
 
@@ -48,7 +46,7 @@ class MundyOnChipRouterCompression(object):
         """
 
         # build progress bar
-        progress_bar = ProgressBar(
+        progress = ProgressBar(
             len(routing_tables.routing_tables) + 2,
             "Running routing table compression on chip")
         compressor_app_id = transceiver.app_id_tracker.get_new_id()
@@ -56,44 +54,32 @@ class MundyOnChipRouterCompression(object):
         # figure size of sdram needed for each chip for storing the routing
         # table
         for routing_table in routing_tables:
-
-            data = self._build_data(
-                routing_table, app_id, compress_only_when_needed,
-                compress_as_much_as_possible)
-
-            # go to spinnman and ask for a memory region of that size per chip.
-            base_address = transceiver.malloc_sdram(
-                routing_table.x, routing_table.y, len(data),
-                compressor_app_id, _SDRAM_TAG)
-
-            # write sdram requirements per chip
-            transceiver.write_memory(
-                routing_table.x, routing_table.y, base_address, data)
-
+            self._load_routing_table(
+                routing_table, transceiver, app_id, compressor_app_id,
+                compress_only_when_needed, compress_as_much_as_possible)
             # update progress bar
-            progress_bar.update()
+            progress.update()
 
         # load the router compressor executable
         executable_targets = self._load_executables(
             routing_tables, compressor_app_id, transceiver, machine)
 
         # update progress bar
-        progress_bar.update()
+        progress.update()
 
         # Wait for the executable to finish
+        succeeded = False
         try:
             transceiver.wait_for_cores_to_be_in_state(
                 executable_targets.all_core_subsets, compressor_app_id,
                 [CPUState.FINISHED])
-        except:
-
+            succeeded = True
+        finally:
             # get the debug data
-            self._handle_failure(
-                executable_targets, transceiver, provenance_file_path,
-                compressor_app_id)
-
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            raise exc_type, exc_value, exc_traceback
+            if not succeeded:
+                self._handle_failure(
+                    executable_targets, transceiver, provenance_file_path,
+                    compressor_app_id)
 
         # Check if any cores have not completed successfully
         self._check_for_success(
@@ -101,17 +87,31 @@ class MundyOnChipRouterCompression(object):
             provenance_file_path, compressor_app_id)
 
         # update progress bar
-        progress_bar.update()
+        progress.update()
 
         # stop anything that's associated with the compressor binary
         transceiver.stop_application(compressor_app_id)
         transceiver.app_id_tracker.free_id(compressor_app_id)
 
         # update the progress bar
-        progress_bar.end()
+        progress.end()
 
         # return loaded routing tables flag
         return True
+
+    def _load_routing_table(
+            self, table, txrx, app_id, compressor_app_id,
+            compress_only_when_needed, compress_as_much_as_possible):
+        data = self._build_data(
+            table, app_id, compress_only_when_needed,
+            compress_as_much_as_possible)
+
+        # go to spinnman and ask for a memory region of that size per chip.
+        base_address = txrx.malloc_sdram(
+            table.x, table.y, len(data), compressor_app_id, _SDRAM_TAG)
+
+        # write sdram requirements per chip
+        txrx.write_memory(table.x, table.y, base_address, data)
 
     def _check_for_success(
             self, executable_targets, transceiver, provenance_file_path,
@@ -140,7 +140,7 @@ class MundyOnChipRouterCompression(object):
                         executable_targets, transceiver, provenance_file_path,
                         compressor_app_id)
 
-                    raise exceptions.SpinnFrontEndException(
+                    raise SpinnFrontEndException(
                         "The router compressor on {}, {} failed to complete"
                         .format(x, y))
 
@@ -152,11 +152,10 @@ class MundyOnChipRouterCompression(object):
         :param executable_targets:
         :param transceiver:
         :param provenance_file_path:
-        :param prov_items:
-        :return:
+        :rtype: None
         """
         logger.info("Router compressor has failed")
-        iobuf_extractor = FrontEndCommonChipIOBufExtractor()
+        iobuf_extractor = ChipIOBufExtractor()
         io_buffers, io_errors, io_warnings = iobuf_extractor(
             transceiver, True, executable_targets.all_core_subsets)
         self._write_iobuf(io_buffers, provenance_file_path)
@@ -174,7 +173,7 @@ class MundyOnChipRouterCompression(object):
         :param io_buffers: the iobuf for the cores
         :param provenance_file_path:\
             the file path where the iobuf are to be stored
-        :return: None
+        :rtype: None
         """
         for iobuf in io_buffers:
             file_name = os.path.join(
@@ -187,9 +186,8 @@ class MundyOnChipRouterCompression(object):
                     "{}_{}_{}_compressor-{}.txt".format(
                         iobuf.x, iobuf.y, iobuf.p, count))
                 count += 1
-            writer = open(file_name, "w")
-            writer.write(iobuf.iobuf)
-            writer.close()
+            with open(file_name, "w") as writer:
+                writer.write(iobuf.iobuf)
 
     def _load_executables(
             self, routing_tables, compressor_app_id, transceiver, machine):
@@ -251,26 +249,24 @@ class MundyOnChipRouterCompression(object):
         # results in sdram and the router table entries
 
         data = b''
-        data += struct.pack("<I", app_id)
-        data += struct.pack("<I", int(compress_only_when_needed))
-        data += struct.pack("<I", int(compress_as_much_as_possible))
-
-        # Write the size of the table
-        data += struct.pack("<I", routing_table.number_of_entries)
+        data += _FOUR_WORDS.pack(
+            app_id, int(compress_only_when_needed),
+            int(compress_as_much_as_possible),
+            # Write the size of the table
+            routing_table.number_of_entries)
 
         for entry in routing_table.multicast_routing_entries:
-            data += struct.pack("<I", entry.routing_entry_key)
-            data += struct.pack("<I", entry.mask)
-            data += struct.pack(
-                "<I",
-                Router.convert_routing_table_entry_to_spinnaker_route(entry))
-            data += struct.pack("<I", self._make_source_hack(entry))
+            data += _FOUR_WORDS.pack(
+                entry.routing_entry_key, entry.mask,
+                Router.convert_routing_table_entry_to_spinnaker_route(entry),
+                self._make_source_hack(entry))
         return bytearray(data)
 
     @staticmethod
     def _make_source_hack(entry):
         """ Hack to support the source requirement for the router compressor\
             on chip
+
         :param entry: the multicast router table entry.
         :return: return the source value
         """

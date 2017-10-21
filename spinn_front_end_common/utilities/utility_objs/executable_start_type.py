@@ -12,7 +12,9 @@ class ExecutableStartType(Enum):
     USES_SIMULATION_INTERFACE = (
         2,
         "Calls simulation_run() and simulation_exit() / "
-        "simulation_handle_pause_resume()")
+        "simulation_handle_pause_resume()"),
+    NO_APPLICATION = (3, "Situation where there user has supplied no "
+                         "application but for some reason still wants to run")
 
     def __new__(cls, value, doc=""):
         obj = object.__new__(cls)

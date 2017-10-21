@@ -1,9 +1,10 @@
-/.project
-/.pydevproject
-/.idea
-.idea/
+.project
+.pydevproject
+.idea
 *.pyc
 *build/
 /dist/
 /SpiNNFrontEndCommon.egg-info/
-/.settings/
+.settings
+.cproject
+Debug

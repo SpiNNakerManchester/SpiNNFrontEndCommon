@@ -1,10 +1,10 @@
-<algorithms>
-    <algorithm name="FrontEndCommonRoutingTableFromMachineReport">
-        <python_module>
-            spinn_front_end_common.utilities.report_functions.front_end_common_routing_table_from_machine_report
-        </python_module>
-        <python_class>FrontEndCommonRoutingTableFromMachineReport
-        </python_class>
+<algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="RoutingTableFromMachineReport">
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
+        <python_class>RoutingTableFromMachineReport</python_class>
         <input_definitions>
             <parameter>
                 <param_name>report_default_directory</param_name>
@@ -35,9 +35,9 @@
             <param_name>has_loaded_routing_tables_flag</param_name>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonMemoryMapOnHostReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_memory_map_on_host_report</python_module>
-        <python_class>FrontEndCommonMemoryMapOnHostReport</python_class>
+    <algorithm name="MemoryMapOnHostReport">
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
+        <python_class>MemoryMapOnHostReport</python_class>
         <input_definitions>
             <parameter>
                 <param_name>report_default_directory</param_name>
@@ -53,9 +53,9 @@
             <param_name>processor_to_app_data_base_address</param_name>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonMemoryMapOnChipReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_memory_map_on_chip_report</python_module>
-        <python_class>FrontEndCommonMemoryMapOnChipReport</python_class>
+    <algorithm name="MemoryMapOnHostChipReport">
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
+        <python_class>MemoryMapOnHostChipReport</python_class>
         <input_definitions>
             <parameter>
                 <param_name>report_default_directory</param_name>
@@ -69,57 +69,44 @@
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
+            <parameter>
+                <param_name>loaded_app_data_token</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>report_default_directory</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
+            <param_name>loaded_app_data_token</param_name>
         </required_inputs>
     </algorithm>
-    <algorithm name="FrontEndCommonApplicationGraphNetworkSpecificationReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_application_graph_network_specification</python_module>
-        <python_class>FrontEndCommonApplicationGraphNetworkSpecification</python_class>
+    <algorithm name="MemoryMapOnChipReport">
+        <python_module>spinn_front_end_common.utilities.report_functions</python_module>
+        <python_class>MemoryMapOnChipReport</python_class>
         <input_definitions>
             <parameter>
-                <param_name>report_folder</param_name>
+                <param_name>report_default_directory</param_name>
                 <param_type>ReportFolder</param_type>
             </parameter>
             <parameter>
-                <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
+                <param_name>dsg_targets</param_name>
+                <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>loaded_app_data_token</param_name>
+                <param_type>LoadedApplicationDataToken</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
-            <param_name>report_folder</param_name>
-            <param_name>graph</param_name>
-            <param_name>hostname</param_name>
-        </required_inputs>
-    </algorithm>
-    <algorithm name="FrontEndCommonMachineGraphNetworkSpecificationReport">
-        <python_module>spinn_front_end_common.utilities.report_functions.front_end_common_machine_graph_network_specification_report</python_module>
-        <python_class>FrontEndCommonMachineGraphNetworkSpecificationReport</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>report_folder</param_name>
-                <param_type>ReportFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>partitioned_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>report_folder</param_name>
-            <param_name>partitioned_graph</param_name>
-            <param_name>hostname</param_name>
+            <param_name>report_default_directory</param_name>
+            <param_name>dsg_targets</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>loaded_app_data_token</param_name>
         </required_inputs>
     </algorithm>
 </algorithms>
