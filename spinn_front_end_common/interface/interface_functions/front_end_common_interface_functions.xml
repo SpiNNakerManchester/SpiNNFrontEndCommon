@@ -2,9 +2,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
-    <algorithm name="InsertEdgesToMCDataExtractors">
-        <python_module>spinn_front_end_common.interface.interface_functions.insert_edges_to_mc_data_extractors</python_module>
-        <python_class>InsertEdgesToMCDataExtractors</python_class>
+    <algorithm name="InsertEdgesToExtraMonitorFunctionality">
+        <python_module>spinn_front_end_common.interface.interface_functions.insert_edges_to_extra_monitor_functionality</python_module>
+        <python_class>InsertEdgesToExtraMonitorFunctionality</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
@@ -42,9 +42,9 @@
             <param_name>graph_mapper</param_name>
         </optional_inputs>
     </algorithm>
-    <algorithm name="InsertMCDataExtractorsVerticesToGraphs">
-        <python_module>spinn_front_end_common.interface.interface_functions.insert_mc_data_extractors_vertices_to_graphs</python_module>
-        <python_class>InsertMCDataExtractorsVerticesToGraphs</python_class>
+    <algorithm name="InsertExtraMonitorVerticesToGraphs">
+        <python_module>spinn_front_end_common.interface.interface_functions.insert_extra_monitor_vertices_to_graphs</python_module>
+        <python_class>InsertExtraMonitorVerticesToGraphs</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
@@ -85,9 +85,9 @@
             <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
         </outputs>
     </algorithm>
-    <algorithm name="PreAllocateResourcesForMCDataExtractor">
-        <python_module>spinn_front_end_common.interface.interface_functions.preallocate_resources_for_mc_data_extractor</python_module>
-        <python_class>PreAllocateResourcesForMCDataExtractor</python_class>
+    <algorithm name="PreAllocateResourcesForExtraMonitorSupport">
+        <python_module>spinn_front_end_common.interface.interface_functions.preallocate_resources_for_extra_monitor_support</python_module>
+        <python_class>PreAllocateResourcesForExtraMonitorSupport</python_class>
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>

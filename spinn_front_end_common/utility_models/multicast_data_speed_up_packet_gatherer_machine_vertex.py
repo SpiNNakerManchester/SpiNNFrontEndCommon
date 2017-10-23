@@ -1,5 +1,9 @@
+from pacman.executor.injection_decorator import inject_items
 from pacman.model.constraints.key_allocator_constraints import \
     FixedKeyAndMaskConstraint
+from pacman.model.constraints.key_allocator_constraints.\
+    share_key_constraint import \
+    ShareKeyConstraint
 from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
@@ -93,7 +97,6 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         AbstractHasAssociatedBinary.__init__(self)
         AbstractProvidesIncomingPartitionConstraints.__init__(self)
 
-
         # data holders for the output, and seq nums
         self._view = None
         self._max_seq_num = None
@@ -127,19 +130,36 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
                 port=connection.local_port, strip_sdp=True,
                 ip_address="localhost")])
 
+    @inject_items({"machine_graph": "MemoryMachineGraph"})
     @overrides(AbstractProvidesIncomingPartitionConstraints.
-               get_incoming_partition_constraints)
-    def get_incoming_partition_constraints(self, partition):
-        return self.static_get_incoming_partition_constraints(partition)
+               get_incoming_partition_constraints,
+               additional_arguments={"machine_graph"})
+    def get_incoming_partition_constraints(self, partition, machine_graph):
+        if partition.identifier != \
+                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
+            raise Exception("do not recognise this partition identifier")
+
+        vertex_partition = list()
+        for incoming_edge in machine_graph.get_edges_ending_at_vertex(self):
+            partition = \
+                machine_graph.get_outgoing_edge_partition_starting_at_vertex(
+                    incoming_edge.pre_vertex,
+                    constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+            vertex_partition.append(partition)
+        return self.static_get_incoming_partition_constraints(
+            partition, vertex_partition)
 
     @staticmethod
-    def static_get_incoming_partition_constraints(partition):
-        if partition.identifier == \
-                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
-            return [FixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(
+    def static_get_incoming_partition_constraints(partition, vertex_partition):
+        constraints = list()
+        constraints.append(
+            FixedKeyAndMaskConstraint([
+                BaseKeyAndMask(
                     MulticastDataSpeedUpPacketGatherMachineVertex.BASE_KEY,
-                    MulticastDataSpeedUpPacketGatherMachineVertex.BASE_MASK)])]
+                    MulticastDataSpeedUpPacketGatherMachineVertex.BASE_MASK
+                )]))
+        constraints.append(ShareKeyConstraint(vertex_partition))
+        return constraints
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -418,7 +438,7 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         :param placement: placement object for location on machine
         :param transceiver: spinnman instance
         :return: set of data items, if its the first packet, the list of seq
-        nums, the seq num recieved and if its finished
+        nums, the seq num received and if its finished
         """
         # self._print_out_packet_data(data)
         length_of_data = len(data)

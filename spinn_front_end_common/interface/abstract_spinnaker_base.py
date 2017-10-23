@@ -1170,8 +1170,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
-        # add algorthims for handleing mc gatherers data speed up
-        algorithms.append("PreAllocateResourcesForMCDataExtractor")
+
+        # add algorithms for handling extra monitor code
+        algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
@@ -1493,9 +1494,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
-        # handle mc gatherers speed up algorthims
-        algorithms.append("InsertEdgesToMCDataExtractors")
-        algorithms.append("InsertMCDataExtractorsVerticesToGraphs")
+        # handle mc gatherers speed up algorithms
+        algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+        algorithms.append("InsertExtraMonitorVerticesToGraphs")
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:

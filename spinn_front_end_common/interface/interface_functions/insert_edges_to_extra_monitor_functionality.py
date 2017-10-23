@@ -1,13 +1,20 @@
 from pacman.model.graphs.application import ApplicationEdge
+from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineEdge
-from spinn_front_end_common.abstract_models.\
-    abstract_utilities_data_speed_up_extractor import \
-    AbstractUtilitiesDataSpeedUpExtractor
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utility_models.\
+    extra_monitor_support_application_vertex import \
+    ExtraMonitorSupportApplicationVertex
+from spinn_front_end_common.utility_models.\
+    extra_monitor_support_machine_vertex import \
+    ExtraMonitorSupportMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class InsertEdgesToMCDataExtractors(object):
+class InsertEdgesToExtraMonitorFunctionality(object):
+
+    TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
+    # TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
@@ -34,7 +41,7 @@ class InsertEdgesToMCDataExtractors(object):
             "functionality. ")
 
         for vertex in progress.over(machine_graph.vertices, False):
-            if isinstance(vertex, AbstractUtilitiesDataSpeedUpExtractor):
+            if isinstance(vertex, ExtraMonitorSupportMachineVertex):
                 self._process_vertex(
                     vertex, machine, placements, machine_graph,
                     vertex_to_ethernet_connected_chip_mapping,
@@ -42,7 +49,7 @@ class InsertEdgesToMCDataExtractors(object):
 
         if application_graph is not None:
             for vertex in progress.over(application_graph.vertices):
-                if isinstance(vertex, AbstractUtilitiesDataSpeedUpExtractor):
+                if isinstance(vertex, ExtraMonitorSupportApplicationVertex):
                     machine_verts = graph_mapper.get_machine_vertices(vertex)
                     for machine_vertex in machine_verts:
                         self._process_vertex(
@@ -79,7 +86,8 @@ class InsertEdgesToMCDataExtractors(object):
 
         # if not built, build a edge and do mapping
         if not already_built:
-            machine_edge = MachineEdge(vertex, data_gatherer_vertex)
+            machine_edge = MachineEdge(
+                vertex, data_gatherer_vertex, traffic_type=self.TRAFFIC_TYPE)
             machine_graph.add_edge(
                 machine_edge,
                 constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
@@ -95,7 +103,8 @@ class InsertEdgesToMCDataExtractors(object):
 
                 # if not built, build a edge and do mapping
                 if not already_built:
-                    app_edge = ApplicationEdge(app_source, app_dest)
+                    app_edge = ApplicationEdge(
+                        app_source, app_dest, traffic_type=self.TRAFFIC_TYPE)
                     application_graph.add_edge(
                         app_edge,
                         constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
