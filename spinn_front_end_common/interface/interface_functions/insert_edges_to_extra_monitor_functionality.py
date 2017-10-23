@@ -13,8 +13,8 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class InsertEdgesToExtraMonitorFunctionality(object):
 
-    TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
-    # TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
+    #TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
+    TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,

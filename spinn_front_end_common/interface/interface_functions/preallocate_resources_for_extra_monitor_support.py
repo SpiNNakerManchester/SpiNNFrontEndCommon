@@ -3,8 +3,8 @@ from pacman.model.resources import SpecificChipSDRAMResource, CoreResource, \
 from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
 from spinn_front_end_common.utility_models.\
-    multicast_data_speed_up_packet_gatherer_machine_vertex import \
-    MulticastDataSpeedUpPacketGatherMachineVertex
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.connections.udp_packet_connections import UDPConnection
 
@@ -89,7 +89,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
         # get resources from packet gatherer
         resources = \
-            MulticastDataSpeedUpPacketGatherMachineVertex. \
+            DataSpeedUpPacketGatherMachineVertex. \
             resources_required_for_connection(connection)
 
         # locate ethernet connected chips that the vertices reside on

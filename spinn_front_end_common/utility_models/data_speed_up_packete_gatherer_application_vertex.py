@@ -6,14 +6,14 @@ from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification, \
     AbstractProvidesIncomingPartitionConstraints
 from spinn_front_end_common.utility_models.\
-    multicast_data_speed_up_packet_gatherer_machine_vertex import \
-    MulticastDataSpeedUpPacketGatherMachineVertex
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_front_end_common.utilities import constants
 
 from spinnman.connections.udp_packet_connections import UDPConnection
 
 
-class MulticastDataSpeedUpPacketGatherApplicationVertex(
+class DataSpeedUpPacketGatherApplicationVertex(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary,
         AbstractProvidesIncomingPartitionConstraints):
@@ -27,23 +27,23 @@ class MulticastDataSpeedUpPacketGatherApplicationVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        return MulticastDataSpeedUpPacketGatherMachineVertex.\
+        return DataSpeedUpPacketGatherMachineVertex.\
             static_get_binary_file_name()
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
-        return MulticastDataSpeedUpPacketGatherMachineVertex.\
+        return DataSpeedUpPacketGatherMachineVertex.\
             resources_required_for_connection(self._connection)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
         connection = UDPConnection(local_host=None)
-        return MulticastDataSpeedUpPacketGatherMachineVertex(connection)
+        return DataSpeedUpPacketGatherMachineVertex(connection)
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
-                   "routing_infos": "MemoryRoutingInfo",
+                   "routing_infos": "MemoryRoutingInfos",
                    "machine_graph": "MemoryMachineGraph"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
@@ -55,9 +55,9 @@ class MulticastDataSpeedUpPacketGatherApplicationVertex(
 
         base_key = routing_infos.get_first_key_for_edge(
             list(machine_graph.get_edges_ending_at_vertex(
-                placement.vertex()))[0])
+                placement.vertex))[0])
 
-        MulticastDataSpeedUpPacketGatherMachineVertex.\
+        DataSpeedUpPacketGatherMachineVertex.\
             static_generate_machine_data_specification(
                 spec, base_key, machine_time_step, time_scale_factor)
 
@@ -68,7 +68,7 @@ class MulticastDataSpeedUpPacketGatherApplicationVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return MulticastDataSpeedUpPacketGatherMachineVertex.\
+        return DataSpeedUpPacketGatherMachineVertex.\
             static_get_binary_start_type()
 
     @inject_items({"application_graph": "MemoryApplicationGraph"})
@@ -88,6 +88,6 @@ class MulticastDataSpeedUpPacketGatherApplicationVertex(
                     incoming_edge.pre_vertex,
                     constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
             vertex_partition.append(partition)
-        return MulticastDataSpeedUpPacketGatherMachineVertex.\
+        return DataSpeedUpPacketGatherMachineVertex.\
             static_get_incoming_partition_constraints(
                 partition, vertex_partition)

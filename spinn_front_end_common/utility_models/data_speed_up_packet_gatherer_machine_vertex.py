@@ -5,6 +5,7 @@ from pacman.model.constraints.key_allocator_constraints.\
     share_key_constraint import \
     ShareKeyConstraint
 from pacman.model.decorators import overrides
+from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
@@ -29,7 +30,7 @@ import struct
 from enum import Enum
 
 
-class MulticastDataSpeedUpPacketGatherMachineVertex(
+class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary,
         AbstractProvidesIncomingPartitionConstraints):
 
@@ -125,7 +126,7 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         return ResourceContainer(
             sdram=SDRAMResource(
                 constants.SYSTEM_BYTES_REQUIREMENT +
-                MulticastDataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
+                DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
             iptags=[IPtagResource(
                 port=connection.local_port, strip_sdp=True,
                 ip_address="localhost")])
@@ -152,13 +153,14 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_get_incoming_partition_constraints(partition, vertex_partition):
         constraints = list()
-        constraints.append(
-            FixedKeyAndMaskConstraint([
-                BaseKeyAndMask(
-                    MulticastDataSpeedUpPacketGatherMachineVertex.BASE_KEY,
-                    MulticastDataSpeedUpPacketGatherMachineVertex.BASE_MASK
-                )]))
-        constraints.append(ShareKeyConstraint(vertex_partition))
+        if partition.traffic_type == EdgeTrafficType.MULTICAST:
+            constraints.append(
+                FixedKeyAndMaskConstraint([
+                    BaseKeyAndMask(
+                        DataSpeedUpPacketGatherMachineVertex.BASE_KEY,
+                        DataSpeedUpPacketGatherMachineVertex.BASE_MASK
+                    )]))
+            constraints.append(ShareKeyConstraint(vertex_partition))
         return constraints
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
@@ -199,19 +201,17 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         setup_size = constants.SYSTEM_BYTES_REQUIREMENT
 
         # Create the data regions for hello world
-        MulticastDataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(
+        DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(
             spec, setup_size)
 
         # write data for the simulation data item
         spec.switch_write_focus(
-            MulticastDataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.
-            SYSTEM.value)
+            DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.SYSTEM.value)
         spec.write_array(simulation_utilities.get_simulation_header_array(
-            MulticastDataSpeedUpPacketGatherMachineVertex.
-            get_binary_file_name(), machine_time_step, time_scale_factor))
+            DataSpeedUpPacketGatherMachineVertex.static_get_binary_file_name(),
+            machine_time_step, time_scale_factor))
         spec.switch_write_focus(
-            MulticastDataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.
-            CONFIG.value)
+            DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.CONFIG.value)
 
         # the keys for the special cases
         spec.write_value(base_key + 1)
@@ -231,13 +231,14 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         """
 
         spec.reserve_memory_region(
-            region=MulticastDataSpeedUpPacketGatherMachineVertex.
-            DATA_REGIONS.SYSTEM.value, size=system_size,
+            region=
+            DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.SYSTEM.value,
+            size=system_size,
             label='systemInfo')
         spec.reserve_memory_region(
-            region=MulticastDataSpeedUpPacketGatherMachineVertex.
-            DATA_REGIONS.CONFIG.value,
-            size=MulticastDataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE,
+            region=
+            DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.CONFIG.value,
+            size=DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE,
             label="config")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
@@ -251,7 +252,7 @@ class MulticastDataSpeedUpPacketGatherMachineVertex(
         
         :return: aplex name
         """
-        return "packet_gatherer.aplx"
+        return "data_speed_up_packet_gatherer.aplx"
 
     def get_data(self, transceiver, placement):
         """ gets data from a given core and memory address. 

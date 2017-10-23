@@ -8,11 +8,11 @@ from spinn_front_end_common.utility_models.\
     extra_monitor_support_machine_vertex import \
     ExtraMonitorSupportMachineVertex
 from spinn_front_end_common.utility_models.\
-    multicast_data_speed_up_packet_gatherer_machine_vertex import \
-    MulticastDataSpeedUpPacketGatherMachineVertex
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_front_end_common.utility_models.\
-    multicast_data_speed_up_packete_gatherer_application_vertex import \
-    MulticastDataSpeedUpPacketGatherApplicationVertex
+    data_speed_up_packete_gatherer_application_vertex import \
+    DataSpeedUpPacketGatherApplicationVertex
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -105,7 +105,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             connection = connection_mapping[
                 (ethernet_connected_chip.x, ethernet_connected_chip.y)]
             machine_vertex = \
-                MulticastDataSpeedUpPacketGatherMachineVertex(
+                DataSpeedUpPacketGatherMachineVertex(
                     connection, [ChipAndCoreConstraint(
                         x=ethernet_connected_chip.x,
                         y=ethernet_connected_chip.y)])
@@ -118,8 +118,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
             # add application graph as needed
             if application_graph is not None:
-                app_vertex = \
-                    MulticastDataSpeedUpPacketGatherApplicationVertex()
+                app_vertex = DataSpeedUpPacketGatherApplicationVertex()
                 application_graph.add_vertex(app_vertex)
 
                 graph_mapper.add_vertex_mapping(
