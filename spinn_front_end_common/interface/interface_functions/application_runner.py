@@ -95,8 +95,7 @@ class ApplicationRunner(object):
                 time.sleep(time_to_wait)
                 timeout = time_threshold
             else:
-                logger.info(
-                    "Application started - waiting until finished")
+                logger.info("Application started - waiting until finished")
 
             for executable_end_type in expected_end_states.keys():
                 txrx.wait_for_cores_to_be_in_state(
