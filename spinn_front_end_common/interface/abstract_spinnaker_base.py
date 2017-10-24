@@ -1939,14 +1939,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executable_targets.all_core_subsets,
             {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED})
 
-        # If there are no cores in a bad state, find those not yet finished
-        if len(unsuccessful_cores) == 0:
-            unsuccessful_cores = self._txrx.get_cores_not_in_state(
-                executable_targets.all_core_subsets,
-                {CPUState.PAUSED, CPUState.FINISHED})
+        # If there are no cores in a bad state, find those not yet in
+        # their finished state
         unsuccessful_core_subset = CoreSubsets()
-        for (x, y, p), _ in unsuccessful_cores.iteritems():
-            unsuccessful_core_subset.add_processor(x, y, p)
+        if len(unsuccessful_cores) == 0:
+            _, end_states = helpful_functions.determine_flow_states(
+                self._executable_types, self._no_sync_changes)
+            for executable_type in self._executable_types:
+                unsuccessful_cores = self._txrx.get_cores_not_in_state(
+                    self._executable_types[executable_type],
+                    end_states[executable_type])
+                for (x, y, p), _ in unsuccessful_cores.iteritems():
+                    unsuccessful_core_subset.add_processor(x, y, p)
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
@@ -1958,8 +1962,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # If there are any cores that are not in RTE, extract data from them
         if (len(non_rte_cores) > 0 and
-                self._executable_types ==
-                ExecutableType.USES_SIMULATION_INTERFACE):
+                ExecutableType.USES_SIMULATION_INTERFACE in
+                self._executable_types):
             placements = Placements()
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:

@@ -3,7 +3,7 @@ import time
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_machine import CoreSubsets
+from spinn_front_end_common.utilities import helpful_functions
 
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
@@ -37,9 +37,9 @@ class ApplicationRunner(object):
         logger.info("*** Running simulation... *** ")
 
         # Get the expected state of the application, depending on the run type
-        expected_start_states, sync_signal, expected_end_states, \
-        no_sync_changes = self._determine_start_states(
-            executable_types, no_sync_changes)
+        expected_start_states, expected_end_states = \
+            helpful_functions.determine_flow_states(
+                executable_types, no_sync_changes)
 
         # wait for all cores to be ready
         for executable_start_type in expected_start_states.keys():
@@ -60,11 +60,23 @@ class ApplicationRunner(object):
 
         # set off the executables that are in sync state \
         # (sending to all is just as safe)
-        if sync_signal is not None:
-            txrx.send_signal(app_id, sync_signal)
-            txrx.wait_for_cores_to_be_in_state(
-                executable_targets.all_core_subsets, app_id,
-                [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
+        if (ExecutableType.USES_SIMULATION_INTERFACE in
+                executable_types.keys() or
+                ExecutableType.SYNC in executable_types.keys()):
+
+            # locate all signals needed to set off executables
+            sync_signals, no_sync_changes = \
+                self._determine_simulation_sync_signals(
+                    executable_types, no_sync_changes)
+
+            # fire all signals as required
+            for sync_signal in sync_signals:
+                txrx.send_signal(app_id, sync_signal)
+
+        # verify all cores are in running states
+        txrx.wait_for_cores_to_be_in_state(
+            executable_targets.all_core_subsets, app_id,
+            [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
 
         # Send start notification
         if notification_interface is not None and send_start_notification:
@@ -98,55 +110,26 @@ class ApplicationRunner(object):
         return True, no_sync_changes
 
     @staticmethod
-    def _determine_start_states(executable_start_types, no_sync_changes):
+    def _determine_simulation_sync_signals(executable_types, no_sync_changes):
         """ sorts out start states, and creates core subsets of the states for
         further checks.
         
-        :param executable_start_types: the dict of start type to vertices
         :param no_sync_changes: sync counter
-        :return: list of expected states, the core subsets for each\
-         executable type, and the sync signal
+        :param executable_types: the types of executables
+        :return: the sync signal and updated no_sync_changes
         """
-        expected_start_states = dict()
-        expected_end_states = dict()
-        sync_signal = None
-        for executable_start_type in executable_start_types.keys():
+        sync_signals = list()
 
-            # cores that ignore all control and are just running
-            if executable_start_type == ExecutableType.RUNNING:
-                expected_start_states[executable_start_type] = [
-                    CPUState.RUNNING, CPUState.FINISHED, CPUState.PAUSED,
-                    CPUState.SYNC0, CPUState.SYNC1
-                ]
-                expected_end_states[executable_start_type] = [CPUState.RUNNING]
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types.keys():
+            if no_sync_changes % 2 == 0:
+                sync_signals.append(Signal.SYNC0)
+            else:
+                sync_signals.append(Signal.SYNC1)
+            # when it falls out of the running, it'll be in a next sync \
+            # state, thus update needed
+            no_sync_changes += 1
 
-            # cores that require a sync barrier
-            elif executable_start_type == ExecutableType.SYNC:
-                sync_signal = Signal.SYNC0
-                expected_start_states[executable_start_type] = [CPUState.SYNC0]
-                expected_end_states[executable_start_type] = \
-                    [CPUState.FINISHED]
+        if ExecutableType.SYNC in executable_types.keys():
+            sync_signals.append(Signal.SYNC0)
 
-            # cores that use our sim interface
-            elif (executable_start_type ==
-                    ExecutableType.USES_SIMULATION_INTERFACE):
-                if no_sync_changes % 2 == 0:
-                    expected_start_states[executable_start_type] = \
-                        [CPUState.SYNC0]
-                    sync_signal = Signal.SYNC0
-                else:
-                    expected_start_states[executable_start_type] = \
-                        [CPUState.SYNC1]
-                    sync_signal = Signal.SYNC1
-
-                # when it falls out of the running, it'll be in a next sync \
-                # state, thus update needed
-                no_sync_changes += 1
-                expected_end_states[executable_start_type] = [CPUState.PAUSED]
-
-        if len(expected_start_states) == 0:
-            raise ConfigurationException(
-                "Unknown executable start types {}".format(
-                    executable_start_types))
-        return expected_start_states, sync_signal, expected_end_states, \
-            no_sync_changes
+        return sync_signals, no_sync_changes
