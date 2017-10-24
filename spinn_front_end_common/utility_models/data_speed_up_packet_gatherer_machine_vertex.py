@@ -16,7 +16,7 @@ from spinn_front_end_common.abstract_models import \
     AbstractProvidesIncomingPartitionConstraints
 from spinn_front_end_common.abstract_models.impl import \
     MachineDataSpecableVertex
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -171,9 +171,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     def static_get_binary_start_type():
         """ supports application vertex reading without cloning
         
-        :return: tpye of start type
+        :return: type of start type the data speed up packet gatherer is using
         """
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.RUNNING
 
     @overrides(MachineDataSpecableVertex.generate_machine_data_specification)
     def generate_machine_data_specification(

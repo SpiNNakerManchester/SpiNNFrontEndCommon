@@ -13,7 +13,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
     AbstractSupportsDatabaseInjection
 from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableStartType
+    import ProvenanceDataItem, ExecutableType
 from spinn_front_end_common.utilities.constants \
     import SYSTEM_BYTES_REQUIREMENT
 
@@ -142,7 +142,7 @@ class LivePacketGatherMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",

@@ -1,7 +1,7 @@
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.overrides import overrides
 
 
@@ -29,7 +29,7 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_get_binary_start_type():
-        return ExecutableStartType.RUNNING
+        return ExecutableType.RUNNING
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

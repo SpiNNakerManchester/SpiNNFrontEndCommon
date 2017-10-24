@@ -10,7 +10,7 @@ from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 from spinn_front_end_common.utilities.constants \
     import SYSTEM_BYTES_REQUIREMENT
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class CommandSenderMachineVertex(
@@ -237,7 +237,7 @@ class CommandSenderMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @staticmethod
     def get_number_of_mallocs_used_by_dsg():

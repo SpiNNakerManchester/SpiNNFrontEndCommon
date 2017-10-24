@@ -9,7 +9,7 @@ from spinn_front_end_common.interface.interface_functions \
 from spinn_front_end_common.interface.interface_functions \
     import LocateExecutableStartType
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
@@ -52,11 +52,11 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         """
 
         vertex_1 = _TestVertexWithBinary(
-            "test.aplx", ExecutableStartType.RUNNING)
+            "test.aplx", ExecutableType.RUNNING)
         vertex_2 = _TestVertexWithBinary(
-            "test2.aplx", ExecutableStartType.RUNNING)
+            "test2.aplx", ExecutableType.RUNNING)
         vertex_3 = _TestVertexWithBinary(
-            "test2.aplx", ExecutableStartType.RUNNING)
+            "test2.aplx", ExecutableType.RUNNING)
         vertex_4 = _TestVertexWithoutBinary()
 
         graph = MachineGraph("Test")
@@ -73,7 +73,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph)
-        self.assertEqual(start_type, ExecutableStartType.RUNNING)
+        self.assertEqual(start_type, ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
         test_cores = targets.get_cores_for_binary("test.aplx")
@@ -89,9 +89,9 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         """
 
         vertex_1 = _TestVertexWithBinary(
-            "test.aplx", ExecutableStartType.RUNNING)
+            "test.aplx", ExecutableType.RUNNING)
         vertex_2 = _TestVertexWithBinary(
-            "test2.aplx", ExecutableStartType.SYNC)
+            "test2.aplx", ExecutableType.SYNC)
 
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])

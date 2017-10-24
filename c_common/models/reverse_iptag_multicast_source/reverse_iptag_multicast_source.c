@@ -1049,7 +1049,7 @@ void timer_callback(uint unused0, uint unused1) {
     use(unused1);
     time++;
 
-    log_debug("timer_callback, final time: %d, current time: %d,"
+    log_info("timer_callback, final time: %d, current time: %d,"
               "next packet buffer time: %d", simulation_ticks, time,
               next_buffer_time);
 
