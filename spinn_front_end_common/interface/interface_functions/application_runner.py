@@ -129,7 +129,10 @@ class ApplicationRunner(object):
             # state, thus update needed
             no_sync_changes += 1
 
+        # handle the sync states, but only send once if they work with \
+        # the simulation interface requirement
         if ExecutableType.SYNC in executable_types.keys():
-            sync_signals.append(Signal.SYNC0)
+            if Signal.SYNC0 not in sync_signals:
+                sync_signals.append(Signal.SYNC0)
 
         return sync_signals, no_sync_changes
