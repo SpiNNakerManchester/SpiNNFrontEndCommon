@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ExecutableStartType(Enum):
+class ExecutableType(Enum):
     """ supports starting of different types of executables
     """
 

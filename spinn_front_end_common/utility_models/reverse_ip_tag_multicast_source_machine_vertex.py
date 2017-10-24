@@ -34,7 +34,7 @@ from spinn_front_end_common.interface.provenance \
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
 from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableStartType
+    import ProvenanceDataItem, ExecutableType
 
 from spinnman.messages.eieio import EIEIOPrefix
 
@@ -596,7 +596,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
