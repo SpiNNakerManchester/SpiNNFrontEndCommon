@@ -303,7 +303,7 @@ class LiveEventConnection(DatabaseConnection):
                             else:
                                 callback(
                                     self._receive_labels[label_id], atom_id)
-        except:
+        except Exception:
             logger.warn("problem handling received packet", exc_info=True)
 
     def send_event(self, label, atom_id, send_full_keys=False):

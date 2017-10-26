@@ -21,7 +21,7 @@ from spinn_front_end_common.utilities.utility_objs import \
     ExecutableStartType
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement, read_config_int 
+    import locate_memory_region_for_placement, read_config_int
 from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 

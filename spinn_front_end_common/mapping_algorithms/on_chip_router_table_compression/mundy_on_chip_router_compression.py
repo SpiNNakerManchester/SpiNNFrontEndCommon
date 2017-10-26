@@ -113,7 +113,7 @@ class MundyOnChipRouterCompression(object):
         # write sdram requirements per chip
         txrx.write_memory(table.x, table.y, base_address, data)
 
-    def __read_user_0(self, txrx, x,y,p):
+    def __read_user_0(self, txrx, x, y, p):
         addr = txrx.get_user_0_register_address_from_core(x, y, p)
         return struct.unpack("<I", str(txrx.read_memory(x, y, addr, 4)))[0]
 
