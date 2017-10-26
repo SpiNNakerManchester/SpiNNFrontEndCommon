@@ -113,6 +113,10 @@ class MundyOnChipRouterCompression(object):
         # write sdram requirements per chip
         txrx.write_memory(table.x, table.y, base_address, data)
 
+    def __read_user_0(self, txrx, x,y,p):
+        addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        return struct.unpack("<I", str(txrx.read_memory(x, y, addr, 4)))[0]
+
     def _check_for_success(
             self, executable_targets, txrx, provenance_file_path,
             compressor_app_id):
@@ -125,14 +129,8 @@ class MundyOnChipRouterCompression(object):
             x = core_subset.x
             y = core_subset.y
             for p in core_subset.processor_ids:
-
                 # Read the result from USER0 register
-                user_0_address = \
-                    txrx.get_user_0_register_address_from_core(x, y, p)
-
-                result = struct.unpack(
-                    "<I", str(txrx.read_memory(x, y, user_0_address, 4))
-                )[0]
+                result = self.__read_user_0(txrx, x, y, p)
 
                 # The result is 0 if success, otherwise failure
                 if result != 0:
