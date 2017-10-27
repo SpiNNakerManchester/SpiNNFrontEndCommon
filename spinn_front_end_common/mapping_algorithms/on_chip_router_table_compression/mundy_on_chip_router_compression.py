@@ -20,6 +20,9 @@ _ONE_WORD = struct.Struct("<I")
 _FOUR_WORDS = struct.Struct("<IIII")
 # The SDRAM Tag used by the application - note this is fixed in the APLX
 _SDRAM_TAG = 1
+_BINARY_PATH = os.path.join(
+    os.path.dirname(on_chip_router_table_compression.__file__),
+    "rt_minimise.aplx")
 
 
 class MundyOnChipRouterCompression(object):
@@ -212,14 +215,9 @@ class MundyOnChipRouterCompression(object):
             core_subsets.add_processor(
                 routing_table.x, routing_table.y, processor.processor_id)
 
-        # build binary path
-        binary_path = os.path.join(
-            os.path.dirname(on_chip_router_table_compression.__file__),
-            "rt_minimise.aplx")
-
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(binary_path, core_subsets)
+        executable_targets.add_subsets(_BINARY_PATH, core_subsets)
 
         txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets
