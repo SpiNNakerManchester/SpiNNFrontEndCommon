@@ -30,6 +30,9 @@ INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 LIBS = libspinn_frontend_common.a
 INSTALL_LIBS = $(LIBS:%.a=$(SPINN_LIB_DIR)/%.a)
 
+# Ensure $(INSTALL) is defined, even on MinGW
+INSTALL ?= install
+
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a: $(BUILD_OBJS) 
 	$(RM) $@
