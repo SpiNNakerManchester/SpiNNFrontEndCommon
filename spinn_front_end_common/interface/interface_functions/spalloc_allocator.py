@@ -129,6 +129,6 @@ class SpallocAllocator(object):
             # get param from jobs before starting, so that hanging doesn't
             # occur
             return job, job.hostname
-        except:
+        except Exception:
             job.destroy()
             raise

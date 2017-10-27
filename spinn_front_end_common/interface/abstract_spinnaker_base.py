@@ -1115,7 +1115,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 helpful_functions.write_finished_file(
                     self._app_data_top_simulation_folder,
                     self._report_simulation_top_directory)
-            except:
+            except Exception:
                 logger.warn("problem when shutting down", exc_info=True)
             raise ex_type, ex_value, ex_traceback
 
