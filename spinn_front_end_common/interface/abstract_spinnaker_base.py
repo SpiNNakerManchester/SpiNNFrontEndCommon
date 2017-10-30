@@ -1173,17 +1173,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
-        algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph.n_vertices > 0:
             inputs["MemoryMachineGraph"] = self._machine_graph
-
-        # add reinjection flag
-        inputs["EnableReinjectionFlag"] = self._config.getboolean(
-            "Machine", "enable_reinjection")
 
         # add max sdram size which we're going to allow (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
@@ -1234,10 +1232,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = 16
 
             algorithms.append("VirtualMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
@@ -1288,10 +1283,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = 16
 
             do_partitioning = False
             if need_virtual_board:
@@ -1495,9 +1487,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
-        # handle mc gatherers speed up algorithms
-        algorithms.append("InsertEdgesToExtraMonitorFunctionality")
-        algorithms.append("InsertExtraMonitorVerticesToGraphs")
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("InsertExtraMonitorVerticesToGraphs")
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -1703,6 +1697,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
+
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("ConfigureExtraMonitorFunctionality")
 
         # expected outputs from this phase
         outputs = [
@@ -2305,9 +2303,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "clear_tags")
 
         if self._txrx is not None:
-
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                self._txrx.enable_reinjection(multicast=False)
 
             # if stopping on machine, clear iptags and
             if clear_tags:
