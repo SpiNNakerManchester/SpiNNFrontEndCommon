@@ -109,7 +109,8 @@ class RouterProvenanceGatherer(object):
             re_injection_data = \
                 extra_monitor_vertices[0].get_reinjection_status_for_vertices(
                     placements=placements,
-                    extra_monitor_cores_for_data=extra_monitor_vertices)
+                    extra_monitor_cores_for_data=extra_monitor_vertices,
+                    transceiver=txrx)
 
         for router_table in sorted(
                 router_tables.routing_tables,
