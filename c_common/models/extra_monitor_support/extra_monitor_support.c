@@ -332,6 +332,8 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         data[0] = (control >> 16) & 0xFF;
         data[1] = (control >> 24) & 0xFF;
 
+        uint chipID = spin1_get_chip_id();
+
         // Put the statistics in the packet
         data[2] = n_dropped_packets;
         data[3] = n_missed_dropped_packets;
@@ -339,21 +341,23 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         data[5] = n_reinjected_packets;
         data[6] = n_link_dumped_packets;
         data[7] = n_processor_dumped_packets;
+        data[8] = chipID >> 8;
+        data[9] = chipID & 0xff;
 
         // Put the current services enabled in the packet
-        data[8] = 0;
+        data[10] = 0;
         bool values_to_check[] = {reinject_mc, reinject_pp,
                                   reinject_nn, reinject_fr};
         int flags[] = {DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
                        DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR};
         for (int i = 0; i < 4; i++) {
             if (values_to_check[i]) {
-                data[8] |= flags[i];
+                data[10] |= flags[i];
             }
         }
 
         // Return the number of bytes in the packet
-        return 9 * 4;
+        return 11 * 4;
 
     } else if (msg->arg1 == CMD_DPRI_RESET_COUNTERS) {
 
@@ -437,6 +441,7 @@ void __wrap_sark_int(void *pc) {
 
                 sark_msg_send(msg, 10);
                 sark_msg_free(msg);
+
             // handle data extractor functionality
             } else if ((dp & PORT_MASK) == 2){
                 msg->length = 12 + handle_sdp_message(msg);
@@ -484,7 +489,8 @@ void configure_comms_controller() {
 void configure_router() {
 
     // re-configure wait values in router
-    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
+    rtr[RTR_CONTROL] =
+        (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
 
     // clear router interrupts,
     (void) rtr[RTR_STATUS];
