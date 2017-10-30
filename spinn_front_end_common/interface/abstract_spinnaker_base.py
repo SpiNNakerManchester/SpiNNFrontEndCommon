@@ -1698,10 +1698,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support"):
-            algorithms.append("ConfigureExtraMonitorFunctionality")
-
         # expected outputs from this phase
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
