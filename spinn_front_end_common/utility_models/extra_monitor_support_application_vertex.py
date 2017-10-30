@@ -42,4 +42,4 @@ class ExtraMonitorSupportApplicationVertex(
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        placement.vertex.generate_data_specification(spec)
+        placement.vertex.generate_data_specification(spec, placement)
