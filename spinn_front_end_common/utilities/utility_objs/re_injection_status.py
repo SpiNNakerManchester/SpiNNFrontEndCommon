@@ -73,6 +73,7 @@ class ReInjectionStatus(object):
         :param offset: The offset in the data where the information starts
         :type offset: int
         """
+        print "len is {}, offset is {}".format(len(data), offset)
         (self._router_timeout, self._router_emergency_timeout,
          self._n_dropped_packets, self._n_missed_dropped_packets,
          self._n_dropped_packet_overflows, self._n_reinjected_packets,

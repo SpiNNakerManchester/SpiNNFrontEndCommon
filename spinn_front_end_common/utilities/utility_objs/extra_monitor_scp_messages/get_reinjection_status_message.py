@@ -61,7 +61,7 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
         result = self.scp_response_header.result
         if result != SCPResult.RC_OK:
             raise SpinnmanUnexpectedResponseCodeException(
-                "Get dropped packet reinjection status", self._command_code,
+                "Get packet reinjection status", self._command_code,
                 result.name)
         self._reinjection_functionality_status = \
             ReInjectionStatus(data, offset)

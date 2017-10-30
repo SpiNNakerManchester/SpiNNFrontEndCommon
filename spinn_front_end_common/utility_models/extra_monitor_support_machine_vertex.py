@@ -165,7 +165,7 @@ class ExtraMonitorSupportMachineVertex(
             transceiver.scamp_connection_selector)
         process.set_timeout(
             timeout_mantissa, timeout_exponent, core_subsets,
-            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_TIMEOUT.value)
+            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_TIMEOUT)
 
     def set_reinjection_router_emergency_timeout(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -189,7 +189,7 @@ class ExtraMonitorSupportMachineVertex(
             transceiver.scamp_connection_selector)
         process.set_timeout(
             timeout_mantissa, timeout_exponent, core_subsets,
-            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_EMERGENCY_TIMEOUT.value)
+            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_EMERGENCY_TIMEOUT)
 
     def reset_reinjection_counters(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -199,7 +199,7 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
         process.reset_counters(
-            core_subsets, self._EXTRA_MONITOR_COMMANDS.RESET_COUNTERS.value)
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.RESET_COUNTERS)
 
     def get_reinjection_status(self, placements, transceiver):
         """ gets the reinjection status from this extra monitor vertex
@@ -212,7 +212,7 @@ class ExtraMonitorSupportMachineVertex(
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status(
             placement.x, placement.y, placement.p,
-            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value)
+            self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -228,7 +228,7 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status_for_core_subsets(
-            core_subsets, self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value)
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
 
     def set_reinjection_packets(
             self, placements, transceiver, point_to_point=None, multicast=None,
@@ -264,7 +264,7 @@ class ExtraMonitorSupportMachineVertex(
             core_subsets, self._reinject_point_to_point,
             self._reinject_multicast, self._reinject_nearest_neighbour,
             self._reinject_fixed_route,
-            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value)
+            self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
 
     @staticmethod
     def _convert_vertices_to_core_subset(
@@ -284,3 +284,4 @@ class ExtraMonitorSupportMachineVertex(
                     "the router time out")
             placement = placements.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
+        return core_subsets

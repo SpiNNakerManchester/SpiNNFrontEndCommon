@@ -1,6 +1,7 @@
 // SARK-based program
 #include <sark.h>
 #include <stdbool.h>
+#include <common-typedefs.h>
 
 extern void spin1_wfi();
 extern INT_HANDLER sark_int_han(void);
@@ -59,18 +60,27 @@ extern INT_HANDLER sark_int_han(void);
 #define CMD_DPRI 30
 
 // Dropped packet re-injection internal control commands (arg1 of SCP message)
-#define CMD_DPRI_SET_ROUTER_TIMEOUT           0
-#define CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT 1
-#define CMD_DPRI_SET_PACKET_TYPES             2
-#define CMD_DPRI_GET_STATUS                   3
-#define CMD_DPRI_RESET_COUNTERS               4
-#define CMD_DPRI_EXIT                         5
+typedef enum reinjector_command_codes{
+    CMD_DPRI_SET_ROUTER_TIMEOUT = 0, CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
+    CMD_DPRI_SET_PACKET_TYPES = 2, CMD_DPRI_GET_STATUS = 3,
+    CMD_DPRI_RESET_COUNTERS = 4, CMD_DPRI_EXIT = 5
+} reinjector_command_codes;
 
 // Dropped packet re-injection packet type flags (arg2 of SCP message)
 #define DPRI_PACKET_TYPE_MC 1
 #define DPRI_PACKET_TYPE_PP 2
 #define DPRI_PACKET_TYPE_NN 4
 #define DPRI_PACKET_TYPE_FR 8
+
+//! values for the priority for each callback
+typedef enum positions_in_memory_for_the_reinject_flags{
+    REINJECT_MULTICAST = 0, REINJECT_POINT_To_POINT = 1,
+    REINJECT_FIXED_ROUTE = 2, REINJECT_NEAREST_NEIGHBOUR = 3
+} positions_in_memory_for_the_reinject_flags;
+
+typedef enum data_spec_regions{
+    CONFIG = 0
+}data_spec_regions;
 
 // ------------------------------------------------------------------------
 
@@ -227,8 +237,8 @@ INT_HANDLER dropped_packet_callback() {
     // clear dump status and interrupt in router,
     uint rtr_dstat = rtr[RTR_DSTAT];
     uint rtr_dump_outputs = rtr[RTR_DLINK];
-    uint is_processor_dump = (rtr_dump_outputs >> 6) & RTR_FPE_MASK;
-    uint is_link_dump = rtr_dump_outputs & RTR_LE_MASK;
+    uint is_processor_dump = ((rtr_dump_outputs >> 6) & RTR_FPE_MASK);
+    uint is_link_dump = (rtr_dump_outputs & RTR_LE_MASK);
 
     // only reinject if configured
     uint packet_type = (hdr & PKT_TYPE_MASK);
@@ -291,7 +301,7 @@ INT_HANDLER dropped_packet_callback() {
 }
 
 static uint sark_cmd_dpri(sdp_msg_t *msg) {
-    if (msg->arg1 == CMD_DPRI_SET_ROUTER_TIMEOUT) {
+    if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_TIMEOUT) {
 
         // Set the router wait1 timeout
         if (msg->arg2 > 0xFF) {
@@ -302,7 +312,7 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
             | ((msg->arg2 & 0xFF) << 16);
         return 0;
 
-    } else if (msg->arg1 == CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT) {
+    } else if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT) {
 
         // Set the router wait2 timeout
         if (msg->arg2 > 0xFF) {
@@ -313,7 +323,7 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
             | ((msg->arg2 & 0xFF) << 24);
         return 0;
 
-    } else if (msg->arg1 == CMD_DPRI_SET_PACKET_TYPES) {
+    } else if (msg->cmd_rc == CMD_DPRI_SET_PACKET_TYPES) {
 
         // Set the re-injection options
         reinject_mc = (msg->arg2 & DPRI_PACKET_TYPE_MC) != 0;
@@ -322,9 +332,10 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         reinject_fr = (msg->arg2 & DPRI_PACKET_TYPE_FR) != 0;
         return 0;
 
-    } else if (msg->arg1 == CMD_DPRI_GET_STATUS) {
+    } else if (msg->cmd_rc == CMD_DPRI_GET_STATUS) {
 
         // Get the status and put it in the packet
+        io_printf(IO_BUF, "a");
         uint *data = &(msg->arg1);
 
         // Put the router timeouts in the packet
@@ -332,7 +343,7 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         data[0] = (control >> 16) & 0xFF;
         data[1] = (control >> 24) & 0xFF;
 
-        uint chipID = spin1_get_chip_id();
+        uint chipID = sv->p2p_addr;
 
         // Put the statistics in the packet
         data[2] = n_dropped_packets;
@@ -359,7 +370,7 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         // Return the number of bytes in the packet
         return 11 * 4;
 
-    } else if (msg->arg1 == CMD_DPRI_RESET_COUNTERS) {
+    } else if (msg->cmd_rc == CMD_DPRI_RESET_COUNTERS) {
 
         // Reset the counters
         n_dropped_packets = 0;
@@ -370,7 +381,7 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         n_processor_dumped_packets = 0;
 
         return 0;
-    } else if (msg->arg1 == CMD_DPRI_EXIT) {
+    } else if (msg->cmd_rc == CMD_DPRI_EXIT) {
         uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
         vic[VIC_DISABLE] = int_select;
         vic[VIC_DISABLE] = (1 << CC_TNF_INT);
@@ -391,26 +402,23 @@ static uint handle_scp_message(sdp_msg_t *msg) {
 
     if (len < 24) {
         msg->cmd_rc = RC_LEN;
+        io_printf(IO_BUF, "cc");
         return 0;
     }
 
-    uint cmd = msg->cmd_rc;
     msg->cmd_rc = RC_OK;
-
-    if (cmd == CMD_DPRI) {
-        return sark_cmd_dpri(msg);
-    }
-
-    msg->cmd_rc = RC_CMD;
-    return 0;
+    io_printf(IO_BUF, "b");
+    return sark_cmd_dpri(msg);
 }
 
 static uint handle_sdp_message(sdp_msg_t *msg){
-
+    return 0;
 }
 
 void __real_sark_int(void *pc);
 void __wrap_sark_int(void *pc) {
+
+    io_printf(IO_BUF, "recieved packet");
 
     // Check for extra messages added by this core
     uint cmd = sark.vcpu->mbox_ap_cmd;
@@ -427,6 +435,7 @@ void __wrap_sark_int(void *pc) {
             sark_shmsg_free(shm_msg);
 
             uint dp = msg->dest_port;
+            io_printf(IO_BUF, "port %d", dp);
 
             if ((dp & PORT_MASK) == 0) {
                 msg->length = 12 + handle_scp_message(msg);
@@ -441,6 +450,7 @@ void __wrap_sark_int(void *pc) {
 
                 sark_msg_send(msg, 10);
                 sark_msg_free(msg);
+                io_printf(IO_BUF, "c");
 
             // handle data extractor functionality
             } else if ((dp & PORT_MASK) == 2){
@@ -502,6 +512,54 @@ void configure_router() {
     rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
 }
 
+
+void initialise_reinjection_functionality(){
+/*
+    #include <data_specification.h>
+    // set up config region
+    // Get the address this core's DTCM data starts at from SRAM
+    address_t address = data_specification_get_data_address();
+    address = data_specification_get_region(CONFIG, address);
+
+    // Read the header
+    if (!data_specification_read_header(address)) {
+        io_printf(IO_BUF, "failed to read the dsg header properly");
+    }
+
+    // process mc reinject flag
+    if (address[REINJECT_MULTICAST] == 1){
+        reinject_mc = false;
+    }
+    else{
+        reinject_mc = true;
+    }
+
+    // process point to point flag
+    if (address[REINJECT_POINT_To_POINT] == 1){
+        reinject_pp = false;
+    }
+    else{
+        reinject_pp = true;
+    }
+
+    // process fixed route flag
+    if (address[REINJECT_FIXED_ROUTE] == 1){
+        reinject_fr = false;
+    }
+    else{
+        reinject_fr = true;
+    }
+
+    // process fixed route flag
+    if (address[REINJECT_NEAREST_NEIGHBOUR] == 1){
+        reinject_nn = false;
+    }
+    else{
+        reinject_nn = true;
+    }
+*/
+}
+
 void c_main() {
     sark_cpu_state(CPU_STATE_RUN);
 
@@ -516,11 +574,9 @@ void c_main() {
     n_missed_dropped_packets = 0;
     n_dropped_packet_overflows = 0;
 
-    // Initially, only reinject mc
-    reinject_mc = true;
-    reinject_pp = false;
-    reinject_nn = false;
-    reinject_fr = false;
+    // update which packet types to reinject
+    initialise_reinjection_functionality();
+
 
     // Disable the interrupts that we are configuring (except CPU for watchdog)
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);

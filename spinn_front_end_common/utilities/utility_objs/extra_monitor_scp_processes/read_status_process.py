@@ -12,8 +12,7 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
 
     def handle_reinjection_status_response(self, response):
         status = response.dpri_status
-        self._reinjector_status[(status.chip_x, status.chip_y)] = \
-            response.dpri_status
+        self._reinjector_status[(status.chip_x, status.chip_y)] = status
 
     def get_reinjection_status(self, x, y, p, command_code):
         self._reinjector_status = dict()
