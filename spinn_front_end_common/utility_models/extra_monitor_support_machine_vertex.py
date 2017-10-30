@@ -12,6 +12,9 @@ from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.reset_counters_process import \
     ResetCountersProcess
 from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes.set_packet_types_process import \
+    SetPacketTypesProcess
+from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_router_emergency_timeout_process import \
     SetRouterEmergencyTimeoutProcess
 from spinn_front_end_common.utilities.utility_objs.\
@@ -78,6 +81,22 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
+
+    @property
+    def reinject_multicast(self):
+        return self._reinject_multicast
+
+    @property
+    def reinject_point_to_point(self):
+        return self._reinject_point_to_point
+
+    @property
+    def reinject_nearest_neighbour(self):
+        return self._reinject_nearest_neighbour
+
+    @property
+    def reinject_fixed_route(self):
+        return self._reinject_fixed_route
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -186,12 +205,53 @@ class ExtraMonitorSupportMachineVertex(
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
+        """ gets the reinjection status from a set of extra monitor cores
+        
+        :param placements: the placements object
+        :param extra_monitor_cores_for_data: the extra monitor cores to get\
+         status from
+        :param transceiver: the spinnMan interface
+        :rtype: None 
+        """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status_for_core_subsets(core_subsets)
 
+    def set_reinjection_packets(
+            self, placements, transceiver, point_to_point=None, multicast=None,
+            nearest_neighbour=None, fixed_route=None):
+        """
+        
+        :param placements: placements object
+        :param transceiver: spinnman instance
+        :param point_to_point: bool stating if point to point should be set,\
+         or None if left as before
+        :param multicast: bool stating if multicast should be set,\
+         or None if left as before
+        :param nearest_neighbour: bool stating if nearest neighbour should be \
+        set, or None if left as before
+        :param fixed_route: bool stating if fixed route should be set, or \
+        None if left as before.
+        :rtype: None 
+        """
+        if multicast is not None:
+            self._reinject_multicast = multicast
+        if point_to_point is not None:
+            self._reinject_point_to_point = point_to_point
+        if nearest_neighbour is not None:
+            self._reinject_nearest_neighbour = nearest_neighbour
+        if fixed_route is not None:
+            self._reinject_fixed_route = fixed_route
 
+        placement = placements.get_placement_of_vertex(self)
+        core_subsets = CoreSubsets()
+        core_subsets.add_processor(placement.x, placement.y, placement.p)
+        process = SetPacketTypesProcess(transceiver.scamp_connection_selector)
+        process.set_packet_types(
+            core_subsets, self._reinject_point_to_point,
+            self._reinject_multicast, self._reinject_nearest_neighbour,
+            self._reinject_fixed_route)
 
     @staticmethod
     def _convert_vertices_to_core_subset(
