@@ -1,6 +1,3 @@
-from spinn_front_end_common.utility_models.\
-    extra_monitor_support_machine_vertex import \
-    ExtraMonitorSupportMachineVertex
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
@@ -12,7 +9,12 @@ class ResetCountersMessage(AbstractSCPRequest):
         reinjection
     """
 
-    def __init__(self, x, y, p):
+    __slots__ = (
+        # command code
+        "_command_code"
+    )
+
+    def __init__(self, x, y, p, command_code):
         """
         :param x: The x-coordinate of a chip, between 0 and 255
         :type x: int
@@ -21,18 +23,19 @@ class ResetCountersMessage(AbstractSCPRequest):
         :param p: The processor running the dropped packet reinjector, between\
                 0 and 17
         :type p: int
+        :param command_code: the command code used by the extra monitor \
+        vertex for resetting reinjection counters. 
         """
+
+        self._command_code = command_code
         AbstractSCPRequest.__init__(
             self,
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED, destination_port=0,
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
-            SCPRequestHeader(command=ExtraMonitorSupportMachineVertex.
-                             EXTRA_MONITOR_COMMANDS.RESET_COUNTERS.value()))
+            SCPRequestHeader(command=self._command_code))
 
     def get_scp_response(self):
         return CheckOKResponse(
-            "Reset dropped packet reinjection counters",
-            ExtraMonitorSupportMachineVertex.EXTRA_MONITOR_COMMANDS.
-            RESET_COUNTERS.value())
+            "Reset dropped packet reinjection counters", self._command_code)

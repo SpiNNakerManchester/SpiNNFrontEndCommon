@@ -34,13 +34,13 @@ class ExtraMonitorSupportMachineVertex(
         "_reinject_multicast",
 
         # if we reinject point to point packets
-        "reinject_point_to_point",
+        "_reinject_point_to_point",
 
         # if we reinject nearest neighbour packets
-        "reinject_nearest_neighbour",
+        "_reinject_nearest_neighbour",
 
         # if we reinject fixed route packets
-        "reinject_fixed_route"
+        "_reinject_fixed_route"
     )
 
     _EXTRA_MONITOR_DSG_REGIONS = Enum(
@@ -49,7 +49,7 @@ class ExtraMonitorSupportMachineVertex(
 
     _CONFIG_REGION_SIZE_IN_BYTES = 4 * 4
 
-    EXTRA_MONITOR_COMMANDS = Enum(
+    _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
         names=[("SET_ROUTER_TIMEOUT", 0),
                ("SET_ROUTER_EMERGENCY_TIMEOUT", 1),
@@ -158,7 +158,9 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
-        process.set_timeout(timeout_mantissa, timeout_exponent, core_subsets)
+        process.set_timeout(
+            timeout_mantissa, timeout_exponent, core_subsets,
+            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_TIMEOUT.value())
 
     def set_reinjection_router_emergency_timeout(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -180,7 +182,9 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
             transceiver.scamp_connection_selector)
-        process.set_timeout(timeout_mantissa, timeout_exponent, core_subsets)
+        process.set_timeout(
+            timeout_mantissa, timeout_exponent, core_subsets,
+            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_EMERGENCY_TIMEOUT.value())
 
     def reset_reinjection_counters(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -189,7 +193,8 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
-        process.reset_counters(core_subsets)
+        process.reset_counters(
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.RESET_COUNTERS.value())
 
     def get_reinjection_status(self, placements, transceiver):
         """ gets the reinjection status from this extra monitor vertex
@@ -201,7 +206,8 @@ class ExtraMonitorSupportMachineVertex(
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status(
-            placement.x, placement.y, placement.p)
+            placement.x, placement.y, placement.p,
+            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value())
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -216,7 +222,8 @@ class ExtraMonitorSupportMachineVertex(
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        return process.get_reinjection_status_for_core_subsets(core_subsets)
+        return process.get_reinjection_status_for_core_subsets(
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value())
 
     def set_reinjection_packets(
             self, placements, transceiver, point_to_point=None, multicast=None,
@@ -251,7 +258,8 @@ class ExtraMonitorSupportMachineVertex(
         process.set_packet_types(
             core_subsets, self._reinject_point_to_point,
             self._reinject_multicast, self._reinject_nearest_neighbour,
-            self._reinject_fixed_route)
+            self._reinject_fixed_route,
+            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value())
 
     @staticmethod
     def _convert_vertices_to_core_subset(

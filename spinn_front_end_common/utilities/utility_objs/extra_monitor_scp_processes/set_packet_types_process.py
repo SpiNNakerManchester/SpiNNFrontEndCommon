@@ -10,7 +10,7 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         AbstractMultiConnectionProcess.__init__(self, connection_selector)
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
-            nearest_neighbour, fixed_route):
+            nearest_neighbour, fixed_route, command_code):
         """
         :param core_subsets: sets of cores to send command to
         :param point_to_point: bool stating if point to point should be set
@@ -25,6 +25,7 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
             for processor_id in core_subset.processor_ids:
                 self._send_request(SetReinjectionPacketTypesMessage(
                     core_subset.x, core_subset.y, processor_id, multicast,
-                    point_to_point, fixed_route, nearest_neighbour))
+                    point_to_point, fixed_route, nearest_neighbour,
+                    command_code))
         self._finish()
         self.check_for_error()

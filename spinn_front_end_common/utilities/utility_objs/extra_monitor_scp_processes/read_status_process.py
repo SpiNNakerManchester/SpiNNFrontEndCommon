@@ -15,20 +15,21 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
         self._reinjector_status[(status.chip_x, status.chip_y)] = \
             response.dpri_status
 
-    def get_reinjection_status(self, x, y, p):
+    def get_reinjection_status(self, x, y, p, command_code):
         self._reinjector_status = dict()
-        self._send_request(GetReinjectionStatusMessage(x, y, p),
+        self._send_request(GetReinjectionStatusMessage(x, y, p, command_code),
                            callback=self.handle_reinjection_status_response)
         self._finish()
         self.check_for_error()
         return self._reinjector_status[(x, y)]
 
-    def get_reinjection_status_for_core_subsets(self, core_subsets):
+    def get_reinjection_status_for_core_subsets(
+            self, core_subsets, command_code):
         self._reinjector_status = dict()
         for core_subset in core_subsets.core_subsets:
             for processor_id in core_subset.processor_ids:
                 self._send_request(GetReinjectionStatusMessage(
-                    core_subset.x, core_subset.y, processor_id),
+                    core_subset.x, core_subset.y, processor_id, command_code),
                     callback=self.handle_reinjection_status_response)
         self._finish()
         self.check_for_error()
