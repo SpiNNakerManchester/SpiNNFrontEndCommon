@@ -128,14 +128,19 @@ class ExtraMonitorSupportMachineVertex(
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
         spec.reserve_memory_region(
-            region=self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value(),
+            region=self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value,
             size=self._CONFIG_REGION_SIZE_IN_BYTES,
             label="re-injection functionality config region")
-        spec.switch_write_focus(self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value())
-        spec.write_value(self._reinject_multicast)
-        spec.write_value(self._reinject_point_to_point)
-        spec.write_value(self._reinject_fixed_route)
-        spec.write_value(self._reinject_nearest_neighbour)
+
+        spec.switch_write_focus(self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value)
+        for value in zip(
+                [self._reinject_multicast, self._reinject_point_to_point,
+                 self._reinject_fixed_route,
+                 self._reinject_nearest_neighbour]):
+            if value:
+                spec.write_value(0)
+            else:
+                spec.write_value(1)
         spec.end_specification()
 
     def set_router_time_outs(
@@ -160,7 +165,7 @@ class ExtraMonitorSupportMachineVertex(
             transceiver.scamp_connection_selector)
         process.set_timeout(
             timeout_mantissa, timeout_exponent, core_subsets,
-            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_TIMEOUT.value())
+            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_TIMEOUT.value)
 
     def set_reinjection_router_emergency_timeout(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -184,7 +189,7 @@ class ExtraMonitorSupportMachineVertex(
             transceiver.scamp_connection_selector)
         process.set_timeout(
             timeout_mantissa, timeout_exponent, core_subsets,
-            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_EMERGENCY_TIMEOUT.value())
+            self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_EMERGENCY_TIMEOUT.value)
 
     def reset_reinjection_counters(
             self, transceiver, placements, extra_monitor_cores_to_set):
@@ -194,7 +199,7 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
         process.reset_counters(
-            core_subsets, self._EXTRA_MONITOR_COMMANDS.RESET_COUNTERS.value())
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.RESET_COUNTERS.value)
 
     def get_reinjection_status(self, placements, transceiver):
         """ gets the reinjection status from this extra monitor vertex
@@ -207,7 +212,7 @@ class ExtraMonitorSupportMachineVertex(
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status(
             placement.x, placement.y, placement.p,
-            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value())
+            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value)
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
@@ -223,7 +228,7 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status_for_core_subsets(
-            core_subsets, self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value())
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value)
 
     def set_reinjection_packets(
             self, placements, transceiver, point_to_point=None, multicast=None,
@@ -259,7 +264,7 @@ class ExtraMonitorSupportMachineVertex(
             core_subsets, self._reinject_point_to_point,
             self._reinject_multicast, self._reinject_nearest_neighbour,
             self._reinject_fixed_route,
-            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value())
+            self._EXTRA_MONITOR_COMMANDS.GET_STATUS.value)
 
     @staticmethod
     def _convert_vertices_to_core_subset(
