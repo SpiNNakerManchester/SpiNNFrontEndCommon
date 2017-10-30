@@ -83,6 +83,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            <param_type>MemoryExtraMonitorVertices</param_type>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForExtraMonitorSupport">
@@ -544,10 +545,6 @@
                 <param_type>AutoDetectBMPFlag</param_type>
             </parameter>
             <parameter>
-                <param_name>enable_reinjection</param_name>
-                <param_type>EnableReinjectionFlag</param_type>
-            </parameter>
-            <parameter>
                 <param_name>scamp_connection_data</param_name>
                 <param_type>ScampConnectionData</param_type>
             </parameter>
@@ -573,7 +570,6 @@
             <param_name>downed_links</param_name>
             <param_name>board_version</param_name>
             <param_name>auto_detect_bmp</param_name>
-            <param_name>enable_reinjection</param_name>
             <param_name>scamp_connection_data</param_name>
             <param_name>boot_port_num</param_name>
             <param_name>max_sdram_size</param_name>

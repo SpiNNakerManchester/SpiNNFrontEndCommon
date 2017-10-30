@@ -1,5 +1,6 @@
 from pacman.model.graphs.application import ApplicationVertex
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import \
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.utility_models.\
     extra_monitor_support_machine_vertex import \
     ExtraMonitorSupportMachineVertex
@@ -7,13 +8,15 @@ from spinn_utilities.overrides import overrides
 
 
 class ExtraMonitorSupportApplicationVertex(
-        ApplicationVertex, AbstractHasAssociatedBinary):
+        ApplicationVertex, AbstractHasAssociatedBinary,
+        AbstractGeneratesDataSpecification):
 
     def __init__(self, constraints):
         ApplicationVertex.__init__(
             self, label="ExtraMonitorSupportApplicationVertex",
             constraints=constraints)
         AbstractHasAssociatedBinary.__init__(self)
+        AbstractGeneratesDataSpecification.__init__(self)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
@@ -36,3 +39,7 @@ class ExtraMonitorSupportApplicationVertex(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
         return ExtraMonitorSupportMachineVertex.static_resources_required()
+
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
+        placement.vertex.generate_data_specification(spec)

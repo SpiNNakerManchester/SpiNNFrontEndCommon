@@ -50,10 +50,11 @@ class InsertExtraMonitorVerticesToGraphs(object):
             vertex_to_ethernet_connected_chip_mapping)
 
         # handle re injector and chip based data extractor functionality.
-        self._handle_second_monitor_functionality(
+        extra_monitor_vertices = self._handle_second_monitor_functionality(
             progress, machine, application_graph, machine_graph, graph_mapper)
 
-        return vertex_to_ethernet_connected_chip_mapping
+        return (vertex_to_ethernet_connected_chip_mapping,
+                extra_monitor_vertices)
 
     @staticmethod
     def _handle_second_monitor_functionality(
@@ -66,14 +67,19 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param application_graph: app graph
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
-        :rtype: None 
+        :rtype: list 
+        :return: list of extra monitor cores 
         """
+
+        extra_monitor_vertices = list()
+
         for chip in progress.over(machine.chips):
 
             # add to machine graph
             machine_vertex = ExtraMonitorSupportMachineVertex(
                 constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
             machine_graph.add_vertex(machine_vertex)
+            extra_monitor_vertices.append(machine_vertex)
 
             # add application graph as needed
             if application_graph is not None:
@@ -82,6 +88,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 application_graph.add_vertex(app_vertex)
                 graph_mapper.add_vertex_mapping(
                     machine_vertex, Slice(0, 0), app_vertex)
+        return extra_monitor_vertices
 
     @staticmethod
     def _handle_data_extraction_vertices(
