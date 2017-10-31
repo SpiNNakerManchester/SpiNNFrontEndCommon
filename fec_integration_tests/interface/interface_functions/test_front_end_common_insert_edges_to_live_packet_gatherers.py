@@ -12,7 +12,7 @@ from spinn_front_end_common.utility_models \
 from spinn_machine import VirtualMachine
 from spinnman.messages.eieio import EIEIOType
 from fec_integration_tests.interface.interface_functions.test_vertex import \
-    TestVertex
+    IntegrationTestVertex
 
 import unittest
 from collections import defaultdict
@@ -298,7 +298,7 @@ class TestInsertLPGEdges(unittest.TestCase):
         # add graph vertices which reside on areas of the machine to ensure
         #  spread over boards.
         for x, y, eth_x, eth_y in positions:
-            vertex = TestVertex(1)
+            vertex = IntegrationTestVertex(1)
             app_graph.add_vertex(vertex)
             vertex_slice = Slice(0, 0)
             resources_required = vertex.get_resources_used_by_atoms(
