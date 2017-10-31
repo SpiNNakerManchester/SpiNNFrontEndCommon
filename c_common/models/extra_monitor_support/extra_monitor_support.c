@@ -56,27 +56,45 @@ extern INT_HANDLER sark_int_han(void);
 #define PKT_TYPE_NN        (2 << PKT_TYPE_SHFT)
 #define PKT_TYPE_FR        (3 << PKT_TYPE_SHFT)
 
-// Dropped packet re-injection control SCP command
-#define CMD_DPRI 30
+#define ROUTER_TIMEOUT_MASK 0xFF
 
-// Dropped packet re-injection internal control commands (arg1 of SCP message)
+// Dropped packet re-injection internal control commands (rc of SCP message)
 typedef enum reinjector_command_codes{
     CMD_DPRI_SET_ROUTER_TIMEOUT = 0, CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
     CMD_DPRI_SET_PACKET_TYPES = 2, CMD_DPRI_GET_STATUS = 3,
     CMD_DPRI_RESET_COUNTERS = 4, CMD_DPRI_EXIT = 5
 } reinjector_command_codes;
 
-// Dropped packet re-injection packet type flags (arg2 of SCP message)
-#define DPRI_PACKET_TYPE_MC 1
-#define DPRI_PACKET_TYPE_PP 2
-#define DPRI_PACKET_TYPE_NN 4
-#define DPRI_PACKET_TYPE_FR 8
+//! flag positions for packet types being reinjected
+typedef enum reinjection_flag_positions{
+    DPRI_PACKET_TYPE_MC = 1, DPRI_PACKET_TYPE_PP = 2, DPRI_PACKET_TYPE_NN = 4,
+    DPRI_PACKET_TYPE_FR = 8
+}reinjection_flag_positions;
 
-//! values for the priority for each callback
+//! positions in response packet for reinjector status
+typedef enum status_response_packet_format{
+    ROUTER_TIME_OUT_POSITION = 0,
+    ROUTER_EMERGENCY_TIMEOUT_POSITION = 1,
+    NUMBER_DROPPED_PACKETS_POSITION = 2,
+    NUMBER_MISSED_DROPPED_PACKETS_POSITION = 3,
+    NUMBER_DROPPED_PACKETS_OVERFLOWS_POSITION = 4,
+    NUMBER_REINJECTED_PACKETS_POSIITON = 5,
+    NUMBER_LINK_DUMPED_PACKETS_POSITION = 6,
+    NUMBER_PROCESSOR_DUMPED_PACKETS_POSITION = 7,
+    PACKET_TYPES_REINJECTED_POSITION = 8,
+    LENGTH_OF_DATA_FOR_STATUS_RESPONSE = 9
+}status_response_packet_format;
+
+//! values for the position of data in memory.
 typedef enum positions_in_memory_for_the_reinject_flags{
     REINJECT_MULTICAST = 0, REINJECT_POINT_To_POINT = 1,
     REINJECT_FIXED_ROUTE = 2, REINJECT_NEAREST_NEIGHBOUR = 3
 } positions_in_memory_for_the_reinject_flags;
+
+//! values for port numbers this core will respond to
+typedef enum functionality_to_port_num_map{
+    RE_INJECTION_FUNCTIONALITY = 4, DATA_SPEED_UP_FUNCTIONALITY = 5
+}functionality_to_port_num_map;
 
 typedef enum data_spec_regions{
     CONFIG = 0
@@ -237,8 +255,8 @@ INT_HANDLER dropped_packet_callback() {
     // clear dump status and interrupt in router,
     uint rtr_dstat = rtr[RTR_DSTAT];
     uint rtr_dump_outputs = rtr[RTR_DLINK];
-    uint is_processor_dump = ((rtr_dump_outputs >> 6) & RTR_FPE_MASK);
-    uint is_link_dump = (rtr_dump_outputs & RTR_LE_MASK);
+    uint is_processor_dump = (rtr_dump_outputs >> 6) & RTR_FPE_MASK;
+    uint is_link_dump = rtr_dump_outputs & RTR_LE_MASK;
 
     // only reinject if configured
     uint packet_type = (hdr & PKT_TYPE_MASK);
@@ -300,77 +318,88 @@ INT_HANDLER dropped_packet_callback() {
     }
 }
 
-static uint sark_cmd_dpri(sdp_msg_t *msg) {
+//! \brief handles the commands for the reinjector code.
+//! \param[in] msg: the message with the commands
+//! \return the length of extra data put into the message for return
+static uint handle_reinjection_command(sdp_msg_t *msg) {
     if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_TIMEOUT) {
 
         // Set the router wait1 timeout
-        if (msg->arg2 > 0xFF) {
+        if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
             msg->cmd_rc = RC_ARG;
             return 0;
         }
         rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
-            | ((msg->arg2 & 0xFF) << 16);
+            | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
+            
+        // set scp command to ok , as successfully completed
+        msg->cmd_rc = RC_OK;
         return 0;
 
     } else if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT) {
 
         // Set the router wait2 timeout
-        if (msg->arg2 > 0xFF) {
+        if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
             msg->cmd_rc = RC_ARG;
             return 0;
         }
         rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
-            | ((msg->arg2 & 0xFF) << 24);
+            | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
+            
+        // set scp command to ok , as successfully completed
+        msg->cmd_rc = RC_OK;
         return 0;
 
     } else if (msg->cmd_rc == CMD_DPRI_SET_PACKET_TYPES) {
 
         // Set the re-injection options
-        reinject_mc = (msg->arg2 & DPRI_PACKET_TYPE_MC) != 0;
-        reinject_pp = (msg->arg2 & DPRI_PACKET_TYPE_PP) != 0;
-        reinject_nn = (msg->arg2 & DPRI_PACKET_TYPE_NN) != 0;
-        reinject_fr = (msg->arg2 & DPRI_PACKET_TYPE_FR) != 0;
+        read_packet_types_for_reinjection((address_t) msg->arg1);
+
+        // set scp command to ok , as successfully completed
+        msg->cmd_rc = RC_OK;
         return 0;
 
     } else if (msg->cmd_rc == CMD_DPRI_GET_STATUS) {
-
         // Get the status and put it in the packet
-        io_printf(IO_BUF, "a");
         uint *data = &(msg->arg1);
 
         // Put the router timeouts in the packet
         uint control = (uint) (rtr[RTR_CONTROL] & 0xFFFF0000);
-        data[0] = (control >> 16) & 0xFF;
-        data[1] = (control >> 24) & 0xFF;
-
-        uint chipID = sv->p2p_addr;
+        data[ROUTER_TIME_OUT_POSITION] = (control >> 16) & ROUTER_TIMEOUT_MASK;
+        data[ROUTER_EMERGENCY_TIMEOUT_POSITION] =
+            (control >> 24) & ROUTER_TIMEOUT_MASK;
 
         // Put the statistics in the packet
-        data[2] = n_dropped_packets;
-        data[3] = n_missed_dropped_packets;
-        data[4] = n_dropped_packet_overflows;
-        data[5] = n_reinjected_packets;
-        data[6] = n_link_dumped_packets;
-        data[7] = n_processor_dumped_packets;
-        data[8] = chipID >> 8;
-        data[9] = chipID & 0xff;
+        data[NUMBER_DROPPED_PACKETS_POSITION] = n_dropped_packets;
+        data[NUMBER_MISSED_DROPPED_PACKETS_POSITION] =
+            n_missed_dropped_packets;
+        data[NUMBER_DROPPED_PACKETS_OVERFLOWS_POSITION] =
+            n_dropped_packet_overflows;
+        data[NUMBER_REINJECTED_PACKETS_POSIITON] = n_reinjected_packets;
+        data[NUMBER_LINK_DUMPED_PACKETS_POSITION] = n_link_dumped_packets;
+        data[NUMBER_PROCESSOR_DUMPED_PACKETS_POSITION] =
+            n_processor_dumped_packets;
+
+        io_printf(IO_BUF, "dropped packets %d\n", n_dropped_packets);
 
         // Put the current services enabled in the packet
-        data[10] = 0;
+        data[PACKET_TYPES_REINJECTED_POSITION] = 0;
         bool values_to_check[] = {reinject_mc, reinject_pp,
                                   reinject_nn, reinject_fr};
         int flags[] = {DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
                        DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR};
         for (int i = 0; i < 4; i++) {
             if (values_to_check[i]) {
-                data[10] |= flags[i];
+                data[PACKET_TYPES_REINJECTED_POSITION] |= flags[i];
             }
         }
 
+        // set scp command to ok , as successfully completed
+        msg->cmd_rc = RC_OK;
         // Return the number of bytes in the packet
-        return 11 * 4;
+        return LENGTH_OF_DATA_FOR_STATUS_RESPONSE * 4;
 
-    } else if (msg->cmd_rc == CMD_DPRI_RESET_COUNTERS) {
+    } else if (msg->arg1 == CMD_DPRI_RESET_COUNTERS) {
 
         // Reset the counters
         n_dropped_packets = 0;
@@ -379,15 +408,19 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
         n_reinjected_packets = 0;
         n_link_dumped_packets = 0;
         n_processor_dumped_packets = 0;
-
+        
+        // set scp command to ok , as successfully completed
+        msg->cmd_rc = RC_OK;
         return 0;
-    } else if (msg->cmd_rc == CMD_DPRI_EXIT) {
+    } else if (msg->arg1 == CMD_DPRI_EXIT) {
         uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
         vic[VIC_DISABLE] = int_select;
         vic[VIC_DISABLE] = (1 << CC_TNF_INT);
         vic[VIC_SELECT] = 0;
         run = false;
-
+        
+        // set scp command to ok , as successfully completed
+        msg->cmd_rc = RC_OK;
         return 0;
     }
 
@@ -397,28 +430,8 @@ static uint sark_cmd_dpri(sdp_msg_t *msg) {
     return 0;
 }
 
-static uint handle_scp_message(sdp_msg_t *msg) {
-    uint len = msg->length;
-
-    if (len < 24) {
-        msg->cmd_rc = RC_LEN;
-        io_printf(IO_BUF, "cc");
-        return 0;
-    }
-
-    msg->cmd_rc = RC_OK;
-    io_printf(IO_BUF, "b");
-    return sark_cmd_dpri(msg);
-}
-
-static uint handle_sdp_message(sdp_msg_t *msg){
-    return 0;
-}
-
 void __real_sark_int(void *pc);
 void __wrap_sark_int(void *pc) {
-
-    io_printf(IO_BUF, "recieved packet");
 
     // Check for extra messages added by this core
     uint cmd = sark.vcpu->mbox_ap_cmd;
@@ -435,26 +448,10 @@ void __wrap_sark_int(void *pc) {
             sark_shmsg_free(shm_msg);
 
             uint dp = msg->dest_port;
-            io_printf(IO_BUF, "port %d", dp);
 
-            if ((dp & PORT_MASK) == 0) {
-                msg->length = 12 + handle_scp_message(msg);
-                uint dest_port = msg->dest_port;
-                uint dest_addr = msg->dest_addr;
-
-                msg->dest_port = msg->srce_port;
-                msg->srce_port = dest_port;
-
-                msg->dest_addr = msg->srce_addr;
-                msg->srce_addr = dest_addr;
-
-                sark_msg_send(msg, 10);
-                sark_msg_free(msg);
-                io_printf(IO_BUF, "c");
-
-            // handle data extractor functionality
-            } else if ((dp & PORT_MASK) == 2){
-                msg->length = 12 + handle_sdp_message(msg);
+            if (((dp & PORT_MASK) >> PORT_SHIFT) == 
+                    RE_INJECTION_FUNCTIONALITY) {
+                msg->length = 12 + handle_reinjection_command(msg);
                 uint dest_port = msg->dest_port;
                 uint dest_addr = msg->dest_addr;
 
@@ -499,8 +496,8 @@ void configure_comms_controller() {
 void configure_router() {
 
     // re-configure wait values in router
-    rtr[RTR_CONTROL] =
-        (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
+    rtr[RTR_CONTROL] = (
+        rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
 
     // clear router interrupts,
     (void) rtr[RTR_STATUS];
@@ -512,20 +509,8 @@ void configure_router() {
     rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
 }
 
-
-void initialise_reinjection_functionality(){
-/*
-    #include <data_specification.h>
-    // set up config region
-    // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
-    address = data_specification_get_region(CONFIG, address);
-
-    // Read the header
-    if (!data_specification_read_header(address)) {
-        io_printf(IO_BUF, "failed to read the dsg header properly");
-    }
-
+//! \brief reads a memory location to set packet types for reinjection
+void read_packet_types_for_reinjection(address_t address){
     // process mc reinject flag
     if (address[REINJECT_MULTICAST] == 1){
         reinject_mc = false;
@@ -557,7 +542,19 @@ void initialise_reinjection_functionality(){
     else{
         reinject_nn = true;
     }
-*/
+}
+
+void initialise_reinjection_functionality(){
+
+    // set up config region
+    // Get the address this core's DTCM data starts at from SRAM
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    address_t address =
+        (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
+    address = (address_t) (address[2]);
+    
+    // process data
+    read_packet_types_for_reinjection(address);
 }
 
 void c_main() {
@@ -576,7 +573,6 @@ void c_main() {
 
     // update which packet types to reinject
     initialise_reinjection_functionality();
-
 
     // Disable the interrupts that we are configuring (except CPU for watchdog)
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
