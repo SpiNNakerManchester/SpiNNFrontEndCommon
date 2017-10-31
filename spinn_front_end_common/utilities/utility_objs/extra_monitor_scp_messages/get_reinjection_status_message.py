@@ -6,6 +6,7 @@ from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
 from spinn_front_end_common.utilities.utility_objs.re_injection_status import \
     ReInjectionStatus
+from spinn_front_end_common.utilities import constants
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
@@ -35,24 +36,28 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
         AbstractSCPRequest.__init__(
             self,
             SDPHeader(
-                flags=SDPFlag.REPLY_EXPECTED, destination_port=0,
+                flags=SDPFlag.REPLY_EXPECTED,
+                destination_port=
+                constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value,
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
-            SCPRequestHeader(command=self._command_code))
+            SCPRequestHeader(command=command_code))
 
     def get_scp_response(self):
-        return GetReinjectionStatusMessageResponse()
+        return GetReinjectionStatusMessageResponse(self._command_code)
 
 
 class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     """ An SCP response to a request for the dropped packet reinjection status
     """
 
-    def __init__(self):
+    def __init__(self, command_code):
         """
         """
+
         AbstractSCPResponse.__init__(self)
         self._reinjection_functionality_status = None
+        self._command_code = command_code
 
     def read_data_bytestring(self, data, offset):
         """ See\

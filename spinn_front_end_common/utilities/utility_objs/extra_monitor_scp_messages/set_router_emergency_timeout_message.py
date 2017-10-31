@@ -1,3 +1,4 @@
+from spinn_front_end_common.utilities import constants
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
@@ -37,7 +38,9 @@ class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
         AbstractSCPRequest.__init__(
             self,
             SDPHeader(
-                flags=SDPFlag.REPLY_EXPECTED, destination_port=0,
+                flags=SDPFlag.REPLY_EXPECTED,
+                destination_port=
+                constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value,
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(
