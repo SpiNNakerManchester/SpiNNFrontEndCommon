@@ -133,10 +133,10 @@ class ExtraMonitorSupportMachineVertex(
             label="re-injection functionality config region")
 
         spec.switch_write_focus(self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value)
-        for value in zip(
-                [self._reinject_multicast, self._reinject_point_to_point,
-                 self._reinject_fixed_route,
-                 self._reinject_nearest_neighbour]):
+        for value in [
+                self._reinject_multicast, self._reinject_point_to_point,
+                self._reinject_fixed_route,
+                self._reinject_nearest_neighbour]:
             if value:
                 spec.write_value(0)
             else:
