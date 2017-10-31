@@ -2,7 +2,7 @@ import struct
 
 from spinnman.messages.scp.enums import DPRIFlags
 
-_PATTERN = struct.Struct("<IIIIIIIIIII")
+_PATTERN = struct.Struct("<IIIIIIIII")
 
 
 def _decode_router_timeout_value(value):
@@ -56,12 +56,6 @@ class ReInjectionStatus(object):
         # a processor failing to take the packet.
         "_n_processor_dumps",
 
-        # the chip x to which these re injector status
-        "_chip_x",
-
-        # the chip y to which these re injector status
-        "_chip_y",
-
         # the flags that states which types of packets were being recorded
         "_flags"
     )
@@ -73,24 +67,11 @@ class ReInjectionStatus(object):
         :param offset: The offset in the data where the information starts
         :type offset: int
         """
-        print "len is {}, offset is {}".format(len(data), offset)
         (self._router_timeout, self._router_emergency_timeout,
          self._n_dropped_packets, self._n_missed_dropped_packets,
          self._n_dropped_packet_overflows, self._n_reinjected_packets,
-         self._n_link_dumps, self._n_processor_dumps, self._chip_x,
-         self._chip_y, self._flags) = _PATTERN.unpack_from(data, offset)
-
-    @property
-    def chip_x(self):
-        """ the chip x to which these re injector status
-        """
-        return self._chip_x
-
-    @property
-    def chip_y(self):
-        """the chip y to which these re injector status
-        """
-        return self._chip_y
+         self._n_link_dumps, self._n_processor_dumps, self._flags) = \
+            _PATTERN.unpack_from(data, offset)
 
     @property
     def router_timeout(self):
