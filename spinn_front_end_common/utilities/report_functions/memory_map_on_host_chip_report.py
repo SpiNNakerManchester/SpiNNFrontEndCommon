@@ -44,31 +44,26 @@ class MemoryMapOnHostChipReport(object):
                 directory_name, MEM_MAP_FILENAME.format(x, y, p))
             try:
                 with open(file_name, "w") as f:
-                    f.write("On chip data specification executor\n\n")
-
-                    dsg_app_pointer_table_address_pointer = transceiver.\
-                        get_user_0_register_address_from_core(x, y, p)
-
-                    dsg_app_pointer_table_address = \
-                        self._get_app_pointer_table(
-                            transceiver, x, y,
-                            dsg_app_pointer_table_address_pointer)
-
-                    report_bytes = 4 * MAX_MEM_REGIONS
-
-                    mem_map_report_data = buffer(transceiver.read_memory(
-                        x, y, dsg_app_pointer_table_address, report_bytes))
-
-                    offset = 0
-                    for i in xrange(MAX_MEM_REGIONS):
-                        region_address = int(_ONE_WORD.unpack_from(
-                            mem_map_report_data, offset)[0])
-                        offset += 4
-                        f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\t"
-                                .format(i, region_address))
+                    self._describe_mem_map(f, transceiver, x, y, p)
             except IOError:
                 logger.error("Generate_placement_reports: Can't open file"
                              " {} for writing.".format(file_name))
+
+    def _describe_mem_map(self, f, txrx, x, y, p):
+        # Read the memory map data from the given core
+        user_0_addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        pointer_table_addr = self._get_app_pointer_table(
+            txrx, x, y, user_0_addr)
+        memmap_data = buffer(txrx.read_memory(
+            x, y, pointer_table_addr, 4 * MAX_MEM_REGIONS))
+
+        # Convert the map to a human-readable description
+        f.write("On chip data specification executor\n\n")
+        for i in xrange(MAX_MEM_REGIONS):
+            region_address = int(_ONE_WORD.unpack_from(
+                memmap_data, i * 4)[0])
+            f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n"
+                    .format(i, region_address))
 
     def _get_app_pointer_table(self, txrx, x, y, table_pointer):
         encoded_address = buffer(txrx.read_memory(x, y, table_pointer, 4))
