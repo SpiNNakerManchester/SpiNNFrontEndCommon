@@ -1490,7 +1490,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support"):
-            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
 
         # handle extra mapping algorithms if required
