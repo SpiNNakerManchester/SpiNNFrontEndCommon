@@ -1,33 +1,18 @@
-from pacman.executor.algorithm_decorators.algorithm_decorator import algorithm
-from pacman.model.graphs.machine.impl.machine_graph import MachineGraph
-from pacman.model.graphs.application.impl.application_graph \
-    import ApplicationGraph
+from pacman.model.graphs.application.application_graph import ApplicationGraph
+from pacman.model.graphs.machine.machine_graph import MachineGraph
 
-from spinn_front_end_common.abstract_models.abstract_uses_memory_io \
-    import AbstractUsesMemoryIO
+from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
 
 from spinn_machine.utilities.progress_bar import ProgressBar
 
-from spinnman.utilities.io.memory_io import MemoryIO
-from spinnman.utilities.io.file_io import FileIO
-from spinnman.messages.spinnaker_boot._system_variables\
-    ._system_variable_boot_values import SystemVariableDefinition
+from spinnman.utilities.io import MemoryIO, FileIO
+from spinnman.messages.spinnaker_boot.system_variable_boot_values \
+    import SystemVariableDefinition
 
 import os
 
 
-@algorithm(
-    input_definitions={
-        "transceiver": "MemoryTransceiver",
-        "graph": ["MemoryApplicationGraph", "MemoryMachineGraph"],
-        "placements": "MemoryPlacements",
-        "app_id": "APPID",
-        "app_data_runtime_folder": "ApplicationDataFolder",
-        "hostname": "IPAddress",
-        "graph_mapper": "MemoryGraphMapper"
-    },
-    outputs=["ProcessorToAppDataBaseAddress", "LoadedApplicationDataToken"])
-class FrontEndCommonWriteMemoryIOData(object):
+class WriteMemoryIOData(object):
 
     __slots__ = [
 
