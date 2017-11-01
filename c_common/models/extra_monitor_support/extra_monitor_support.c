@@ -54,6 +54,8 @@ extern INT_HANDLER sark_int_han(void);
 
 #define SEQUENCE_NUMBER_SIZE 1
 
+#define TX_FULL_MASK 0x40000000
+
 //-----------------------------------------------------------------------------
 //! sdp flags
 //-----------------------------------------------------------------------------
@@ -698,7 +700,8 @@ void send_data_block(
             data_to_transmit[current_dma_pointer][data_position];
         //log_info("transmit key %d and payload %d", first_packet_key, current_data);
 
-        while((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) != 0){
+        while((cc[CC_TCR] & TX_FULL_MASK) != 0){
+            // DO Nothing
         }
         cc[CC_TXDATA] = current_data;
         cc[CC_TXKEY]  = first_packet_key;
@@ -737,7 +740,8 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read){
 //! \brief sends a end flag via multicast
 void data_speed_up_send_end_flag(){
     // verify that the router can take the packet
-    while((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) != 0){
+    while(cc[CC_TCR] & TX_FULL_MASK){
+        // DO nothing
     }
     cc[CC_TXDATA] = END_FLAG;
     cc[CC_TXKEY]  = key_to_transmit_with;
@@ -913,10 +917,7 @@ void the_dma_complete_read_missing_seqeuence_nums(){
                  (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
         }
         else{ // finished data send, tell host its done
-            while((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) != 0){
-            }
-            cc[CC_TXDATA] = END_FLAG;
-            cc[CC_TXKEY]  = key_to_transmit_with;
+            data_speed_up_send_end_flag();
         }
     }
 }
