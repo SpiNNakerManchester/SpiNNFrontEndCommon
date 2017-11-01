@@ -15,11 +15,11 @@ CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects
-OBJS = data_specification.o simulation.o recording.o
+OBJS = data_specification.o simulation.o recording.o profiler.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers
-HEADERS = common-typedefs.h data_specification.h simulation.h recording.h buffered_eieio_defs.h
+HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
@@ -29,6 +29,9 @@ INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 # Libraries
 LIBS = libspinn_frontend_common.a
 INSTALL_LIBS = $(LIBS:%.a=$(SPINN_LIB_DIR)/%.a)
+
+# Ensure $(INSTALL) is defined, even on MinGW
+INSTALL ?= install
 
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a: $(BUILD_OBJS) 
@@ -42,19 +45,24 @@ $(SPINN_COMMON_BUILD):
 	$(MKDIR) $@
 
 # Installing rules
-install: $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
+install: install-libraries install-headers install-makefiles
+install-libraries: $(INSTALL_LIBS)
+install-headers: $(INSTALL_HEADERS)
+install-makefiles: $(INSTALL_MAKEFILES)
 
 $(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
-	$(CP) $< $@
+	$(INSTALL) -c -m644 $< $(SPINN_LIB_DIR)
 
 $(SPINN_INC_DIR)/%.h: include/%.h
-	$(CP) $< $@
+	$(INSTALL) -c -m644 $< $(SPINN_INC_DIR)
 
 $(SPINN_MAKE_LIB_DIR)/%: %
-	$(CP) $< $@
+	$(INSTALL) -c -m644 $< $(SPINN_MAKE_LIB_DIR)
 
 clean:
 	$(RM) $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a $(BUILD_OBJS)
 
 install-clean:
 	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
+
+.PHONY: clean install install-libraries install-headers install-makefiles install-clean

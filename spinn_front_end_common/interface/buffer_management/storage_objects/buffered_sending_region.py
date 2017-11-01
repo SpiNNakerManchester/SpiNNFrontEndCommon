@@ -1,12 +1,9 @@
 # The size of the header of a message
-from spinnman.messages.eieio.command_messages.host_send_sequenced_data import \
-    HostSendSequencedData
-from spinnman.messages.eieio.data_messages.eieio_data_header import \
-    EIEIODataHeader
-from spinnman.messages.eieio.eieio_type import EIEIOType
-from spinnman import constants
-from spinnman.messages.eieio.command_messages.event_stop_request import \
-    EventStopRequest
+from spinnman.messages.eieio.command_messages \
+    import EventStopRequest, HostSendSequencedData
+from spinnman.messages.eieio.data_messages import EIEIODataHeader
+from spinnman.messages.eieio import EIEIOType
+from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 
 import bisect
 import math
@@ -50,7 +47,7 @@ class BufferedSendingRegion(object):
 
     # The number of keys allowed (different from the actual number as there is
     #  an additional header)
-    _N_KEYS_PER_MESSAGE = (constants.UDP_MESSAGE_MAX_SIZE -
+    _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
                            (HostSendSequencedData.get_min_packet_length() +
                             _HEADER_SIZE)) / _N_BYTES_PER_KEY
 
@@ -67,9 +64,7 @@ class BufferedSendingRegion(object):
         self._current_timestamp_pos = 0
 
         self._buffer_size = None
-
         self._total_region_size = None
-
         self._max_packets_in_timestamp = 0
 
     @property

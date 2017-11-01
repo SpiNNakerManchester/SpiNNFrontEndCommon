@@ -1,4 +1,4 @@
-import sqlite3 as sqlite
+import sqlite3
 
 
 class DatabaseReader(object):
@@ -19,8 +19,8 @@ class DatabaseReader(object):
         :param database_path: The path to the database
         :type database_path: str
         """
-        self._connection = sqlite.connect(database_path)
-        self._connection.row_factory = sqlite.Row
+        self._connection = sqlite3.connect(database_path)
+        self._connection.row_factory = sqlite3.Row
         self._cursor = self._connection.cursor()
 
     @property
@@ -41,10 +41,10 @@ class DatabaseReader(object):
         """
         event_id_to_atom_id_mapping = dict()
         for row in self._cursor.execute(
-            "SELECT n.atom_id as a_id, n.event_id as event"
-            " FROM event_to_atom_mapping as n"
-            " JOIN Application_vertices as p ON n.vertex_id = p.vertex_id"
-                " WHERE p.vertex_label=\"{}\"".format(label)):
+                "SELECT n.atom_id AS a_id, n.event_id AS event"
+                " FROM event_to_atom_mapping AS n"
+                " JOIN Application_vertices AS p ON n.vertex_id = p.vertex_id"
+                " WHERE p.vertex_label = ?", (label, )):
             event_id_to_atom_id_mapping[row["event"]] = row["a_id"]
         return event_id_to_atom_id_mapping
 
@@ -57,10 +57,11 @@ class DatabaseReader(object):
         """
         atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
-            "SELECT n.atom_id as a_id, n.event_id as event"
-            " FROM event_to_atom_mapping as n"
-            " JOIN Application_vertices as p ON n.vertex_id = p.vertex_id"
-                " WHERE p.vertex_label=\"{}\"".format(label)):
+                "SELECT n.atom_id AS a_id, n.event_id AS event"
+                " FROM event_to_atom_mapping AS n"
+                " JOIN Application_vertices AS p"
+                "   ON n.vertex_id = p.vertex_id"
+                " WHERE p.vertex_label = ?", (label, )):
             atom_to_event_id_mapping[row["a_id"]] = row["event"]
         return atom_to_event_id_mapping
 
@@ -74,18 +75,18 @@ class DatabaseReader(object):
         :rtype: (str, int, bool)
         """
         self._cursor.execute(
-            "SELECT * FROM IP_tags as tag"
-            " JOIN graph_mapper_vertex as mapper"
-            " ON tag.vertex_id = mapper.machine_vertex_id"
-            " JOIN Application_vertices as post_vertices"
-            " ON mapper.application_vertex_id = post_vertices.vertex_id"
-            " JOIN Application_edges as edges"
-            " ON mapper.application_vertex_id == edges.post_vertex"
-            " JOIN Application_vertices as pre_vertices"
-            " ON edges.pre_vertex == pre_vertices.vertex_id"
-            " WHERE pre_vertices.vertex_label == \"{}\""
-            " AND post_vertices.vertex_label == \"{}\""
-            .format(label, receiver_label))
+            "SELECT * FROM IP_tags AS tag"
+            " JOIN graph_mapper_vertex AS mapper"
+            "   ON tag.vertex_id = mapper.machine_vertex_id"
+            " JOIN Application_vertices AS post_vertices"
+            "   ON mapper.application_vertex_id = post_vertices.vertex_id"
+            " JOIN Application_edges AS edges"
+            "   ON mapper.application_vertex_id = edges.post_vertex"
+            " JOIN Application_vertices AS pre_vertices"
+            "   ON edges.pre_vertex = pre_vertices.vertex_id"
+            " WHERE pre_vertices.vertex_label = ?"
+            "   AND post_vertices.vertex_label = ?"
+            " LIMIT 1", (label, receiver_label))
         row = self._cursor.fetchone()
         return (
             row["ip_address"], row["port"], row["strip_sdp"],
@@ -101,13 +102,14 @@ class DatabaseReader(object):
         :rtype: (str, int)
         """
         self._cursor.execute(
-            "SELECT tag.board_address, tag.port as port"
-            " FROM Reverse_IP_tags as tag"
-            " JOIN graph_mapper_vertex as mapper"
-            " ON tag.vertex_id = mapper.machine_vertex_id"
-            " JOIN Application_vertices as application"
-            " ON mapper.application_vertex_id = application.vertex_id"
-            " WHERE application.vertex_label=\"{}\"".format(label))
+            "SELECT tag.board_address, tag.port AS port"
+            " FROM Reverse_IP_tags AS tag"
+            " JOIN graph_mapper_vertex AS mapper"
+            "   ON tag.vertex_id = mapper.machine_vertex_id"
+            " JOIN Application_vertices AS application"
+            "   ON mapper.application_vertex_id = application.vertex_id"
+            " WHERE application.vertex_label = ?"
+            " LIMIT 1", (label, ))
         row = self._cursor.fetchone()
         return row["board_address"], row["port"]
 
@@ -121,16 +123,16 @@ class DatabaseReader(object):
         :rtype: (str, int, bool)
         """
         self._cursor.execute(
-            "SELECT * FROM IP_tags as tag"
-            " JOIN Machine_vertices as post_vertices"
-            " ON tag.vertex_id == post_vertices.vertex_id"
-            " JOIN Machine_edges as edges"
-            " ON post_vertices.vertex_id == edges.post_vertex"
-            " JOIN Machine_vertices as pre_vertices"
-            " ON edges.pre_vertex == pre_vertices.vertex_id"
-            " WHERE pre_vertices.label == \"{}\""
-            " AND post_vertices.label == \"{}\""
-            .format(label, receiver_label))
+            "SELECT * FROM IP_tags AS tag"
+            " JOIN Machine_vertices AS post_vertices"
+            "   ON tag.vertex_id = post_vertices.vertex_id"
+            " JOIN Machine_edges AS edges"
+            "   ON post_vertices.vertex_id = edges.post_vertex"
+            " JOIN Machine_vertices AS pre_vertices"
+            "   ON edges.pre_vertex = pre_vertices.vertex_id"
+            " WHERE pre_vertices.label = ?"
+            "   AND post_vertices.label = ?"
+            " LIMIT 1", (label, receiver_label))
         row = self._cursor.fetchone()
         return (
             row["ip_address"], row["port"], row["strip_sdp"],
@@ -146,38 +148,39 @@ class DatabaseReader(object):
         :rtype: (str, int)
         """
         self._cursor.execute(
-            "SELECT tag.board_address, tag.port as port"
-            " FROM Reverse_IP_tags as tag"
-            " JOIN Machine_vertices as post_vertices"
-            " ON tag.vertex_id = post_vertices.vertex_id"
-            " WHERE post_vertices.label=\"{}\"".format(label))
+            "SELECT tag.board_address, tag.port AS port"
+            " FROM Reverse_IP_tags AS tag"
+            " JOIN Machine_vertices AS post_vertices"
+            "   ON tag.vertex_id = post_vertices.vertex_id"
+            " WHERE post_vertices.label = ?"
+            " LIMIT 1", (label, ))
         row = self._cursor.fetchone()
         return row["board_address"], row["port"]
 
     def get_machine_live_output_key(self, label, receiver_label):
         self._cursor.execute(
-            "SELECT * FROM Routing_info as r_info"
-            " JOIN Machine_edges as edges"
-            " ON edges.edge_id == r_info.edge_id"
-            " JOIN Machine_vertices as post_vertices"
-            " ON post_vertices.vertex_id == edges.post_vertex"
-            " JOIN Machine_vertices as pre_vertices"
-            " ON pre_vertices.vertex_id == edges.pre_vertex"
-            " WHERE pre_vertices.label == \"{}\""
-            " AND post_vertices.label == \"{}\""
-            .format(label, receiver_label))
+            "SELECT * FROM Routing_info AS r_info"
+            " JOIN Machine_edges AS edges"
+            "   ON edges.edge_id = r_info.edge_id"
+            " JOIN Machine_vertices AS post_vertices"
+            "   ON post_vertices.vertex_id = edges.post_vertex"
+            " JOIN Machine_vertices AS pre_vertices"
+            "   ON pre_vertices.vertex_id = edges.pre_vertex"
+            " WHERE pre_vertices.label = ?"
+            "   AND post_vertices.label = ?"
+            " LIMIT 1", (label, receiver_label))
         row = self._cursor.fetchone()
         return (row["key"], row["mask"])
 
     def get_machine_live_input_key(self, label):
         self._cursor.execute(
-            "SELECT * FROM Routing_info as r_info"
-            " JOIN Machine_edges as edges"
-            " ON edges.edge_id == r_info.edge_id"
-            " JOIN Machine_vertices as pre_vertices"
-            " ON pre_vertices.vertex_id == edges.pre_vertex"
-            " WHERE pre_vertices.label == \"{}\""
-            .format(label))
+            "SELECT * FROM Routing_info AS r_info"
+            " JOIN Machine_edges AS edges"
+            "   ON edges.edge_id = r_info.edge_id"
+            " JOIN Machine_vertices AS pre_vertices"
+            "   ON pre_vertices.vertex_id = edges.pre_vertex"
+            " WHERE pre_vertices.label = ?"
+            " LIMIT 1", (label, ))
         row = self._cursor.fetchone()
         return (row["key"], row["mask"])
 
@@ -191,7 +194,8 @@ class DatabaseReader(object):
         """
         self._cursor.execute(
             "SELECT no_atoms FROM Application_vertices "
-            "WHERE vertex_label = \"{}\"".format(label))
+            "WHERE vertex_label = ?"
+            " LIMIT 1", (label, ))
         return self._cursor.fetchone()["no_atoms"]
 
     def get_configuration_parameter_value(self, parameter_name):
@@ -204,8 +208,16 @@ class DatabaseReader(object):
         """
         self._cursor.execute(
             "SELECT value FROM configuration_parameters"
-            " WHERE parameter_id = \"{}\"".format(parameter_name))
+            " WHERE parameter_id = ?"
+            " LIMIT 1", (parameter_name, ))
         return float(self._cursor.fetchone()["value"])
 
     def close(self):
         self._connection.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):  # @UnusedVariable
+        self._connection.close()
+        return False
