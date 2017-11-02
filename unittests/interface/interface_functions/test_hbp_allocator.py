@@ -19,12 +19,12 @@ class TestHBPAllocator(unittest.TestCase):
             httpretty.GET, "http://localhost/checkLease",
             body=json.dumps({"allocated": True}))
 
-        with LogCapture() as l:
+        with LogCapture() as lc:
             controller = _HBPJobController("http://localhost")
             controller.extend_allocation(1)
             result = controller._check_lease(0)
             assert result["allocated"] is True
-            for record in l.records:
+            for record in lc.records:
                 if record.levelname == "INFO":
                     assert "Starting new HTTP connection" not in record.msg
 
