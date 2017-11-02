@@ -1563,6 +1563,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
 
+        optional_algorithms.append("FixedRouteRouter")
+
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
@@ -1697,6 +1699,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
+
+        # report for fixed routes if applied
+        optional_algorithms.append("LoadFixedRoutes")
+        optional_algorithms.append("FixedRouteFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
