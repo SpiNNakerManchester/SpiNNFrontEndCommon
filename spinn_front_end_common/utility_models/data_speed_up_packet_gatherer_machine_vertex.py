@@ -68,9 +68,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
 
-    # the port the c code will listen on for this functionality
-    SDP_PACKET_PORT = 2
-
     # number of items used up by the re transmit code for its header
     SDP_RETRANSMISSION_HEADER_SIZE = 2
 
@@ -182,7 +179,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         base_key = routing_info.get_first_key_for_edge(
             list(machine_graph.get_edges_ending_at_vertex(self))[0])
-        self.static_generate_machine_data_spec(
+        self.static_generate_machine_data_specification(
             spec, base_key, machine_time_step, time_scale_factor)
 
     @staticmethod
@@ -254,17 +251,28 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         return "data_speed_up_packet_gatherer.aplx"
 
-    def get_data(self, transceiver, placement):
+    def get_data(
+            self, transceiver, placement, memory_address, length_in_bytes,
+            extra_monitor_cores_for_router_timeout, placements):
         """ gets data from a given core and memory address. 
         
         :param transceiver: spinnman instance
         :param placement: placement object for where to get data from
+        :param memory_address: the address in sdram to start reading from
+        :param length_in_bytes: the length of data to read in bytes
+        :param extra_monitor_cores_for_router_timeout: cores 
+        to set router timeout for
+        :param placements: the placements object
         :return: byte array of the data
         """
         # set time out
-        transceiver.set_reinjection_router_timeout(15, 15)
+        extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
+            15, 15, transceiver, placements,
+            extra_monitor_cores_for_router_timeout)
 
-        data = struct.pack("<I", self.SDP_PACKET_START_SENDING_COMMAND_ID)
+        data = struct.pack(
+            "<III", *[self.SDP_PACKET_START_SENDING_COMMAND_ID,
+                      memory_address, length_in_bytes])
 
         # print "sending to core {}:{}:{}".format(
         #    placement.x, placement.y, placement.p)
@@ -273,7 +281,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
                 destination_cpu=placement.p,
-                destination_port=self.SDP_PACKET_PORT,
+                destination_port=
+                constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=data)
 
@@ -301,7 +310,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                         seq_nums, transceiver, placement)
 
         # self._check(seq_nums)
-        transceiver.set_reinjection_router_timeout(15, 4)
+        extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
+            15, 4, transceiver, placements,
+            extra_monitor_cores_for_router_timeout)
 
         return self._output, self._lost_seq_nums
 
@@ -411,7 +422,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                     destination_chip_x=placement.x,
                     destination_chip_y=placement.y,
                     destination_cpu=placement.p,
-                    destination_port=self.SDP_PACKET_PORT,
+                    destination_port=
+                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
                     flags=SDPFlag.REPLY_NOT_EXPECTED),
                 data=str(data))
 

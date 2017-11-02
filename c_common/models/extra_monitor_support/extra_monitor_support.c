@@ -730,11 +730,12 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read){
     // set off dma
     uint desc =
         DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-        items_to_read * WORD_TO_BYTE_MULTIPLIER;
+        (items_to_read * WORD_TO_BYTE_MULTIPLIER);
     dma_port_last_used = dma_tag;
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
     dma[DMA_DESC] = desc;
+
 }
 
 //! \brief sends a end flag via multicast
@@ -777,7 +778,8 @@ void dma_complete_reading_for_original_transmission(){
 
         // if less data needed request less data
         if (next_position_in_store >= number_of_elements_to_read_from_sdram){
-            num_items_read = number_of_elements_to_read_from_sdram - position_in_store;
+            num_items_read =
+                number_of_elements_to_read_from_sdram - position_in_store;
             //log_info("reading %d items", num_items_read);
             //log_info("position in store = %d, new position in store = %d", position_in_store, next_position_in_store);
         }
@@ -883,7 +885,7 @@ void retransmission_dma_read(){
     //log_info("setting off dma");
     uint desc =
         DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-        ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER;
+        (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER);
     dma_port_last_used = DMA_TAG_READ_FOR_RETRANSMISSION;
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) retransmit_seq_nums;
@@ -942,7 +944,7 @@ void dma_complete_reading_retransmission_data(){;
 
 //! \brief dma complete callback for have read missing seq num data
 void dma_complete_writing_missing_seq_to_sdram(){
-    io_printf(IO_BUF, "Need to figure what to do here");
+    io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
 //! \brief the handler for all messages coming in for data speed up
@@ -950,7 +952,6 @@ void dma_complete_writing_missing_seq_to_sdram(){
 //! \param[in] msg: the sdp message (without scp header)
 void handle_data_speed_up(sdp_msg_pure_data *msg){
     if(msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA){
-
         //log_info("starting the send of original data");
         // set sdram position and length
         store_address = (address_t*) msg->data[SDRAM_POSITION];
@@ -1017,7 +1018,6 @@ void handle_data_speed_up(sdp_msg_pure_data *msg){
 INT_HANDLER speed_up_handle_dma(){
     // reset the interrupt.
     dma[DMA_CTRL]  = 0x8;
-
     if(dma_port_last_used == DMA_TAG_READ_FOR_TRANSMISSION){
         dma_complete_reading_for_original_transmission();
     }else if(dma_port_last_used == DMA_TAG_READ_FOR_RETRANSMISSION){
@@ -1131,8 +1131,23 @@ void data_speed_up_initialise(){
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
     key_to_transmit_with = address[MY_KEY];
 
-  vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
-  vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
+   vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
+   vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
+
+   for (uint32_t i = 0; i < 2; i++) {
+       data_to_transmit[i] = (uint32_t*) sark_xalloc(
+           sv->sdram_heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
+           ALLOC_LOCK);
+       if (data_to_transmit[i] == NULL){
+           io_printf(IO_BUF, "failed to xalloc dtcm for dma buffers\n");
+           rt_error(RTE_SWERR);
+      }
+  }
+
+  // configuration for the dma's by the speed data loader
+  dma[DMA_CTRL] = 0x3f; // Abort pending and active transfers
+  dma[DMA_CTRL] = 0x0d; // clear possible transfer done and restart
+  dma[DMA_GCTL] = 0x000c00; // enable dma done interrupt
 }
 
 //-----------------------------------------------------------------------------

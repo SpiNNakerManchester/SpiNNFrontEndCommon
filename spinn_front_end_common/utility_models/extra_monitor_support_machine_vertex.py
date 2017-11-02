@@ -1,4 +1,7 @@
 from enum import Enum
+import struct
+import math
+import time
 
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
@@ -22,6 +25,9 @@ from spinn_front_end_common.utilities.utility_objs.\
     SetRouterTimeoutProcess
 from spinn_machine import CoreSubsets
 from spinn_utilities.overrides import overrides
+from spinnman.connections.udp_packet_connections import UDPConnection
+from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -285,3 +291,4 @@ class ExtraMonitorSupportMachineVertex(
             placement = placements.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
         return core_subsets
+
