@@ -178,6 +178,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
+            if (len(send_buffer_times) > 0 and
+                    hasattr(send_buffer_times[0], "__len__")):
+                # Working with a list of lists so check length
+                if len(send_buffer_times) != n_keys:
+                    raise ConfigurationException(
+                        "The array or arrays of times {} does not have the "
+                        "expected length of {} "
+                        "".format(send_buffer_times, n_keys))
+
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
