@@ -3,8 +3,6 @@ from data_specification import utility_calls
 
 # front end common imports
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.interface import interface_functions
-from spinn_front_end_common.utilities import report_functions
 
 # SpiNMachine imports
 from spinn_machine import CoreSubsets
@@ -275,15 +273,6 @@ def convert_string_into_chip_and_core_subset(cores):
             x, y, processor_id = downed_core.split(",")
             ignored_cores.add_processor(int(x), int(y), int(processor_id))
     return ignored_cores
-
-
-def get_front_end_common_pacman_packages():
-    """ Get the packages for the front end common interface functions
-    """
-    return [
-        interface_functions,
-        report_functions
-    ]
 
 
 def sort_out_downed_chips_cores_links(
