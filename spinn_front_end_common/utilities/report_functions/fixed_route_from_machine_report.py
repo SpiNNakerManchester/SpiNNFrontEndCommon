@@ -39,14 +39,16 @@ class FixedRouteFromMachineReport(object):
         """
         progress = ProgressBar(machine.chips(), "Writing fixed route report")
         for chip in progress.over(machine.chips()):
-            fixed_route = transceiver.read_fixed_route(chip.x, chip.y, app_id)
-            output.write(
-                "{: <3s}:{: <3s} contains route {: <10s} [Cores][Links]"
-                .format(
-                    chip.x, chip.y, self._reduce_route_value(
-                        fixed_route.processor_ids, fixed_route.link_ids),
-                    self._expand_route_value(
-                        fixed_route.processor_ids, fixed_route.link_ids)))
+            if not chip.virtual:
+                fixed_route = \
+                    transceiver.read_fixed_route(chip.x, chip.y, app_id)
+                output.write(
+                    "{: <3s}:{: <3s} contains route {: <10s} [Cores][Links]"
+                    .format(
+                        chip.x, chip.y, self._reduce_route_value(
+                            fixed_route.processor_ids, fixed_route.link_ids),
+                        self._expand_route_value(
+                            fixed_route.processor_ids, fixed_route.link_ids)))
 
     @staticmethod
     def _reduce_route_value(processors_ids, link_ids):
