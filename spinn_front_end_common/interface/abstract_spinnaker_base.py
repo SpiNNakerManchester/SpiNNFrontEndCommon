@@ -177,6 +177,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_extra_mapping_inputs",
 
         #
+        "_extra_inputs",
+
+        #
         "_extra_pre_run_algorithms",
 
         #
@@ -401,6 +404,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #  releases
         self._extra_mapping_algorithms = list()
         self._extra_mapping_inputs = dict()
+        self._extra_inputs = dict()
         self._extra_pre_run_algorithms = list()
         self._extra_post_run_algorithms = list()
         self._extra_load_algorithms = list()
@@ -489,6 +493,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(msg)
         if extra_mapping_inputs is not None:
             self._extra_mapping_inputs.update(extra_mapping_inputs)
+
+    def update_extra_inputs(self, extra_inputs):
+        if self.has_ran:
+            msg = "Changing inputs is not supported after run"
+            raise ConfigurationException(msg)
+        if extra_inputs is not None:
+            self._extra_inputs.update(extra_inputs)
 
     def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
         if self.has_ran:
@@ -1116,7 +1127,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 helpful_functions.write_finished_file(
                     self._app_data_top_simulation_folder,
                     self._report_simulation_top_directory)
-            except:
+            except Exception:
                 logger.warn("problem when shutting down", exc_info=True)
             raise ex_type, ex_value, ex_traceback
 
@@ -1124,7 +1135,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._machine is not None:
             return self._machine
 
-        inputs = dict()
+        inputs = dict(self._extra_inputs)
         algorithms = list()
         outputs = list()
 
@@ -1565,6 +1576,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
 
+        algorithms.append("FixedRouteRouter")
+
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
@@ -1699,8 +1712,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms.append("LoadExecutableImages")
 
         # report for fixed routes if applied
-        optional_algorithms.append("LoadFixedRoutes")
-        optional_algorithms.append("FixedRouteFromMachineReport")
+        algorithms.append("LoadFixedRoutes")
+        algorithms.append("FixedRouteFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
