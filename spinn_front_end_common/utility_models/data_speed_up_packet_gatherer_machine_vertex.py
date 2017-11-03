@@ -2,12 +2,12 @@ from pacman.executor.injection_decorator import inject_items
 #from pacman.model.constraints.key_allocator_constraints.\
 #    share_key_constraint import \
 #    ShareKeyConstraint
-#from pacman.model.graphs.common import EdgeTrafficType
+#from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.decorators import overrides
+from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
-from pacman.model.routing_info import BaseKeyAndMask
 
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.abstract_models import \
@@ -31,6 +31,9 @@ from enum import Enum
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary,
         AbstractProvidesIncomingPartitionConstraints):
+
+    #TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
+    TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     # dsg data regions
     DATA_REGIONS = Enum(
@@ -73,7 +76,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     END_FLAG = 0xFFFFFFFF
 
     # base key (really nasty hack)
-    BASE_KEY =  0xFFFFFFF9
+    BASE_KEY = 0xFFFFFFF9
     BASE_MASK = 0xFFFFFFFB
 
     # the size in bytes of the end flag
@@ -175,8 +178,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, spec, placement, machine_graph, routing_info, iptags,
             reverse_iptags, machine_time_step, time_scale_factor):
 
-        base_key = routing_info.get_first_key_for_edge(
-            list(machine_graph.get_edges_ending_at_vertex(self))[0])
+        if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
+            base_key = routing_info.get_first_key_for_edge(
+                list(machine_graph.get_edges_ending_at_vertex(self))[0])
+        else:
+            base_key = self.BASE_KEY
         self.static_generate_machine_data_specification(
             spec, base_key, machine_time_step, time_scale_factor)
 

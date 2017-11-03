@@ -1,6 +1,7 @@
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.decorators import overrides
+from pacman.model.graphs.common import EdgeTrafficType
 
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification, \
@@ -53,9 +54,13 @@ class DataSpeedUpPacketGatherApplicationVertex(
             self, spec, placement, machine_time_step, time_scale_factor,
             routing_infos, machine_graph):
 
-        base_key = routing_infos.get_first_key_for_edge(
-            list(machine_graph.get_edges_ending_at_vertex(
-                placement.vertex))[0])
+        if DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE == \
+                EdgeTrafficType.MULTICAST:
+            base_key = routing_infos.get_first_key_for_edge(
+                list(machine_graph.get_edges_ending_at_vertex(
+                    placement.vertex))[0])
+        else:
+            base_key = DataSpeedUpPacketGatherMachineVertex.BASE_KEY
 
         DataSpeedUpPacketGatherMachineVertex.\
             static_generate_machine_data_specification(
