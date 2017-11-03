@@ -30,6 +30,9 @@ INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 LIBS = libspinn_frontend_common.a
 INSTALL_LIBS = $(LIBS:%.a=$(SPINN_LIB_DIR)/%.a)
 
+# Ensure $(INSTALL) is defined, even on MinGW
+INSTALL ?= install
+
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a: $(BUILD_OBJS) 
 	$(RM) $@
@@ -48,13 +51,13 @@ install-headers: $(INSTALL_HEADERS)
 install-makefiles: $(INSTALL_MAKEFILES)
 
 $(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
-	$(CP) $< $@
+	$(INSTALL) -c -m644 $< $(SPINN_LIB_DIR)
 
 $(SPINN_INC_DIR)/%.h: include/%.h
-	$(CP) $< $@
+	$(INSTALL) -c -m644 $< $(SPINN_INC_DIR)
 
 $(SPINN_MAKE_LIB_DIR)/%: %
-	$(CP) $< $@
+	$(INSTALL) -c -m644 $< $(SPINN_MAKE_LIB_DIR)
 
 clean:
 	$(RM) $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a $(BUILD_OBJS)
