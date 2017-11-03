@@ -2,6 +2,9 @@
 main interface for the spinnaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.timer import Timer
 from spinn_utilities import __version__ as spinn_utils_version
 
@@ -1503,6 +1506,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                    "enable_advanced_monitor_support"):
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
+            algorithms.append("FixedRouteRouter")
+            inputs['FixedRouteDestinationClass'] = \
+                DataSpeedUpPacketGatherMachineVertex
+
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -1575,8 +1582,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
-
-        algorithms.append("FixedRouteRouter")
 
         # handle outputs
         outputs = [
@@ -1711,9 +1716,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
-        # report for fixed routes if applied
-        algorithms.append("LoadFixedRoutes")
-        algorithms.append("FixedRouteFromMachineReport")
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
 
         # expected outputs from this phase
         outputs = [

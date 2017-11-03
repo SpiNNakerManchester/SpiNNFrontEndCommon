@@ -1298,8 +1298,8 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>executable_targets</param_name>
-                <param_type>ExecutableTargets</param_type>
+                <param_name>executable_types</param_name>
+                <param_type>ExecutableTypes</param_type>
             </parameter>
             <parameter>
                 <param_name>has_ran</param_name>
@@ -1309,7 +1309,7 @@
         <required_inputs>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
-            <param_name>executable_targets</param_name>
+            <param_name>executable_types</param_name>
             <param_name>has_ran</param_name>
         </required_inputs>
     </algorithm>

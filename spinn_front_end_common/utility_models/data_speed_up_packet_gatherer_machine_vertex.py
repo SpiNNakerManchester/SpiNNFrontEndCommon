@@ -1,11 +1,9 @@
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.constraints.key_allocator_constraints import \
-    FixedKeyAndMaskConstraint
-from pacman.model.constraints.key_allocator_constraints.\
-    share_key_constraint import \
-    ShareKeyConstraint
+#from pacman.model.constraints.key_allocator_constraints.\
+#    share_key_constraint import \
+#    ShareKeyConstraint
+#from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.decorators import overrides
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
@@ -150,14 +148,14 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_get_incoming_partition_constraints(partition, vertex_partition):
         constraints = list()
-        if partition.traffic_type == EdgeTrafficType.MULTICAST:
-            constraints.append(
-                FixedKeyAndMaskConstraint([
-                    BaseKeyAndMask(
-                        DataSpeedUpPacketGatherMachineVertex.BASE_KEY,
-                        DataSpeedUpPacketGatherMachineVertex.BASE_MASK
-                    )]))
-            constraints.append(ShareKeyConstraint(vertex_partition))
+        #if partition.traffic_type == EdgeTrafficType.MULTICAST:
+        #    constraints.append(
+        #        FixedKeyAndMaskConstraint([
+        #            BaseKeyAndMask(
+        #                DataSpeedUpPacketGatherMachineVertex.BASE_KEY,
+        #                DataSpeedUpPacketGatherMachineVertex.BASE_MASK
+        #            )]))
+        #    constraints.append(ShareKeyConstraint(vertex_partition))
         return constraints
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
