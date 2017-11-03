@@ -37,16 +37,17 @@ class FixedRouteFromMachineReport(object):
         :param machine: 
         :return: 
         """
-        progress = ProgressBar(machine.chips(), "Writing fixed route report")
-        for chip in progress.over(machine.chips()):
+        progress = ProgressBar(machine.chips, "Writing fixed route report")
+        output.write(" x    y       route         [cores][links]\n")
+        for chip in progress.over(machine.chips):
             if not chip.virtual:
                 fixed_route = \
                     transceiver.read_fixed_route(chip.x, chip.y, app_id)
                 output.write(
-                    "{: <3s}:{: <3s} contains route {: <10s} [Cores][Links]"
+                    "{: <3s}:{: <3s} contains route {: <10s} {}\n"
                     .format(
-                        chip.x, chip.y, self._reduce_route_value(
-                            fixed_route.processor_ids, fixed_route.link_ids),
+                        str(chip.x), str(chip.y), str(self._reduce_route_value(
+                            fixed_route.processor_ids, fixed_route.link_ids)),
                         self._expand_route_value(
                             fixed_route.processor_ids, fixed_route.link_ids)))
 

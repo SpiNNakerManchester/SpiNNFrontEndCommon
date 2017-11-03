@@ -1574,7 +1574,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
 
-        optional_algorithms.append("FixedRouteRouter")
+        algorithms.append("FixedRouteRouter")
 
         # handle outputs
         outputs = [
@@ -1712,8 +1712,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms.append("LoadExecutableImages")
 
         # report for fixed routes if applied
-        optional_algorithms.append("LoadFixedRoutes")
-        optional_algorithms.append("FixedRouteFromMachineReport")
+        algorithms.append("LoadFixedRoutes")
+        algorithms.append("FixedRouteFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
