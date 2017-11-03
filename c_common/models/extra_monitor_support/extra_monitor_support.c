@@ -703,6 +703,7 @@ void send_data_block(
         while((cc[CC_TCR] & TX_FULL_MASK) != 0){
             // DO Nothing
         }
+        cc[CC_TCR] = PKT_FR_PL;
         cc[CC_TXDATA] = current_data;
         cc[CC_TXKEY]  = first_packet_key;
 
@@ -744,6 +745,7 @@ void data_speed_up_send_end_flag(){
     while(cc[CC_TCR] & TX_FULL_MASK){
         // DO nothing
     }
+    cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = END_FLAG;
     cc[CC_TXKEY]  = key_to_transmit_with;
 }
