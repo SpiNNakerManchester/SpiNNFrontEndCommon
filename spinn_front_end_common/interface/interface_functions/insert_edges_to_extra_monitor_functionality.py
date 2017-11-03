@@ -1,7 +1,9 @@
 from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_front_end_common.utility_models.\
     extra_monitor_support_application_vertex import \
     ExtraMonitorSupportApplicationVertex
@@ -12,9 +14,6 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
-
-    #TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
-    TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
@@ -56,6 +55,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                             machine_vertex, machine, placements, machine_graph,
                             vertex_to_ethernet_connected_chip_mapping,
                             application_graph, graph_mapper)
+        progress.end()
 
     def _process_vertex(
             self, vertex, machine, placements, machine_graph,
@@ -87,7 +87,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         # if not built, build a edge and do mapping
         if not already_built:
             machine_edge = MachineEdge(
-                vertex, data_gatherer_vertex, traffic_type=self.TRAFFIC_TYPE)
+                vertex, data_gatherer_vertex,
+                traffic_type=DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE)
             machine_graph.add_edge(
                 machine_edge,
                 constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
@@ -104,7 +105,9 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                 # if not built, build a edge and do mapping
                 if not already_built:
                     app_edge = ApplicationEdge(
-                        app_source, app_dest, traffic_type=self.TRAFFIC_TYPE)
+                        app_source, app_dest,
+                        traffic_type=
+                        DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE)
                     application_graph.add_edge(
                         app_edge,
                         constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)

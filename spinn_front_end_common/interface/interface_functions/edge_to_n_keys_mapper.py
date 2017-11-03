@@ -1,4 +1,5 @@
 # pacman imports
+from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.routing_info \
     import DictBasedMachinePartitionNKeysMap
 
@@ -126,28 +127,29 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_machine_partition(partition, n_keys_map):
+        if partition.traffic_type == EdgeTrafficType.MULTICAST:
+            if not isinstance(partition.pre_vertex,
+                              AbstractProvidesNKeysForPartition):
+                n_keys_map.set_n_keys_for_partition(partition, 1)
+            else:
+                n_keys_map.set_n_keys_for_partition(
+                    partition,
+                    partition.pre_vertex.get_n_keys_for_partition(
+                        partition, None))
 
-        if not isinstance(partition.pre_vertex,
-                          AbstractProvidesNKeysForPartition):
-            n_keys_map.set_n_keys_for_partition(partition, 1)
-        else:
-            n_keys_map.set_n_keys_for_partition(
-                partition,
-                partition.pre_vertex.get_n_keys_for_partition(partition, None))
-
-        constraints = list()
-        if isinstance(partition.pre_vertex,
-                      AbstractProvidesOutgoingPartitionConstraints):
-            constraints.extend(
-                partition.pre_vertex.get_outgoing_partition_constraints(
-                    partition))
-
-        for edge in partition.edges:
-            if isinstance(edge.post_vertex,
-                          AbstractProvidesIncomingPartitionConstraints):
+            constraints = list()
+            if isinstance(partition.pre_vertex,
+                          AbstractProvidesOutgoingPartitionConstraints):
                 constraints.extend(
-                    edge.post_vertex.get_incoming_partition_constraints(
+                    partition.pre_vertex.get_outgoing_partition_constraints(
                         partition))
-        constraints.extend(partition.constraints)
 
-        return constraints
+            for edge in partition.edges:
+                if isinstance(edge.post_vertex,
+                              AbstractProvidesIncomingPartitionConstraints):
+                    constraints.extend(
+                        edge.post_vertex.get_incoming_partition_constraints(
+                            partition))
+            constraints.extend(partition.constraints)
+
+            return constraints
