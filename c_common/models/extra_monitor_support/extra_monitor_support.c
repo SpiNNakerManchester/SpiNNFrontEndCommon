@@ -54,8 +54,7 @@ extern INT_HANDLER sark_int_han(void);
 
 #define SEQUENCE_NUMBER_SIZE 1
 
-#define TX_FULL_MASK 0x40000000
-
+#define TX_NOT_FULL_MASK 0x10000000
 //-----------------------------------------------------------------------------
 //! sdp flags
 //-----------------------------------------------------------------------------
@@ -698,10 +697,9 @@ void send_data_block(
    {
         uint32_t current_data =
             data_to_transmit[current_dma_pointer][data_position];
-        //log_info("transmit key %d and payload %d", first_packet_key, current_data);
+        io_printf(IO_BUF, "transmit key %d and payload %d\n", first_packet_key, current_data);
 
-        while((cc[CC_TCR] & TX_FULL_MASK) != 0){
-            // DO Nothing
+        while((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0){
         }
         cc[CC_TCR] = PKT_FR_PL;
         cc[CC_TXDATA] = current_data;
@@ -732,6 +730,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read){
     uint desc =
         DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
         (items_to_read * WORD_TO_BYTE_MULTIPLIER);
+
     dma_port_last_used = dma_tag;
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
@@ -742,8 +741,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read){
 //! \brief sends a end flag via multicast
 void data_speed_up_send_end_flag(){
     // verify that the router can take the packet
-    while(cc[CC_TCR] & TX_FULL_MASK){
-        // DO nothing
+    while((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0){
     }
     cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = END_FLAG;
@@ -786,7 +784,7 @@ void dma_complete_reading_for_original_transmission(){
             //log_info("position in store = %d, new position in store = %d", position_in_store, next_position_in_store);
         }
 
-        // reread and transmit
+        // set off another read and transmit dma'ed one
         read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_read);
 
         //log_info("sending data");
@@ -1138,7 +1136,7 @@ void data_speed_up_initialise(){
 
    for (uint32_t i = 0; i < 2; i++) {
        data_to_transmit[i] = (uint32_t*) sark_xalloc(
-           sv->sdram_heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
+           sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
            ALLOC_LOCK);
        if (data_to_transmit[i] == NULL){
            io_printf(IO_BUF, "failed to xalloc dtcm for dma buffers\n");
