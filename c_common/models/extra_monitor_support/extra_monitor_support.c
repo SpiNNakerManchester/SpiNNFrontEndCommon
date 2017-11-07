@@ -697,7 +697,6 @@ void send_data_block(
    {
         uint32_t current_data =
             data_to_transmit[current_dma_pointer][data_position];
-        io_printf(IO_BUF, "transmit key %d and payload %d\n", first_packet_key, current_data);
 
         while((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0){
         }
