@@ -42,6 +42,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             "Inserting extra monitors into graphs")
 
         vertex_to_ethernet_connected_chip_mapping = dict()
+        vertex_to_chip_map = dict()
 
         # progress data receiver for data extraction functionality
         self._handle_data_extraction_vertices(
@@ -51,14 +52,16 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
         # handle re injector and chip based data extractor functionality.
         extra_monitor_vertices = self._handle_second_monitor_functionality(
-            progress, machine, application_graph, machine_graph, graph_mapper)
+            progress, machine, application_graph, machine_graph, graph_mapper,
+            vertex_to_chip_map)
 
         return (vertex_to_ethernet_connected_chip_mapping,
-                extra_monitor_vertices)
+                extra_monitor_vertices, vertex_to_chip_map)
 
     @staticmethod
     def _handle_second_monitor_functionality(
-            progress, machine, application_graph, machine_graph, graph_mapper):
+            progress, machine, application_graph, machine_graph, graph_mapper,
+            vertex_to_chip_map):
         """
         handles placing the second monitor vertex with extra functionality\
          into the graph
@@ -67,6 +70,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param application_graph: app graph
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
+        :param vertex_to_chip_map: map between vertex and chip
         :rtype: list 
         :return: list of extra monitor cores 
         """
@@ -78,6 +82,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             # add to machine graph
             machine_vertex = ExtraMonitorSupportMachineVertex(
                 constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+            vertex_to_chip_map[(chip.x, chip.y)] = machine_vertex
             machine_graph.add_vertex(machine_vertex)
             extra_monitor_vertices.append(machine_vertex)
 

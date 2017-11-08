@@ -80,10 +80,28 @@ class BufferManager(object):
         "_listener_port",
 
         # Store to file flag
-        "_store_to_file"
+        "_store_to_file",
+        
+        # the extra monitor cores which support faster data extraction
+        "_extra_monitor_cores",
+        
+        # the extra_monitor to ethernet connection map
+        "_extra_monitor_cores_to_ethernet_connection_map",
+
+        # monitor cores via chip id
+        "_extra_monitor_cores_by_chip",
+
+        # machine object
+        "_machine",
+
+        # flag for what data extraction to use
+        "_uses_advanced_monitors"
     ]
 
-    def __init__(self, placements, tags, transceiver, store_to_file=False):
+    def __init__(self, placements, tags, transceiver, extra_monitor_cores,
+                 extra_monitor_cores_to_ethernet_connection_map,
+                 extra_monitor_to_chip_mapping, machine,
+                 uses_advanced_monitors, store_to_file=False):
         """
 
         :param placements: The placements of the vertices
@@ -102,6 +120,12 @@ class BufferManager(object):
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
+        self._extra_monitor_cores = extra_monitor_cores
+        self._extra_monitor_cores_to_ethernet_connection_map = \
+            extra_monitor_cores_to_ethernet_connection_map
+        self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
+        self._machine = machine
+        self._uses_advanced_monitors = uses_advanced_monitors
 
         # Set of (ip_address, port) that are being listened to for the tags
         self._seen_tags = set()
@@ -123,6 +147,32 @@ class BufferManager(object):
         self._finished = False
 
         self._listener_port = None
+
+    def _request_data(self, transceiver, placement_x, placement_y, address,
+                      length):
+        """ uses the extra monitor cores for data extraction
+        
+        :param transceiver: the spinnman interface
+        :param placement_x: the placement x coord where data is to be \
+        extracted from
+        :param placement_y: the placement y coord where data is to be \
+        extracted from
+        :param address: the memory address to start at
+        :param length: the number of bytes to extract
+        :return: data as a byte array
+        """
+        if self._uses_advanced_monitors:
+            sender = self._extra_monitor_cores_by_chip[
+                (placement_x, placement_y)]
+            chip = self._machine.get_chip_at(placement_x, placement_y)
+            receiver = self._extra_monitor_cores_to_ethernet_connection_map[
+                chip.nearest_ethernet_y, chip.nearest_ethernet_y]
+            return receiver.get_data(
+                transceiver, self._placements.get_placement_of_vertex(sender),
+                address, length, self._extra_monitor_cores, self._placements)
+        else:
+            return transceiver.read_memory(
+                placement_x, placement_y, address, length)
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -289,9 +339,10 @@ class BufferManager(object):
             self, placement, state_region_base_address):
 
         # retrieve channel state memory area
-        channel_state_data = str(self._transceiver.read_memory(
-            placement.x, placement.y, state_region_base_address,
-            ChannelBufferState.size_of_channel_state()))
+        channel_state_data = str(self._request_data(
+            transceiver=self._transceiver, placement_x=placement.x,
+            address=state_region_base_address, placement_y=placement.y,
+            length=ChannelBufferState.size_of_channel_state()))
         return ChannelBufferState.create_from_bytearray(channel_state_data)
 
     def _create_message_to_send(self, size, vertex, region):
@@ -613,8 +664,9 @@ class BufferManager(object):
             # now read_ptr is updated, check memory to read
             if read_ptr < write_ptr:
                 length = write_ptr - read_ptr
-                data = self._transceiver.read_memory(
-                    placement.x, placement.y, read_ptr, length)
+                data = self._request_data(
+                    transceiver=self._transceiver, placement_x=placement.x,
+                    address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
@@ -624,15 +676,17 @@ class BufferManager(object):
                 if length < 0:
                     raise exceptions.ConfigurationException(
                         "The amount of data to read is negative!")
-                data = self._transceiver.read_memory(
-                    placement.x, placement.y, read_ptr, length)
+                data = self._request_data(
+                    transceiver=self._transceiver, placement_x=placement.x,
+                    address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.store_data_in_region_buffer(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
-                data = self._transceiver.read_memory(
-                    placement.x, placement.y, read_ptr, length)
+                data = self._request_data(
+                    transceiver=self._transceiver, placement_x=placement.x,
+                    address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
@@ -640,15 +694,17 @@ class BufferManager(object):
             elif (read_ptr == write_ptr and
                     last_operation == BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
-                data = self._transceiver.read_memory(
-                    placement.x, placement.y, read_ptr, length)
+                data = self._request_data(
+                    transceiver=self._transceiver, placement_x=placement.x,
+                    address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.store_data_in_region_buffer(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
-                data = self._transceiver.read_memory(
-                    placement.x, placement.y, read_ptr, length)
+                data = self._request_data(
+                    transceiver=self._transceiver, placement_x=placement.x,
+                    address=read_ptr, length=length, placement_y=placement.y)
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
@@ -716,8 +772,9 @@ class BufferManager(object):
                 start_address = packet.start_address(i)
                 region_id = packet.region_id(i)
                 channel = packet.channel(i)
-                data = self._transceiver.read_memory(
-                    x, y, start_address, length)
+                data = self._request_data(
+                    transceiver=self._transceiver, placement_x=x,
+                    placement_y=y, address=start_address, length=length)
                 self._received_data.store_data_in_region_buffer(
                     x, y, p, region_id, data)
                 new_channel.append(channel)

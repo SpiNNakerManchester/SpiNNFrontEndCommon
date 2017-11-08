@@ -1170,6 +1170,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 version_provenance.append(ProvenanceDataItem(
                     names=["version_data", name], value=value))
         inputs["ProvenanceItems"] = version_provenance
+        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
 
         # add algorithms for handling LPG placement and edge insertion
         if len(self._live_packet_recorder_params) != 0:
