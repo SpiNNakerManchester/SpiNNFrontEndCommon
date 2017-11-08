@@ -547,6 +547,10 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
         recording_record(
             SPIKE_HISTORY_CHANNEL, &recording_length, 4);
 
+        // Record the time
+        recording_record(
+            SPIKE_HISTORY_CHANNEL, &time, 4);
+
         // NOTE: recording_length could be bigger than the length of the valid
         // data in eieio_msg_ptr.  This is OK as the data pointed to by
         // eieio_msg_ptr is always big enough to have extra space in it.  The
