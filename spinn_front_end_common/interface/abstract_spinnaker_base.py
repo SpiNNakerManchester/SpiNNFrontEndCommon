@@ -71,7 +71,10 @@ import signal
 import sys
 
 from numpy import __version__ as numpy_version
-from scipy import __version__ as scipy_version
+try:
+    from scipy import __version__ as scipy_version
+except ImportError:
+    scipy_version = "scipy not installed"
 from data_specification import __version__ as data_spec_version
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from spalloc import __version__ as spalloc_version
