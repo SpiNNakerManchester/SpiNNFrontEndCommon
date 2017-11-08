@@ -71,7 +71,7 @@ typedef enum regions_e {
 
 //! human readable definitions of the data in each region
 typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY
+    NEW_SEQ_KEY, FIRST_DATA_KEY, TAG_ID
 } config_elements;
 
 //! values for the priority for each callback
@@ -160,7 +160,7 @@ static bool initialize(uint32_t *timer_period) {
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
 
-    my_msg.tag = 1;                    // IPTag 1
+    my_msg.tag = config_address[TAG_ID];                    // IPTag 1
     my_msg.dest_port = PORT_ETH;       // Ethernet
     my_msg.dest_addr = sv->eth_addr;   // Nearest Ethernet chip
 

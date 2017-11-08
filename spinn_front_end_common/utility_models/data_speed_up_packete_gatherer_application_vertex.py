@@ -45,14 +45,15 @@ class DataSpeedUpPacketGatherApplicationVertex(
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
                    "routing_infos": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph"})
+                   "machine_graph": "MemoryMachineGraph",
+                   "tags": "MemoryTags"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "machine_time_step", "time_scale_factor", "routing_infos",
-                   "machine_graph"})
+                   "machine_graph", "tags"})
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            routing_infos, machine_graph):
+            routing_infos, machine_graph, tags):
 
         if DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE == \
                 EdgeTrafficType.MULTICAST:
@@ -64,7 +65,8 @@ class DataSpeedUpPacketGatherApplicationVertex(
 
         DataSpeedUpPacketGatherMachineVertex.\
             static_generate_machine_data_specification(
-                spec, base_key, machine_time_step, time_scale_factor)
+                spec, base_key, machine_time_step, time_scale_factor,
+            tags.get_ip_tags_for_vertex(placement.vertex))
 
     @property
     @overrides(ApplicationVertex.n_atoms)

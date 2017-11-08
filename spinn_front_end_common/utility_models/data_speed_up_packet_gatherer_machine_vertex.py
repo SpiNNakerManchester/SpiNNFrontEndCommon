@@ -42,7 +42,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                ('CONFIG', 1)])
 
     # size of config region in bytes
-    CONFIG_SIZE = 8
+    CONFIG_SIZE = 12
 
     # items of data a SDP packet can hold when scp header removed
     DATA_PER_FULL_PACKET = 68  # 272 bytes as removed scp header
@@ -184,17 +184,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:
             base_key = self.BASE_KEY
         self.static_generate_machine_data_specification(
-            spec, base_key, machine_time_step, time_scale_factor)
+            spec, base_key, machine_time_step, time_scale_factor, iptags)
 
     @staticmethod
     def static_generate_machine_data_specification(
-            spec, base_key, machine_time_step, time_scale_factor):
+            spec, base_key, machine_time_step, time_scale_factor, iptags):
         """ supports application vertices usage. writes the dataspec
         
         :param spec: the data spec object
         :param base_key: the base key to transmit with
         :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
+        :param iptags: iptags 
         :return: None
         """
 
@@ -217,6 +218,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         # the keys for the special cases
         spec.write_value(base_key + 1)
         spec.write_value(base_key + 2)
+
+        # locate the tag id for our data
+        spec.write_value(iptags[0].tag)
 
         # End-of-Spec:
         spec.end_specification()
