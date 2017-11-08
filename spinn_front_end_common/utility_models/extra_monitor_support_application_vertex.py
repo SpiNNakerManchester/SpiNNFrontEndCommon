@@ -41,11 +41,6 @@ class ExtraMonitorSupportApplicationVertex(
     def get_resources_used_by_atoms(self, vertex_slice):
         return ExtraMonitorSupportMachineVertex.static_resources_required()
 
-    @inject_items({"routing_info": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph"})
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"routing_info", "machine_graph"})
-    def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph):
+    def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(
-            spec, placement, routing_info, machine_graph)
+            spec=spec, placement=placement)
