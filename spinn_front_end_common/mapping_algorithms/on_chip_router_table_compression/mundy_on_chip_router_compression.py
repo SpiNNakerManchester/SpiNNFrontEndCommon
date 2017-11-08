@@ -157,8 +157,7 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_buffers, io_errors, io_warnings = iobuf_extractor(
-            transceiver, True, executable_targets.all_core_subsets)
-        self._write_iobuf(io_buffers, provenance_file_path)
+            transceiver, True, executable_targets.all_core_subsets, provenance_file_path)
         for warning in io_warnings:
             logger.warn(warning)
         for error in io_errors:
@@ -166,28 +165,28 @@ class MundyOnChipRouterCompression(object):
         transceiver.stop_application(compressor_app_id)
         transceiver.app_id_tracker.free_id(compressor_app_id)
 
-    @staticmethod
-    def _write_iobuf(io_buffers, provenance_file_path):
-        """ writes the iobuf to files
-
-        :param io_buffers: the iobuf for the cores
-        :param provenance_file_path:\
-            the file path where the iobuf are to be stored
-        :rtype: None
-        """
-        for iobuf in io_buffers:
-            file_name = os.path.join(
-                provenance_file_path,
-                "{}_{}_{}_compressor.txt".format(iobuf.x, iobuf.y, iobuf.p))
-            count = 2
-            while os.path.exists(file_name):
-                file_name = os.path.join(
-                    provenance_file_path,
-                    "{}_{}_{}_compressor-{}.txt".format(
-                        iobuf.x, iobuf.y, iobuf.p, count))
-                count += 1
-            with open(file_name, "w") as writer:
-                writer.write(iobuf.iobuf)
+#     @staticmethod
+#     def _write_iobuf(io_buffers, provenance_file_path):
+#         """ writes the iobuf to files
+#
+#         :param io_buffers: the iobuf for the cores
+#         :param provenance_file_path:\
+#             the file path where the iobuf are to be stored
+#         :rtype: None
+#         """
+#         for iobuf in io_buffers:
+#             file_name = os.path.join(
+#                 provenance_file_path,
+#                 "{}_{}_{}_compressor.txt".format(iobuf.x, iobuf.y, iobuf.p))
+#             count = 2
+#             while os.path.exists(file_name):
+#                 file_name = os.path.join(
+#                     provenance_file_path,
+#                     "{}_{}_{}_compressor-{}.txt".format(
+#                         iobuf.x, iobuf.y, iobuf.p, count))
+#                 count += 1
+#             with open(file_name, "w") as writer:
+#                 writer.write(iobuf.iobuf)
 
     def _load_executables(
             self, routing_tables, compressor_app_id, transceiver, machine):
