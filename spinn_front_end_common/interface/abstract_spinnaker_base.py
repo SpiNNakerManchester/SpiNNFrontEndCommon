@@ -2149,6 +2149,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._placements
 
     @property
+    def tags(self):
+        return self._tags
+
+    @property
     def transceiver(self):
         return self._txrx
 
