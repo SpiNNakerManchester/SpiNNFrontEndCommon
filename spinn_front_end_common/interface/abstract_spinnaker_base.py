@@ -1652,10 +1652,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = []
         algorithms = [self._dsg_algorithm]
 
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data")):
-            algorithms.append("GraphProvenanceGatherer")
-
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
         self._mapping_outputs = executor.get_items()
@@ -1785,15 +1781,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms = list()
 
-        # If we have run before, make sure to extract the data before the next
-        # run
+        # clear iobuf if were in multirun mode
         if (self._has_ran and not self._has_reset_last and
-                not self._use_virtual_board):
-            algorithms.append("BufferExtractor")
-
-            # check if we need to clear the iobuf during runs
-            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
-                algorithms.append("ChipIOBufClearer")
+                not self._use_virtual_board and
+                self._config.getboolean("Reports", "clear_iobuf_during_run")):
+            algorithms.append("ChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
@@ -1831,6 +1823,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "actually run")
         else:
             algorithms.append("ApplicationRunner")
+
+        # ensure we exploit the parallel of data extraction by running it at\
+        # end regardless of multirun
+        algorithms.append("BufferExtractor")
+
+        if (self._config.getboolean("Reports", "reports_enabled") and
+                self._config.getboolean("Reports", "write_provenance_data")):
+            algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:

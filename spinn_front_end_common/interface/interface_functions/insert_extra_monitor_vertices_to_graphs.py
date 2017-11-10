@@ -118,7 +118,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 (ethernet_connected_chip.x, ethernet_connected_chip.y)]
             machine_vertex = \
                 DataSpeedUpPacketGatherMachineVertex(
-                    connection, [ChipAndCoreConstraint(
+                    x=ethernet_connected_chip.x,
+                    y=ethernet_connected_chip.y, connection=connection,
+                    constraints=[ChipAndCoreConstraint(
                         x=ethernet_connected_chip.x,
                         y=ethernet_connected_chip.y)])
             machine_graph.add_vertex(machine_vertex)

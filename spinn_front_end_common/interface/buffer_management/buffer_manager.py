@@ -1,4 +1,5 @@
 # spinn_utilites imports
+from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
 
 # spinnman imports
@@ -148,6 +149,14 @@ class BufferManager(object):
 
         self._listener_port = None
 
+    @staticmethod
+    def _locate_receiver(
+            machine, placement_x, placement_y,
+            extra_monitor_cores_to_ethernet_connection_map):
+        chip = machine.get_chip_at(placement_x, placement_y)
+        return extra_monitor_cores_to_ethernet_connection_map[
+            chip.nearest_ethernet_y, chip.nearest_ethernet_y]
+
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
         """ uses the extra monitor cores for data extraction
@@ -164,12 +173,12 @@ class BufferManager(object):
         if self._uses_advanced_monitors:
             sender = self._extra_monitor_cores_by_chip[
                 (placement_x, placement_y)]
-            chip = self._machine.get_chip_at(placement_x, placement_y)
-            receiver = self._extra_monitor_cores_to_ethernet_connection_map[
-                chip.nearest_ethernet_y, chip.nearest_ethernet_y]
+            receiver = self._locate_receiver(
+                self._machine, placement_x, placement_y,
+                self._extra_monitor_cores_to_ethernet_connection_map)
             return receiver.get_data(
                 transceiver, self._placements.get_placement_of_vertex(sender),
-                address, length, self._extra_monitor_cores, self._placements)
+                address, length)
         else:
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
@@ -546,6 +555,39 @@ class BufferManager(object):
             with self._thread_lock_buffer_out:
                 self._finished = True
 
+    def get_data_for_vertices(self, vertices, progress):
+        receivers = OrderedSet()
+        if self._uses_advanced_monitors:
+
+            # locate receivers
+            for vertex in vertices:
+                placement = self._placements.get_placement_of_vertex(vertex)
+                receivers.add(self._locate_receiver(
+                    self._machine, placement.x, placement.y,
+                    self._extra_monitor_cores_to_ethernet_connection_map))
+
+            # set time out
+            for receiver in receivers:
+                receiver.set_cores_for_data_extraction(
+                    transceiver=self._transceiver, placements=self._placements,
+                    extra_monitor_cores_for_router_timeout=
+                    self._extra_monitor_cores)
+
+        # get data
+        for vertex in vertices:
+            placement = self._placements.get_placement_of_vertex(vertex)
+            for recording_region_id in vertex.get_recorded_region_ids():
+                self.get_data_for_vertex(placement, recording_region_id)
+                progress.update()
+
+        # unset time out
+        if self._uses_advanced_monitors:
+            for receiver in receivers:
+                receiver.unset_cores_for_data_extraction(
+                    transceiver=self._transceiver, placements=self._placements,
+                    extra_monitor_cores_for_router_timeout=
+                    self._extra_monitor_cores)
+
     def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
@@ -719,8 +761,10 @@ class BufferManager(object):
         # data flush has been completed - return appropriate data
         # the two returns can be exchanged - one returns data and the other
         # returns a pointer to the structure holding the data
-        return self._received_data.get_region_data_pointer(
+        data = self._received_data.get_region_data_pointer(
             placement.x, placement.y, placement.p, recording_region_id)
+
+        return data
 
     def _retrieve_and_store_data(self, packet):
         """ Following a SpinnakerRequestReadData packet, the data stored\

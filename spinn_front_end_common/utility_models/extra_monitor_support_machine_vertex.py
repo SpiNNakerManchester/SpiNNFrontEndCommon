@@ -22,7 +22,8 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_router_timeout_process import \
     SetRouterTimeoutProcess
-from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import \
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 from spinn_machine import CoreSubsets
 from spinn_utilities.overrides import overrides

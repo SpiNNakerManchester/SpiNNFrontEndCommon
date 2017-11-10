@@ -722,8 +722,9 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read){
     address_t data_sdram_position =
         (address_t)&store_address[position_in_store];
 
-    // update position as needed
+    // update positions as needed
     position_in_store += items_to_read;
+    num_items_read = items_to_read;
 
     // set off dma
     uint desc =
@@ -753,51 +754,51 @@ void dma_complete_reading_for_original_transmission(){
     //do dma
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = key_to_transmit_with;
-    uint32_t items_to_transmit = ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+    uint32_t items_read_this_time = num_items_read;
 
     // put size in bytes if first send
     //log_info("in original read complete callback");
     if(first_transmission){
-        //log_info("in first");
+        //io_printf(IO_BUF, "in first\n");
         data_to_transmit[current_dma_pointer][0] = bytes_to_read_write;
         key_to_transmit = key_to_transmit_with + 2;
         first_transmission = false;
-        items_to_transmit = ITEMS_PER_DATA_PACKET;
+        items_read_this_time += 1;
     }
 
     // stopping procedure
     // if a full packet, read another and try again
-    //log_info("position_in_store = %d, to get to %d. seq num = %d", position_in_store, (uint)bytes_to_write / WORD_TO_BYTE_MULTIPLIER, possible_seq_num);
+    //io_printf(IO_BUF, "next position %d, elements %d\n", position_in_store, number_of_elements_to_read_from_sdram);
     if (position_in_store < number_of_elements_to_read_from_sdram - 1){
+        //io_printf(IO_BUF, "setting off another dma\n");
         //log_info("setting off another dma");
-        num_items_read = ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+        uint32_t num_items_to_read =
+            ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
 
         uint32_t next_position_in_store =
             position_in_store + (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
 
         // if less data needed request less data
         if (next_position_in_store >= number_of_elements_to_read_from_sdram){
-            num_items_read =
+            num_items_to_read =
                 number_of_elements_to_read_from_sdram - position_in_store;
-            //log_info("reading %d items", num_items_read);
+            //log_info("reading %d items", num_items_to_read);
             //log_info("position in store = %d, new position in store = %d", position_in_store, next_position_in_store);
         }
 
         // set off another read and transmit dma'ed one
-        read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_read);
+        read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
 
         //log_info("sending data");
         send_data_block(
-            current_dma_pointer, items_to_transmit, key_to_transmit);
+            current_dma_pointer, items_read_this_time, key_to_transmit);
         //log_info("finished sending data");
     }
     else{
-        //log_info("sending last data");
-        //log_info("position_in_store = %d, to get to %d. seq num = %d", position_in_store, (uint)bytes_to_write / WORD_TO_BYTE_MULTIPLIER, possible_seq_num);
-        //log_info("trasnmitting %d elements", num_items_read);
+        //io_printf(IO_BUF, "sending last data \n");
         send_data_block(
-            current_dma_pointer, num_items_read, key_to_transmit);
-        //log_info("finished sending data");
+            current_dma_pointer, items_read_this_time, key_to_transmit);
+        //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
        data_speed_up_send_end_flag();
@@ -951,11 +952,12 @@ void dma_complete_writing_missing_seq_to_sdram(){
 //! \param[in] msg: the sdp message (without scp header)
 void handle_data_speed_up(sdp_msg_pure_data *msg){
     if(msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA){
-        //log_info("starting the send of original data");
+        //io_printf(IO_BUF, "starting the send of original data\n");
         // set sdram position and length
         store_address = (address_t*) msg->data[SDRAM_POSITION];
         bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
         sark_msg_free((sdp_msg_t *) msg);
+        //io_printf(IO_BUF, "address %d, byts to write %d\n", store_address, bytes_to_read_write);
 
         // reset states
         first_transmission = true;
@@ -963,10 +965,19 @@ void handle_data_speed_up(sdp_msg_pure_data *msg){
         position_in_store = 0;
         number_of_elements_to_read_from_sdram =
             (uint)(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
+        //io_printf(IO_BUF, "elements to read %d \n", number_of_elements_to_read_from_sdram);
 
-        read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
-             ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+        if( number_of_elements_to_read_from_sdram <
+                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE){
+            read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                 number_of_elements_to_read_from_sdram);
+        }
+        else{
+            read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                 ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+        }
     }
+
     // start or continue to gather missing packet list
     else if(msg->data[COMMAND_ID_POSITION] ==
             SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS ||

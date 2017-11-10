@@ -112,7 +112,9 @@ void receive_data(uint key, uint payload){
     }
     else{
         if (key == first_data_key){
+            //log_info("resetting seq and position");
             seq_num = FIRST_SEQ_NUM;
+            position_in_store = 0;
         }
 
         //log_info(" payload = %d posiiton = %d", payload, position_in_store);
