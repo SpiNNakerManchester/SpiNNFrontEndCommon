@@ -2,6 +2,32 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="LoadFixedRoutes">
+        <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
+        <python_class>LoadFixedRoutes</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>fixed_routes</param_name>
+                <param_type>MemoryFixedRoutes</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>fixed_routes</param_name>
+            <param_name>transceiver</param_name>
+            <param_name>app_id</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>LoadedFixedRoutesToken</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="PreAllocateResourcesForChipPowerMonitor">
         <python_module>
             spinn_front_end_common.interface.interface_functions.pre_allocate_resources_for_chip_power_monitor
