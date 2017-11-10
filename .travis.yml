@@ -39,7 +39,7 @@ before_script:
   - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
   # Initialise builds against spinnaker_tools
   - make -C $SPINN_DIRS
-  - make -C spinn_common
+  - make -C spinn_common install
 
 script:
   # Python
