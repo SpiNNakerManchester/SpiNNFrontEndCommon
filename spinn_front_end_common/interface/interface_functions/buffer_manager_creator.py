@@ -10,9 +10,9 @@ class BufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx, store_data_in_file,
-            extra_monitor_cores, extra_monitor_to_chip_mapping,
-            extra_monitor_cores_to_ethernet_connection_map, machine,
-            uses_advanced_monitors):
+            uses_advanced_monitors, extra_monitor_cores=None,
+            extra_monitor_to_chip_mapping=None,
+            extra_monitor_cores_to_ethernet_connection_map=None, machine=None):
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager
