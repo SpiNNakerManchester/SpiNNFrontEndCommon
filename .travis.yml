@@ -5,17 +5,16 @@ dist: trusty
 addons:
   apt:
     packages:
+      - libc6:i386
       - vera++
       - libxml2-utils
       #- gcc-arm-none-eabi
       #- libnewlib-arm-none-eabi
 
-virtualenv:
-  system_site_packages: true
-
 cache: pip
 
 before_install:
+  # Bring pip up to date 
   - pip install --upgrade pip setuptools wheel
   - pip install --only-binary=numpy,scipy numpy scipy
   # SpiNNakerManchester internal dependencies; development mode
@@ -26,6 +25,13 @@ before_install:
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@${TRAVIS_BRANCH} || pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@${TRAVIS_BRANCH} || pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/spalloc.git@${TRAVIS_BRANCH} || pip install --upgrade git+git://github.com/SpiNNakerManchester/spalloc.git@master
+  # Enable compilation with a known compiler version
+  - wget https://github.com/SpiNNakerManchester/spinnaker_tools/releases/download/v3.0.0/gcc-5.4-stripped.tar.gz
+  - tar zxf gcc-5.4-stripped.tar.gz
+  - export PATH=$PATH:$PWD/gcc-stripped/bin/
+  - wget https://github.com/SpiNNakerManchester/spinnaker_tools/releases/download/v3.1.0/spinnaker_tools_3.1.0.tar.gz
+  - tar zxf spinnaker_tools_3.1.0.tar.gz
+  - export SPINN_DIRS=$PWD/spinnaker_tools_3.1.0
 
 install:
   # These things ought to be enough
@@ -33,13 +39,22 @@ install:
   - python ./setup.py install
   - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
 
+before_script:
+  # Initialise builds against spinnaker_tools
+  - make -C $SPINN_DIRS
+
 script:
+  # Python
   - py.test unittests
   - py.test fec_integration_tests
   - flake8 spinn_front_end_common
   - flake8 unittests integration_tests
-  - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh 
+  # XML
+  - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh
+  # C 
+  - cd c_common && make && cd ..
   - support/run-vera.sh c_common
+  # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json
   - support/travis-sphinx.sh singlehtml -T -b singlehtml -d _build/doctrees-readthedocssinglehtmllocalmedia -D language=en . _build/localmedia
