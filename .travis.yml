@@ -8,8 +8,8 @@ addons:
       - libc6:i386
       - vera++
       - libxml2-utils
-      #- gcc-arm-none-eabi
-      #- libnewlib-arm-none-eabi
+      - gcc-arm-none-eabi
+      - libnewlib-arm-none-eabi
 
 cache: pip
 
@@ -25,23 +25,21 @@ before_install:
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@${TRAVIS_BRANCH} || pip install --upgrade git+git://github.com/SpiNNakerManchester/PACMAN.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@${TRAVIS_BRANCH} || pip install --upgrade git+git://github.com/SpiNNakerManchester/DataSpecification.git@master
   - pip install --upgrade git+git://github.com/SpiNNakerManchester/spalloc.git@${TRAVIS_BRANCH} || pip install --upgrade git+git://github.com/SpiNNakerManchester/spalloc.git@master
-  # Enable compilation with a known compiler version
-  - wget https://github.com/SpiNNakerManchester/spinnaker_tools/releases/download/v3.0.0/gcc-5.4-stripped.tar.gz
-  - tar zxf gcc-5.4-stripped.tar.gz
-  - export PATH=$PATH:$PWD/gcc-stripped/bin/
-  - wget https://github.com/SpiNNakerManchester/spinnaker_tools/releases/download/v3.1.0/spinnaker_tools_3.1.0.tar.gz
-  - tar zxf spinnaker_tools_3.1.0.tar.gz
-  - export SPINN_DIRS=$PWD/spinnaker_tools_3.1.0
+  # C dependencies
+  - git clone --branch v3.1.1 https://github.com/SpiNNakerManchester/spinnaker_tools.git
+  - git clone --branch 4.0.0 https://github.com/SpiNNakerManchester/spinn_common.git
+  - export SPINN_DIRS=$PWD/spinnaker_tools
 
 install:
   # These things ought to be enough
   - pip install -r requirements-test.txt
   - python ./setup.py install
-  - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
 
 before_script:
+  - git clone https://github.com/SpiNNakerManchester/SupportScripts.git support
   # Initialise builds against spinnaker_tools
   - make -C $SPINN_DIRS
+  - make -C spinn_common
 
 script:
   # Python
@@ -52,7 +50,7 @@ script:
   # XML
   - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh
   # C 
-  - cd c_common && make && cd ..
+  - make -C c_common
   - support/run-vera.sh c_common
   # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
