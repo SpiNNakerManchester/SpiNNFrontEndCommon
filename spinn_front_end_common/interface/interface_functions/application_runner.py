@@ -106,9 +106,14 @@ class ApplicationRunner(object):
                 logger.info(
                     "Application started - waiting until finished")
 
-            txrx.wait_for_cores_to_be_in_state(
-                executable_targets.all_core_subsets, app_id,
-                [CPUState.FINISHED, CPUState.PAUSED], timeout=timeout)
+            try:
+                txrx.wait_for_cores_to_be_in_state(
+                    executable_targets.all_core_subsets, app_id,
+                    [CPUState.FINISHED, CPUState.PAUSED], timeout=timeout)
+            finally:
+
+                # Stop the buffer manager after run (always)
+                buffer_manager.stop()
 
         if (notification_interface is not None and
                 send_stop_notification and runtime is not None):
