@@ -1902,6 +1902,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if executor is not None:
                     # Only do this if the error occurred in the run
                     if not run_complete and not self._use_virtual_board:
+                        self._last_run_outputs = executor.get_items()
                         self._recover_from_error(
                             e, e_inf, executor.get_item("ExecutableTargets"))
                 else:
@@ -1952,9 +1953,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Extract router provenance
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
-            self._txrx, self._machine, self._router_tables, True,
+            transceiver=self._txrx, machine=self._machine,
+            router_tables=self._router_tables, has_ran=True,
+            extra_monitor_vertices=
             self._last_run_outputs["MemoryExtraMonitorVertices"],
-            self._placements)
+            placements=self._placements)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
