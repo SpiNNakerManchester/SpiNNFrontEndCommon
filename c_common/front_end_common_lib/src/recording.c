@@ -438,9 +438,19 @@ bool recording_record_and_notify(
                 log_info("WARNING: recording channel %u out of space", channel);
                 g_recording_channels[channel].missing_info = 1;
             }
+
+            // Call the callback to make sure resources are freed
+            if (callback != NULL) {
+                callback();
+            }
             return false;
         }
     } else {
+
+        // Call the callback to make sure resources are freed
+        if (callback != NULL) {
+            callback();
+        }
         return false;
     }
 }
@@ -695,6 +705,7 @@ void recording_reset() {
 
 void recording_do_timestep_update(uint32_t time) {
     if (time - last_time_buffering_trigger > time_between_triggers) {
+        log_debug("Sending buffering trigger message");
         _recording_send_buffering_out_trigger_message(0);
         last_time_buffering_trigger = time;
     }
