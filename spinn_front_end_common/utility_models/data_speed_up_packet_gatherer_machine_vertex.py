@@ -95,6 +95,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     # the amount of bytes the data length will take up
     LENGTH_OF_DATA_SIZE = 4
 
+    THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
+
     def __init__(self, x, y, connection=None, constraints=None):
         MachineVertex.__init__(
             self,
@@ -294,8 +296,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                     time_taken, report=False, message=None))
                 times_extracted_the_same_thing += 1
 
-
-
                 # handle lost seq nums
                 lost_seq_num_iteration = 0
                 for n_lost_seq_nums in lost_seq_nums:
@@ -354,7 +354,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             return data
 
         if (length_in_bytes <
-                self.DATA_PER_FULL_PACKET * self.WORD_TO_BYTE_CONVERTER):
+                self.THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES):
             data = transceiver.read_memory(
                 placement.x, placement.y, memory_address, length_in_bytes)
             end = float(time.time())
