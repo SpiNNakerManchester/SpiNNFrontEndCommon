@@ -149,14 +149,6 @@ class BufferManager(object):
 
         self._listener_port = None
 
-    @staticmethod
-    def _locate_receiver(
-            machine, placement_x, placement_y,
-            extra_monitor_cores_to_ethernet_connection_map):
-        chip = machine.get_chip_at(placement_x, placement_y)
-        return extra_monitor_cores_to_ethernet_connection_map[
-            chip.nearest_ethernet_y, chip.nearest_ethernet_y]
-
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
         """ uses the extra monitor cores for data extraction
@@ -173,7 +165,7 @@ class BufferManager(object):
         if self._uses_advanced_monitors:
             sender = self._extra_monitor_cores_by_chip[
                 (placement_x, placement_y)]
-            receiver = self._locate_receiver(
+            receiver = funs.locate_extra_monitor_mc_receiver(
                 self._machine, placement_x, placement_y,
                 self._extra_monitor_cores_to_ethernet_connection_map)
             return receiver.get_data(
@@ -562,7 +554,7 @@ class BufferManager(object):
             # locate receivers
             for vertex in vertices:
                 placement = self._placements.get_placement_of_vertex(vertex)
-                receivers.add(self._locate_receiver(
+                receivers.add(funs.locate_extra_monitor_mc_receiver(
                     self._machine, placement.x, placement.y,
                     self._extra_monitor_cores_to_ethernet_connection_map))
 

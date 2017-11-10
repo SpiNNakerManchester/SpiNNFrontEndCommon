@@ -23,6 +23,14 @@ FINISHED_FILENAME = "finished"
 _ONE_WORD = struct.Struct("<I")
 
 
+def locate_extra_monitor_mc_receiver(
+        machine, placement_x, placement_y,
+        extra_monitor_cores_to_ethernet_connection_map):
+    chip = machine.get_chip_at(placement_x, placement_y)
+    return extra_monitor_cores_to_ethernet_connection_map[
+        chip.nearest_ethernet_y, chip.nearest_ethernet_y]
+
+
 def read_data(x, y, address, length, data_format, transceiver):
     """ Reads and converts a single data item from memory
 

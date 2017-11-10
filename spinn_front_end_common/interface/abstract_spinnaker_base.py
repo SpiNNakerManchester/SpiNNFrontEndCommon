@@ -2236,6 +2236,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 (float(self._machine_time_step) / 1000.0))
         return 0.0
 
+    def get_generated_output(self, name_of_variable):
+        if name_of_variable in self._last_run_outputs:
+            return self._last_run_outputs[name_of_variable]
+        else:
+            return None
+
     def __repr__(self):
         return "general front end instance for machine {}"\
             .format(self._hostname)
