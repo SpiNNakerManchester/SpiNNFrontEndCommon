@@ -59,6 +59,7 @@ static uint32_t *region_sizes = NULL;
 static uint32_t n_recording_regions = 0;
 static uint32_t sdp_port = 0;
 static uint32_t sequence_number = 0;
+static bool sequence_ack = false;
 static uint32_t last_time_buffering_trigger = 0;
 static uint32_t buffer_size_before_trigger = 0;
 static uint32_t time_between_triggers = 0;
@@ -112,6 +113,7 @@ static inline void _recording_host_data_read(eieio_msg_t msg, uint length) {
         return;
     }
     sequence_number = (sequence_number + 1) & MAX_SEQUENCE_NO;
+    sequence_ack = false;
 
     for (i = 0; i < n_requests; i++) {
         uint8_t channel = ptr_data[i].channel;
@@ -137,6 +139,20 @@ static inline void _recording_host_data_read(eieio_msg_t msg, uint length) {
     }
 }
 
+static inline void _recording_host_data_read_ack(
+        eieio_msg_t msg, uint length) {
+    host_data_read_ack_packet_header *ptr_hdr =
+        (host_data_read_ack_packet_header *) msg;
+
+    uint8_t sequence = ptr_hdr->sequence;
+
+    if (sequence != sequence_number) {
+        log_debug("dropping packet with sequence no: %d", sequence);
+        return;
+    }
+    sequence_ack = true;
+}
+
 static inline void _recording_eieio_packet_handler(
         eieio_msg_t msg, uint length) {
     uint16_t data_hdr_value = msg[0];
@@ -151,6 +167,11 @@ static inline void _recording_eieio_packet_handler(
         case HOST_DATA_READ:
             log_debug("command: HOST_DATA_READ");
             _recording_host_data_read(msg, length);
+            break;
+
+        case HOST_DATA_READ_ACK:
+            log_debug("command: HOST_DATA_READ_ACK");
+            _recording_host_data_read_ack(msg, length);
             break;
 
         default:
@@ -701,10 +722,13 @@ void recording_reset() {
         }
     }
     _recording_buffer_state_data_write();
+    sequence_number = 0;
+    sequence_ack = false;
 }
 
 void recording_do_timestep_update(uint32_t time) {
-    if (time - last_time_buffering_trigger > time_between_triggers) {
+    if (!sequence_ack &&
+            ((time - last_time_buffering_trigger) > time_between_triggers)) {
         log_debug("Sending buffering trigger message");
         _recording_send_buffering_out_trigger_message(0);
         last_time_buffering_trigger = time;
