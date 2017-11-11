@@ -4,9 +4,9 @@ from spinn_utilities.progress_bar import ProgressBar
 # spinnman imports
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.command_messages.host_data_read_ack import HostDataReadAck
 from spinnman.messages.eieio.command_messages \
-    import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData
+    import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData, \
+    HostDataReadAck
 from spinnman.messages.eieio.command_messages \
     import HostDataRead, SpinnakerRequestBuffers, PaddingRequest
 from spinnman.messages.eieio.command_messages \
@@ -716,7 +716,7 @@ class BufferManager(object):
                     "never sent one acknowledge".format(x, y, p))
             return
 
-        # Send an ack message to stop the core sending more messages
+        # Send an ACK message to stop the core sending more messages
         ack_message_header = SDPHeader(
             destination_port=SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value,
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
@@ -724,7 +724,7 @@ class BufferManager(object):
         ack_message_data = HostDataReadAck(pkt_seq)
         ack_message = SDPMessage(
             ack_message_header, ack_message_data.bytestring)
-        self._transcevier.send_sdp_message(ack_message)
+        self._transceiver.send_sdp_message(ack_message)
 
         # read data from memory, store it and create data for return ACK packet
         n_requests = packet.n_requests
