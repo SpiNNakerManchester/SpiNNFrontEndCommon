@@ -156,13 +156,26 @@ class BufferManager(object):
                                 logger.warn("problem when sending messages",
                                             exc_info=True)
             elif isinstance(packet, SpinnakerRequestReadData):
+                if not self._finished:
+
+                    # Send an ACK message to stop the core sending more messages
+                    ack_message_header = SDPHeader(
+                        destination_port=(
+                            SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value),
+                        destination_cpu=packet.p, destination_chip_x=packet.x,
+                        destination_chip_y=packet.y,
+                        flags=SDPFlag.REPLY_NOT_EXPECTED)
+                    ack_message_data = HostDataReadAck(packet.sequence_no)
+                    ack_message = SDPMessage(
+                        ack_message_header, ack_message_data.bytestring)
+                    self._transceiver.send_sdp_message(ack_message)
                 with self._thread_lock_buffer_out:
                     if not self._finished:
-                        # logger.debug(
-                        #     "received {} read request(s) with sequence: {},"
-                        #     " from chip ({},{}, core {}".format(
-                        #         packet.n_requests, packet.sequence_no,
-                        #         packet.x, packet.y, packet.p))
+                        logger.info(
+                            "received {} read request(s) with sequence: {},"
+                            " from chip ({},{}, core {}".format(
+                                packet.n_requests, packet.sequence_no,
+                                packet.x, packet.y, packet.p))
                         try:
                             self._retrieve_and_store_data(packet)
                         except Exception:
@@ -715,16 +728,6 @@ class BufferManager(object):
                     "has incorrect sequence number, but the host "
                     "never sent one acknowledge".format(x, y, p))
             return
-
-        # Send an ACK message to stop the core sending more messages
-        ack_message_header = SDPHeader(
-            destination_port=SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value,
-            destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
-            flags=SDPFlag.REPLY_NOT_EXPECTED)
-        ack_message_data = HostDataReadAck(pkt_seq)
-        ack_message = SDPMessage(
-            ack_message_header, ack_message_data.bytestring)
-        self._transceiver.send_sdp_message(ack_message)
 
         # read data from memory, store it and create data for return ACK packet
         n_requests = packet.n_requests
