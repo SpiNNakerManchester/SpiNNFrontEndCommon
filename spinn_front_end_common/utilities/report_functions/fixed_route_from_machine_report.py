@@ -10,14 +10,14 @@ class FixedRouteFromMachineReport(object):
     def __call__(self, transceiver, machine, report_default_directory,
                  app_id, loaded_fixed_routes_on_machine_token):
         """ writing the fixed routes from the machine
-        
+
         :param transceiver: spinnMan instance
         :param machine: SpiNNMachine instance
         :param report_default_directory: folder where reports reside
         :param loaded_fixed_routes_on_machine_token: token that states fixed \
         routes have been loaded
         :param app_id: the app id the fixed routes were loaded with
-        :rtype: None 
+        :rtype: None
         """
 
         if not loaded_fixed_routes_on_machine_token:
@@ -31,11 +31,11 @@ class FixedRouteFromMachineReport(object):
                 self._write_fixed_routers(output, transceiver, machine, app_id)
 
     def _write_fixed_routers(self, output, transceiver, machine, app_id):
-        """
-        
-        :param transceiver: 
-        :param machine: 
-        :return: 
+        """ writer for fixed routes
+
+        :param transceiver: the spinnman instance
+        :param machine: the spinnmanchine instance
+        :rtype: None
         """
         progress = ProgressBar(machine.chips, "Writing fixed route report")
         output.write(" x    y       route         [cores][links]\n")
