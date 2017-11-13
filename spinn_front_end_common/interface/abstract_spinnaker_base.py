@@ -1575,6 +1575,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms.append("LocateExecutableStartType")
 
         algorithms.append("FixedRouteRouter")
+        if "FixedRouteDestinationClass" not in inputs:
+            inputs["FixedRouteDestinationClass"] = None
 
         # handle outputs
         outputs = [
