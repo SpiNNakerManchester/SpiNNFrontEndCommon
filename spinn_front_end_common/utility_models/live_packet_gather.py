@@ -125,8 +125,8 @@ class LivePacketGather(
             iptags=[IPtagResource(
                 ip_address=self._ip_address, port=self._port,
                 strip_sdp=self._strip_sdp, tag=self._tag,
-                traffic_identifier=
-                LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER)])
+                traffic_identifier=(
+                    LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))])
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
