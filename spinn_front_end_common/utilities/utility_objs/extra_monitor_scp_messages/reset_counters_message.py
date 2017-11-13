@@ -25,7 +25,7 @@ class ResetCountersMessage(AbstractSCPRequest):
                 0 and 17
         :type p: int
         :param command_code: the command code used by the extra monitor \
-        vertex for resetting reinjection counters. 
+        vertex for resetting reinjection counters.
         """
 
         self._command_code = command_code
@@ -33,8 +33,8 @@ class ResetCountersMessage(AbstractSCPRequest):
             self,
             SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
-                destination_port=
-                constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value,
+                destination_port=(
+                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=self._command_code))

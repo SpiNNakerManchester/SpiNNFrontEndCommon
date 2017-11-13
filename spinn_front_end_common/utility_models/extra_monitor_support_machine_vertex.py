@@ -63,7 +63,7 @@ class ExtraMonitorSupportMachineVertex(
             reinject_point_to_point=False, reinject_nearest_neighbour=False,
             reinject_fixed_route=False):
         """ constructor
-        
+
         :param constraints: constraints on this vertex
         :param reinject_multicast: if we reinject mc packets
         :param reinject_point_to_point: if we reinject point to point packets
@@ -148,7 +148,7 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set):
         """ supports setting of the router time outs for a set of chips via
          their extra monitor cores.
-        
+
         :param timeout_mantissa: what timeout mantissa to set it to
         :type timeout_exponent: int
         :type timeout_mantissa: int
@@ -156,7 +156,7 @@ class ExtraMonitorSupportMachineVertex(
         :param transceiver: the spinnman interface
         :param placements: placements object
         :param extra_monitor_cores_to_set: which vertices to use
-        :rtype: None 
+        :rtype: None
         """
 
         core_subsets = self._convert_vertices_to_core_subset(
@@ -180,7 +180,7 @@ class ExtraMonitorSupportMachineVertex(
         :type timeout_exponent: int
         :param transceiver: the spinnMan instance
         :param placements: the placements object
-        :param extra_monitor_cores_to_set: the set of vertices to 
+        :param extra_monitor_cores_to_set: the set of vertices to \
         change the local chip for.
         """
         core_subsets = self._convert_vertices_to_core_subset(
@@ -203,7 +203,7 @@ class ExtraMonitorSupportMachineVertex(
 
     def get_reinjection_status(self, placements, transceiver):
         """ gets the reinjection status from this extra monitor vertex
-        
+
         :param transceiver: the spinnMan interface
         :param placements: the placements object
         :return: the reinjection status for this vertex
@@ -217,12 +217,12 @@ class ExtraMonitorSupportMachineVertex(
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
         """ gets the reinjection status from a set of extra monitor cores
-        
+
         :param placements: the placements object
         :param extra_monitor_cores_for_data: the extra monitor cores to get\
          status from
         :param transceiver: the spinnMan interface
-        :rtype: None 
+        :rtype: None
         """
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
@@ -234,7 +234,7 @@ class ExtraMonitorSupportMachineVertex(
             self, placements, transceiver, point_to_point=None, multicast=None,
             nearest_neighbour=None, fixed_route=None):
         """
-        
+
         :param placements: placements object
         :param transceiver: spinnman instance
         :param point_to_point: bool stating if point to point should be set,\
@@ -245,7 +245,7 @@ class ExtraMonitorSupportMachineVertex(
         set, or None if left as before
         :param fixed_route: bool stating if fixed route should be set, or \
         None if left as before.
-        :rtype: None 
+        :rtype: None
         """
         if multicast is not None:
             self._reinject_multicast = multicast
@@ -269,8 +269,8 @@ class ExtraMonitorSupportMachineVertex(
     @staticmethod
     def _convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements):
-        """ converts vertices into core subsets. 
-        
+        """ converts vertices into core subsets.
+
         :param extra_monitor_cores_to_set: the vertices to convert to core \
         subsets
         :param placements: the placements object

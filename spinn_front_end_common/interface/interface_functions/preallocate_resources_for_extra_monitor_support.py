@@ -4,11 +4,13 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
+    """ allocate resources needed for the extra monitor support
+    """
 
     def __call__(
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
-        """
+        """ setter offer
 
         :param machine: spinnaker machine object
         :param pre_allocated_resources: resources already pre allocated
@@ -41,13 +43,13 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
     @staticmethod
     def _handle_second_monitor_support(cores, machine, progress):
-        """ adds the second monitor pre allocations, which reflect the 
+        """ adds the second monitor pre allocations, which reflect the \
         re-injector and data extractor support
-        
+
         :param cores: the storage of core requirements
         :param machine: the spinnMachine instance
-        :param progress: the progress bar to operate one 
-        :rtype: None 
+        :param progress: the progress bar to operate one
+        :rtype: None
         """
         for chip in progress.over(list(machine.chips)):
             cores.append(CoreResource(chip=chip, n_cores=1))

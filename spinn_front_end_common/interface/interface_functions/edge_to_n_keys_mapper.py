@@ -120,7 +120,6 @@ class EdgeToNKeysMapper(object):
                 constraints.extend(
                     app_edge.post_vertex.get_incoming_partition_constraints(
                         partition))
-        x = partition.constraints
         constraints.extend(partition.constraints)
         return constraints
 

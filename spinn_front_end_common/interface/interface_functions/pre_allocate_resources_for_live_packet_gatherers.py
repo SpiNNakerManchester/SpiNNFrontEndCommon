@@ -70,8 +70,8 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     board=chip.ip_address,
                     ip_address=lpg_params.hostname, port=lpg_params.port,
                     strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
-                    traffic_identifier=
-                    LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))
+                    traffic_identifier=LivePacketGatherMachineVertex.
+                    TRAFFIC_IDENTIFIER))
 
         if sdram_reqs > 0:
             sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))
