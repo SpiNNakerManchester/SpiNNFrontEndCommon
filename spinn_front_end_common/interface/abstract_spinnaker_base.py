@@ -71,7 +71,10 @@ import signal
 import sys
 
 from numpy import __version__ as numpy_version
-from scipy import __version__ as scipy_version
+try:
+    from scipy import __version__ as scipy_version
+except ImportError:
+    scipy_version = "scipy not installed"
 from data_specification import __version__ as data_spec_version
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from spalloc import __version__ as spalloc_version
@@ -175,6 +178,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         #
         "_extra_mapping_inputs",
+
+        #
+        "_extra_inputs",
 
         #
         "_extra_pre_run_algorithms",
@@ -401,6 +407,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #  releases
         self._extra_mapping_algorithms = list()
         self._extra_mapping_inputs = dict()
+        self._extra_inputs = dict()
         self._extra_pre_run_algorithms = list()
         self._extra_post_run_algorithms = list()
         self._extra_load_algorithms = list()
@@ -489,6 +496,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(msg)
         if extra_mapping_inputs is not None:
             self._extra_mapping_inputs.update(extra_mapping_inputs)
+
+    def update_extra_inputs(self, extra_inputs):
+        if self.has_ran:
+            msg = "Changing inputs is not supported after run"
+            raise ConfigurationException(msg)
+        if extra_inputs is not None:
+            self._extra_inputs.update(extra_inputs)
 
     def extend_extra_mapping_algorithms(self, extra_mapping_algorithms):
         if self.has_ran:
@@ -1123,7 +1137,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._machine is not None:
             return self._machine
 
-        inputs = dict()
+        inputs = dict(self._extra_inputs)
         algorithms = list()
         outputs = list()
 
