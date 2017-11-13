@@ -1,4 +1,3 @@
-
 //! imports
 #include "spin1_api.h"
 #include "common-typedefs.h"
@@ -63,7 +62,6 @@ static uint32_t position_in_store = 0;
 //! sdp message holder for transmissions
 sdp_msg_pure_data my_msg;
 
-
 //! human readable definitions of each region in SDRAM
 typedef enum regions_e {
     SYSTEM_REGION, CONFIG
@@ -75,43 +73,40 @@ typedef enum config_elements {
 } config_elements;
 
 //! values for the priority for each callback
-typedef enum callback_priorities{
+typedef enum callback_priorities {
     MC_PACKET = -1, SDP = 0, DMA = 0
 } callback_priorities;
-
 
 void resume_callback() {
     time = UINT32_MAX;
 }
 
-void send_data(){
+static void send_data() {
    //log_info("last element is %d", data[position_in_store - 1]);
    //log_info("first element is %d", data[0]);
 
    spin1_memcpy(&my_msg.data, data,
                 position_in_store * WORD_TO_BYTE_MULTIPLIER);
    my_msg.length =
-       LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
+       LENGTH_OF_SDP_HEADER + position_in_store * WORD_TO_BYTE_MULTIPLIER;
    //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
-   while(!spin1_send_sdp_msg ((sdp_msg_t *) &my_msg, 100)){
-
+   while (!spin1_send_sdp_msg ((sdp_msg_t *) &my_msg, 100)) {
+       // Empty body
    }
    position_in_store = 1;
    seq_num += 1;
    data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload){
-
+void receive_data(uint key, uint payload) {
     log_info("packet!");
-    if(key == new_sequence_key){
+    if (key == new_sequence_key) {
         log_info("finding new seq num %d", payload);
         log_info("position in store is %d", position_in_store);
         data[0] = payload;
-    }
-    else{
-        if (key == first_data_key){
+    } else {
+        if (key == first_data_key) {
             seq_num = FIRST_SEQ_NUM;
         }
 
@@ -120,15 +115,15 @@ void receive_data(uint key, uint payload){
         position_in_store += 1;
         log_info("payload is %d", payload);
 
-        if (payload == 0xFFFFFFFF){
-            if (position_in_store == 2){
+        if (payload == 0xFFFFFFFF) {
+            if (position_in_store == 2) {
                 data[0] = 0xFFFFFFFF;
                 position_in_store = 1;
             }
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
-        }else if(position_in_store == ITEMS_PER_DATA_PACKET){
+        } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
