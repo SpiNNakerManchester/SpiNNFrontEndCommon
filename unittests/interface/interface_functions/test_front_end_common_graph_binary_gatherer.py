@@ -72,8 +72,9 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         targets = gatherer.__call__(
             placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
-        start_type = gatherer.__call__(graph)
-        self.assertEqual(start_type, ExecutableType.RUNNING)
+        start_type = gatherer.__call__(graph, placements)
+        x = start_type.keys()[0]
+        self.assertEqual(start_type.keys()[0], ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
         test_cores = targets.get_cores_for_binary("test.aplx")
@@ -93,12 +94,17 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         vertex_2 = _TestVertexWithBinary(
             "test2.aplx", ExecutableType.SYNC)
 
+        placements = Placements(placements=[
+            Placement(vertex_1, 0, 0, 0),
+            Placement(vertex_2, 0, 0, 1)])
+
         graph = MachineGraph("Test")
         graph.add_vertices([vertex_1, vertex_2])
 
         gatherer = LocateExecutableStartType()
-        with self.assertRaises(ConfigurationException):
-            gatherer.__call__(graph)
+        results = gatherer.__call__(graph, placements=placements)
+        self.assertIn(ExecutableType.RUNNING, results)
+        self.assertIn(ExecutableType.SYNC, results)
 
 
 if __name__ == '__main__':
