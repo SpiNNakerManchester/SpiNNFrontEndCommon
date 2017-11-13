@@ -150,6 +150,7 @@ static inline void _recording_host_data_read_ack(
         log_debug("dropping packet with sequence no: %d", sequence);
         return;
     }
+    log_debug("Sequence %d acked", sequence);
     sequence_ack = true;
 }
 
@@ -419,6 +420,7 @@ static inline void _recording_send_buffering_out_trigger_message(
         data_ptr[0].processor_and_request =
             (spin1_get_core_id() << 3) | n_requests;
         data_ptr[0].sequence = sequence_number;
+        log_debug("Sending request with sequence %d", sequence_number);
         msg_size += (n_requests * sizeof(read_request_packet_data));
         msg.length = msg_size;
 

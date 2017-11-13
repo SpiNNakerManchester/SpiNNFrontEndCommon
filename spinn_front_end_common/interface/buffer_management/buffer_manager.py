@@ -29,6 +29,7 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
 
 # general imports
 import threading
+from multiprocessing.pool import ThreadPool
 import logging
 
 
@@ -81,7 +82,10 @@ class BufferManager(object):
         "_listener_port",
 
         # Store to file flag
-        "_store_to_file"
+        "_store_to_file",
+
+        # Buffering out thread pool
+        "_buffering_out_thread_pool"
     ]
 
     def __init__(self, placements, tags, transceiver, store_to_file=False):
@@ -120,6 +124,7 @@ class BufferManager(object):
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.Lock()
         self._thread_lock_buffer_in = threading.Lock()
+        self._buffering_out_thread_pool = ThreadPool(processes=1)
 
         self._finished = False
 
@@ -158,7 +163,8 @@ class BufferManager(object):
             elif isinstance(packet, SpinnakerRequestReadData):
                 if not self._finished:
 
-                    # Send an ACK message to stop the core sending more messages
+                    # Send an ACK message to stop the core sending more
+                    # messages
                     ack_message_header = SDPHeader(
                         destination_port=(
                             SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value),
@@ -169,18 +175,8 @@ class BufferManager(object):
                     ack_message = SDPMessage(
                         ack_message_header, ack_message_data.bytestring)
                     self._transceiver.send_sdp_message(ack_message)
-                with self._thread_lock_buffer_out:
-                    if not self._finished:
-                        logger.info(
-                            "received {} read request(s) with sequence: {},"
-                            " from chip ({},{}, core {}".format(
-                                packet.n_requests, packet.sequence_no,
-                                packet.x, packet.y, packet.p))
-                        try:
-                            self._retrieve_and_store_data(packet)
-                        except Exception:
-                            logger.warn("problem when handling data",
-                                        exc_info=True)
+                self._buffering_out_thread_pool.apply_async(
+                    self._process_buffered_in_packet, args=[packet])
             elif isinstance(packet, EIEIOCommandMessage):
                 raise SpinnmanInvalidPacketException(
                     str(packet.__class__),
@@ -691,6 +687,20 @@ class BufferManager(object):
         # returns a pointer to the structure holding the data
         return self._received_data.get_region_data_pointer(
             placement.x, placement.y, placement.p, recording_region_id)
+
+    def _process_buffered_in_packet(self, packet):
+        with self._thread_lock_buffer_out:
+            if not self._finished:
+                # logger.debug(
+                #     "received {} read request(s) with sequence: {},"
+                #     " from chip ({},{}, core {}".format(
+                #         packet.n_requests, packet.sequence_no,
+                #        packet.x, packet.y, packet.p))
+                try:
+                    self._retrieve_and_store_data(packet)
+                except Exception:
+                    logger.warn("problem when handling data",
+                                exc_info=True)
 
     def _retrieve_and_store_data(self, packet):
         """ Following a SpinnakerRequestReadData packet, the data stored\

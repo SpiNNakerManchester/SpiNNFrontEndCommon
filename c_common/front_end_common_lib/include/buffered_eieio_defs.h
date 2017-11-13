@@ -32,7 +32,7 @@ typedef enum eieio_command_messages {
     HOST_DATA_READ,
 
     // Host confirming message received to read data
-    HOST_DATA_READ_ACK
+    HOST_DATA_READ_ACK = 12,
 } eieio_command_messages;
 
 //! The different buffer operations
