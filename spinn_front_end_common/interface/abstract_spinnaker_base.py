@@ -2164,6 +2164,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._graph_mapper
 
     @property
+    def tags(self):
+        return self._tags
+
+    @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
