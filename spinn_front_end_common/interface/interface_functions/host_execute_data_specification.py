@@ -110,4 +110,4 @@ class HostExecuteDataSpecification(object):
                 'memory_used': bytes_used_by_spec,
                 'memory_written': bytes_written_by_spec}
 
-        return processor_to_app_data_base_address, True
+        return processor_to_app_data_base_address
