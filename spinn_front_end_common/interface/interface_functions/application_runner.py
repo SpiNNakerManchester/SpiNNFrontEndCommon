@@ -42,7 +42,7 @@ class ApplicationRunner(object):
                 executable_types, no_sync_changes)
 
         # wait for all cores to be ready
-        for executable_start_type in expected_start_states.keys():
+        for executable_start_type in expected_start_states:
             txrx.wait_for_cores_to_be_in_state(
                 executable_types[executable_start_type], app_id,
                 expected_start_states[executable_start_type])
@@ -61,8 +61,8 @@ class ApplicationRunner(object):
         # set off the executables that are in sync state \
         # (sending to all is just as safe)
         if (ExecutableType.USES_SIMULATION_INTERFACE in
-                executable_types.keys() or
-                ExecutableType.SYNC in executable_types.keys()):
+                executable_types or
+                ExecutableType.SYNC in executable_types):
 
             # locate all signals needed to set off executables
             sync_signals, no_sync_changes = \
@@ -97,7 +97,7 @@ class ApplicationRunner(object):
             else:
                 logger.info("Application started - waiting until finished")
 
-            for executable_end_type in expected_end_states.keys():
+            for executable_end_type in expected_end_states:
                 txrx.wait_for_cores_to_be_in_state(
                     executable_types[executable_end_type], app_id,
                     expected_end_states[executable_end_type], timeout=timeout)
