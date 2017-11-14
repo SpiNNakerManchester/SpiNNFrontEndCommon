@@ -103,6 +103,8 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
         results = gatherer.__call__(graph, placements=placements)
         self.assertIn(ExecutableType.RUNNING, results)
         self.assertIn(ExecutableType.SYNC, results)
+        self.assertNotIn(ExecutableType.USES_SIMULATION_INTERFACE, results)
+        self.assertNotIn(ExecutableType.NO_APPLICATION, results)
 
 
 if __name__ == '__main__':
