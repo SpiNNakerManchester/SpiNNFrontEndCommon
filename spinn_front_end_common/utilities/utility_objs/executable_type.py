@@ -37,7 +37,7 @@ class ExecutableType(Enum):
         "application but for some reason still wants to run")
 
     SYSTEM = (
-        4, 
+        4,
         [CPUState.RUNNING],
         [CPUState.RUNNING],
         True,
@@ -60,4 +60,3 @@ class ExecutableType(Enum):
         self.start_state = start_state
         self.end_state = end_state
         self.supports_auto_pause_and_resume = supports_auto_pause_and_resume
-

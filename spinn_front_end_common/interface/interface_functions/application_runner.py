@@ -3,7 +3,6 @@ import time
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import helpful_functions
 
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
