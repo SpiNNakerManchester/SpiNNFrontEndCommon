@@ -19,7 +19,7 @@ def get_profile_region_size(n_samples):
     """ Get the size of the region of the profile data
 
     :param n_samples: number of different samples to record
-    :return the size in bytes used by the profile region
+    :return: the size in bytes used by the profile region
     """
     return PROFILE_HEADER_SIZE_BYTES + (
         n_samples * SIZE_OF_PROFILE_DATA_ENTRY_IN_BYTES)
