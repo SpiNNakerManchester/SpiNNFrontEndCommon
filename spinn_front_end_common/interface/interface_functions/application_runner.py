@@ -36,16 +36,11 @@ class ApplicationRunner(object):
 
         logger.info("*** Running simulation... *** ")
 
-        # Get the expected state of the application, depending on the run type
-        expected_start_states, expected_end_states = \
-            helpful_functions.determine_flow_states(
-                executable_types, no_sync_changes)
-
         # wait for all cores to be ready
-        for executable_start_type in expected_start_states:
+        for executable_type in executable_types:
             txrx.wait_for_cores_to_be_in_state(
-                executable_types[executable_start_type], app_id,
-                expected_start_states[executable_start_type])
+                executable_types[executable_type], app_id,
+                executable_type.start_state)
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
@@ -97,10 +92,10 @@ class ApplicationRunner(object):
             else:
                 logger.info("Application started - waiting until finished")
 
-            for executable_end_type in expected_end_states:
+            for executable_type in executable_types:
                 txrx.wait_for_cores_to_be_in_state(
-                    executable_types[executable_end_type], app_id,
-                    expected_end_states[executable_end_type], timeout=timeout)
+                    executable_types[executable_type], app_id,
+                    executable_type.end_state, timeout=timeout)
 
         if (notification_interface is not None and
                 send_stop_notification and runtime is not None):
