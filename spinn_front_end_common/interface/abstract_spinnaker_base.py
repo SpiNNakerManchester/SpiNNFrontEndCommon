@@ -783,9 +783,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # verify that we can keep doing auto pause and resume
         can_keep_running = True
-        for executable_type in self._executable_types:
-            if not executable_type.supports_auto_pause_and_resume:
-                can_keep_running = False
+        if self._has_ran:
+            for executable_type in self._executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    can_keep_running = False
 
         if self._has_ran and not can_keep_running:
             raise NotImplementedError(
@@ -1690,7 +1691,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(
                 self._config.get("Mapping", "loading_algorithms").split(","))
         algorithms.extend(self._extra_load_algorithms)
-        algorithms.append("WriteMemoryIOData")
 
         # add optional algorithms
         optional_algorithms = list()
