@@ -1811,7 +1811,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._use_virtual_board:
             logger.warn(
                 "Application will not actually be run as on a virtual board")
-        elif (ExecutableType.NO_APPLICATION in self._executable_types):
+        elif (len(self._executable_types) == 0 and
+                ExecutableType.NO_APPLICATION in self._executable_types):
             logger.warn(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
