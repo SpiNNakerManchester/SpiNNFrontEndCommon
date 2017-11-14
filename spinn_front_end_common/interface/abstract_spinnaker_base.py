@@ -1688,29 +1688,28 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms.extend(self._extra_load_algorithms)
         algorithms.append("WriteMemoryIOData")
 
-        # add optional algorithms
-        optional_algorithms = list()
-        optional_algorithms.append("RoutingTableLoader")
-        optional_algorithms.append("TagsLoader")
         if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteDataSpecification")
+            algorithms.append("HostExecuteDataSpecification")
             if self._config.getboolean("Reports", "write_memory_map_report"):
-                optional_algorithms.append("MemoryMapOnHostReport")
-                optional_algorithms.append("MemoryMapOnHostChipReport")
+                algorithms.append("MemoryMapOnHostReport")
+                algorithms.append("MemoryMapOnHostChipReport")
         else:
-            optional_algorithms.append("MachineExecuteDataSpecification")
+            algorithms.append("MachineExecuteDataSpecification")
             if self._config.getboolean("Reports", "write_memory_map_report"):
-                optional_algorithms.append("MemoryMapOnChipReport")
+                algorithms.append("MemoryMapOnChipReport")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
         if self._has_ran and not self._use_virtual_board:
-            optional_algorithms.append("DSGRegionReloader")
+            algorithms.append("DSGRegionReloader")
 
         # Get the executable targets
-        optional_algorithms.append("GraphBinaryGatherer")
+        algorithms.append("GraphBinaryGatherer")
 
-        # algorithms needed for loading the binaries to the SpiNNaker machine
+        # add optional algorithms for things that might have been loaded
+        optional_algorithms = list()
+        optional_algorithms.append("RoutingTableLoader")
+        optional_algorithms.append("TagsLoader")
         optional_algorithms.append("LoadExecutableImages")
 
         # expected outputs from this phase
