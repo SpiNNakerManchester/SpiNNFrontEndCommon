@@ -1,6 +1,6 @@
 import struct
 
-from spinnman.messages.scp.enums import DPRIFlags
+from spinn_front_end_common.utilities.utility_objs.dpri_flags import DPRIFlags
 
 _PATTERN = struct.Struct("<IIIIIIIII")
 
