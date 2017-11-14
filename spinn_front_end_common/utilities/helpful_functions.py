@@ -459,7 +459,7 @@ def convert_time_diff_to_total_milliseconds(sample):
 
 def determine_flow_states(executable_types, no_sync_changes):
     """ returns the start and end states for these executable types
-    
+
     :param executable_types: the execute types to locate start and end states\
      from
     :param no_sync_changes: the number of times sync signals been sent
