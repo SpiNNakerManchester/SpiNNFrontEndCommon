@@ -3,7 +3,6 @@ import time
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import helpful_functions
 
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
@@ -36,16 +35,11 @@ class ApplicationRunner(object):
 
         logger.info("*** Running simulation... *** ")
 
-        # Get the expected state of the application, depending on the run type
-        expected_start_states, expected_end_states = \
-            helpful_functions.determine_flow_states(
-                executable_types, no_sync_changes)
-
         # wait for all cores to be ready
-        for executable_start_type in expected_start_states.keys():
+        for executable_type in executable_types:
             txrx.wait_for_cores_to_be_in_state(
-                executable_types[executable_start_type], app_id,
-                expected_start_states[executable_start_type])
+                executable_types[executable_type], app_id,
+                executable_type.start_state)
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
@@ -61,8 +55,8 @@ class ApplicationRunner(object):
         # set off the executables that are in sync state \
         # (sending to all is just as safe)
         if (ExecutableType.USES_SIMULATION_INTERFACE in
-                executable_types.keys() or
-                ExecutableType.SYNC in executable_types.keys()):
+                executable_types or
+                ExecutableType.SYNC in executable_types):
 
             # locate all signals needed to set off executables
             sync_signals, no_sync_changes = \
@@ -95,13 +89,12 @@ class ApplicationRunner(object):
                 time.sleep(time_to_wait)
                 timeout = time_threshold
             else:
-                logger.info(
-                    "Application started - waiting until finished")
+                logger.info("Application started - waiting until finished")
 
-            for executable_end_type in expected_end_states.keys():
+            for executable_type in executable_types:
                 txrx.wait_for_cores_to_be_in_state(
-                    executable_types[executable_end_type], app_id,
-                    expected_end_states[executable_end_type], timeout=timeout)
+                    executable_types[executable_type], app_id,
+                    executable_type.end_state, timeout=timeout)
 
         if (notification_interface is not None and
                 send_stop_notification and runtime is not None):
@@ -111,7 +104,7 @@ class ApplicationRunner(object):
 
     @staticmethod
     def _determine_simulation_sync_signals(executable_types, no_sync_changes):
-        """ sorts out start states, and creates core subsets of the states for\
+        """ sorts out start states, and creates core subsets of the states for
         further checks.
 
         :param no_sync_changes: sync counter
@@ -120,7 +113,7 @@ class ApplicationRunner(object):
         """
         sync_signals = list()
 
-        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types.keys():
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
             if no_sync_changes % 2 == 0:
                 sync_signals.append(Signal.SYNC0)
             else:
@@ -131,7 +124,7 @@ class ApplicationRunner(object):
 
         # handle the sync states, but only send once if they work with \
         # the simulation interface requirement
-        if ExecutableType.SYNC in executable_types.keys():
+        if ExecutableType.SYNC in executable_types:
             if Signal.SYNC0 not in sync_signals:
                 sync_signals.append(Signal.SYNC0)
 
