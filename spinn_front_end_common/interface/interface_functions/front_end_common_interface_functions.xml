@@ -330,7 +330,6 @@
         </required_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <param_type>LoadedApplicationDataToken</param_type>
         </outputs>
     </algorithm>
     <algorithm name="MachineExecuteDataSpecification">
@@ -360,9 +359,6 @@
             <param_name>transceiver</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
-        <outputs>
-            <param_type>LoadedApplicationDataToken</param_type>
-        </outputs>
     </algorithm>
     <algorithm name="LoadExecutableImages">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -380,16 +376,11 @@
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_application_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
-            <param_name>loaded_application_data_token</param_name>
         </required_inputs>
         <outputs>
             <param_type>LoadBinariesToken</param_type>
@@ -838,14 +829,6 @@
                 <param_type>LoadedRoutingTablesToken</param_type>
             </parameter>
             <parameter>
-                <param_name>loaded_binaries_token</param_name>
-                <param_type>LoadBinariesToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>loaded_application_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
-            <parameter>
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
             </parameter>
@@ -873,8 +856,6 @@
             <param_name>loaded_reverse_iptags_token</param_name>
             <param_name>loaded_iptags_token</param_name>
             <param_name>loaded_routing_tables_token</param_name>
-            <param_name>loaded_binaries_token</param_name>
-            <param_name>loaded_application_data_token</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
         </required_inputs>
@@ -1184,21 +1165,13 @@
                 <param_name>no_machine_timesteps</param_name>
                 <param_type>TotalMachineTimeSteps</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_binaries_token</param_name>
-                <param_type>LoadBinariesToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
             <param_name>app_id</param_name>
             <param_name>executable_targets</param_name>
             <param_name>no_machine_timesteps</param_name>
-            <param_name>loaded_binaries_token</param_name>
         </required_inputs>
-        <outputs>
-            <param_type>HasLoadedRuntimeToChips</param_type>
-        </outputs>
     </algorithm>
     <algorithm name="ChipProvenanceUpdater">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1590,7 +1563,6 @@
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <param_type>LoadedApplicationDataToken</param_type>
         </outputs>
     </algorithm>
 </algorithms>

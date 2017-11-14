@@ -42,7 +42,7 @@ class WriteMemoryIOData(object):
                     app_data_runtime_folder, hostname,
                     processor_to_app_data_base_address)
 
-        return processor_to_app_data_base_address, True
+        return processor_to_app_data_base_address
 
     def _get_used_tags(self, transceiver, x, y, heap_address):
         heap = transceiver.get_heap(x, y, heap=heap_address)

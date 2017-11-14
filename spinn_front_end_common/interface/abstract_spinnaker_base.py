@@ -1705,18 +1705,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Get the executable targets
         algorithms.append("GraphBinaryGatherer")
+        algorithms.append("LoadExecutableImages")
 
         # add optional algorithms for things that might have been loaded
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
-        optional_algorithms.append("LoadExecutableImages")
 
         # expected outputs from this phase
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
-            "LoadedRoutingTablesToken", "LoadBinariesToken",
-            "LoadedApplicationDataToken"
+            "LoadedRoutingTablesToken"
         ]
 
         executor = self._run_algorithms(
