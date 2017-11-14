@@ -119,7 +119,7 @@ class ApplicationRunner(object):
         """
         sync_signals = list()
 
-        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types.keys():
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
             if no_sync_changes % 2 == 0:
                 sync_signals.append(Signal.SYNC0)
             else:
@@ -130,7 +130,7 @@ class ApplicationRunner(object):
 
         # handle the sync states, but only send once if they work with \
         # the simulation interface requirement
-        if ExecutableType.SYNC in executable_types.keys():
+        if ExecutableType.SYNC in executable_types:
             if Signal.SYNC0 not in sync_signals:
                 sync_signals.append(Signal.SYNC0)
 
