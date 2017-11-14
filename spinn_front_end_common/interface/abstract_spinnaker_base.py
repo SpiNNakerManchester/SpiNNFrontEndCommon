@@ -780,14 +780,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param run_time: the run duration in milliseconds.
         """
         self.verify_not_running()
-        if (self._has_ran and
-                ExecutableType.USES_SIMULATION_INTERFACE not in
-                self._executable_types and
-                ExecutableType.NO_APPLICATION not in
-                self._executable_types):
+
+        # verify that we can keep doing auto pause and resume
+        can_keep_running = True
+        for executable_type in self._executable_types:
+            if not executable_type.supports_auto_pause_and_resume:
+                can_keep_running = False
+
+        if self._has_ran and not can_keep_running:
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
                 " more than once")
+
         self._state = Simulator_State.IN_RUN
 
         self._adjust_config(run_time)
