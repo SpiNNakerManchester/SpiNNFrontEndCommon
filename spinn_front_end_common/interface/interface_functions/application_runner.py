@@ -3,10 +3,8 @@ import time
 
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utilities import helpful_functions
 
 from spinnman.messages.scp.enums import Signal
-from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 
@@ -36,16 +34,11 @@ class ApplicationRunner(object):
 
         logger.info("*** Running simulation... *** ")
 
-        # Get the expected state of the application, depending on the run type
-        expected_start_states, expected_end_states = \
-            helpful_functions.determine_flow_states(
-                executable_types, no_sync_changes)
-
         # wait for all cores to be ready
-        for executable_start_type in expected_start_states.keys():
+        for executable_type in executable_types:
             txrx.wait_for_cores_to_be_in_state(
-                executable_types[executable_start_type], app_id,
-                expected_start_states[executable_start_type])
+                executable_types[executable_type], app_id,
+                executable_type.start_state)
 
         # set the buffer manager into a resume state, so that if it had ran
         # before it'll work again
@@ -61,22 +54,25 @@ class ApplicationRunner(object):
         # set off the executables that are in sync state \
         # (sending to all is just as safe)
         if (ExecutableType.USES_SIMULATION_INTERFACE in
-                executable_types.keys() or
-                ExecutableType.SYNC in executable_types.keys()):
+                executable_types or
+                ExecutableType.SYNC in executable_types):
 
             # locate all signals needed to set off executables
-            sync_signals, no_sync_changes = \
+            sync_signal, no_sync_changes = \
                 self._determine_simulation_sync_signals(
                     executable_types, no_sync_changes)
 
             # fire all signals as required
-            for sync_signal in sync_signals:
-                txrx.send_signal(app_id, sync_signal)
+            txrx.send_signal(app_id, sync_signal)
 
         # verify all cores are in running states
+        total_end_states = set()
+        for executable_type in executable_types:
+            for end_state in executable_type.end_state:
+                total_end_states.add(end_state)
         txrx.wait_for_cores_to_be_in_state(
             executable_targets.all_core_subsets, app_id,
-            [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
+            list(total_end_states))
 
         # Send start notification
         if notification_interface is not None and send_start_notification:
@@ -95,13 +91,12 @@ class ApplicationRunner(object):
                 time.sleep(time_to_wait)
                 timeout = time_threshold
             else:
-                logger.info(
-                    "Application started - waiting until finished")
+                logger.info("Application started - waiting until finished")
 
-            for executable_end_type in expected_end_states.keys():
+            for executable_type in executable_types:
                 txrx.wait_for_cores_to_be_in_state(
-                    executable_types[executable_end_type], app_id,
-                    expected_end_states[executable_end_type], timeout=timeout)
+                    executable_types[executable_type], app_id,
+                    executable_type.end_state, timeout=timeout)
 
         if (notification_interface is not None and
                 send_stop_notification and runtime is not None):
@@ -113,26 +108,30 @@ class ApplicationRunner(object):
     def _determine_simulation_sync_signals(executable_types, no_sync_changes):
         """ sorts out start states, and creates core subsets of the states for
         further checks.
-        
+
         :param no_sync_changes: sync counter
         :param executable_types: the types of executables
         :return: the sync signal and updated no_sync_changes
         """
-        sync_signals = list()
+        sync_signal = None
 
-        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types.keys():
+        if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
             if no_sync_changes % 2 == 0:
-                sync_signals.append(Signal.SYNC0)
+                sync_signal = Signal.SYNC0
             else:
-                sync_signals.append(Signal.SYNC1)
+                sync_signal = Signal.SYNC1
             # when it falls out of the running, it'll be in a next sync \
             # state, thus update needed
             no_sync_changes += 1
 
         # handle the sync states, but only send once if they work with \
         # the simulation interface requirement
-        if ExecutableType.SYNC in executable_types.keys():
-            if Signal.SYNC0 not in sync_signals:
-                sync_signals.append(Signal.SYNC0)
+        if ExecutableType.SYNC in executable_types:
+            if sync_signal == Signal.SYNC1:
+                raise ConfigurationException(
+                    "There can only be one SYNC signal per run. This is "
+                    "because we cannot ensure the cores have not reached the "
+                    "next SYNC state before we send the next SYNC. Resulting "
+                    "in uncontrolled behaviour")
 
-        return sync_signals, no_sync_changes
+        return sync_signal, no_sync_changes
