@@ -61,7 +61,10 @@ SDP_PORTS = Enum(
         ("OUTPUT_BUFFERING_SDP_PORT", 2),
 
         # command port for resetting runtime etc
-        ("RUNNING_COMMAND_SDP_PORT", 3)]
+        ("RUNNING_COMMAND_SDP_PORT", 3),
+
+        # extra monitor core reinjector functionality
+        ("EXTRA_MONITOR_CORE_RE_INJECTION", 4)]
 )
 
 # output buffering operations
