@@ -68,6 +68,12 @@ typedef enum provenance_items {
 #define MAX_PACKET_SIZE				280
 
 typedef struct __attribute__((packed)) {
+    uint32_t length;
+    uint32_t time;
+    uint8_t data[MAX_PACKET_SIZE];
+} recorded_packet_t;
+
+typedef struct __attribute__((packed)) {
     uint16_t event;
     uint16_t payload;
 } event16_t;

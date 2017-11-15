@@ -19,7 +19,7 @@ extern void spin1_wfi();
 
 //! \brief human readable versions of the different priorities and usages.
 typedef enum callback_priorities {
-    SDP_CALLBACK = 0,
+    SDP_CALLBACK = 1,
     TIMER = 2,
     DMA = 0
 } callback_priorities;
@@ -72,6 +72,7 @@ static uint32_t last_request_tick;
 static bool stopped = false;
 
 static bool recording_in_progress = false;
+static recorded_packet_t *recorded_packet;
 
 //---------------------------------------------------------------------------
 
@@ -508,7 +509,9 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
         log_debug(
             "recording a eieio message with length %u", recording_length);
         recording_in_progress = true;
-        recording_record(SPIKE_HISTORY_CHANNEL, &recording_length, 4);
+        recorded_packet->length = recording_length;
+        recorded_packet->time = time;
+        spin1_memcpy(recorded_packet->data, eieio_msg_ptr, recording_length);
 
         // NOTE: recording_length could be bigger than the length of the valid
         // data in eieio_msg_ptr.  This is OK as the data pointed to by
@@ -516,7 +519,7 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
         // bytes in this data will be random, but are also ignored by
         // whatever reads the data.
         recording_record_and_notify(
-            SPIKE_HISTORY_CHANNEL, eieio_msg_ptr, recording_length,
+            SPIKE_HISTORY_CHANNEL, recorded_packet, recording_length + 8,
             recording_done_callback);
     }
 }
@@ -889,6 +892,8 @@ bool read_parameters(
 
     // allocate a buffer size of the maximum SDP payload size
     msg_from_sdram = (eieio_msg_t) spin1_malloc(MAX_PACKET_SIZE);
+    recorded_packet = (recorded_packet_t *) spin1_malloc(
+        sizeof(recorded_packet_t));
 
     req.length = 8 + sizeof(req_packet_sdp_t);
     req.flags = 0x7;
@@ -1042,6 +1047,11 @@ void timer_callback(uint unused0, uint unused1)
 	    next_buffer_time);
 
     if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
+        // Wait for recording to finish
+        while (recording_in_progress) {
+            spin1_wfi();
+        }
+
 	// Enter pause and resume state to avoid another tick
 	simulation_handle_pause_resume(resume_callback);
 
