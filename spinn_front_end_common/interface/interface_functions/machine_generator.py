@@ -18,7 +18,7 @@ class MachineGenerator(object):
 
     def __call__(
             self, hostname, bmp_details, downed_chips, downed_cores,
-            downed_links, board_version, auto_detect_bmp, enable_reinjection,
+            downed_links, board_version, auto_detect_bmp,
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             max_sdram_size=None, max_core_id=None):
         """
@@ -32,8 +32,6 @@ class MachineGenerator(object):
                 machine (1, 2, 3, 4 or 5)
         :param auto_detect_bmp: boolean which determines if the BMP should
                be automatically determined
-        :param enable_reinjection: True if dropped packet reinjection is to be\
-               enabled
         :param boot_port_num: the port num used for the boot connection
         :param scamp_connection_data: the list of scamp connection data or\
                None
@@ -54,8 +52,7 @@ class MachineGenerator(object):
             hostname=hostname, bmp_connection_data=bmp_connection_data,
             version=board_version, ignore_chips=downed_chips,
             ignore_cores=downed_cores, ignored_links=downed_links,
-            auto_detect_bmp=auto_detect_bmp,
-            boot_port_no=boot_port_num,
+            auto_detect_bmp=auto_detect_bmp, boot_port_no=boot_port_num,
             scamp_connections=scamp_connection_data,
             max_sdram_size=max_sdram_size, max_core_id=max_core_id)
 
@@ -67,8 +64,7 @@ class MachineGenerator(object):
             raise ConfigurationException(
                 "Please set a machine version number in the configuration "
                 "file (spynnaker.cfg or pacman.cfg)")
-        txrx.ensure_board_is_ready(
-            enable_reinjector=enable_reinjection)
+        txrx.ensure_board_is_ready()
         txrx.discover_scamp_connections()
         machine = txrx.get_machine_details()
         return machine, txrx

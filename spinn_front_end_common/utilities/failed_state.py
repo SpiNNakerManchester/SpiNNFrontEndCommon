@@ -50,6 +50,10 @@ class FailedState(SimulatorInterface):
     def placements(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
+    @property
+    def tags(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
+
     def run(self, run_time):
         raise ConfigurationException(FAILED_STATE_MSG)
 

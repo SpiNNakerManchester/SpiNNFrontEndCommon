@@ -31,7 +31,7 @@ from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models import CommandSender
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
@@ -71,7 +71,10 @@ import signal
 import sys
 
 from numpy import __version__ as numpy_version
-from scipy import __version__ as scipy_version
+try:
+    from scipy import __version__ as scipy_version
+except ImportError:
+    scipy_version = "scipy not installed"
 from data_specification import __version__ as data_spec_version
 from spinn_storage_handlers import __version__ as spinn_storage_version
 from spalloc import __version__ as spalloc_version
@@ -297,7 +300,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_all_provenance_items",
 
         #
-        "_executable_start_type",
+        "_executable_types",
 
         # mapping between parameters and the vertices which need to talk to
         # them
@@ -389,7 +392,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._txrx = None
         self._buffer_manager = None
         self._ip_address = None
-        self._executable_start_type = None
+        self._executable_types = None
 
         # pacman executor objects
         self._machine_outputs = None
@@ -777,13 +780,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param run_time: the run duration in milliseconds.
         """
         self.verify_not_running()
-        if (self._has_ran and
-                self._executable_start_type not in [
-                    ExecutableStartType.USES_SIMULATION_INTERFACE,
-                    ExecutableStartType.NO_APPLICATION]):
+
+        # verify that we can keep doing auto pause and resume
+        can_keep_running = True
+        if self._has_ran:
+            for executable_type in self._executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    can_keep_running = False
+
+        if self._has_ran and not can_keep_running:
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
                 " more than once")
+
         self._state = Simulator_State.IN_RUN
 
         self._adjust_config(run_time)
@@ -848,9 +857,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._machine = None
-                if self._buffer_manager is not None:
-                    self._buffer_manager.stop()
-                    self._buffer_manager = None
+                self._buffer_manager = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
@@ -872,9 +879,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     break
 
         # Disable auto pause and resume if the binary can't do it
-        if (self._executable_start_type !=
-                ExecutableStartType.USES_SIMULATION_INTERFACE):
-            self._config.set("Buffers", "use_auto_pause_and_resume", "False")
+        for executable_type in self._executable_types:
+            if not executable_type.supports_auto_pause_and_resume:
+                self._config.set("Buffers",
+                                 "use_auto_pause_and_resume", "False")
 
         # Work out an array of timesteps to perform
         if (not self._config.getboolean(
@@ -1182,15 +1190,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
+        # add algorithms for handling extra monitor code
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
+
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph.n_vertices > 0:
             inputs["MemoryMachineGraph"] = self._machine_graph
-
-        # add reinjection flag
-        inputs["EnableReinjectionFlag"] = self._config.getboolean(
-            "Machine", "enable_reinjection")
 
         # add max sdram size which we're going to allow (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
@@ -1241,10 +1250,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = 16
 
             algorithms.append("VirtualMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
@@ -1295,10 +1301,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = 16
 
             do_partitioning = False
             if need_virtual_board:
@@ -1502,6 +1505,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("InsertExtraMonitorVerticesToGraphs")
+
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
             algorithms.extend(self._extra_mapping_algorithms)
@@ -1582,7 +1590,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
             "MemoryTags", "MemoryRoutingInfos",
-            "MemoryMachineGraph", "ExecutableStartType"
+            "MemoryMachineGraph", "ExecutableTypes"
         ]
 
         if self._application_graph.n_vertices > 0:
@@ -1598,8 +1606,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             else:
                 inputs["BufferManager"] = self._buffer_manager
 
-        outputs.append("ExecutableStartType")
-
         # Execute the mapping algorithms
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "mapping", optional_algorithms)
@@ -1614,7 +1620,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._routing_infos = executor.get_item("MemoryRoutingInfos")
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
-        self._executable_start_type = executor.get_item("ExecutableStartType")
+        self._executable_types = executor.get_item("ExecutableTypes")
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
@@ -1797,8 +1803,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Update the run time if not using a virtual board
         if (not self._use_virtual_board and
-                self._executable_start_type ==
-                ExecutableStartType.USES_SIMULATION_INTERFACE):
+                ExecutableType.USES_SIMULATION_INTERFACE in
+                self._executable_types):
             algorithms.append("ChipRuntimeUpdater")
 
         # Add the database writer in case it is needed
@@ -1817,8 +1823,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._use_virtual_board:
             logger.warn(
                 "Application will not actually be run as on a virtual board")
-        elif self._executable_start_type == \
-                ExecutableStartType.NO_APPLICATION:
+        elif (len(self._executable_types) == 1 and
+                ExecutableType.NO_APPLICATION in self._executable_types):
             logger.warn(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
@@ -1952,14 +1958,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
             executable_targets.all_core_subsets,
             {CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED})
 
-        # If there are no cores in a bad state, find those not yet finished
-        if len(unsuccessful_cores) == 0:
-            unsuccessful_cores = self._txrx.get_cores_not_in_state(
-                executable_targets.all_core_subsets,
-                {CPUState.PAUSED, CPUState.FINISHED})
+        # If there are no cores in a bad state, find those not yet in
+        # their finished state
         unsuccessful_core_subset = CoreSubsets()
-        for (x, y, p), _ in unsuccessful_cores.iteritems():
-            unsuccessful_core_subset.add_processor(x, y, p)
+        if len(unsuccessful_cores) == 0:
+            for executable_type in self._executable_types:
+                unsuccessful_cores = self._txrx.get_cores_not_in_state(
+                    self._executable_types[executable_type],
+                    executable_type.end_state)
+                for (x, y, p), _ in unsuccessful_cores.iteritems():
+                    unsuccessful_core_subset.add_processor(x, y, p)
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
@@ -1971,8 +1979,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # If there are any cores that are not in RTE, extract data from them
         if (len(non_rte_cores) > 0 and
-                self._executable_start_type ==
-                ExecutableStartType.USES_SIMULATION_INTERFACE):
+                ExecutableType.USES_SIMULATION_INTERFACE in
+                self._executable_types):
             placements = Placements()
             non_rte_core_subsets = CoreSubsets()
             for (x, y, p) in non_rte_cores:
@@ -2162,6 +2170,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._graph_mapper
 
     @property
+    def tags(self):
+        return self._tags
+
+    @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
@@ -2311,9 +2323,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if self._txrx is not None:
 
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                self._txrx.enable_reinjection(multicast=False)
-
             # if stopping on machine, clear iptags and
             if clear_tags:
                 for ip_tag in self._tags.ip_tags:
@@ -2338,9 +2347,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # app stop command
             if self._txrx is not None and self._app_id is not None:
                 self._txrx.stop_application(self._app_id)
-
-        if self._buffer_manager is not None:
-            self._buffer_manager.stop()
 
         # stop the transceiver
         if self._txrx is not None:
@@ -2387,8 +2393,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # stop any binaries that need to be notified of the simulation
             # stopping if in infinite run
-            if (self._executable_start_type ==
-                    ExecutableStartType.USES_SIMULATION_INTERFACE):
+            if (ExecutableType.USES_SIMULATION_INTERFACE in
+                    self._executable_types):
                 algorithms.append("ApplicationFinisher")
 
             # add extractor of iobuf if needed
