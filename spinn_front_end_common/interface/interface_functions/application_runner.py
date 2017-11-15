@@ -5,6 +5,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 from spinnman.messages.scp.enums import Signal
+from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
 
@@ -66,13 +67,9 @@ class ApplicationRunner(object):
             txrx.send_signal(app_id, sync_signal)
 
         # verify all cores are in running states
-        total_end_states = set()
-        for executable_type in executable_types:
-            for end_state in executable_type.end_state:
-                total_end_states.add(end_state)
         txrx.wait_for_cores_to_be_in_state(
             executable_targets.all_core_subsets, app_id,
-            list(total_end_states))
+            [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
 
         # Send start notification
         if notification_interface is not None and send_start_notification:

@@ -14,7 +14,7 @@ class ChipIOBufClearer(object):
             raise ConfigurationException(
                 "The simulation has to have ran before running this system")
 
-        process = ClearIOBUFProcess(transceiver._scamp_connection_selector)
+        process = ClearIOBUFProcess(transceiver.scamp_connection_selector)
         process.clear_iobuf(executable_targets.all_core_subsets,
                             len(executable_targets.all_core_subsets))
         return True
