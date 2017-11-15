@@ -20,5 +20,5 @@ class AbstractHasAssociatedBinary(object):
         """ Get the start type of the binary to be run
 
         :rtype:\
-            :py:class:`spinn_front_end_common.utilities.utility_objs.executable_start_type.ExecutableStartType`
+            :py:class:`spinn_front_end_common.utilities.utility_objs.executable_start_type.ExecutableType`
         """

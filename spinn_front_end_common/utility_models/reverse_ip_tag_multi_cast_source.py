@@ -19,7 +19,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 # general imports
 import sys
@@ -229,7 +229,7 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(spec, placement)

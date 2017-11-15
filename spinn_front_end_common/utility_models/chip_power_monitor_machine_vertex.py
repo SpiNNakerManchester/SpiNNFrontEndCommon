@@ -17,9 +17,8 @@ from spinn_front_end_common.interface.buffer_management import \
 from spinn_front_end_common.interface.buffer_management.buffer_models import \
     AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.utility_objs import \
-    ExecutableStartType
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions \
     import locate_memory_region_for_placement, read_config_int
 from spinn_front_end_common.interface.simulation.simulation_utilities \
@@ -280,7 +279,7 @@ class ChipPowerMonitorMachineVertex(
 
         :return: starttype enum
         """
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
