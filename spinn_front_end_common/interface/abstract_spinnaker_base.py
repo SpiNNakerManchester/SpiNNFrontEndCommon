@@ -1509,8 +1509,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support"):
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
-            algorithms.append("FixedRouteRouter")
-            inputs['FixedRouteDestinationClass'] = None
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -1583,6 +1581,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
+
+        algorithms.append("FixedRouteRouter")
+        if "FixedRouteDestinationClass" not in inputs:
+            inputs["FixedRouteDestinationClass"] = None
 
         # handle outputs
         outputs = [
