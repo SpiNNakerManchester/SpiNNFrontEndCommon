@@ -17,7 +17,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities import constants
 from .command_sender_machine_vertex import CommandSenderMachineVertex
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class CommandSender(
@@ -170,4 +170,4 @@ class CommandSender(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
