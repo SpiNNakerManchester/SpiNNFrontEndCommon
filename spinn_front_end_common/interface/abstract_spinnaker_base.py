@@ -1685,7 +1685,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(
                 self._config.get("Mapping", "loading_algorithms").split(","))
         algorithms.extend(self._extra_load_algorithms)
-        algorithms.append("WriteMemoryIOData")
 
         # add optional algorithms
         optional_algorithms = list()
