@@ -8,14 +8,14 @@ class ExecutableType(Enum):
 
     RUNNING = (
         0,
-        [CPUState.RUNNING, CPUState.FINISHED],
+        [CPUState.RUNNING],
         [CPUState.FINISHED],
         False,
         "Runs immediately without waiting for barrier and then exits")
 
     SYNC = (
         1,
-        [CPUState.SYNC0, CPUState.FINISHED],
+        [CPUState.SYNC0],
         [CPUState.FINISHED],
         False,
         "Calls spin1_start(SYNC_WAIT) and then eventually spin1_exit()")

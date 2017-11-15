@@ -37,8 +37,8 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
             self,
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
-                destination_port=
-                constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value,
+                destination_port=(
+                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=command_code))

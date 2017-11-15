@@ -27,7 +27,6 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
         :param fixed_route: bool stating if fixed route should be set
         :param command_code: the code used by the extra monitor vertex for \
         set packet types
-        
         """
 
         self._command_code = command_code
@@ -35,8 +34,8 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
             self,
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
-                destination_port=
-                constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value,
+                destination_port=(
+                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=self._command_code),

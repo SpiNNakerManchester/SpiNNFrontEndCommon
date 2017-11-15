@@ -860,9 +860,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._machine = None
-                if self._buffer_manager is not None:
-                    self._buffer_manager.stop()
-                    self._buffer_manager = None
+                self._buffer_manager = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
@@ -1513,7 +1511,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support"):
-            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
@@ -2172,16 +2169,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._placements
 
     @property
-    def tags(self):
-        return self._tags
-
-    @property
     def transceiver(self):
         return self._txrx
 
     @property
     def graph_mapper(self):
         return self._graph_mapper
+
+    @property
+    def tags(self):
+        return self._tags
 
     @property
     def buffer_manager(self):
@@ -2357,9 +2354,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # app stop command
             if self._txrx is not None and self._app_id is not None:
                 self._txrx.stop_application(self._app_id)
-
-        if self._buffer_manager is not None:
-            self._buffer_manager.stop()
 
         # stop the transceiver
         if self._txrx is not None:
