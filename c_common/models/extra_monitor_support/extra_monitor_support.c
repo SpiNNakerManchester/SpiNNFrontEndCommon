@@ -449,7 +449,7 @@ void __wrap_sark_int(void *pc) {
 
             uint dp = msg->dest_port;
 
-            if (((dp & PORT_MASK) >> PORT_SHIFT) == 
+            if (((dp & PORT_MASK) >> PORT_SHIFT) ==
                     RE_INJECTION_FUNCTIONALITY) {
                 msg->length = 12 + handle_reinjection_command(msg);
                 uint dest_port = msg->dest_port;
