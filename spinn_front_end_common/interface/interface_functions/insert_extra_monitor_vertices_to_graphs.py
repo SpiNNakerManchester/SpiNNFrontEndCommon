@@ -18,15 +18,14 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class InsertExtraMonitorVerticesToGraphs(object):
-    """
-    
+    """inserts the extra monitor vertices into the graph.
     """
 
     def __call__(self, machine, connection_mapping, machine_graph,
                  n_cores_to_allocate=1, graph_mapper=None,
                  application_graph=None):
         """ inserts vertices to corresponds to the extra monitor cores
-        
+
         :param machine: spinnMachine instance
         :param connection_mapping: map between chip and connection
         :param machine_graph: machine graph
@@ -62,8 +61,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
     def _handle_second_monitor_functionality(
             progress, machine, application_graph, machine_graph, graph_mapper,
             vertex_to_chip_map):
-        """
-        handles placing the second monitor vertex with extra functionality\
+        """ handles placing the second monitor vertex with extra functionality\
          into the graph
         :param progress: progress bar
         :param machine: spinnMachine instance
@@ -71,8 +69,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
         :param vertex_to_chip_map: map between vertex and chip
-        :rtype: list 
-        :return: list of extra monitor cores 
+        :rtype: list
+        :return: list of extra monitor cores
         """
 
         extra_monitor_vertices = list()

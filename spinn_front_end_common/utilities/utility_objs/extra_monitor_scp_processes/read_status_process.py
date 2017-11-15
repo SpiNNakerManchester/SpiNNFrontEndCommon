@@ -34,4 +34,3 @@ class ReadStatusProcess(AbstractMultiConnectionProcess):
         self._finish()
         self.check_for_error()
         return self._reinjector_status
-

@@ -10,7 +10,7 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         AbstractMultiConnectionProcess.__init__(self, connection_selector)
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
-            nearest_neighbour, fixed_route, command_code):
+                         nearest_neighbour, fixed_route, command_code):
         """
         :param core_subsets: sets of cores to send command to
         :param point_to_point: bool stating if point to point should be set
@@ -18,7 +18,7 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         :param nearest_neighbour: bool stating if nearest neighbour should be \
         set
         :param fixed_route: bool stating if fixed route should be set
-        :rtype: None 
+        :rtype: None
         """
 
         for core_subset in core_subsets.core_subsets:

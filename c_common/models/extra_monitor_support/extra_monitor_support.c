@@ -196,18 +196,18 @@ typedef enum sending_data_sdp_data_positions {
 
 //! \brief position in sdm message for missing seq nums
 typedef enum missing_seq_num_sdp_data_positions {
-    POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 1, 
+    POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 1,
     START_OF_MISSING_SEQ_NUMS = 2
 } missing_seq_num_sdp_data_positions;
 
 
 // Dropped packet re-injection internal control commands (rc of SCP message)
 typedef enum reinjector_command_codes {
-    CMD_DPRI_SET_ROUTER_TIMEOUT = 0, 
+    CMD_DPRI_SET_ROUTER_TIMEOUT = 0,
     CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
-    CMD_DPRI_SET_PACKET_TYPES = 2, 
+    CMD_DPRI_SET_PACKET_TYPES = 2,
     CMD_DPRI_GET_STATUS = 3,
-    CMD_DPRI_RESET_COUNTERS = 4, 
+    CMD_DPRI_RESET_COUNTERS = 4,
     CMD_DPRI_EXIT = 5
 } reinjector_command_codes;
 

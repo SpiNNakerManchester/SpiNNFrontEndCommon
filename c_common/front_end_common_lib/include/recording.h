@@ -44,6 +44,11 @@ typedef struct {
     uint32_t space_read;
 } host_data_read_packet_data;
 
+typedef struct {
+    uint16_t eieio_header_command;
+    uint8_t sequence;
+} host_data_read_ack_packet_header;
+
 //! \brief Determines if the given channel has space assigned for recording.
 //! \param[in] recording_flags The flags as returned by recording_initialize
 //! \param[in] channel The channel to check
