@@ -85,7 +85,7 @@ class ApplicationRunner(object):
 
         # set off the executables that are in sync state
         # (sending to all is just as safe)
-        if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types \
+        if (ExecutableType.USES_SIMULATION_INTERFACE in executable_types
                 or ExecutableType.SYNC in executable_types):
             # locate all signals needed to set off executables
             sync_signal, no_sync_changes = \
