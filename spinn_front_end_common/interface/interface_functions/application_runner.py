@@ -58,13 +58,12 @@ class ApplicationRunner(object):
                 ExecutableType.SYNC in executable_types):
 
             # locate all signals needed to set off executables
-            sync_signals, no_sync_changes = \
+            sync_signal, no_sync_changes = \
                 self._determine_simulation_sync_signals(
                     executable_types, no_sync_changes)
 
             # fire all signals as required
-            for sync_signal in sync_signals:
-                txrx.send_signal(app_id, sync_signal)
+            txrx.send_signal(app_id, sync_signal)
 
         # verify all cores are in running states
         total_end_states = set()
@@ -114,13 +113,13 @@ class ApplicationRunner(object):
         :param executable_types: the types of executables
         :return: the sync signal and updated no_sync_changes
         """
-        sync_signals = list()
+        sync_signal = None
 
         if ExecutableType.USES_SIMULATION_INTERFACE in executable_types:
             if no_sync_changes % 2 == 0:
-                sync_signals.append(Signal.SYNC0)
+                sync_signal = Signal.SYNC0
             else:
-                sync_signals.append(Signal.SYNC1)
+                sync_signal = Signal.SYNC1
             # when it falls out of the running, it'll be in a next sync \
             # state, thus update needed
             no_sync_changes += 1
@@ -128,7 +127,11 @@ class ApplicationRunner(object):
         # handle the sync states, but only send once if they work with \
         # the simulation interface requirement
         if ExecutableType.SYNC in executable_types:
-            if Signal.SYNC0 not in sync_signals:
-                sync_signals.append(Signal.SYNC0)
+            if sync_signal == Signal.SYNC1:
+                raise ConfigurationException(
+                    "There can only be one SYNC signal per run. This is "
+                    "because we cannot ensure the cores have not reached the "
+                    "next SYNC state before we send the next SYNC. Resulting "
+                    "in uncontrolled behaviour")
 
-        return sync_signals, no_sync_changes
+        return sync_signal, no_sync_changes
