@@ -1,7 +1,5 @@
 from enum import Enum
 
-from pacman.executor.injection_decorator import inject_items
-from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from spinn_front_end_common.abstract_models import \
@@ -49,7 +47,7 @@ class ExtraMonitorSupportMachineVertex(
         value="_EXTRA_MONITOR_DSG_REGIONS",
         names=[('CONFIG', 0)])
 
-    _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_REGION_SIZE_IN_BYTES = 4 * 4
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -109,7 +107,7 @@ class ExtraMonitorSupportMachineVertex(
     def static_resources_required():
         return ResourceContainer(sdram=SDRAMResource(
             sdram=ExtraMonitorSupportMachineVertex.
-            _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES))
+            _CONFIG_REGION_SIZE_IN_BYTES))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -127,22 +125,11 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_file_name():
         return "extra_monitor_support.aplx"
 
-    @inject_items({"routing_info": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph"})
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"routing_info", "machine_graph"})
-    def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph):
-        self.generate_data_spec(spec)
-
-    def generate_data_spec(self, spec):
-        self._generate_reinjector_functionality_data_specification(spec)
-        spec.end_specification()
-
-    def _generate_reinjector_functionality_data_specification(self, spec):
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
         spec.reserve_memory_region(
             region=self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value,
-            size=self._CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES,
+            size=self._CONFIG_REGION_SIZE_IN_BYTES,
             label="re-injection functionality config region")
 
         spec.switch_write_focus(self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value)
@@ -154,6 +141,7 @@ class ExtraMonitorSupportMachineVertex(
                 spec.write_value(0)
             else:
                 spec.write_value(1)
+        spec.end_specification()
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
@@ -297,4 +285,3 @@ class ExtraMonitorSupportMachineVertex(
             placement = placements.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
         return core_subsets
-

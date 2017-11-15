@@ -1,4 +1,3 @@
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import \
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
@@ -41,11 +40,6 @@ class ExtraMonitorSupportApplicationVertex(
     def get_resources_used_by_atoms(self, vertex_slice):
         return ExtraMonitorSupportMachineVertex.static_resources_required()
 
-    @inject_items({"routing_info": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph"})
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"routing_info", "machine_graph"})
-    def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph):
-        placement.vertex.generate_data_spec(
-            spec, placement, routing_info, machine_graph)
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
+    def generate_data_specification(self, spec, placement):
+        placement.vertex.generate_data_specification(spec, placement)
