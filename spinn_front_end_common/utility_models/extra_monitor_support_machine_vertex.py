@@ -115,7 +115,7 @@ class ExtraMonitorSupportMachineVertex(
 
     @staticmethod
     def static_get_binary_start_type():
-        return ExecutableType.RUNNING
+        return ExecutableType.SYSTEM
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):

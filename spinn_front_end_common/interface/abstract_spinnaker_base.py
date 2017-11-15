@@ -780,14 +780,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param run_time: the run duration in milliseconds.
         """
         self.verify_not_running()
-        if (self._has_ran and
-                ExecutableType.USES_SIMULATION_INTERFACE not in
-                self._executable_types and
-                ExecutableType.NO_APPLICATION not in
-                self._executable_types):
+
+        # verify that we can keep doing auto pause and resume
+        can_keep_running = True
+        if self._has_ran:
+            for executable_type in self._executable_types:
+                if not executable_type.supports_auto_pause_and_resume:
+                    can_keep_running = False
+
+        if self._has_ran and not can_keep_running:
             raise NotImplementedError(
                 "Only binaries that use the simulation interface can be run"
                 " more than once")
+
         self._state = Simulator_State.IN_RUN
 
         self._adjust_config(run_time)
@@ -876,9 +881,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     break
 
         # Disable auto pause and resume if the binary can't do it
-        if (ExecutableType.USES_SIMULATION_INTERFACE not in
-                self._executable_types):
-            self._config.set("Buffers", "use_auto_pause_and_resume", "False")
+        for executable_type in self._executable_types:
+            if not executable_type.supports_auto_pause_and_resume:
+                self._config.set("Buffers",
+                                 "use_auto_pause_and_resume", "False")
 
         # Work out an array of timesteps to perform
         if (not self._config.getboolean(
@@ -1811,8 +1817,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._use_virtual_board:
             logger.warn(
                 "Application will not actually be run as on a virtual board")
-        elif (ExecutableType.NO_APPLICATION in
-                self._executable_types):
+        elif (len(self._executable_types) == 1 and
+                ExecutableType.NO_APPLICATION in self._executable_types):
             logger.warn(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
@@ -1950,12 +1956,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # their finished state
         unsuccessful_core_subset = CoreSubsets()
         if len(unsuccessful_cores) == 0:
-            _, end_states = helpful_functions.determine_flow_states(
-                self._executable_types, self._no_sync_changes)
             for executable_type in self._executable_types:
                 unsuccessful_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
-                    end_states[executable_type])
+                    executable_type.end_state)
                 for (x, y, p), _ in unsuccessful_cores.iteritems():
                     unsuccessful_core_subset.add_processor(x, y, p)
 
@@ -2152,16 +2156,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._placements
 
     @property
-    def tags(self):
-        return self._tags
-
-    @property
     def transceiver(self):
         return self._txrx
 
     @property
     def graph_mapper(self):
         return self._graph_mapper
+
+    @property
+    def tags(self):
+        return self._tags
 
     @property
     def buffer_manager(self):
