@@ -13,7 +13,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
     AbstractSupportsDatabaseInjection
 from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableStartType
+    import ProvenanceDataItem, ExecutableType
 from spinn_front_end_common.utilities.constants \
     import SYSTEM_BYTES_REQUIREMENT
 
@@ -37,6 +37,8 @@ class LivePacketGatherMachineVertex(
                ('CONFIG', 1),
                ('PROVENANCE', 2)])
 
+    TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
+
     N_ADDITIONAL_PROVENANCE_ITEMS = 2
     _CONFIG_SIZE = 48
     _PROVENANCE_REGION_SIZE = 8
@@ -59,7 +61,7 @@ class LivePacketGatherMachineVertex(
             iptags=[IPtagResource(
                 ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,
-                traffic_identifier="LPG_EVENT_STREAM")])
+                traffic_identifier=self.TRAFFIC_IDENTIFIER)])
 
         # app specific data items
         self._use_prefix = use_prefix
@@ -140,7 +142,7 @@ class LivePacketGatherMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
