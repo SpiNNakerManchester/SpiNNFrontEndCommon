@@ -47,5 +47,5 @@ class ExtraMonitorSupportApplicationVertex(
                additional_arguments={"routing_info", "machine_graph"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph):
-        placement.vertex.generate_data_specification(
+        placement.vertex.generate_data_spec(
             spec, placement, routing_info, machine_graph)
