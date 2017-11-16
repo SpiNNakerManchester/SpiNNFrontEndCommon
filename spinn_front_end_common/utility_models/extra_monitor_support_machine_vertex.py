@@ -140,7 +140,7 @@ class ExtraMonitorSupportMachineVertex(
                additional_arguments={"routing_info", "machine_graph"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph):
-        self._generate_reinjector_functionality_data_specification(spec)
+        self._generate_re_injection_functionality_data_specification(spec)
         self._generate_data_speed_up_functionality_data_specification(
             spec, routing_info, machine_graph)
         spec.end_specification()
@@ -162,7 +162,7 @@ class ExtraMonitorSupportMachineVertex(
         else:
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.BASE_KEY)
 
-    def _generate_reinjector_functionality_data_specification(self, spec):
+    def _generate_re_injection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(
             region=self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value,
             size=self._CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES,
@@ -245,7 +245,7 @@ class ExtraMonitorSupportMachineVertex(
         """
         placement = placements.get_placement_of_vertex(self)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
-        return process.get_reinjection_status(
+        return process.get_re_injection_status(
             placement.x, placement.y, placement.p,
             self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
 

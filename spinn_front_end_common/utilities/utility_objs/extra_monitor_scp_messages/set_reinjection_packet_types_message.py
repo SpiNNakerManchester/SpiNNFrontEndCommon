@@ -17,7 +17,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the dropped packet reinjector, between\
+        :param p: The processor running the extra monitor vertex, between\
                 0 and 17
         :type p: int
         :param point_to_point: bool stating if point to point should be set

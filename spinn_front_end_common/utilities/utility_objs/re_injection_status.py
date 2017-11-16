@@ -32,7 +32,7 @@ class ReInjectionStatus(object):
         "_router_emergency_timeout",
 
         # The number of packets dropped by the router and received by\
-        # the reinjector (may not fit in the queue though)
+        # the re injection functionality (may not fit in the queue though)
         "_n_dropped_packets",
 
         # The number of times that when a dropped packet was read it was\
@@ -88,7 +88,7 @@ class ReInjectionStatus(object):
     @property
     def n_dropped_packets(self):
         """ The number of packets dropped by the router and received by\
-            the reinjector (may not fit in the queue though)
+            the re injection functionality (may not fit in the queue though)
         """
         return self._n_dropped_packets
 
