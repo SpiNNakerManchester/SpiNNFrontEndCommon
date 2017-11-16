@@ -1719,9 +1719,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
-        # report for fixed routes if applied
-        algorithms.append("LoadFixedRoutes")
-        algorithms.append("FixedRouteFromMachineReport")
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
@@ -1951,7 +1953,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Extract router provenance
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
-            self._txrx, self._machine, self._router_tables, True)
+            self._txrx, self._machine, self._router_tables, True,
+            self._last_run_outputs["MemoryExtraMonitorVertices"],
+            self._placements)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
