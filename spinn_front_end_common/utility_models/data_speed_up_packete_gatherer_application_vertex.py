@@ -66,7 +66,7 @@ class DataSpeedUpPacketGatherApplicationVertex(
         DataSpeedUpPacketGatherMachineVertex.\
             static_generate_machine_data_specification(
                 spec, base_key, machine_time_step, time_scale_factor,
-            tags.get_ip_tags_for_vertex(placement.vertex))
+                tags.get_ip_tags_for_vertex(placement.vertex))
 
     @property
     @overrides(ApplicationVertex.n_atoms)

@@ -178,7 +178,6 @@ class ExtraMonitorSupportMachineVertex(
             else:
                 spec.write_value(1)
 
-
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
             extra_monitor_cores_to_set):
@@ -321,4 +320,3 @@ class ExtraMonitorSupportMachineVertex(
             placement = placements.get_placement_of_vertex(vertex)
             core_subsets.add_processor(placement.x, placement.y, placement.p)
         return core_subsets
-

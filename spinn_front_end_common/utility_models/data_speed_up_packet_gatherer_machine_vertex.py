@@ -130,7 +130,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def resources_required_for_connection(connection):
         """ used to generate resources required given a UDP connection
         Exists for giving the app vertex access to the data without clones.
-        
+
         :param connection: UDP connection for transmissions
         :return: resource container
         """
@@ -164,7 +164,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_get_incoming_partition_constraints(partition, vertex_partition):
         constraints = list()
-        #if partition.traffic_type == EdgeTrafficType.MULTICAST:
+        # if partition.traffic_type == EdgeTrafficType.MULTICAST:
         #    constraints.append(
         #        FixedKeyAndMaskConstraint([
         #            BaseKeyAndMask(
@@ -181,7 +181,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_get_binary_start_type():
         """ supports application vertex reading without cloning
-        
+
         :return: type of start type the data speed up packet gatherer is using
         """
         return ExecutableType.SYSTEM
@@ -203,12 +203,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     def static_generate_machine_data_specification(
             spec, base_key, machine_time_step, time_scale_factor, iptags):
         """ supports application vertices usage. writes the dataspec
-        
+
         :param spec: the data spec object
         :param base_key: the base key to transmit with
         :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
-        :param iptags: iptags 
+        :param iptags: iptags
         :return: None
         """
 
@@ -242,10 +242,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _reserve_memory_regions(spec, system_size):
         """ writes the dsg regions memory sizes. Static so that it can be used
         by the application vertex.
-        
+
         :param spec: spec file
         :param system_size: size of system region
-        :rtype: None 
+        :rtype: None
         """
 
         spec.reserve_memory_region(
@@ -265,9 +265,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def static_get_binary_file_name():
-        """ used for supporting a application vertex that is used as 
+        """ used for supporting a application vertex that is used as \
         only a data holder.
-        
+
         :return: aplex name
         """
         return "data_speed_up_packet_gatherer.aplx"
@@ -333,8 +333,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def get_data(
             self, transceiver, placement, memory_address, length_in_bytes):
-        """ gets data from a given core and memory address. 
-        
+        """ gets data from a given core and memory address.
+
         :param transceiver: spinnman instance
         :param placement: placement object for where to get data from
         :param memory_address: the address in sdram to start reading from
@@ -409,7 +409,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _calculate_missing_seq_nums(self, seq_nums):
         """ determines which seq numbers we've missed
-        
+
         :param seq_nums: the set already acquired
         :return: list of missing seq nums
         """
@@ -423,9 +423,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums):
-        """ determines if there are any missing seq nums, and if so 
+        """ determines if there are any missing seq nums, and if so \
         retransmits the missing seq nums back to the core for retransmission
-        
+
         :param seq_nums: the seq nums already received
         :param transceiver: spinnman instance
         :param placement: placement instance
@@ -534,17 +534,17 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _process_data(self, data, first, seq_num, seq_nums, finished,
                       placement, transceiver, lost_seq_nums):
         """ Takes a packet and processes it see if we're finished yet
-        
+
         :param data: the packet data
-        :param first: if the packet is the first packet, in which has extra 
+        :param first: if the packet is the first packet, in which has extra \
         data in header
-        :param seq_num: the seq number of the packet 
+        :param seq_num: the seq number of the packet
         :param seq_nums: the list of seq nums received so far
-        :param finished: bool which states if finished or not 
+        :param finished: bool which states if finished or not
         :param placement: placement object for location on machine
         :param transceiver: spinnman instance
         :param lost_seq_nums: the list of n seq nums lost per iteration
-        :return: set of data items, if its the first packet, the list of seq
+        :return: set of data items, if its the first packet, the list of seq\
         nums, the seq num received and if its finished
         """
         # self._print_out_packet_data(data)
@@ -653,7 +653,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data_start_position: where in data holder to start from
         :param data_end_position: where in data holder to end
         :param seq_num: the seq number to figure
-        :return: 
+        :rtype: None
         """
         if view_end_position > len(self._output):
             raise Exception(
@@ -671,7 +671,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _check(self, seq_nums):
         """ verifying if the seq nums are correct.
-        
+
         :param seq_nums: the received seq nums
         :return: bool of true or false given if all the seq nums been received
         """
@@ -688,7 +688,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def calculate_max_seq_num(self):
         """ deduces the max seq num expected to be received
-        
+
         :return: int of the biggest seq num expected
         """
         n_sequence_numbers = 0
@@ -705,8 +705,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_missing(seq_nums):
-        """ debug printer for the missing seq nums from the pile 
-        
+        """ debug printer for the missing seq nums from the pile
+
         :param seq_nums: the seq nums received so far
         :rtype: None
         """
@@ -719,9 +719,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _print_out_packet_data(self, data):
         """ debug prints out the data from the packet
-        
+
         :param data: the packet data
-        :rtype: None 
+        :rtype: None
         """
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
@@ -731,11 +731,11 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
-        """ debug helper method for figuring out if everything been received 
-        
+        """ debug helper method for figuring out if everything been received
+
         :param seq_nums: seq nums received
         :param max_needed: biggest expected to have
-        :rtype: None 
+        :rtype: None
         """
         if len(seq_nums) != max_needed:
             print "should have received {} sequence numbers, but received " \
@@ -745,10 +745,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
         """ debug helper for printing missing seq num packet transmission
-        
+
         :param packet_count: which packet is being fired
         :param n_packets: how many packets to fire.
-        :rtype: None 
+        :rtype: None
         """
         print("send sdp packet with missing seq nums: {} of {}".format(
             packet_count + 1, n_packets))

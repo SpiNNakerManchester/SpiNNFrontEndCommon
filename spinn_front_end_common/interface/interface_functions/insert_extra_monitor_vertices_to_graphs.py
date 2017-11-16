@@ -102,12 +102,12 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
         :param progress: progress bar
         :param machine: machine instance
-        :param connection_mapping: mapping between connection and ethernet chip 
+        :param connection_mapping: mapping between connection and ethernet chip
         :param application_graph: application graph
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map
-        :rtype: None 
+        :rtype: None
         """
         # insert machine vertices
         for ethernet_connected_chip in progress.over(

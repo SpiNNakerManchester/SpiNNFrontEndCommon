@@ -56,13 +56,13 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
     @staticmethod
     def _handle_second_monitor_support(cores, machine, progress):
-        """ adds the second monitor pre allocations, which reflect the 
-        re-injector and data extractor support
-        
+        """ adds the second monitor pre allocations, which reflect the\
+         re-injector and data extractor support
+
         :param cores: the storage of core requirements
         :param machine: the spinnMachine instance
-        :param progress: the progress bar to operate one 
-        :rtype: None 
+        :param progress: the progress bar to operate one
+        :rtype: None
         """
         for chip in progress.over(list(machine.chips)):
             cores.append(CoreResource(chip=chip, n_cores=1))
@@ -71,9 +71,9 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
     def _handle_packet_gathering_support(
             sdrams, cores, tags, machine, progress, connection_mapping,
             n_cores_to_allocate):
-        """ adds the packet gathering functionality tied into the data 
-        extractor within each chip
-        
+        """ adds the packet gathering functionality tied into the data\
+         extractor within each chip
+
         :param sdrams: the pre-allocated sdram requirement for these vertices
         :param cores: the pre-allocated cores requirement for these vertices
         :param tags: the pre-allocated tags requirement for these vertices
@@ -82,7 +82,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param connection_mapping: the mapping between connection and chip
         :param n_cores_to_allocate: how many packet gathers to allocate per \
             chip
-        :rtype: None 
+        :rtype: None
         """
 
         connection = UDPConnection(local_host=None)

@@ -1519,7 +1519,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
 
-
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
             algorithms.extend(self._extra_mapping_algorithms)
@@ -1962,8 +1961,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         prov_items = router_provenance(
             transceiver=self._txrx, machine=self._machine,
             router_tables=self._router_tables, has_ran=True,
-            extra_monitor_vertices=
-            self._last_run_outputs["MemoryExtraMonitorVertices"],
+            extra_monitor_vertices=(
+                self._last_run_outputs["MemoryExtraMonitorVertices"]),
             placements=self._placements)
 
         # Find the cores that are not in an expected state
