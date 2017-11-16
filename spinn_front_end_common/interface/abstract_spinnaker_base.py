@@ -1734,6 +1734,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingCompressionCheckerReport")
             if routing_tables_needed:
                 optional_algorithms.append("RoutingTableFromMachineReport")
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
@@ -1963,7 +1968,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Extract router provenance
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
-            self._txrx, self._machine, self._router_tables, True)
+            self._txrx, self._machine, self._router_tables, True,
+            self._last_run_outputs["MemoryExtraMonitorVertices"],
+            self._placements)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
