@@ -1525,6 +1525,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingInfoReports")
             if self._config.getboolean("Reports", "write_router_reports"):
                 algorithms.append("RouterReports")
+            if self._config.getboolean("Reports",
+                                       "write_routing_table_reports"):
+                optional_algorithms.append("unCompressedRoutingTableReports")
+                optional_algorithms.append("compressedRoutingTableReports")
+                optional_algorithms.append("comparisonOfRoutingTablesReport")
             if self._config.getboolean(
                     "Reports", "write_routing_tables_from_machine_report"):
                 optional_algorithms.append(
@@ -1576,6 +1581,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
+
+        algorithms.append("FixedRouteRouter")
+        if "FixedRouteDestinationClass" not in inputs:
+            inputs["FixedRouteDestinationClass"] = None
 
         # handle outputs
         outputs = [
