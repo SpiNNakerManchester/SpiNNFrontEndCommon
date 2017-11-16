@@ -297,7 +297,8 @@ class RouterProvenanceGatherer(object):
                 message=(
                     "The extra monitor on {}, {} has dropped {} "
                     "packets.".format(
-                        x, y, re_injection_status.n_dropped_packet_overflows))))
+                        x, y,
+                        re_injection_status.n_dropped_packet_overflows))))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Reinjected"),
                 re_injection_status.n_reinjected_packets))
