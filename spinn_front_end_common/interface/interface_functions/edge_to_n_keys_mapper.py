@@ -48,14 +48,9 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        added_constraints = False
                         constraints = self._process_application_partition(
                             partition, n_keys_map, graph_mapper)
-                        if not added_constraints:
-                            partition.add_constraints(constraints)
-                        else:
-                            self._check_constraints_equal(
-                                constraints, partition.constraints)
+                        partition.add_constraints(constraints)
 
         else:
             # generate progress bar
@@ -70,14 +65,9 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        added_constraints = False
                         constraints = self._process_machine_partition(
                             partition, n_keys_map)
-                        if not added_constraints:
-                            partition.add_constraints(constraints)
-                        else:
-                            self._check_constraints_equal(
-                                constraints, partition.constraints)
+                        partition.add_constraints(constraints)
 
         return n_keys_map
 
@@ -102,14 +92,11 @@ class EdgeToNKeysMapper(object):
         vertex = graph_mapper.get_application_vertex(
             partition.pre_vertex)
 
-        if not isinstance(vertex, AbstractProvidesNKeysForPartition):
-            n_keys_map.set_n_keys_for_partition(
-                partition, vertex_slice.n_atoms)
+        if isinstance(vertex, AbstractProvidesNKeysForPartition):
+            n_keys = vertex.get_n_keys_for_partition(partition, graph_mapper)
         else:
-            n_keys_map.set_n_keys_for_partition(
-                partition,
-                vertex.get_n_keys_for_partition(
-                    partition, graph_mapper))
+            n_keys = vertex_slice.n_atoms
+        n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
         constraints = list()
         if isinstance(vertex,
@@ -128,14 +115,12 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_machine_partition(partition, n_keys_map):
-        if not isinstance(partition.pre_vertex,
-                          AbstractProvidesNKeysForPartition):
-            n_keys_map.set_n_keys_for_partition(partition, 1)
+        if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
+            n_keys = partition.pre_vertex.get_n_keys_for_partition(
+                partition, None)
         else:
-            n_keys_map.set_n_keys_for_partition(
-                partition,
-                partition.pre_vertex.get_n_keys_for_partition(
-                    partition, None))
+            n_keys = 1
+        n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
         constraints = list()
         if isinstance(partition.pre_vertex,
