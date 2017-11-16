@@ -184,7 +184,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         
         :return: type of start type the data speed up packet gatherer is using
         """
-        return ExecutableType.RUNNING
+        return ExecutableType.SYSTEM
 
     @overrides(MachineDataSpecableVertex.generate_machine_data_specification)
     def generate_machine_data_specification(
@@ -414,6 +414,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of missing seq nums
         """
         missing_seq_nums = list()
+        if self._max_seq_num is None:
+            raise Exception("Have not heard from the machine")
         for seq_num in range(1, self._max_seq_num):
             if seq_num not in seq_nums:
                 missing_seq_nums.append(seq_num)

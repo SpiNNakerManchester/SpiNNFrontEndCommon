@@ -20,8 +20,8 @@ class BufferManagerCreator(object):
             placements=placements, tags=tags, transceiver=txrx,
             store_to_file=store_data_in_file,
             extra_monitor_cores=extra_monitor_cores,
-            extra_monitor_cores_to_ethernet_connection_map=
-            extra_monitor_cores_to_ethernet_connection_map,
+            extra_monitor_cores_to_ethernet_connection_map=(
+                extra_monitor_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
             machine=machine, uses_advanced_monitors=uses_advanced_monitors)
 

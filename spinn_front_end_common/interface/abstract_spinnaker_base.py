@@ -1513,6 +1513,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support"):
+            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \

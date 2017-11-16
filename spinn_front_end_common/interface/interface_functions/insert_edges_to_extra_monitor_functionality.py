@@ -36,7 +36,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
         progress = ProgressBar(
             len(machine_graph.vertices) + n_app_vertices,
-            "Inserting edges between vertices which require mc speed up "
+            "Inserting edges between vertices which require fr speed up "
             "functionality. ")
 
         for vertex in progress.over(machine_graph.vertices, False):

@@ -158,7 +158,7 @@ class BufferManager(object):
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
         """ uses the extra monitor cores for data extraction
-        
+
         :param transceiver: the spinnman interface
         :param placement_x: the placement x coord where data is to be \
         extracted from
@@ -575,8 +575,8 @@ class BufferManager(object):
             for receiver in receivers:
                 receiver.set_cores_for_data_extraction(
                     transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=
-                    self._extra_monitor_cores)
+                    extra_monitor_cores_for_router_timeout=(
+                        self._extra_monitor_cores))
 
         # get data
         for vertex in vertices:
@@ -590,8 +590,8 @@ class BufferManager(object):
             for receiver in receivers:
                 receiver.unset_cores_for_data_extraction(
                     transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=
-                    self._extra_monitor_cores)
+                    extra_monitor_cores_for_router_timeout=(
+                        self._extra_monitor_cores))
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a pointer to the data container for all the data retrieved\

@@ -1026,6 +1026,8 @@ void __wrap_sark_int(void *pc) {
             sark_msg_cpy(msg, shm_msg);
             sark_shmsg_free(shm_msg);
 
+            io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
                 msg->length = 12 + handle_reinjection_command(msg);
@@ -1044,6 +1046,7 @@ void __wrap_sark_int(void *pc) {
                 handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
+                io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
         	// Do nothing
             }
             sark_msg_free(msg);
