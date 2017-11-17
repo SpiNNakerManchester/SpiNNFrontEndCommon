@@ -68,7 +68,7 @@ SDP_PORTS = Enum(
         ("RUNNING_COMMAND_SDP_PORT", 3),
 
         # extra monitor core re injection functionality
-        ("EXTRA_MONITOR_CORE_RE_INJECTION", 4),
+        ("EXTRA_MONITOR_CORE_REINJECTION", 4),
 
         # extra monitor core data transfer functionality
         ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5)]
