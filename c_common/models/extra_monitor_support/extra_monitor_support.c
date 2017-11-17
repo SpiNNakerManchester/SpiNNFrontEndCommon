@@ -522,7 +522,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         }
         rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
         	    | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
-            
+
         // set scp command to ok , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
@@ -535,7 +535,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         }
         rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
         	    | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
-            
+
         // set scp command to ok , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
