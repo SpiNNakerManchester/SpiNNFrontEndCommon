@@ -32,10 +32,10 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         """
         n_app_vertices = 0
         if application_graph is not None:
-            n_app_vertices = len(application_graph.vertices)
+            n_app_vertices = application_graph.n_vertices
 
         progress = ProgressBar(
-            len(machine_graph.vertices) + n_app_vertices,
+            machine_graph.n_vertices + n_app_vertices,
             "Inserting edges between vertices which require fr speed up "
             "functionality. ")
 
@@ -77,9 +77,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         chip = machine.get_chip_at(placement.x, placement.y)
         ethernet_connected_chip = machine.get_chip_at(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        data_gatherer_vertex = \
-            vertex_to_ethernet_connected_chip_mapping[
-                (ethernet_connected_chip.x, ethernet_connected_chip.y)]
+        data_gatherer_vertex = vertex_to_ethernet_connected_chip_mapping[
+            ethernet_connected_chip.x, ethernet_connected_chip.y]
 
         # locate if a edge is already built
         already_built = self._has_edge_already(
@@ -123,13 +122,5 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param graph: which graph to look in
         :return: bool true if found, false otherwise
         """
-        edges_at_destination = \
-            list(graph.get_edges_ending_at_vertex(destination))
-        n_edges = len(edges_at_destination)
-        position = 0
-        found = False
-        while not found and position < n_edges:
-            if edges_at_destination[position].pre_vertex == source:
-                found = True
-            position += 1
-        return found
+        return any(edge.pre_vertex == source
+                   for edge in graph.get_edges_ending_at_vertex(destination))
