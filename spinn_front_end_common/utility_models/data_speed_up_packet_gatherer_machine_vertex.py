@@ -1,6 +1,5 @@
 from collections import defaultdict
 
-from pacman.executor.injection_decorator import inject_items
 from pacman.model.decorators import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
