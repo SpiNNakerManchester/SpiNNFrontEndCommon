@@ -104,9 +104,9 @@ class RouterProvenanceGatherer(object):
         seen_chips = set()
 
         # get all extra monitor core data if it exists
-        re_injection_data = None
+        reinjection_data = None
         if extra_monitor_vertices is not None:
-            re_injection_data = \
+            reinjection_data = \
                 extra_monitor_vertices[0].get_reinjection_status_for_vertices(
                     placements=placements,
                     extra_monitor_cores_for_data=extra_monitor_vertices,
@@ -117,35 +117,35 @@ class RouterProvenanceGatherer(object):
                 key=lambda table: (table.x, table.y)):
             self._write_router_table_diagnostic(
                 txrx, machine, router_table.x, router_table.y, seen_chips,
-                router_table, items, re_injection_data)
+                router_table, items, reinjection_data)
             progress.update()
 
         for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):
             self._write_router_chip_diagnostic(
-                txrx, chip, seen_chips, items, re_injection_data)
+                txrx, chip, seen_chips, items, reinjection_data)
             progress.update()
         progress.end()
         return items
 
     def _write_router_table_diagnostic(
             self, txrx, machine, x, y, seen_chips, router_table, items,
-            re_injection_data):
+            reinjection_data):
         if not machine.get_chip_at(x, y).virtual:
             try:
                 router_diagnostic = txrx.get_router_diagnostics(x, y)
                 seen_chips.add((x, y))
-                reinjector_status = re_injection_data[(x, y)]
+                reinjection_status = reinjection_data[(x, y)]
                 items.extend(self._write_router_diagnostics(
-                    x, y, router_diagnostic, reinjector_status, True,
+                    x, y, router_diagnostic, reinjection_status, True,
                     router_table))
-                self._add_totals(router_diagnostic, reinjector_status)
+                self._add_totals(router_diagnostic, reinjection_status)
             except Exception as e:
                 logger.warn(
                     "Could not read routing diagnostics from {}, {}: {}"
                     .format(x, y, e))
 
     def _write_router_chip_diagnostic(
-            self, txrx, chip, seen_chips, items, re_injection_data):
+            self, txrx, chip, seen_chips, items, reinjection_data):
         if not chip.virtual and (chip.x, chip.y) not in seen_chips:
             try:
                 diagnostic = txrx.get_router_diagnostics(chip.x, chip.y)
@@ -153,27 +153,27 @@ class RouterProvenanceGatherer(object):
                 if (diagnostic.n_dropped_multicast_packets or
                         diagnostic.n_local_multicast_packets or
                         diagnostic.n_external_multicast_packets):
-                    reinjector_status = re_injection_data[(chip.x, chip.y)]
+                    reinjection_status = reinjection_data[(chip.x, chip.y)]
                     items.extend(self._write_router_diagnostics(
-                            chip.x, chip.y, diagnostic, reinjector_status,
+                            chip.x, chip.y, diagnostic, reinjection_status,
                             False, None))
-                    self._add_totals(diagnostic, reinjector_status)
+                    self._add_totals(diagnostic, reinjection_status)
             except Exception:
                 # There could be issues with unused chips - don't worry!
                 pass
 
-    def _add_totals(self, router_diagnostic, reinjector_status):
+    def _add_totals(self, router_diagnostic, reinjection_status):
         self._total_sent_packets += (
             router_diagnostic.n_local_multicast_packets +
             router_diagnostic.n_external_multicast_packets)
         self._total_new_packets += router_diagnostic.n_local_multicast_packets
         self._total_dropped_packets += (
             router_diagnostic.n_dropped_multicast_packets)
-        if reinjector_status is not None:
+        if reinjection_status is not None:
             self._total_missed_dropped_packets += (
-                reinjector_status.n_missed_dropped_packets)
+                reinjection_status.n_missed_dropped_packets)
             self._total_lost_dropped_packets += (
-                reinjector_status.n_dropped_packet_overflows)
+                reinjection_status.n_dropped_packet_overflows)
         else:
             self._total_lost_dropped_packets += (
                 router_diagnostic.n_dropped_multicast_packets)
@@ -185,14 +185,15 @@ class RouterProvenanceGatherer(object):
         return new_names
 
     def _write_router_diagnostics(
-            self, x, y, router_diagnostic, reinjector_status, expected,
+            self, x, y, router_diagnostic, reinjection_status, expected,
             router_table):
         """ Stores router diagnostics as a set of provenance data items
 
         :param x: x coord of the router in question
         :param y: y coord of the router in question
         :param router_diagnostic: the router diagnostic object
-        :param reinjector_status: the data gained from the reinjector
+        :param reinjection_status: the data gained from the extra monitor \
+            re injection functionality
         :param router_table: the router table generated by the PACMAN tools
         """
         names = list()
@@ -216,7 +217,7 @@ class RouterProvenanceGatherer(object):
             str(router_diagnostic.n_dropped_multicast_packets),
             report=(
                 router_diagnostic.n_dropped_multicast_packets > 0 and
-                reinjector_status is None),
+                reinjection_status is None),
             message=(
                 "The router on {}, {} has dropped {} multicast route packets. "
                 "Try increasing the machine_time_step and/or the time scale "
@@ -277,50 +278,53 @@ class RouterProvenanceGatherer(object):
         items.append(ProvenanceDataItem(
             self._add_name(names, "Dropped_FR_Packets"),
             str(router_diagnostic.n_dropped_fixed_route_packets)))
-        if reinjector_status is not None:
+        if reinjection_status is not None:
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Received_For_Reinjection"),
-                reinjector_status.n_dropped_packets))
+                reinjection_status.n_dropped_packets))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Missed_For_Reinjection"),
-                reinjector_status.n_missed_dropped_packets,
-                report=reinjector_status.n_missed_dropped_packets > 0,
+                reinjection_status.n_missed_dropped_packets,
+                report=reinjection_status.n_missed_dropped_packets > 0,
                 message=(
-                    "The reinjector on {}, {} has missed {} packets.".format(
-                        x, y, reinjector_status.n_missed_dropped_packets))))
+                    "The extra monitor on {}, {} has missed {} "
+                    "packets.".format(
+                        x, y, reinjection_status.n_missed_dropped_packets))))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Reinjection_Overflows"),
-                reinjector_status.n_dropped_packet_overflows,
-                report=reinjector_status.n_dropped_packet_overflows > 0,
+                reinjection_status.n_dropped_packet_overflows,
+                report=reinjection_status.n_dropped_packet_overflows > 0,
                 message=(
-                    "The reinjector on {}, {} has dropped {} packets.".format(
-                        x, y, reinjector_status.n_dropped_packet_overflows))))
+                    "The extra monitor on {}, {} has dropped {} "
+                    "packets.".format(
+                        x, y,
+                        reinjection_status.n_dropped_packet_overflows))))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Reinjected"),
-                reinjector_status.n_reinjected_packets))
+                reinjection_status.n_reinjected_packets))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Dumped_from_a_Link"),
-                str(reinjector_status.n_link_dumps),
-                report=reinjector_status.n_link_dumps > 0,
+                str(reinjection_status.n_link_dumps),
+                report=reinjection_status.n_link_dumps > 0,
                 message=(
-                    "The reinjector on {}, {} has detected that {} packets "
+                    "The extra monitor on {}, {} has detected that {} packets "
                     "were dumped from a outgoing link of this chip's router."
                     " This often occurs when external devices are used in the "
                     "script but not connected to the communication fabric "
                     "correctly. These packets may have been reinjected "
                     "multiple times and so this number may be a overestimate."
-                    .format(x, y, reinjector_status.n_link_dumps))))
+                    .format(x, y, reinjection_status.n_link_dumps))))
             items.append(ProvenanceDataItem(
                 self._add_name(names, "Dumped_from_a_processor"),
-                str(reinjector_status.n_processor_dumps),
-                report=reinjector_status.n_processor_dumps > 0,
+                str(reinjection_status.n_processor_dumps),
+                report=reinjection_status.n_processor_dumps > 0,
                 message=(
-                    "The reinjector on {}, {} has detected that {} packets "
+                    "The extra monitor on {}, {} has detected that {} packets "
                     "were dumped from a core failing to take the packet."
                     " This often occurs when the executable has crashed or"
                     " has not been given a multicast packet callback. It can"
                     " also result from the core taking too long to process"
                     " each packet. These packets were reinjected and so this"
                     " number is likely a overestimate.".format(
-                        x, y, reinjector_status.n_processor_dumps))))
+                        x, y, reinjection_status.n_processor_dumps))))
         return items

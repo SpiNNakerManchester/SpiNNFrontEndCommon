@@ -40,6 +40,6 @@ class ExtraMonitorSupportApplicationVertex(
     def get_resources_used_by_atoms(self, vertex_slice):
         return ExtraMonitorSupportMachineVertex.static_resources_required()
 
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):
-        placement.vertex.generate_data_specification(spec, placement)
+        placement.vertex.generate_data_specification(
+            spec=spec, placement=placement)

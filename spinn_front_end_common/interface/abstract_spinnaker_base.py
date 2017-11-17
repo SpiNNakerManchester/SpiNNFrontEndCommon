@@ -2,6 +2,9 @@
 main interface for the spinnaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.timer import Timer
 from spinn_utilities import __version__ as spinn_utils_version
 
@@ -1174,6 +1177,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 version_provenance.append(ProvenanceDataItem(
                     names=["version_data", name], value=value))
         inputs["ProvenanceItems"] = version_provenance
+        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
 
         # add algorithms for handling LPG placement and edge insertion
         if len(self._live_packet_recorder_params) != 0:
@@ -1508,7 +1513,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support"):
+            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
+            algorithms.append("FixedRouteRouter")
+            inputs['FixedRouteDestinationClass'] = \
+                DataSpeedUpPacketGatherMachineVertex
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -1582,10 +1591,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
 
-        algorithms.append("FixedRouteRouter")
-        if "FixedRouteDestinationClass" not in inputs:
-            inputs["FixedRouteDestinationClass"] = None
-
         # handle outputs
         outputs = [
             "MemoryPlacements", "MemoryRoutingTables",
@@ -1652,10 +1657,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Run the data generation algorithms
         outputs = []
         algorithms = [self._dsg_algorithm]
-
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data")):
-            algorithms.append("GraphProvenanceGatherer")
 
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
@@ -1786,15 +1787,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms = list()
 
-        # If we have run before, make sure to extract the data before the next
-        # run
+        # clear iobuf if were in multirun mode
         if (self._has_ran and not self._has_reset_last and
-                not self._use_virtual_board):
-            algorithms.append("BufferExtractor")
-
-            # check if we need to clear the iobuf during runs
-            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
-                algorithms.append("ChipIOBufClearer")
+                not self._use_virtual_board and
+                self._config.getboolean("Reports", "clear_iobuf_during_run")):
+            algorithms.append("ChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
@@ -1832,6 +1829,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "actually run")
         else:
             algorithms.append("ApplicationRunner")
+
+        # ensure we exploit the parallel of data extraction by running it at\
+        # end regardless of multirun
+        algorithms.append("BufferExtractor")
+
+        if (self._config.getboolean("Reports", "reports_enabled") and
+                self._config.getboolean("Reports", "write_provenance_data")):
+            algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
@@ -1903,6 +1908,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if executor is not None:
                     # Only do this if the error occurred in the run
                     if not run_complete and not self._use_virtual_board:
+                        self._last_run_outputs = executor.get_items()
                         self._recover_from_error(
                             e, e_inf, executor.get_item("ExecutableTargets"))
                 else:
@@ -1953,9 +1959,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Extract router provenance
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
-            self._txrx, self._machine, self._router_tables, True,
-            self._last_run_outputs["MemoryExtraMonitorVertices"],
-            self._placements)
+            transceiver=self._txrx, machine=self._machine,
+            router_tables=self._router_tables, has_ran=True,
+            extra_monitor_vertices=(
+                self._last_run_outputs["MemoryExtraMonitorVertices"]),
+            placements=self._placements)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2234,6 +2242,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 float(self._current_run_timesteps) *
                 (float(self._machine_time_step) / 1000.0))
         return 0.0
+
+    def get_generated_output(self, name_of_variable):
+        if name_of_variable in self._last_run_outputs:
+            return self._last_run_outputs[name_of_variable]
+        else:
+            return None
 
     def __repr__(self):
         return "general front end instance for machine {}"\

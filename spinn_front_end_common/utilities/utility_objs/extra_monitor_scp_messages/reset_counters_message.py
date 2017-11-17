@@ -21,7 +21,7 @@ class ResetCountersMessage(AbstractSCPRequest):
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the dropped packet reinjector, between\
+        :param p: The processor running the extra monitor vertex, between\
                 0 and 17
         :type p: int
         :param command_code: the command code used by the extra monitor \
@@ -34,7 +34,7 @@ class ResetCountersMessage(AbstractSCPRequest):
             SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
                 destination_port=(
-                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value),
+                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=self._command_code))
