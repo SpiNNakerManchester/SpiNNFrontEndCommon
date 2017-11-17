@@ -1,10 +1,5 @@
 from collections import defaultdict
 
-from pacman.executor.injection_decorator import inject_items
-# from pacman.model.constraints.key_allocator_constraints.\
-#    share_key_constraint import \
-#    ShareKeyConstraint
-# from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.decorators import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
@@ -12,8 +7,6 @@ from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
 
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesIncomingPartitionConstraints
 from spinn_front_end_common.abstract_models.impl import \
     MachineDataSpecableVertex
 from spinn_front_end_common.interface.provenance import \
@@ -36,7 +29,6 @@ from enum import Enum
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary,
-        AbstractProvidesIncomingPartitionConstraints,
         AbstractProvidesLocalProvenanceData):
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
@@ -104,7 +96,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             constraints=constraints)
         MachineDataSpecableVertex.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
-        AbstractProvidesIncomingPartitionConstraints.__init__(self)
         AbstractProvidesLocalProvenanceData.__init__(self)
 
         # data holders for the output, and seq nums
@@ -141,38 +132,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             iptags=[IPtagResource(
                 port=connection.local_port, strip_sdp=True,
                 ip_address="localhost")])
-
-    @inject_items({"machine_graph": "MemoryMachineGraph"})
-    @overrides(AbstractProvidesIncomingPartitionConstraints.
-               get_incoming_partition_constraints,
-               additional_arguments={"machine_graph"})
-    def get_incoming_partition_constraints(self, partition, machine_graph):
-        if partition.identifier != \
-                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
-            raise Exception("do not recognise this partition identifier")
-
-        vertex_partition = list()
-        for incoming_edge in machine_graph.get_edges_ending_at_vertex(self):
-            partition = \
-                machine_graph.get_outgoing_edge_partition_starting_at_vertex(
-                    incoming_edge.pre_vertex,
-                    constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-            vertex_partition.append(partition)
-        return self.static_get_incoming_partition_constraints(
-            partition, vertex_partition)
-
-    @staticmethod
-    def static_get_incoming_partition_constraints(partition, vertex_partition):
-        constraints = list()
-        # if partition.traffic_type == EdgeTrafficType.MULTICAST:
-        #    constraints.append(
-        #        FixedKeyAndMaskConstraint([
-        #            BaseKeyAndMask(
-        #                DataSpeedUpPacketGatherMachineVertex.BASE_KEY,
-        #                DataSpeedUpPacketGatherMachineVertex.BASE_MASK
-        #            )]))
-        #    constraints.append(ShareKeyConstraint(vertex_partition))
-        return constraints
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -297,8 +256,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 times_extracted_the_same_thing += 1
 
                 # handle lost seq nums
-                lost_seq_num_iteration = 0
-                for n_lost_seq_nums in lost_seq_nums:
+                for lost_seq_num_iteration, n_lost_seq_nums in \
+                        enumerate(lost_seq_nums):
                     prov_items.append(ProvenanceDataItem(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
                          iteration_name,
@@ -740,7 +699,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         if len(seq_nums) != max_needed:
             print "should have received {} sequence numbers, but received " \
                   "{} sequence numbers".format(max_needed, len(seq_nums))
-            return False
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):

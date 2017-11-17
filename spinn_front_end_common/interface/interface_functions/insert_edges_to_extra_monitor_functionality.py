@@ -47,7 +47,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
                     application_graph, graph_mapper)
 
         if application_graph is not None:
-            for vertex in progress.over(application_graph.vertices):
+            for vertex in progress.over(application_graph.vertices, False):
                 if isinstance(vertex, ExtraMonitorSupportApplicationVertex):
                     machine_verts = graph_mapper.get_machine_vertices(vertex)
                     for machine_vertex in machine_verts:

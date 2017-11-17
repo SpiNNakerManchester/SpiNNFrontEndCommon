@@ -22,8 +22,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """
 
         progress = ProgressBar(
-            len(list(machine.ethernet_connected_chips)) +
-            len(list(machine.chips)),
+            len(list(machine.ethernet_connected_chips)) + machine.n_chips,
             "Pre allocating resources for Extra Monitor support vertices")
 
         connection_mapping = dict()
