@@ -2653,4 +2653,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Reports", "write_energy_report")
         if take_into_account_chip_power_monitor:
             cores -= self._machine.n_chips
+        take_into_account_extra_monitor_cores = self._read_config_boolean(
+            "Machine", "enable_advanced_monitor_support")
+        if take_into_account_extra_monitor_cores:
+            cores -= self._machine.n_chips
+            cores -= len(self._machine.ethernet_connected_chips)
         return cores
