@@ -215,9 +215,7 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
 static void _recording_write(
         uint8_t channel, void *data, void *write_pointer, uint32_t length,
         void *finished_write_pointer, recording_complete_callback_t callback) {
-
     if (callback != NULL) {
-
         // add to DMA complete tracker
         circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
         circular_buffer_add(
@@ -235,7 +233,6 @@ static void _recording_write(
         g_recording_channels[(uint8_t) channel].dma_current_write =
                 (uint8_t *) finished_write_pointer;
     }
-
 }
 
 // Add a packet to the SDRAM
@@ -338,11 +335,8 @@ static inline bool _recording_write_memory(
             return true;
         }
     }
-    log_debug("reached end");
-
     log_debug("Buffer already full");
     return false;
-
 }
 
 static void _create_buffer_message(
@@ -359,7 +353,6 @@ static void _create_buffer_message(
 
 static inline void _recording_send_buffering_out_trigger_message(
         bool flush_all) {
-
     uint msg_size = 16 + sizeof(read_request_packet_header);
     uint n_requests = 0;
 
@@ -399,7 +392,6 @@ static inline void _recording_send_buffering_out_trigger_message(
                     write_pointer - buffer_region);
                 n_requests++;
             } else {
-
                 // something somewhere went terribly wrong this should never
                 // happen
                 log_error(
@@ -444,7 +436,6 @@ static void _buffering_in_handler(uint mailbox, uint port) {
 bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
-
     if (_has_been_initialsed(channel)) {
         recording_channel_t *recording_channel = &g_recording_channels[channel];
         uint32_t space_available = compute_available_space_in_channel(channel);
@@ -456,20 +447,18 @@ bool recording_record_and_notify(
             _recording_write_memory(channel, data, size_bytes, callback);
 
             return true;
-        } else {
-            if (!g_recording_channels[channel].missing_info) {
-                log_info("WARNING: recording channel %u out of space", channel);
-                g_recording_channels[channel].missing_info = 1;
-            }
-
-            // Call the callback to make sure resources are freed
-            if (callback != NULL) {
-                callback();
-            }
-            return false;
         }
-    } else {
+	if (!g_recording_channels[channel].missing_info) {
+	    log_info("WARNING: recording channel %u out of space", channel);
+	    g_recording_channels[channel].missing_info = 1;
+	}
 
+	// Call the callback to make sure resources are freed
+	if (callback != NULL) {
+	    callback();
+	}
+	return false;
+    } else {
         // Call the callback to make sure resources are freed
         if (callback != NULL) {
             callback();
@@ -479,7 +468,6 @@ bool recording_record_and_notify(
 }
 
 bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
-
     // Because callback is NULL, spin1_memcpy will be used
     if (!recording_record_and_notify(channel, data, size_bytes, NULL)) {
         return false;
@@ -506,7 +494,6 @@ void _recording_buffer_state_data_write(){
     // store info related to the state of the transmission to avoid possible
     // duplication of info on the host side
     *last_sequence_number = sequence_number;
-
 }
 
 void recording_finalise() {
@@ -552,7 +539,6 @@ void recording_finalise() {
 
 //! \brief updates host read point as dma has finished
 void _recording_dma_finished(uint unused, uint tag) {
-
     // pop region and write pointer from circular queue
     uint32_t channel_id;
     uint32_t dma_current_write;
@@ -575,7 +561,6 @@ void _recording_dma_finished(uint unused, uint tag) {
 
 bool recording_initialize(
         address_t recording_data_address, uint32_t *recording_flags) {
-
     // build dma address circular queue
     dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 4);
 
@@ -675,7 +660,6 @@ bool recording_initialize(
 }
 
 void recording_reset() {
-
     // Go through the regions and set up the data
     for (uint32_t i = 0; i < n_recording_regions; i++) {
         uint32_t region_size = region_sizes[i];
