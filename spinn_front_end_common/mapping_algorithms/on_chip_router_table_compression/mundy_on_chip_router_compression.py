@@ -116,7 +116,8 @@ class MundyOnChipRouterCompression(object):
         # write sdram requirements per chip
         txrx.write_memory(table.x, table.y, base_address, data)
 
-    def __read_user_0(self, txrx, x, y, p):
+    @staticmethod
+    def __read_user_0(txrx, x, y, p):
         addr = txrx.get_user_0_register_address_from_core(x, y, p)
         return struct.unpack("<I", str(txrx.read_memory(x, y, addr, 4)))[0]
 
@@ -145,9 +146,9 @@ class MundyOnChipRouterCompression(object):
                         "The router compressor on {}, {} failed to complete"
                         .format(x, y))
 
+    @staticmethod
     def _handle_failure(
-            self, executable_targets, txrx, provenance_file_path,
-            compressor_app_id):
+            executable_targets, txrx, provenance_file_path, compressor_app_id):
         """
         :param executable_targets:
         :param txrx:
@@ -166,8 +167,9 @@ class MundyOnChipRouterCompression(object):
         txrx.stop_application(compressor_app_id)
         txrx.app_id_tracker.free_id(compressor_app_id)
 
+    @staticmethod
     def _load_executables(
-            self, routing_tables, compressor_app_id, txrx, machine):
+            routing_tables, compressor_app_id, txrx, machine):
         """ loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed

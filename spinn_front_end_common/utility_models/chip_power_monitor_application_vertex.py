@@ -69,18 +69,17 @@ class ChipPowerMonitorApplicationVertex(
     def get_binary_start_type(self):
         return ChipPowerMonitorMachineVertex.binary_start_type()
 
-    @overrides(ApplicationVertex.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
-        return self._get_resources_used_by_atoms(vertex_slice)
-
     @inject_items({
         "n_machine_time_steps": "TotalMachineTimeSteps",
         "machine_time_step": "MachineTimeStep",
         "time_scale_factor": "TimeScaleFactor"})
-    def _get_resources_used_by_atoms(
-            self, vertex_slice,  # @UnusedVariable
-            n_machine_time_steps, time_scale_factor,
-            machine_time_step):
+    @overrides(ApplicationVertex.get_resources_used_by_atoms,
+               additional_arguments={
+                   "n_machine_time_steps", "machine_time_step",
+                   "time_scale_factor"})
+    def get_resources_used_by_atoms(
+            self, vertex_slice, n_machine_time_steps, machine_time_step,
+            time_scale_factor):
         return ChipPowerMonitorMachineVertex.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
