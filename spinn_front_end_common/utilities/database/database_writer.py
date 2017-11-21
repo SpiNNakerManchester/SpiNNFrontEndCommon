@@ -1,5 +1,6 @@
 # spinn front end common
 from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
+from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models \
     import AbstractProvidesKeyToAtomMapping, AbstractRecordable, \
     AbstractSupportsDatabaseInjection
@@ -394,11 +395,12 @@ class DatabaseWriter(object):
         """
         with self._connection:
             for partition in machine_graph.outgoing_edge_partitions:
-                rinfo = routing_infos.get_routing_info_from_partition(
-                    partition)
-                for edge in partition.edges:
-                    for key_mask in rinfo.keys_and_masks:
-                        self.__insert_routing_info(edge, key_mask)
+                if partition.traffic_type == EdgeTrafficType.MULTICAST:
+                    rinfo = routing_infos.get_routing_info_from_partition(
+                        partition)
+                    for edge in partition.edges:
+                        for key_mask in rinfo.keys_and_masks:
+                            self.__insert_routing_info(edge, key_mask)
 
     def add_routing_tables(self, routing_tables):
         """ Adds the routing tables into the database

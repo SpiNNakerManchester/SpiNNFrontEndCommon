@@ -32,7 +32,7 @@ class ChipRuntimeUpdater(object):
             no_machine_timesteps = 0
 
         # TODO: Expose the connection selector in SpiNNMan
-        process = UpdateRuntimeProcess(txrx._scamp_connection_selector)
+        process = UpdateRuntimeProcess(txrx.scamp_connection_selector)
         process.update_runtime(
             no_machine_timesteps, infinite_run, core_subsets,
             len(core_subsets))

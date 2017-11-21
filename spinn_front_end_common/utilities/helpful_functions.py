@@ -5,6 +5,7 @@ from data_specification import utility_calls
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 # SpiNMachine imports
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_machine import CoreSubsets
 
 # general imports
@@ -15,9 +16,19 @@ import datetime
 import shutil
 from ConfigParser import RawConfigParser
 
+from spinnman.model.enums import CPUState
+
 logger = logging.getLogger(__name__)
 FINISHED_FILENAME = "finished"
 _ONE_WORD = struct.Struct("<I")
+
+
+def locate_extra_monitor_mc_receiver(
+        machine, placement_x, placement_y,
+        extra_monitor_cores_to_ethernet_connection_map):
+    chip = machine.get_chip_at(placement_x, placement_y)
+    return extra_monitor_cores_to_ethernet_connection_map[
+        chip.nearest_ethernet_y, chip.nearest_ethernet_y]
 
 
 def read_data(x, y, address, length, data_format, transceiver):
@@ -452,3 +463,43 @@ def convert_time_diff_to_total_milliseconds(sample):
     :return: total milliseconds
     """
     return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)
+
+
+def determine_flow_states(executable_types, no_sync_changes):
+    """ returns the start and end states for these executable types
+
+    :param executable_types: the execute types to locate start and end states\
+     from
+    :param no_sync_changes: the number of times sync signals been sent
+    :return: dict of executable type to states.
+    """
+    expected_start_states = dict()
+    expected_end_states = dict()
+    for executable_start_type in executable_types.keys():
+
+        # cores that ignore all control and are just running
+        if executable_start_type == ExecutableType.RUNNING:
+            expected_start_states[ExecutableType.RUNNING] = [
+                CPUState.RUNNING, CPUState.FINISHED]
+            expected_end_states[ExecutableType.RUNNING] = [
+                CPUState.RUNNING, CPUState.FINISHED]
+
+        # cores that require a sync barrier
+        elif executable_start_type == ExecutableType.SYNC:
+            expected_start_states[ExecutableType.SYNC] = [CPUState.SYNC0]
+            expected_end_states[ExecutableType.SYNC] = [CPUState.FINISHED]
+
+        # cores that use our sim interface
+        elif (executable_start_type ==
+                ExecutableType.USES_SIMULATION_INTERFACE):
+            if no_sync_changes % 2 == 0:
+                expected_start_states[executable_start_type] = [CPUState.SYNC0]
+            else:
+                expected_start_states[executable_start_type] = [CPUState.SYNC1]
+            expected_end_states[executable_start_type] = [CPUState.PAUSED]
+
+    # if no states, go boom.
+    if len(expected_start_states) == 0:
+        raise ConfigurationException(
+            "Unknown executable start types {}".format(executable_types))
+    return expected_start_states, expected_end_states

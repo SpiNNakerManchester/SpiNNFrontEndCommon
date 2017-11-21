@@ -27,6 +27,10 @@ DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = 8
 # 4 for application hash
 SIMULATION_N_BYTES = 12
 
+# the number of words used by the mc data speed up interface
+# 4 for the first key used by mc protocol
+MULTICAST_SPEEDUP_N_BYTES = 4
+
 # The number of bytes used by the dsg and simulation interfaces
 SYSTEM_BYTES_REQUIREMENT = \
     (DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES)
@@ -61,7 +65,13 @@ SDP_PORTS = Enum(
         ("OUTPUT_BUFFERING_SDP_PORT", 2),
 
         # command port for resetting runtime etc
-        ("RUNNING_COMMAND_SDP_PORT", 3)]
+        ("RUNNING_COMMAND_SDP_PORT", 3),
+
+        # extra monitor core re injection functionality
+        ("EXTRA_MONITOR_CORE_REINJECTION", 4),
+
+        # extra monitor core data transfer functionality
+        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5)]
 )
 
 # output buffering operations
@@ -76,3 +86,6 @@ BUFFERING_OPERATIONS = Enum(
         # Host confirming data being read form SpiNNaker memory
         ("BUFFER_WRITE", 1)]
 )
+
+# partition ids pre allocated to functionality
+PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"
