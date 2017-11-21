@@ -79,20 +79,42 @@ static recorded_packet_t *recorded_packet;
 #define UINT(width, value)		((uint##width##_t) (value))
 
 //! Select a particular bit from a value, as a boolean
-#define TEST_BIT(value, bit_index) \
-	((bool) (((value) >> (bit_index)) & 0x1))
+static inline bool test_bit(
+	uint16_t value,
+	uint16_t bit_index)
+{
+    assert(bit_index <= 15);
+    return (bool) ((value >> bit_index) & 0x1);
+}
+
 
 //! Select a range of bits from a value, as a byte
-#define PICK_BITS(value, low_bit_index, bit_count) \
-	UINT(8, (((value) >> (low_bit_index)) & ((1<<(bit_count))-1)))
+static inline uint8_t pick_bits(
+	uint16_t value,
+	uint16_t low_bit_index,
+	uint16_t bit_count)
+{
+    assert(bit_count <= 8);
+    assert(low_bit_index <= 15);
+    uint16_t selector = (1 << bit_count) - 1;
+    return UINT(8, (value >> low_bit_index) & selector);
+}
 
 //! Combine a pair of shorts (in an array) into a 32-bit number
-#define PACK_SHORTS(buffer) \
-	((UINT(32, (buffer)[1]) << 16) | UINT(32, (buffer)[0]))
+static inline uint32_t pack_shorts(
+	uint16_t *buffer)
+{
+    return (UINT(32, buffer[1]) << 16) | UINT(32, buffer[0]);
+}
 
-//! How to subtract one pointer from another. NB: from<=to *MUST* be true!
-#define SPACE(from, to) \
-	(UINT(32, (to)) - UINT(32, (from)))
+//! How to subtract one pointer from another.
+static inline uint32_t space(
+	uint8_t *from,
+	uint8_t *to)
+{
+    assert(from <= to);
+    return UINT(32, to) - UINT(32, from);
+}
 
 //---------------------------------------------------------------------------
 
@@ -128,10 +150,10 @@ static inline uint16_t calculate_eieio_packet_event_size(
 	eieio_msg_t eieio_msg_ptr)
 {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = PICK_BITS(data_hdr_value, PKT_TYPE, 2);
-    bool pkt_apply_prefix = TEST_BIT(data_hdr_value, WANTS_PREFIX);
-    bool pkt_payload_prefix_apply = TEST_BIT(data_hdr_value, PREFIX_APPLY);
-    uint8_t event_count = PICK_BITS(data_hdr_value, PKT_COUNT, 8);
+    uint8_t pkt_type = pick_bits(data_hdr_value, PKT_TYPE, 2);
+    bool pkt_apply_prefix = test_bit(data_hdr_value, WANTS_PREFIX);
+    bool pkt_payload_prefix_apply = test_bit(data_hdr_value, PREFIX_APPLY);
+    uint8_t event_count = pick_bits(data_hdr_value, PKT_COUNT, 8);
     uint16_t event_size, total_size;
     uint16_t header_size = 2;
 
@@ -152,7 +174,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
 	header_size += 2;
     }
     if (pkt_payload_prefix_apply) {
-	if (TEST_BIT(!pkt_type, EIEIO_PKT_32BIT)) {
+	if (test_bit(!pkt_type, EIEIO_PKT_32BIT)) {
 	    header_size += 2;
 	} else {
 	    header_size += 4;
@@ -167,7 +189,7 @@ static inline uint16_t calculate_eieio_packet_size(
 	eieio_msg_t eieio_msg_ptr)
 {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = PICK_BITS(data_hdr_value, 14, 2);
+    uint8_t pkt_type = pick_bits(data_hdr_value, 14, 2);
 
     if (pkt_type == KEY_PAYLOAD_16_BIT) {
 	return calculate_eieio_packet_command_size(eieio_msg_ptr);
@@ -224,11 +246,11 @@ static inline void signal_software_error(
 static inline uint32_t get_sdram_buffer_space_available(void)
 {
     if (read_pointer < write_pointer) {
-	uint32_t final_space = SPACE(write_pointer, end_of_buffer_region);
-	uint32_t initial_space = SPACE(buffer_region, read_pointer);
+	uint32_t final_space = space(write_pointer, end_of_buffer_region);
+	uint32_t initial_space = space(buffer_region, read_pointer);
 	return final_space + initial_space;
     } else if (write_pointer < read_pointer) {
-	return SPACE(write_pointer, read_pointer);
+	return space(write_pointer, read_pointer);
     } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
 	// If pointers are equal, buffer is full if last operation is write
 	return 0;
@@ -255,9 +277,9 @@ static inline uint32_t extract_time_from_eieio_msg(
 	eieio_msg_t eieio_msg_ptr)
 {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    bool pkt_has_timestamp = TEST_BIT(data_hdr_value, HAS_TIMESTAMP);
-    bool pkt_apply_prefix = TEST_BIT(data_hdr_value, WANTS_PREFIX);
-    bool pkt_mode = TEST_BIT(data_hdr_value, PKT_MODE);
+    bool pkt_has_timestamp = test_bit(data_hdr_value, HAS_TIMESTAMP);
+    bool pkt_apply_prefix = test_bit(data_hdr_value, WANTS_PREFIX);
+    bool pkt_mode = test_bit(data_hdr_value, PKT_MODE);
 
     // If the packet is actually a command packet, return the current time
     if (!pkt_apply_prefix && pkt_mode) {
@@ -266,8 +288,8 @@ static inline uint32_t extract_time_from_eieio_msg(
 
     // If the packet indicates that payloads are timestamps
     if (pkt_has_timestamp) {
-	bool pkt_payload_prefix_apply = TEST_BIT(data_hdr_value, 13);
-	uint8_t pkt_type = PICK_BITS(data_hdr_value, PKT_TYPE, 2);
+	bool pkt_payload_prefix_apply = test_bit(data_hdr_value, 13);
+	uint8_t pkt_type = pick_bits(data_hdr_value, PKT_TYPE, 2);
 	uint32_t payload_time = 0;
 	bool got_payload_time = false;
 	uint16_t *event_ptr = &eieio_msg_ptr[1];
@@ -279,9 +301,9 @@ static inline uint32_t extract_time_from_eieio_msg(
 		event_ptr += 1;
 	    }
 
-	    if (TEST_BIT(pkt_type, EIEIO_PKT_32BIT)) {
+	    if (test_bit(pkt_type, EIEIO_PKT_32BIT)) {
 		// 32 bit packet
-		payload_time = PACK_SHORTS(event_ptr);
+		payload_time = pack_shorts(event_ptr);
 		event_ptr += 2;
 	    } else {
 		// 16 bit packet
@@ -292,10 +314,10 @@ static inline uint32_t extract_time_from_eieio_msg(
 	}
 
 	// If the packets have a payload
-	if (TEST_BIT(pkt_type, EIEIO_PKT_HAS_PAYLOAD)) {
-	    if (TEST_BIT(pkt_type, EIEIO_PKT_32BIT)) {
+	if (test_bit(pkt_type, EIEIO_PKT_HAS_PAYLOAD)) {
+	    if (test_bit(pkt_type, EIEIO_PKT_32BIT)) {
 		// 32 bit packet
-		payload_time |= PACK_SHORTS(event_ptr);
+		payload_time |= pack_shorts(event_ptr);
 	    } else {
 		// 16 bit packet
 		payload_time |= event_ptr[0];
@@ -329,14 +351,14 @@ static inline bool add_eieio_packet_to_sdram(
     if ((read_pointer < write_pointer) ||
 	    (read_pointer == write_pointer &&
 		    last_buffer_operation == BUFFER_OPERATION_READ)) {
-	uint32_t final_space = SPACE(write_pointer, end_of_buffer_region);
+	uint32_t final_space = space(write_pointer, end_of_buffer_region);
 
 	if (final_space >= length) {
 	    log_debug("Packet fits in final space of %d", final_space);
 	    goto doSingleCopy;
 	}
 
-	uint32_t total_space = final_space + SPACE(buffer_region, read_pointer);
+	uint32_t total_space = final_space + space(buffer_region, read_pointer);
 	if (total_space < length) {
 	    log_debug("Not enough space (%d bytes)", total_space);
 	    return false;
@@ -354,7 +376,7 @@ static inline bool add_eieio_packet_to_sdram(
 	spin1_memcpy(write_pointer, msg_ptr, final_len);
 	write_pointer += final_len;
     } else if (write_pointer < read_pointer) {
-	uint32_t middle_space = SPACE(write_pointer, read_pointer);
+	uint32_t middle_space = space(write_pointer, read_pointer);
 	if (middle_space < length) {
 	    log_debug("Not enough space in middle (%d bytes)", middle_space);
 	    return false;
@@ -457,12 +479,12 @@ static inline void process_32_bit_packets(
 
     uint16_t *next_event = (uint16_t *) event_pointer;
     for (uint32_t i = 0; i < pkt_count; i++) {
-	uint32_t key = PACK_SHORTS(next_event);
+	uint32_t key = pack_shorts(next_event);
 	log_debug("Packet key = 0x%08x", key);
 	next_event += 2;
 	uint32_t payload = 0;
 	if (pkt_has_payload) {
-	    payload = PACK_SHORTS(next_event);
+	    payload = pack_shorts(next_event);
 	    next_event += 2;
 	}
 
@@ -546,16 +568,16 @@ static inline bool eieio_data_parse_packet(
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     print_packet(eieio_msg_ptr);
 
-    bool pkt_apply_prefix = TEST_BIT(data_hdr_value, WANTS_PREFIX);
-    bool pkt_prefix_upper = TEST_BIT(data_hdr_value, PKT_MODE);
-    bool pkt_payload_apply_prefix = TEST_BIT(data_hdr_value, PREFIX_APPLY);
-    uint8_t pkt_type = PICK_BITS(data_hdr_value, PKT_TYPE, 2);
-    uint8_t pkt_count = PICK_BITS(data_hdr_value, PKT_COUNT, 8);
-    bool pkt_has_payload = TEST_BIT(pkt_type, EIEIO_PKT_HAS_PAYLOAD);
+    bool pkt_apply_prefix = test_bit(data_hdr_value, WANTS_PREFIX);
+    bool pkt_prefix_upper = test_bit(data_hdr_value, PKT_MODE);
+    bool pkt_payload_apply_prefix = test_bit(data_hdr_value, PREFIX_APPLY);
+    uint8_t pkt_type = pick_bits(data_hdr_value, PKT_TYPE, 2);
+    uint8_t pkt_count = pick_bits(data_hdr_value, PKT_COUNT, 8);
+    bool pkt_has_payload = test_bit(pkt_type, EIEIO_PKT_HAS_PAYLOAD);
 
     uint32_t pkt_key_prefix = 0;
     uint32_t pkt_payload_prefix = 0;
-    bool pkt_payload_is_timestamp = TEST_BIT(data_hdr_value, HAS_TIMESTAMP);
+    bool pkt_payload_is_timestamp = test_bit(data_hdr_value, HAS_TIMESTAMP);
 
     log_debug("data_hdr_value: %04x", data_hdr_value);
     log_debug("pkt_apply_prefix: %d", pkt_apply_prefix);
@@ -585,13 +607,13 @@ static inline bool eieio_data_parse_packet(
     }
 
     if (pkt_payload_apply_prefix) {
-	if (!TEST_BIT(pkt_type, EIEIO_PKT_32BIT)) {
+	if (!test_bit(pkt_type, EIEIO_PKT_32BIT)) {
 	    // If there is a payload prefix and the payload is 16-bit
 	    pkt_payload_prefix = (uint32_t) hdr_pointer[0];
 	    hdr_pointer += 1;
 	} else {
 	    // If there is a payload prefix and the payload is 32-bit
-	    pkt_payload_prefix = PACK_SHORTS(hdr_pointer);
+	    pkt_payload_prefix = pack_shorts(hdr_pointer);
 	    hdr_pointer += 2;
 	}
     }
@@ -611,7 +633,7 @@ static inline bool eieio_data_parse_packet(
 	return false;
     }
 
-    if (!TEST_BIT(pkt_type, EIEIO_PKT_32BIT)) {
+    if (!test_bit(pkt_type, EIEIO_PKT_32BIT)) {
         process_16_bit_packets(
             event_pointer, pkt_prefix_upper, pkt_count, pkt_key_prefix,
             pkt_payload_prefix, pkt_has_payload, pkt_payload_is_timestamp);
@@ -654,8 +676,8 @@ static inline void eieio_command_parse_sequenced_data(
 	uint16_t length)
 {
     uint16_t sequence_value_region_id = eieio_msg_ptr[1];
-    uint16_t region_id = PICK_BITS(sequence_value_region_id, 0, 8);
-    uint16_t sequence_value = PICK_BITS(sequence_value_region_id, 8, 8);
+    uint16_t region_id = pick_bits(sequence_value_region_id, 0, 8);
+    uint16_t sequence_value = pick_bits(sequence_value_region_id, 8, 8);
     uint8_t next_expected_sequence_no =
     		(pkt_last_sequence_seen + 1) & MAX_SEQUENCE_NO;
     eieio_msg_t eieio_content_pkt = &eieio_msg_ptr[2];
@@ -732,7 +754,7 @@ static inline bool packet_handler_selector(
     log_debug("packet_handler_selector");
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = PICK_BITS(data_hdr_value, 14, 2);
+    uint8_t pkt_type = pick_bits(data_hdr_value, 14, 2);
 
     if (pkt_type == KEY_PAYLOAD_16_BIT) {
 	log_debug("parsing a command packet");
@@ -781,7 +803,7 @@ void fetch_and_process_packet(void)
 		log_error("Packet from SDRAM of %u bytes is too big!", len);
 		rt_error(RTE_SWERR);
 	    }
-	    uint32_t final_space = SPACE(read_pointer, end_of_buffer_region);
+	    uint32_t final_space = space(read_pointer, end_of_buffer_region);
 
 	    log_debug("packet with length %d, from address: %08x", len,
 		    read_pointer);
