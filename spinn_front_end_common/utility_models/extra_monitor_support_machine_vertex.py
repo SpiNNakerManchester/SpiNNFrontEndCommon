@@ -1,5 +1,7 @@
 from enum import Enum
 
+from pacman.executor.injection_decorator import inject_items
+from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from spinn_front_end_common.abstract_models import \
@@ -20,6 +22,9 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_router_timeout_process import \
     SetRouterTimeoutProcess
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_machine import CoreSubsets
 from spinn_utilities.overrides import overrides
 
@@ -45,9 +50,11 @@ class ExtraMonitorSupportMachineVertex(
 
     _EXTRA_MONITOR_DSG_REGIONS = Enum(
         value="_EXTRA_MONITOR_DSG_REGIONS",
-        names=[('CONFIG', 0)])
+        names=[('CONFIG', 0),
+               ('DATA_SPEED_CONFIG', 1)])
 
-    _CONFIG_REGION_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 1 * 4
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -107,7 +114,9 @@ class ExtraMonitorSupportMachineVertex(
     def static_resources_required():
         return ResourceContainer(sdram=SDRAMResource(
             sdram=ExtraMonitorSupportMachineVertex.
-            _CONFIG_REGION_SIZE_IN_BYTES))
+            _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES +
+            ExtraMonitorSupportMachineVertex.
+            _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -125,11 +134,38 @@ class ExtraMonitorSupportMachineVertex(
     def static_get_binary_file_name():
         return "extra_monitor_support.aplx"
 
-    @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
-    def generate_data_specification(self, spec, placement):
+    @inject_items({"routing_info": "MemoryRoutingInfos",
+                   "machine_graph": "MemoryMachineGraph"})
+    @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
+               additional_arguments={"routing_info", "machine_graph"})
+    def generate_data_specification(
+            self, spec, placement, routing_info, machine_graph):
+        self._generate_reinjection_functionality_data_specification(spec)
+        self._generate_data_speed_up_functionality_data_specification(
+            spec, routing_info, machine_graph)
+        spec.end_specification()
+
+    def _generate_data_speed_up_functionality_data_specification(
+            self, spec, routing_info, machine_graph):
+        spec.reserve_memory_region(
+            region=self._EXTRA_MONITOR_DSG_REGIONS.DATA_SPEED_CONFIG.value,
+            size=self._CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
+            label="data_speed functionality config region")
+        spec.switch_write_focus(
+            self._EXTRA_MONITOR_DSG_REGIONS.DATA_SPEED_CONFIG.value)
+
+        if DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE == \
+                EdgeTrafficType.MULTICAST:
+            base_key = routing_info.get_first_key_for_edge(
+                list(machine_graph.get_edges_starting_at_vertex(self))[0])
+            spec.write_value(base_key)
+        else:
+            spec.write_value(DataSpeedUpPacketGatherMachineVertex.BASE_KEY)
+
+    def _generate_reinjection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(
             region=self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value,
-            size=self._CONFIG_REGION_SIZE_IN_BYTES,
+            size=self._CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES,
             label="re-injection functionality config region")
 
         spec.switch_write_focus(self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value)
@@ -141,7 +177,6 @@ class ExtraMonitorSupportMachineVertex(
                 spec.write_value(0)
             else:
                 spec.write_value(1)
-        spec.end_specification()
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,

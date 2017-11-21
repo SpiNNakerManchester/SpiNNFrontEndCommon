@@ -4,7 +4,7 @@ from spinnman.messages.scp.abstract_messages \
 from spinnman.messages.scp.enums import SCPResult
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
-from spinn_front_end_common.utilities.utility_objs.re_injection_status import \
+from spinn_front_end_common.utilities.utility_objs.reinjection_status import \
     ReInjectionStatus
 from spinn_front_end_common.utilities import constants
 
@@ -24,7 +24,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the dropped packet reinjector, between\
+        :param p: The processor running the extra monitor vertex, between\
                 0 and 17
         :type p: int
         :param command_code: the command code used by the extra monitor \
@@ -38,7 +38,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
-                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_RE_INJECTION.value),
+                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=command_code))
