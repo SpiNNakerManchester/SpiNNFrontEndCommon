@@ -72,20 +72,6 @@ class EdgeToNKeysMapper(object):
         return n_keys_map
 
     @staticmethod
-    def _check_constraints_equal(constraints, stored_constraints):
-        """
-
-        :param constraints:
-        :param stored_constraints:
-        :rtype: None
-        """
-        for constraint in constraints:
-            if constraint not in stored_constraints:
-                raise ConfigurationException(
-                    "Two edges within the same partition have different "
-                    "constraints")
-
-    @staticmethod
     def _process_application_partition(partition, n_keys_map, graph_mapper):
         vertex_slice = graph_mapper.get_slice(
             partition.pre_vertex)
