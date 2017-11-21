@@ -59,6 +59,10 @@ class SimulatorInterface(object):
         pass
 
     @abstractproperty
+    def tags(self):
+        pass
+
+    @abstractproperty
     def run(self, run_time):
         pass
 

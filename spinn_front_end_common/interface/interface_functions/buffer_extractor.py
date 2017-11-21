@@ -21,7 +21,7 @@ class BufferExtractor(object):
         progress = ProgressBar(
             n_regions_to_read, "Extracting buffers from the last run")
         try:
-            self._read_regions(vertices, placements, buffer_manager, progress)
+            buffer_manager.get_data_for_vertices(vertices, progress)
         finally:
             progress.end()
 
@@ -35,13 +35,3 @@ class BufferExtractor(object):
                 n_regions_to_read += len(vertex.get_recorded_region_ids())
                 vertices.append(vertex)
         return n_regions_to_read, vertices
-
-    @staticmethod
-    def _read_regions(vertices, placements, buffer_manager, progress):
-        # Read back the regions
-        for vertex in vertices:
-            placement = placements.get_placement_of_vertex(vertex)
-            for recording_region_id in vertex.get_recorded_region_ids():
-                buffer_manager.get_data_for_vertex(
-                    placement, recording_region_id)
-                progress.update()
