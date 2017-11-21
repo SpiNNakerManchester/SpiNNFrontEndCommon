@@ -12,7 +12,7 @@ from pacman.model.graphs.machine import SimpleMachineVertex
 from pacman.model.decorators import overrides
 
 
-class TestVertex(ApplicationVertex):
+class SimpleTestVertex(ApplicationVertex):
     """
     test vertex
     """
