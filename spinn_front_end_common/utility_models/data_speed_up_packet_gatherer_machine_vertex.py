@@ -1,19 +1,11 @@
 from collections import defaultdict
 
-from pacman.executor.injection_decorator import inject_items
-# from pacman.model.constraints.key_allocator_constraints.\
-#    share_key_constraint import \
-#    ShareKeyConstraint
-# from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.decorators import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
-
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesIncomingPartitionConstraints
 from spinn_front_end_common.abstract_models.impl import \
     MachineDataSpecableVertex
 from spinn_front_end_common.interface.provenance import \
@@ -22,7 +14,6 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
     ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.interface.simulation import simulation_utilities
-
 
 from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -36,7 +27,6 @@ from enum import Enum
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary,
-        AbstractProvidesIncomingPartitionConstraints,
         AbstractProvidesLocalProvenanceData):
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
@@ -51,8 +41,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     # size of config region in bytes
     CONFIG_SIZE = 12
 
-    # items of data a SDP packet can hold when scp header removed
-    DATA_PER_FULL_PACKET = 68  # 272 bytes as removed scp header
+    # items of data a SDP packet can hold when SCP header removed
+    DATA_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
 
     # size of items the sequence number uses
     SEQUENCE_NUMBER_SIZE_IN_ITEMS = 1
@@ -60,14 +50,14 @@ class DataSpeedUpPacketGatherMachineVertex(
     # the size of the sequence number in bytes
     SEQUENCE_NUMBER_SIZE = 4
 
-    # items of data from sdp pakcet with a seqeunce number
+    # items of data from SDP packet with a sequence number
     DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = \
         DATA_PER_FULL_PACKET - SEQUENCE_NUMBER_SIZE_IN_ITEMS
 
     # converter between words and bytes
     WORD_TO_BYTE_CONVERTER = 4
 
-    # time outs used by the protocol for seperate bits
+    # time outs used by the protocol for separate bits
     TIMEOUT_PER_RECEIVE_IN_SECONDS = 1
     TIME_OUT_FOR_SENDING_IN_SECONDS = 0.01
 
@@ -104,7 +94,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             constraints=constraints)
         MachineDataSpecableVertex.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
-        AbstractProvidesIncomingPartitionConstraints.__init__(self)
         AbstractProvidesLocalProvenanceData.__init__(self)
 
         # data holders for the output, and seq nums
@@ -142,38 +131,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                 port=connection.local_port, strip_sdp=True,
                 ip_address="localhost")])
 
-    @inject_items({"machine_graph": "MemoryMachineGraph"})
-    @overrides(AbstractProvidesIncomingPartitionConstraints.
-               get_incoming_partition_constraints,
-               additional_arguments={"machine_graph"})
-    def get_incoming_partition_constraints(self, partition, machine_graph):
-        if partition.identifier != \
-                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
-            raise Exception("do not recognise this partition identifier")
-
-        vertex_partition = list()
-        for incoming_edge in machine_graph.get_edges_ending_at_vertex(self):
-            partition = \
-                machine_graph.get_outgoing_edge_partition_starting_at_vertex(
-                    incoming_edge.pre_vertex,
-                    constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-            vertex_partition.append(partition)
-        return self.static_get_incoming_partition_constraints(
-            partition, vertex_partition)
-
-    @staticmethod
-    def static_get_incoming_partition_constraints(partition, vertex_partition):
-        constraints = list()
-        # if partition.traffic_type == EdgeTrafficType.MULTICAST:
-        #    constraints.append(
-        #        FixedKeyAndMaskConstraint([
-        #            BaseKeyAndMask(
-        #                DataSpeedUpPacketGatherMachineVertex.BASE_KEY,
-        #                DataSpeedUpPacketGatherMachineVertex.BASE_MASK
-        #            )]))
-        #    constraints.append(ShareKeyConstraint(vertex_partition))
-        return constraints
-
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
         return self.static_get_binary_start_type()
@@ -202,7 +159,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_generate_machine_data_specification(
             spec, base_key, machine_time_step, time_scale_factor, iptags):
-        """ supports application vertices usage. writes the dataspec
+        """ supports application vertices usage. writes the data spec
 
         :param spec: the data spec object
         :param base_key: the base key to transmit with
@@ -281,9 +238,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             # handle duplicates of the same calls
             times_extracted_the_same_thing = 0
             top_level_name = "Provenance_for_{}".format(self._label)
-            for (time_taken, lost_seq_nums) in self._provenance_data_items[
-                    (placement, memory_address, length_in_bytes)]:
-
+            for time_taken, lost_seq_nums in self._provenance_data_items[
+                    placement, memory_address, length_in_bytes]:
                 # handle time
                 chip_name = "chip{}:{}".format(placement.x, placement.y)
                 last_name = "Memory_address:{}:Length_in_bytes:{}"\
@@ -297,12 +253,10 @@ class DataSpeedUpPacketGatherMachineVertex(
                 times_extracted_the_same_thing += 1
 
                 # handle lost seq nums
-                lost_seq_num_iteration = 0
-                for n_lost_seq_nums in lost_seq_nums:
+                for i, n_lost_seq_nums in enumerate(lost_seq_nums):
                     prov_items.append(ProvenanceDataItem(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
-                         iteration_name,
-                         "iteration_{}".format(lost_seq_num_iteration)],
+                         iteration_name, "iteration_{}".format(i)],
                         n_lost_seq_nums, report=n_lost_seq_nums > 0,
                         message="During the extraction of data, {} sequences "
                                 "were lost. These had to be retransmitted and"
@@ -311,7 +265,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                                 "applications and remove routers between "
                                 "yourself and the SpiNNaker machine to reduce"
                                 " the chance of this occurring."))
-                    lost_seq_num_iteration += 1
         return prov_items
 
     @staticmethod
@@ -337,7 +290,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param transceiver: spinnman instance
         :param placement: placement object for where to get data from
-        :param memory_address: the address in sdram to start reading from
+        :param memory_address: the address in SDRAM to start reading from
         :param length_in_bytes: the length of data to read in bytes
         :return: byte array of the data
         """
@@ -349,8 +302,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             data = bytearray(0)
             end = float(time.time())
             self._provenance_data_items[
-                (placement, memory_address,
-                 length_in_bytes)].append((end - start, [0]))
+                placement, memory_address,
+                length_in_bytes].append((end - start, [0]))
             return data
 
         if (length_in_bytes <
@@ -359,13 +312,13 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placement.x, placement.y, memory_address, length_in_bytes)
             end = float(time.time())
             self._provenance_data_items[
-                (placement, memory_address,
-                 length_in_bytes)].append((end - start, [0]))
+                placement, memory_address,
+                length_in_bytes].append((end - start, [0]))
             return data
 
         data = struct.pack(
-            "<III", *[self.SDP_PACKET_START_SENDING_COMMAND_ID,
-                      memory_address, length_in_bytes])
+            "<III", self.SDP_PACKET_START_SENDING_COMMAND_ID,
+            memory_address, length_in_bytes)
 
         # print "sending to core {}:{}:{}".format(
         #    placement.x, placement.y, placement.p)
@@ -392,10 +345,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data = self._connection.receive(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
 
-                first, seq_num, seq_nums, finished = \
-                    self._process_data(
-                        data, first, seq_num, seq_nums, finished,
-                        placement, transceiver, lost_seq_nums)
+                first, seq_num, seq_nums, finished = self._process_data(
+                    data, first, seq_num, seq_nums, finished,
+                    placement, transceiver, lost_seq_nums)
             except SpinnmanTimeoutException:
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
@@ -403,12 +355,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         end = float(time.time())
         self._provenance_data_items[
-                (placement, memory_address,
-                 length_in_bytes)].append((end - start, lost_seq_nums))
+                placement, memory_address,
+                length_in_bytes].append((end - start, lost_seq_nums))
         return self._output
 
     def _calculate_missing_seq_nums(self, seq_nums):
-        """ determines which seq numbers we've missed
+        """ determines which sequence numbers we've missed
 
         :param seq_nums: the set already acquired
         :return: list of missing seq nums
@@ -423,13 +375,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums):
-        """ determines if there are any missing seq nums, and if so \
-        retransmits the missing seq nums back to the core for retransmission
+        """ Determines if there are any missing sequence numbers, and if so \
+        retransmits the missing sequence numbers back to the core for \
+        retransmission.
 
         :param seq_nums: the seq nums already received
         :param transceiver: spinnman instance
         :param placement: placement instance
-        :return: true or false based on if finished or not
+        :return: whether all packets are transmitted
+        :rtype: bool
         """
         # locate missing seq nums from pile
 
@@ -439,7 +393,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         if len(missing_seq_nums) == 0:
             return True
 
-        # print "doing retransmission"
         # figure n packets given the 2 formats
         n_packets = 1
         length_via_format2 = \
@@ -452,7 +405,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # transmit missing seq as a new sdp packet
         first = True
         seq_num_offset = 0
-        for packet_count in range(0, n_packets):
+        for _ in xrange(n_packets):
             length_left_in_packet = self.DATA_PER_FULL_PACKET
             offset = 0
             data = None
@@ -520,9 +473,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                     flags=SDPFlag.REPLY_NOT_EXPECTED),
                 data=str(data))
 
-            # debug
-            # self._print_out_packet_data(data)
-
             # send message to core
             transceiver.send_sdp_message(message=message)
 
@@ -537,7 +487,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param data: the packet data
         :param first: if the packet is the first packet, in which has extra \
-        data in header
+            data in header
         :param seq_num: the seq number of the packet
         :param seq_nums: the list of seq nums received so far
         :param finished: bool which states if finished or not
@@ -545,7 +495,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param transceiver: spinnman instance
         :param lost_seq_nums: the list of n seq nums lost per iteration
         :return: set of data items, if its the first packet, the list of seq\
-        nums, the seq num received and if its finished
+            nums, the seq num received and if its finished
         """
         # self._print_out_packet_data(data)
         length_of_data = len(data)
@@ -663,14 +613,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 "seq num {} length of packet {} and final {}".format(
                     len(self._output), view_end_position, seq_num,
                     self._max_seq_num, packet_length, is_final))
-        # print "view_start={} view_end={} data_start={} data_end={}".format(
-        # view_start_position, view_end_position, data_start_position,
-        # data_end_position)
         self._view[view_start_position: view_end_position] = \
             data[data_start_position:data_end_position]
 
     def _check(self, seq_nums):
-        """ verifying if the seq nums are correct.
+        """ verifying if the sequence numbers are correct.
 
         :param seq_nums: the received seq nums
         :return: bool of true or false given if all the seq nums been received
@@ -680,11 +627,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         max_needed = self.calculate_max_seq_num()
         if len(seq_nums) > max_needed:
             raise Exception(
-                "I've received more data than i was expecting!!")
-        if len(seq_nums) != max_needed:
-            # self._print_length_of_received_seq_nums(seq_nums, max_needed)
-            return False
-        return True
+                "I've received more data than I was expecting!!")
+        return len(seq_nums) == max_needed
 
     def calculate_max_seq_num(self):
         """ deduces the max seq num expected to be received
@@ -693,8 +637,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         n_sequence_numbers = 0
         data_left = len(self._output) - (
-            (self.DATA_PER_FULL_PACKET -
-             self.SDP_RETRANSMISSION_HEADER_SIZE) *
+            (self.DATA_PER_FULL_PACKET - self.SDP_RETRANSMISSION_HEADER_SIZE) *
             self.WORD_TO_BYTE_CONVERTER)
 
         extra_n_sequences = float(data_left) / float(
@@ -711,8 +654,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         last_seq_num = 0
-        seq_nums = sorted(seq_nums)
-        for seq_num in seq_nums:
+        for seq_num in sorted(seq_nums):
             if seq_num != last_seq_num + 1:
                 print "from list im missing seq num {}".format(seq_num)
             last_seq_num = seq_num
@@ -740,7 +682,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         if len(seq_nums) != max_needed:
             print "should have received {} sequence numbers, but received " \
                   "{} sequence numbers".format(max_needed, len(seq_nums))
-            return False
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):

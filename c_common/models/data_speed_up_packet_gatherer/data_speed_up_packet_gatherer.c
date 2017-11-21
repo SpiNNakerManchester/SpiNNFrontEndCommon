@@ -1,4 +1,3 @@
-
 //! imports
 #include "spin1_api.h"
 #include "common-typedefs.h"
@@ -23,13 +22,13 @@
 
 //! struct for a SDP message with pure data, no scp header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
-    struct sdp_msg *next;		// Next in free list
+    struct sdp_msg *next;	// Next in free list
     uint16_t length;		// length
     uint16_t checksum;		// checksum (if used)
 
     // sdp_hdr_t
     uint8_t flags;	    	// SDP flag byte
-    uint8_t tag;		      	// SDP IPtag
+    uint8_t tag;		// SDP IPtag
     uint8_t dest_port;		// SDP destination port/CPU
     uint8_t srce_port;		// SDP source port/CPU
     uint16_t dest_addr;		// SDP destination address
@@ -85,33 +84,31 @@ void resume_callback() {
 }
 
 void send_data(){
-   //log_info("last element is %d", data[position_in_store - 1]);
-   //log_info("first element is %d", data[0]);
+    //log_info("last element is %d", data[position_in_store - 1]);
+    //log_info("first element is %d", data[0]);
 
-   spin1_memcpy(&my_msg.data, data,
-                position_in_store * WORD_TO_BYTE_MULTIPLIER);
-   my_msg.length =
-       LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
-   //log_info("my length is %d with position %d", my_msg.length, position_in_store);
+    spin1_memcpy(&my_msg.data, data,
+	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
+    my_msg.length =
+	    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
+    //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
-   while(!spin1_send_sdp_msg ((sdp_msg_t *) &my_msg, 100)){
-
-   }
-   position_in_store = 1;
-   seq_num += 1;
-   data[0] = seq_num;
+    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
+	// Empty body
+    }
+    position_in_store = 1;
+    seq_num += 1;
+    data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload){
-
+void receive_data(uint key, uint payload) {
     //log_info("packet!");
-    if(key == new_sequence_key){
+    if (key == new_sequence_key) {
         //log_info("finding new seq num %d", payload);
         //log_info("position in store is %d", position_in_store);
         data[0] = payload;
-    }
-    else{
-        if (key == first_data_key){
+    } else {
+        if (key == first_data_key) {
             //log_info("resetting seq and position");
             seq_num = FIRST_SEQ_NUM;
             position_in_store = 0;
@@ -122,15 +119,15 @@ void receive_data(uint key, uint payload){
         position_in_store += 1;
         //log_info("payload is %d", payload);
 
-        if (payload == 0xFFFFFFFF){
-            if (position_in_store == 2){
+        if (payload == 0xFFFFFFFF) {
+            if (position_in_store == 2) {
                 data[0] = 0xFFFFFFFF;
                 position_in_store = 1;
             }
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
-        }else if(position_in_store == ITEMS_PER_DATA_PACKET){
+        } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
@@ -162,9 +159,9 @@ static bool initialize(uint32_t *timer_period) {
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
 
-    my_msg.tag = config_address[TAG_ID];                    // IPTag 1
-    my_msg.dest_port = PORT_ETH;       // Ethernet
-    my_msg.dest_addr = sv->eth_addr;   // Nearest Ethernet chip
+    my_msg.tag = config_address[TAG_ID];	// IPTag 1
+    my_msg.dest_port = PORT_ETH;		// Ethernet
+    my_msg.dest_addr = sv->eth_addr;		// Nearest Ethernet chip
 
     // fill in SDP source & flag fields
     my_msg.flags = 0x07;

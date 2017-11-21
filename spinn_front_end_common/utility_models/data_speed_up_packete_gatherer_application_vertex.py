@@ -4,27 +4,23 @@ from pacman.model.decorators import overrides
 from pacman.model.graphs.common import EdgeTrafficType
 
 from spinn_front_end_common.abstract_models \
-    import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification, \
-    AbstractProvidesIncomingPartitionConstraints
+    import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.utility_models.\
     data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
-from spinn_front_end_common.utilities import constants
 
 from spinnman.connections.udp_packet_connections import UDPConnection
 
 
 class DataSpeedUpPacketGatherApplicationVertex(
         ApplicationVertex, AbstractGeneratesDataSpecification,
-        AbstractHasAssociatedBinary,
-        AbstractProvidesIncomingPartitionConstraints):
+        AbstractHasAssociatedBinary):
 
     def __init__(self):
         ApplicationVertex.__init__(
             self, "multicast speed up application vertex", None, 1)
         AbstractGeneratesDataSpecification.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
-        AbstractProvidesIncomingPartitionConstraints.__init__(self)
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -40,7 +36,7 @@ class DataSpeedUpPacketGatherApplicationVertex(
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
         connection = UDPConnection(local_host=None)
-        return DataSpeedUpPacketGatherMachineVertex(connection)
+        return DataSpeedUpPacketGatherMachineVertex(None, None, connection)
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
@@ -77,24 +73,3 @@ class DataSpeedUpPacketGatherApplicationVertex(
     def get_binary_start_type(self):
         return DataSpeedUpPacketGatherMachineVertex.\
             static_get_binary_start_type()
-
-    @inject_items({"application_graph": "MemoryApplicationGraph"})
-    @overrides(AbstractProvidesIncomingPartitionConstraints.
-               get_incoming_partition_constraints,
-               additional_arguments={"application_graph"})
-    def get_incoming_partition_constraints(self, partition, application_graph):
-        if partition.identifier != \
-                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP:
-            raise Exception("do not recognise this partition identifier")
-
-        vertex_partition = list()
-        incoming_edges = application_graph.get_edges_ending_at_vertex(self)
-        for incoming_edge in incoming_edges:
-            partition = application_graph.\
-                get_outgoing_edge_partition_starting_at_vertex(
-                    incoming_edge.pre_vertex,
-                    constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
-            vertex_partition.append(partition)
-        return DataSpeedUpPacketGatherMachineVertex.\
-            static_get_incoming_partition_constraints(
-                partition, vertex_partition)

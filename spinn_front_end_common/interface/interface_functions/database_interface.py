@@ -17,13 +17,13 @@ class DatabaseInterface(object):
         "_user_create_database",
 
         # True if the network is computed to need the database to be written
-        "_needs_database"
+        "_needs_db"
     ]
 
     def __init__(self):
         self._writer = None
         self._user_create_database = None
-        self._needs_database = None
+        self._needs_db = None
 
     def __call__(
             self, machine_graph, user_create_database, tags,
@@ -35,39 +35,14 @@ class DatabaseInterface(object):
         self._writer = DatabaseWriter(database_directory)
         self._user_create_database = user_create_database
         # add database generation if requested
-        self._needs_database = self._writer.auto_detect_database(
-            machine_graph)
+        self._needs_db = self._writer.auto_detect_database(machine_graph)
 
         if self.needs_database:
-            with self._writer as w, ProgressBar(9, "Creating database") as p:
-                w.add_system_params(
-                    time_scale_factor, machine_time_step, runtime)
-                p.update()
-                w.add_machine_objects(machine)
-                p.update()
-                if application_graph is not None \
-                        and application_graph.n_vertices:
-                    w.add_application_vertices(application_graph)
-                p.update()
-                w.add_vertices(machine_graph, graph_mapper, application_graph)
-                p.update()
-                w.add_placements(placements)
-                p.update()
-                w.add_routing_infos(routing_infos, machine_graph)
-                p.update()
-                w.add_routing_tables(router_tables)
-                p.update()
-                w.add_tags(machine_graph, tags)
-                p.update()
-                if (graph_mapper is not None
-                        and application_graph is not None
-                        and create_atom_to_event_id_mapping):
-                    w.create_atom_to_event_id_mapping(
-                        graph_mapper=graph_mapper,
-                        application_graph=application_graph,
-                        machine_graph=machine_graph,
-                        routing_infos=routing_infos)
-                p.update()
+            self._write_to_db(machine, time_scale_factor, machine_time_step,
+                              runtime, application_graph, machine_graph,
+                              graph_mapper, placements, routing_infos,
+                              router_tables, tags,
+                              create_atom_to_event_id_mapping)
 
         return self, self.database_file_path
 
@@ -81,3 +56,34 @@ class DatabaseInterface(object):
         if self.needs_database:
             return self._writer.database_path
         return None
+
+    def _write_to_db(
+            self, machine, time_scale_factor, machine_time_step,
+            runtime, application_graph, machine_graph, graph_mapper,
+            placements, routing_infos, router_tables, tags,
+            create_atom_to_event_id_mapping):
+        with self._writer as w, ProgressBar(9, "Creating database") as p:
+            w.add_system_params(time_scale_factor, machine_time_step, runtime)
+            p.update()
+            w.add_machine_objects(machine)
+            p.update()
+            if application_graph is not None and application_graph.n_vertices:
+                w.add_application_vertices(application_graph)
+            p.update()
+            w.add_vertices(machine_graph, graph_mapper, application_graph)
+            p.update()
+            w.add_placements(placements)
+            p.update()
+            w.add_routing_infos(routing_infos, machine_graph)
+            p.update()
+            w.add_routing_tables(router_tables)
+            p.update()
+            w.add_tags(machine_graph, tags)
+            p.update()
+            if (graph_mapper is not None and application_graph is not None
+                    and create_atom_to_event_id_mapping):
+                w.create_atom_to_event_id_mapping(
+                    graph_mapper=graph_mapper,
+                    application_graph=application_graph,
+                    machine_graph=machine_graph, routing_infos=routing_infos)
+            p.update()

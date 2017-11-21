@@ -9,6 +9,8 @@ import os
 
 logger = logging.getLogger(__name__)
 
+_FOLDER_NAME = "routing_tables_from_machine"
+
 
 class RoutingTableFromMachineReport(object):
     def __call__(
@@ -22,9 +24,7 @@ class RoutingTableFromMachineReport(object):
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")
 
-        folder_name = os.path.join(
-            report_default_directory, "routing_tables_from_machine")
-
+        folder_name = os.path.join(report_default_directory, _FOLDER_NAME)
         os.mkdir(folder_name)
 
         # generate a file for every multicast entry

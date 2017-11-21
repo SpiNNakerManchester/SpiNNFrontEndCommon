@@ -22,8 +22,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """
 
         progress = ProgressBar(
-            len(list(machine.ethernet_connected_chips)) +
-            len(list(machine.chips)),
+            len(list(machine.ethernet_connected_chips)) + machine.n_chips,
             "Pre allocating resources for Extra Monitor support vertices")
 
         connection_mapping = dict()
@@ -64,7 +63,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param progress: the progress bar to operate one
         :rtype: None
         """
-        for chip in progress.over(list(machine.chips)):
+        for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
 
     @staticmethod
@@ -88,15 +87,13 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         connection = UDPConnection(local_host=None)
 
         # get resources from packet gatherer
-        resources = \
-            DataSpeedUpPacketGatherMachineVertex. \
+        resources = DataSpeedUpPacketGatherMachineVertex. \
             resources_required_for_connection(connection)
 
         # locate ethernet connected chips that the vertices reside on
         for ethernet_connected_chip in \
                 progress.over(machine.ethernet_connected_chips,
                               finish_at_end=False):
-
             # do resources. sdram, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
@@ -110,5 +107,5 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
                 strip_sdp=resources.iptags[0].strip_sdp,
                 tag=resources.iptags[0].tag,
                 traffic_identifier=resources.iptags[0].traffic_identifier))
-            connection_mapping[(ethernet_connected_chip.x,
-                                ethernet_connected_chip.y)] = connection
+            connection_mapping[ethernet_connected_chip.x,
+                               ethernet_connected_chip.y] = connection
