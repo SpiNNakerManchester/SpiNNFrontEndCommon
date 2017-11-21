@@ -11,8 +11,8 @@ from spinn_front_end_common.utility_models \
     import LivePacketGather, LivePacketGatherMachineVertex
 from spinn_machine import VirtualMachine
 from spinnman.messages.eieio import EIEIOType
-from fec_integration_tests.interface.interface_functions.test_vertex import \
-    TestVertex
+from fec_integration_tests.interface.interface_functions.simple_test_vertex \
+    import TestVertex
 
 import unittest
 from collections import defaultdict
