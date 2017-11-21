@@ -26,8 +26,8 @@ class TagsLoader(object):
 
         # Use tags object to supply tag info if it is supplied
         if tags is not None:
-            iptags = tags.ip_tags
-            reverse_iptags = tags.reverse_ip_tags
+            iptags = list(tags.ip_tags)
+            reverse_iptags = list(tags.reverse_ip_tags)
 
         # Load the IPtags and the Reverse IPtags
         progress = ProgressBar(
