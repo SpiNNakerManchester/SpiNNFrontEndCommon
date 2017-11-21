@@ -88,7 +88,7 @@ static recorded_packet_t *recorded_packet;
 
 //! Combine a pair of shorts (in an array) into a 32-bit number
 #define PACK_SHORTS(buffer) \
-	(((UINT(32, (buffer)[1]) << 16) | UINT(32, (buffer)[0]))
+	((UINT(32, (buffer)[1]) << 16) | UINT(32, (buffer)[0]))
 
 //! How to subtract one pointer from another. NB: from<=to *MUST* be true!
 #define SPACE(from, to) \
@@ -143,7 +143,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
     case KEY_32_BIT:
 	event_size = 4;
 	break;
-    case KEY_PAYLOAD_32_bIT:
+    case KEY_PAYLOAD_32_BIT:
 	event_size = 8;
 	break;
     }
@@ -377,6 +377,8 @@ static inline bool add_eieio_packet_to_sdram(
 
 //---------------------------------------------------------------------------
 
+#define CHECK_KEY(key)		((!check) || ((key) & mask) == key_space)
+
 static inline void process_16_bit_packets(
 	void* event_pointer,
 	bool pkt_prefix_upper,
@@ -413,11 +415,10 @@ static inline void process_16_bit_packets(
 
 	log_debug("check before send packet: check=%d, key=0x%08x, "
 		"mask=0x%08x, key_space=%d: %d",
-		check, key, mask, key_space,
-		(!check) || (key & mask == key_space));
+		check, key, mask, key_space, CHECK_KEY(key));
 
 	if (has_key) {
-	    if (check && (key & mask != key_space)) {
+	    if (!CHECK_KEY(key)) {
 		incorrect_keys++;
 		continue;
 	    }
@@ -468,11 +469,10 @@ static inline void process_32_bit_packets(
 	key |= pkt_key_prefix;
 	payload |= pkt_payload_prefix;
 
-	log_debug("check before send packet: %d",
-		(!check) || (key & mask == key_space));
+	log_debug("check before send packet: %d", CHECK_KEY(key));
 
 	if (has_key) {
-	    if (check && (key & mask != key_space)) {
+	    if (!CHECK_KEY(key)) {
 		incorrect_keys++;
 		continue;
 	    }
