@@ -2,6 +2,9 @@
 main interface for the spinnaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.timer import Timer
 from spinn_utilities import __version__ as spinn_utils_version
 
@@ -857,9 +860,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # wipe out stuff associated with a given machine, as these need
                 # to be rebuilt.
                 self._machine = None
-                if self._buffer_manager is not None:
-                    self._buffer_manager.stop()
-                    self._buffer_manager = None
+                self._buffer_manager = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
@@ -1176,6 +1177,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 version_provenance.append(ProvenanceDataItem(
                     names=["version_data", name], value=value))
         inputs["ProvenanceItems"] = version_provenance
+        inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
 
         # add algorithms for handling LPG placement and edge insertion
         if len(self._live_packet_recorder_params) != 0:
@@ -1192,15 +1195,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
+        # add algorithms for handling extra monitor code
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
+
         # add the application and machine graphs as needed
         if self._application_graph.n_vertices > 0:
             inputs["MemoryApplicationGraph"] = self._application_graph
         elif self._machine_graph.n_vertices > 0:
             inputs["MemoryMachineGraph"] = self._machine_graph
-
-        # add reinjection flag
-        inputs["EnableReinjectionFlag"] = self._config.getboolean(
-            "Machine", "enable_reinjection")
 
         # add max sdram size which we're going to allow (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
@@ -1251,10 +1255,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = 16
 
             algorithms.append("VirtualMachineGenerator")
             algorithms.append("MallocBasedChipIDAllocator")
@@ -1305,10 +1306,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                inputs["CPUsPerVirtualChip"] = 15
-            else:
-                inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = 16
 
             do_partitioning = False
             if need_virtual_board:
@@ -1512,6 +1510,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getfloat(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("InsertExtraMonitorVerticesToGraphs")
+            algorithms.append("FixedRouteRouter")
+            inputs['FixedRouteDestinationClass'] = \
+                DataSpeedUpPacketGatherMachineVertex
+
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
             algorithms.extend(self._extra_mapping_algorithms)
@@ -1651,10 +1658,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = []
         algorithms = [self._dsg_algorithm]
 
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data")):
-            algorithms.append("GraphProvenanceGatherer")
-
         executor = self._run_algorithms(
             inputs, algorithms, outputs, "data_generation")
         self._mapping_outputs = executor.get_items()
@@ -1717,6 +1720,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
+        # handle extra monitor functionality
+        if self._config.getboolean("Machine",
+                                   "enable_advanced_monitor_support"):
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
+
         # expected outputs from this phase
         outputs = [
             "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
@@ -1778,15 +1787,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms = list()
 
-        # If we have run before, make sure to extract the data before the next
-        # run
+        # clear iobuf if were in multirun mode
         if (self._has_ran and not self._has_reset_last and
-                not self._use_virtual_board):
-            algorithms.append("BufferExtractor")
-
-            # check if we need to clear the iobuf during runs
-            if self._config.getboolean("Reports", "clear_iobuf_during_run"):
-                algorithms.append("ChipIOBufClearer")
+                not self._use_virtual_board and
+                self._config.getboolean("Reports", "clear_iobuf_during_run")):
+            algorithms.append("ChipIOBufClearer")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
@@ -1824,6 +1829,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "actually run")
         else:
             algorithms.append("ApplicationRunner")
+
+        # ensure we exploit the parallel of data extraction by running it at\
+        # end regardless of multirun, but only run if using a real machine
+        if not self._use_virtual_board:
+            algorithms.append("BufferExtractor")
+
+        if (self._config.getboolean("Reports", "reports_enabled") and
+                self._config.getboolean("Reports", "write_provenance_data")):
+            algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
         if self._extra_post_run_algorithms is not None:
@@ -1895,6 +1909,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if executor is not None:
                     # Only do this if the error occurred in the run
                     if not run_complete and not self._use_virtual_board:
+                        self._last_run_outputs = executor.get_items()
                         self._recover_from_error(
                             e, e_inf, executor.get_item("ExecutableTargets"))
                 else:
@@ -1945,7 +1960,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Extract router provenance
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
-            self._txrx, self._machine, self._router_tables, True)
+            transceiver=self._txrx, machine=self._machine,
+            router_tables=self._router_tables, has_ran=True,
+            extra_monitor_vertices=(
+                self._last_run_outputs["MemoryExtraMonitorVertices"]),
+            placements=self._placements)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2164,6 +2183,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._graph_mapper
 
     @property
+    def tags(self):
+        return self._tags
+
+    @property
     def buffer_manager(self):
         """ The buffer manager being used for loading/extracting buffers
 
@@ -2220,6 +2243,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 float(self._current_run_timesteps) *
                 (float(self._machine_time_step) / 1000.0))
         return 0.0
+
+    def get_generated_output(self, name_of_variable):
+        if name_of_variable in self._last_run_outputs:
+            return self._last_run_outputs[name_of_variable]
+        else:
+            return None
 
     def __repr__(self):
         return "general front end instance for machine {}"\
@@ -2313,9 +2342,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if self._txrx is not None:
 
-            if self._config.getboolean("Machine", "enable_reinjection"):
-                self._txrx.enable_reinjection(multicast=False)
-
             # if stopping on machine, clear iptags and
             if clear_tags:
                 for ip_tag in self._tags.ip_tags:
@@ -2340,9 +2366,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # app stop command
             if self._txrx is not None and self._app_id is not None:
                 self._txrx.stop_application(self._app_id)
-
-        if self._buffer_manager is not None:
-            self._buffer_manager.stop()
 
         # stop the transceiver
         if self._txrx is not None:
@@ -2630,4 +2653,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Reports", "write_energy_report")
         if take_into_account_chip_power_monitor:
             cores -= self._machine.n_chips
+        take_into_account_extra_monitor_cores = self._read_config_boolean(
+            "Machine", "enable_advanced_monitor_support")
+        if take_into_account_extra_monitor_cores:
+            cores -= self._machine.n_chips
+            cores -= len(self._machine.ethernet_connected_chips)
         return cores
