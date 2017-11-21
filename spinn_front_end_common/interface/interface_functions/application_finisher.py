@@ -12,10 +12,7 @@ _ONE_WORD = struct.Struct("<I")
 class ApplicationFinisher(object):
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_targets, has_ran):
-        if not has_ran:
-            raise exceptions.ConfigurationException(
-                "The ran token is not set correctly, please fix and try again")
+    def __call__(self, app_id, txrx, executable_targets):
 
         total_processors = executable_targets.total_processors
         all_core_subsets = executable_targets.all_core_subsets

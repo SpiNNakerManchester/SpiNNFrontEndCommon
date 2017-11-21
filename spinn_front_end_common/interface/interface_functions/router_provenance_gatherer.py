@@ -34,7 +34,7 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables, has_ran,
+            self, transceiver, machine, router_tables,
             provenance_data_objects=None):
         """
         :param transceiver: the SpiNNMan interface object
@@ -42,11 +42,6 @@ class RouterProvenanceGatherer(object):
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran
         """
-
-        if not has_ran:
-            logger.warning("{} skipped as nothing has run "
-                           "".format(self.__class__.__name__))
-            return list()
 
         self._total_sent_packets = 0
         self._total_new_packets = 0

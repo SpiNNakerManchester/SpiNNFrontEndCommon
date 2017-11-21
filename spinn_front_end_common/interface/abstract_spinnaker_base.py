@@ -1686,43 +1686,35 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.extend(
                 self._config.get("Mapping", "loading_algorithms").split(","))
         algorithms.extend(self._extra_load_algorithms)
-        algorithms.append("WriteMemoryIOData")
-
-        if self._exec_dse_on_host:
-            algorithms.append("HostExecuteDataSpecification")
-            if self._config.getboolean("Reports", "write_memory_map_report"):
-                algorithms.append("MemoryMapOnHostReport")
-                algorithms.append("MemoryMapOnHostChipReport")
-        else:
-            algorithms.append("MachineExecuteDataSpecification")
-            if self._config.getboolean("Reports", "write_memory_map_report"):
-                algorithms.append("MemoryMapOnChipReport")
-
-        # Reload any parameters over the loaded data if we have already
-        # run and not using a virtual board
-        if self._has_ran and not self._use_virtual_board:
-            algorithms.append("DSGRegionReloader")
-
-        # Get the executable targets
-        algorithms.append("GraphBinaryGatherer")
-
-        # algorithms needed for loading the binaries to the SpiNNaker machine
-        algorithms.append("LoadExecutableImages")
 
         # add optional algorithms
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
+        optional_algorithms.append("WriteMemoryIOData")
+        if self._exec_dse_on_host:
+            optional_algorithms.append("HostExecuteDataSpecification")
+            if self._config.getboolean("Reports", "write_memory_map_report"):
+                optional_algorithms.append("MemoryMapOnHostReport")
+                optional_algorithms.append("MemoryMapOnHostChipReport")
+        else:
+            optional_algorithms.append("MachineExecuteDataSpecification")
+            if self._config.getboolean("Reports", "write_memory_map_report"):
+                optional_algorithms.append("MemoryMapOnChipReport")
 
-        # expected outputs from this phase
-        outputs = [
-            "LoadedReverseIPTagsToken", "LoadedIPTagsToken",
-            "LoadedRoutingTablesToken", "LoadBinariesToken",
-            "LoadedApplicationDataToken"
-        ]
+        # Reload any parameters over the loaded data if we have already
+        # run and not using a virtual board
+        if self._has_ran and not self._use_virtual_board:
+            optional_algorithms.append("DSGRegionReloader")
+
+        # Get the executable targets
+        optional_algorithms.append("GraphBinaryGatherer")
+
+        # algorithms needed for loading the binaries to the SpiNNaker machine
+        optional_algorithms.append("LoadExecutableImages")
 
         executor = self._run_algorithms(
-            inputs, algorithms, outputs, "loading", optional_algorithms)
+            inputs, algorithms, "loading", optional_algorithms)
         self._load_outputs = executor.get_items()
 
         self._load_time += \

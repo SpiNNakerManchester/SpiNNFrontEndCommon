@@ -1,8 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
 
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
 
@@ -15,18 +12,11 @@ logger = logging.getLogger(__name__)
 class LoadExecutableImages(object):
     __slots__ = []
 
-    def __call__(self, executable_targets, app_id, transceiver,
-                 loaded_application_data_token):
+    def __call__(self, executable_targets, app_id, transceiver):
         """ Go through the executable targets and load each binary to \
             everywhere and then send a start request to the cores that \
             actually use it
         """
-
-        if not loaded_application_data_token:
-            raise ConfigurationException(
-                "The token for having loaded the application data token is set"
-                " to false and therefore I cannot run. Please fix and try "
-                "again")
 
         progress = ProgressBar(
             executable_targets.total_processors + 1,
@@ -39,8 +29,6 @@ class LoadExecutableImages(object):
         self._start_simulation(executable_targets, transceiver, app_id)
         progress.update()
         progress.end()
-
-        return True
 
     def _launch_binary(self, executable_targets, binary, txrx, app_id):
         core_subset = executable_targets.get_cores_for_binary(binary)

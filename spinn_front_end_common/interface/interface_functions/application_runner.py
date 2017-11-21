@@ -21,17 +21,8 @@ class ApplicationRunner(object):
             self, buffer_manager, wait_on_confirmation, send_stop_notification,
             send_start_notification, notification_interface,
             executable_targets, executable_start_type, app_id, txrx, runtime,
-            time_scale_factor, loaded_reverse_iptags_token,
-            loaded_iptags_token, loaded_routing_tables_token,
-            loaded_binaries_token, loaded_application_data_token,
-            no_sync_changes, time_threshold, run_until_complete=False):
-
-        # check all tokens are valid
-        if (not loaded_reverse_iptags_token or not loaded_iptags_token or
-                not loaded_routing_tables_token or not loaded_binaries_token or
-                not loaded_application_data_token):
-            raise ConfigurationException(
-                "Not all valid tokens have been given in the positive state")
+            time_scale_factor, no_sync_changes, time_threshold,
+            run_until_complete=False):
 
         logger.info("*** Running simulation... *** ")
 
@@ -114,4 +105,4 @@ class ApplicationRunner(object):
                 send_stop_notification and runtime is not None):
             notification_interface.send_stop_pause_notification()
 
-        return True, no_sync_changes
+        return no_sync_changes

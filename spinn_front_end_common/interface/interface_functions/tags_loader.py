@@ -41,8 +41,6 @@ class TagsLoader(object):
             self.load_reverse_iptags(reverse_iptags, transceiver, progress)
         progress.end()
 
-        return True, True
-
     @staticmethod
     def load_iptags(iptags, transceiver, progress_bar):
         """ Loads all the iptags individually.

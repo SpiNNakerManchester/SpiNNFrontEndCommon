@@ -22,8 +22,11 @@ class WriteMemoryIOData(object):
 
     def __call__(
             self, graph, placements, app_id, app_data_runtime_folder, hostname,
-            transceiver=None, graph_mapper=None):
-        processor_to_app_data_base_address = dict()
+            transceiver=None, graph_mapper=None,
+            processor_to_app_data_base_address=None):
+
+        if processor_to_app_data_base_address is None:
+            processor_to_app_data_base_address = dict()
         progress = ProgressBar(
             len(list(placements.placements)), "Writing data")
 
@@ -42,7 +45,7 @@ class WriteMemoryIOData(object):
                     app_data_runtime_folder, hostname,
                     processor_to_app_data_base_address)
 
-        return processor_to_app_data_base_address, True
+        return processor_to_app_data_base_address
 
     def _get_used_tags(self, transceiver, x, y, heap_address):
         heap = transceiver.get_heap(x, y, heap=heap_address)
