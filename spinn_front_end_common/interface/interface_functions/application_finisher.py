@@ -1,6 +1,7 @@
 import struct
 
 from spinn_front_end_common.utilities import constants, exceptions
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
@@ -12,10 +13,12 @@ _ONE_WORD = struct.Struct("<I")
 class ApplicationFinisher(object):
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_targets):
+    def __call__(self, app_id, txrx, executable_types):
 
-        total_processors = executable_targets.total_processors
-        all_core_subsets = executable_targets.all_core_subsets
+        total_processors = \
+            len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
+        all_core_subsets = \
+            executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
         progress = ProgressBar(
             total_processors,

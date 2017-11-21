@@ -1,4 +1,5 @@
 # pacman imports
+from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.routing_info \
     import DictBasedMachinePartitionNKeysMap
 
@@ -46,14 +47,15 @@ class EdgeToNKeysMapper(object):
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
                 for partition in partitions:
-                    added_constraints = False
-                    constraints = self._process_application_partition(
-                        partition, n_keys_map, graph_mapper)
-                    if not added_constraints:
-                        partition.add_constraints(constraints)
-                    else:
-                        self._check_constraints_equal(
-                            constraints, partition.constraints)
+                    if partition.traffic_type == EdgeTrafficType.MULTICAST:
+                        added_constraints = False
+                        constraints = self._process_application_partition(
+                            partition, n_keys_map, graph_mapper)
+                        if not added_constraints:
+                            partition.add_constraints(constraints)
+                        else:
+                            self._check_constraints_equal(
+                                constraints, partition.constraints)
 
         else:
             # generate progress bar
@@ -67,14 +69,15 @@ class EdgeToNKeysMapper(object):
                     get_outgoing_edge_partitions_starting_at_vertex(
                         vertex)
                 for partition in partitions:
-                    added_constraints = False
-                    constraints = self._process_machine_partition(
-                        partition, n_keys_map)
-                    if not added_constraints:
-                        partition.add_constraints(constraints)
-                    else:
-                        self._check_constraints_equal(
-                            constraints, partition.constraints)
+                    if partition.traffic_type == EdgeTrafficType.MULTICAST:
+                        added_constraints = False
+                        constraints = self._process_machine_partition(
+                            partition, n_keys_map)
+                        if not added_constraints:
+                            partition.add_constraints(constraints)
+                        else:
+                            self._check_constraints_equal(
+                                constraints, partition.constraints)
 
         return n_keys_map
 
@@ -125,14 +128,14 @@ class EdgeToNKeysMapper(object):
 
     @staticmethod
     def _process_machine_partition(partition, n_keys_map):
-
         if not isinstance(partition.pre_vertex,
                           AbstractProvidesNKeysForPartition):
             n_keys_map.set_n_keys_for_partition(partition, 1)
         else:
             n_keys_map.set_n_keys_for_partition(
                 partition,
-                partition.pre_vertex.get_n_keys_for_partition(partition, None))
+                partition.pre_vertex.get_n_keys_for_partition(
+                    partition, None))
 
         constraints = list()
         if isinstance(partition.pre_vertex,
