@@ -1893,7 +1893,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("ProvenanceItems")
 
         # Decide what needs done
-        required_tokens=["ApplicationRun"]
+        required_tokens = ["ApplicationRun"]
 
         run_complete = False
         executor = PACMANAlgorithmExecutor(
