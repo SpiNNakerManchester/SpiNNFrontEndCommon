@@ -140,7 +140,7 @@ def test_memory_io():
     }
     algorithms = ["WriteMemoryIOData"]
     executor = PACMANAlgorithmExecutor(
-        algorithms, [], inputs, [],
+        algorithms, [], inputs, [], [], [],
         xml_paths=get_front_end_common_pacman_xml_paths())
     executor.execute_mapping()
     assert(vertex._test_tag == vertex._tag)

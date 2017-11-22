@@ -52,7 +52,7 @@ class ApplicationRunner(object):
             notification_interface, wait_on_confirmation,
             send_start_notification, send_stop_notification)
 
-        return True, self.run_application(
+        return self.run_application(
             buffer_manager, notifier, executable_targets, executable_types,
             app_id, txrx, runtime, time_scale_factor, no_sync_changes,
             time_threshold, run_until_complete)
@@ -165,4 +165,4 @@ class ApplicationRunner(object):
                     "next SYNC state before we send the next SYNC. Resulting "
                     "in uncontrolled behaviour")
 
-        return no_sync_changes
+        return sync_signal, no_sync_changes

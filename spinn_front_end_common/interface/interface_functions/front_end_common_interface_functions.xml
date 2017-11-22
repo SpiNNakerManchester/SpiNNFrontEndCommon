@@ -1061,7 +1061,6 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
-            <param_name>has_ran</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>provenance_data_objects</param_name>
@@ -1145,9 +1144,9 @@
         <outputs>
             <param_type>ProvenanceItems</param_type>
         </outputs>
-        <required_input_token>
+        <required_input_tokens>
             <token>ApplicationRun</token>
-        </required_input_token>
+        </required_input_tokens>
     </algorithm>
     <algorithm name="ProvenanceXMLWriter">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1424,7 +1423,6 @@
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
-            <param_name>has_ran</param_name>
             <param_name>core_subsets</param_name>
             <param_name>provenance_file_path</param_name>
         </required_inputs>
