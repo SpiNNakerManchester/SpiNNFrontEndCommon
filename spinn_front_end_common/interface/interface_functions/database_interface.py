@@ -48,7 +48,7 @@ class DatabaseInterface(object):
 
     @property
     def needs_database(self):
-        return ((self._user_create_database == "None" and self._needs_database)
+        return ((self._user_create_database == "None" and self._needs_db)
                 or self._user_create_database == "True")
 
     @property
