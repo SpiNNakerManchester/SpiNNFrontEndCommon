@@ -8,9 +8,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
 from spinn_front_end_common.abstract_models import \
-    AbstractProvidesIncomingPartitionConstraints, \
-    AbstractProvidesNKeysForPartition, \
-    AbstractProvidesOutgoingPartitionConstraints
+    AbstractProvidesNKeysForPartition
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
@@ -48,9 +46,8 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        constraints = self._process_application_partition(
+                        self._process_application_partition(
                             partition, n_keys_map, graph_mapper)
-                        partition.add_constraints(constraints)
 
         else:
             # generate progress bar
@@ -65,9 +62,7 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        constraints = self._process_machine_partition(
-                            partition, n_keys_map)
-                        partition.add_constraints(constraints)
+                        self._process_machine_partition(partition, n_keys_map)
 
         return n_keys_map
 
@@ -84,21 +79,6 @@ class EdgeToNKeysMapper(object):
             n_keys = vertex_slice.n_atoms
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
 
-        constraints = list()
-        if isinstance(vertex,
-                      AbstractProvidesOutgoingPartitionConstraints):
-            constraints.extend(
-                vertex.get_outgoing_partition_constraints(partition))
-        for edge in partition.edges:
-            app_edge = graph_mapper.get_application_edge(edge)
-            if isinstance(app_edge.post_vertex,
-                          AbstractProvidesIncomingPartitionConstraints):
-                constraints.extend(
-                    app_edge.post_vertex.get_incoming_partition_constraints(
-                        partition))
-        constraints.extend(partition.constraints)
-        return constraints
-
     @staticmethod
     def _process_machine_partition(partition, n_keys_map):
         if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
@@ -107,20 +87,3 @@ class EdgeToNKeysMapper(object):
         else:
             n_keys = 1
         n_keys_map.set_n_keys_for_partition(partition, n_keys)
-
-        constraints = list()
-        if isinstance(partition.pre_vertex,
-                      AbstractProvidesOutgoingPartitionConstraints):
-            constraints.extend(
-                partition.pre_vertex.get_outgoing_partition_constraints(
-                    partition))
-
-        for edge in partition.edges:
-            if isinstance(edge.post_vertex,
-                          AbstractProvidesIncomingPartitionConstraints):
-                constraints.extend(
-                    edge.post_vertex.get_incoming_partition_constraints(
-                        partition))
-        constraints.extend(partition.constraints)
-
-        return constraints
