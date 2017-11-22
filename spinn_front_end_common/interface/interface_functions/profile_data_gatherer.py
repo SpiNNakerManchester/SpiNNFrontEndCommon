@@ -1,8 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 
 # front end common imports
-from spinn_front_end_common.interface.profiling.abstract_has_profile_data \
-    import AbstractHasProfileData
+from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 
 import os
 import logging
@@ -39,41 +38,36 @@ class ProfileDataGatherer(object):
                     transceiver, placement)
 
                 if len(profile_data.tags) > 0:
+                    self._write(placement, profile_data, run_time_ms,
+                                machine_time_step_ms, provenance_file_path)
 
-                    max_tag_len = max([len(tag) for tag in profile_data.tags])
+    def _write(self, p, profile_data, run_time_ms,
+               machine_time_step_ms, directory):
+        max_tag_len = max([len(tag) for tag in profile_data.tags])
 
-                    # write data
-                    file_name = os.path.join(
-                        provenance_file_path, "{}_{}_{}_profile.txt".format(
-                            placement.x, placement.y, placement.p))
+        # write data
+        file_name = os.path.join(
+            directory, "{}_{}_{}_profile.txt".format(p.x, p.y, p.p))
 
-                    # set mode of the file based off if the file already exists
-                    mode = "w"
-                    if os.path.exists(file_name):
-                        mode = "a"
+        # set mode of the file based off if the file already exists
+        mode = "w"
+        if os.path.exists(file_name):
+            mode = "a"
 
-                    # write profile data to file
-                    with open(file_name, mode) as writer:
-                        writer.write(
-                            "{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n"
-                            .format(
-                                "tag", max_tag_len, "n_calls", "mean_ms",
-                                "n_calls_per_ts", "mean_ms_per_ts"))
-                        writer.write(
-                            "{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n"
-                            .format(
-                                "", max_tag_len, "", "", "", ""))
-                        for tag in profile_data.tags:
-                            writer.write(
-                                "{: <{}s} {: >7d} {: >14.6f} {: >14.6f} "
-                                "{: >14.6f}\n"
-                                .format(
-                                    tag, max_tag_len,
-                                    profile_data.get_n_calls(tag),
-                                    profile_data.get_mean_ms(tag),
-                                    profile_data.get_mean_n_calls_per_ts(
-                                        tag, run_time_ms,
-                                        machine_time_step_ms),
-                                    profile_data.get_mean_ms_per_ts(
-                                        tag, run_time_ms,
-                                        machine_time_step_ms)))
+        # write profile data to file
+        with open(file_name, mode) as f:
+            f.write("{: <{}s} {: <7s} {: <14s} {: <14s} {: <14s}\n".format(
+                "tag", max_tag_len, "n_calls", "mean_ms",
+                "n_calls_per_ts", "mean_ms_per_ts"))
+            f.write("{:-<{}s} {:-<7s} {:-<14s} {:-<14s} {:-<14s}\n".format(
+                "", max_tag_len, "", "", "", ""))
+            for tag in profile_data.tags:
+                f.write("{: <{}s} {: >7d} {: >14.6f} {: >14.6f} {: >14.6f}\n"
+                        .format(
+                            tag, max_tag_len,
+                            profile_data.get_n_calls(tag),
+                            profile_data.get_mean_ms(tag),
+                            profile_data.get_mean_n_calls_per_ts(
+                                tag, run_time_ms, machine_time_step_ms),
+                            profile_data.get_mean_ms_per_ts(
+                                tag, run_time_ms, machine_time_step_ms)))

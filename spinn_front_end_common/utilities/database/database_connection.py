@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseConnection(UDPConnection, Thread):
-    """ A connection from the toolchain which will be notified\
-        when the database has been written, and can then respond when the\
-        database has been read, and further wait for notification that the\
-        simulation has started.
+    """ A connection from the toolchain which will be notified when the \
+        database has been written, and can then respond when the database \
+        has been read, and further wait for notification that the simulation \
+        has started.
     """
 
     def __init__(self, start_resume_callback_function=None,
@@ -28,16 +28,16 @@ class DatabaseConnection(UDPConnection, Thread):
                  local_port=19999):
         """
 
-        :param start_resume_callback_function: A function to be called when
-                    the start message has been received.  This function should
-                    not take any parameters or return anything.
+        :param start_resume_callback_function: A function to be called when \
+            the start message has been received.  This function should not \
+            take any parameters or return anything.
         :type start_resume_callback_function: function() -> None
         :param local_host: Optional specification of the local hostname or\
-                    ip address of the interface to listen on
+            ip address of the interface to listen on
         :type local_host: str
-        :param local_port: Optional specification of the local port to listen\
-                    on.  Must match the port that the toolchain will send the\
-                    notification on (19999 by default)
+        :param local_port: Optional specification of the local port to listen \
+            on.  Must match the port that the toolchain will send the \
+            notification on (19999 by default)
         :type local_port: int
         """
         UDPConnection.__init__(
@@ -54,7 +54,7 @@ class DatabaseConnection(UDPConnection, Thread):
         self.start()
 
     def add_database_callback(self, database_callback_function):
-        """ Add a database callback to be called when the database is ready
+        """ Add a database callback to be called when the database is ready.
 
         :param database_callback_function: A function to be called when the\
             database message has been received.  This function should take \
@@ -62,8 +62,9 @@ class DatabaseConnection(UDPConnection, Thread):
             Once the function returns, it will be assumed that the database \
             has been read, and the return response will be sent.
         :type database_callback_function: function(\
-            :py:class:`spynnaker_external_devices.pyNN.connections.database_reader.DatabaseReader`)\
-                    -> None
+            :py:class:`spinn_front_end_common.utilities.database.database_reader.DatabaseReader`)\
+            -> None
+        :raises SpinnmanIOException: If anything goes wrong
         """
         self._database_callback_functions.append(database_callback_function)
 
@@ -72,15 +73,15 @@ class DatabaseConnection(UDPConnection, Thread):
         logger.info(
             "{}:{} Waiting for message to indicate that the database is "
             "ready".format(self.local_ip_address, self.local_port))
-        while self._running:
-            try:
+        try:
+            while self._running:
                 data, address = self._retrieve_database_address()
                 if data is not None:
                     self._process_message(address, data)
-            except Exception as e:
-                logger.error("Failure processing database callback",
-                             exc_info=True)
-                raise SpinnmanIOException(str(e))
+        except Exception as e:
+            logger.error("Failure processing database callback",
+                         exc_info=True)
+            raise SpinnmanIOException(str(e))
 
     def _process_message(self, address, data):
         # Read the read packet confirmation
@@ -133,8 +134,7 @@ class DatabaseConnection(UDPConnection, Thread):
 
     def _retrieve_database_address(self):
         try:
-            data, address = self.receive_with_address(timeout=3)
-            return data, address
+            return self.receive_with_address(timeout=3)
         except SpinnmanTimeoutException:
             return None, None
         except SpinnmanIOException:

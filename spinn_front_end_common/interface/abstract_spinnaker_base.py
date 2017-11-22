@@ -1751,6 +1751,21 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
+        # Add reports that depend on compression
+        if self._config.getboolean("Reports", "reports_enabled"):
+            routing_tables_needed = False
+            if self._config.getboolean("Reports",
+                                       "write_routing_table_reports"):
+                routing_tables_needed = True
+                algorithms.append("unCompressedRoutingTableReports")
+                algorithms.append("compressedRoutingTableReports")
+                algorithms.append("comparisonOfRoutingTablesReport")
+            if self._config.getboolean(
+                    "Reports", "write_routing_compression_checker_report"):
+                routing_tables_needed = True
+                algorithms.append("routingCompressionCheckerReport")
+            if routing_tables_needed:
+                optional_algorithms.append("RoutingTableFromMachineReport")
         # handle extra monitor functionality
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support"):

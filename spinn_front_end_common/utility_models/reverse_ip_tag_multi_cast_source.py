@@ -169,7 +169,7 @@ class ReverseIpTagMultiCastSource(
         return self._n_atoms
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
+    def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         container = ResourceContainer(
             sdram=SDRAMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
@@ -236,8 +236,9 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
+            self, vertex_slice,
+            resources_required,  # @UnusedVariable
+            label=None, constraints=None):
         send_buffer_times = self._send_buffer_times
         if (self._send_buffer_times is not None and
                 len(self._send_buffer_times) > 0):

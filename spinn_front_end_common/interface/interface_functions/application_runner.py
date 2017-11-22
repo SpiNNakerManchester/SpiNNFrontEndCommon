@@ -164,5 +164,8 @@ class ApplicationRunner(object):
                     "because we cannot ensure the cores have not reached the "
                     "next SYNC state before we send the next SYNC. Resulting "
                     "in uncontrolled behaviour")
+            else:
+                sync_signal = Signal.SYNC0
+                no_sync_changes += 1
 
         return sync_signal, no_sync_changes
