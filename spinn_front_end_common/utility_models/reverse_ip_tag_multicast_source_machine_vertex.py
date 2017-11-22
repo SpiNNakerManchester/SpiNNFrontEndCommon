@@ -34,7 +34,7 @@ from spinn_front_end_common.interface.provenance \
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
 from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableStartType
+    import ProvenanceDataItem, ExecutableType
 
 from spinnman.messages.eieio import EIEIOPrefix
 
@@ -178,6 +178,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
+            if (len(send_buffer_times) > 0 and
+                    hasattr(send_buffer_times[0], "__len__")):
+                # Working with a list of lists so check length
+                if len(send_buffer_times) != n_keys:
+                    raise ConfigurationException(
+                        "The array or arrays of times {} does not have the "
+                        "expected length of {} "
+                        "".format(send_buffer_times, n_keys))
+
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
@@ -597,7 +606,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
