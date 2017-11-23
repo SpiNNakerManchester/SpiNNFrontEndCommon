@@ -1722,23 +1722,45 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.get("Mapping", "loading_algorithms").split(","))
         algorithms.extend(self._extra_load_algorithms)
 
+        write_memory_report = self._config.getboolean(
+            "Reports", "write_memory_map_report")
+        if write_memory_report and application_graph_changed:
+            if self._exec_dse_on_host:
+                algorithms.append("MemoryMapOnHostReport")
+                algorithms.append("MemoryMapOnHostChipReport")
+            else:
+                algorithms.append("MemoryMapOnChipReport")
+
+        # Add reports that depend on compression
+        routing_tables_needed = False
+        if application_graph_changed:
+            if self._config.getboolean("Reports",
+                                       "write_routing_table_reports"):
+                routing_tables_needed = True
+                algorithms.append("unCompressedRoutingTableReports")
+                algorithms.append("compressedRoutingTableReports")
+                algorithms.append("comparisonOfRoutingTablesReport")
+            if self._config.getboolean(
+                    "Reports", "write_routing_compression_checker_report"):
+                routing_tables_needed = True
+                algorithms.append("routingCompressionCheckerReport")
+
+        # handle extra monitor functionality
+        enable_advanched_monitor = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        if enable_advanched_monitor and application_graph_changed:
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
+
         # add optional algorithms
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
 
-        write_memory_report = self._config.getboolean(
-            "Reports", "write_memory_map_report")
         if self._exec_dse_on_host:
             optional_algorithms.append("HostExecuteDataSpecification")
-
-            if write_memory_report and application_graph_changed:
-                algorithms.append("MemoryMapOnHostReport")
-                algorithms.append("MemoryMapOnHostChipReport")
         else:
             optional_algorithms.append("MachineExecuteDataSpecification")
-            if write_memory_report:
-                optional_algorithms.append("MemoryMapOnChipReport")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
@@ -1751,29 +1773,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
-        # Add reports that depend on compression
-        if self._config.getboolean("Reports", "reports_enabled") and \
-                application_graph_changed:
-            routing_tables_needed = False
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
-                routing_tables_needed = True
-                algorithms.append("unCompressedRoutingTableReports")
-                algorithms.append("compressedRoutingTableReports")
-                algorithms.append("comparisonOfRoutingTablesReport")
-            if self._config.getboolean(
-                    "Reports", "write_routing_compression_checker_report"):
-                routing_tables_needed = True
-                algorithms.append("routingCompressionCheckerReport")
-            if routing_tables_needed:
-                optional_algorithms.append("RoutingTableFromMachineReport")
-
-        # handle extra monitor functionality
-        enable_advanched_monitor = self._config.getboolean(
-            "Machine", "enable_advanced_monitor_support")
-        if enable_advanched_monitor and application_graph_changed:
-            algorithms.append("LoadFixedRoutes")
-            algorithms.append("FixedRouteFromMachineReport")
+        # Something probably a report needs the routing tables
+        # This report is one way to get them if done on machine
+        if routing_tables_needed:
+            optional_algorithms.append("RoutingTableFromMachineReport")
 
         # expected outputs from this phase
         outputs = [
