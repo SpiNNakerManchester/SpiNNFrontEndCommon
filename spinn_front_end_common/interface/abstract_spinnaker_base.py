@@ -1697,8 +1697,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board:
-            if application_graph_changed:
+        if not self._use_virtual_board and application_graph_changed:
                 algorithms.append("RoutingSetup")
                 # Get the executable targets
                 algorithms.append("GraphBinaryGatherer")
