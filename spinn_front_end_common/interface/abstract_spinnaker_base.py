@@ -1707,9 +1707,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # Get the executable targets
                 algorithms.append("GraphBinaryGatherer")
 
-        if helpful_functions.read_config(
-                self._config, "Mapping", "loading_algorithms") is not None \
-                and self._application_graph_changed:
+        loading_algorithm = helpful_functions.read_config(
+            self._config, "Mapping", "loading_algorithms")
+        if loading_algorithm is not None and self._application_graph_changed:
             algorithms.extend(
                 self._config.get("Mapping", "loading_algorithms").split(","))
         algorithms.extend(self._extra_load_algorithms)
@@ -1718,17 +1718,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
+
+        write_memory_report = self._config.getboolean(
+            "Reports", "write_memory_map_report")
         if self._exec_dse_on_host:
             optional_algorithms.append("HostExecuteDataSpecification")
-            if self._config.getboolean(
-                    "Reports", "write_memory_map_report") and \
-                    self._application_graph_changed:
+
+            if write_memory_report and self._application_graph_changed:
                 algorithms.append("MemoryMapOnHostReport")
                 algorithms.append("MemoryMapOnHostChipReport")
         else:
             optional_algorithms.append("MachineExecuteDataSpecification")
-            if self._config.getboolean(
-                    "Reports", "write_memory_map_report"):
+            if write_memory_report:
                 optional_algorithms.append("MemoryMapOnChipReport")
 
         # Reload any parameters over the loaded data if we have already
@@ -1743,6 +1744,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms.append("LoadExecutableImages")
 
         # Add reports that depend on compression
+
         if self._config.getboolean("Reports", "reports_enabled") and \
                 self._application_graph_changed:
             routing_tables_needed = False
@@ -1758,10 +1760,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingCompressionCheckerReport")
             if routing_tables_needed:
                 optional_algorithms.append("RoutingTableFromMachineReport")
+
         # handle extra monitor functionality
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support") \
-                and self._application_graph_changed:
+        enable_advanched_monitor = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        if enable_advanched_monitor and self._application_graph_changed:
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
