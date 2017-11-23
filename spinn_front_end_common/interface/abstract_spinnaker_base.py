@@ -1717,8 +1717,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         loading_algorithm = helpful_functions.read_config(
             self._config, "Mapping", "loading_algorithms")
         if loading_algorithm is not None and application_graph_changed:
-            algorithms.extend(
-                self._config.get("Mapping", "loading_algorithms").split(","))
+            algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
 
         write_memory_report = self._config.getboolean(
