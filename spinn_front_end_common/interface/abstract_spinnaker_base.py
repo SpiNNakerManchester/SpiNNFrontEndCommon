@@ -332,10 +332,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_machine_is_turned_off",
 
         # Version information from the front end
-        "_front_end_versions",
-
-        # Records if the application graph has changed
-        "_application_graph_changed"
+        "_front_end_versions"
     ]
 
     def __init__(
@@ -829,19 +826,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
-        self._application_graph_changed = \
-            self._detect_if_graph_has_changed(True)
+        application_graph_changed = self._detect_if_graph_has_changed(True)
 
         # create new sub-folder for reporting data if the graph has changed and
         # reset has been called.
-        if (self._has_ran and self._application_graph_changed and
+        if (self._has_ran and application_graph_changed and
                 self._has_reset_last):
             self._set_up_output_folders()
 
         # verify that the if graph has changed, and has ran, that a reset has
         # been called, otherwise system go boom boom
-        if not self._has_ran or self._application_graph_changed:
-            if (self._application_graph_changed and self._has_ran and
+        if not self._has_ran or application_graph_changed:
+            if (application_graph_changed and self._has_ran and
                     not self._has_reset_last):
                 self.stop()
                 raise NotImplementedError(
@@ -858,7 +854,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._graph_mapper = None
 
             # Reset the machine if the graph has changed
-            if (self._has_ran and self._application_graph_changed and
+            if (self._has_ran and application_graph_changed and
                     not self._use_virtual_board):
 
                 # wipe out stuff associated with a given machine, as these need
@@ -933,16 +929,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # If we have never run before, or the graph has changed, or a reset
         # has been requested, load the data
-        if (not self._has_ran or self._application_graph_changed or
+        if (not self._has_ran or application_graph_changed or
                 self._has_reset_last):
 
             # Data generation needs to be done if not already done
-            if not self._has_ran or self._application_graph_changed:
+            if not self._has_ran or application_graph_changed:
                 self._do_data_generation(steps[0])
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load()
+                self._do_load(application_graph_changed)
                 loading_done = True
 
         # Run for each of the given steps
@@ -1670,7 +1666,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             helpful_functions.convert_time_diff_to_total_milliseconds(
                 data_gen_timer.take_sample())
 
-    def _do_load(self):
+    def _do_load(self, application_graph_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1682,10 +1678,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["WriteMemoryMapReportFlag"] = (
             self._config.getboolean("Reports", "reports_enabled") and
             self._config.getboolean("Reports", "write_memory_map_report") and
-            self._application_graph_changed
+            application_graph_changed
         )
 
-        if not self._application_graph_changed:
+        if not application_graph_changed:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
             inputs["LoadedReverseIPTagsToken"] = self._last_run_outputs[
@@ -1702,14 +1698,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board:
-            if self._application_graph_changed:
+            if application_graph_changed:
                 algorithms.append("RoutingSetup")
                 # Get the executable targets
                 algorithms.append("GraphBinaryGatherer")
 
         if helpful_functions.read_config(
                 self._config, "Mapping", "loading_algorithms") is not None \
-                and self._application_graph_changed:
+                and application_graph_changed:
             algorithms.extend(
                 self._config.get("Mapping", "loading_algorithms").split(","))
         algorithms.extend(self._extra_load_algorithms)
@@ -1722,7 +1718,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             optional_algorithms.append("HostExecuteDataSpecification")
             if self._config.getboolean(
                     "Reports", "write_memory_map_report") and \
-                    self._application_graph_changed:
+                    application_graph_changed:
                 algorithms.append("MemoryMapOnHostReport")
                 algorithms.append("MemoryMapOnHostChipReport")
         else:
@@ -1744,7 +1740,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Add reports that depend on compression
         if self._config.getboolean("Reports", "reports_enabled") and \
-                self._application_graph_changed:
+                application_graph_changed:
             routing_tables_needed = False
             if self._config.getboolean("Reports",
                                        "write_routing_table_reports"):
@@ -1761,7 +1757,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         if self._config.getboolean("Machine",
                                    "enable_advanced_monitor_support") \
-                and self._application_graph_changed:
+                and application_graph_changed:
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
