@@ -606,7 +606,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # options names are all lower without _ inside config
                 if (option in ["displayalgorithmtimings",
                                "clear_iobuf_during_run",
-                               "extract_iobuf", "extract_iobuf_during_run"]
+                               "extract_iobuf",
+                               "extract_iobuf_during_run"]
                         or option[:5] == "write"):
                     try:
                         if not self._config.get_bool("Reports", option):
@@ -1200,8 +1201,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("PreAllocateResourcesForLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
-        if self._config.getboolean("Reports", "write_energy_report"):
 
+        if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
                 "EnergyMonitor", "sampling_frequency")
