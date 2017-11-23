@@ -1689,7 +1689,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # The initial inputs are the mapping outputs
         inputs = dict(self._mapping_outputs)
         inputs["WriteMemoryMapReportFlag"] = (
-            self._config.getboolean("Reports", "reports_enabled") and
             self._config.getboolean("Reports", "write_memory_map_report") and
             application_graph_changed
         )
@@ -1887,8 +1886,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             algorithms.append("BufferExtractor")
 
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data")):
+        if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
@@ -1904,8 +1902,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data") and
+        if (self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
@@ -1926,9 +1923,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             run_complete = True
 
             # write provenance to file if necessary
-            if (self._config.getboolean("Reports", "reports_enabled") and
-                    self._config.getboolean(
-                        "Reports", "write_provenance_data") and
+            if (self._config.getboolean(
+                    "Reports", "write_provenance_data") and
                     not self._use_virtual_board and
                     n_machine_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
