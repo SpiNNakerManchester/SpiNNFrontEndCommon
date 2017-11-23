@@ -601,6 +601,21 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                         "has been set to True".format(option))
                     except ValueError:
                         pass
+        elif not self._config.getboolean("Reports", "reportsEnabled"):
+            for option in self._config.options("Reports"):
+                # options names are all lower without _ inside config
+                if (option in ["displayalgorithmtimings",
+                               "clear_iobuf_during_run",
+                               "extract_iobuf", "extract_iobuf_during_run"]
+                        or option[:5] == "write"):
+                    try:
+                        if not self._config.get_bool("Reports", option):
+                            self._config.set("Reports", option, "False")
+                            logger.info(
+                                "As reportsEnabled == \"False\" [Reports] {} "
+                                "has been set to False".format(option))
+                    except ValueError:
+                        pass
 
         if runtime is None:
             if self._config.getboolean(
@@ -1185,8 +1200,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("PreAllocateResourcesForLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report")):
+        if self._config.getboolean("Reports", "write_energy_report"):
 
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
@@ -1500,8 +1514,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
 
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report")):
+        if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append(
                 "InsertChipPowerMonitorsToGraphs")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
@@ -2459,8 +2472,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("ChipIOBufExtractor")
 
             # add extractor of provenance if needed
-            if (self._config.getboolean("Reports", "reportsEnabled") and
-                    self._config.getboolean("Reports", "writeProvenanceData")):
+            if self._config.getboolean("Reports", "writeProvenanceData"):
                 algorithms.append("PlacementsProvenanceGatherer")
                 algorithms.append("RouterProvenanceGatherer")
                 algorithms.append("ProfileDataGatherer")
@@ -2480,9 +2492,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 run_complete = True
 
                 # write provenance to file if necessary
-                if (self._config.getboolean("Reports", "reportsEnabled") and
-                        self._config.getboolean(
-                            "Reports", "writeProvenanceData")):
+                if self._config.getboolean("Reports", "writeProvenanceData"):
                     prov_items = executor.get_item("ProvenanceItems")
                     prov_items.extend(self._pacman_provenance.data_items)
                     self._pacman_provenance.clear()
@@ -2504,8 +2514,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     logger.error("Error when attempting to recover from error",
                                  exc_info=True)
 
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report") and
+        if (self._config.getboolean("Reports", "write_energy_report") and
                 self._buffer_manager is not None):
 
             # create energy report
