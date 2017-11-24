@@ -617,6 +617,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                         "has been set to True".format(option))
                     except ValueError:
                         pass
+        elif not self._config.getboolean("Reports", "reportsEnabled"):
+            for option in self._config.options("Reports"):
+                # options names are all lower without _ inside config
+                if (option in ["displayalgorithmtimings",
+                               "clear_iobuf_during_run",
+                               "extract_iobuf",
+                               "extract_iobuf_during_run"]
+                        or option[:5] == "write"):
+                    try:
+                        if not self._config.get_bool("Reports", option):
+                            self._config.set("Reports", option, "False")
+                            logger.info(
+                                "As reportsEnabled == \"False\" [Reports] {} "
+                                "has been set to False".format(option))
+                    except ValueError:
+                        pass
 
         if runtime is None:
             if self._config.getboolean(
@@ -954,7 +970,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
-                self._do_load()
+                self._do_load(application_graph_changed)
                 loading_done = True
 
         # Run for each of the given steps
@@ -1205,9 +1221,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("PreAllocateResourcesForLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report")):
 
+        if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
                 "EnergyMonitor", "sampling_frequency")
@@ -1525,8 +1540,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
 
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report")):
+        if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append(
                 "InsertChipPowerMonitorsToGraphs")
             inputs['MemorySamplingFrequency'] = self._config.getfloat(
@@ -1695,7 +1709,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             helpful_functions.convert_time_diff_to_total_milliseconds(
                 data_gen_timer.take_sample())
 
-    def _do_load(self):
+    def _do_load(self, application_graph_changed):
         # set up timing
         load_timer = Timer()
         load_timer.start_timing()
@@ -1706,39 +1720,77 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs = dict(self._mapping_outputs)
         tokens = list(self._mapping_tokens)
         inputs["WriteMemoryMapReportFlag"] = (
-            self._config.getboolean("Reports", "reports_enabled") and
-            self._config.getboolean("Reports", "write_memory_map_report")
+            self._config.getboolean("Reports", "write_memory_map_report") and
+            application_graph_changed
         )
+
+        if not application_graph_changed:
+            inputs["ExecutableTargets"] = self._last_run_outputs[
+                "ExecutableTargets"]
+            inputs["LoadedReverseIPTagsToken"] = self._last_run_outputs[
+                "LoadedReverseIPTagsToken"]
+            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
+                "LoadedIPTagsToken"]
+            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
+                "LoadedIPTagsToken"]
+            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
+                "LoadedIPTagsToken"]
 
         algorithms = list()
 
         # add report for extracting routing table from machine report if needed
         # Add algorithm to clear routing tables and set up routing
-        if not self._use_virtual_board:
+        if not self._use_virtual_board and application_graph_changed:
             algorithms.append("RoutingSetup")
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        if helpful_functions.read_config(
-                self._config, "Mapping", "loading_algorithms") is not None:
-            algorithms.extend(
-                self._config.get("Mapping", "loading_algorithms").split(","))
+        loading_algorithm = helpful_functions.read_config(
+            self._config, "Mapping", "loading_algorithms")
+        if loading_algorithm is not None and application_graph_changed:
+            algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
+
+        write_memory_report = self._config.getboolean(
+            "Reports", "write_memory_map_report")
+        if write_memory_report and application_graph_changed:
+            if self._exec_dse_on_host:
+                algorithms.append("MemoryMapOnHostReport")
+                algorithms.append("MemoryMapOnHostChipReport")
+            else:
+                algorithms.append("MemoryMapOnChipReport")
+
+        # Add reports that depend on compression
+        routing_tables_needed = False
+        if application_graph_changed:
+            if self._config.getboolean("Reports",
+                                       "write_routing_table_reports"):
+                routing_tables_needed = True
+                algorithms.append("unCompressedRoutingTableReports")
+                algorithms.append("compressedRoutingTableReports")
+                algorithms.append("comparisonOfRoutingTablesReport")
+            if self._config.getboolean(
+                    "Reports", "write_routing_compression_checker_report"):
+                routing_tables_needed = True
+                algorithms.append("routingCompressionCheckerReport")
+
+        # handle extra monitor functionality
+        enable_advanched_monitor = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        if enable_advanched_monitor and application_graph_changed:
+            algorithms.append("LoadFixedRoutes")
+            algorithms.append("FixedRouteFromMachineReport")
 
         # add optional algorithms
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
+
         if self._exec_dse_on_host:
             optional_algorithms.append("HostExecuteDataSpecification")
-            if self._config.getboolean("Reports", "write_memory_map_report"):
-                optional_algorithms.append("MemoryMapOnHostReport")
-                optional_algorithms.append("MemoryMapOnHostChipReport")
         else:
             optional_algorithms.append("MachineExecuteDataSpecification")
-            if self._config.getboolean("Reports", "write_memory_map_report"):
-                optional_algorithms.append("MemoryMapOnChipReport")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
@@ -1751,26 +1803,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # algorithms needed for loading the binaries to the SpiNNaker machine
         optional_algorithms.append("LoadExecutableImages")
 
-        # Add reports that depend on compression
-        if self._config.getboolean("Reports", "reports_enabled"):
-            routing_tables_needed = False
-            if self._config.getboolean("Reports",
-                                       "write_routing_table_reports"):
-                routing_tables_needed = True
-                algorithms.append("unCompressedRoutingTableReports")
-                algorithms.append("compressedRoutingTableReports")
-                algorithms.append("comparisonOfRoutingTablesReport")
-            if self._config.getboolean(
-                    "Reports", "write_routing_compression_checker_report"):
-                routing_tables_needed = True
-                algorithms.append("routingCompressionCheckerReport")
-            if routing_tables_needed:
-                optional_algorithms.append("RoutingTableFromMachineReport")
-        # handle extra monitor functionality
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support"):
-            optional_algorithms.append("LoadFixedRoutes")
-            optional_algorithms.append("FixedRouteFromMachineReport")
+        # Something probably a report needs the routing tables
+        # This report is one way to get them if done on machine
+        if routing_tables_needed:
+            optional_algorithms.append("RoutingTableFromMachineReport")
 
         # Decide what needs to be done
         required_tokens = ["DataLoaded", "BinariesLoaded"]
@@ -1881,8 +1917,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             algorithms.append("BufferExtractor")
 
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data")):
+        if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
@@ -1898,8 +1933,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("ChipIOBufExtractor")
 
         # add extractor of provenance if needed
-        if (self._config.getboolean("Reports", "reports_enabled") and
-                self._config.getboolean("Reports", "write_provenance_data") and
+        if (self._config.getboolean("Reports", "write_provenance_data") and
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("PlacementsProvenanceGatherer")
@@ -1924,9 +1958,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             run_complete = True
 
             # write provenance to file if necessary
-            if (self._config.getboolean("Reports", "reports_enabled") and
-                    self._config.getboolean(
-                        "Reports", "write_provenance_data") and
+            if (self._config.getboolean(
+                    "Reports", "write_provenance_data") and
                     not self._use_virtual_board and
                     n_machine_time_steps is not None):
                 prov_items = executor.get_item("ProvenanceItems")
@@ -2476,8 +2509,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("ChipIOBufExtractor")
 
             # add extractor of provenance if needed
-            if (self._config.getboolean("Reports", "reportsEnabled") and
-                    self._config.getboolean("Reports", "writeProvenanceData")):
+            if self._config.getboolean("Reports", "writeProvenanceData"):
                 algorithms.append("PlacementsProvenanceGatherer")
                 algorithms.append("RouterProvenanceGatherer")
                 algorithms.append("ProfileDataGatherer")
@@ -2499,9 +2531,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 run_complete = True
 
                 # write provenance to file if necessary
-                if (self._config.getboolean("Reports", "reportsEnabled") and
-                        self._config.getboolean(
-                            "Reports", "writeProvenanceData")):
+                if self._config.getboolean("Reports", "writeProvenanceData"):
                     prov_items = executor.get_item("ProvenanceItems")
                     prov_items.extend(self._pacman_provenance.data_items)
                     self._pacman_provenance.clear()
@@ -2523,8 +2553,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     logger.error("Error when attempting to recover from error",
                                  exc_info=True)
 
-        if (self._config.getboolean("Reports", "reportsEnabled") and
-                self._config.getboolean("Reports", "write_energy_report") and
+        if (self._config.getboolean("Reports", "write_energy_report") and
                 self._buffer_manager is not None):
 
             # create energy report
