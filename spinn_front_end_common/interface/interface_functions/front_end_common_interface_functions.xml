@@ -1,7 +1,7 @@
 <algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
-            https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+        ><!-- xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+            https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd"> -->
     <algorithm name="LoadFixedRoutes">
         <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
         <python_class>LoadFixedRoutes</python_class>
@@ -25,7 +25,7 @@
             <param_name>app_id</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedFixedRoutesToken</param_type>
+            <token part="FixedRoutesLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertEdgesToExtraMonitorFunctionality">
@@ -306,8 +306,6 @@
             <param_name>application_graph</param_name>
             <param_name>graph_mapper</param_name>
         </optional_inputs>
-        <outputs>
-        </outputs>
     </algorithm>
     <algorithm name="InsertLivePacketGatherersToGraphs">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -477,10 +475,8 @@
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-        </outputs>
-        <generated_output_tokens>
             <token part="DSGDataLoaded">DataLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="MachineExecuteDataSpecification">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -509,9 +505,9 @@
             <param_name>transceiver</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
-        <generated_output_tokens>
+        <outputs>
             <token part="DSGDataLoaded">DataLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="LoadExecutableImages">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -534,13 +530,11 @@
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
-        </required_inputs>
-        <required_input_tokens>
             <token>DataLoaded</token>
-        </required_input_tokens>
-        <generated_output_tokens>
+        </required_inputs>
+        <outputs>
             <token part="ApplicationBinariesLoaded">BinariesLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="MachineGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -644,9 +638,9 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
         </required_inputs>
-        <generated_output_tokens>
+        <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="RoutingSetup">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -694,10 +688,10 @@
             <param_name>tags</param_name>
             <param_name>transceiver</param_name>
         </required_inputs>
-        <generated_output_tokens>
+        <outputs>
             <token part="LoadedIPTags">DataLoaded</token>
             <token part="LoadedReverseIPTags">DataLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="TagsLoaderSeparateLists">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -721,10 +715,10 @@
             <param_name>reverse_iptags</param_name>
             <param_name>transceiver</param_name>
         </required_inputs>
-        <generated_output_tokens>
+        <outputs>
             <token part="LoadedIPTags">DataLoaded</token>
             <token part="LoadedReverseIPTags">DataLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="VirtualMachineGenerator">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1026,20 +1020,16 @@
             <param_name>time_scale_factor</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
+            <token>DataLoaded</token>
+            <token>BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
             <param_name>run_until_complete</param_name>
         </optional_inputs>
         <outputs>
             <param_type>NoSyncChanges</param_type>
-        </outputs>
-        <required_input_tokens>
-            <token>DataLoaded</token>
-            <token>BinariesLoaded</token>
-        </required_input_tokens>
-        <generated_output_tokens>
             <token>ApplicationRun</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="PlacementsProvenanceGatherer">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1061,6 +1051,7 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
             <param_name>provenance_data_objects</param_name>
@@ -1068,9 +1059,6 @@
         <outputs>
             <param_type>ProvenanceItems</param_type>
         </outputs>
-        <required_input_tokens>
-            <token>ApplicationRun</token>
-        </required_input_tokens>
     </algorithm>
     <algorithm name="GraphProvenanceGatherer">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1135,6 +1123,7 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>router_tables</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
             <param_name>provenance_data_objects</param_name>
@@ -1144,9 +1133,6 @@
         <outputs>
             <param_type>ProvenanceItems</param_type>
         </outputs>
-        <required_input_tokens>
-            <token>ApplicationRun</token>
-        </required_input_tokens>
     </algorithm>
     <algorithm name="ProvenanceXMLWriter">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1318,10 +1304,8 @@
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
             <param_name>executable_types</param_name>
-        </required_inputs>
-        <required_input_tokens>
             <token>ApplicationRun</token>
-        </required_input_tokens>
+        </required_inputs>
     </algorithm>
     <algorithm name="ChipRuntimeUpdater">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1349,13 +1333,11 @@
             <param_name>app_id</param_name>
             <param_name>executable_types</param_name>
             <param_name>no_machine_timesteps</param_name>
-        </required_inputs>
-        <required_input_tokens>
             <token>BinariesLoaded</token>
-        </required_input_tokens>
-        <generated_output_tokens>
+        </required_inputs>
+        <outputs>
             <token part="SimulationBinaries">ChipRuntimeUpdated</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="ChipProvenanceUpdater">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1396,13 +1378,11 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_types</param_name>
-        </required_inputs>
-        <required_input_tokens>
             <token>ApplicationRun</token>
-        </required_input_tokens>
-        <generated_output_tokens>
+        </required_inputs>
+        <outputs>
             <token>ClearedIOBuf</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
     <algorithm name="ChipIOBufExtractor">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1425,14 +1405,12 @@
             <param_name>transceiver</param_name>
             <param_name>core_subsets</param_name>
             <param_name>provenance_file_path</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
         <outputs>
             <param_type>ErrorMessages</param_type>
             <param_type>WarnMessages</param_type>
         </outputs>
-        <required_input_tokens>
-            <token>ApplicationRun</token>
-        </required_input_tokens>
     </algorithm>
     <algorithm name="EdgeToNKeysMapper">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -1651,10 +1629,8 @@
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>buffer_manager</param_name>
-        </required_inputs>
-        <required_input_tokens>
             <token>ApplicationRun</token>
-        </required_input_tokens>
+        </required_inputs>
     </algorithm>
     <algorithm name="ProfileDataGatherer">
         <python_module>spinn_front_end_common.interface.interface_functions.profile_data_gatherer</python_module>
@@ -1687,10 +1663,8 @@
             <param_name>provenance_file_path</param_name>
             <param_name>run_time_ms</param_name>
             <param_name>machine_time_step</param_name>
-        </required_inputs>
-        <required_input_tokens>
             <token>ApplicationRun</token>
-        </required_input_tokens>
+        </required_inputs>
     </algorithm>
     <algorithm name="WriteMemoryIOData">
         <python_module>spinn_front_end_common.interface.interface_functions.write_memory_io_data</python_module>
@@ -1744,9 +1718,7 @@
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-        </outputs>
-        <generated_output_tokens>
             <token part="MemoryIODataLoaded">DataLoaded</token>
-        </generated_output_tokens>
+        </outputs>
     </algorithm>
 </algorithms>

@@ -47,7 +47,7 @@ class HostExecuteDataSpecification(object):
             processor_to_app_data_base_address[x, y, p] = self._execute(
                 transceiver, machine, app_id, x, y, p, data_spec_file_path)
 
-        return processor_to_app_data_base_address, True
+        return processor_to_app_data_base_address
 
     @staticmethod
     def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
