@@ -60,7 +60,8 @@ def get_recording_data_size(recorded_region_sizes):
 
 def get_minimum_buffer_sdram(
         buffered_sdram_per_timestep, n_machine_time_steps=None,
-        minimum_sdram_for_buffering=(1024 * 1024)):
+        minimum_sdram_for_buffering=(1024 * 1024),
+        extra_buffered_sdram=None):
     """ Get the minimum buffer SDRAM
 
     :param buffered_sdram_per_timestep:\
@@ -74,6 +75,9 @@ def get_minimum_buffer_sdram(
     :param minimum_sdram_for_buffering:\
         The minimum SDRAM to reserve per recorded region for buffering
     :type minimum_sdram_for_buffering: int
+    :param extra_buffered_sdram: Where the buffered_sdram_per_timestep is\
+        an average value this the extra to round up for safety
+    :type extra_buffered_sdram: list of int of None
     :rtype: list of int
     """
 
@@ -83,18 +87,22 @@ def get_minimum_buffer_sdram(
     #   size and the minimum_sdram_for_buffering
     # - If the sdram is 0 then 0
     # - If n_machine_time_steps is None then minimum_sdram_for_buffering
+    if extra_buffered_sdram is None:
+        extra_buffered_sdram = [0 for _ in buffered_sdram_per_timestep]
     return [
-        min(sdram * n_machine_time_steps, minimum_sdram_for_buffering)
+        min(sdram * n_machine_time_steps + extra, minimum_sdram_for_buffering)
         if sdram > 0 and n_machine_time_steps is not None
         else 0 if sdram == 0 else minimum_sdram_for_buffering
-        for sdram in buffered_sdram_per_timestep
+        for sdram, extra in
+        zip(buffered_sdram_per_timestep, extra_buffered_sdram)
     ]
 
 
 def get_recording_region_sizes(
         buffered_sdram_per_timestep, n_machine_time_steps=None,
         minimum_sdram_for_buffering=(1024 * 1024),
-        maximum_sdram_for_buffering=None, use_auto_pause_and_resume=True):
+        maximum_sdram_for_buffering=None, use_auto_pause_and_resume=True,
+        extra_buffered_sdram=None):
     """ Get the size of each recording region to be passed in to\
         get_recording_resources, based on the details of the simulation
 
@@ -115,6 +123,9 @@ def get_recording_region_sizes(
     :param use_auto_pause_and_resume:\
         True if automatic pause and resume is to be used for buffering
     :type use_auto_pause_and_resume: bool
+    :param extra_buffered_sdram: Where the buffered_sdram_per_timestep is\
+        an average value this the extra to round up for safety
+    :type extra_buffered_sdram: list of int of None
     :rtype: list of int
     """
     if use_auto_pause_and_resume:
@@ -122,13 +133,13 @@ def get_recording_region_sizes(
         # If auto pause and resume is enabled, find the minimum sizes
         return get_minimum_buffer_sdram(
             buffered_sdram_per_timestep, n_machine_time_steps,
-            minimum_sdram_for_buffering)
+            minimum_sdram_for_buffering, extra_buffered_sdram)
     else:
 
         # If auto pause and resume is disabled, use the actual region size
         return get_recorded_region_sizes(
             n_machine_time_steps, buffered_sdram_per_timestep,
-            maximum_sdram_for_buffering)
+            maximum_sdram_for_buffering, extra_buffered_sdram)
 
 
 def get_recording_resources(
@@ -172,7 +183,7 @@ def get_recording_resources(
 
 def get_recorded_region_sizes(
         n_machine_time_steps, buffered_sdram_per_timestep,
-        maximum_sdram_for_buffering=None):
+        maximum_sdram_for_buffering=None, extra_buffered_sdram=None):
     """ Get the size of each recording region to be passed in to\
         get_recording_header_array
 
@@ -185,19 +196,25 @@ def get_recorded_region_sizes(
     :param maximum_sdram_for_buffering:\
         The maximum size of each buffer, or None if no maximum
     :type maximum_sdram_for_buffering: None or list of int
+    :param extra_buffered_sdram: Where the buffered_sdram_per_timestep is\
+        an average value this the extra to round up for safety
+    :type extra_buffered_sdram: list of int of None
     :rtype: list of int
     """
 
     # The size of each buffer is the actual size needed for the number of
     # timesteps, or the maximum for buffering if a maximum is specified
+    if extra_buffered_sdram is None:
+        extra_buffered_sdram = [0 for _ in buffered_sdram_per_timestep]
     if n_machine_time_steps is None:
         data = [0 for _ in buffered_sdram_per_timestep]
         return data
     return [
-        n_machine_time_steps * sdram
+        n_machine_time_steps * sdram + extra_buffered_sdram[i]
         if (maximum_sdram_for_buffering is None or
             maximum_sdram_for_buffering[i] == 0 or
-            (n_machine_time_steps * sdram) < maximum_sdram_for_buffering[i])
+            (n_machine_time_steps * sdram + extra_buffered_sdram[i])
+            < maximum_sdram_for_buffering[i])
         else maximum_sdram_for_buffering[i]
         for i, sdram in enumerate(buffered_sdram_per_timestep)
     ]
