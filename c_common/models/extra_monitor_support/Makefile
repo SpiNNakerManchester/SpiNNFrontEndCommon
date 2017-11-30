@@ -5,8 +5,6 @@ SOURCES = extra_monitor_support.c
 CFLAGS += -Ofast
 LFLAGS += -Ofast -Wl,--wrap=sark_int
 
-
 SPINN_LIBS := $(SPINN_DIRS)/lib/libsark.a
 
-include ../Makefile.common
-
+include ../common.mk
