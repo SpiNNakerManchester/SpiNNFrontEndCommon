@@ -89,7 +89,7 @@ class LivePacketGather(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required,
+            self, vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return LivePacketGatherMachineVertex(
             label, self._use_prefix, self._key_prefix, self._prefix_type,
@@ -115,7 +115,7 @@ class LivePacketGather(
         return 1
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
+    def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
             sdram=SDRAMResource(
                 LivePacketGatherMachineVertex.get_sdram_usage()),

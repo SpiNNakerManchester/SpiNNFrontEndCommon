@@ -1,3 +1,6 @@
+from .chip_power_monitor_application_vertex \
+    import ChipPowerMonitorApplicationVertex
+from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 from .command_sender import CommandSender
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 from .live_packet_gather import LivePacketGather
@@ -8,6 +11,8 @@ from .reverse_ip_tag_multicast_source_machine_vertex \
     import ReverseIPTagMulticastSourceMachineVertex
 
 __all__ = ["CommandSender", "CommandSenderMachineVertex",
+           "ChipPowerMonitorApplicationVertex",
+           "ChipPowerMonitorMachineVertex",
            "LivePacketGather", "LivePacketGatherMachineVertex",
            "MultiCastCommand", "ReverseIpTagMultiCastSource",
            "ReverseIPTagMulticastSourceMachineVertex"]

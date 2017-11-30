@@ -31,7 +31,8 @@ endef
 
 # Convert the objs into the correct format to work here
 OBJS := $(abspath $(SOURCES))
-$(foreach dir, $(sort $(SOURCE_DIRS)), $(eval OBJS := $(OBJS:$(abspath $(dir))/%.c=$(BUILD_DIR)%.o)))
+$(foreach dir, $(sort $(SOURCE_DIRS)), $(eval OBJS := \
+	$(OBJS:$(abspath $(dir))/%.c=$(BUILD_DIR)%.o)))
 $(foreach dir, $(sort $(SOURCE_DIRS)), $(eval $(call define-build-code,$(dir))))
 OBJECTS += $(OBJS)
 

@@ -386,7 +386,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
                 # Work with a single list
                 key_list = [
-                    key + key_to_send for key in range(self._n_keys)]
+                    key + key_to_send for key in xrange(self._n_keys)]
                 for timeStamp in sorted(self._send_buffer_times):
                     time_stamp_in_ticks = int(math.ceil(
                         float(int(timeStamp * 1000.0)) /
@@ -568,9 +568,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             "n_machine_time_steps"
         })
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            machine_graph, routing_info, tags, first_machine_time_step,
-            n_machine_time_steps):
+            self, spec, placement,  # @UnusedVariable
+            machine_time_step, time_scale_factor, machine_graph, routing_info,
+            tags, first_machine_time_step, n_machine_time_steps):
 
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(
@@ -609,7 +609,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
+    def get_outgoing_partition_constraints(self, partition):  # @UnusedVariable
         if self._virtual_key is not None:
             return list([FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])
