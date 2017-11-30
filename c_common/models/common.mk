@@ -9,4 +9,4 @@ SOURCE_DIR := $(abspath $(CURRENT_DIR))
 SOURCE_DIRS += $(SOURCE_DIR)
 APP_OUTPUT_DIR := $(abspath $(CURRENT_DIR)../../spinn_front_end_common/common_model_binaries/)/
 
-include $(CURRENT_DIR)../front_end_common_lib/Makefile.SpiNNFrontEndCommon
+include $(CURRENT_DIR)../front_end_common_lib/FrontEndCommon.mk
