@@ -5,8 +5,7 @@ from pacman.model.resources import SpecificChipSDRAMResource
 from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
 from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
-    import LivePacketGatherMachineVertex as LPGVertex, \
-    LivePacketGatherMachineVertex
+    import LivePacketGatherMachineVertex as LPGVertex
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -70,8 +69,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     board=chip.ip_address,
                     ip_address=lpg_params.hostname, port=lpg_params.port,
                     strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
-                    traffic_identifier=(
-                        LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER)))
+                    traffic_identifier=LPGVertex.TRAFFIC_IDENTIFIER))
 
         if sdram_reqs > 0:
             sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))

@@ -84,12 +84,9 @@ class DatabaseWriter(object):
                 problem space.
         :return: a bool which represents if the database is needed
         """
-        for vertex in machine_graph.vertices:
-            if (isinstance(vertex, AbstractSupportsDatabaseInjection) and
-                    vertex.is_in_injection_mode):
-                return True
-        else:
-            return False
+        return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
+                   and vertex.is_in_injection_mode
+                   for vertex in machine_graph.vertices)
 
     @property
     def database_path(self):

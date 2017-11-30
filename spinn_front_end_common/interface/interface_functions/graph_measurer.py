@@ -2,7 +2,8 @@ from spinn_utilities.progress_bar import ProgressBar
 
 # pacman imports
 from pacman.utilities.utility_objs import ResourceTracker
-from pacman.utilities.algorithm_utilities import placer_algorithm_utilities
+from pacman.utilities.algorithm_utilities.placer_algorithm_utilities \
+    import sort_vertices_by_known_constraints
 
 # general imports
 import logging
@@ -28,9 +29,8 @@ class GraphMeasurer(object):
         # check that the algorithm can handle the constraints
         ResourceTracker.check_constraints(machine_graph.vertices)
 
-        ordered_vertices = \
-            placer_algorithm_utilities.sort_vertices_by_known_constraints(
-                machine_graph.vertices)
+        ordered_vertices = sort_vertices_by_known_constraints(
+            machine_graph.vertices)
 
         # Iterate over vertices and allocate
         progress = ProgressBar(machine_graph.n_vertices, "Measuring the graph")

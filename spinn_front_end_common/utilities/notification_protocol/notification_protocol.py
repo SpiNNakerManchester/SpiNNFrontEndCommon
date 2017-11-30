@@ -58,16 +58,14 @@ class NotificationProtocol(object):
         if self._wait_for_read_confirmation:
             self.wait_for_confirmation()
         eieio_command_message = NotificationProtocolStartResume()
-        for connection in self._data_base_message_connections:
+        for c in self._data_base_message_connections:
             try:
-                connection.send_eieio_message(eieio_command_message)
+                c.send_eieio_message(eieio_command_message)
             except Exception:
                 logger.warning(
-                    "*** Failed to send start/resume notification to"
-                    " external application on"
-                    " {}:{} about the simulation ***".format(
-                        connection.remote_ip_address,
-                        connection.remote_port))
+                    "*** Failed to send start/resume notification to external "
+                    "application on {}:{} about the simulation ***".format(
+                        c.remote_ip_address, c.remote_port), exc_info=True)
 
     def send_stop_pause_notification(self):
         """ sends the pause / stop notifications when the script has either\
@@ -78,16 +76,14 @@ class NotificationProtocol(object):
         logger.info("*** Sending pause / stop message to external sources "
                     "to state the simulation has been paused or stopped. ***")
         eieio_command_message = NotificationProtocolPauseStop()
-        for connection in self._data_base_message_connections:
+        for c in self._data_base_message_connections:
             try:
-                connection.send_eieio_message(eieio_command_message)
+                c.send_eieio_message(eieio_command_message)
             except Exception:
                 logger.warning(
-                    "*** Failed to send stop/pause notification to"
-                    " external application on"
-                    " {}:{} about the simulation ***".format(
-                        connection.remote_ip_address,
-                        connection.remote_port))
+                    "*** Failed to send stop/pause notification to external "
+                    "application on {}:{} about the simulation ***".format(
+                        c.remote_ip_address, c.remote_port), exc_info=True)
 
     # noinspection PyPep8
     def send_read_notification(self, database_path):
@@ -112,58 +108,54 @@ class NotificationProtocol(object):
 
         """
         # noinspection PyBroadException
-        if database_path is not None:
+        try:
+            if database_path is not None:
+                self._do_read_notify(database_path)
+        except Exception:
+            logger.warning("problem when sending DB notification",
+                           exc_info=True)
+
+    def _do_read_notify(self, database_path):
+        self._sent_visualisation_confirmation = True
+
+        # add file path to database into command message.
+        number_of_chars = len(database_path)
+        if number_of_chars > MAX_DATABASE_PATH_LENGTH:
+            raise ConfigurationException(
+                "The file path to the database is too large to be transmitted "
+                "via the command packet, please set the file path manually "
+                "and set the .cfg parameter [Database] send_file_path to "
+                "False")
+        message = DatabaseConfirmation(database_path)
+
+        # Send command and wait for response
+        logger.info(
+            "*** Notifying external sources that the database is ready for "
+            "reading ***")
+
+        # noinspection PyBroadException
+        for c in self._data_base_message_connections:
             try:
-                self._sent_visualisation_confirmation = True
-
-                # add file path to database into command message.
-                number_of_chars = len(database_path)
-                if number_of_chars > MAX_DATABASE_PATH_LENGTH:
-                    raise ConfigurationException(
-                        "The file path to the database is too large to be "
-                        "transmitted via the command packet, "
-                        "please set the file path manually and "
-                        "set the .cfg parameter [Database] send_file_path "
-                        "to False")
-                eieio_command_message = DatabaseConfirmation(database_path)
-
-                # Send command and wait for response
-                logger.info(
-                    "*** Notifying external sources that the database is "
-                    "ready for reading ***")
-
-                # noinspection PyBroadException
-                for connection in self._data_base_message_connections:
-                    try:
-                        connection.send_eieio_message(eieio_command_message)
-                    except Exception:
-                        logger.warning(
-                            "*** Failed to notify external application on"
-                            " {}:{} about the database ***".format(
-                                connection.remote_ip_address,
-                                connection.remote_port))
-
-                # if the system needs to wait, try receiving a packet back
-                if self._wait_for_read_confirmation:
-                    for connection in self._data_base_message_connections:
-                        try:
-                            connection.receive_eieio_message()
-                            logger.info(
-                                "*** Confirmation from {}:{} received,"
-                                " continuing ***".format(
-                                    connection.remote_ip_address,
-                                    connection.remote_port))
-                        except Exception:
-                            logger.warning(
-                                "*** Failed to receive notification from"
-                                " external application on"
-                                " {}:{} about the database ***".format(
-                                    connection.remote_ip_address,
-                                    connection.remote_port))
-
+                c.send_eieio_message(message)
             except Exception:
-                logger.warn("problem when sending DB notification",
-                            exc_info=True)
+                logger.warning(
+                    "*** Failed to notify external application on {}:{} "
+                    "about the database ***".format(
+                        c.remote_ip_address, c.remote_port), exc_info=True)
+
+        # if the system needs to wait, try receiving a packet back
+        for c in self._data_base_message_connections:
+            try:
+                if self._wait_for_read_confirmation:
+                    c.receive_eieio_message()
+                    logger.info(
+                        "*** Confirmation from {}:{} received, continuing ***"
+                        .format(c.remote_ip_address, c.remote_port))
+            except Exception:
+                logger.warning(
+                    "*** Failed to receive notification from external "
+                    "application on {}:{} about the database ***".format(
+                        c.remote_ip_address, c.remote_port), exc_info=True)
 
     def close(self):
         """ Closes the thread pool

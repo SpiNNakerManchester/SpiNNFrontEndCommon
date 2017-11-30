@@ -1,8 +1,6 @@
 # spinn front end common imports
-from spinn_front_end_common.utility_models.live_packet_gather \
-    import LivePacketGather
-from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
-    import LivePacketGatherMachineVertex
+from spinn_front_end_common.utility_models \
+    import LivePacketGather, LivePacketGatherMachineVertex
 
 # pacman imports
 from pacman.model.graphs.common import Slice
