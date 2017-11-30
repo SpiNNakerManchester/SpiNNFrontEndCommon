@@ -31,7 +31,8 @@ endef
 
 # Convert the objs into the correct format to work here
 OBJS := $(abspath $(SOURCES))
-$(foreach dir, $(sort $(SOURCE_DIRS)), $(eval OBJS := $(OBJS:$(abspath $(dir))/%.c=$(BUILD_DIR)%.o)))
+$(foreach dir, $(sort $(SOURCE_DIRS)), $(eval OBJS := \
+	$(OBJS:$(abspath $(dir))/%.c=$(BUILD_DIR)%.o)))
 $(foreach dir, $(sort $(SOURCE_DIRS)), $(eval $(call define-build-code,$(dir))))
 OBJECTS += $(OBJS)
 
@@ -43,7 +44,8 @@ PROFILER := PROFILER_DISABLED
 SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | (md5sum 2>/dev/null || md5) | cut -c 1-8)
 
-CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(OTIME) -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
+CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(OTIME) \
+	-DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
 include $(SPINN_DIRS)/make/Makefile.common
 
@@ -51,4 +53,5 @@ all: $(APP_OUTPUT_DIR)$(APP).aplx
 
 # Tidy and cleaning dependencies
 clean:
-	$(RM) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(APP_OUTPUT_DIR)$(APP).aplx
+	$(RM) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt \
+		$(APP_OUTPUT_DIR)$(APP).aplx
