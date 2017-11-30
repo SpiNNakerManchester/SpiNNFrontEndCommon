@@ -1,7 +1,8 @@
 <algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
-            https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+            https://raw.githubusercontent.com/SpiNNakerManchester/SupportScripts/master/xml-support/algorithms.xsd">
+       <!-- https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd -->
     <algorithm name="LoadFixedRoutes">
         <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
         <python_class>LoadFixedRoutes</python_class>
