@@ -36,8 +36,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         """
 
         progress = ProgressBar(
-            len(list(machine.chips)) +
-            len(list(machine.ethernet_connected_chips)),
+            machine.n_chips + len(list(machine.ethernet_connected_chips)),
             "Inserting extra monitors into graphs")
 
         vertex_to_ethernet_connected_chip_mapping = dict()
