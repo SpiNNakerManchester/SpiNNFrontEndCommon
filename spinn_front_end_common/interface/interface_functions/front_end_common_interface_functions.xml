@@ -2,6 +2,36 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="ProcessPartitionConstraints">
+        <python_module>spinn_front_end_common.interface.interface_functions.process_partition_constraints</python_module>
+        <python_class>ProcessPartitionConstraints</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </input_definitions>
+        <optional_inputs>
+            <one_of>
+                <all_of>
+                    <param_name>graph_mapper</param_name>
+                    <param_name>application_graph</param_name>
+                    <param_name>machine_graph</param_name>
+                </all_of>
+                <all_of>
+                    <param_name>machine_graph</param_name>
+                </all_of>
+            </one_of>
+        </optional_inputs>
+    </algorithm>
     <algorithm name="LoadFixedRoutes">
         <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
         <python_class>LoadFixedRoutes</python_class>

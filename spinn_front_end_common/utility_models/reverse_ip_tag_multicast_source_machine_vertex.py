@@ -123,7 +123,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 default, any board is chosen)
         :param receive_port: The port on the board that will listen for\
                 incoming event packets (default is to disable this feature;\
-                set a value to enable it)
+                set a value to enable it, or set the reserve_reverse_ip_tag\
+                parameter to True if a random port is to be used)
         :param receive_sdp_port: The SDP port to listen on for incoming event\
                 packets (defaults to 1)
         :param receive_tag: The IP tag to use for receiving live events\
@@ -151,6 +152,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 send buffer is specified)
         :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
+        :param reserve_reverse_ip_tag: True if the source should set up a tag\
+                through which it can receive packets; if port is set to None\
+                this can be used to enable the reception of packets on a\
+                randomly assigned port, which can be read from the database
         """
         MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
@@ -220,7 +225,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._buffer_notification_tag = buffer_notification_tag
 
         # set flag for checking if in injection mode
-        self._in_injection_mode = receive_port is not None
+        self._in_injection_mode = \
+            receive_port is not None or reserve_reverse_ip_tag
 
         # Sort out the keys to be used
         self._n_keys = n_keys
