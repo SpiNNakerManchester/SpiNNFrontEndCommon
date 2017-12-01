@@ -33,7 +33,7 @@ static resume_callback_t stored_resume_function = NULL;
 static address_t stored_provenance_data_address = NULL;
 
 //! the list of SDP callbacks for ports
-static callback_t sdp_callback[NUM_SDP_PORTS];
+static callback_t sdp_callbacks[NUM_SDP_PORTS];
 
 //! the list of DMA callbacks for dma complete callbacks
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
@@ -216,9 +216,9 @@ static NOINLINE void scp_callback(
 static NOINLINE void sdp_callback(
 	uint mailbox, uint port)
 {
-    if (sdp_callback[port] != NULL) {
+    if (sdp_callbacks[port] != NULL) {
         // if a callback is associated with the port, process it
-        sdp_callback[port](mailbox, port);
+        sdp_callbacks[port](mailbox, port);
     } else {
         // if no callback is associated, dump the received packet
         sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -229,20 +229,20 @@ static NOINLINE void sdp_callback(
 bool simulation_sdp_callback_on(
 	uint sdp_port, callback_t callback)
 {
-    if (sdp_callback[sdp_port] != NULL) {
+    if (sdp_callbacks[sdp_port] != NULL) {
         log_error("Cannot allocate SDP callback on port %d as its already "
         	"been allocated.", sdp_port);
         return false;
     }
 
-    sdp_callback[sdp_port] = callback;
+    sdp_callbacks[sdp_port] = callback;
     return true;
 }
 
 void simulation_sdp_callback_off(
 	uint sdp_port)
 {
-    sdp_callback[sdp_port] = NULL;
+    sdp_callbacks[sdp_port] = NULL;
 }
 
 //! \brief handles the dma transfer done callbacks interface.
