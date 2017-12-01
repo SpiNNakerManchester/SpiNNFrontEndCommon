@@ -112,19 +112,17 @@ class RouterProvenanceGatherer(object):
                     extra_monitor_cores_for_data=extra_monitor_vertices,
                     transceiver=txrx)
 
-        for router_table in sorted(
+        for router_table in progress.over(sorted(
                 router_tables.routing_tables,
-                key=lambda table: (table.x, table.y)):
+                key=lambda table: (table.x, table.y)), False):
             self._write_router_table_diagnostic(
                 txrx, machine, router_table.x, router_table.y, seen_chips,
                 router_table, items, reinjection_data)
-            progress.update()
 
-        for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):
+        for chip in progress.over(sorted(
+                machine.chips, key=lambda c: (c.x, c.y))):
             self._write_router_chip_diagnostic(
                 txrx, chip, seen_chips, items, reinjection_data)
-            progress.update()
-        progress.end()
         return items
 
     def _write_router_table_diagnostic(
