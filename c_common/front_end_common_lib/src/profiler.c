@@ -13,7 +13,9 @@ uint32_t *profiler_output = NULL;
 //---------------------------------------
 // Functions
 //---------------------------------------
-void profiler_init(uint32_t* data_region) {
+void profiler_init(
+	uint32_t* data_region)
+{
     log_info("Reading profile setup from 0x%08x", data_region);
     profiler_samples_remaining = data_region[0];
     profiler_count = &data_region[0];
@@ -31,10 +33,11 @@ void profiler_init(uint32_t* data_region) {
 }
 
 //---------------------------------------
-void profiler_finalise() {
+void profiler_finalise(void)
+{
     uint32_t words_written = (profiler_output - profiler_count) - 1;
+
     *profiler_count = words_written;
-    log_info(
-        "Profiler wrote %u bytes to 0x%08x",
-        (words_written * 4) + 4, profiler_count);
+    log_info("Profiler wrote %u bytes to 0x%08x",
+	    (words_written * 4) + 4, profiler_count);
 }

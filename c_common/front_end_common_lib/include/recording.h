@@ -12,10 +12,10 @@
 #include <spin1_api.h>
 #include <buffered_eieio_defs.h>
 
-#define RECORDING_DMA_COMPLETE_TAG_ID 15
+#define RECORDING_DMA_COMPLETE_TAG_ID	15
 
 //! \brief Callback for recording completion.
-typedef void (*recording_complete_callback_t) ();
+typedef void (*recording_complete_callback_t) (void);
 
 typedef struct {
     uint16_t eieio_header_command;
@@ -54,7 +54,8 @@ typedef struct {
 //! \param[in] channel The channel to check
 //! \return True if the channel is enabled, false otherwise
 inline bool recording_is_channel_enabled(
-        uint32_t recording_flags, uint8_t channel) {
+        uint32_t recording_flags, uint8_t channel)
+{
     return (recording_flags & (1 << channel)) != 0;
 }
 

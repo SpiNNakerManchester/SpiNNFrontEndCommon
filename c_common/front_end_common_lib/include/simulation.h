@@ -14,26 +14,32 @@
 #include "common-typedefs.h"
 #include <spin1_api.h>
 
-// constant for how many dma ids you can use (caps the values of the tags as
-// well)
-#define MAX_DMA_CALLBACK_TAG 16
+// How many DMA IDs can be used (caps the values of the tags as well)
+#define MAX_DMA_CALLBACK_TAG	16
 
 // the position and human readable terms for each element from the region
 // containing the timing details.
-typedef enum region_elements{
-    APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD,
-    SIMULATION_CONTROL_SDP_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
+typedef enum region_elements {
+    APPLICATION_MAGIC_NUMBER,
+    SIMULATION_TIMER_PERIOD,
+    SIMULATION_CONTROL_SDP_PORT,
+    SIMULATION_N_TIMING_DETAIL_WORDS
 } region_elements;
 
 //! elements that are always grabbed for provenance if possible when requested
-typedef enum provenance_data_elements{
-    TRANSMISSION_EVENT_OVERFLOW, CALLBACK_QUEUE_OVERLOADED,
-    DMA_QUEUE_OVERLOADED, TIMER_TIC_HAS_OVERRUN,
-    MAX_NUMBER_OF_TIMER_TIC_OVERRUN, PROVENANCE_DATA_ELEMENTS
+typedef enum provenance_data_elements {
+    TRANSMISSION_EVENT_OVERFLOW,
+    CALLBACK_QUEUE_OVERLOADED,
+    DMA_QUEUE_OVERLOADED,
+    TIMER_TIC_HAS_OVERRUN,
+    MAX_NUMBER_OF_TIMER_TIC_OVERRUN,
+    PROVENANCE_DATA_ELEMENTS
 } provenance_data_elements;
 
-typedef enum simulation_commands{
-    CMD_STOP = 6, CMD_RUNTIME = 7, PROVENANCE_DATA_GATHERING = 8,
+typedef enum simulation_commands {
+    CMD_STOP = 6,
+    CMD_RUNTIME = 7,
+    PROVENANCE_DATA_GATHERING = 8,
     IOBUF_CLEAR = 9
 } simulation_commands;
 
@@ -41,11 +47,11 @@ typedef enum simulation_commands{
 typedef void (*prov_callback_t)(address_t);
 
 //! the definition of the callback used by pause and resume
-typedef void (*resume_callback_t)();
+typedef void (*resume_callback_t)(void);
 
 //! the definition of the callback used by pause and resume when exit command
 //! is sent and models want to do cleaning up
-typedef void (*exit_callback_t)();
+typedef void (*exit_callback_t)(void);
 
 //! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
@@ -80,33 +86,37 @@ bool simulation_initialise(
 //!        stored
 //! \param[in] provenance_data_address: the address where provenance data should
 //!            be stored
-void simulation_set_provenance_data_address(address_t provenance_data_address);
+void simulation_set_provenance_data_address(
+	address_t provenance_data_address);
 
 //! \brief Set an additional callback function to store extra provenance data
 //! \param[in] provenance_function: function to call for extra provenance data
 //! \param[in] provenance_data_address: the address where provenance data should
 //!            be stored
 void simulation_set_provenance_function(
-        prov_callback_t provenance_function, address_t provenance_data_address);
+        prov_callback_t provenance_function,
+	address_t provenance_data_address);
 
 //! \brief Set an additional function to call before exiting the binary when
 //!        running without a fixed duration of execution
 //! \param[in] exit_function: function to call when the host tells the
 //!            simulation to exit. Executed before API exit.
-void simulation_set_exit_function(exit_callback_t exit_function);
+void simulation_set_exit_function(
+	exit_callback_t exit_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
-void simulation_handle_pause_resume(resume_callback_t resume_function);
+void simulation_handle_pause_resume(
+	resume_callback_t resume_function);
 
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
-void simulation_exit();
+void simulation_exit(void);
 
 //! \brief Starts the simulation running, returning when it is complete,
-void simulation_run();
+void simulation_run(void);
 
 //! \brief Registers an additional SDP callback on a given SDP port.  This is
 //!        required when using simulation_register_sdp_callback, as this will
@@ -119,16 +129,19 @@ bool simulation_sdp_callback_on(
 
 //! \brief disables SDP callbacks on the given port
 //| \param[in] sdp_port The SDP port to disable callbacks for
-void simulation_sdp_callback_off(uint sdp_port);
+void simulation_sdp_callback_off(
+	uint sdp_port);
 
-//! \brief registers a dma transfer callback to the simulation system
-//! \param[in] tag: the dma transfer tag to register against
+//! \brief registers a DMA transfer callback to the simulation system
+//! \param[in] tag: the DMA transfer tag to register against
 //! \param[in] callback: the callback to register for the given tag
 //! \return true if successful, false otherwise
-bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback);
+bool simulation_dma_transfer_done_callback_on(
+	uint tag, callback_t callback);
 
-//! \brief turns off a registered callback for a given dma transfer done tag
-//! \param[in] tag: the dma transfer tag to de-register
-void simulation_dma_transfer_done_callback_off(uint tag);
+//! \brief turns off a registered callback for a given DMA transfer done tag
+//! \param[in] tag: the DMA transfer tag to de-register
+void simulation_dma_transfer_done_callback_off(
+	uint tag);
 
 #endif // _SIMULATION_H_
