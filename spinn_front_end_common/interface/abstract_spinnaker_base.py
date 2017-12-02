@@ -1091,13 +1091,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
             total_run_timesteps += self._current_run_timesteps
-            machine_time_steps = (
-                (total_run_timesteps * 1000.0) / self._machine_time_step)
-            if machine_time_steps != int(machine_time_steps):
-                logger.warn(
-                    "The runtime and machine time step combination result in "
-                    "a fractional number of machine time steps")
-            self._no_machine_time_steps = int(math.ceil(machine_time_steps))
+            self._no_machine_time_steps = total_run_timesteps
         else:
             self._no_machine_time_steps = None
             for vertex in self._application_graph.vertices:
