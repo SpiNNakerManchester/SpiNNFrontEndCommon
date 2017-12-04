@@ -134,7 +134,7 @@ class RouterProvenanceGatherer(object):
                 seen_chips.add((x, y))
                 reinjection_status = None
                 if reinjection_data is not None:
-                    reinjection_status = reinjection_data[(chip.x, chip.y)]
+                    reinjection_status = reinjection_data[(x, y)]
                 items.extend(self._write_router_diagnostics(
                     x, y, router_diagnostic, reinjection_status, True,
                     router_table))
