@@ -119,17 +119,12 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>connection_mapping</param_name>
-                <param_type>MCGathererConnectionMapping</param_type>
-            </parameter>
-            <parameter>
                 <param_name>n_cores_to_allocate</param_name>
                 <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
-            <param_name>connection_mapping</param_name>
             <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
@@ -169,7 +164,6 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
-            <param_type>MCGathererConnectionMapping</param_type>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForChipPowerMonitor">

@@ -5,9 +5,8 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models.impl import \
-    MachineDataSpecableVertex
+from spinn_front_end_common.abstract_models \
+    import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.interface.provenance import \
     AbstractProvidesLocalProvenanceData
 from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
@@ -15,19 +14,20 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
-from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 
 import math
 import time
 import struct
 from enum import Enum
+from pacman.executor.injection_decorator import inject_items
 
 
 class DataSpeedUpPacketGatherMachineVertex(
-        MachineVertex, MachineDataSpecableVertex, AbstractHasAssociatedBinary,
-        AbstractProvidesLocalProvenanceData):
+        MachineVertex, AbstractGeneratesDataSpecification,
+        AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
@@ -61,7 +61,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     TIMEOUT_PER_RECEIVE_IN_SECONDS = 1
     TIME_OUT_FOR_SENDING_IN_SECONDS = 0.01
 
-    # command ids for the sdp packets
+    # command ids for the SDP packets
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
@@ -87,25 +87,22 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 
-    def __init__(self, x, y, connection=None, constraints=None):
+    def __init__(self, x, y, ip_address, constraints=None):
         MachineVertex.__init__(
             self,
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
             constraints=constraints)
-        MachineDataSpecableVertex.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
         AbstractProvidesLocalProvenanceData.__init__(self)
 
-        # data holders for the output, and seq nums
+        # data holders for the output, and sequence numbers
         self._view = None
         self._max_seq_num = None
         self._output = None
 
-        # create socket
-        if connection is None:
-            self._connection = UDPConnection(local_host=None)
-        else:
-            self._connection = connection
+        # Create a connection to be used
+        self._connection = SCAMPConnection(
+            chip_x=x, chip_y=y, remote_host=ip_address)
 
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
@@ -113,61 +110,38 @@ class DataSpeedUpPacketGatherMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        return self.resources_required_for_connection(self._connection)
+        return self.static_resources_required()
 
     @staticmethod
-    def resources_required_for_connection(connection):
-        """ used to generate resources required given a UDP connection
-        Exists for giving the app vertex access to the data without clones.
-
-        :param connection: UDP connection for transmissions
-        :return: resource container
-        """
+    def static_resources_required():
         return ResourceContainer(
             sdram=SDRAMResource(
                 constants.SYSTEM_BYTES_REQUIREMENT +
                 DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
             iptags=[IPtagResource(
-                port=connection.local_port, strip_sdp=True,
-                ip_address="localhost")])
+                port=None, strip_sdp=True,
+                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return self.static_get_binary_start_type()
-
-    @staticmethod
-    def static_get_binary_start_type():
-        """ supports application vertex reading without cloning
-
-        :return: type of start type the data speed up packet gatherer is using
-        """
         return ExecutableType.SYSTEM
 
-    @overrides(MachineDataSpecableVertex.generate_machine_data_specification)
-    def generate_machine_data_specification(
-            self, spec, placement, machine_graph, routing_info, iptags,
-            reverse_iptags, machine_time_step, time_scale_factor):
-
-        if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
-            base_key = routing_info.get_first_key_for_edge(
-                list(machine_graph.get_edges_ending_at_vertex(self))[0])
-        else:
-            base_key = self.BASE_KEY
-        self.static_generate_machine_data_specification(
-            spec, base_key, machine_time_step, time_scale_factor, iptags)
-
-    @staticmethod
-    def static_generate_machine_data_specification(
-            spec, base_key, machine_time_step, time_scale_factor, iptags):
-        """ supports application vertices usage. writes the data spec
-
-        :param spec: the data spec object
-        :param base_key: the base key to transmit with
-        :param machine_time_step: machine time step
-        :param time_scale_factor: time scale factor
-        :param iptags: iptags
-        :return: None
-        """
+    @inject_items({
+        "machine_graph": "MemoryMachineGraph",
+        "routing_info": "MemoryRoutingInfos",
+        "tags": "MemoryTags",
+        "machine_time_step": "MachineTimeStep",
+        "time_scale_factor": "TimeScaleFactor"
+    })
+    @overrides(
+        AbstractGeneratesDataSpecification.generate_data_specification,
+        additional_arguments={
+            "machine_graph", "routing_info", "tags",
+            "machine_time_step", "time_scale_factor"
+        })
+    def generate_data_specification(
+            self, spec, placement, machine_graph, routing_info, tags,
+            machine_time_step, time_scale_factor):
 
         # Setup words + 1 for flags + 1 for recording size
         setup_size = constants.SYSTEM_BYTES_REQUIREMENT
@@ -177,20 +151,25 @@ class DataSpeedUpPacketGatherMachineVertex(
             spec, setup_size)
 
         # write data for the simulation data item
-        spec.switch_write_focus(
-            DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.SYSTEM.value)
+        spec.switch_write_focus(self.DATA_REGIONS.SYSTEM.value)
         spec.write_array(simulation_utilities.get_simulation_header_array(
-            DataSpeedUpPacketGatherMachineVertex.static_get_binary_file_name(),
-            machine_time_step, time_scale_factor))
-        spec.switch_write_focus(
-            DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.CONFIG.value)
+            self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
         # the keys for the special cases
+        if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
+            base_key = routing_info.get_first_key_for_edge(
+                list(machine_graph.get_edges_ending_at_vertex(self))[0])
+        else:
+            base_key = self.BASE_KEY
+        spec.switch_write_focus(self.DATA_REGIONS.CONFIG.value)
         spec.write_value(base_key + 1)
         spec.write_value(base_key + 2)
 
-        # locate the tag id for our data
-        spec.write_value(iptags[0].tag)
+        # locate the tag id for our data and update with port
+        iptags = tags.get_ip_tags_for_vertex(self)
+        iptag = iptags[0]
+        iptag.port = self._connection.local_port
+        spec.write_value(iptag.tag)
 
         # End-of-Spec:
         spec.end_specification()
@@ -218,15 +197,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        return self.static_get_binary_file_name()
-
-    @staticmethod
-    def static_get_binary_file_name():
-        """ used for supporting a application vertex that is used as \
-        only a data holder.
-
-        :return: aplex name
-        """
         return "data_speed_up_packet_gatherer.aplx"
 
     @overrides(AbstractProvidesLocalProvenanceData.get_local_provenance_data)
@@ -252,7 +222,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     time_taken, report=False, message=None))
                 times_extracted_the_same_thing += 1
 
-                # handle lost seq nums
+                # handle lost sequence numbers
                 for i, n_lost_seq_nums in enumerate(lost_seq_nums):
                     prov_items.append(ProvenanceDataItem(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
@@ -333,7 +303,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             data=data)
 
         # send
-        transceiver.send_sdp_message(message=message)
+        self._connection.send_sdp_message(message)
 
         # receive
         finished = False
@@ -363,7 +333,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """ determines which sequence numbers we've missed
 
         :param seq_nums: the set already acquired
-        :return: list of missing seq nums
+        :return: list of missing sequence numbers
         """
         missing_seq_nums = list()
         if self._max_seq_num is None:
@@ -379,14 +349,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         retransmits the missing sequence numbers back to the core for \
         retransmission.
 
-        :param seq_nums: the seq nums already received
+        :param seq_nums: the sequence numbers already received
         :param transceiver: spinnman instance
         :param placement: placement instance
         :return: whether all packets are transmitted
         :rtype: bool
         """
-        # locate missing seq nums from pile
-
+        # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
         # self._print_missing(seq_nums)
@@ -402,7 +371,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 float(length_via_format2) /
                 float(self.DATA_PER_FULL_PACKET - 1)))
 
-        # transmit missing seq as a new sdp packet
+        # transmit missing sequence as a new SDP packet
         first = True
         seq_num_offset = 0
         for _ in xrange(n_packets):
@@ -462,7 +431,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                  seq_num_offset + size_of_data_left_to_transmit])
             seq_num_offset += length_left_in_packet
 
-            # build sdp message
+            # build SDP message
             message = SDPMessage(
                 sdp_header=SDPHeader(
                     destination_chip_x=placement.x,
@@ -476,7 +445,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             # send message to core
             transceiver.send_sdp_message(message=message)
 
-            # sleep for ensuring core doesnt lose packets
+            # sleep for ensuring core doesn't lose packets
             time.sleep(self.TIME_OUT_FOR_SENDING_IN_SECONDS)
             # self._print_packet_num_being_sent(packet_count, n_packets)
         return False
@@ -488,14 +457,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data: the packet data
         :param first: if the packet is the first packet, in which has extra \
             data in header
-        :param seq_num: the seq number of the packet
-        :param seq_nums: the list of seq nums received so far
+        :param seq_num: the sequence number of the packet
+        :param seq_nums: the list of sequence numbers received so far
         :param finished: bool which states if finished or not
         :param placement: placement object for location on machine
         :param transceiver: spinnman instance
-        :param lost_seq_nums: the list of n seq nums lost per iteration
-        :return: set of data items, if its the first packet, the list of seq\
-            nums, the seq num received and if its finished
+        :param lost_seq_nums: the list of n sequence numbers lost per iteration
+        :return: set of data items, if its the first packet, the list of\
+            sequence numbers, the sequence number received and if its finished
         """
         # self._print_out_packet_data(data)
         length_of_data = len(data)
@@ -522,7 +491,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     data, self.LENGTH_OF_DATA_SIZE, length_of_data, seq_num,
                     length_of_data, False)
 
-            # deduce max seq num for future use
+            # deduce max sequence number for future use
             self._max_seq_num = self.calculate_max_seq_num()
 
         else:  # some data packet
@@ -542,7 +511,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             else:
                 # this flag can be dropped at some point
                 seq_num = first_packet_element
-                # print "seq num = {}".format(seq_num)
+                # print "sequence number = {}".format(seq_num)
                 if seq_num > self._max_seq_num:
                     raise Exception(
                         "got an insane sequence number. got {} when "
@@ -602,15 +571,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data: the data holder to write from
         :param data_start_position: where in data holder to start from
         :param data_end_position: where in data holder to end
-        :param seq_num: the seq number to figure
+        :param seq_num: the sequence number to figure
         :rtype: None
         """
         if view_end_position > len(self._output):
             raise Exception(
                 "I'm trying to add to my output data, but am trying to add "
                 "outside my acceptable output positions!!!! max is {} and "
-                "I received request to fill to {} for seq num {} from max "
-                "seq num {} length of packet {} and final {}".format(
+                "I received request to fill to {} for sequence num {} from max"
+                " sequence num {} length of packet {} and final {}".format(
                     len(self._output), view_end_position, seq_num,
                     self._max_seq_num, packet_length, is_final))
         self._view[view_start_position: view_end_position] = \
@@ -619,8 +588,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _check(self, seq_nums):
         """ verifying if the sequence numbers are correct.
 
-        :param seq_nums: the received seq nums
-        :return: bool of true or false given if all the seq nums been received
+        :param seq_nums: the received sequence numbers
+        :return: bool of true or false given if all the sequence numbers have\
+            been received
         """
         # hand back
         seq_nums = sorted(seq_nums)
@@ -631,9 +601,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         return len(seq_nums) == max_needed
 
     def calculate_max_seq_num(self):
-        """ deduces the max seq num expected to be received
+        """ deduces the max sequence num expected to be received
 
-        :return: int of the biggest seq num expected
+        :return: int of the biggest sequence num expected
         """
         n_sequence_numbers = 0
         data_left = len(self._output) - (
@@ -648,15 +618,15 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_missing(seq_nums):
-        """ debug printer for the missing seq nums from the pile
+        """ debug printer for the missing sequence numbers from the pile
 
-        :param seq_nums: the seq nums received so far
+        :param seq_nums: the sequence numbers received so far
         :rtype: None
         """
         last_seq_num = 0
         for seq_num in sorted(seq_nums):
             if seq_num != last_seq_num + 1:
-                print "from list im missing seq num {}".format(seq_num)
+                print "from list i'm missing sequence num {}".format(seq_num)
             last_seq_num = seq_num
 
     def _print_out_packet_data(self, data):
@@ -675,7 +645,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
         """ debug helper method for figuring out if everything been received
 
-        :param seq_nums: seq nums received
+        :param seq_nums: sequence numbers received
         :param max_needed: biggest expected to have
         :rtype: None
         """
@@ -685,11 +655,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
-        """ debug helper for printing missing seq num packet transmission
+        """ debug helper for printing missing sequence number packet\
+            transmission
 
         :param packet_count: which packet is being fired
         :param n_packets: how many packets to fire.
         :rtype: None
         """
-        print("send sdp packet with missing seq nums: {} of {}".format(
+        print("send SDP packet with missing sequence numbers: {} of {}".format(
             packet_count + 1, n_packets))
