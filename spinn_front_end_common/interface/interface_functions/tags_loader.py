@@ -19,26 +19,21 @@ class TagsLoader(object):
         """
         # clear all the tags from the Ethernet connection, as nothing should
         # be allowed to use it (no two apps should use the same Ethernet
-        # connection at the same time
+        # connection at the same time)
         progress = ProgressBar(MAX_TAG_ID, "Clearing tags")
-
         for tag_id in progress.over(range(MAX_TAG_ID)):
             transceiver.clear_ip_tag(tag_id)
 
-        progress = None
+        # Use tags object to supply tag info if it is supplied
         if tags is not None:
-            progress = ProgressBar(
-                len(list(tags.ip_tags)) + len(list(tags.reverse_ip_tags)),
-                "Loading Tags")
-            self.load_iptags(tags.ip_tags, transceiver, progress)
-            self.load_reverse_iptags(
-                tags.reverse_ip_tags, transceiver, progress)
-        else:
-            progress = ProgressBar(
-                len(iptags) + len(reverse_iptags),
-                "Loading Tags")
-            self.load_iptags(iptags, transceiver, progress)
-            self.load_reverse_iptags(reverse_iptags, transceiver, progress)
+            iptags = list(tags.ip_tags)
+            reverse_iptags = list(tags.reverse_ip_tags)
+
+        # Load the IPtags and the Reverse IPtags
+        progress = ProgressBar(
+            len(iptags) + len(reverse_iptags), "Loading Tags")
+        self.load_iptags(iptags, transceiver, progress)
+        self.load_reverse_iptags(reverse_iptags, transceiver, progress)
         progress.end()
 
     @staticmethod
@@ -49,9 +44,8 @@ class TagsLoader(object):
         :param transceiver: the transceiver object
         :rtype: None
         """
-        for ip_tag in iptags:
+        for ip_tag in progress_bar.over(iptags, False):
             transceiver.set_ip_tag(ip_tag)
-            progress_bar.update()
 
     @staticmethod
     def load_reverse_iptags(reverse_ip_tags, transceiver, progress_bar):
@@ -61,6 +55,5 @@ class TagsLoader(object):
         :param transceiver: the transceiver object
         :rtype: None
         """
-        for reverse_ip_tag in reverse_ip_tags:
+        for reverse_ip_tag in progress_bar.over(reverse_ip_tags, False):
             transceiver.set_reverse_ip_tag(reverse_ip_tag)
-            progress_bar.update()
