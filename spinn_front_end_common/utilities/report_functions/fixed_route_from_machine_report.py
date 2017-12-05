@@ -37,7 +37,7 @@ class FixedRouteFromMachineReport(object):
         :param machine: the spinnmanchine instance
         :rtype: None
         """
-        progress = ProgressBar(machine.chips, "Writing fixed route report")
+        progress = ProgressBar(machine.n_chips, "Writing fixed route report")
         output.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
             if not chip.virtual:

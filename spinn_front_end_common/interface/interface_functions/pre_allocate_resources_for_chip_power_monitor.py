@@ -32,8 +32,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
         """
 
         progress_bar = ProgressBar(
-            len(list(machine.chips)),
-            "Preallocating resources for chip power monitor")
+            machine.n_chips, "Preallocating resources for chip power monitor")
 
         # store how much SDRAM the LPG uses per core
         resources = ChipPowerMonitorMachineVertex.get_resources(
