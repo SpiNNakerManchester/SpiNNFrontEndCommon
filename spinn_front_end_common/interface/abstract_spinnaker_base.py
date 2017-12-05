@@ -2000,12 +2000,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         logger.info("\n\nAttempting to extract data\n\n")
 
         # Extract router provenance
+        extra_monitor_vertices = None
+        if self._read_config_boolean(
+                "Machine", "enable_advanced_monitor_support"):
+            extra_monitor_vertices = self._last_run_outputs[
+                "MemoryExtraMonitorVertices"]
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
             transceiver=self._txrx, machine=self._machine,
             router_tables=self._router_tables, has_ran=True,
-            extra_monitor_vertices=(
-                self._last_run_outputs["MemoryExtraMonitorVertices"]),
+            extra_monitor_vertices=extra_monitor_vertices,
             placements=self._placements)
 
         # Find the cores that are not in an expected state

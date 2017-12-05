@@ -132,7 +132,9 @@ class RouterProvenanceGatherer(object):
             try:
                 router_diagnostic = txrx.get_router_diagnostics(x, y)
                 seen_chips.add((x, y))
-                reinjection_status = reinjection_data[(x, y)]
+                reinjection_status = None
+                if reinjection_data is not None:
+                    reinjection_status = reinjection_data[(x, y)]
                 items.extend(self._write_router_diagnostics(
                     x, y, router_diagnostic, reinjection_status, True,
                     router_table))
@@ -151,7 +153,9 @@ class RouterProvenanceGatherer(object):
                 if (diagnostic.n_dropped_multicast_packets or
                         diagnostic.n_local_multicast_packets or
                         diagnostic.n_external_multicast_packets):
-                    reinjection_status = reinjection_data[(chip.x, chip.y)]
+                    reinjection_status = None
+                    if reinjection_data is not None:
+                        reinjection_status = reinjection_data[(chip.x, chip.y)]
                     items.extend(self._write_router_diagnostics(
                             chip.x, chip.y, diagnostic, reinjection_status,
                             False, None))
