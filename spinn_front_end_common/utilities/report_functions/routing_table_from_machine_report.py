@@ -3,8 +3,6 @@ from pacman.model.routing_tables import MulticastRoutingTable, \
     MulticastRoutingTables
 from pacman.operations.algorithm_reports import reports
 
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
 import logging
 import os
 
@@ -16,11 +14,7 @@ _FOLDER_NAME = "routing_tables_from_machine"
 class RoutingTableFromMachineReport(object):
     def __call__(
             self, report_default_directory, routing_tables, transceiver,
-            app_id, has_loaded_routing_tables_flag):
-        if not has_loaded_routing_tables_flag:
-            raise ConfigurationException(
-                "This report needs the routing tables to be loaded onto the "
-                "machine before being executed.")
+            app_id):
 
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")

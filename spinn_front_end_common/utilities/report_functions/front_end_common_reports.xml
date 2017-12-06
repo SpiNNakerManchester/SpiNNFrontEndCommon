@@ -1,7 +1,7 @@
 <algorithms xmlns="https://github.com/SpiNNakerManchester/PACMAN"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
-			https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
+            https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
     <algorithm name="FixedRouteFromMachineReport">
         <python_module>spinn_front_end_common.utilities.report_functions.fixed_route_from_machine_report</python_module>
         <python_class>FixedRouteFromMachineReport</python_class>
@@ -22,17 +22,13 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_fixed_routes_on_machine_token</param_name>
-                <param_type>LoadedFixedRoutesToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>report_default_directory</param_name>
             <param_name>app_id</param_name>
-            <param_name>loaded_fixed_routes_on_machine_token</param_name>
+            <token>DataLoaded</token>
         </required_inputs>
     </algorithm>
     <algorithm name="RoutingTableFromMachineReport">
@@ -55,17 +51,13 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
-            <parameter>
-                <param_name>has_loaded_routing_tables_flag</param_name>
-                <param_type>LoadedRoutingTablesToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>report_default_directory</param_name>
             <param_name>routing_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>app_id</param_name>
-            <param_name>has_loaded_routing_tables_flag</param_name>
+            <token>DataLoaded</token>
         </required_inputs>
         <outputs>
             <param_type>MemoryCompressedRoutingTables</param_type>
@@ -105,16 +97,12 @@
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_app_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>report_default_directory</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
-            <param_name>loaded_app_data_token</param_name>
+            <token>DataLoaded</token>
         </required_inputs>
     </algorithm>
     <algorithm name="MemoryMapOnChipReport">
@@ -133,16 +121,12 @@
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_app_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>report_default_directory</param_name>
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
-            <param_name>loaded_app_data_token</param_name>
+            <token>DataLoaded</token>
         </required_inputs>
     </algorithm>
 </algorithms>

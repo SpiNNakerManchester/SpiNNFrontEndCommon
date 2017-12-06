@@ -97,9 +97,6 @@ class MundyOnChipRouterCompression(object):
         # update the progress bar
         progress.end()
 
-        # return loaded routing tables flag
-        return True
-
     def _load_routing_table(
             self, table, txrx, app_id, compressor_app_id,
             compress_only_when_needed, compress_as_much_as_possible):
