@@ -13,7 +13,7 @@ class ProfileDataGatherer(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, placements, has_ran, provenance_file_path,
+            self, transceiver, placements, provenance_file_path,
             run_time_ms, machine_time_step):
         """
         :param transceiver: the SpiNNMan interface object
@@ -25,11 +25,6 @@ class ProfileDataGatherer(object):
         """
 
         machine_time_step_ms = machine_time_step / 1000
-
-        if not has_ran:
-            logger.warning("{} skipped as nothing has run "
-                           "".format(self.__class__.__name__))
-            return
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")

@@ -37,7 +37,7 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         transceiver = _PretendTransceiver([IOBuffer(x, y, p, text)])
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
-            transceiver, has_ran=True, core_subsets=core_subsets,
+            transceiver, core_subsets=core_subsets,
             provenance_file_path=folder)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")

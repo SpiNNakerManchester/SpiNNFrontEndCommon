@@ -44,7 +44,7 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
         targets.add_processor("test2.aplx", 0, 1, 0)
         targets.add_processor("test2.aplx", 0, 1, 1)
         targets.add_processor("test2.aplx", 0, 1, 2)
-        loader.__call__(targets, 30, transceiver, True)
+        loader.__call__(targets, 30, transceiver)
 
 
 if __name__ == "__main__":
