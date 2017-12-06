@@ -241,6 +241,9 @@ class DatabaseWriter(object):
             int(entry.routing_entry_key), int(entry.mask), int(route))
 
     def __insert_ip_tag(self, vertex, ip_tag):
+        port = ip_tag.port
+        if port is None:
+            port = 0
         return self.__insert(
             "INSERT INTO IP_tags("
             "  vertex_id, tag, board_address, ip_address,"
@@ -248,16 +251,19 @@ class DatabaseWriter(object):
             "VALUES (?, ?, ?, ?, ?, ?)",
             int(self._vertex_to_id[vertex]),
             int(ip_tag.tag), str(ip_tag.board_address),
-            str(ip_tag.ip_address), int(ip_tag.port),
+            str(ip_tag.ip_address), int(port),
             1 if ip_tag.strip_sdp else 0)
 
     def __insert_reverse_ip_tag(self, vertex, reverse_ip_tag):
+        port = reverse_ip_tag.port
+        if port is None:
+            port = 0
         return self.__insert(
             "INSERT INTO Reverse_IP_tags("
             "  vertex_id, tag, board_address, port) "
             "VALUES (?, ?, ?, ?)",
             int(self._vertex_to_id[vertex]), int(reverse_ip_tag.tag),
-            str(reverse_ip_tag.board_address), int(reverse_ip_tag.port))
+            str(reverse_ip_tag.board_address), int(port))
 
     def __insert_event_atom_mapping(self, vertex, event_id, atom_id):
         return self.__insert(
