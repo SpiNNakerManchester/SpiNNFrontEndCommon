@@ -1637,14 +1637,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
-        else:
-            # Fill in IP Tag ports (virtual so won't actually be used)
-            for tag in self._tags.ip_tags:
-                if tag.port is None:
-                    tag.port = 65534
-            for tag in self._tags.reverse_ip_tags:
-                if tag.port is None:
-                    tag.port = 64434
 
         self._mapping_time += \
             helpful_functions.convert_time_diff_to_total_milliseconds(
