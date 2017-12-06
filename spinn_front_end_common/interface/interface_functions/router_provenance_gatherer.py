@@ -34,7 +34,7 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables, has_ran,
+            self, transceiver, machine, router_tables,
             provenance_data_objects=None, extra_monitor_vertices=None,
             placements=None):
         """
@@ -47,11 +47,6 @@ class RouterProvenanceGatherer(object):
         monitor code
         :param placements: the placements object
         """
-
-        if not has_ran:
-            logger.warning("{} skipped as nothing has run "
-                           "".format(self.__class__.__name__))
-            return list()
 
         self._total_sent_packets = 0
         self._total_new_packets = 0

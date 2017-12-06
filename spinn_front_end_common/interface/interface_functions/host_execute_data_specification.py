@@ -22,7 +22,9 @@ class HostExecuteDataSpecification(object):
 
     __slots__ = []
 
-    def __call__(self, transceiver, machine, app_id, dsg_targets):
+    def __call__(
+            self, transceiver, machine, app_id, dsg_targets,
+            processor_to_app_data_base_address=None):
         """
 
         :param machine: the python representation of the spinnaker machine
@@ -32,7 +34,8 @@ class HostExecuteDataSpecification(object):
 
         :return: map of placement and dsg data, and loaded data flag.
         """
-        processor_to_app_data_base_address = dict()
+        if processor_to_app_data_base_address is None:
+            processor_to_app_data_base_address = dict()
 
         # create a progress bar for end users
         progress = ProgressBar(
@@ -44,7 +47,7 @@ class HostExecuteDataSpecification(object):
             processor_to_app_data_base_address[x, y, p] = self._execute(
                 transceiver, machine, app_id, x, y, p, data_spec_file_path)
 
-        return processor_to_app_data_base_address, True
+        return processor_to_app_data_base_address
 
     @staticmethod
     def _execute(txrx, machine, app_id, x, y, p, data_spec_path):

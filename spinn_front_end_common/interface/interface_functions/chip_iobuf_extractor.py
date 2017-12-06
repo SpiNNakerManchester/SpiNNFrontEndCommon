@@ -1,5 +1,4 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import re
 import os
 
@@ -18,11 +17,7 @@ class ChipIOBufExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, has_ran, core_subsets, provenance_file_path):
-        if not has_ran:
-            raise ConfigurationException(
-                "The simulation needs to have tried to run before asking for"
-                "iobuf. Please fix and try again")
+            self, transceiver, core_subsets, provenance_file_path):
 
         return self._run_for_core_subsets(
             core_subsets, transceiver, provenance_file_path)

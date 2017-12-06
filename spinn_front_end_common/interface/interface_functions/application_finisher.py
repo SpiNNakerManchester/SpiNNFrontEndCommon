@@ -13,10 +13,7 @@ _ONE_WORD = struct.Struct("<I")
 class ApplicationFinisher(object):
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_types, has_ran):
-        if not has_ran:
-            raise exceptions.ConfigurationException(
-                "The ran token is not set correctly, please fix and try again")
+    def __call__(self, app_id, txrx, executable_types):
 
         total_processors = \
             len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
