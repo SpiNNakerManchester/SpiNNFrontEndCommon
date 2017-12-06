@@ -54,7 +54,7 @@ class ExtraMonitorSupportMachineVertex(
                ('DATA_SPEED_CONFIG', 1)])
 
     _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
-    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 1 * 4
+    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -159,8 +159,21 @@ class ExtraMonitorSupportMachineVertex(
             base_key = routing_info.get_first_key_for_edge(
                 list(machine_graph.get_edges_starting_at_vertex(self))[0])
             spec.write_value(base_key)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.NEW_SEQ_KEY_OFFSET)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.FIRST_DATA_KEY_OFFSET)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY_OFFSET)
         else:
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.BASE_KEY)
+            spec.write_value(DataSpeedUpPacketGatherMachineVertex.NEW_SEQ_KEY)
+            spec.write_value(
+                DataSpeedUpPacketGatherMachineVertex.FIRST_DATA_KEY)
+            spec.write_value(DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY)
 
     def _generate_reinjection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(

@@ -39,7 +39,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                ('CONFIG', 1)])
 
     # size of config region in bytes
-    CONFIG_SIZE = 12
+    CONFIG_SIZE = 16
 
     # items of data a SDP packet can hold when SCP header removed
     DATA_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -72,9 +72,17 @@ class DataSpeedUpPacketGatherMachineVertex(
     # what governs a end flag
     END_FLAG = 0xFFFFFFFF
 
-    # base key (really nasty hack)
+    # base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
+    NEW_SEQ_KEY = 0xFFFFFFF8
+    FIRST_DATA_KEY = 0xFFFFFFF7
+    END_FLAG_KEY = 0xFFFFFFF6
+
+    # to use with mc stuff
     BASE_MASK = 0xFFFFFFFB
+    NEW_SEQ_KEY_OFFSET = 1
+    FIRST_DATA_KEY_OFFSET = 2
+    END_FLAG_KEY_OFFSET = 3
 
     # the size in bytes of the end flag
     END_FLAG_SIZE = 4
@@ -159,11 +167,17 @@ class DataSpeedUpPacketGatherMachineVertex(
         if self.TRAFFIC_TYPE == EdgeTrafficType.MULTICAST:
             base_key = routing_info.get_first_key_for_edge(
                 list(machine_graph.get_edges_ending_at_vertex(self))[0])
+            new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
+            first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
+            end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
         else:
-            base_key = self.BASE_KEY
+            new_seq_key = self.NEW_SEQ_KEY
+            first_data_key = self.FIRST_DATA_KEY
+            end_flag_key = self.END_FLAG_KEY
         spec.switch_write_focus(self.DATA_REGIONS.CONFIG.value)
-        spec.write_value(base_key + 1)
-        spec.write_value(base_key + 2)
+        spec.write_value(new_seq_key)
+        spec.write_value(first_data_key)
+        spec.write_value(end_flag_key)
 
         # locate the tag id for our data and update with port
         iptags = tags.get_ip_tags_for_vertex(self)
@@ -358,7 +372,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
-        # self._print_missing(seq_nums)
+        self._print_missing(seq_nums)
         if len(missing_seq_nums) == 0:
             return True
 
@@ -377,8 +391,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         for _ in xrange(n_packets):
             length_left_in_packet = self.DATA_PER_FULL_PACKET
             offset = 0
-            data = None
-            size_of_data_left_to_transmit = None
 
             # if first, add n packets to list
             if first:
@@ -474,22 +486,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._output = bytearray(length)
             self._view = memoryview(self._output)
 
-            # verify if there are more packets to come or if this is the last
-            last_mc_packet = struct.unpack_from(
-                "<I", data, length_of_data - self.END_FLAG_SIZE)[0]
-            if last_mc_packet == self.END_FLAG:
-                self._write_into_view(
-                    0,
-                    length_of_data - self.LENGTH_OF_DATA_SIZE -
-                    self.END_FLAG_SIZE,
-                    data, self.LENGTH_OF_DATA_SIZE,
-                    length_of_data - self.END_FLAG_SIZE, seq_num,
-                    length_of_data, False)
-            else:
-                self._write_into_view(
-                    0, length_of_data - self.LENGTH_OF_DATA_SIZE,
-                    data, self.LENGTH_OF_DATA_SIZE, length_of_data, seq_num,
-                    length_of_data, False)
+            self._write_into_view(
+                0, length_of_data - self.LENGTH_OF_DATA_SIZE,
+                data, self.LENGTH_OF_DATA_SIZE, length_of_data, seq_num,
+                length_of_data, False)
 
             # deduce max sequence number for future use
             self._max_seq_num = self.calculate_max_seq_num()
@@ -497,62 +497,40 @@ class DataSpeedUpPacketGatherMachineVertex(
         else:  # some data packet
             first_packet_element = struct.unpack_from(
                 "<I", data, 0)[0]
-            last_mc_packet = struct.unpack_from(
-                "<I", data, length_of_data - self.END_FLAG_SIZE)[0]
+            seq_num = first_packet_element & 0x7FFFFFFF
+            is_end_of_stream = \
+                True if (first_packet_element >> 31) & 1 == 1 else False
+
+            # check seq num not insane
+            if seq_num > self._max_seq_num:
+                raise Exception(
+                    "got an insane sequence number. got {} when "
+                    "the max is {} with a length of {}".format(
+                        seq_num, self._max_seq_num, length_of_data))
+
+            # figure offset for where data is to be put
+            offset = self._calculate_offset(seq_num)
+
+            # write data
+            true_data_length = (
+                offset + length_of_data - self.SEQUENCE_NUMBER_SIZE)
+            self._write_into_view(
+                offset, true_data_length, data,
+                self.SEQUENCE_NUMBER_SIZE,
+                length_of_data, seq_num, length_of_data, False)
+
+            # add seq num to list
+            seq_nums.add(seq_num)
 
             # if received a last flag on its own, its during retransmission.
             #  check and try again if required
-            if (last_mc_packet == self.END_FLAG and
-                    length_of_data == self.END_FLAG_SIZE):
+            if is_end_of_stream:
                 if not self._check(seq_nums):
                     finished = self._determine_and_retransmit_missing_seq_nums(
                         placement=placement, transceiver=transceiver,
                         seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
-            else:
-                # this flag can be dropped at some point
-                seq_num = first_packet_element
-                # print "sequence number = {}".format(seq_num)
-                if seq_num > self._max_seq_num:
-                    raise Exception(
-                        "got an insane sequence number. got {} when "
-                        "the max is {} with a length of {}".format(
-                            seq_num, self._max_seq_num, length_of_data))
-                seq_nums.add(seq_num)
-
-                # figure offset for where data is to be put
-                offset = self._calculate_offset(seq_num)
-
-                # write excess data as required
-                if last_mc_packet == self.END_FLAG:
-
-                    # adjust for end flag
-                    true_data_length = (
-                        length_of_data - self.END_FLAG_SIZE -
-                        self.SEQUENCE_NUMBER_SIZE)
-
-                    # write data
-                    self._write_into_view(
-                        offset, offset + true_data_length, data,
-                        self.SEQUENCE_NUMBER_SIZE,
-                        length_of_data - self.END_FLAG_SIZE, seq_num,
-                        length_of_data, True)
-
-                    # check if need to retry
-                    if not self._check(seq_nums):
-                        finished = \
-                            self._determine_and_retransmit_missing_seq_nums(
-                                placement=placement, transceiver=transceiver,
-                                seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
-                    else:
-                        finished = True
-
-                else:  # full block of data, just write it in
-                    true_data_length = (
-                        offset + length_of_data - self.SEQUENCE_NUMBER_SIZE)
-                    self._write_into_view(
-                        offset, true_data_length, data,
-                        self.SEQUENCE_NUMBER_SIZE,
-                        length_of_data, seq_num, length_of_data, False)
+                else:
+                    finished = True
         return first, seq_num, seq_nums, finished
 
     def _calculate_offset(self, seq_num):
@@ -626,7 +604,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         last_seq_num = 0
         for seq_num in sorted(seq_nums):
             if seq_num != last_seq_num + 1:
-                print "from list i'm missing sequence num {}".format(seq_num)
+                print "from list i'm missing sequence num {}\n".format(seq_num)
             last_seq_num = seq_num
 
     def _print_out_packet_data(self, data):

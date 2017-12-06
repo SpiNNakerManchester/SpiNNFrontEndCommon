@@ -254,7 +254,7 @@ typedef enum data_spec_regions{
 
 //! human readable definitions of each element in the transmission region
 typedef enum data_speed_config_data_elements {
-    MY_KEY, MB
+    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, MB
 } data_speed_config_data_elements;
 
 //! values for the priority for each callback
@@ -326,7 +326,10 @@ sdp_msg_pure_data my_msg;
 //! round number.
 static uint32_t bytes_to_read_write;
 static address_t *store_address = NULL;
-static uint32_t key_to_transmit_with;
+static uint32_t basic_data_key = 0;
+static uint32_t new_sequence_key = 0;
+static uint32_t first_data_key = 0;
+static uint32_t end_flag_key = 0;
 
 // ------------------------------------------------------------------------
 // reinjector main functions
@@ -685,7 +688,7 @@ void send_data_block(
         send_fixed_route_packet(first_packet_key, current_data);
 
         // update key to transmit with
-        first_packet_key = key_to_transmit_with;
+        first_packet_key = basic_data_key;
     }
     //log_info("last data is %d",
     //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
@@ -721,14 +724,14 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 
 //! \brief sends a end flag via multicast
 void data_speed_up_send_end_flag() {
-    send_fixed_route_packet(key_to_transmit_with, END_FLAG);
+    send_fixed_route_packet(end_flag_key, END_FLAG);
 }
 
 //! \brief dma complete callback for reading for original transmission
 void dma_complete_reading_for_original_transmission(){
     //do dma
     uint32_t current_dma_pointer = transmit_dma_pointer;
-    uint32_t key_to_transmit = key_to_transmit_with;
+    uint32_t key_to_transmit = basic_data_key;
     uint32_t items_read_this_time = num_items_read;
 
     // put size in bytes if first send
@@ -736,7 +739,7 @@ void dma_complete_reading_for_original_transmission(){
     if (first_transmission) {
         //io_printf(IO_BUF, "in first\n");
         data_to_transmit[current_dma_pointer][0] = bytes_to_read_write;
-        key_to_transmit = key_to_transmit_with + 2;
+        key_to_transmit = first_data_key;
         first_transmission = false;
         items_read_this_time += 1;
     }
@@ -905,7 +908,7 @@ void dma_complete_reading_retransmission_data() {
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
     send_data_block(transmit_dma_pointer, ITEMS_PER_DATA_PACKET,
-	    key_to_transmit_with + 1);
+	                new_sequence_key);
 
     position_in_read_data += 1;
     the_dma_complete_read_missing_seqeuence_nums();
@@ -1100,7 +1103,11 @@ void data_speed_up_initialise() {
     address_t address =
         (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
-    key_to_transmit_with = address[MY_KEY];
+    basic_data_key = address[MY_KEY];
+    new_sequence_key = address[NEW_SEQ_KEY];
+    first_data_key = address[FIRST_DATA_KEY];
+    end_flag_key = address[END_FLAG_KEY];
+    
 
     vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
     vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;

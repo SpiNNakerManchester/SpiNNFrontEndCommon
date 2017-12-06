@@ -51,6 +51,7 @@ static uint32_t infinite_run;
 //! the key that causes sequence number to be processed
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
+static uint32_t end_flag_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
@@ -70,7 +71,7 @@ typedef enum regions_e {
 
 //! human readable definitions of the data in each region
 typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY, TAG_ID
+    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, TAG_ID
 } config_elements;
 
 //! values for the priority for each callback
@@ -119,11 +120,13 @@ void receive_data(uint key, uint payload) {
         position_in_store += 1;
         //log_info("payload is %d", payload);
 
-        if (payload == 0xFFFFFFFF) {
-            if (position_in_store == 2) {
-                data[0] = 0xFFFFFFFF;
-                position_in_store = 1;
-            }
+        if (key == end_flag_key){
+            // set end flag bit in seq num
+            data[0] = data[0] + (1 << 31);
+
+            // adjust size as last payload not counted
+            position_in_store = position_in_store - 1;
+
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
@@ -158,6 +161,7 @@ static bool initialize(uint32_t *timer_period) {
     address_t config_address = data_specification_get_region(CONFIG, address);
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
+    end_flag_key = config_address[END_FLAG_KEY];
 
     my_msg.tag = config_address[TAG_ID];	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet
