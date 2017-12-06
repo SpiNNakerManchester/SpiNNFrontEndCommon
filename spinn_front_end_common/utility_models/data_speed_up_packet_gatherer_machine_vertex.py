@@ -352,8 +352,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: list of missing sequence numbers
         """
         missing_seq_nums = list()
-        if self._max_seq_num is None:
-            raise Exception("Have not heard from the machine")
         for seq_num in range(0, self._max_seq_num):
             if seq_num not in seq_nums:
                 missing_seq_nums.append(seq_num)
