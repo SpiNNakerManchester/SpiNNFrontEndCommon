@@ -1449,7 +1449,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
             required_tokens=[], xml_paths=self._xml_paths,
-            required_outputs=outputs,
+            required_outputs=outputs, required_output_tokens=[],
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
