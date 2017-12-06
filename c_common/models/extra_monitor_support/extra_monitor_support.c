@@ -738,7 +738,7 @@ void dma_complete_reading_for_original_transmission(){
     //log_info("in original read complete callback");
     if (first_transmission) {
         //io_printf(IO_BUF, "in first\n");
-        data_to_transmit[current_dma_pointer][0] = bytes_to_read_write;
+        data_to_transmit[current_dma_pointer][0] = 0;
         key_to_transmit = first_data_key;
         first_transmission = false;
         items_read_this_time += 1;

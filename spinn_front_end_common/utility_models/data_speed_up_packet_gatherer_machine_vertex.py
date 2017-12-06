@@ -321,17 +321,19 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # receive
         finished = False
-        first = True
-        seq_num = 1
         seq_nums = set()
+        self._output = bytearray(length_in_bytes)
+        self._view = memoryview(self._output)
+        self._max_seq_num = self.calculate_max_seq_num()
+
         while not finished:
             try:
                 data = self._connection.receive(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
 
-                first, seq_num, seq_nums, finished = self._process_data(
-                    data, first, seq_num, seq_nums, finished,
-                    placement, transceiver, lost_seq_nums)
+                seq_nums, finished = self._process_data(
+                    data, seq_nums, finished, placement, transceiver,
+                    lost_seq_nums)
             except SpinnmanTimeoutException:
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
@@ -352,7 +354,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         missing_seq_nums = list()
         if self._max_seq_num is None:
             raise Exception("Have not heard from the machine")
-        for seq_num in range(1, self._max_seq_num):
+        for seq_num in range(0, self._max_seq_num):
             if seq_num not in seq_nums:
                 missing_seq_nums.append(seq_num)
         return missing_seq_nums
@@ -462,14 +464,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             # self._print_packet_num_being_sent(packet_count, n_packets)
         return False
 
-    def _process_data(self, data, first, seq_num, seq_nums, finished,
-                      placement, transceiver, lost_seq_nums):
+    def _process_data(
+            self, data, seq_nums, finished, placement, transceiver,
+            lost_seq_nums):
         """ Takes a packet and processes it see if we're finished yet
 
         :param data: the packet data
-        :param first: if the packet is the first packet, in which has extra \
-            data in header
-        :param seq_num: the sequence number of the packet
         :param seq_nums: the list of sequence numbers received so far
         :param finished: bool which states if finished or not
         :param placement: placement object for location on machine
@@ -480,58 +480,45 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # self._print_out_packet_data(data)
         length_of_data = len(data)
-        if first:
-            length = struct.unpack_from("<I", data, 0)[0]
-            first = False
-            self._output = bytearray(length)
-            self._view = memoryview(self._output)
+        first_packet_element = struct.unpack_from(
+            "<I", data, 0)[0]
 
-            self._write_into_view(
-                0, length_of_data - self.LENGTH_OF_DATA_SIZE,
-                data, self.LENGTH_OF_DATA_SIZE, length_of_data, seq_num,
-                length_of_data, False)
+        # get flags
+        seq_num = first_packet_element & 0x7FFFFFFF
+        is_end_of_stream = \
+            True if (first_packet_element >> 31) & 1 == 1 else False
 
-            # deduce max sequence number for future use
-            self._max_seq_num = self.calculate_max_seq_num()
+        # check seq num not insane
+        if seq_num > self._max_seq_num:
+            raise Exception(
+                "got an insane sequence number. got {} when "
+                "the max is {} with a length of {}".format(
+                    seq_num, self._max_seq_num, length_of_data))
 
-        else:  # some data packet
-            first_packet_element = struct.unpack_from(
-                "<I", data, 0)[0]
-            seq_num = first_packet_element & 0x7FFFFFFF
-            is_end_of_stream = \
-                True if (first_packet_element >> 31) & 1 == 1 else False
+        # figure offset for where data is to be put
+        offset = self._calculate_offset(seq_num)
 
-            # check seq num not insane
-            if seq_num > self._max_seq_num:
-                raise Exception(
-                    "got an insane sequence number. got {} when "
-                    "the max is {} with a length of {}".format(
-                        seq_num, self._max_seq_num, length_of_data))
+        # write data
+        true_data_length = (
+            offset + length_of_data - self.SEQUENCE_NUMBER_SIZE)
+        self._write_into_view(
+            offset, true_data_length, data,
+            self.SEQUENCE_NUMBER_SIZE,
+            length_of_data, seq_num, length_of_data, False)
 
-            # figure offset for where data is to be put
-            offset = self._calculate_offset(seq_num)
+        # add seq num to list
+        seq_nums.add(seq_num)
 
-            # write data
-            true_data_length = (
-                offset + length_of_data - self.SEQUENCE_NUMBER_SIZE)
-            self._write_into_view(
-                offset, true_data_length, data,
-                self.SEQUENCE_NUMBER_SIZE,
-                length_of_data, seq_num, length_of_data, False)
-
-            # add seq num to list
-            seq_nums.add(seq_num)
-
-            # if received a last flag on its own, its during retransmission.
-            #  check and try again if required
-            if is_end_of_stream:
-                if not self._check(seq_nums):
-                    finished = self._determine_and_retransmit_missing_seq_nums(
-                        placement=placement, transceiver=transceiver,
-                        seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
-                else:
-                    finished = True
-        return first, seq_num, seq_nums, finished
+        # if received a last flag on its own, its during retransmission.
+        #  check and try again if required
+        if is_end_of_stream:
+            if not self._check(seq_nums):
+                finished = self._determine_and_retransmit_missing_seq_nums(
+                    placement=placement, transceiver=transceiver,
+                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
+            else:
+                finished = True
+        return seq_nums, finished
 
     def _calculate_offset(self, seq_num):
         offset = (seq_num * self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
@@ -573,10 +560,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         # hand back
         seq_nums = sorted(seq_nums)
         max_needed = self.calculate_max_seq_num()
-        if len(seq_nums) > max_needed:
+        if len(seq_nums) > max_needed + 1:
             raise Exception(
                 "I've received more data than I was expecting!!")
-        return len(seq_nums) == max_needed
+        return len(seq_nums) == max_needed + 1
 
     def calculate_max_seq_num(self):
         """ deduces the max sequence num expected to be received
