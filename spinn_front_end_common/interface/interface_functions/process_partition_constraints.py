@@ -1,27 +1,15 @@
-# pacman imports
 from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.routing_info \
-    import DictBasedMachinePartitionNKeysMap
-
-# utilities imports
+from spinn_front_end_common.abstract_models import \
+    AbstractProvidesOutgoingPartitionConstraints, \
+    AbstractProvidesIncomingPartitionConstraints
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.progress_bar import ProgressBar
 
-# front end common imports
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesNKeysForPartition
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
-
-class EdgeToNKeysMapper(object):
-    """ Works out the number of keys needed for each edge
-    """
-
-    __slots__ = []
+class ProcessPartitionConstraints(object):
 
     def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
-        # Generate an n_keys map for the graph and add constraints
-        n_keys_map = DictBasedMachinePartitionNKeysMap()
 
         if machine_graph is None:
             raise ConfigurationException(
@@ -46,9 +34,8 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_application_partition(
-                            partition, n_keys_map, graph_mapper)
-
+                        self._process_application_partition(partition,
+                                                            graph_mapper)
         else:
             # generate progress bar
             progress = ProgressBar(
@@ -62,28 +49,37 @@ class EdgeToNKeysMapper(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_machine_partition(partition, n_keys_map)
-
-        return n_keys_map
+                        self._process_machine_partition(partition)
 
     @staticmethod
-    def _process_application_partition(partition, n_keys_map, graph_mapper):
-        vertex_slice = graph_mapper.get_slice(
-            partition.pre_vertex)
+    def _process_application_partition(partition, graph_mapper):
         vertex = graph_mapper.get_application_vertex(
             partition.pre_vertex)
 
-        if isinstance(vertex, AbstractProvidesNKeysForPartition):
-            n_keys = vertex.get_n_keys_for_partition(partition, graph_mapper)
-        else:
-            n_keys = vertex_slice.n_atoms
-        n_keys_map.set_n_keys_for_partition(partition, n_keys)
+        constraints = list()
+        if isinstance(vertex,
+                      AbstractProvidesOutgoingPartitionConstraints):
+            constraints.extend(
+                vertex.get_outgoing_partition_constraints(partition))
+        for edge in partition.edges:
+            app_edge = graph_mapper.get_application_edge(edge)
+            if isinstance(app_edge.post_vertex,
+                          AbstractProvidesIncomingPartitionConstraints):
+                constraints.extend(
+                    app_edge.post_vertex.get_incoming_partition_constraints(
+                        partition))
+        constraints.extend(partition.constraints)
+        return constraints
 
     @staticmethod
-    def _process_machine_partition(partition, n_keys_map):
-        if isinstance(partition.pre_vertex, AbstractProvidesNKeysForPartition):
-            n_keys = partition.pre_vertex.get_n_keys_for_partition(
-                partition, None)
-        else:
-            n_keys = 1
-        n_keys_map.set_n_keys_for_partition(partition, n_keys)
+    def _process_machine_partition(partition):
+        constraints = list()
+        for edge in partition.edges:
+            if isinstance(edge.post_vertex,
+                          AbstractProvidesIncomingPartitionConstraints):
+                constraints.extend(
+                    edge.post_vertex.get_incoming_partition_constraints(
+                        partition))
+        constraints.extend(partition.constraints)
+
+        return constraints

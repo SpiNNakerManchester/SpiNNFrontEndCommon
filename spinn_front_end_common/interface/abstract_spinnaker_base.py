@@ -1107,13 +1107,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
             total_run_timesteps += self._current_run_timesteps
-            machine_time_steps = (
-                (total_run_timesteps * 1000.0) / self._machine_time_step)
-            if machine_time_steps != int(machine_time_steps):
-                logger.warn(
-                    "The runtime and machine time step combination result in "
-                    "a fractional number of machine time steps")
-            self._no_machine_time_steps = int(math.ceil(machine_time_steps))
+            self._no_machine_time_steps = total_run_timesteps
         else:
             self._no_machine_time_steps = None
             for vertex in self._application_graph.vertices:
@@ -2041,12 +2035,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         logger.info("\n\nAttempting to extract data\n\n")
 
         # Extract router provenance
+        extra_monitor_vertices = None
+        if self._read_config_boolean(
+                "Machine", "enable_advanced_monitor_support"):
+            extra_monitor_vertices = self._last_run_outputs[
+                "MemoryExtraMonitorVertices"]
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
             transceiver=self._txrx, machine=self._machine,
-            router_tables=self._router_tables,
-            extra_monitor_vertices=(
-                self._last_run_outputs["MemoryExtraMonitorVertices"]),
+            router_tables=self._router_tables, has_ran=True,
+            extra_monitor_vertices=extra_monitor_vertices,
             placements=self._placements)
 
         # Find the cores that are not in an expected state

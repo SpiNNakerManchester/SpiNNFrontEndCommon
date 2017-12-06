@@ -29,10 +29,10 @@ class InsertChipPowerMonitorsToGraphs(object):
         """
 
         # create progress bar
-        progress_bar = ProgressBar(
-            machine, "Adding Chip power monitors to Graph")
+        progress = ProgressBar(
+            machine.n_chips, "Adding Chip power monitors to Graph")
 
-        for chip in progress_bar.over(machine.chips):
+        for chip in progress.over(machine.chips):
 
             # build constraint
             constraint = ChipAndCoreConstraint(chip.x, chip.y)
