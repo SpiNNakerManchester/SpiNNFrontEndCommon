@@ -164,6 +164,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="ExtraMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForChipPowerMonitor">
@@ -174,6 +175,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
@@ -214,6 +216,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="EnergyMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertChipPowerMonitorsToGraphs">
@@ -268,6 +271,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
@@ -284,6 +288,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="LivePacketGatherer">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertEdgesToLivePacketGatherers">
