@@ -24,6 +24,8 @@ import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
+TIMEOUT_RETRY_LIMIT = 20
+
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
@@ -337,7 +339,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     data, seq_nums, finished, placement, transceiver,
                     lost_seq_nums)
             except SpinnmanTimeoutException:
-                if timeoutcount > 20:
+                if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise
                 timeoutcount += 1
                 if not finished:
