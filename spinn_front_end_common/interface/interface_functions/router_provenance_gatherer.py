@@ -34,7 +34,7 @@ class RouterProvenanceGatherer(object):
     ]
 
     def __call__(
-            self, transceiver, machine, router_tables, has_ran,
+            self, transceiver, machine, router_tables,
             provenance_data_objects=None, extra_monitor_vertices=None,
             placements=None):
         """
@@ -47,11 +47,6 @@ class RouterProvenanceGatherer(object):
         monitor code
         :param placements: the placements object
         """
-
-        if not has_ran:
-            logger.warning("{} skipped as nothing has run "
-                           "".format(self.__class__.__name__))
-            return list()
 
         self._total_sent_packets = 0
         self._total_new_packets = 0
@@ -112,19 +107,17 @@ class RouterProvenanceGatherer(object):
                     extra_monitor_cores_for_data=extra_monitor_vertices,
                     transceiver=txrx)
 
-        for router_table in sorted(
+        for router_table in progress.over(sorted(
                 router_tables.routing_tables,
-                key=lambda table: (table.x, table.y)):
+                key=lambda table: (table.x, table.y)), False):
             self._write_router_table_diagnostic(
                 txrx, machine, router_table.x, router_table.y, seen_chips,
                 router_table, items, reinjection_data)
-            progress.update()
 
-        for chip in sorted(machine.chips, key=lambda c: (c.x, c.y)):
+        for chip in progress.over(sorted(
+                machine.chips, key=lambda c: (c.x, c.y))):
             self._write_router_chip_diagnostic(
                 txrx, chip, seen_chips, items, reinjection_data)
-            progress.update()
-        progress.end()
         return items
 
     def _write_router_table_diagnostic(
@@ -134,7 +127,9 @@ class RouterProvenanceGatherer(object):
             try:
                 router_diagnostic = txrx.get_router_diagnostics(x, y)
                 seen_chips.add((x, y))
-                reinjection_status = reinjection_data[(x, y)]
+                reinjection_status = None
+                if reinjection_data is not None:
+                    reinjection_status = reinjection_data[(x, y)]
                 items.extend(self._write_router_diagnostics(
                     x, y, router_diagnostic, reinjection_status, True,
                     router_table))
@@ -153,7 +148,9 @@ class RouterProvenanceGatherer(object):
                 if (diagnostic.n_dropped_multicast_packets or
                         diagnostic.n_local_multicast_packets or
                         diagnostic.n_external_multicast_packets):
-                    reinjection_status = reinjection_data[(chip.x, chip.y)]
+                    reinjection_status = None
+                    if reinjection_data is not None:
+                        reinjection_status = reinjection_data[(chip.x, chip.y)]
                     items.extend(self._write_router_diagnostics(
                             chip.x, chip.y, diagnostic, reinjection_status,
                             False, None))

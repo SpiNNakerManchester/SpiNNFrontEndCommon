@@ -8,7 +8,7 @@ class FixedRouteFromMachineReport(object):
     """
 
     def __call__(self, transceiver, machine, report_default_directory,
-                 app_id, loaded_fixed_routes_on_machine_token):
+                 app_id):
         """ writing the fixed routes from the machine
 
         :param transceiver: spinnMan instance
@@ -19,10 +19,6 @@ class FixedRouteFromMachineReport(object):
         :param app_id: the app id the fixed routes were loaded with
         :rtype: None
         """
-
-        if not loaded_fixed_routes_on_machine_token:
-            raise loaded_fixed_routes_on_machine_token(
-                "Needs to have loaded fixed route data for this to work.")
 
         file_name = os.path.join(
             report_default_directory, "fixed_route_routers")
@@ -37,7 +33,7 @@ class FixedRouteFromMachineReport(object):
         :param machine: the spinnmanchine instance
         :rtype: None
         """
-        progress = ProgressBar(machine.chips, "Writing fixed route report")
+        progress = ProgressBar(machine.n_chips, "Writing fixed route report")
         output.write(" x    y       route         [cores][links]\n")
         for chip in progress.over(machine.chips):
             if not chip.virtual:

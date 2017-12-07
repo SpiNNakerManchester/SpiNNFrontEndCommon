@@ -12,5 +12,3 @@ class LoadFixedRoutes(object):
         for chip_x, chip_y in progress_bar.over(fixed_routes.keys()):
             transceiver.load_fixed_route(
                 chip_x, chip_y, fixed_routes[(chip_x, chip_y)], app_id)
-
-        return True

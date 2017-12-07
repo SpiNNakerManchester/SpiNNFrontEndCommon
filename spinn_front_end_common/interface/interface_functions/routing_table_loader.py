@@ -22,7 +22,6 @@ class RoutingTableLoader(object):
                     transceiver.load_multicast_routes(
                         router_table.x, router_table.y,
                         router_table.multicast_routing_entries, app_id=app_id)
-        return True
 
     @staticmethod
     def _set_router_diagnostic_filters(x, y, transceiver):
