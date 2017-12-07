@@ -132,7 +132,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         x=ethernet_connected_chip.x,
                         y=ethernet_connected_chip.y)])
                 machine_graph.add_vertex(machine_vertex)
-                machine_vertex = app_vertex.machine_vertex
 
             # update mapping for edge builder
             vertex_to_ethernet_connected_chip_mapping[

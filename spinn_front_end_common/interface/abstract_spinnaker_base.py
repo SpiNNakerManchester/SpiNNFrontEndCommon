@@ -1709,7 +1709,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             application_graph_changed
         )
 
-        if not application_graph_changed:
+        if not application_graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
             inputs["LoadedReverseIPTagsToken"] = self._last_run_outputs[
@@ -1762,7 +1762,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # handle extra monitor functionality
         enable_advanched_monitor = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
-        if enable_advanched_monitor and application_graph_changed:
+        if (enable_advanched_monitor and
+                (application_graph_changed or not self._has_ran)):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
