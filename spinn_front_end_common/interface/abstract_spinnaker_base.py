@@ -2035,7 +2035,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
             transceiver=self._txrx, machine=self._machine,
-            router_tables=self._router_tables, has_ran=True,
+            router_tables=self._router_tables,
             extra_monitor_vertices=extra_monitor_vertices,
             placements=self._placements)
 
@@ -2092,7 +2092,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Read IOBUF where possible (that should be everywhere)
         iobuf = ChipIOBufExtractor()
         errors, warnings = iobuf(
-            self._txrx, True, unsuccessful_core_subset,
+            self._txrx, unsuccessful_core_subset,
             self._provenance_file_path)
 
         # Print the details of error cores
