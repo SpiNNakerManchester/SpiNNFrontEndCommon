@@ -326,15 +326,20 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = memoryview(self._output)
         self._max_seq_num = self.calculate_max_seq_num()
 
+        timeoutcount = 0
         while not finished:
             try:
                 data = self._connection.receive(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
+                timeoutcount = 0
 
                 seq_nums, finished = self._process_data(
                     data, seq_nums, finished, placement, transceiver,
                     lost_seq_nums)
             except SpinnmanTimeoutException:
+                if timeoutcount > 20:
+                    raise
+                timeoutcount += 1
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
                         seq_nums, transceiver, placement, lost_seq_nums)
