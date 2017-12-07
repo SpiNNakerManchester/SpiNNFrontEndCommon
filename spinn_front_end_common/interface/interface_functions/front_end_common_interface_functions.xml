@@ -1582,10 +1582,7 @@
             <param_name>spalloc_machine</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MachineWidth</param_type>
-            <param_type>MachineHeight</param_type>
-            <param_type>MachineHasWrapAroundsFlag</param_type>
-            <param_type>BoardVersion</param_type>
+            <param_type>MemoryVirtualMachine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="HBPMaxMachineGenerator">
@@ -1606,9 +1603,7 @@
             <param_name>total_run_time</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MachineWidth</param_type>
-            <param_type>MachineHeight</param_type>
-            <param_type>MachineHasWrapAroundsFlag</param_type>
+            <param_type>MemoryVirtualMachine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphMeasurer">

@@ -1341,8 +1341,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             do_partitioning = False
             if need_virtual_board:
-                algorithms.append("VirtualMachineGenerator")
-                algorithms.append("MallocBasedChipIDAllocator")
+                algorithms.append("VirtualMallocBasedChipIDAllocator")
 
                 # If we are using an allocation server, and we need a virtual
                 # board, we need to use the virtual board to get the number of
@@ -2035,7 +2034,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
             transceiver=self._txrx, machine=self._machine,
-            router_tables=self._router_tables, has_ran=True,
+            router_tables=self._router_tables,
             extra_monitor_vertices=extra_monitor_vertices,
             placements=self._placements)
 
