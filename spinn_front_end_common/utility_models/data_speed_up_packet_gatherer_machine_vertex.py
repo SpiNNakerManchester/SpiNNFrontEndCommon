@@ -12,6 +12,7 @@ from spinn_front_end_common.interface.provenance import \
 from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
     ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -340,7 +341,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                     lost_seq_nums)
             except SpinnmanTimeoutException:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
-                    raise
+                    raise exceptions.SpinnFrontEndException(
+                        "Failed to hear from the machine during {} attempts. "
+                        "Please try removing firewalls")
                 timeoutcount += 1
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
