@@ -1,9 +1,10 @@
 from spalloc import ProtocolClient
+from spinn_machine.virtual_machine import VirtualMachine
 
 
 class SpallocMaxMachineGenerator(object):
-    """ Generates the width and height of the maximum machine a given\
-        allocation server can generate
+    """ Generates a maximum virtual machine a given allocation server can\
+        generate
     """
 
     __slots__ = []
@@ -29,9 +30,15 @@ class SpallocMaxMachineGenerator(object):
                 max_width = width
                 max_height = height
 
+        if max_width is None:
+            raise Exception(
+                "The spalloc server appears to have no compatible machines")
+
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
-        return max_width, max_height, None, None
+        return VirtualMachine(
+            width=max_width, height=max_height, with_wrap_arounds=None,
+            version=None)
 
     @staticmethod
     def _filter(machines, filter):  # @ReservedAssignment

@@ -24,8 +24,7 @@ class ProcessPartitionConstraints(object):
             # generate progress bar
             progress = ProgressBar(
                 machine_graph.n_vertices,
-                "Getting number of keys required by each edge using "
-                "application graph")
+                "Getting constraints for application graph")
 
             # iterate over each partition in the graph
             for vertex in progress.over(machine_graph.vertices):
@@ -34,14 +33,13 @@ class ProcessPartitionConstraints(object):
                         vertex)
                 for partition in partitions:
                     if partition.traffic_type == EdgeTrafficType.MULTICAST:
-                        self._process_application_partition(partition,
-                                                            graph_mapper)
+                        self._process_application_partition(
+                            partition, graph_mapper)
         else:
             # generate progress bar
             progress = ProgressBar(
                 machine_graph.n_vertices,
-                "Getting number of keys required by each edge using "
-                "machine graph")
+                "Getting constraints for machine graph")
 
             for vertex in progress.over(machine_graph.vertices):
                 partitions = machine_graph.\
@@ -55,31 +53,28 @@ class ProcessPartitionConstraints(object):
     def _process_application_partition(partition, graph_mapper):
         vertex = graph_mapper.get_application_vertex(
             partition.pre_vertex)
-
-        constraints = list()
         if isinstance(vertex,
                       AbstractProvidesOutgoingPartitionConstraints):
-            constraints.extend(
+            partition.add_constraints(
                 vertex.get_outgoing_partition_constraints(partition))
         for edge in partition.edges:
             app_edge = graph_mapper.get_application_edge(edge)
             if isinstance(app_edge.post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
-                constraints.extend(
+                partition.add_constraints(
                     app_edge.post_vertex.get_incoming_partition_constraints(
                         partition))
-        constraints.extend(partition.constraints)
-        return constraints
 
     @staticmethod
     def _process_machine_partition(partition):
-        constraints = list()
+        if isinstance(partition.pre_vertex,
+                      AbstractProvidesOutgoingPartitionConstraints):
+            partition.add_constraints(
+                partition.pre_vertex.get_outgoing_partition_constraints(
+                    partition))
         for edge in partition.edges:
             if isinstance(edge.post_vertex,
                           AbstractProvidesIncomingPartitionConstraints):
-                constraints.extend(
+                partition.add_constraints(
                     edge.post_vertex.get_incoming_partition_constraints(
                         partition))
-        constraints.extend(partition.constraints)
-
-        return constraints
