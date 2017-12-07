@@ -153,7 +153,7 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
-            txrx, True, executable_targets.all_core_subsets,
+            txrx, executable_targets.all_core_subsets,
             provenance_file_path)
         for warning in io_warnings:
             logger.warn(warning)
