@@ -1244,6 +1244,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["TimeScaleFactor"] = self._time_scale_factor
+        inputs["MemoryPreAllocatedResources"] = None
 
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
