@@ -144,6 +144,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
