@@ -729,7 +729,7 @@ void data_speed_up_send_end_flag() {
 
 //! \brief dma complete callback for reading for original transmission
 void dma_complete_reading_for_original_transmission(){
-    //do dma
+    // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = basic_data_key;
     uint32_t items_read_this_time = num_items_read;

@@ -72,9 +72,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     # number of items used up by the re transmit code for its header
     SDP_RETRANSMISSION_HEADER_SIZE = 2
 
-    # what governs a end flag
-    END_FLAG = 0xFFFFFFFF
-
     # base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
     NEW_SEQ_KEY = 0xFFFFFFF8
@@ -88,7 +85,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     END_FLAG_KEY_OFFSET = 3
 
     # the size in bytes of the end flag
-    END_FLAG_SIZE = 4
+    LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
 
     # the amount of bytes the n bytes takes up
     N_PACKETS_SIZE = 4
@@ -382,7 +379,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
-        self._print_missing(seq_nums)
+        # self._print_missing(seq_nums)
         if len(missing_seq_nums) == 0:
             return True
 
@@ -493,8 +490,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # get flags
         seq_num = first_packet_element & 0x7FFFFFFF
-        is_end_of_stream = \
-            True if (first_packet_element >> 31) & 1 == 1 else False
+        is_end_of_stream = (
+            first_packet_element & self.LAST_MESSAGE_FLAG_BIT_MASK) != 0
 
         # check seq num not insane
         if seq_num > self._max_seq_num:
@@ -599,7 +596,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         last_seq_num = 0
         for seq_num in sorted(seq_nums):
             if seq_num != last_seq_num + 1:
-                print "from list i'm missing sequence num {}\n".format(seq_num)
+                print "from list i'm missing sequence num {}".format(seq_num)
             last_seq_num = seq_num
 
     def _print_out_packet_data(self, data):

@@ -17,9 +17,6 @@
 //! convert between words to bytes
 #define WORD_TO_BYTE_MULTIPLIER 4
 
-//! flag for saying stuff has ended
-#define END_FLAG 0xFFFFFFFF
-
 //! struct for a SDP message with pure data, no scp header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     struct sdp_msg *next;	// Next in free list
