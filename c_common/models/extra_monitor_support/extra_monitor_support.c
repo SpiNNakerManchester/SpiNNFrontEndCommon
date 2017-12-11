@@ -1075,7 +1075,8 @@ void __wrap_sark_int(void *pc) {
                 handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
-                io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                io_printf(IO_BUF, "port %d\n",
+                          (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
         	// Do nothing
             }
             sark_msg_free(msg);
