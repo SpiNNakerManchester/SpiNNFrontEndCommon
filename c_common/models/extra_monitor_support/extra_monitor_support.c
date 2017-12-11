@@ -319,6 +319,7 @@ static uint32_t position_for_retransmission = 0;
 static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;
 static uint32_t dma_port_last_used = 0;
+static uint32_t current_data_read_state = 0;
 
 //! SDP message holder for transmissions
 sdp_msg_pure_data my_msg;
@@ -785,6 +786,7 @@ void dma_complete_reading_for_original_transmission(){
 
         //log_info("finished sending original data with end flag");
         has_finished = true;
+        current_data_read_state = 0;
     }
 
     if (TDMA_WAIT_PERIOD != 0) {
@@ -894,6 +896,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
                 (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
+            current_data_read_state = 0;
         }
     }
 }
@@ -924,8 +927,21 @@ void dma_complete_writing_missing_seq_to_sdram() {
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
 void handle_data_speed_up(sdp_msg_pure_data *msg) {
+
+    // If we are currently processing another request, ignore
+    if (current_data_read_state != 0) {
+        io_printf(IO_BUF,
+            "Warning - received command %d while command %d in progress\n",
+            msg->data[COMMAND_ID_POSITION], current_data_read_state);
+        sark_msg_free((sdp_msg_t *) msg);
+        return;
+    }
+
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
+
         //io_printf(IO_BUF, "starting the send of original data\n");
+        current_data_read_state = SDP_COMMAND_FOR_SENDING_DATA;
+
         // set sdram position and length
         store_address = (address_t*) msg->data[SDRAM_POSITION];
         bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
@@ -980,6 +996,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         // if got all missing packets, start retransmitting them to host
         if (number_of_missing_seq_sdp_packets == 0) {
             // packets all received, add finish flag for DMA stoppage
+            current_data_read_state = msg->data[COMMAND_ID_POSITION];
             missing_sdp_seq_num_sdram_address[
             number_of_missing_seq_nums_in_sdram] = END_FLAG;
             number_of_missing_seq_nums_in_sdram += 1;
