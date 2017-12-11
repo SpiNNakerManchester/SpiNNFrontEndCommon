@@ -52,6 +52,7 @@ static uint32_t end_flag_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
+static uint32_t max_seq_num = 0;
 
 //! data holders for the sdp packet
 static uint32_t data[ITEMS_PER_DATA_PACKET];
@@ -97,6 +98,12 @@ void send_data(){
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
+
+    if (seq_num > max_seq_num){
+        log_error(
+            "got a funky seq num. max is %d, received %d",
+            max_seq_num, seq_num);
+    }
 }
 
 void receive_data(uint key, uint payload) {
@@ -105,11 +112,18 @@ void receive_data(uint key, uint payload) {
         //log_info("finding new seq num %d", payload);
         //log_info("position in store is %d", position_in_store);
         data[0] = payload;
+
+        if (payload > max_seq_num){
+            log_error(
+                "got a funky seq num. max is %d, received %d",
+                max_seq_num, payload);
+        }
     } else {
         if (key == first_data_key) {
             //log_info("resetting seq and position");
             seq_num = FIRST_SEQ_NUM;
             position_in_store = 0;
+            max_seq_num = payload;
         }
 
         //log_info(" payload = %d posiiton = %d", payload, position_in_store);

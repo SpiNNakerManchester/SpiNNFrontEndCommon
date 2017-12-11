@@ -1,6 +1,7 @@
 // SARK-based program
 #include <sark.h>
 #include <stdbool.h>
+#include <math.h>
 #include <common-typedefs.h>
 
 extern void spin1_wfi();
@@ -310,6 +311,7 @@ static uint32_t number_of_missing_seq_sdp_packets = 0;
 static uint32_t number_of_missing_seq_nums_in_sdram = 0;
 static uint32_t number_of_elements_to_read_from_sdram = 0;
 address_t missing_sdp_seq_num_sdram_address = NULL;
+static uint32_t max_seq_num = 0;
 
 //! retransmission dma stuff
 static uint32_t retransmit_seq_nums[ITEMS_PER_DATA_PACKET];
@@ -738,7 +740,7 @@ void dma_complete_reading_for_original_transmission(){
     //log_info("in original read complete callback");
     if (first_transmission) {
         //io_printf(IO_BUF, "in first\n");
-        data_to_transmit[current_dma_pointer][0] = 0;
+        data_to_transmit[current_dma_pointer][0] = max_seq_num;
         key_to_transmit = first_data_key;
         first_transmission = false;
         items_read_this_time += 1;
@@ -905,6 +907,12 @@ void dma_complete_reading_retransmission_data() {
     data_to_transmit[transmit_dma_pointer][0] =
 	    missing_seq_num_being_processed;
 
+	if(missing_seq_num_being_processed > max_seq_num){
+	    io_printf(
+	        IO_BUF, "Got some shitty seq num here. max is %d and got %d \n",
+	        max_seq_num, missing_seq_num_being_processed);
+	}
+
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
     send_data_block(transmit_dma_pointer, ITEMS_PER_DATA_PACKET,
@@ -929,6 +937,9 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         store_address = (address_t*) msg->data[SDRAM_POSITION];
         bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
         sark_msg_free((sdp_msg_t *) msg);
+
+        max_seq_num = (float)bytes_to_read_write / (float)(67 * 4);
+        max_seq_num = ceil(max_seq_num);
         //io_printf(IO_BUF, "address %d, byts to write %d\n", store_address,
         //          bytes_to_read_write);
 
@@ -1049,7 +1060,8 @@ void __wrap_sark_int(void *pc) {
                 handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
-                io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                io_printf(IO_BUF, "port %d\n",
+                          (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
         	// Do nothing
             }
             sark_msg_free(msg);

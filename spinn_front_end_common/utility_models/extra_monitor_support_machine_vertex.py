@@ -55,6 +55,7 @@ class ExtraMonitorSupportMachineVertex(
 
     _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
     _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -116,7 +117,9 @@ class ExtraMonitorSupportMachineVertex(
             sdram=ExtraMonitorSupportMachineVertex.
             _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
-            _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES))
+            _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
+            ExtraMonitorSupportMachineVertex.
+            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
