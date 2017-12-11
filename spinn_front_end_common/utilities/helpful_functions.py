@@ -141,7 +141,6 @@ def set_up_report_specifics(
 
     # determine common report folder
     config_param = default_report_file_path
-    created_folder = False
     if config_param == "DEFAULT":
         directory = os.getcwd()
 
@@ -168,11 +167,13 @@ def set_up_report_specifics(
                 this_run_time.second, this_run_time.microsecond))
 
     # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = child_folder(report_default_directory, this_run_time_string)
+    app_folder_name = child_folder(report_default_directory,
+                                   this_run_time_string)
 
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
-    app_sub_folder_name = child_folder(app_folder_name, "run_{}".format(n_calls_to_run))
+    app_sub_folder_name = child_folder(
+        app_folder_name, "run_{}".format(n_calls_to_run))
 
     # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
