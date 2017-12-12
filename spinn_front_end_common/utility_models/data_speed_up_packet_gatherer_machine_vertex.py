@@ -327,20 +327,24 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._max_seq_num = self.calculate_max_seq_num()
 
         timeoutcount = 0
+        count = 0
         while not finished:
             try:
                 data = self._connection.receive(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
                 timeoutcount = 0
-
-                seq_nums, finished = self._process_data(
-                    data, seq_nums, finished, placement, transceiver,
-                    lost_seq_nums)
+                count += 1
+                if count > 1000:
+                    count = 0
+                else:
+                    seq_nums, finished = self._process_data(
+                        data, seq_nums, finished, placement, transceiver,
+                        lost_seq_nums)
             except SpinnmanTimeoutException:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise exceptions.SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls")
+                        "Please try removing firewalls".format(timeoutcount))
                 timeoutcount += 1
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
@@ -575,11 +579,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :return: int of the biggest sequence num expected
         """
-        n_sequence_numbers = float(len(self._output)) / float(
+
+        n_sequence_nums = float(len(self._output)) / float(
             self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
             self.WORD_TO_BYTE_CONVERTER)
-        n_sequence_numbers = math.ceil(n_sequence_numbers)
-        return int(n_sequence_numbers)
+        n_sequence_nums = math.ceil(n_sequence_nums)
+        return int(n_sequence_nums)
 
     @staticmethod
     def _print_missing(seq_nums):
