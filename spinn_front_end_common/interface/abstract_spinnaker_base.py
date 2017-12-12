@@ -1712,14 +1712,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not application_graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
-            inputs["LoadedReverseIPTagsToken"] = self._last_run_outputs[
-                "LoadedReverseIPTagsToken"]
-            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
-                "LoadedIPTagsToken"]
-            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
-                "LoadedIPTagsToken"]
-            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
-                "LoadedIPTagsToken"]
 
         algorithms = list()
 
