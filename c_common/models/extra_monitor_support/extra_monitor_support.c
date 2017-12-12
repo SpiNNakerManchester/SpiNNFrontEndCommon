@@ -318,7 +318,6 @@ static uint32_t position_for_retransmission = 0;
 static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;
 static uint32_t dma_port_last_used = 0;
-static bool in_re_transmission_mode = false;
 
 //! sdp message holder for transmissions
 sdp_msg_pure_data my_msg;
@@ -880,7 +879,6 @@ void the_dma_complete_read_missing_seqeuence_nums() {
         if (number_of_missing_seq_nums_in_sdram >
                 position_for_retransmission) {
             position_in_read_data = 0;
-            missing_sdp_seq_num_sdram_address = NULL;
             retransmission_dma_read();
         }
     } else {
@@ -895,7 +893,6 @@ void the_dma_complete_read_missing_seqeuence_nums() {
         	    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
-            in_re_transmission_mode = false;
         }
     }
 }
@@ -960,58 +957,35 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
             SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS) {
         //log_info("starting resend mode");
 
-        // if aready in a retrnamission phase, dont process as normal
-        if (missing_sdp_seq_num_sdram_address != NULL &&
-                msg->data[COMMAND_ID_POSITION] ==
-                    SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS){
-            // if its waiting on extra packets,
-            if (missing_sdp_seq_num_sdram_address != 0){
-                number_of_missing_seq_sdp_packets =
-                    number_of_missing_seq_sdp_packets -
-                    number_of_missing_seq_sdp_packets;
-                missing_sdp_seq_num_sdram_address = 0;
-                missing_sdp_seq_num_sdram_address[
-                    number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                number_of_missing_seq_nums_in_sdram += 1;
-                retransmission_dma_read();
-            }
+        // reset state, as could be here from multiple attempts
+        if (msg->data[COMMAND_ID_POSITION] ==
+                SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS) {
+            number_of_missing_seq_nums_in_sdram = 0;
+            number_of_missing_seq_sdp_packets = 0;
+            position_for_retransmission = 0;
+            position_in_read_data = 0;
         }
-        else{
-            // reset state, as could be here from multiple attempts
-            if (msg->data[COMMAND_ID_POSITION] ==
-                    SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS) {
-                number_of_missing_seq_nums_in_sdram = 0;
-                number_of_missing_seq_sdp_packets = 0;
-                position_for_retransmission = 0;
-                position_in_read_data = 0;
-            }
 
-            if (number_of_missing_seq_sdp_packets != 0) {
-                // put missing seq nums into sdram
-                store_missing_seq_nums(
-                    msg->data,
-                    (msg->length - LENGTH_OF_SDP_HEADER) /
-                    WORD_TO_BYTE_MULTIPLIER,
-                    msg->data[COMMAND_ID_POSITION] ==
-                        SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
-            }
+        // put missing seq nums into sdram
+        store_missing_seq_nums(
+        	msg->data,
+		(msg->length - LENGTH_OF_SDP_HEADER) / WORD_TO_BYTE_MULTIPLIER,
+		msg->data[COMMAND_ID_POSITION] ==
+			SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
 
-            //log_info("free message");
-            sark_msg_free((sdp_msg_t *) msg);
+        //log_info("free message");
+        sark_msg_free((sdp_msg_t *) msg);
 
-            // if got all missing packets, start retransmitting them to host
-            if (number_of_missing_seq_sdp_packets == 0 &&
-                    !in_re_transmission_mode) {
-                // packets all received, add finish flag for dma stoppage
-                missing_sdp_seq_num_sdram_address[
-                number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                number_of_missing_seq_nums_in_sdram += 1;
+        // if got all missing packets, start retransmitting them to host
+        if (number_of_missing_seq_sdp_packets == 0) {
+            // packets all received, add finish flag for dma stoppage
+            missing_sdp_seq_num_sdram_address[
+		    number_of_missing_seq_nums_in_sdram] = END_FLAG;
+            number_of_missing_seq_nums_in_sdram += 1;
 
-                //log_info("start retransmission");
-                // start dma off
-                in_re_transmission_mode = true;
-                retransmission_dma_read();
-            }
+            //log_info("start retransmission");
+            // start dma off
+            retransmission_dma_read();
         }
     } else {
         io_printf(IO_BUF, "received unknown sdp packet\n");
@@ -1075,8 +1049,7 @@ void __wrap_sark_int(void *pc) {
                 handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
-                io_printf(IO_BUF, "port %d\n",
-                          (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
         	// Do nothing
             }
             sark_msg_free(msg);
