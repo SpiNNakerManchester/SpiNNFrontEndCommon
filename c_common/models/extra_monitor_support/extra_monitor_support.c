@@ -891,6 +891,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
         missing_seq_num_being_processed = (uint32_t)
             retransmit_seq_nums[position_in_read_data];
         if (missing_seq_num_being_processed != END_FLAG) {
+
             // regenerate data
             position_in_store = missing_seq_num_being_processed * (
                 ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
@@ -930,15 +931,6 @@ void dma_complete_writing_missing_seq_to_sdram() {
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
 void handle_data_speed_up(sdp_msg_pure_data *msg) {
-
-    // If we are currently processing another request, ignore
-    if (current_data_read_state != 0) {
-        io_printf(IO_BUF,
-            "Warning - received command %d while command %d in progress\n",
-            msg->data[COMMAND_ID_POSITION], current_data_read_state);
-        sark_msg_free((sdp_msg_t *) msg);
-        return;
-    }
 
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
 
@@ -981,6 +973,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         if (missing_sdp_seq_num_sdram_address != NULL &&
                 msg->data[COMMAND_ID_POSITION] ==
                     SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS){
+
             // if its waiting on extra packets,
             if (missing_sdp_seq_num_sdram_address != 0){
                 number_of_missing_seq_sdp_packets =
@@ -992,6 +985,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 number_of_missing_seq_nums_in_sdram += 1;
                 retransmission_dma_read();
             }
+            sark_msg_free((sdp_msg_t *) msg);
         }
         else{
             // reset state, as could be here from multiple attempts

@@ -579,16 +579,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :return: int of the biggest sequence num expected
         """
-        n_sequence_numbers = 0
-        data_left = len(self._output) - (
-            (self.DATA_PER_FULL_PACKET - self.SDP_RETRANSMISSION_HEADER_SIZE) *
-            self.WORD_TO_BYTE_CONVERTER)
 
-        extra_n_sequences = float(data_left) / float(
+        n_sequence_nums = float(len(self._output)) / float(
             self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
             self.WORD_TO_BYTE_CONVERTER)
-        n_sequence_numbers += math.ceil(extra_n_sequences)
-        return int(n_sequence_numbers)
+        n_sequence_nums = math.ceil(n_sequence_nums)
+        return int(n_sequence_nums)
 
     @staticmethod
     def _print_missing(seq_nums):
