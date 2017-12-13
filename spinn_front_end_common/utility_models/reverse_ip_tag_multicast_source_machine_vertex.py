@@ -156,7 +156,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             can be used to enable the reception of packets on a randomly\
             assigned port, which can be read from the database
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
         MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
 
@@ -178,39 +178,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Work out if buffers are being sent
         self._send_buffer = None
         self._send_buffer_partition_id = send_buffer_partition_id
+        self._send_buffer_max_space = send_buffer_max_space
         if send_buffer_times is None:
             self._send_buffer_times = None
-            self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
-            if send_buffer_times and hasattr(send_buffer_times[0], "__len__"):
-                # Working with a list of lists so check length
-                if len(send_buffer_times) != n_keys:
-                    raise ConfigurationException(
-                        "The array or arrays of times {} does not have the "
-                        "expected length of {} "
-                        "".format(send_buffer_times, n_keys))
-
-            self._send_buffer_max_space = send_buffer_max_space
-            self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
-            self._send_buffer_times = send_buffer_times
-
-            self._iptags = [IPtagResource(
-                ip_address=buffer_notification_ip_address,
-                port=buffer_notification_port, strip_sdp=True,
-                tag=buffer_notification_tag,
-                traffic_identifier=TRAFFIC_IDENTIFIER)]
-            if board_address is not None:
-                self.add_constraint(BoardConstraint(board_address))
-            self._send_buffers = {
-                self._REGIONS.SEND_BUFFER.value:
-                self._send_buffer
-            }
+            self._install_send_buffer(n_keys, send_buffer_times, (
+                buffer_notification_ip_address, buffer_notification_port,
+                buffer_notification_tag, board_address))
 
         # buffered out parameters
-        self._send_buffer_space_before_notify = send_buffer_space_before_notify
-        if self._send_buffer_space_before_notify > send_buffer_max_space:
-            self._send_buffer_space_before_notify = send_buffer_max_space
+        self._send_buffer_space_before_notify = max((
+            send_buffer_space_before_notify, send_buffer_max_space))
 
         # Set up for recording (if requested)
         self._record_buffer_size = 0
@@ -244,36 +223,57 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
+            self._install_virtual_key(n_keys)
 
-            # check that virtual key is valid
-            if self._virtual_key < 0:
+    def _install_send_buffer(self, n_keys, send_buffer_times, target_address):
+        if send_buffer_times and hasattr(send_buffer_times[0], "__len__"):
+            # Working with a list of lists so check length
+            if len(send_buffer_times) != n_keys:
                 raise ConfigurationException(
-                    "Virtual keys must be positive")
+                    "The array or arrays of times {} does not have the "
+                    "expected length of {}".format(send_buffer_times, n_keys))
 
-            # Get a mask and maximum number of keys for the number of keys
-            # requested
-            self._mask, max_key = self._calculate_mask(n_keys)
+        self._send_buffer = BufferedSendingRegion(self._send_buffer_max_space)
+        self._send_buffer_times = send_buffer_times
 
-            # Check that the number of keys and the virtual key don't interfere
-            if n_keys > max_key:
+        (ip_address, port, tag, board_address) = target_address
+        self._iptags = [IPtagResource(
+            ip_address=ip_address, port=port, strip_sdp=True, tag=tag,
+            traffic_identifier=TRAFFIC_IDENTIFIER)]
+        if board_address is not None:
+            self.add_constraint(BoardConstraint(board_address))
+        self._send_buffers = {
+            self._REGIONS.SEND_BUFFER.value:
+            self._send_buffer
+        }
+
+    def _install_virtual_key(self, n_keys):
+        # check that virtual key is valid
+        if self._virtual_key < 0:
+            raise ConfigurationException("Virtual keys must be positive")
+
+        # Get a mask and maximum number of keys for the number of keys
+        # requested
+        self._mask, max_key = self._calculate_mask(n_keys)
+
+        # Check that the number of keys and the virtual key don't interfere
+        if n_keys > max_key:
+            raise ConfigurationException(
+                "The mask calculated from the number of keys will not work "
+                "with the virtual key specified")
+
+        if self._prefix is not None:
+            # Check that the prefix doesn't change the virtual key in the
+            # masked area
+            masked_key = (self._virtual_key | self._prefix) & self._mask
+            if self._virtual_key != masked_key:
                 raise ConfigurationException(
-                    "The mask calculated from the number of keys will "
-                    "not work with the virtual key specified")
-
-            if self._prefix is not None:
-
-                # Check that the prefix doesn't change the virtual key in the
-                # masked area
-                masked_key = (self._virtual_key | self._prefix) & self._mask
-                if self._virtual_key != masked_key:
-                    raise ConfigurationException(
-                        "The number of keys, virtual key and key prefix"
-                        " settings don't work together")
-            else:
-
-                # If no prefix was generated, generate one
-                self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
-                self._prefix = self._virtual_key
+                    "The number of keys, virtual key and key prefix settings "
+                    "don't work together")
+        else:
+            # If no prefix was generated, generate one
+            self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
+            self._prefix = self._virtual_key
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
