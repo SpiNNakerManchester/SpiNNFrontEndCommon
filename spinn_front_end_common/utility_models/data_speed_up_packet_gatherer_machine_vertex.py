@@ -246,13 +246,16 @@ class DataSpeedUpPacketGatherMachineVertex(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
                          iteration_name, "iteration_{}".format(i)],
                         n_lost_seq_nums, report=n_lost_seq_nums > 0,
-                        message="During the extraction of data, {} sequences "
-                                "were lost. These had to be retransmitted and"
-                                " will have slowed down the data extraction "
-                                "process. Reduce the number of executing "
-                                "applications and remove routers between "
-                                "yourself and the SpiNNaker machine to reduce"
-                                " the chance of this occurring."))
+                        message=
+                        "During the extraction of data of {} bytes from "
+                        "memory address {}, attempt {} had {} sequences that "
+                        "were lost. These had to be retransmitted and will "
+                        "have slowed down the data extraction process. "
+                        "Reduce the number of executing applications and "
+                        "remove routers between yourself and the SpiNNaker "
+                        "machine to reduce the chance of this occurring."
+                        .format(length_in_bytes, memory_address, i,
+                                n_lost_seq_nums)))
         return prov_items
 
     @staticmethod
@@ -338,7 +341,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
                 timeoutcount = 0
                 count += 1
-                if count > 1000:
+                if count > 5:
                     count = 0
                 else:
                     seq_nums, finished = self._process_data(
@@ -387,7 +390,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
-        self._print_missing(missing_seq_nums)
+        # self._print_missing(missing_seq_nums)
         if len(missing_seq_nums) == 0:
             return True
 
@@ -491,7 +494,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
         """
-        self._print_out_packet_data(data)
+        # self._print_out_packet_data(data)
         length_of_data = len(data)
         first_packet_element = struct.unpack_from(
             "<I", data, 0)[0]
