@@ -1211,7 +1211,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Machine", "enable_advanced_monitor_support")
 
         # add algorithms for handling LPG placement and edge insertion
-        if len(self._live_packet_recorder_params) != 0:
+        if self._live_packet_recorder_params:
             algorithms.append("PreAllocateResourcesForLivePacketGatherers")
             inputs['LivePacketRecorderParameters'] = \
                 self._live_packet_recorder_params
@@ -1526,7 +1526,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         algorithms = list()
 
-        if len(self._live_packet_recorder_params) != 0:
+        if self._live_packet_recorder_params:
             algorithms.append(
                 "InsertLivePacketGatherersToGraphs")
             algorithms.append("InsertEdgesToLivePacketGatherers")
@@ -2041,7 +2041,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # If there are no cores in a bad state, find those not yet in
         # their finished state
         unsuccessful_core_subset = CoreSubsets()
-        if len(unsuccessful_cores) == 0:
+        if not unsuccessful_cores:
             for executable_type in self._executable_types:
                 unsuccessful_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
@@ -2054,11 +2054,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             (x, y, p)
             for (x, y, p), core_info in unsuccessful_cores.iteritems()
             if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
-                core_info.state != CPUState.WATCHDOG)
-        ]
+                core_info.state != CPUState.WATCHDOG)]
 
         # If there are any cores that are not in RTE, extract data from them
-        if (len(non_rte_cores) > 0 and
+        if (non_rte_cores and
                 ExecutableType.USES_SIMULATION_INTERFACE in
                 self._executable_types):
             placements = Placements()

@@ -32,12 +32,10 @@ class ProfileDataGatherer(object):
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractHasProfileData):
-
                 # get data
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
-
-                if len(profile_data.tags) > 0:
+                if profile_data.tags:
                     self._write(placement, profile_data, run_time_ms,
                                 machine_time_step_ms, provenance_file_path)
 

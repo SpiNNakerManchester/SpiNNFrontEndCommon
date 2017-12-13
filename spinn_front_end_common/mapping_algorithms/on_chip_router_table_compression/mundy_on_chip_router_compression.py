@@ -240,8 +240,7 @@ class MundyOnChipRouterCompression(object):
         :return: return the source value
         """
         if entry.defaultable:
-            return list(entry.link_ids)[0] + 3 % 6
-        elif len(entry.link_ids) > 0:
+            return (list(entry.link_ids)[0] + 3) % 6
+        elif entry.link_ids:
             return list(entry.link_ids)[0]
-        else:
-            return 0
+        return 0

@@ -183,8 +183,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
-            if (len(send_buffer_times) > 0 and
-                    hasattr(send_buffer_times[0], "__len__")):
+            if send_buffer_times and hasattr(send_buffer_times[0], "__len__"):
                 # Working with a list of lists so check length
                 if len(send_buffer_times) != n_keys:
                     raise ConfigurationException(
@@ -356,10 +355,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _is_in_range(
             self, time_stamp_in_ticks,
             first_machine_time_step, n_machine_time_steps):
-        return (
-            (n_machine_time_steps is None) or (
-                first_machine_time_step <= time_stamp_in_ticks <
-                n_machine_time_steps))
+        return (n_machine_time_steps is None) or (
+            first_machine_time_step <= time_stamp_in_ticks <
+            n_machine_time_steps)
 
     def _fill_send_buffer(
             self, machine_time_step, first_machine_time_step,
@@ -373,8 +371,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         if self._send_buffer is not None:
             self._send_buffer.clear()
-        if (self._send_buffer_times is not None and
-                len(self._send_buffer_times) != 0):
+        if self._send_buffer_times is not None and self._send_buffer_times:
             if hasattr(self._send_buffer_times[0], "__len__"):
 
                 # Works with a list-of-lists
@@ -391,8 +388,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             else:
 
                 # Work with a single list
-                key_list = [
-                    key + key_to_send for key in xrange(self._n_keys)]
+                key_list = [key + key_to_send
+                            for key in xrange(self._n_keys)]
                 for timeStamp in sorted(self._send_buffer_times):
                     time_stamp_in_ticks = int(math.ceil(
                         float(int(timeStamp * 1000.0)) /

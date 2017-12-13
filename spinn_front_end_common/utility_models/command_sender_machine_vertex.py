@@ -105,7 +105,7 @@ class CommandSenderMachineVertex(
         # Write setup region
         # Find the maximum number of commands per timestep
         max_n_commands = 0
-        if len(self._timed_commands) > 0:
+        if self._timed_commands:
             counter = Counter(self._timed_commands)
             max_n_commands = counter.most_common(1)[0][1]
         max_n_commands = max([

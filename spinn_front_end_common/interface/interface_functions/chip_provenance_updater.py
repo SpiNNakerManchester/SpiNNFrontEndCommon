@@ -38,8 +38,7 @@ class ChipProvenanceUpdater(object):
         idle_cores = txrx.get_cores_in_state(
             all_core_subsets, CPUState.IDLE)
 
-        if (len(error_cores) != 0 or len(watchdog_cores) != 0 or
-                len(idle_cores) != 0):
+        if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
                 "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
                 " idle cores {}".format(

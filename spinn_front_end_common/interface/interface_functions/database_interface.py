@@ -48,8 +48,9 @@ class DatabaseInterface(object):
 
     @property
     def needs_database(self):
-        return ((self._user_create_database == "None" and self._needs_db)
-                or self._user_create_database == "True")
+        if self._user_create_database == "None":
+            return self._needs_db
+        return self._user_create_database == "True"
 
     @property
     def database_file_path(self):

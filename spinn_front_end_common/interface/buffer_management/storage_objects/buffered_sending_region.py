@@ -194,12 +194,12 @@ class BufferedSendingRegion(object):
     def is_next_key(self, timestamp):
         """ Determine if there is another key for the given timestamp
 
-        :param timestamp: the time stamp to check if there's still keys to\
-                transmit
+        :param timestamp: \
+            the time stamp to check if there's still keys to transmit
         :rtype: bool
         """
         if timestamp in self._buffer:
-            return len(self._buffer[timestamp]) > 0
+            return bool(self._buffer[timestamp])
         return False
 
     @property
@@ -211,7 +211,7 @@ class BufferedSendingRegion(object):
         next_timestamp = self.next_timestamp
         keys = self._buffer[next_timestamp]
         key = keys.pop()
-        if len(keys) == 0:
+        if not keys:
             del self._buffer[next_timestamp]
             self._current_timestamp_pos += 1
         return key

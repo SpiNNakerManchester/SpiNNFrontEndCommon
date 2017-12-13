@@ -70,7 +70,7 @@ class MockMachine(Thread):
                     self._messages.append(data)
                     sdp_header = SDPHeader.from_bytestring(data, 2)
                     response = None
-                    if len(self._responses) > 0:
+                    if self._responses:
                         response = self._responses.popleft()
                     else:
                         response = _SCPOKMessage(

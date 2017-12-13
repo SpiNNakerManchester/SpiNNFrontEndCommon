@@ -380,7 +380,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
         # self._print_missing(seq_nums)
-        if len(missing_seq_nums) == 0:
+        if not missing_seq_nums:
             return True
 
         # figure n packets given the 2 formats

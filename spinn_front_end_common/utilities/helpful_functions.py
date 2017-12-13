@@ -44,8 +44,7 @@ def read_data(x, y, address, length, data_format, transceiver):
 
     # turn byte array into str for unpack to work
     data = buffer(transceiver.read_memory(x, y, address, length))
-    result = struct.unpack_from(data_format, data)[0]
-    return result
+    return struct.unpack_from(data_format, data)[0]
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -67,8 +66,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
             regions_base_address, region)
     region_address = buffer(transceiver.read_memory(
         placement.x, placement.y, region_offset_in_pointer_table, 4))
-    region_address_decoded = _ONE_WORD.unpack_from(region_address)[0]
-    return region_address_decoded
+    return _ONE_WORD.unpack_from(region_address)[0]
 
 
 def set_up_output_application_data_specifics(
@@ -88,8 +86,8 @@ def set_up_output_application_data_specifics(
     this_run_time_folder = None
     if where_to_write_application_data_files == "DEFAULT":
         directory = os.getcwd()
-        application_generated_data_file_folder = \
-            os.path.join(directory, 'application_generated_data_files')
+        application_generated_data_file_folder = os.path.join(
+            directory, 'application_generated_data_files')
         if not os.path.exists(application_generated_data_file_folder):
             os.makedirs(application_generated_data_file_folder)
 
@@ -98,30 +96,26 @@ def set_up_output_application_data_specifics(
             application_generated_data_file_folder)
 
         # add time stamped folder for this run
-        this_run_time_folder = \
-            os.path.join(
-                application_generated_data_file_folder, this_run_time_string)
+        this_run_time_folder = os.path.join(
+            application_generated_data_file_folder, this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
 
         # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(this_run_time_folder,
-                                             "time_stamp")
-        writer = open(time_of_run_file_name, "w")
-        writer.writelines("{}".format(this_run_time_string))
-        writer.flush()
-        writer.close()
+        time_of_run_file_name = os.path.join(
+            this_run_time_folder, "time_stamp")
+        with open(time_of_run_file_name, "w") as f:
+            f.writelines("{}".format(this_run_time_string))
 
     else:
         # add time stamped folder for this run
-        application_generated_data_file_folder = \
-            os.path.join(where_to_write_application_data_files,
-                         'application_generated_data_files')
+        application_generated_data_file_folder = os.path.join(
+            where_to_write_application_data_files,
+            'application_generated_data_files')
         if not os.path.exists(application_generated_data_file_folder):
             os.makedirs(application_generated_data_file_folder)
-        this_run_time_folder = \
-            os.path.join(application_generated_data_file_folder,
-                         this_run_time_string)
+        this_run_time_folder = os.path.join(
+            application_generated_data_file_folder, this_run_time_string)
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
 
@@ -131,10 +125,10 @@ def set_up_output_application_data_specifics(
             where_to_write_application_data_files)
 
         # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(this_run_time_folder,
-                                             "time_stamp")
-        writer = open(time_of_run_file_name, "w")
-        writer.writelines("{}".format(this_run_time_string))
+        time_of_run_file_name = os.path.join(
+            this_run_time_folder, "time_stamp")
+        with open(time_of_run_file_name, "w") as f:
+            f.writelines("{}".format(this_run_time_string))
 
         if not os.path.exists(this_run_time_folder):
             os.makedirs(this_run_time_folder)
@@ -179,13 +173,12 @@ def set_up_report_specifics(
         if not os.path.exists(report_default_directory):
             os.makedirs(report_default_directory)
     else:
-        report_default_directory = \
-            os.path.join(config_param, 'reports')
+        report_default_directory = os.path.join(config_param, 'reports')
         if not os.path.exists(report_default_directory):
             os.makedirs(report_default_directory)
 
     # clear and clean out folders considered not useful anymore
-    if not created_folder and len(os.listdir(report_default_directory)) > 0:
+    if not created_folder and os.listdir(report_default_directory):
         _remove_excess_folders(max_reports_kept, report_default_directory)
 
     # determine the time slot for later
@@ -202,7 +195,7 @@ def set_up_report_specifics(
         report_default_directory, this_run_time_string)
 
     if not os.path.exists(app_folder_name):
-            os.makedirs(app_folder_name)
+        os.makedirs(app_folder_name)
 
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
@@ -214,27 +207,20 @@ def set_up_report_specifics(
 
     # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
-    writer = open(time_of_run_file_name, "w")
-    writer.writelines("{}".format(this_run_time_string))
-    writer.flush()
-    writer.close()
+    with open(time_of_run_file_name, "w") as f:
+        f.writelines("{}".format(this_run_time_string))
     return app_sub_folder_name, app_folder_name, this_run_time_string
 
 
 def write_finished_file(app_data_runtime_folder, report_default_directory):
     # write a finished file that allows file removal to only remove folders
     # that are finished
-    app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
-    writer = open(app_file_name, "w")
-    writer.writelines("finished")
-    writer.flush()
-    writer.close()
-
-    app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
-    writer = open(app_file_name, "w")
-    writer.writelines("finished")
-    writer.flush()
-    writer.close()
+    finished_file = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
+    with open(finished_file, "w") as f:
+        f.writelines("finished")
+    finished_file = os.path.join(report_default_directory, FINISHED_FILENAME)
+    with open(finished_file, "w") as f:
+        f.writelines("finished")
 
 
 def _remove_excess_folders(max_to_keep, starting_directory):
@@ -246,8 +232,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
         # sort files into time frame
         files_in_report_folder.sort(
             cmp, key=lambda temp_file:
-            os.path.getmtime(os.path.join(starting_directory,
-                                          temp_file)))
+            os.path.getmtime(os.path.join(starting_directory, temp_file)))
 
         # remove only the number of files required, and only if they have
         # the finished flag file created
@@ -264,7 +249,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
                 files_removed += 1
             else:
                 files_not_closed += 1
-            if (files_removed + files_not_closed) >= num_files_to_remove:
+            if files_removed + files_not_closed >= num_files_to_remove:
                 break
         if files_not_closed > max_to_keep / 4:
             logger.warning("{} has {} old reports that have not been closed".
@@ -304,7 +289,7 @@ def sort_out_downed_chips_cores_links(
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
             set of ((x, y), link id) of down links)
-    :rtype: ({(int, int,), }, {(int, int, int), }, {((int, int), int), })
+    :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
     """
     ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
@@ -461,6 +446,7 @@ def convert_time_diff_to_total_milliseconds(sample):
     """ converts between a time diff and total milliseconds
 
     :return: total milliseconds
+    :rtype: float
     """
     return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)
 
@@ -468,38 +454,42 @@ def convert_time_diff_to_total_milliseconds(sample):
 def determine_flow_states(executable_types, no_sync_changes):
     """ returns the start and end states for these executable types
 
-    :param executable_types: the execute types to locate start and end states\
-     from
+    :param executable_types: \
+        the execute types to locate start and end states from
+    :type executable_types: dict(\
+        :py:class:`spinn_front_end_common.utilities.utility_objs.executable_type.ExecutableType`\
+        -> any)
     :param no_sync_changes: the number of times sync signals been sent
+    :type no_sync_changes: int
     :return: dict of executable type to states.
+    :rtype: 2-tuple
     """
     expected_start_states = dict()
     expected_end_states = dict()
-    for executable_start_type in executable_types.keys():
+    for start_type in executable_types.keys():
 
         # cores that ignore all control and are just running
-        if executable_start_type == ExecutableType.RUNNING:
+        if start_type == ExecutableType.RUNNING:
             expected_start_states[ExecutableType.RUNNING] = [
                 CPUState.RUNNING, CPUState.FINISHED]
             expected_end_states[ExecutableType.RUNNING] = [
                 CPUState.RUNNING, CPUState.FINISHED]
 
         # cores that require a sync barrier
-        elif executable_start_type == ExecutableType.SYNC:
+        elif start_type == ExecutableType.SYNC:
             expected_start_states[ExecutableType.SYNC] = [CPUState.SYNC0]
             expected_end_states[ExecutableType.SYNC] = [CPUState.FINISHED]
 
         # cores that use our sim interface
-        elif (executable_start_type ==
-                ExecutableType.USES_SIMULATION_INTERFACE):
+        elif start_type == ExecutableType.USES_SIMULATION_INTERFACE:
             if no_sync_changes % 2 == 0:
-                expected_start_states[executable_start_type] = [CPUState.SYNC0]
+                expected_start_states[start_type] = [CPUState.SYNC0]
             else:
-                expected_start_states[executable_start_type] = [CPUState.SYNC1]
-            expected_end_states[executable_start_type] = [CPUState.PAUSED]
+                expected_start_states[start_type] = [CPUState.SYNC1]
+            expected_end_states[start_type] = [CPUState.PAUSED]
 
     # if no states, go boom.
-    if len(expected_start_states) == 0:
+    if not expected_start_states:
         raise ConfigurationException(
             "Unknown executable start types {}".format(executable_types))
     return expected_start_states, expected_end_states
