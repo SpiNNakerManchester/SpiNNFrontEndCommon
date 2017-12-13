@@ -402,6 +402,7 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
+    # pylint: disable=protected-access
     if value.lower() in RawConfigParser._boolean_states:
         return RawConfigParser._boolean_states[value.lower()]
     raise ValueError("Unknown boolean value {} in configuration {}:{}".format(

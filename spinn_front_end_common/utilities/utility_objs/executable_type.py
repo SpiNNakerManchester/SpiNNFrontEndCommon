@@ -46,17 +46,21 @@ class ExecutableType(Enum):
 
     def __new__(cls, value, start_state, end_state,
                 supports_auto_pause_and_resume, doc=""):
+        # pylint: disable=protected-access, too-many-arguments
         obj = object.__new__(cls)
         obj._value_ = value
         obj.start_state = start_state
         obj.end_state = end_state
         obj.supports_auto_pause_and_resume = supports_auto_pause_and_resume
+        obj.__doc__ = doc
         return obj
 
     def __init__(self, value, start_state, end_state,
                  supports_auto_pause_and_resume, doc=""):
+        # pylint: disable=too-many-arguments
         self._value_ = value
         self.__doc__ = doc
         self.start_state = start_state
         self.end_state = end_state
         self.supports_auto_pause_and_resume = supports_auto_pause_and_resume
+        self.__doc__ = doc

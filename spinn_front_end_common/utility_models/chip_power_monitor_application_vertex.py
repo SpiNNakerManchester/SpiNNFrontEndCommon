@@ -61,6 +61,7 @@ class ChipPowerMonitorApplicationVertex(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps, ip_tags):
         # pylint: disable=too-many-arguments, arguments-differ
+        # pylint: disable=protected-access
 
         # generate spec for the machine vertex
         placement.vertex._generate_data_specification(
