@@ -6,7 +6,6 @@ FAILED_STATE_MSG = "This call is only valid between setup and end/stop"
 
 class FailedState(SimulatorInterface):
 
-    @staticmethod
     def add_socket_address(self, x):
         raise ConfigurationException(FAILED_STATE_MSG)
 
