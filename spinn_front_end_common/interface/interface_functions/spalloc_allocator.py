@@ -94,6 +94,7 @@ class SpallocAllocator(object):
         :param spalloc_port: The optional port number to speak to spalloc
         :param spalloc_machine: The optional spalloc machine to use
         """
+        # pylint: disable=too-many-arguments
 
         # Work out how many boards are needed
         n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD

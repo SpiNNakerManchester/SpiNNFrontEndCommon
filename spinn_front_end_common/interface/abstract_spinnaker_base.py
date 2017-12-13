@@ -796,16 +796,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def run_until_complete(self):
         """ Run a simulation until it completes
         """
-        self._run(None, run_until_complete=True)
+        self._run_wait(None, run_until_complete=True)
 
     def run(self, run_time):
         """ Run a simulation for a fixed amount of time
 
         :param run_time: the run duration in milliseconds.
         """
-        self._run(run_time)
+        self._run_wait(run_time)
 
-    def _run(self, run_time, run_until_complete=False):
+    def _run_wait(self, run_time, run_until_complete=False):
         """ The main internal run function
 
         :param run_time: the run duration in milliseconds.

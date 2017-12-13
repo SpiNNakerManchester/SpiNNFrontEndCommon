@@ -30,6 +30,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
         :param machine_time_step: the machine time step
         :return: pre allocated resources
         """
+        # pylint: disable=too-many-arguments
 
         progress_bar = ProgressBar(
             machine.n_chips, "Preallocating resources for chip power monitor")

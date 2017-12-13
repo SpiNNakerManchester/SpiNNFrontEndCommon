@@ -35,6 +35,7 @@ class DSGRegionReloader(object):
         :param graph_mapper:\
             the mapping between application and machine graph
         """
+        # pylint: disable=too-many-arguments
 
         # build file paths for reloaded stuff
         reloaded_dsg_data_files_file_path = \
@@ -90,6 +91,7 @@ class DSGRegionReloader(object):
             transceiver, placement, vertex, hostname,
             reloaded_dsg_report_files_file_path, write_text_specs,
             reloaded_dsg_data_files_file_path):
+        # pylint: disable=too-many-arguments
 
         # If the vertex doesn't regenerate, skip
         if not isinstance(vertex, AbstractRewritesDataSpecification):

@@ -26,6 +26,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param application_graph: app graph.
         :return: vertex to Ethernet connection map
         """
+        # pylint: disable=too-many-arguments
 
         progress = ProgressBar(
             machine.n_chips + len(list(machine.ethernet_connected_chips)),
@@ -62,6 +63,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :rtype: list
         :return: list of extra monitor cores
         """
+        # pylint: disable=too-many-arguments
 
         extra_monitor_vertices = list()
 
@@ -97,6 +99,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
+
         # insert machine vertices
         for ethernet_connected_chip in progress.over(
                 machine.ethernet_connected_chips, finish_at_end=False):

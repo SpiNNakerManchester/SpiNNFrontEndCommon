@@ -27,6 +27,7 @@ class InsertChipPowerMonitorsToGraphs(object):
         :param machine_graph: the machine graph
         :return: mapping between LPG params and LPG vertex
         """
+        # pylint: disable=too-many-arguments
 
         # create progress bar
         progress = ProgressBar(

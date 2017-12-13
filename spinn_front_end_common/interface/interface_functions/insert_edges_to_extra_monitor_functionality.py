@@ -20,11 +20,12 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param placements: the placements
         :param machine: the machine object
         :param application_graph: the application graph
-        :param vertex_to_ethernet_connected_chip_mapping: mapping between \
-        ethernet connected chips and packet gatherers
+        :param vertex_to_ethernet_connected_chip_mapping: \
+            mapping between ethernet connected chips and packet gatherers
         :param graph_mapper: the graph mapper
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         n_app_vertices = 0
         if application_graph is not None:
             n_app_vertices = application_graph.n_vertices
@@ -62,12 +63,13 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param machine: the spinnMachine instance
         :param placements: the placements object
         :param machine_graph: machine graph object
-        :param vertex_to_ethernet_connected_chip_mapping: the ethernet to mc\
-         gatherer map
+        :param vertex_to_ethernet_connected_chip_mapping: \
+            the ethernet to mc gatherer map
         :param application_graph: app graph object
         :param graph_mapper: the mapping between app and machine graph
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         placement = placements.get_placement_of_vertex(vertex)
         chip = machine.get_chip_at(placement.x, placement.y)
         ethernet_connected_chip = machine.get_chip_at(

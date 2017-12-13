@@ -39,6 +39,7 @@ class MachineGenerator(object):
                (mainly used in debugging purposes)
         :type max_sdram_size: int or None
         """
+        # pylint: disable=too-many-arguments
 
         # if the end user gives you scamp data, use it and don't discover them
         if scamp_connection_data is not None:

@@ -23,7 +23,7 @@ class ProfileDataGatherer(object):
         :param run_time_ms: runtime in ms
         :param machine_time_step: machine time step in ms
         """
-
+        # pylint: disable=too-many-arguments
         machine_time_step_ms = machine_time_step / 1000
 
         progress = ProgressBar(
@@ -41,6 +41,7 @@ class ProfileDataGatherer(object):
 
     def _write(self, p, profile_data, run_time_ms,
                machine_time_step_ms, directory):
+        # pylint: disable=too-many-arguments
         max_tag_len = max([len(tag) for tag in profile_data.tags])
 
         # write data

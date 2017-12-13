@@ -45,6 +45,7 @@ class ApplicationRunner(object):
             executable_targets, executable_types, app_id, txrx, runtime,
             time_scale_factor, no_sync_changes, time_threshold,
             run_until_complete=False):
+        # pylint: disable=too-many-arguments
         logger.info("*** Running simulation... *** ")
 
         # Simplify the notifications
@@ -62,6 +63,8 @@ class ApplicationRunner(object):
             self, buffer_manager, notifier, executable_targets,
             executable_types, app_id, txrx, runtime, time_scale_factor,
             no_sync_changes, time_threshold, run_until_complete):
+        # pylint: disable=too-many-arguments
+
         # wait for all cores to be ready
         self._wait_for_start(txrx, app_id, executable_types)
 
@@ -98,19 +101,12 @@ class ApplicationRunner(object):
         # Wait for the application to finish
         if runtime is None and not run_until_complete:
             logger.info("Application is set to run forever; exiting")
+            # Do NOT stop the buffer manager; app is using it still
         else:
             try:
-                if not run_until_complete:
-                    time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
-                    logger.info(
-                        "Application started; waiting %fs for it to stop",
-                        time_to_wait)
-                    time.sleep(time_to_wait)
-                    self._wait_for_end(txrx, app_id, executable_types,
-                                       timeout=time_threshold)
-                else:
-                    logger.info("Application started; waiting until finished")
-                    self._wait_for_end(txrx, app_id, executable_types)
+                self._run_wait(
+                    txrx, app_id, executable_types, run_until_complete,
+                    runtime, time_scale_factor, time_threshold)
             finally:
                 # Stop the buffer manager after run
                 buffer_manager.stop()
@@ -120,6 +116,21 @@ class ApplicationRunner(object):
             notifier.send_stop_pause_notification()
 
         return no_sync_changes
+
+    def _run_wait(self, txrx, app_id, executable_types, run_until_complete,
+                  runtime, time_scale_factor, time_threshold):
+        # pylint: disable=too-many-arguments
+        if not run_until_complete:
+            time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
+            logger.info(
+                "Application started; waiting %fs for it to stop",
+                time_to_wait)
+            time.sleep(time_to_wait)
+            self._wait_for_end(txrx, app_id, executable_types,
+                               timeout=time_threshold)
+        else:
+            logger.info("Application started; waiting until finished")
+            self._wait_for_end(txrx, app_id, executable_types)
 
     @staticmethod
     def _wait_for_start(txrx, app_id, executable_types, timeout=None):

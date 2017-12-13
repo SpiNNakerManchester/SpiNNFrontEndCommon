@@ -53,6 +53,7 @@ class ChipProvenanceUpdater(object):
 
     def _update_provenance(self, txrx, total_processors, processors_completed,
                            all_core_subsets, app_id, progress):
+        # pylint: disable=too-many-arguments
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:

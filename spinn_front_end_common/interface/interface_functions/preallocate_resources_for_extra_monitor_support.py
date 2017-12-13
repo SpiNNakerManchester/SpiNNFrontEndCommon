@@ -3,7 +3,7 @@ from pacman.model.resources import SpecificChipSDRAMResource, CoreResource, \
 from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
 from spinn_front_end_common.utility_models import \
-    DataSpeedUpPacketGatherMachineVertex
+    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -76,10 +76,10 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             chip
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
 
         # get resources from packet gatherer
-        resources = \
-            DataSpeedUpPacketGatherMachineVertex.static_resources_required()
+        resources = DataSpeedUp.static_resources_required()
 
         # locate Ethernet connected chips that the vertices reside on
         for ethernet_connected_chip in \
