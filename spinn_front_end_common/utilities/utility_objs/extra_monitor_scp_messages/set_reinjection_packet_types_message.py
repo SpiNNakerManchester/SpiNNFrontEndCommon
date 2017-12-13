@@ -17,16 +17,21 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-                0 and 17
+        :param p: \
+            The processor running the extra monitor vertex, between 0 and 17
         :type p: int
-        :param point_to_point: bool stating if point to point should be set
-        :param multicast: bool stating if multicast should be set
-        :param nearest_neighbour: bool stating if nearest neighbour should be \
-        set
-        :param fixed_route: bool stating if fixed route should be set
-        :param command_code: the code used by the extra monitor vertex for \
-        set packet types
+        :param point_to_point: If point to point should be set
+        :type point_to_point: bool
+        :param multicast: If multicast should be set
+        :type multicast: bool
+        :param nearest_neighbour: If nearest neighbour should be set
+        :type nearest_neighbour: bool
+        :param fixed_route: If fixed route should be set
+        :type fixed_route: bool
+        :param command_code: \
+            the code used by the extra monitor vertex for set packet types
+        :type command_code: \
+            :py:class:`spinnman.messages.scp.scp_command.SCPCommand`
         """
 
         self._command_code = command_code

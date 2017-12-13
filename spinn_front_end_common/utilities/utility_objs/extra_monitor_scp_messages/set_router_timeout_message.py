@@ -22,16 +22,19 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-                0 and 17
+        :param p: \
+            The processor running the extra monitor vertex, between 0 and 17
         :type p: int
-        :param timeout_mantissa: The mantissa of the timeout value, \
-                between 0 and 15
+        :param timeout_mantissa: \
+            The mantissa of the timeout value, between 0 and 15
         :type timeout_mantissa: int
-        :param timeout_exponent: The exponent of the timeout value, \
-                between 0 and 15
+        :param timeout_exponent: \
+            The exponent of the timeout value, between 0 and 15
+        :type timeout_exponent: int
         :param command_code: the code used by the extra monitor vertex for \
-        setting the emergency timeout value
+            setting the emergency timeout value
+        :type command_code: \
+            :py:class:`spinnman.messages.scp.scp_command.SCPCommand`
         """
 
         self._command_code = command_code

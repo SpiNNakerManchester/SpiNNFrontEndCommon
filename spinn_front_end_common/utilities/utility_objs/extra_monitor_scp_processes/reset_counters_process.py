@@ -1,7 +1,6 @@
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.\
-    reset_counters_message import ResetCountersMessage
-from spinnman.processes.abstract_multi_connection_process import \
-    AbstractMultiConnectionProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
+    import ResetCountersMessage
+from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class ResetCountersProcess(AbstractMultiConnectionProcess):
