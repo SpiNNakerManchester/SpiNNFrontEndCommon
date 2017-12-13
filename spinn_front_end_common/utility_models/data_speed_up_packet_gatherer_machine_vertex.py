@@ -379,6 +379,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: whether all packets are transmitted
         :rtype: bool
         """
+        # pylint: disable=too-many-locals
+
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
@@ -449,12 +451,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             struct.pack_into(
                 "<{}I".format(size_of_data_left_to_transmit), data, offset,
                 *missing_seq_nums[
-                 seq_num_offset:
-                 seq_num_offset + size_of_data_left_to_transmit])
+                    seq_num_offset:
+                    seq_num_offset + size_of_data_left_to_transmit])
             seq_num_offset += length_left_in_packet
 
-            # build SDP message
-            message = SDPMessage(
+            # build SDP message and send it to the core
+            transceiver.send_sdp_message(message=SDPMessage(
                 sdp_header=SDPHeader(
                     destination_chip_x=placement.x,
                     destination_chip_y=placement.y,
@@ -462,10 +464,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     destination_port=constants.
                     SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
                     flags=SDPFlag.REPLY_NOT_EXPECTED),
-                data=str(data))
-
-            # send message to core
-            transceiver.send_sdp_message(message=message)
+                data=str(data)))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self.TIME_OUT_FOR_SENDING_IN_SECONDS)

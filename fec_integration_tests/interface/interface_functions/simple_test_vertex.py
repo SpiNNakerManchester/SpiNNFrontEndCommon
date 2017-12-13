@@ -16,6 +16,8 @@ class SimpleTestVertex(ApplicationVertex):
     """
     test vertex
     """
+    # pylint: disable=unused-argument
+
     _model_based_max_atoms_per_core = None
 
     def __init__(self, n_atoms, label="testVertex", max_atoms_per_core=256,

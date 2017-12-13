@@ -48,6 +48,20 @@ def read_data(x, y, address, length, data_format, transceiver):
     return struct.unpack_from(data_format, data)[0]
 
 
+def write_address_to_user0(txrx, x, y, p, address):
+    """ Writes the given address into the user_0 register of the given core.
+
+    :param txrx: The transceiver.
+    :param x: Chip coordinate.
+    :param y: Chip coordinate.
+    :param p: Core ID on chip.
+    :param address: Value to write (32-bit integer)
+    """
+    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
+    start_address_encoded = buffer(_ONE_WORD.pack(address))
+    txrx.write_memory(x, y, user_0_address, start_address_encoded)
+
+
 def locate_memory_region_for_placement(placement, region, transceiver):
     """ Get the address of a region for a placement
 

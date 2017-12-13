@@ -80,7 +80,7 @@ class EnergyReport(object):
             spalloc
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
@@ -143,12 +143,12 @@ class EnergyReport(object):
         :param packet_cost: packet cost
         :param load_time_cost: load time cost
         :param data_extraction_cost: data extraction cost
-        :param runtime_total_ms: runtime with time scale factor\
-            taken into account
+        :param runtime_total_ms: \
+            Runtime with time scale factor taken into account
         :param f: file writer
         :rtype: None
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
 
         # total the energy costs
         total_joules = (
@@ -220,7 +220,7 @@ class EnergyReport(object):
         :return: machine_active_cost, machine_idle_chips_cost, \
             fpga_cost, packet_cost, load_time_cost, extraction_time_cost
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
 
         # write warning about accuracy etc
         self._write_warning(f)
@@ -407,6 +407,7 @@ class EnergyReport(object):
         :param ethernet_connected_chip: the ethernet chip to look from
         :return: number of fpgas on, on this board
         """
+        # pylint: disable=too-many-locals
 
         # positions to check for active links
         left_additions = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4)]

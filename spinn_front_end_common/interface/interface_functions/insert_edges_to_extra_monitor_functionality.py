@@ -1,8 +1,9 @@
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants \
+    import PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP
 from spinn_front_end_common.utility_models import \
-    DataSpeedUpPacketGatherMachineVertex, \
+    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp, \
     ExtraMonitorSupportApplicationVertex, \
     ExtraMonitorSupportMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
@@ -70,45 +71,41 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :rtype: None
         """
         # pylint: disable=too-many-arguments
-        placement = placements.get_placement_of_vertex(vertex)
-        chip = machine.get_chip_at(placement.x, placement.y)
-        ethernet_connected_chip = machine.get_chip_at(
-            chip.nearest_ethernet_x, chip.nearest_ethernet_y)
-        data_gatherer_vertex = vertex_to_ethernet_connected_chip_mapping[
-            ethernet_connected_chip.x, ethernet_connected_chip.y]
+        data_gatherer_vertex = self._get_gatherer_vertex(
+            machine, vertex_to_ethernet_connected_chip_mapping, placements,
+            vertex)
 
-        # locate if a edge is already built
-        already_built = self._has_edge_already(
-            vertex, data_gatherer_vertex, machine_graph)
-
-        # if not built, build a edge and do mapping
-        if not already_built:
+        # locate if edge is already built; if not, build it and do mapping
+        if not self._has_edge_already(
+                vertex, data_gatherer_vertex, machine_graph):
             machine_edge = MachineEdge(
                 vertex, data_gatherer_vertex,
-                traffic_type=DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE)
+                traffic_type=DataSpeedUp.TRAFFIC_TYPE)
             machine_graph.add_edge(
-                machine_edge,
-                constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+                machine_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
 
             if application_graph is not None:
                 app_source = graph_mapper.get_application_vertex(vertex)
                 app_dest = graph_mapper.get_application_vertex(
                     data_gatherer_vertex)
 
-                # locate if a edge is already built
-                already_built = self._has_edge_already(
-                    app_source, app_dest, application_graph)
-
-                # if not built, build a edge and do mapping
-                if not already_built:
+                # locate if edge is already built; if not, build it and map it
+                if not self._has_edge_already(
+                        app_source, app_dest, application_graph):
                     app_edge = ApplicationEdge(
                         app_source, app_dest,
-                        traffic_type=(
-                            DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE))
+                        traffic_type=DataSpeedUp.TRAFFIC_TYPE)
                     application_graph.add_edge(
-                        app_edge,
-                        constants.PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+                        app_edge, PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
                     graph_mapper.add_edge_mapping(machine_edge, app_edge)
+
+    @staticmethod
+    def _get_gatherer_vertex(machine, v_to_2_chip_map, placements, vertex):
+        placement = placements.get_placement_of_vertex(vertex)
+        chip = machine.get_chip_at(placement.x, placement.y)
+        ethernet_chip = machine.get_chip_at(
+            chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+        return v_to_2_chip_map[ethernet_chip.x, ethernet_chip.y]
 
     @staticmethod
     def _has_edge_already(source, destination, graph):

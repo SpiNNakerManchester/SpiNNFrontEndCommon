@@ -120,7 +120,7 @@ class BufferManager(object):
             in a file instead of in RAM (default uses RAM)
         :type store_to_file: bool
         """
-
+        # pylint: disable=too-many-arguments
         self._placements = placements
         self._tags = tags
         self._transceiver = transceiver
@@ -616,23 +616,16 @@ class BufferManager(object):
             if not self._received_data.is_end_buffering_state_recovered(
                     placement.x, placement.y, placement.p,
                     recording_region_id):
-
-                end_state_address = get_region_pointer(
-                    placement, self._transceiver, recording_data_address,
-                    recording_region_id)
                 end_state = self._generate_end_buffering_state_from_machine(
-                    placement, end_state_address)
+                    placement, get_region_pointer(
+                        placement, self._transceiver, recording_data_address,
+                        recording_region_id))
                 self._received_data.store_end_buffering_state(
                     placement.x, placement.y, placement.p, recording_region_id,
                     end_state)
             else:
                 end_state = self._received_data.get_end_buffering_state(
                     placement.x, placement.y, placement.p, recording_region_id)
-
-            start_ptr = end_state.start_address
-            write_ptr = end_state.current_write
-            end_ptr = end_state.end_address
-            read_ptr = end_state.current_read
 
             # current read needs to be adjusted in case the last portion of the
             # memory has already been read, but the HostDataRead packet has not
@@ -650,48 +643,15 @@ class BufferManager(object):
                     placement.x, placement.y, placement.p)
 
             if last_sequence_number == seq_no_last_ack_packet:
-
-                # if the last ACK packet has not been processed on the chip,
-                # process it now
-                last_sent_ack_sdp_packet = \
-                    self._received_data.last_sent_packet_to_core(
-                        placement.x, placement.y, placement.p)
-                last_sent_ack_packet = \
-                    create_eieio_command.read_eieio_command_message(
-                        last_sent_ack_sdp_packet.data, 0)
-                if not isinstance(last_sent_ack_packet, HostDataRead):
-                    raise Exception(
-                        "Something somewhere went terribly wrong - "
-                        "I was looking for a HostDataRead packet, "
-                        "while I got {0:s}".format(last_sent_ack_packet))
-                for i in xrange(last_sent_ack_packet.n_requests):
-
-                    last_ack_packet_is_of_this_region = \
-                        recording_region_id == \
-                        last_sent_ack_packet.region_id(i)
-
-                    if (last_ack_packet_is_of_this_region and
-                            not end_state.is_state_updated):
-                        read_ptr += last_sent_ack_packet.space_read(i)
-                        if (read_ptr == write_ptr or
-                                (read_ptr == end_ptr and
-                                 write_ptr == start_ptr)):
-                            end_state.update_last_operation(
-                                BUFFERING_OPERATIONS.BUFFER_READ.value)
-                        if read_ptr == end_ptr:
-                            read_ptr = start_ptr
-                        elif read_ptr > end_ptr:
-                            raise Exception(
-                                "Something somewhere went terribly wrong - "
-                                "I was reading beyond the region area some "
-                                "unknown data".format(
-                                    last_sent_ack_packet))
-                end_state.update_read_pointer(read_ptr)
-                end_state.set_update_completed()
+                self._process_last_ack(placement, recording_region_id,
+                                       end_state)
 
             # now state is updated, read back values for read pointer and
             # last operation performed
             last_operation = end_state.last_buffer_operation
+            start_ptr = end_state.start_address
+            end_ptr = end_state.end_address
+            write_ptr = end_state.current_write
             read_ptr = end_state.current_read
 
             # now read_ptr is updated, check memory to read
@@ -765,6 +725,40 @@ class BufferManager(object):
         data = self._received_data.get_region_data_pointer(
             placement.x, placement.y, placement.p, recording_region_id)
         return data
+
+    def _process_last_ack(self, placement, region_id, end_state):
+        # if the last ACK packet has not been processed on the chip,
+        # process it now
+        last_sent_ack = self._received_data.last_sent_packet_to_core(
+            placement.x, placement.y, placement.p)
+        last_sent_ack = create_eieio_command.read_eieio_command_message(
+            last_sent_ack.data, 0)
+        if not isinstance(last_sent_ack, HostDataRead):
+            raise Exception(
+                "Something somewhere went terribly wrong; looking for a "
+                "HostDataRead packet, while I got {0:s}".format(last_sent_ack))
+
+        start_ptr = end_state.start_address
+        write_ptr = end_state.current_write
+        end_ptr = end_state.end_address
+        read_ptr = end_state.current_read
+
+        for i in xrange(last_sent_ack.n_requests):
+            in_region = region_id == last_sent_ack.region_id(i)
+            if in_region and not end_state.is_state_updated:
+                read_ptr += last_sent_ack.space_read(i)
+                if (read_ptr == write_ptr or
+                        (read_ptr == end_ptr and write_ptr == start_ptr)):
+                    end_state.update_last_operation(
+                        BUFFERING_OPERATIONS.BUFFER_READ.value)
+                if read_ptr == end_ptr:
+                    read_ptr = start_ptr
+                elif read_ptr > end_ptr:
+                    raise Exception(
+                        "Something somewhere went terribly wrong; I was "
+                        "reading beyond the region area")
+        end_state.update_read_pointer(read_ptr)
+        end_state.set_update_completed()
 
     def _process_buffered_in_packet(self, packet):
         # logger.debug(

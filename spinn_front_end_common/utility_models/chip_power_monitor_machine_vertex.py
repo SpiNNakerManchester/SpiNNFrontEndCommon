@@ -100,6 +100,8 @@ class ChipPowerMonitorMachineVertex(
 
         :return:Resource container
         """
+        # pylint: disable=too-many-locals
+
         # get config
         config = globals_variables.get_simulator().config
 

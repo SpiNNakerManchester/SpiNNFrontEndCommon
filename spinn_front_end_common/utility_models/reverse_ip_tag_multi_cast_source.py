@@ -108,7 +108,7 @@ class ReverseIpTagMultiCastSource(
         :param buffer_notification_tag: The IP tag to use to notify the\
             host about space in the buffer (default is to use any tag)
         """
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
         ApplicationVertex.__init__(
             self, label, constraints, max_atoms_per_core)
         ProvidesKeyToAtomMappingImpl.__init__(self)

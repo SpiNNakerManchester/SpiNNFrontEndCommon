@@ -51,7 +51,7 @@ class LivePacketGatherMachineVertex(
             number_of_packets_sent_per_time_step=0,
             hostname=None, port=None, strip_sdp=None, board_address=None,
             tag=None, constraints=None):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
 
         # inheritance
         MachineVertex.__init__(self, label, constraints=constraints)

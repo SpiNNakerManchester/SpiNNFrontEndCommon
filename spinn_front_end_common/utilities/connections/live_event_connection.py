@@ -157,54 +157,57 @@ class LiveEventConnection(DatabaseConnection):
             "machine_time_step") / 1000.0
 
         if self._send_labels is not None:
-            self._sender_connection = EIEIOConnection()
-            for send_label in self._send_labels:
-                self._send_address_details[send_label] = \
-                    self.__get_live_input_details(db_reader, send_label)
-                if self._machine_vertices:
-                    key, _ = db_reader.get_machine_live_input_key(send_label)
-                    self._atom_id_to_key[send_label] = {0: key}
-                    vertex_sizes[send_label] = 1
-                else:
-                    self._atom_id_to_key[send_label] = \
-                        db_reader.get_atom_id_to_key_mapping(send_label)
-                    vertex_sizes[send_label] = len(
-                        self._atom_id_to_key[send_label])
+            self._init_sender(db_reader, vertex_sizes)
 
         if self._receive_labels is not None:
-            for label_id, receive_label in enumerate(self._receive_labels):
-                host, port, board_address = self.__get_live_output_details(
-                    db_reader, receive_label)
-                if port not in self._receivers:
-                    receiver = EIEIOConnection(local_port=port)
-                    listener = ConnectionListener(receiver)
-                    listener.add_callback(self._receive_packet_callback)
-                    listener.start()
-                    self._receivers[port] = receiver
-                    self._listeners[port] = listener
-
-                send_port_trigger_message(receiver, board_address)
-                logger.info(
-                    "Listening for traffic from %s on %s:%d",
-                    receive_label, host, port)
-
-                if self._machine_vertices:
-                    key, _ = db_reader.get_machine_live_output_key(
-                        receive_label, self._live_packet_gather_label)
-                    self._key_to_atom_id_and_label[key] = (0, label_id)
-                    vertex_sizes[receive_label] = 1
-                else:
-                    key_to_atom_id = db_reader.get_key_to_atom_id_mapping(
-                        receive_label)
-                    for (key, atom_id) in key_to_atom_id.iteritems():
-                        self._key_to_atom_id_and_label[key] = (
-                            atom_id, label_id)
-                    vertex_sizes[receive_label] = len(key_to_atom_id)
+            self._init_receivers(db_reader, vertex_sizes)
 
         for label, vertex_size in vertex_sizes.iteritems():
             for init_callback in self._init_callbacks[label]:
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
+
+    def _init_sender(self, db, vertex_sizes):
+        self._sender_connection = EIEIOConnection()
+        for label in self._send_labels:
+            self._send_address_details[label] = self.__get_live_input_details(
+                db, label)
+            if self._machine_vertices:
+                key, _ = db.get_machine_live_input_key(label)
+                self._atom_id_to_key[label] = {0: key}
+                vertex_sizes[label] = 1
+            else:
+                self._atom_id_to_key[label] = db.get_atom_id_to_key_mapping(
+                    label)
+                vertex_sizes[label] = len(self._atom_id_to_key[label])
+
+    def _init_receivers(self, db, vertex_sizes):
+        for label_id, label in enumerate(self._receive_labels):
+            host, port, board_address = self.__get_live_output_details(
+                db, label)
+            if port not in self._receivers:
+                receiver = EIEIOConnection(local_port=port)
+                listener = ConnectionListener(receiver)
+                listener.add_callback(self._receive_packet_callback)
+                listener.start()
+                self._receivers[port] = receiver
+                self._listeners[port] = listener
+
+            send_port_trigger_message(receiver, board_address)
+            logger.info(
+                "Listening for traffic from %s on %s:%d",
+                label, host, port)
+
+            if self._machine_vertices:
+                key, _ = db.get_machine_live_output_key(
+                    label, self._live_packet_gather_label)
+                self._key_to_atom_id_and_label[key] = (0, label_id)
+                vertex_sizes[label] = 1
+            else:
+                key_to_atom_id = db.get_key_to_atom_id_mapping(label)
+                for (key, atom_id) in key_to_atom_id.iteritems():
+                    self._key_to_atom_id_and_label[key] = (atom_id, label_id)
+                vertex_sizes[label] = len(key_to_atom_id)
 
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
