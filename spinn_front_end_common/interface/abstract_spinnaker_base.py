@@ -921,9 +921,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                  "use_auto_pause_and_resume", "False")
 
         # Work out an array of timesteps to perform
-        if (not self._config.getboolean(
-                "Buffers", "use_auto_pause_and_resume") or
-                not is_buffered_recording):
+        if (not self._config.getboolean("Buffers", "use_auto_pause_and_resume")
+                or not is_buffered_recording):
 
             # Not currently possible to run the second time for more than the
             # first time without auto pause and resume
@@ -1082,8 +1081,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if min_time_steps is None:
             return [n_machine_time_steps]
-        else:
-            return self._generate_steps(n_machine_time_steps, min_time_steps)
+        return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
     def _generate_steps(n_machine_time_steps, min_machine_time_steps):
@@ -1105,25 +1103,23 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return steps
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):
-        total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
-            total_run_timesteps += self._current_run_timesteps
-            self._no_machine_time_steps = total_run_timesteps
-        else:
-            self._no_machine_time_steps = None
-            for vertex in self._application_graph.vertices:
-                if (isinstance(vertex, AbstractRecordable) and
-                        vertex.is_recording()):
-                    raise ConfigurationException(
-                        "recording a vertex when set to infinite runtime "
-                        "is not currently supported")
-            for vertex in self._machine_graph.vertices:
-                if (isinstance(vertex, AbstractRecordable) and
-                        vertex.is_recording()):
-                    raise ConfigurationException(
-                        "recording a vertex when set to infinite runtime "
-                        "is not currently supported")
-        return total_run_timesteps
+            total_timesteps = next_run_timesteps + self._current_run_timesteps
+            self._no_machine_time_steps = total_timesteps
+            return total_timesteps
+
+        self._no_machine_time_steps = None
+        for vtx in self._application_graph.vertices:
+            if isinstance(vtx, AbstractRecordable) and vtx.is_recording():
+                raise ConfigurationException(
+                    "recording a vertex when set to infinite runtime "
+                    "is not currently supported")
+        for vtx in self._machine_graph.vertices:
+            if isinstance(vtx, AbstractRecordable) and vtx.is_recording():
+                raise ConfigurationException(
+                    "recording a vertex when set to infinite runtime "
+                    "is not currently supported")
+        return None
 
     def _run_algorithms(
             self, inputs, algorithms, outputs, tokens, required_tokens,
@@ -1605,21 +1601,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._machine_graph.n_vertices == 0):
             full = self._config.get(
                 "Mapping", "application_to_machine_graph_algorithms")
-            individual = full.replace(" ", "").split(",")
-            algorithms.extend(individual)
+            algorithms.extend(full.replace(" ", "").split(","))
             inputs['MemoryPreviousAllocatedResources'] = \
                 PreAllocatedResourceContainer()
 
         if self._use_virtual_board:
             full = self._config.get(
                 "Mapping", "machine_graph_to_virtual_machine_algorithms")
-            individual = full.replace(" ", "").split(",")
-            algorithms.extend(individual)
         else:
             full = self._config.get(
                 "Mapping", "machine_graph_to_machine_algorithms")
-            individual = full.replace(" ", "").split(",")
-            algorithms.extend(individual)
+        algorithms.extend(full.replace(" ", "").split(","))
 
         # add check for algorithm start type
         algorithms.append("LocateExecutableStartType")
@@ -2308,14 +2300,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._has_ran:
             return (
                 float(self._current_run_timesteps) *
-                (float(self._machine_time_step) / 1000.0))
+                (self._machine_time_step / 1000.0))
         return 0.0
 
     def get_generated_output(self, name_of_variable):
         if name_of_variable in self._last_run_outputs:
             return self._last_run_outputs[name_of_variable]
-        else:
-            return None
+        return None
 
     def __repr__(self):
         return "general front end instance for machine {}"\
@@ -2404,11 +2395,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "clear_routing_tables")
 
         if clear_tags is None:
-            clear_tags = self._config.getboolean(
-                "Machine", "clear_tags")
+            clear_tags = self._config.getboolean("Machine", "clear_tags")
 
         if self._txrx is not None:
-
             # if stopping on machine, clear iptags and
             if clear_tags:
                 for ip_tag in self._tags.ip_tags:

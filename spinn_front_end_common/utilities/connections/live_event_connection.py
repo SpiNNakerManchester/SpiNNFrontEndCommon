@@ -212,8 +212,7 @@ class LiveEventConnection(DatabaseConnection):
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
             return db_reader.get_machine_live_input_details(send_label)
-        else:
-            return db_reader.get_live_input_details(send_label)
+        return db_reader.get_live_input_details(send_label)
 
     def __get_live_output_details(self, db_reader, receive_label):
         if self._machine_vertices:

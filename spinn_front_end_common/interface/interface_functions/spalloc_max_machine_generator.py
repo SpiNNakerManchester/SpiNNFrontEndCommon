@@ -41,11 +41,10 @@ class SpallocMaxMachineGenerator(object):
             version=None)
 
     @staticmethod
-    def _filter(machines, filter):  # @ReservedAssignment
-        if filter is None:
+    def _filter(machines, target_name):
+        if target_name is None:
             return (m for m in machines if "default" in m["tags"])
-        else:
-            return (m for m in machines if m["name"] == filter)
+        return (m for m in machines if m["name"] == target_name)
 
     @staticmethod
     def _get_size(machine):

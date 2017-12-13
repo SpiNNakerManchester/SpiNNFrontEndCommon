@@ -68,8 +68,7 @@ class SimpleTestVertex(ApplicationVertex):
         """
         if self._fixed_sdram_value is None:
             return 1 * vertex_slice.n_atoms
-        else:
-            return self._fixed_sdram_value
+        return self._fixed_sdram_value
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(

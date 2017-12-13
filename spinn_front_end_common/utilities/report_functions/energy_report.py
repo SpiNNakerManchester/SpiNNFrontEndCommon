@@ -330,7 +330,7 @@ class EnergyReport(object):
 
             # if the spinn4 or spinn5 board, need to verify if wrap-arounds
             # are there, if not then assume fpgas are turned off.
-            elif int(version) in (4, 5):
+            if int(version) in (4, 5):
 
                 # how many fpgas are active
                 n_operational_fpgas = self._board_n_operational_fpgas(
@@ -341,16 +341,17 @@ class EnergyReport(object):
                     return self._print_out_fpga_cost(
                         total_runtime, n_operational_fpgas, f, version,
                         runtime_total_ms)
-                else:  # no active fpgas
-                    f.write(
-                        "The FPGA's on the SpiNN-{} board are turned off and "
-                        "therefore the energy used by the FPGA is 0\n".format(
-                            version))
-                    return 0, 0
-            else:  # no idea where we are
-                raise ConfigurationException(
-                    "Do not know what the FPGA setup is for this version of "
-                    "SpiNNaker machine.")
+                # no active fpgas
+                f.write(
+                    "The FPGA's on the SpiNN-{} board are turned off and "
+                    "therefore the energy used by the FPGA is 0\n".format(
+                        version))
+                return 0, 0
+
+            # no idea where we are; version unrecognised
+            raise ConfigurationException(
+                "Do not know what the FPGA setup is for this version of "
+                "SpiNNaker machine.")
         else:  # spalloc machine, need to check each board
             total_fpgas = 0
             for ethernet_connected_chip in machine.ethernet_connected_chips:

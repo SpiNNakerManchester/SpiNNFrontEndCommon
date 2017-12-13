@@ -92,24 +92,19 @@ class MachineGenerator(object):
     def _sort_out_bmp_cabinet_and_frame_string(bmp_cabinet_and_frame):
         split_string = bmp_cabinet_and_frame.split(";", 2)
         if len(split_string) == 1:
-            hostname_split = split_string[0].split(",")
-            if len(hostname_split) == 1:
+            host = split_string[0].split(",")
+            if len(host) == 1:
                 return [0, 0, split_string[0], None]
-            else:
-                return [0, 0, hostname_split[0], hostname_split[1]]
+            return [0, 0, host[0], host[1]]
         if len(split_string) == 2:
-            hostname_split = split_string[1].split(",")
-            if len(hostname_split) == 1:
-                return [0, split_string[0], split_string[1], None]
-            else:
-                return [0, split_string[0], hostname_split[0],
-                        hostname_split[1]]
-        hostname_split = split_string[2].split(",")
-        if len(hostname_split) == 1:
-            return [split_string[0], split_string[1], hostname_split[0], None]
-        else:
-            return [split_string[0], split_string[1], hostname_split[0],
-                    hostname_split[1]]
+            host = split_string[1].split(",")
+            if len(host) == 1:
+                return [0, split_string[0], host[0], None]
+            return [0, split_string[0], host[0], host[1]]
+        host = split_string[2].split(",")
+        if len(host) == 1:
+            return [split_string[0], split_string[1], host[0], None]
+        return [split_string[0], split_string[1], host[0], host[1]]
 
     @staticmethod
     def _sort_out_bmp_boards_string(bmp_boards):
