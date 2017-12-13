@@ -989,7 +989,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         if (msg->data[COMMAND_ID_POSITION] ==
                     SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS &&
                     number_of_missing_seq_sdp_packets != 0){
-                 io_printf(IO_BUF, "forcing start of retranmission packet\n");
+                //io_printf(IO_BUF, "forcing start of retranmission packet\n");
                 sark_msg_free((sdp_msg_t *) msg);
                 number_of_missing_seq_sdp_packets = 0;
                 missing_sdp_seq_num_sdram_address[
@@ -1005,7 +1005,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
             if (!in_re_transmission_mode) {
 
                 // put missing sequence numbers into sdram
-                io_printf(IO_BUF, "storing thing\n");
+                //io_printf(IO_BUF, "storing thing\n");
                 store_missing_seq_nums(
                     msg->data,
                     (msg->length - LENGTH_OF_SDP_HEADER) /
@@ -1014,14 +1014,14 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                         SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
 
                 //log_info("free message");
-                io_printf(IO_BUF, "freeing SDP packet\n");
+                //io_printf(IO_BUF, "freeing SDP packet\n");
                 sark_msg_free((sdp_msg_t *) msg);
 
                 // if got all missing packets, start retransmitting them to host
                 if (number_of_missing_seq_sdp_packets == 0) {
                     // packets all received, add finish flag for DMA stoppage
 
-                    io_printf(IO_BUF, "starting resend process\n");
+                    //io_printf(IO_BUF, "starting resend process\n");
                     missing_sdp_seq_num_sdram_address[
                     number_of_missing_seq_nums_in_sdram] = END_FLAG;
                     number_of_missing_seq_nums_in_sdram += 1;

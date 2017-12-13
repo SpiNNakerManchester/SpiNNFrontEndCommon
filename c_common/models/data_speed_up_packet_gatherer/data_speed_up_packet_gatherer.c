@@ -83,8 +83,8 @@ void resume_callback() {
 }
 
 void send_data(){
-    log_info("last element is %d", data[position_in_store - 1]);
-    log_info("first element is %d", data[0]);
+    //log_info("last element is %d", data[position_in_store - 1]);
+    //log_info("first element is %d", data[0]);
 
     spin1_memcpy(&my_msg.data, data,
 	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
@@ -110,8 +110,8 @@ void send_data(){
 void receive_data(uint key, uint payload) {
     //log_info("packet!");
     if (key == new_sequence_key) {
-        log_info("finding new seq num %d", payload);
-        log_info("position in store is %d", position_in_store);
+        //log_info("finding new seq num %d", payload);
+        //log_info("position in store is %d", position_in_store);
         data[0] = payload;
         seq_num = payload;
         position_in_store = 1;
@@ -129,7 +129,7 @@ void receive_data(uint key, uint payload) {
         //log_info("payload is %d", payload);
 
         if (key == first_data_key) {
-            log_info("resetting seq and position");
+            //log_info("resetting seq and position");
             seq_num = FIRST_SEQ_NUM;
             data[0] = seq_num;
             position_in_store = 1;
@@ -143,8 +143,8 @@ void receive_data(uint key, uint payload) {
             // adjust size as last payload not counted
             position_in_store = position_in_store - 1;
 
-            log_info("position = %d with seq num %d", position_in_store, seq_num);
-            log_info("last payload was %d", payload);
+            //log_info("position = %d with seq num %d", position_in_store, seq_num);
+            //log_info("last payload was %d", payload);
             send_data();
         } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
