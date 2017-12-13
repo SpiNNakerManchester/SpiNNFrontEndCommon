@@ -6,6 +6,7 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from spinn_front_end_common.abstract_models import \
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.read_status_process import \
@@ -66,7 +67,7 @@ class ExtraMonitorSupportMachineVertex(
                ("EXIT", 5)])
 
     def __init__(
-            self, constraints, reinject_multicast=True,
+            self, constraints, reinject_multicast=None,
             reinject_point_to_point=False, reinject_nearest_neighbour=False,
             reinject_fixed_route=False):
         """ constructor
@@ -84,7 +85,12 @@ class ExtraMonitorSupportMachineVertex(
         AbstractHasAssociatedBinary.__init__(self)
         AbstractGeneratesDataSpecification.__init__(self)
 
-        self._reinject_multicast = reinject_multicast
+        if reinject_multicast is None:
+            config = globals_variables.get_simulator().config
+            self._reinject_multicast = config.getboolean(
+                "Machine", "enable_reinjection")
+        else:
+            self._reinject_multicast = reinject_multicast
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
