@@ -71,8 +71,8 @@ class DatabaseConnection(UDPConnection, Thread):
     def run(self):
         self._running = True
         logger.info(
-            "{}:{} Waiting for message to indicate that the database is "
-            "ready".format(self.local_ip_address, self.local_port))
+            "%s:%d Waiting for message to indicate that the database is "
+            "ready", self.local_ip_address, self.local_port)
         try:
             while self._running:
                 data, address = self._retrieve_database_address()
@@ -85,8 +85,8 @@ class DatabaseConnection(UDPConnection, Thread):
 
     def _process_message(self, address, data):
         # Read the read packet confirmation
-        logger.info("{}:{} Reading database".format(
-            self.local_ip_address, self.local_port))
+        logger.info("%s:%d Reading database",
+                    self.local_ip_address, self.local_port)
         database_path = str(data[2:])
 
         # Call the callback

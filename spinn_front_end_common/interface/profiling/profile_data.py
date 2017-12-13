@@ -79,7 +79,7 @@ class ProfileData(object):
 
             tag_label = self._tag_labels.get(tag, None)
             if tag_label is None:
-                logger.warn("Unknown tag {} in profile data".format(tag))
+                logger.warn("Unknown tag %d in profile data", tag)
                 tag_label = "UNKNOWN"
 
             # Get indices where these tags occur

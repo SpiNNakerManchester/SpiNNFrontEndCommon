@@ -134,10 +134,10 @@ class RouterProvenanceGatherer(object):
                     x, y, router_diagnostic, reinjection_status, True,
                     router_table))
                 self._add_totals(router_diagnostic, reinjection_status)
-            except Exception as e:
-                logger.warn(
-                    "Could not read routing diagnostics from {}, {}: {}"
-                    .format(x, y, e))
+            except Exception:
+                logger.warning(
+                    "Could not read routing diagnostics from %d, %d",
+                    x, y, exc_info=True)
 
     def _write_router_chip_diagnostic(
             self, txrx, chip, seen_chips, items, reinjection_data):

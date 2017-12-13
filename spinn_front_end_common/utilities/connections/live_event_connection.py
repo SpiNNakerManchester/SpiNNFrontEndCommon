@@ -188,8 +188,8 @@ class LiveEventConnection(DatabaseConnection):
 
                 send_port_trigger_message(receiver, board_address)
                 logger.info(
-                    "Listening for traffic from {} on {}:{}".format(
-                        receive_label, host, port))
+                    "Listening for traffic from %s on %s:%d",
+                    receive_label, host, port)
 
                 if self._machine_vertices:
                     key, _ = db_reader.get_machine_live_output_key(

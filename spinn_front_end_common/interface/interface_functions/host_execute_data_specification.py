@@ -69,8 +69,8 @@ class HostExecuteDataSpecification(object):
             # bytes_used_by_spec, bytes_written_by_spec = \
             executor.execute()
         except DataSpecificationException:
-            logger.error("Error executing data specification for {}, {}, {}"
-                         .format(x, y, p))
+            logger.error("Error executing data specification for %d, %d, %d",
+                         x, y, p)
             raise
 
         bytes_used_by_spec = executor.get_constructed_data_size()

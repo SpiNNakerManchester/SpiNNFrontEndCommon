@@ -165,18 +165,17 @@ class BufferManager(object):
         :param length: the number of bytes to extract
         :return: data as a byte array
         """
-        if self._uses_advanced_monitors:
-            sender = self._extra_monitor_cores_by_chip[
-                (placement_x, placement_y)]
-            receiver = funs.locate_extra_monitor_mc_receiver(
-                self._machine, placement_x, placement_y,
-                self._extra_monitor_cores_to_ethernet_connection_map)
-            return receiver.get_data(
-                transceiver, self._placements.get_placement_of_vertex(sender),
-                address, length)
-        else:
+        if not self._uses_advanced_monitors:
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
+
+        sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
+        receiver = funs.locate_extra_monitor_mc_receiver(
+            self._machine, placement_x, placement_y,
+            self._extra_monitor_cores_to_ethernet_connection_map)
+        return receiver.get_data(
+            transceiver, self._placements.get_placement_of_vertex(sender),
+            address, length)
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
@@ -239,8 +238,9 @@ class BufferManager(object):
         self._seen_tags.add((tag.ip_address, connection.local_port))
         utility_functions.send_port_trigger_message(
             connection, tag.board_address)
-        logger.info("Listening for packets using tag {} on {}:{}".format(
-            tag.tag, connection.local_ip_address, connection.local_port))
+        logger.info(
+            "Listening for packets using tag %s on %s:%d",
+            tag.tag, connection.local_ip_address, connection.local_port)
         return connection
 
     def _add_buffer_listeners(self, vertex):

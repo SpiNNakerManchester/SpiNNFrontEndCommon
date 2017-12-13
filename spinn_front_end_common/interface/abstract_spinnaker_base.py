@@ -356,8 +356,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # global params
         if default_config_paths is None:
             default_config_paths = []
-        default_config_paths.insert(0, os.path.join(os.path.dirname(__file__),
-                                                    CONFIG_FILE))
+        default_config_paths.insert(0, os.path.join(
+            os.path.dirname(__file__), CONFIG_FILE))
 
         self._load_config(filename=configfile, defaults=default_config_paths,
                           validation_cfg=validation_cfg)
@@ -373,8 +373,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # output locations of binaries to be searched for end user info
         logger.info(
-            "Will search these locations for binaries: {}"
-            .format(self._executable_finder.binary_paths))
+            "Will search these locations for binaries: %s",
+            self._executable_finder.binary_paths)
 
         self._n_chips_required = n_chips_required
         self._hostname = None
@@ -591,9 +591,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Please fix and try again")
 
     def _load_config(self, filename, defaults, validation_cfg):
-        self._config = conf_loader.load_config(filename=filename,
-                                               defaults=defaults,
-                                               validation_cfg=validation_cfg)
+        self._config = conf_loader.load_config(
+            filename=filename, defaults=defaults,
+            validation_cfg=validation_cfg)
+
+    # options names are all lower without _ inside config
+    DEBUG_ENABLE_OPTS = frozenset([
+        "reportsenabled", "displayalgorithmtimings",
+        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
+    REPORT_DISABLE_OPTS = frozenset([
+        "displayalgorithmtimings",
+        "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
     def _adjust_config(self, runtime):
         """
@@ -606,31 +614,24 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._config.get("Mode", "mode") == "Debug":
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if (option in ["reportsenabled", "displayalgorithmtimings",
-                               "clear_iobuf_during_run",
-                               "extract_iobuf", "extract_iobuf_during_run"]
-                        or option[:5] == "write"):
+                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "True")
-                            logger.info("As mode == \"Debug\" [Reports] {} "
-                                        "has been set to True".format(option))
+                            logger.info("As mode == \"Debug\", [Reports] %s "
+                                        "has been set to True", option)
                     except ValueError:
                         pass
         elif not self._config.getboolean("Reports", "reportsEnabled"):
             for option in self._config.options("Reports"):
                 # options names are all lower without _ inside config
-                if (option in ["displayalgorithmtimings",
-                               "clear_iobuf_during_run",
-                               "extract_iobuf",
-                               "extract_iobuf_during_run"]
-                        or option[:5] == "write"):
+                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "False")
                             logger.info(
-                                "As reportsEnabled == \"False\" [Reports] {} "
-                                "has been set to False".format(option))
+                                "As reportsEnabled == \"False\", [Reports] %s "
+                                "has been set to False", option)
                     except ValueError:
                         pass
 
@@ -974,10 +975,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 loading_done = True
 
         # Run for each of the given steps
-        logger.info("Running for {} steps for a total of {} ms".format(
-            len(steps), run_time))
+        logger.info("Running for %d steps for a total of %dms",
+                    len(steps), run_time)
         for i, step in enumerate(steps):
-            logger.info("Run {} of {}".format(i + 1, len(steps)))
+            logger.info("Run %d of %d", i + 1, len(steps))
             self._do_run(step, loading_done, run_until_complete)
 
         # Indicate that the signal handler needs to act
@@ -2093,8 +2094,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             state = core_info.state
             if state == CPUState.RUN_TIME_EXCEPTION:
                 state = core_info.run_time_error
-            logger.error("{}, {}, {}: {} {}".format(
-                x, y, p, state.name, core_info.application_name))
+            logger.error("%d, %d, %d: %s %s",
+                         x, y, p, state.name, core_info.application_name)
             if core_info.state == CPUState.RUN_TIME_EXCEPTION:
                 logger.error(
                     "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}".format(
@@ -2632,23 +2633,23 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """ executes the power saving mode of either on or off of the/
             spinnaker machine.
 
-        :param config_flag: config flag string
+        :param config_flag: Flag read from the configuration file
+        :type config_flag: str
         :rtype: None
         """
         # check if machine should be turned off
         turn_off = helpful_functions.read_config_boolean(
             self._config, "EnergySavings", config_flag)
+        if turn_off is None:
+            return
 
         # if a mode is set, execute
-        if turn_off is not None:
-            if turn_off:
-                if self._turn_off_board_to_save_power():
-                    logger.info(
-                        "Board turned off based on: {}".format(config_flag))
-            else:
-                if self._turn_on_board_if_saving_power():
-                    logger.info(
-                        "Board turned on based on: {}".format(config_flag))
+        if turn_off:
+            if self._turn_off_board_to_save_power():
+                logger.info("Board turned off based on: %s", config_flag)
+        else:
+            if self._turn_on_board_if_saving_power():
+                logger.info("Board turned on based on: %s", config_flag)
 
     def _turn_off_board_to_save_power(self):
         """ executes the power saving mode of turning off the spinnaker \

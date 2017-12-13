@@ -103,8 +103,8 @@ class ApplicationRunner(object):
                 if not run_until_complete:
                     time_to_wait = runtime * time_scale_factor / 1000.0 + 0.1
                     logger.info(
-                        "Application started; waiting {}s for it to stop"
-                        .format(time_to_wait))
+                        "Application started; waiting %fs for it to stop",
+                        time_to_wait)
                     time.sleep(time_to_wait)
                     self._wait_for_end(txrx, app_id, executable_types,
                                        timeout=time_threshold)

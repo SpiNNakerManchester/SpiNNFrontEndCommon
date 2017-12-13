@@ -39,7 +39,7 @@ class MemoryMapOnHostChipReport(object):
                     self._describe_mem_map(f, transceiver, x, y, p)
             except IOError:
                 logger.error("Generate_placement_reports: Can't open file"
-                             " {} for writing.".format(file_name))
+                             " %s for writing.", file_name)
 
     def _describe_mem_map(self, f, txrx, x, y, p):
         # Read the memory map data from the given core
