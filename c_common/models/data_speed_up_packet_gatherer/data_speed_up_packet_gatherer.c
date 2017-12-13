@@ -84,7 +84,7 @@ void resume_callback() {
 
 void send_data(){
     //log_info("last element is %d", data[position_in_store - 1]);
-    //log_info("first element is %d", data[0]);
+    log_info("first element is %d", data[0]);
 
     spin1_memcpy(&my_msg.data, data,
 	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
@@ -92,26 +92,27 @@ void send_data(){
 	    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
     //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
+    if (seq_num > max_seq_num){
+        log_error(
+            "got a funky seq num in sending. max is %d, received %d",
+            max_seq_num, seq_num);
+    }
+
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
 	// Empty body
     }
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
-
-    if (seq_num > max_seq_num){
-        log_error(
-            "got a funky seq num. max is %d, received %d",
-            max_seq_num, seq_num);
-    }
 }
 
 void receive_data(uint key, uint payload) {
     //log_info("packet!");
     if (key == new_sequence_key) {
-        //log_info("finding new seq num %d", payload);
-        //log_info("position in store is %d", position_in_store);
+        log_info("finding new seq num %d", payload);
+        log_info("position in store is %d", position_in_store);
         data[0] = payload;
+        seq_num = payload;
 
         if (payload > max_seq_num){
             log_error(
@@ -120,7 +121,7 @@ void receive_data(uint key, uint payload) {
         }
     } else {
         if (key == first_data_key) {
-            //log_info("resetting seq and position");
+            log_info("resetting seq and position");
             seq_num = FIRST_SEQ_NUM;
             position_in_store = 0;
             max_seq_num = payload;
@@ -138,8 +139,8 @@ void receive_data(uint key, uint payload) {
             // adjust size as last payload not counted
             position_in_store = position_in_store - 1;
 
-            //log_info("position = %d with seq num %d", position_in_store, seq_num);
-            //log_info("last payload was %d", payload);
+            log_info("position = %d with seq num %d", position_in_store, seq_num);
+            log_info("last payload was %d", payload);
             send_data();
         } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             //log_info("position = %d with seq num %d", position_in_store, seq_num);

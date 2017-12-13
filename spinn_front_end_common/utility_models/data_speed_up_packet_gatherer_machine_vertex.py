@@ -52,6 +52,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # the size of the sequence number in bytes
     SEQUENCE_NUMBER_SIZE = 4
+    END_FLAG_SIZE_IN_BYTES = 4
 
     # items of data from SDP packet with a sequence number
     DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = \
@@ -383,7 +384,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # locate missing sequence numbers from pile
         missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
         lost_seq_nums.append(len(missing_seq_nums))
-        # self._print_missing(seq_nums)
+        self._print_missing(missing_seq_nums)
         if len(missing_seq_nums) == 0:
             return True
 
@@ -510,10 +511,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write data
         true_data_length = (
             offset + length_of_data - self.SEQUENCE_NUMBER_SIZE)
-        self._write_into_view(
-            offset, true_data_length, data,
-            self.SEQUENCE_NUMBER_SIZE,
-            length_of_data, seq_num, length_of_data, False)
+        if is_end_of_stream and length_of_data == self.END_FLAG_SIZE_IN_BYTES:
+            pass
+        else:
+            self._write_into_view(
+                offset, true_data_length, data,
+                self.SEQUENCE_NUMBER_SIZE,
+                length_of_data, seq_num, length_of_data, False)
 
         # add seq num to list
         seq_nums.add(seq_num)
@@ -593,11 +597,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param seq_nums: the sequence numbers received so far
         :rtype: None
         """
-        last_seq_num = 0
         for seq_num in sorted(seq_nums):
-            if seq_num != last_seq_num + 1:
-                print "from list i'm missing sequence num {}".format(seq_num)
-            last_seq_num = seq_num
+            print "from list i'm missing sequence num {}".format(seq_num)
 
     def _print_out_packet_data(self, data):
         """ debug prints out the data from the packet
