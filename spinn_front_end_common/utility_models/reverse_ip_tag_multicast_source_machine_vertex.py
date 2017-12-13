@@ -157,6 +157,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 this can be used to enable the reception of packets on a\
                 randomly assigned port, which can be read from the database
         """
+        # pylint: disable=too-many-arguments
         MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
 
@@ -574,7 +575,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
             tags, first_machine_time_step, n_machine_time_steps):
-
+        # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(
             machine_time_step, first_machine_time_step, n_machine_time_steps)

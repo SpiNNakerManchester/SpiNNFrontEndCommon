@@ -19,12 +19,14 @@ from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 
+import logging
 import math
 import time
 import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
+log = logging.getLogger(__name__)
 TIMEOUT_RETRY_LIMIT = 20
 
 
@@ -148,8 +150,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             "machine_time_step", "time_scale_factor"
         })
     def generate_data_specification(
-            self, spec, placement, machine_graph, routing_info, tags,
+            self, spec, placement,  # @UnusedVariable
+            machine_graph, routing_info, tags,
             machine_time_step, time_scale_factor):
+        # pylint: disable=too-many-arguments, arguments-differ
 
         # Setup words + 1 for flags + 1 for recording size
         setup_size = constants.SYSTEM_BYTES_REQUIREMENT
@@ -190,14 +194,13 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _reserve_memory_regions(spec, system_size):
-        """ writes the dsg regions memory sizes. Static so that it can be used
-        by the application vertex.
+        """ Writes the DSG regions memory sizes. Static so that it can be used
+            by the application vertex.
 
         :param spec: spec file
         :param system_size: size of system region
         :rtype: None
         """
-
         spec.reserve_memory_region(
             region=DataSpeedUpPacketGatherMachineVertex.
             DATA_REGIONS.SYSTEM.value,
@@ -270,7 +273,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def get_data(
             self, transceiver, placement, memory_address, length_in_bytes):
-        """ gets data from a given core and memory address.
+        """ Gets data from a given core and memory address.
 
         :param transceiver: spinnman instance
         :param placement: placement object for where to get data from
@@ -366,9 +369,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums):
-        """ Determines if there are any missing sequence numbers, and if so \
-        retransmits the missing sequence numbers back to the core for \
-        retransmission.
+        """ Determines if there are any missing sequence numbers, and if so\
+            retransmits the missing sequence numbers back to the core for\
+            retransmission.
 
         :param seq_nums: the sequence numbers already received
         :param transceiver: spinnman instance
@@ -596,7 +599,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         last_seq_num = 0
         for seq_num in sorted(seq_nums):
             if seq_num != last_seq_num + 1:
-                print "from list i'm missing sequence num {}".format(seq_num)
+                log.info("from list I'm missing sequence num %d", seq_num)
             last_seq_num = seq_num
 
     def _print_out_packet_data(self, data):
@@ -608,8 +611,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
             str(data))
-        print "converted data back into readable form is {}" \
-            .format(reread_data)
+        log.info("converted data back into readable form is %s", reread_data)
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
@@ -620,8 +622,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if len(seq_nums) != max_needed:
-            print "should have received {} sequence numbers, but received " \
-                  "{} sequence numbers".format(max_needed, len(seq_nums))
+            log.info("should have received %d sequence numbers, but received "
+                     "%d sequence numbers", max_needed, len(seq_nums))
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
@@ -632,5 +634,5 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param n_packets: how many packets to fire.
         :rtype: None
         """
-        print("send SDP packet with missing sequence numbers: {} of {}".format(
-            packet_count + 1, n_packets))
+        log.info("send SDP packet with missing sequence numbers: %s of %s",
+                 packet_count + 1, n_packets)

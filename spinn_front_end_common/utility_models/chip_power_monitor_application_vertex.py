@@ -60,6 +60,8 @@ class ChipPowerMonitorApplicationVertex(
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps, ip_tags):
+        # pylint: disable=too-many-arguments, arguments-differ
+
         # generate spec for the machine vertex
         placement.vertex._generate_data_specification(
             spec, machine_time_step, time_scale_factor, n_machine_time_steps,
@@ -78,8 +80,9 @@ class ChipPowerMonitorApplicationVertex(
                    "n_machine_time_steps", "machine_time_step",
                    "time_scale_factor"})
     def get_resources_used_by_atoms(
-            self, vertex_slice, n_machine_time_steps, machine_time_step,
-            time_scale_factor):
+            self, vertex_slice,  # @UnusedVariable
+            n_machine_time_steps, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return ChipPowerMonitorMachineVertex.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)

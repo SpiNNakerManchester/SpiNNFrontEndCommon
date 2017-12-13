@@ -154,9 +154,9 @@ class LivePacketGatherMachineVertex(
             "machine_time_step", "time_scale_factor", "tags"
         })
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            tags):
-
+            self, spec, placement,  # @UnusedVariable
+            machine_time_step, time_scale_factor, tags):
+        # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:

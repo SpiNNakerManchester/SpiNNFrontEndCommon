@@ -87,6 +87,7 @@ class ChipPowerMonitorMachineVertex(
                    'time_scale_factor'})
     def resources_required(
             self, n_machine_time_steps, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return self.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
@@ -180,6 +181,7 @@ class ChipPowerMonitorMachineVertex(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, n_machine_time_steps,
             ip_tags):
+        # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
             spec, machine_time_step, time_scale_factor, n_machine_time_steps,
             ip_tags)
@@ -295,6 +297,7 @@ class ChipPowerMonitorMachineVertex(
                additional_arguments={"time_scale_factor"})
     def get_n_timesteps_in_buffer_space(
             self, buffer_space, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return recording_utilities.get_n_timesteps_in_buffer_space(
             buffer_space,
             [self._deduce_sdram_requirements_per_timer_tick(
@@ -309,6 +312,7 @@ class ChipPowerMonitorMachineVertex(
                    'time_scale_factor'})
     def get_minimum_buffer_sdram_usage(
             self, n_machine_time_steps, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return recording_utilities.get_minimum_buffer_sdram(
             [self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor)],

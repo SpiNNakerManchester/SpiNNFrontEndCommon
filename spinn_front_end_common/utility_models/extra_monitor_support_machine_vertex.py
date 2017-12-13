@@ -139,7 +139,9 @@ class ExtraMonitorSupportMachineVertex(
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={"routing_info", "machine_graph"})
     def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph):
+            self, spec, placement,  # @UnusedVariable
+            routing_info, machine_graph):
+        # pylint: disable=arguments-differ
         self._generate_reinjection_functionality_data_specification(spec)
         self._generate_data_speed_up_functionality_data_specification(
             spec, routing_info, machine_graph)

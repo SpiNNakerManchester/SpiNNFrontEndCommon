@@ -5,7 +5,6 @@ from pacman.model.decorators import overrides
 
 
 class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
-
     __slots__ = ()
 
     def __init__(self):
@@ -19,11 +18,7 @@ class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
         additional_arguments={"graph_mapper"})
     def routing_key_partition_atom_mapping(
             self, routing_info, partition, graph_mapper):
-        mapping = list()
+        # pylint: disable=arguments-differ
         vertex_slice = graph_mapper.get_slice(partition.pre_vertex)
         keys = routing_info.get_keys(vertex_slice.n_atoms)
-        atom = vertex_slice.lo_atom
-        for key in keys:
-            mapping.append((atom, key))
-            atom += 1
-        return mapping
+        return list(enumerate(keys, vertex_slice.lo_atom))

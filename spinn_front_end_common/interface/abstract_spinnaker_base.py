@@ -2601,7 +2601,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def add_socket_address(self, socket_address):
         """
-
         :param socket_address:
         :rtype: None
         """
