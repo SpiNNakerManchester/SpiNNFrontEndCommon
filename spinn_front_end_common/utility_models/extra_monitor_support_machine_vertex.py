@@ -8,22 +8,10 @@ from spinn_front_end_common.abstract_models import \
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes.read_status_process import \
-    ReadStatusProcess
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes.reset_counters_process import \
-    ResetCountersProcess
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes.set_packet_types_process import \
-    SetPacketTypesProcess
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes.set_router_emergency_timeout_process import \
-    SetRouterEmergencyTimeoutProcess
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes.set_router_timeout_process import \
-    SetRouterTimeoutProcess
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
+    extra_monitor_scp_processes import \
+    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess, \
+    SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess
+from .data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 from spinn_machine import CoreSubsets
 from spinn_utilities.overrides import overrides

@@ -1,14 +1,9 @@
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
-from spinn_front_end_common.utility_models.\
-    extra_monitor_support_application_vertex import \
-    ExtraMonitorSupportApplicationVertex
-from spinn_front_end_common.utility_models.\
-    extra_monitor_support_machine_vertex import \
+from spinn_front_end_common.utility_models import \
+    DataSpeedUpPacketGatherMachineVertex, \
+    ExtraMonitorSupportApplicationVertex, \
     ExtraMonitorSupportMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
 

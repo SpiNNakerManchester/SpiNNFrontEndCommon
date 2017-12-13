@@ -1,17 +1,10 @@
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from pacman.model.graphs.common import Slice
 
-from spinn_front_end_common.utility_models.\
-    extra_monitor_support_application_vertex import \
-    ExtraMonitorSupportApplicationVertex
-from spinn_front_end_common.utility_models.\
-    extra_monitor_support_machine_vertex import \
-    ExtraMonitorSupportMachineVertex
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packete_gatherer_application_vertex import \
+from spinn_front_end_common.utility_models import \
+    ExtraMonitorSupportApplicationVertex, \
+    ExtraMonitorSupportMachineVertex, \
+    DataSpeedUpPacketGatherMachineVertex, \
     DataSpeedUpPacketGatherApplicationVertex
 
 from spinn_utilities.progress_bar import ProgressBar

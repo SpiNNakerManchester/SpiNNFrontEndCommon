@@ -3,7 +3,7 @@ from .chip_power_monitor_application_vertex \
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 from .command_sender import CommandSender
 from .command_sender_machine_vertex import CommandSenderMachineVertex
-from .data_speed_up_packete_gatherer_application_vertex \
+from .data_speed_up_packet_gatherer_application_vertex \
     import DataSpeedUpPacketGatherApplicationVertex
 from .data_speed_up_packet_gatherer_machine_vertex \
     import DataSpeedUpPacketGatherMachineVertex

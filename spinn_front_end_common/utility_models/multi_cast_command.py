@@ -15,16 +15,16 @@ class MultiCastCommand(object):
         :param payload: The payload of the command
         :type payload: int
         :param time: The time within the simulation at which to send the\
-                    command, or None if this is not a timed command
+            command, or None if this is not a timed command
         :type time: int
         :param repeat: The number of times that the command should be\
-                    repeated after sending it once.  This could be used to\
-                    ensure that the command is sent despite lost packets.\
-                    Must be between 0 and 65535
+            repeated after sending it once. This could be used to ensure that\
+            the command is sent despite lost packets. Must be between 0 and\
+            65535
         :type repeat: int
-        :param delay_between_repeats: The amount of time in micro seconds to\
-                    wait between sending repeats of the same command.\
-                    Must be between 0 and 65535, and must be 0 if repeat is 0
+        :param delay_between_repeats: The amount of time in microseconds to\
+            wait between sending repeats of the same command. Must be between\
+            0 and 65535, and must be 0 if repeat is 0
         :type delay_between_repeats: int
         :raise SpynnakerException: If the repeat or delay are out of range
         """
@@ -81,7 +81,7 @@ class MultiCastCommand(object):
 
     @property
     def is_payload(self):
-        """ Determine if this command has a payload.  By default, this returns\
+        """ Determine if this command has a payload. By default, this returns\
             True if the payload passed in to the constructor is not None, but\
             this can be overridden to indicate that a payload will be\
             generated, despite None being passed to the constructor

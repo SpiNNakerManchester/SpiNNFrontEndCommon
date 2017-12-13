@@ -2,9 +2,6 @@
 main interface for the spinnaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.timer import Timer
 from spinn_utilities import __version__ as spinn_utils_version
 
@@ -25,21 +22,19 @@ from pacman import __version__ as pacman_version
 
 # common front end imports
 from spinn_front_end_common.abstract_models import \
-    AbstractSendMeMulticastCommandsVertex, AbstractRecordable
-from spinn_front_end_common.abstract_models import \
+    AbstractSendMeMulticastCommandsVertex, AbstractRecordable, \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.utilities.utility_objs.provenance_data_item \
-    import ProvenanceDataItem
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utility_models import CommandSender
+from spinn_front_end_common.utilities.utility_objs \
+    import ExecutableType, ProvenanceDataItem
+from spinn_front_end_common.utilities.report_functions import EnergyReport
+from spinn_front_end_common.utility_models import \
+    CommandSender, DataSpeedUpPacketGatherMachineVertex
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
-from spinn_front_end_common.utilities.report_functions.energy_report import \
-    EnergyReport
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.interface.simulator_state import Simulator_State

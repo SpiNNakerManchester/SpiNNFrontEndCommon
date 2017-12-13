@@ -2,8 +2,7 @@ from pacman.model.resources import SpecificChipSDRAMResource, CoreResource, \
     PreAllocatedResourceContainer
 from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
+from spinn_front_end_common.utility_models import \
     DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
 

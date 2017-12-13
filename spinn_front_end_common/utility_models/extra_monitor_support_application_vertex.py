@@ -1,8 +1,7 @@
 from pacman.model.graphs.application import ApplicationVertex
 from spinn_front_end_common.abstract_models import \
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
-from spinn_front_end_common.utility_models.\
-    extra_monitor_support_machine_vertex import \
+from .extra_monitor_support_machine_vertex import \
     ExtraMonitorSupportMachineVertex
 from spinn_utilities.overrides import overrides
 
