@@ -8,6 +8,8 @@ from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
+_GOOD_STATES = frozenset([
+    CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
 
 
 class _NotificationWrapper(object):
@@ -45,7 +47,7 @@ class ApplicationRunner(object):
             executable_targets, executable_types, app_id, txrx, runtime,
             time_scale_factor, no_sync_changes, time_threshold,
             run_until_complete=False):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
         logger.info("*** Running simulation... *** ")
 
         # Simplify the notifications
@@ -92,8 +94,7 @@ class ApplicationRunner(object):
 
         # verify all cores are in running states
         txrx.wait_for_cores_to_be_in_state(
-            executable_targets.all_core_subsets, app_id,
-            [CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
+            executable_targets.all_core_subsets, app_id, _GOOD_STATES)
 
         # Send start notification
         notifier.send_start_resume_notification()
@@ -175,8 +176,7 @@ class ApplicationRunner(object):
                     "because we cannot ensure the cores have not reached the "
                     "next SYNC state before we send the next SYNC. Resulting "
                     "in uncontrolled behaviour")
-            else:
-                sync_signal = Signal.SYNC0
-                no_sync_changes += 1
+            sync_signal = Signal.SYNC0
+            no_sync_changes += 1
 
         return sync_signal, no_sync_changes

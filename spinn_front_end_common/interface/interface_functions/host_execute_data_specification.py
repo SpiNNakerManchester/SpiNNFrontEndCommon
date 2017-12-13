@@ -54,7 +54,7 @@ class HostExecuteDataSpecification(object):
 
     @staticmethod
     def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments, too-many-locals
 
         # build specification reader
         reader = FileDataReader(data_spec_path)

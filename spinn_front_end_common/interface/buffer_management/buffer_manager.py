@@ -809,42 +809,14 @@ class BufferManager(object):
             return
 
         # read data from memory, store it and create data for return ACK packet
-        n_requests = packet.n_requests
-        new_channel = list()
-        new_region_id = list()
-        new_space_read = list()
-        new_n_requests = 0
-        for i in xrange(n_requests):
-            length = packet.space_to_be_read(i)
-            if length > 0:
-                new_n_requests += 1
-                start_address = packet.start_address(i)
-                region_id = packet.region_id(i)
-                channel = packet.channel(i)
-                # logger.debug(
-                #     "Buffer receive Reading {} bytes from {}, {}: {}".format(
-                #         length, x, y, hex(start_address)))
-                data = self._request_data(
-                    transceiver=self._transceiver, placement_x=x,
-                    placement_y=y, address=start_address, length=length)
-                self._received_data.store_data_in_region_buffer(
-                    x, y, p, region_id, data)
-                new_channel.append(channel)
-                new_region_id.append(region_id)
-                new_space_read.append(length)
-
-        # create return acknowledge packet with data stored
-        ack_packet = HostDataRead(
-            new_n_requests, pkt_seq, new_channel, new_region_id,
-            new_space_read)
-        ack_packet_data = ack_packet.bytestring
+        ack_packet = self._assemble_ack_packet(x, y, p, packet, pkt_seq)
 
         # create SDP header and message
-        return_message_header = SDPHeader(
+        return_message = SDPMessage(SDPHeader(
             destination_port=SDP_PORTS.OUTPUT_BUFFERING_SDP_PORT.value,
             destination_cpu=p, destination_chip_x=x, destination_chip_y=y,
-            flags=SDPFlag.REPLY_NOT_EXPECTED)
-        return_message = SDPMessage(return_message_header, ack_packet_data)
+            flags=SDPFlag.REPLY_NOT_EXPECTED),
+            ack_packet.bytestring)
 
         # storage of last packet received
         self._received_data.store_last_received_packet_from_core(
@@ -855,6 +827,33 @@ class BufferManager(object):
         self._received_data.store_last_sent_packet_to_core(
             x, y, p, return_message)
         self._transceiver.send_sdp_message(return_message)
+
+    def _assemble_ack_packet(self, x, y, p, packet, pkt_seq):
+        # pylint: disable=too-many-arguments
+        channels = list()
+        region_ids = list()
+        space_read = list()
+        for i in xrange(packet.n_requests):
+            length = packet.space_to_be_read(i)
+            if not length:
+                continue
+            start_address = packet.start_address(i)
+            region_id = packet.region_id(i)
+            channel = packet.channel(i)
+            # logger.debug(
+            #     "Buffer receive Reading {} bytes from {}, {}: {}".format(
+            #         length, x, y, hex(start_address)))
+            self._received_data.store_data_in_region_buffer(
+                x, y, p, region_id, self._request_data(
+                    transceiver=self._transceiver, placement_x=x,
+                    placement_y=y, address=start_address, length=length))
+            channels.append(channel)
+            region_ids.append(region_id)
+            space_read.append(length)
+
+        # create return acknowledge packet with data stored
+        return HostDataRead(
+            len(channels), pkt_seq, channels, region_ids, space_read)
 
     @property
     def sender_vertices(self):
