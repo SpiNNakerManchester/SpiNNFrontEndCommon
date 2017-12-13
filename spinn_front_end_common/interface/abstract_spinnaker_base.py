@@ -761,12 +761,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 raise Exception(
                     "A spalloc_user must be specified with a spalloc_server")
 
-    def signal_handler(self, signal, frame):  # @UnusedVariable
+    def signal_handler(self, _signal, _frame):
         """ handles closing down of script via keyboard interrupt
 
-        :param signal: the signal received
-        :param frame: frame executed in
-        :return:  None
+        :param _signal: the signal received (ignored)
+        :param _frame: frame executed in (ignored)
+        :return: None
         """
         # If we are to raise the keyboard interrupt, do so
         if self._raise_keyboard_interrupt:
@@ -901,14 +901,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._do_mapping(run_time, n_machine_time_steps, total_run_time)
 
         # Check if anything is recording and buffered
-        is_buffered_recording = False
-        for placement in self._placements.placements:
-            vertex = placement.vertex
-            if (isinstance(vertex, AbstractReceiveBuffersToHost) and
-                    isinstance(vertex, AbstractRecordable)):
-                if vertex.is_recording():
-                    is_buffered_recording = True
-                    break
+        is_buffered_recording = self._is_buffered_recording()
 
         # Disable auto pause and resume if the binary can't do it
         for executable_type in self._executable_types:
@@ -986,6 +979,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._state = Simulator_State.FINISHED
         else:
             self._state = Simulator_State.RUN_FOREVER
+
+    def _is_buffered_recording(self):
+        for placement in self._placements.placements:
+            vertex = placement.vertex
+            if (isinstance(vertex, AbstractReceiveBuffersToHost) and
+                    isinstance(vertex, AbstractRecordable) and
+                    vertex.is_recording()):
+                return True
+        return False
 
     def _add_commands_to_command_sender(self):
         for vertex in self._application_graph.vertices:
@@ -1434,7 +1436,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = ["FileMachine"]
         executor = PACMANAlgorithmExecutor(
             algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
-            required_tokens=[], xml_paths=self._xml_paths,
+            xml_paths=self._xml_paths,
             required_outputs=outputs, required_output_tokens=[],
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path)
@@ -1791,15 +1793,85 @@ class AbstractSpinnakerBase(SimulatorInterface):
         run_timer = Timer()
         run_timer.start_timing()
 
+        run_complete = False
+        executor, total_run_timesteps = self._create_execute_workflow(
+            n_machine_time_steps, loading_done, run_until_complete)
+        try:
+            executor.execute_mapping()
+            self._pacman_provenance.extract_provenance(executor)
+            run_complete = True
+
+            # write provenance to file if necessary
+            if (self._config.getboolean(
+                    "Reports", "write_provenance_data") and
+                    not self._use_virtual_board and
+                    n_machine_time_steps is not None):
+                prov_items = executor.get_item("ProvenanceItems")
+                prov_items.extend(self._pacman_provenance.data_items)
+                self._pacman_provenance.clear()
+                self._write_provenance(prov_items)
+                self._all_provenance_items.append(prov_items)
+
+            # move data around
+            self._last_run_outputs = executor.get_items()
+            self._last_run_tokens = executor.get_completed_tokens()
+            self._current_run_timesteps = total_run_timesteps
+            self._no_sync_changes = executor.get_item("NoSyncChanges")
+            self._has_reset_last = False
+            self._has_ran = True
+
+            self._execute_time += \
+                helpful_functions.convert_time_diff_to_total_milliseconds(
+                    run_timer.take_sample())
+
+        except KeyboardInterrupt:
+            logger.error("User has aborted the simulation")
+            self._shutdown()
+            sys.exit(1)
+        except Exception as e:
+            e_inf = sys.exc_info()
+
+            # If an exception occurs during a run, attempt to get
+            # information out of the simulation before shutting down
+            try:
+                if executor is not None:
+                    # Only do this if the error occurred in the run
+                    if not run_complete and not self._use_virtual_board:
+                        self._last_run_outputs = executor.get_items()
+                        self._last_run_tokens = executor.get_completed_tokens()
+                        self._recover_from_error(
+                            e, e_inf, executor.get_item("ExecutableTargets"))
+                else:
+                    logger.error(
+                        "The PACMAN executor crashing during initialisation,"
+                        " please read previous error message to locate its"
+                        " error")
+            except Exception:
+                logger.error("Error when attempting to recover from error",
+                             exc_info=True)
+
+            # if in debug mode, do not shut down machine
+            if self._config.get("Mode", "mode") != "Debug":
+                try:
+                    self.stop(
+                        turn_off_machine=False, clear_routing_tables=False,
+                        clear_tags=False)
+                except Exception:
+                    logger.error("Error when attempting to stop",
+                                 exc_info=True)
+
+            # reraise exception
+            ex_type, ex_value, ex_traceback = e_inf
+            raise ex_type, ex_value, ex_traceback
+
+    def _create_execute_workflow(
+            self, n_machine_time_steps, loading_done, run_until_complete):
         # calculate number of machine time steps
         total_run_timesteps = self._calculate_number_of_machine_time_steps(
             n_machine_time_steps)
         run_time = None
         if n_machine_time_steps is not None:
-            run_time = (
-                n_machine_time_steps *
-                (float(self._machine_time_step) / 1000.0)
-            )
+            run_time = n_machine_time_steps * self._machine_time_step / 1000.0
 
         # if running again, load the outputs from last load or last mapping
         if self._load_outputs is not None:
@@ -1821,8 +1893,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             inputs["CoresToExtractIOBufFrom"] = \
                 helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_cores"),
+                    self._config.get("Reports", "extract_iobuf_from_cores"),
                     self._config.get(
                         "Reports", "extract_iobuf_from_binary_types"),
                     self._load_outputs["ExecutableTargets"],
@@ -1911,82 +1982,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             required_tokens = ["ApplicationRun"]
 
-        run_complete = False
-        executor = PACMANAlgorithmExecutor(
+        return PACMANAlgorithmExecutor(
             algorithms=algorithms, optional_algorithms=[], inputs=inputs,
             tokens=tokens, required_output_tokens=required_tokens,
             xml_paths=self._xml_paths, required_outputs=outputs,
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path,
-            provenance_name="Execution")
-        try:
-            executor.execute_mapping()
-            self._pacman_provenance.extract_provenance(executor)
-            run_complete = True
-
-            # write provenance to file if necessary
-            if (self._config.getboolean(
-                    "Reports", "write_provenance_data") and
-                    not self._use_virtual_board and
-                    n_machine_time_steps is not None):
-                prov_items = executor.get_item("ProvenanceItems")
-                prov_items.extend(self._pacman_provenance.data_items)
-                self._pacman_provenance.clear()
-                self._write_provenance(prov_items)
-                self._all_provenance_items.append(prov_items)
-
-            # move data around
-            self._last_run_outputs = executor.get_items()
-            self._last_run_tokens = executor.get_completed_tokens()
-            self._current_run_timesteps = total_run_timesteps
-            self._no_sync_changes = executor.get_item("NoSyncChanges")
-            self._has_reset_last = False
-            self._has_ran = True
-
-            self._execute_time += \
-                helpful_functions.convert_time_diff_to_total_milliseconds(
-                    run_timer.take_sample())
-
-        except KeyboardInterrupt:
-            logger.error("User has aborted the simulation")
-            self._shutdown()
-            sys.exit(1)
-        except Exception as e:
-            e_inf = sys.exc_info()
-
-            # If an exception occurs during a run, attempt to get
-            # information out of the simulation before shutting down
-            try:
-                if executor is not None:
-                    # Only do this if the error occurred in the run
-                    if not run_complete and not self._use_virtual_board:
-                        self._last_run_outputs = executor.get_items()
-                        self._last_run_tokens = executor.get_completed_tokens()
-                        self._recover_from_error(
-                            e, e_inf, executor.get_item("ExecutableTargets"))
-                else:
-                    logger.error(
-                        "The PACMAN executor crashing during initialisation,"
-                        " please read previous error message to locate its"
-                        " error")
-            except Exception:
-                logger.error("Error when attempting to recover from error",
-                             exc_info=True)
-
-            # if in debug mode, do not shut down machine
-            in_debug_mode = self._config.get("Mode", "mode") == "Debug"
-            if not in_debug_mode:
-                try:
-                    self.stop(
-                        turn_off_machine=False, clear_routing_tables=False,
-                        clear_tags=False)
-                except Exception:
-                    logger.error("Error when attempting to stop",
-                                 exc_info=True)
-
-            # reraise exception
-            ex_type, ex_value, ex_traceback = e_inf
-            raise ex_type, ex_value, ex_traceback
+            provenance_name="Execution"), total_run_timesteps
 
     def _write_provenance(self, provenance_data_items):
         """ Write provenance to disk
@@ -2453,44 +2455,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._state = Simulator_State.SHUTDOWN
 
         # Keep track of any exception to be re-raised
-        ex_type, ex_value, ex_traceback = None, None, None
+        exc_info = None
 
         # If we have run forever, stop the binaries
         if (self._has_ran and self._current_run_timesteps is None and
                 not self._use_virtual_board):
-            inputs = self._last_run_outputs
-            tokens = self._last_run_tokens
-            algorithms = []
-            outputs = []
-
-            # stop any binaries that need to be notified of the simulation
-            # stopping if in infinite run
-            if (ExecutableType.USES_SIMULATION_INTERFACE in
-                    self._executable_types):
-                algorithms.append("ApplicationFinisher")
-
-            # add extractor of iobuf if needed
-            if (self._config.getboolean("Reports", "extract_iobuf") and
-                    self._config.getboolean(
-                        "Reports", "extract_iobuf_during_run")):
-                algorithms.append("ChipIOBufExtractor")
-
-            # add extractor of provenance if needed
-            if self._config.getboolean("Reports", "writeProvenanceData"):
-                algorithms.append("PlacementsProvenanceGatherer")
-                algorithms.append("RouterProvenanceGatherer")
-                algorithms.append("ProfileDataGatherer")
-                outputs.append("ProvenanceItems")
-
-            # Run the algorithms
-            executor = PACMANAlgorithmExecutor(
-                algorithms=algorithms, optional_algorithms=[], inputs=inputs,
-                tokens=tokens, required_output_tokens=[],
-                xml_paths=self._xml_paths,
-                required_outputs=outputs, do_timings=self._do_timings,
-                print_timings=self._print_timings,
-                provenance_path=self._pacman_executor_provenance_path,
-                provenance_name="stopping")
+            executor = self._create_stop_workflow()
             run_complete = False
             try:
                 executor.execute_mapping()
@@ -2505,70 +2475,29 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._write_provenance(prov_items)
                     self._all_provenance_items.append(prov_items)
             except Exception as e:
-                ex_type, ex_value, ex_traceback = sys.exc_info()
+                exc_info = sys.exc_info()
 
                 # If an exception occurs during a run, attempt to get
                 # information out of the simulation before shutting down
                 try:
-
                     # Only do this if the error occurred in the run
                     if not run_complete and not self._use_virtual_board:
                         self._recover_from_error(
-                            e, ex_traceback, executor.get_item(
+                            e, exc_info[2], executor.get_item(
                                 "ExecutableTargets"))
                 except Exception:
                     logger.error("Error when attempting to recover from error",
                                  exc_info=True)
 
-        if (self._config.getboolean("Reports", "write_energy_report") and
-                self._buffer_manager is not None):
-
-            # create energy report
-            energy_report = EnergyReport()
-
-            # acquire provenance items
-            if self._last_run_outputs is not None:
-                prov_items = self._last_run_outputs["ProvenanceItems"]
-                pacman_provenance = list()
-                router_provenance = list()
-
-                # group them by name type
-                grouped_items = sorted(
-                    prov_items, key=lambda item: item.names[0])
-                for element in grouped_items:
-                    if element.names[0] == 'pacman':
-                        pacman_provenance.append(element)
-                    if element.names[0] == 'router_provenance':
-                        router_provenance.append(element)
-
-                # run energy report
-                energy_report(
-                    self._placements, self._machine,
-                    self._report_default_directory,
-                    self._read_config_int("Machine", "version"),
-                    self._spalloc_server, self._remote_spinnaker_url,
-                    self._time_scale_factor, self._machine_time_step,
-                    pacman_provenance, router_provenance, self._machine_graph,
-                    self._current_run_timesteps, self._buffer_manager,
-                    self._mapping_time, self._load_time, self._execute_time,
-                    self._dsg_time, self._extraction_time,
-                    self._machine_allocation_controller)
+        if self._config.getboolean("Reports", "write_energy_report"):
+            self._do_energy_report()
 
         # handle iobuf extraction if never extracted it yet but requested to
-        if (self._config.getboolean("Reports", "extract_iobuf") and
-                not self._config.getboolean(
-                    "Reports", "extract_iobuf_during_run") and
-                not self._config.getboolean(
-                    "Reports", "clear_iobuf_during_run")):
-            extractor = ChipIOBufExtractor()
-            extractor(
-                transceiver=self._txrx,
-                core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
-                provenance_file_path=self._provenance_file_path)
+        if self._config.getboolean("Reports", "extract_iobuf"):
+            self._extract_iobufs()
 
         # shut down the machine properly
-        self._shutdown(
-            turn_off_machine, clear_routing_tables, clear_tags)
+        self._shutdown(turn_off_machine, clear_routing_tables, clear_tags)
 
         # display any provenance data gathered
         for i, provenance_items in enumerate(self._all_provenance_items):
@@ -2581,8 +2510,87 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
-        if ex_type is not None:
+        if exc_info is not None:
+            ex_type, ex_value, ex_traceback = exc_info
             raise ex_type, ex_value, ex_traceback
+
+    def _create_stop_workflow(self):
+        inputs = self._last_run_outputs
+        tokens = self._last_run_tokens
+        algorithms = []
+        outputs = []
+
+        # stop any binaries that need to be notified of the simulation
+        # stopping if in infinite run
+        if ExecutableType.USES_SIMULATION_INTERFACE in self._executable_types:
+            algorithms.append("ApplicationFinisher")
+
+        # add extractor of iobuf if needed
+        if self._config.getboolean("Reports", "extract_iobuf") and \
+                self._config.getboolean("Reports", "extract_iobuf_during_run"):
+            algorithms.append("ChipIOBufExtractor")
+
+        # add extractor of provenance if needed
+        if self._config.getboolean("Reports", "writeProvenanceData"):
+            algorithms.append("PlacementsProvenanceGatherer")
+            algorithms.append("RouterProvenanceGatherer")
+            algorithms.append("ProfileDataGatherer")
+            outputs.append("ProvenanceItems")
+
+        # Assemble how to run the algorithms
+        return PACMANAlgorithmExecutor(
+            algorithms=algorithms, optional_algorithms=[], inputs=inputs,
+            tokens=tokens, required_output_tokens=[],
+            xml_paths=self._xml_paths,
+            required_outputs=outputs, do_timings=self._do_timings,
+            print_timings=self._print_timings,
+            provenance_path=self._pacman_executor_provenance_path,
+            provenance_name="stopping")
+
+    def _do_energy_report(self):
+        if self._buffer_manager is None:
+            return
+        # create energy report
+        energy_report = EnergyReport()
+
+        # acquire provenance items
+        if self._last_run_outputs is not None:
+            prov_items = self._last_run_outputs["ProvenanceItems"]
+            pacman_provenance = list()
+            router_provenance = list()
+
+            # group them by name type
+            grouped_items = sorted(
+                prov_items, key=lambda item: item.names[0])
+            for element in grouped_items:
+                if element.names[0] == 'pacman':
+                    pacman_provenance.append(element)
+                if element.names[0] == 'router_provenance':
+                    router_provenance.append(element)
+
+            # run energy report
+            energy_report(
+                self._placements, self._machine,
+                self._report_default_directory,
+                self._read_config_int("Machine", "version"),
+                self._spalloc_server, self._remote_spinnaker_url,
+                self._time_scale_factor, self._machine_time_step,
+                pacman_provenance, router_provenance, self._machine_graph,
+                self._current_run_timesteps, self._buffer_manager,
+                self._mapping_time, self._load_time, self._execute_time,
+                self._dsg_time, self._extraction_time,
+                self._machine_allocation_controller)
+
+    def _extract_iobufs(self):
+        if self._config.getboolean("Reports", "extract_iobuf_during_run"):
+            return
+        if self._config.getboolean("Reports", "clear_iobuf_during_run"):
+            return
+        extractor = ChipIOBufExtractor()
+        extractor(
+            transceiver=self._txrx,
+            core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
+            provenance_file_path=self._provenance_file_path)
 
     def add_socket_address(self, socket_address):
         """
