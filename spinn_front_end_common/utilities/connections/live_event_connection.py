@@ -31,25 +31,23 @@ class LiveEventConnection(DatabaseConnection):
                  send_labels=None, local_host=None, local_port=19999,
                  machine_vertices=False):
         """
-
         :param live_packet_gather_label: The label of the LivePacketGather\
-                    vertex to which received events are being sent
-        :param receive_labels: Labels of vertices from which live events\
-                    will be received.
+            vertex to which received events are being sent
+        :param receive_labels: \
+            Labels of vertices from which live events will be received.
         :type receive_labels: iterable of str
-        :param send_labels: Labels of vertices to which live events will be\
-                    sent
+        :param send_labels: \
+            Labels of vertices to which live events will be sent
         :type send_labels: iterable of str
         :param local_host: Optional specification of the local hostname or\
-                    ip address of the interface to listen on
+            IP address of the interface to listen on
         :type local_host: str
         :param local_port: Optional specification of the local port to listen\
-                    on.  Must match the port that the toolchain will send the\
-                    notification on (19999 by default)
+            on. Must match the port that the toolchain will send the\
+            notification on (19999 by default)
         :type local_port: int
-
         """
-
+        # pylint: disable=too-many-arguments
         DatabaseConnection.__init__(
             self, self._start_resume_callback, self._stop_pause_callback,
             local_host=local_host, local_port=local_port)
@@ -85,14 +83,14 @@ class LiveEventConnection(DatabaseConnection):
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
 
-        :param label: The label of the vertex to be notified about. Must\
-                    be one of the vertices listed in the constructor
+        :param label: The label of the vertex to be notified about. Must be\
+            one of the vertices listed in the constructor
         :type label: str
         :param init_callback: A function to be called to initialise the\
-                    vertex.  This should take as parameters the label of the\
-                    vertex, the number of neurons in the population,\
-                    the run time of the simulation in milliseconds, and the\
-                    simulation timestep in milliseconds
+            vertex. This should take as parameters the label of the vertex,\
+            the number of neurons in the population, the run time of the\
+            simulation in milliseconds, and the simulation timestep in\
+            milliseconds
         :type init_callback: function(str, int, float, float) -> None
         """
         self._init_callbacks[label].append(init_callback)
@@ -100,13 +98,13 @@ class LiveEventConnection(DatabaseConnection):
     def add_receive_callback(self, label, live_event_callback):
         """ Add a callback for the reception of live events from a vertex
 
-        :param label: The label of the vertex to be notified about. Must\
-                    be one of the vertices listed in the constructor
+        :param label: The label of the vertex to be notified about. Must be\
+            one of the vertices listed in the constructor
         :type label: str
-        :param live_event_callback: A function to be called when events\
-                    are received.  This should take as parameters the label\
-                    of the vertex, the simulation timestep when the event\
-                    occurred, and an array-like of atom ids.
+        :param live_event_callback: A function to be called when events are\
+            received. This should take as parameters the label of the vertex,\
+            the simulation timestep when the event occurred, and an\
+            array-like of atom ids.
         :type live_event_callback: function(str, int, [int]) -> None
         """
         label_id = self._receive_labels.index(label)
@@ -116,11 +114,11 @@ class LiveEventConnection(DatabaseConnection):
         """ Add a callback for the start of the simulation
 
         :param start_callback: A function to be called when the start\
-                    message has been received.  This function should take the\
-                    label of the referenced vertex, and an instance of\
-                    this class, which can be used to send events
+            message has been received. This function should take the label of\
+            the referenced vertex, and an instance of this class, which can\
+            be used to send events
         :type start_callback: function(str, \
-                    :py:class:`SpynnakerLiveEventConnection`) -> None
+            :py:class:`SpynnakerLiveEventConnection`) -> None
         :param label: the label of the function to be sent
         :type label: str
         """
@@ -140,12 +138,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: the label of the function to be sent
         :type label: str
         :param pause_stop_callback: A function to be called when the pause\
-                    or stop message has been received.
-                    This function should take the label of the referenced \
-                    vertex, and an instance of this class, which can be used \
-                    to send events.
+            or stop message has been received. This function should take the\
+            label of the referenced  vertex, and an instance of this class,\
+            which can be used to send events.
         :type pause_stop_callback: function(str, \
-                    :py:class:`SpynnakerLiveEventConnection`) -> None
+            :py:class:`SpynnakerLiveEventConnection`) -> None
         :rtype: None
         """
         self._pause_stop_callbacks[label].append(pause_stop_callback)
@@ -303,14 +300,14 @@ class LiveEventConnection(DatabaseConnection):
     def send_event(self, label, atom_id, send_full_keys=False):
         """ Send an event from a single atom
 
-        :param label: The label of the vertex from which the event will\
-                    originate
+        :param label: \
+            The label of the vertex from which the event will originate
         :type label: str
         :param atom_id: The id of the atom sending the event
         :type atom_id: int
         :param send_full_keys: Determines whether to send full 32-bit keys,\
-                    getting the key for each atom from the database, or\
-                    whether to send 16-bit atom ids directly
+            getting the key for each atom from the database, or whether to\
+            send 16-bit atom ids directly
         :type send_full_keys: bool
         """
         self.send_events(label, [atom_id], send_full_keys)
@@ -318,14 +315,14 @@ class LiveEventConnection(DatabaseConnection):
     def send_events(self, label, atom_ids, send_full_keys=False):
         """ Send a number of events
 
-        :param label: The label of the vertex from which the events will\
-                    originate
+        :param label: \
+            The label of the vertex from which the events will originate
         :type label: str
         :param atom_ids: array-like of atom ids sending events
         :type atom_ids: [int]
         :param send_full_keys: Determines whether to send full 32-bit keys,\
-                    getting the key for each atom from the database, or\
-                    whether to send 16-bit atom ids directly
+            getting the key for each atom from the database, or whether to\
+            send 16-bit atom ids directly
         :type send_full_keys: bool
         """
         max_keys = _MAX_HALF_KEYS_PER_PACKET

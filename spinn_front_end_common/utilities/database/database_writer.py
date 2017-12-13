@@ -99,7 +99,7 @@ class DatabaseWriter(object):
             return c.lastrowid
         except Exception:
             logger.error("problem with insertion; argument types are %s",
-                         str(map((lambda x: type(x)), args)), exc_info=True)
+                         str(map(type, args)), exc_info=True)
             raise
 
     def create_schema(self):
@@ -123,6 +123,7 @@ class DatabaseWriter(object):
 
     def __insert_processor(self, chip, machine_id, available_DTCM,
                            available_CPU, physical_id):
+        # pylint: disable=too-many-arguments
         return self.__insert(
             "INSERT INTO Processor("
             "  chip_x, chip_y, machine_id, available_DTCM, "

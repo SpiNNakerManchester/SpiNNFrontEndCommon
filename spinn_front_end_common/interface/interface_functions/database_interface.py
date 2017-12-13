@@ -31,6 +31,7 @@ class DatabaseInterface(object):
             placements, routing_infos, router_tables, database_directory,
             create_atom_to_event_id_mapping=False, application_graph=None,
             graph_mapper=None):
+        # pylint: disable=too-many-arguments
 
         self._writer = DatabaseWriter(database_directory)
         self._user_create_database = user_create_database
@@ -63,6 +64,7 @@ class DatabaseInterface(object):
             runtime, application_graph, machine_graph, graph_mapper,
             placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
+        # pylint: disable=too-many-arguments
         with self._writer as w, ProgressBar(9, "Creating database") as p:
             w.add_system_params(time_scale_factor, machine_time_step, runtime)
             p.update()

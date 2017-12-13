@@ -33,7 +33,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
         :type command_code: \
             :py:class:`spinnman.messages.scp.scp_command.SCPCommand`
         """
-
+        # pylint: disable=too-many-arguments
         self._command_code = command_code
         AbstractSCPRequest.__init__(
             self,

@@ -15,7 +15,7 @@ class RoutingTableFromMachineReport(object):
     def __call__(
             self, report_default_directory, routing_tables, transceiver,
             app_id):
-
+        # pylint: disable=protected-access
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")
 

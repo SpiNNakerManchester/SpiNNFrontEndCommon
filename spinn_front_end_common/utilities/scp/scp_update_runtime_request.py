@@ -11,11 +11,11 @@ class SCPUpdateRuntimeRequest(AbstractSCPRequest):
     def __init__(
             self, x, y, p, run_time, infinite_run, destination_port,
             expect_response=True):
+        # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_NOT_EXPECTED
-        arg3 = 0
         if expect_response:
             sdp_flags = SDPFlag.REPLY_EXPECTED
-            arg3 = 1
+        arg3 = int(bool(expect_response))
 
         AbstractSCPRequest.__init__(
             self,

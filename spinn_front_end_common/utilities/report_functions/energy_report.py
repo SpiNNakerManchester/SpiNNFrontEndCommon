@@ -80,7 +80,7 @@ class EnergyReport(object):
             spalloc
         :rtype: None
         """
-
+        # pylint: disable=too-many-arguments
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
@@ -148,6 +148,7 @@ class EnergyReport(object):
         :param f: file writer
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
 
         # total the energy costs
         total_joules = (
@@ -219,6 +220,7 @@ class EnergyReport(object):
         :return: machine_active_cost, machine_idle_chips_cost, \
             fpga_cost, packet_cost, load_time_cost, extraction_time_cost
         """
+        # pylint: disable=too-many-arguments
 
         # write warning about accuracy etc
         self._write_warning(f)
@@ -317,6 +319,7 @@ class EnergyReport(object):
         :param runtime_total_ms:
         :return: power usage of fpgas
         """
+        # pylint: disable=too-many-arguments
 
         # if not spalloc, then could be any type of board
         if spalloc_server is None and remote_spinnaker_url is None:
@@ -372,6 +375,7 @@ class EnergyReport(object):
         :param runtime_total_ms: runtime in milliseconds
         :return: power usage
         """
+        # pylint: disable=too-many-arguments
         power_usage_total = (
             total_runtime * self.MILLIWATTS_PER_FPGA * n_operational_fpgas)
         power_usage_runtime = (
@@ -452,6 +456,7 @@ class EnergyReport(object):
         :param machine: machine rep
         :return: 0 if not on, 1 if on
         """
+        # pylint: disable=too-many-arguments
         for shift_group, link_ids in zip(shifts, overall_link_ids):
             for shift in shift_group:
                 new_x = (ethernet_chip_x + shift[0]) % (machine_max_x + 1)
@@ -494,6 +499,7 @@ class EnergyReport(object):
         :param f: file writer
         :return: energy cost
         """
+        # pylint: disable=too-many-arguments
 
         # locate chip power monitor
         chip_power_monitor = self._get_chip_power_monitor(chip, placements)
@@ -597,6 +603,7 @@ class EnergyReport(object):
         :param load_time: the time of the entire load time phase in ms
         :return: load time energy value in Joules
         """
+        # pylint: disable=too-many-arguments
 
         # find time in milliseconds
         total_time_ms = 0.0
@@ -651,6 +658,7 @@ class EnergyReport(object):
         :param active_chips:
         :return: cost of data extraction in Joules
         """
+        # pylint: disable=too-many-arguments
 
         # find time
         total_time_ms = 0.0
@@ -709,6 +717,7 @@ class EnergyReport(object):
         :param n_frames: number of frames used by this machine
         :return: energy in joules
         """
+        # pylint: disable=too-many-arguments
 
         # if spalloc or hbp
         if machine_allocation_controller is not None:

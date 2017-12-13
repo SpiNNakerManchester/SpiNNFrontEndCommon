@@ -71,6 +71,7 @@ class BufferedReceivingData(object):
         :param data: data to be stored
         :type data: bytearray
         """
+        # pylint: disable=too-many-arguments
         self._data[x, y, p, region].write(data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
@@ -104,6 +105,7 @@ class BufferedReceivingData(object):
         :param data: data to be stored
         :type data: bytearray
         """
+        # pylint: disable=too-many-arguments
         self.store_data_in_region_buffer(x, y, p, region, data)
         self._is_flushed[x, y, p, region] = True
 
@@ -254,6 +256,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param state: The end state
         """
+        # pylint: disable=too-many-arguments
         self._end_buffering_state[x, y, p, region] = state
 
     def is_end_buffering_state_recovered(self, x, y, p, region):

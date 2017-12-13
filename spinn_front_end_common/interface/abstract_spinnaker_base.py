@@ -347,6 +347,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
+        # pylint: disable=too-many-arguments
 
         # global params
         if default_config_paths is None:
@@ -1130,7 +1131,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param provenance_name: the name for provenance
         :return:  None
         """
-
+        # pylint: disable=too-many-arguments
         optional = optional_algorithms
         if optional is None:
             optional = []

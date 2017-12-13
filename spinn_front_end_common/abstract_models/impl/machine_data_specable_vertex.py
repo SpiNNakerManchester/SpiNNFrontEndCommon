@@ -39,4 +39,5 @@ class MachineDataSpecableVertex(AbstractGeneratesDataSpecification):
     def generate_machine_data_specification(
             self, spec, placement, machine_graph, routing_info, iptags,
             reverse_iptags, machine_time_step, time_scale_factor):
+        # pylint: disable=too-many-arguments
         pass

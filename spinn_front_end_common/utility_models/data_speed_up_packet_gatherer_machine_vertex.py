@@ -486,10 +486,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
         """
+        # pylint: disable=too-many-arguments
         # self._print_out_packet_data(data)
         length_of_data = len(data)
-        first_packet_element = struct.unpack_from(
-            "<I", data, 0)[0]
+        first_packet_element = struct.unpack_from("<I", data, 0)[0]
 
         # get flags
         seq_num = first_packet_element & 0x7FFFFFFF
@@ -547,6 +547,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param seq_num: the sequence number to figure
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         if view_end_position > len(self._output):
             raise Exception(
                 "I'm trying to add to my output data, but am trying to add "

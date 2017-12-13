@@ -41,6 +41,7 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param data_format: the format to read memory
     :param transceiver: the SpinnMan interface
     """
+    # pylint: disable=too-many-arguments
 
     # turn byte array into str for unpack to work
     data = buffer(transceiver.read_memory(x, y, address, length))

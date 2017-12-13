@@ -110,14 +110,14 @@ class BufferManager(object):
 
         :param placements: The placements of the vertices
         :type placements:\
-                    :py:class:`pacman.model.placements.Placements`
+            :py:class:`pacman.model.placements.Placements`
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.Tags`
-        :param transceiver: The transceiver to use for sending and receiving\
-                    information
+        :param transceiver: \
+            The transceiver to use for sending and receiving information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
         :param store_to_file: True if the data should be temporarily stored\
-                    in a file instead of in RAM (default uses RAM)
+            in a file instead of in RAM (default uses RAM)
         :type store_to_file: bool
         """
 
@@ -157,14 +157,15 @@ class BufferManager(object):
         """ uses the extra monitor cores for data extraction
 
         :param transceiver: the spinnman interface
-        :param placement_x: the placement x coord where data is to be \
-        extracted from
-        :param placement_y: the placement y coord where data is to be \
-        extracted from
+        :param placement_x: \
+            the placement x coord where data is to be extracted from
+        :param placement_y: \
+            the placement y coord where data is to be extracted from
         :param address: the memory address to start at
         :param length: the number of bytes to extract
         :return: data as a byte array
         """
+        # pylint: disable=too-many-arguments
         if not self._uses_advanced_monitors:
             return transceiver.read_memory(
                 placement_x, placement_y, address, length)
@@ -279,8 +280,8 @@ class BufferManager(object):
         self._add_buffer_listeners(vertex)
 
     def add_sender_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices\
-            which require buffers to be sent to them during runtime
+        """ Add a vertex into the managed list for vertices which require\
+            buffers to be sent to them during runtime
 
         :param vertex: the vertex to be managed
         :type vertex:\
@@ -306,8 +307,8 @@ class BufferManager(object):
 
     def reset(self):
         """ Resets the buffered regions to start transmitting from the\
-            beginning of its expected regions and clears the buffered out data\
-            files
+            beginning of its expected regions and clears the buffered out\
+            data files
         """
         # reset buffered out
         self._received_data = BufferedReceivingData(self._store_to_file)
@@ -334,7 +335,6 @@ class BufferManager(object):
         :param y: placement y coord
         :param p: placement p coord
         :param recording_region_id: the recording region id
-
         """
         self._received_data.clear(x, y, p, recording_region_id)
 
@@ -584,15 +584,14 @@ class BufferManager(object):
                         self._extra_monitor_cores))
 
     def get_data_for_vertex(self, placement, recording_region_id):
-        """ Get a pointer to the data container for all the data retrieved\
+        """ Get a handle to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
         :param placement: the placement to get the data from
         :type placement: pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
-        :return: pointer to a class which inherits from\
-            AbstractBufferedDataStorage
+        :return: object which will contain the data
         :rtype:\
             :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
         """
