@@ -321,7 +321,6 @@ static uint32_t position_for_retransmission = 0;
 static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;
 static uint32_t dma_port_last_used = 0;
-static uint32_t current_data_read_state = 0;
 static bool in_re_transmission_mode = false;
 
 //! SDP message holder for transmissions
@@ -789,7 +788,6 @@ void dma_complete_reading_for_original_transmission(){
 
         //log_info("finished sending original data with end flag");
         has_finished = true;
-        current_data_read_state = 0;
         number_of_missing_seq_sdp_packets = 0;
     }
 
@@ -908,8 +906,10 @@ void the_dma_complete_read_missing_seqeuence_nums() {
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
             in_re_transmission_mode = false;
-            current_data_read_state = 0;
             missing_sdp_seq_num_sdram_address = NULL;
+            position_in_read_data = 0;
+            position_for_retransmission = 0;
+            number_of_missing_seq_nums_in_sdram = 0;
         }
     }
 }
@@ -950,8 +950,6 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
 
         //io_printf(IO_BUF, "starting the send of original data\n");
-        current_data_read_state = SDP_COMMAND_FOR_SENDING_DATA;
-
         // set sdram position and length
         store_address = (address_t*) msg->data[SDRAM_POSITION];
         bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
@@ -1022,7 +1020,8 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 // if got all missing packets, start retransmitting them to host
                 if (number_of_missing_seq_sdp_packets == 0) {
                     // packets all received, add finish flag for DMA stoppage
-                    current_data_read_state = msg->data[COMMAND_ID_POSITION];
+
+                    io_printf(IO_BUF, "starting resend process\n");
                     missing_sdp_seq_num_sdram_address[
                     number_of_missing_seq_nums_in_sdram] = END_FLAG;
                     number_of_missing_seq_nums_in_sdram += 1;

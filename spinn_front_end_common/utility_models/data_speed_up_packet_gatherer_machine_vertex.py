@@ -120,6 +120,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self.static_resources_required()
+    
+    def close_connection(self):
+        self._connection.close()
 
     @staticmethod
     def static_resources_required():
@@ -488,7 +491,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
         """
-        # self._print_out_packet_data(data)
+        self._print_out_packet_data(data)
         length_of_data = len(data)
         first_packet_element = struct.unpack_from(
             "<I", data, 0)[0]
