@@ -54,6 +54,7 @@ class CommandSenderMachineVertex(
     def __init__(
             self, constraints, resources_required, label,
             commands_at_start_resume, commands_at_pause_stop, timed_commands):
+        # pylint: disable=too-many-arguments
         ProvidesProvenanceDataFromMachineImpl.__init__(self)
         MachineVertex.__init__(self, label, constraints)
 
@@ -80,8 +81,8 @@ class CommandSenderMachineVertex(
 
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
-
+            n_machine_time_steps):  # @UnusedVariable
+        # pylint: disable=too-many-arguments
         timed_commands_size = \
             self.get_timed_commands_bytes(self._timed_commands)
         start_resume_commands_size = \

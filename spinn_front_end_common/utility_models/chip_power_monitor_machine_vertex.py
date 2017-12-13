@@ -198,6 +198,7 @@ class ChipPowerMonitorMachineVertex(
         :param ip_tags: iptags
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -232,6 +233,7 @@ class ChipPowerMonitorMachineVertex(
         :param time_scale_factor: the time scale factor
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         spec.switch_write_focus(
             region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
@@ -337,7 +339,7 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_data(self, placement, buffer_manager):
         """ get data from sdram given placement and buffer manager
 
-        :param placement: the location on machien to get data from
+        :param placement: the location on machine to get data from
         :param buffer_manager: the buffer manager that might have data
         :return: results
         :rtype: numpy array with 1 dimension

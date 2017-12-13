@@ -114,48 +114,47 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Extra flag for receiving packets without a port
             reserve_reverse_ip_tag=False):
         """
-
         :param n_keys: The number of keys to be sent via this multicast source
         :param label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
         :param board_address: The IP address of the board on which to place\
-                this vertex if receiving data, either buffered or live (by\
-                default, any board is chosen)
+            this vertex if receiving data, either buffered or live (by\
+            default, any board is chosen)
         :param receive_port: The port on the board that will listen for\
-                incoming event packets (default is to disable this feature;\
-                set a value to enable it, or set the reserve_reverse_ip_tag\
-                parameter to True if a random port is to be used)
+            incoming event packets (default is to disable this feature; set a\
+            value to enable it, or set the reserve_reverse_ip_tag parameter\
+            to True if a random port is to be used)
         :param receive_sdp_port: The SDP port to listen on for incoming event\
-                packets (defaults to 1)
+            packets (defaults to 1)
         :param receive_tag: The IP tag to use for receiving live events\
-                (uses any by default)
+            (uses any by default)
         :param virtual_key: The base multicast key to send received events\
-                with (assigned automatically by default)
+            with (assigned automatically by default)
         :param prefix: The prefix to "or" with generated multicast keys\
-                (default is no prefix)
+            (default is no prefix)
         :param prefix_type: Whether the prefix should apply to the upper or\
-                lower half of the multicast keys (default is upper half)
+            lower half of the multicast keys (default is upper half)
         :param check_keys: True if the keys of received events should be\
-                verified before sending (default False)
+            verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\
-                should be sent (one array for each key, default disabled)
+            should be sent (one array for each key, default disabled)
         :param send_buffer_max_space: The maximum amount of space to use of\
-                the SDRAM on the machine (default is 1MB)
+            the SDRAM on the machine (default is 1MB)
         :param send_buffer_space_before_notify: The amount of space free in\
-                the sending buffer before the machine will ask the host for\
-                more data (default setting is optimised for most cases)
-        :param buffer_notification_ip_address: The IP address of the host\
-                that will send new buffers (must be specified if a send buffer\
-                is specified)
+            the sending buffer before the machine will ask the host for more\
+            data (default setting is optimised for most cases)
+        :param buffer_notification_ip_address: The IP address of the host that\
+            will send new buffers (must be specified if a send buffer is\
+            specified)
         :param buffer_notification_port: The port that the host that will\
-                send new buffers is listening on (must be specified if a\
-                send buffer is specified)
+            send new buffers is listening on (must be specified if a send\
+            buffer is specified)
         :param buffer_notification_tag: The IP tag to use to notify the\
-                host about space in the buffer (default is to use any tag)
+            host about space in the buffer (default is to use any tag)
         :param reserve_reverse_ip_tag: True if the source should set up a tag\
-                through which it can receive packets; if port is set to None\
-                this can be used to enable the reception of packets on a\
-                randomly assigned port, which can be read from the database
+            through which it can receive packets; if port is set to None this\
+            can be used to enable the reception of packets on a randomly\
+            assigned port, which can be read from the database
         """
         # pylint: disable=too-many-arguments
         MachineVertex.__init__(self, label, constraints)

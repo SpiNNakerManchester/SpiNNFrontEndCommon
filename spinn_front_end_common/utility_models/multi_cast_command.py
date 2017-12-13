@@ -9,7 +9,6 @@ class MultiCastCommand(object):
             self, key, payload=None, time=None, repeat=0,
             delay_between_repeats=0):
         """
-
         :param key: The key of the command
         :type key: int
         :param payload: The payload of the command
@@ -28,7 +27,7 @@ class MultiCastCommand(object):
         :type delay_between_repeats: int
         :raise SpynnakerException: If the repeat or delay are out of range
         """
-
+        # pylint: disable=too-many-arguments
         if repeat < 0 or repeat > 0xFFFF:
             raise ConfigurationException(
                 "repeat must be between 0 and 65535")

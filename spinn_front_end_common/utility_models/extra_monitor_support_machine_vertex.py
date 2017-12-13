@@ -22,16 +22,12 @@ class ExtraMonitorSupportMachineVertex(
         AbstractGeneratesDataSpecification):
 
     __slots__ = (
-
         # if we reinject mc packets
         "_reinject_multicast",
-
         # if we reinject point to point packets
         "_reinject_point_to_point",
-
         # if we reinject nearest neighbour packets
         "_reinject_nearest_neighbour",
-
         # if we reinject fixed route packets
         "_reinject_fixed_route"
     )
@@ -62,10 +58,11 @@ class ExtraMonitorSupportMachineVertex(
         :param constraints: constraints on this vertex
         :param reinject_multicast: if we reinject mc packets
         :param reinject_point_to_point: if we reinject point to point packets
-        :param reinject_nearest_neighbour: if we reinject nearest neighbour \
-        packets
+        :param reinject_nearest_neighbour: if we reinject nearest neighbour\
+            packets
         :param reinject_fixed_route: if we reinject fixed route packets
         """
+        # pylint: disable=too-many-arguments
         MachineVertex.__init__(
             self, label="ExtraMonitorSupportMachineVertex",
             constraints=constraints)
@@ -184,8 +181,8 @@ class ExtraMonitorSupportMachineVertex(
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
             extra_monitor_cores_to_set):
-        """ supports setting of the router time outs for a set of chips via
-         their extra monitor cores.
+        """ Supports setting of the router time outs for a set of chips via\
+            their extra monitor cores.
 
         :param timeout_mantissa: what timeout mantissa to set it to
         :type timeout_exponent: int
@@ -196,7 +193,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: which vertices to use
         :rtype: None
         """
-
+        # pylint: disable=too-many-arguments
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
@@ -210,17 +207,18 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set):
         """ Sets the timeout of the routers
 
-        :param timeout_mantissa: The mantissa of the timeout value, between 0\
-                and 15
+        :param timeout_mantissa: \
+            The mantissa of the timeout value, between 0 and 15
         :type timeout_mantissa: int
-        :param timeout_exponent: The exponent of the timeout value, between 0\
-                and 15
+        :param timeout_exponent: \
+            The exponent of the timeout value, between 0 and 15
         :type timeout_exponent: int
         :param transceiver: the spinnMan instance
         :param placements: the placements object
-        :param extra_monitor_cores_to_set: the set of vertices to \
-        change the local chip for.
+        :param extra_monitor_cores_to_set: \
+            the set of vertices to change the local chip for.
         """
+        # pylint: disable=too-many-arguments
         core_subsets = self._convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
@@ -257,8 +255,8 @@ class ExtraMonitorSupportMachineVertex(
         """ gets the reinjection status from a set of extra monitor cores
 
         :param placements: the placements object
-        :param extra_monitor_cores_for_data: the extra monitor cores to get\
-         status from
+        :param extra_monitor_cores_for_data: \
+            the extra monitor cores to get status from
         :param transceiver: the spinnMan interface
         :rtype: None
         """
@@ -272,19 +270,19 @@ class ExtraMonitorSupportMachineVertex(
             self, placements, transceiver, point_to_point=None, multicast=None,
             nearest_neighbour=None, fixed_route=None):
         """
-
         :param placements: placements object
         :param transceiver: spinnman instance
         :param point_to_point: bool stating if point to point should be set,\
-         or None if left as before
+            or None if left as before
         :param multicast: bool stating if multicast should be set,\
-         or None if left as before
+            or None if left as before
         :param nearest_neighbour: bool stating if nearest neighbour should be \
-        set, or None if left as before
+            set, or None if left as before
         :param fixed_route: bool stating if fixed route should be set, or \
-        None if left as before.
+            None if left as before.
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         if multicast is not None:
             self._reinject_multicast = multicast
         if point_to_point is not None:
@@ -310,7 +308,7 @@ class ExtraMonitorSupportMachineVertex(
         """ converts vertices into core subsets.
 
         :param extra_monitor_cores_to_set: the vertices to convert to core \
-        subsets
+            subsets
         :param placements: the placements object
         :return: the converts CoreSubSets to the vertices
         """
