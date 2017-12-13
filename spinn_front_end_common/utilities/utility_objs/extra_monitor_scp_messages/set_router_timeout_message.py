@@ -10,10 +10,10 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
     for dropped packet reinjection
     """
 
-    __slots__ = (
+    __slots__ = [
         # command code
         "_command_code"
-    )
+    ]
 
     def __init__(self, x, y, p, timeout_mantissa, timeout_exponent,
                  command_code):

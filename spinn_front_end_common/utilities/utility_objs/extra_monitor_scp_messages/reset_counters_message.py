@@ -10,10 +10,10 @@ class ResetCountersMessage(AbstractSCPRequest):
         reinjection
     """
 
-    __slots__ = (
+    __slots__ = [
         # command code
         "_command_code"
-    )
+    ]
 
     def __init__(self, x, y, p, command_code):
         """

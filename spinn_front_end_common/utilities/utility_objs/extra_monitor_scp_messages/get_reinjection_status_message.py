@@ -13,10 +13,10 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
     """ An SCP Request to get the status of the dropped packet reinjection
     """
 
-    __slots__ = (
+    __slots__ = [
         # command code
         "_command_code"
-    )
+    ]
 
     def __init__(self, x, y, p, command_code):
         """
