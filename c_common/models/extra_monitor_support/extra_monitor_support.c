@@ -812,7 +812,7 @@ void write_missing_sdp_seq_nums_into_sdram(
             data[offset], max_seq_num);
         }
         else{
-            io_printf(IO_BUF, "storing seq num. %d \n", data[offset]);
+            //io_printf(IO_BUF, "storing seq num. %d \n", data[offset]);
         //log_info("data writing into sdram is %d", data[offset]);
         }
     }
@@ -895,8 +895,8 @@ void the_dma_complete_read_missing_seqeuence_nums() {
         // get next sequence number to regenerate
         missing_seq_num_being_processed = (uint32_t)
             retransmit_seq_nums[position_in_read_data];
-        io_printf(IO_BUF, "dealing with seq num %d \n",
-                  missing_seq_num_being_processed);
+        //io_printf(IO_BUF, "dealing with seq num %d \n",
+         //         missing_seq_num_being_processed);
         if (missing_seq_num_being_processed != END_FLAG) {
 
             // regenerate data
@@ -912,12 +912,11 @@ void the_dma_complete_read_missing_seqeuence_nums() {
 
             if (left_over_portion <
                     (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)){
-                retransmitted_seq_num_items_read = left_over_portion;
+                retransmitted_seq_num_items_read = left_over_portion + 1;
                 read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
             }else
             {
-                retransmitted_seq_num_items_read =
-                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
                 read(DMA_TAG_RETRANSMISSION_READING, 1,
                     (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
             }
