@@ -1220,8 +1220,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support"):
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
@@ -1538,8 +1539,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support"):
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("FixedRouteRouter")
@@ -1743,8 +1745,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingCompressionCheckerReport")
 
         # handle extra monitor functionality
-        enable_advanched_monitor = self._config.getboolean(
-            "Machine", "enable_advanced_monitor_support")
+        enable_advanched_monitor = (
+            self._config.getboolean(
+                "Machine", "enable_advanced_monitor_support") or
+            self._config.getboolean("Machine", "enable_reinjection"))
         if (enable_advanched_monitor and
                 (application_graph_changed or not self._has_ran)):
             algorithms.append("LoadFixedRoutes")
@@ -2013,8 +2017,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Extract router provenance
         extra_monitor_vertices = None
-        if self._read_config_boolean(
-                "Machine", "enable_advanced_monitor_support"):
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
             extra_monitor_vertices = self._last_run_outputs[
                 "MemoryExtraMonitorVertices"]
         router_provenance = RouterProvenanceGatherer()
@@ -2711,8 +2716,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Reports", "write_energy_report")
         if take_into_account_chip_power_monitor:
             cores -= self._machine.n_chips
-        take_into_account_extra_monitor_cores = self._read_config_boolean(
-            "Machine", "enable_advanced_monitor_support")
+        take_into_account_extra_monitor_cores = (self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection"))
         if take_into_account_extra_monitor_cores:
             cores -= self._machine.n_chips
             cores -= len(self._machine.ethernet_connected_chips)
