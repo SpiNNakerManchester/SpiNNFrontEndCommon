@@ -124,8 +124,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # split to core sizes
         "_application_graph",
 
+        # the end user application graph, used to hold vertices which need to
+        # be split to core sizes
+        "_original_application_graph",
+
         # the pacman machine graph, used to hold vertices which represent cores
         "_machine_graph",
+
+        # the end user pacman machine graph, used to hold vertices which
+        # represent cores.
+        "_original_machine_graph",
 
         # the mapping interface between application and machine graphs.
         "_graph_mapper",
@@ -396,12 +404,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._graph_label = graph_label
 
         # pacman objects
-        self._application_graph = ApplicationGraph(label=self._graph_label)
-        self._machine_graph = MachineGraph(label=self._graph_label)
+        self._original_application_graph = \
+            ApplicationGraph(label=self._graph_label)
+        self._original_machine_graph = MachineGraph(label=self._graph_label)
+
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
+        self._application_graph = None
+        self._machine_graph = None
         self._tags = None
         self._machine = None
         self._txrx = None
@@ -809,6 +821,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         self._run(run_time)
 
+    def _build_graphs_for_usege(self):
+        self._application_graph = ApplicationGraph(
+            label=self._original_application_graph.label)
+        for vertex in self._original_application_graph.vertices:
+            self._application_graph.add_vertex(vertex)
+        for outgoing_partition in \
+                self._original_application_graph.outgoing_edge_partitions:
+            for edge in outgoing_partition.edges:
+                self._application_graph.add_edge(
+                    edge, outgoing_partition.identifier)
+
+
+
     def _run(self, run_time, run_until_complete=False):
         """ The main internal run function
 
@@ -855,6 +880,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
+
+        # build the graphs to modify with system requriements
+        self._build_graphs_for_usege()
 
         # If we have never run before, or the graph has changed,
         # start by performing mapping
