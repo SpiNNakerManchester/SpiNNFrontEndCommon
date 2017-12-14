@@ -110,6 +110,9 @@ void send_data(){
 void receive_data(uint key, uint payload) {
     //log_info("packet!");
     if (key == new_sequence_key) {
+        if(position_in_store != 1){
+            send_data();
+        }
         //log_info("finding new seq num %d", payload);
         //log_info("position in store is %d", position_in_store);
         data[0] = payload;

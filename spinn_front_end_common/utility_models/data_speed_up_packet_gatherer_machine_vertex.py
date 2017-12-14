@@ -348,6 +348,14 @@ class DataSpeedUpPacketGatherMachineVertex(
                         "Failed to hear from the machine during {} attempts. "
                         "Please try removing firewalls".format(timeoutcount))
                 timeoutcount += 1
+                remote_port = self._connection.remote_port
+                local_port = self._connection.local_port
+                local_ip = self._connection.local_ip_address
+                remote_ip = self._connection.remote_ip_address
+                self._connection.close()
+                self._connection = SCAMPConnection(
+                    local_port=local_port, remote_port=remote_port,
+                    local_host=local_ip, remote_host=remote_ip)
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
                         seq_nums, transceiver, placement, lost_seq_nums)

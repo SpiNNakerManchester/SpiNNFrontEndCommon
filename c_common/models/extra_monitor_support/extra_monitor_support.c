@@ -306,6 +306,7 @@ static uint32_t position_in_store = 0;
 static uint32_t num_items_read = 0;
 static bool first_transmission = true;
 static bool has_finished = false;
+static uint32_t retransmitted_seq_num_items_read = 0;
 
 //! retransmission stuff
 static uint32_t number_of_missing_seq_sdp_packets = 0;
@@ -901,8 +902,25 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             // regenerate data
             position_in_store = missing_seq_num_being_processed * (
                 ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
-            read(DMA_TAG_RETRANSMISSION_READING, 1,
-                (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
+            uint32_t left_over_portion =
+                ((bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER) -
+                position_in_store);
+
+                //io_printf(IO_BUF, "for seq %d, pos = %d, left %d\n",
+                //missing_seq_num_being_processed, position_in_store,
+                //left_over_portion);
+
+            if (left_over_portion <
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)){
+                retransmitted_seq_num_items_read = left_over_portion;
+                read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
+            }else
+            {
+                retransmitted_seq_num_items_read =
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                read(DMA_TAG_RETRANSMISSION_READING, 1,
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
+            }
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
             in_re_transmission_mode = false;
@@ -930,7 +948,7 @@ void dma_complete_reading_retransmission_data() {
 
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
-    send_data_block(transmit_dma_pointer, ITEMS_PER_DATA_PACKET,
+    send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read,
                     new_sequence_key);
 
     position_in_read_data += 1;
