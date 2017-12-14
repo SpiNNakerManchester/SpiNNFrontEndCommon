@@ -833,7 +833,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
         # sort out machine graph
-        self._machine_graph = MachineGraph(label=self._machine_graph.label)
+        self._machine_graph = MachineGraph(
+            label=self._original_machine_graph.label)
         for vertex in self._original_machine_graph.vertices:
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
@@ -2269,6 +2270,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
     @property
     def machine_graph(self):
         return self._machine_graph
+
+    @property
+    def original_machine_graph(self):
+        return self._original_machine_graph
+
+    @property
+    def original_application_graph(self):
+        return self._original_application_graph
 
     @property
     def application_graph(self):
