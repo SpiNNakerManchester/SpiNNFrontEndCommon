@@ -822,6 +822,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._run(run_time)
 
     def _build_graphs_for_usege(self):
+        # sort out app graph
         self._application_graph = ApplicationGraph(
             label=self._original_application_graph.label)
         for vertex in self._original_application_graph.vertices:
@@ -831,8 +832,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
             for edge in outgoing_partition.edges:
                 self._application_graph.add_edge(
                     edge, outgoing_partition.identifier)
-
-
+        # sort out machine graph
+        self._machine_graph = MachineGraph(label=self._machine_graph.label)
+        for vertex in self._original_machine_graph.vertices:
+            self._machine_graph.add_vertex(vertex)
+        for outgoing_partition in \
+                self._original_machine_graph.outgoing_edge_partitions:
+            for edge in outgoing_partition.edges:
+                self._machine_graph.add_edge(
+                    edge, outgoing_partition.identifier)
 
     def _run(self, run_time, run_until_complete=False):
         """ The main internal run function
@@ -2361,7 +2369,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if (self._machine_graph.n_vertices > 0 and
+        if (self._original_machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
@@ -2371,7 +2379,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._application_graph.add_vertex(vertex_to_add)
+        self._original_application_graph.add_vertex(vertex_to_add)
 
     def add_machine_vertex(self, vertex):
         """
@@ -2381,7 +2389,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
-        if self._application_graph.n_vertices > 0:
+        if self._original_application_graph.n_vertices > 0:
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
@@ -2390,7 +2398,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._machine_graph.add_vertex(vertex)
+        self._original_machine_graph.add_vertex(vertex)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -2401,7 +2409,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
 
-        self._application_graph.add_edge(
+        self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
 
     def add_machine_edge(self, edge, partition_id):
@@ -2412,7 +2420,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     edge partition
         :rtype: None
         """
-        self._machine_graph.add_edge(edge, partition_id)
+        self._original_machine_graph.add_edge(edge, partition_id)
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
