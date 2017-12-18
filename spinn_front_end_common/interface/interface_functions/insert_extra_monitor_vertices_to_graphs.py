@@ -73,33 +73,34 @@ class InsertExtraMonitorVerticesToGraphs(object):
         extra_monitor_vertices = list()
 
         for chip in progress.over(machine.chips):
-
-            equiv_machine_vertex = self._exists_equiv_vertex(
-                    chip.x, chip.y, machine_graph,
-                    ExtraMonitorSupportMachineVertex)
-            if equiv_machine_vertex is None:
-                # add to machine graph
-                machine_vertex = ExtraMonitorSupportMachineVertex(
-                    constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)])
-                machine_graph.add_vertex(machine_vertex)
-            else:
-                machine_vertex = equiv_machine_vertex
-
-            vertex_to_chip_map[(chip.x, chip.y)] = machine_vertex
-            extra_monitor_vertices.append(machine_vertex)
-
-            # add application graph as needed
-            if application_graph is not None:
-                equiv_vertex = self._exists_equiv_vertex(
-                    chip.x, chip.y, application_graph,
-                    ExtraMonitorSupportApplicationVertex)
-                if equiv_vertex is None:
-                    app_vertex = ExtraMonitorSupportApplicationVertex(
+            if not chip.virtual:
+                equiv_machine_vertex = self._exists_equiv_vertex(
+                        chip.x, chip.y, machine_graph,
+                        ExtraMonitorSupportMachineVertex)
+                if equiv_machine_vertex is None:
+                    # add to machine graph
+                    machine_vertex = ExtraMonitorSupportMachineVertex(
                         constraints=[
                             ChipAndCoreConstraint(x=chip.x, y=chip.y)])
-                    application_graph.add_vertex(app_vertex)
-                    graph_mapper.add_vertex_mapping(
-                        machine_vertex, Slice(0, 0), app_vertex)
+                    machine_graph.add_vertex(machine_vertex)
+                else:
+                    machine_vertex = equiv_machine_vertex
+
+                vertex_to_chip_map[(chip.x, chip.y)] = machine_vertex
+                extra_monitor_vertices.append(machine_vertex)
+
+                # add application graph as needed
+                if application_graph is not None:
+                    equiv_vertex = self._exists_equiv_vertex(
+                        chip.x, chip.y, application_graph,
+                        ExtraMonitorSupportApplicationVertex)
+                    if equiv_vertex is None:
+                        app_vertex = ExtraMonitorSupportApplicationVertex(
+                            constraints=[
+                                ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+                        application_graph.add_vertex(app_vertex)
+                        graph_mapper.add_vertex_mapping(
+                            machine_vertex, Slice(0, 0), app_vertex)
         return extra_monitor_vertices
 
     @staticmethod
