@@ -120,7 +120,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self.static_resources_required()
-    
+
     def close_connection(self):
         self._connection.close()
 
@@ -246,16 +246,17 @@ class DataSpeedUpPacketGatherMachineVertex(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
                          iteration_name, "iteration_{}".format(i)],
                         n_lost_seq_nums, report=n_lost_seq_nums > 0,
-                        message=
-                        "During the extraction of data of {} bytes from "
-                        "memory address {}, attempt {} had {} sequences that "
-                        "were lost. These had to be retransmitted and will "
-                        "have slowed down the data extraction process. "
-                        "Reduce the number of executing applications and "
-                        "remove routers between yourself and the SpiNNaker "
-                        "machine to reduce the chance of this occurring."
-                        .format(length_in_bytes, memory_address, i,
-                                n_lost_seq_nums)))
+                        message=(
+                            "During the extraction of data of {} bytes from "
+                            "memory address {}, attempt {} had {} sequences "
+                            "that were lost. These had to be retransmitted and"
+                            " will have slowed down the data extraction "
+                            "process. Reduce the number of executing "
+                            "applications and remove routers between yourself"
+                            " and the SpiNNaker machine to reduce the chance "
+                            "of this occurring."
+                            .format(length_in_bytes, memory_address, i,
+                                    n_lost_seq_nums))))
         return prov_items
 
     @staticmethod
