@@ -890,12 +890,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._machine_allocation_controller.extend_allocation(
                 total_run_time)
 
-        # build the graphs to modify with system requriements
-        self._build_graphs_for_usege()
-
         # If we have never run before, or the graph has changed,
         # start by performing mapping
         application_graph_changed = self._detect_if_graph_has_changed(True)
+
+        # build the graphs to modify with system requirements
+        if (self._has_reset_last or not self._has_ran or
+                application_graph_changed):
+            self._build_graphs_for_usege()
+            self._add_dependent_verts_and_edges_for_application_graph()
+            self._add_commands_to_command_sender()
 
         # create new sub-folder for reporting data if the graph has changed and
         # reset has been called.
@@ -912,10 +916,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
-
-            if not self._has_ran:
-                self._add_dependent_verts_and_edges_for_application_graph()
-                self._add_commands_to_command_sender()
 
             # Reset the machine graph if there is an application graph
             if self._application_graph.n_vertices > 0:
@@ -1035,7 +1035,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if self._command_sender is None:
                     self._command_sender = CommandSender(
                         "auto_added_command_sender", None)
-                    self.add_application_vertex(self._command_sender)
+                    self._application_graph.add_vertex(self._command_sender)
 
                 # allow the command sender to create key to partition map
                 self._command_sender.add_commands(
@@ -1048,14 +1048,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             edges, partition_ids = \
                 self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
-                self.add_application_edge(edge, partition_id)
+                self._application_graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
             # add any dependent edges and vertices if needed
             if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
                 for dependant_vertex in vertex.dependent_vertices():
-                    self.add_application_vertex(dependant_vertex)
+                    self._application_graph.add_vertex(dependant_vertex)
                     edge_partition_identifiers = vertex.\
                         edge_partition_identifiers_for_dependent_vertex(
                             dependant_vertex)
@@ -1063,7 +1063,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         dependant_edge = ApplicationEdge(
                             pre_vertex=vertex,
                             post_vertex=dependant_vertex)
-                        self.add_application_edge(
+                        self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
@@ -1479,7 +1479,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         outputs = ["FileMachine"]
         executor = PACMANAlgorithmExecutor(
             algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
-            required_tokens=[], xml_paths=self._xml_paths,
+            xml_paths=self._xml_paths,
             required_outputs=outputs, required_output_tokens=[],
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path)
@@ -2206,19 +2206,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
-        """ Iterates though the graph and looks changes
+        """ Iterates though the original graphs and look for changes
         """
         changed = False
 
         # if application graph is filled, check their changes
-        if self._application_graph.n_vertices != 0:
-            for vertex in self._application_graph.vertices:
+        if self._original_application_graph.n_vertices != 0:
+            for vertex in self._original_application_graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
-            for partition in self._application_graph.outgoing_edge_partitions:
+            for partition in \
+                    self._original_application_graph.outgoing_edge_partitions:
                 for edge in partition.edges:
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
@@ -2227,14 +2228,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
-        elif self._machine_graph.n_vertices != 0:
-            for machine_vertex in self._machine_graph.vertices:
+        elif self._original_machine_graph.n_vertices != 0:
+            for machine_vertex in self._original_machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
-            for partition in self._machine_graph.outgoing_edge_partitions:
+            for partition in \
+                    self._original_machine_graph.outgoing_edge_partitions:
                 for machine_edge in partition.edges:
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:
