@@ -939,7 +939,7 @@ void dma_complete_reading_retransmission_data() {
     data_to_transmit[transmit_dma_pointer][0] =
         missing_seq_num_being_processed;
 
-	if(missing_seq_num_being_processed > max_seq_num){
+	if (missing_seq_num_being_processed > max_seq_num) {
 	    io_printf(
 	        IO_BUF, "Got some shitty seq num here. max is %d and got %d \n",
 	        max_seq_num, missing_seq_num_being_processed);
