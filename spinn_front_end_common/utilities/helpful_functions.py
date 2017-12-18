@@ -71,6 +71,13 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     return region_address_decoded
 
 
+def child_folder(parent, child_name):
+    child = os.path.join(parent, child_name)
+    if not os.path.exists(child):
+        os.makedirs(child)
+    return child
+
+
 def set_up_output_application_data_specifics(
         where_to_write_application_data_files,
         max_application_binaries_kept, n_calls_to_run,
@@ -89,63 +96,32 @@ def set_up_output_application_data_specifics(
     if where_to_write_application_data_files == "DEFAULT":
         directory = os.getcwd()
         application_generated_data_file_folder = \
-            os.path.join(directory, 'application_generated_data_files')
-        if not os.path.exists(application_generated_data_file_folder):
-            os.makedirs(application_generated_data_file_folder)
-
-        _remove_excess_folders(
-            max_application_binaries_kept,
-            application_generated_data_file_folder)
-
-        # add time stamped folder for this run
-        this_run_time_folder = \
-            os.path.join(
-                application_generated_data_file_folder, this_run_time_string)
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
-
-        # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(this_run_time_folder,
-                                             "time_stamp")
-        writer = open(time_of_run_file_name, "w")
-        writer.writelines("{}".format(this_run_time_string))
-        writer.flush()
-        writer.close()
+            child_folder(directory, 'application_generated_data_files')
 
     else:
         # add time stamped folder for this run
         application_generated_data_file_folder = \
-            os.path.join(where_to_write_application_data_files,
+            child_folder(where_to_write_application_data_files,
                          'application_generated_data_files')
-        if not os.path.exists(application_generated_data_file_folder):
-            os.makedirs(application_generated_data_file_folder)
-        this_run_time_folder = \
-            os.path.join(application_generated_data_file_folder,
-                         this_run_time_string)
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
+    # add time stamped folder for this run
+    this_run_time_folder = \
+        child_folder(application_generated_data_file_folder,
+                     this_run_time_string)
 
-        # remove folders that are old and above the limit
-        _remove_excess_folders(
-            max_application_binaries_kept,
-            where_to_write_application_data_files)
+    # remove folders that are old and above the limit
+    _remove_excess_folders(
+        max_application_binaries_kept,
+        application_generated_data_file_folder)
 
-        # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(this_run_time_folder,
-                                             "time_stamp")
-        writer = open(time_of_run_file_name, "w")
+    # store timestamp in latest/time_stamp
+    time_of_run_file_name = os.path.join(this_run_time_folder, "time_stamp")
+    with open(time_of_run_file_name, "w") as writer:
         writer.writelines("{}".format(this_run_time_string))
-
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
 
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
-    this_run_time_sub_folder = os.path.join(
+    this_run_time_sub_folder = child_folder(
         this_run_time_folder, "run_{}".format(n_calls_to_run))
-
-    if not os.path.exists(this_run_time_sub_folder):
-        os.makedirs(this_run_time_sub_folder)
 
     return this_run_time_sub_folder, this_run_time_folder
 
@@ -165,27 +141,20 @@ def set_up_report_specifics(
 
     # determine common report folder
     config_param = default_report_file_path
-    created_folder = False
     if config_param == "DEFAULT":
         directory = os.getcwd()
 
         # global reports folder
-        report_default_directory = os.path.join(directory, 'reports')
-        if not os.path.exists(report_default_directory):
-            os.makedirs(report_default_directory)
-            created_folder = True
+        report_default_directory = child_folder(directory, 'reports')
     elif config_param == "REPORTS":
         report_default_directory = 'reports'
         if not os.path.exists(report_default_directory):
             os.makedirs(report_default_directory)
     else:
-        report_default_directory = \
-            os.path.join(config_param, 'reports')
-        if not os.path.exists(report_default_directory):
-            os.makedirs(report_default_directory)
+        report_default_directory = child_folder(config_param, 'reports')
 
     # clear and clean out folders considered not useful anymore
-    if not created_folder and len(os.listdir(report_default_directory)) > 0:
+    if len(os.listdir(report_default_directory)) > 0:
         _remove_excess_folders(max_reports_kept, report_default_directory)
 
     # determine the time slot for later
@@ -198,26 +167,18 @@ def set_up_report_specifics(
                 this_run_time.second, this_run_time.microsecond))
 
     # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = os.path.join(
-        report_default_directory, this_run_time_string)
-
-    if not os.path.exists(app_folder_name):
-            os.makedirs(app_folder_name)
+    app_folder_name = child_folder(report_default_directory,
+                                   this_run_time_string)
 
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
-    app_sub_folder_name = os.path.join(
+    app_sub_folder_name = child_folder(
         app_folder_name, "run_{}".format(n_calls_to_run))
-
-    if not os.path.exists(app_sub_folder_name):
-        os.makedirs(app_sub_folder_name)
 
     # store timestamp in latest/time_stamp for provenance reasons
     time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
-    writer = open(time_of_run_file_name, "w")
-    writer.writelines("{}".format(this_run_time_string))
-    writer.flush()
-    writer.close()
+    with open(time_of_run_file_name, "w") as writer:
+        writer.writelines("{}".format(this_run_time_string))
     return app_sub_folder_name, app_folder_name, this_run_time_string
 
 
@@ -225,16 +186,12 @@ def write_finished_file(app_data_runtime_folder, report_default_directory):
     # write a finished file that allows file removal to only remove folders
     # that are finished
     app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
-    writer = open(app_file_name, "w")
-    writer.writelines("finished")
-    writer.flush()
-    writer.close()
+    with open(app_file_name, "w") as writer:
+        writer.writelines("finished")
 
     app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
-    writer = open(app_file_name, "w")
-    writer.writelines("finished")
-    writer.flush()
-    writer.close()
+    with open(app_file_name, "w") as writer:
+        writer.writelines("finished")
 
 
 def _remove_excess_folders(max_to_keep, starting_directory):
