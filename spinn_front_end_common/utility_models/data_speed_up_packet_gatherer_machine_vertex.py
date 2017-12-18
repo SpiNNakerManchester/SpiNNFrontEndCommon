@@ -340,7 +340,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
                     raise exceptions.SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls")
+                        "Please try removing firewalls".format(timeoutcount))
                 timeoutcount += 1
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
