@@ -1767,6 +1767,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
+        optional_algorithms.append("WriteMemoryIOData")
+
         if self._exec_dse_on_host:
             optional_algorithms.append("HostExecuteDataSpecification")
         else:
