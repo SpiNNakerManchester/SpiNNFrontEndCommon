@@ -52,6 +52,7 @@ static uint32_t end_flag_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
+static uint32_t max_seq_num = 0;
 
 //! data holders for the sdp packet
 static uint32_t data[ITEMS_PER_DATA_PACKET];
@@ -91,9 +92,16 @@ void send_data(){
 	    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
     //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
+    if (seq_num > max_seq_num){
+        log_error(
+            "got a funky seq num in sending. max is %d, received %d",
+            max_seq_num, seq_num);
+    }
+
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
 	// Empty body
     }
+
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
@@ -102,20 +110,34 @@ void send_data(){
 void receive_data(uint key, uint payload) {
     //log_info("packet!");
     if (key == new_sequence_key) {
+        if (position_in_store != 1) {
+            send_data();
+        }
         //log_info("finding new seq num %d", payload);
         //log_info("position in store is %d", position_in_store);
         data[0] = payload;
-    } else {
-        if (key == first_data_key) {
-            //log_info("resetting seq and position");
-            seq_num = FIRST_SEQ_NUM;
-            position_in_store = 0;
+        seq_num = payload;
+        position_in_store = 1;
+
+        if (payload > max_seq_num){
+            log_error(
+                "got a funky seq num. max is %d, received %d",
+                max_seq_num, payload);
         }
+    } else {
 
         //log_info(" payload = %d posiiton = %d", payload, position_in_store);
         data[position_in_store] = payload;
         position_in_store += 1;
         //log_info("payload is %d", payload);
+
+        if (key == first_data_key) {
+            //log_info("resetting seq and position");
+            seq_num = FIRST_SEQ_NUM;
+            data[0] = seq_num;
+            position_in_store = 1;
+            max_seq_num = payload;
+        }
 
         if (key == end_flag_key){
             // set end flag bit in seq num
