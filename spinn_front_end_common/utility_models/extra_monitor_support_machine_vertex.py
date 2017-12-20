@@ -6,6 +6,7 @@ from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from spinn_front_end_common.abstract_models import \
     AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.read_status_process import \
@@ -54,7 +55,8 @@ class ExtraMonitorSupportMachineVertex(
                ('DATA_SPEED_CONFIG', 1)])
 
     _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
-    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 1 * 4
+    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -66,7 +68,7 @@ class ExtraMonitorSupportMachineVertex(
                ("EXIT", 5)])
 
     def __init__(
-            self, constraints, reinject_multicast=True,
+            self, constraints, reinject_multicast=None,
             reinject_point_to_point=False, reinject_nearest_neighbour=False,
             reinject_fixed_route=False):
         """ constructor
@@ -84,7 +86,12 @@ class ExtraMonitorSupportMachineVertex(
         AbstractHasAssociatedBinary.__init__(self)
         AbstractGeneratesDataSpecification.__init__(self)
 
-        self._reinject_multicast = reinject_multicast
+        if reinject_multicast is None:
+            config = globals_variables.get_simulator().config
+            self._reinject_multicast = config.getboolean(
+                "Machine", "enable_reinjection")
+        else:
+            self._reinject_multicast = reinject_multicast
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
@@ -116,7 +123,9 @@ class ExtraMonitorSupportMachineVertex(
             sdram=ExtraMonitorSupportMachineVertex.
             _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
-            _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES))
+            _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
+            ExtraMonitorSupportMachineVertex.
+            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -159,8 +168,21 @@ class ExtraMonitorSupportMachineVertex(
             base_key = routing_info.get_first_key_for_edge(
                 list(machine_graph.get_edges_starting_at_vertex(self))[0])
             spec.write_value(base_key)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.NEW_SEQ_KEY_OFFSET)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.FIRST_DATA_KEY_OFFSET)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY_OFFSET)
         else:
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.BASE_KEY)
+            spec.write_value(DataSpeedUpPacketGatherMachineVertex.NEW_SEQ_KEY)
+            spec.write_value(
+                DataSpeedUpPacketGatherMachineVertex.FIRST_DATA_KEY)
+            spec.write_value(DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY)
 
     def _generate_reinjection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(

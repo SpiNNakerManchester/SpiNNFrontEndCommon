@@ -2,6 +2,36 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="ProcessPartitionConstraints">
+        <python_module>spinn_front_end_common.interface.interface_functions.process_partition_constraints</python_module>
+        <python_class>ProcessPartitionConstraints</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine_graph</param_name>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>application_graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+        </input_definitions>
+        <optional_inputs>
+            <one_of>
+                <all_of>
+                    <param_name>graph_mapper</param_name>
+                    <param_name>application_graph</param_name>
+                    <param_name>machine_graph</param_name>
+                </all_of>
+                <all_of>
+                    <param_name>machine_graph</param_name>
+                </all_of>
+            </one_of>
+        </optional_inputs>
+    </algorithm>
     <algorithm name="LoadFixedRoutes">
         <python_module>spinn_front_end_common.interface.interface_functions.load_fixed_routes</python_module>
         <python_class>LoadFixedRoutes</python_class>
@@ -89,17 +119,12 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>connection_mapping</param_name>
-                <param_type>MCGathererConnectionMapping</param_type>
-            </parameter>
-            <parameter>
                 <param_name>n_cores_to_allocate</param_name>
                 <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
-            <param_name>connection_mapping</param_name>
             <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
@@ -119,6 +144,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
@@ -139,7 +165,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
-            <param_type>MCGathererConnectionMapping</param_type>
+            <token part="ExtraMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForChipPowerMonitor">
@@ -150,6 +176,7 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
@@ -190,6 +217,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="EnergyMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertChipPowerMonitorsToGraphs">
@@ -244,6 +272,7 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
@@ -260,6 +289,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="LivePacketGatherer">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertEdgesToLivePacketGatherers">
@@ -1558,10 +1588,7 @@
             <param_name>spalloc_machine</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MachineWidth</param_type>
-            <param_type>MachineHeight</param_type>
-            <param_type>MachineHasWrapAroundsFlag</param_type>
-            <param_type>BoardVersion</param_type>
+            <param_type>MemoryVirtualMachine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="HBPMaxMachineGenerator">
@@ -1582,9 +1609,7 @@
             <param_name>total_run_time</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MachineWidth</param_type>
-            <param_type>MachineHeight</param_type>
-            <param_type>MachineHasWrapAroundsFlag</param_type>
+            <param_type>MemoryVirtualMachine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphMeasurer">
@@ -1665,60 +1690,5 @@
             <param_name>machine_time_step</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
-    </algorithm>
-    <algorithm name="WriteMemoryIOData">
-        <python_module>spinn_front_end_common.interface.interface_functions.write_memory_io_data</python_module>
-        <python_class>WriteMemoryIOData</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>graph</param_name>
-                <param_type>MemoryApplicationGraph</param_type>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_id</param_name>
-                <param_type>APPID</param_type>
-            </parameter>
-            <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
-                <param_name>hostname</param_name>
-                <param_type>IPAddress</param_type>
-            </parameter>
-            <parameter>
-                <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
-            </parameter>
-            <parameter>
-                <param_name>graph_mapper</param_name>
-                <param_type>MemoryGraphMapper</param_type>
-            </parameter>
-            <parameter>
-                <param_name>processor_to_app_data_base_address</param_name>
-                <param_type>ProcessorToAppDataBaseAddress</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>graph</param_name>
-            <param_name>placements</param_name>
-            <param_name>app_id</param_name>
-            <param_name>app_data_runtime_folder</param_name>
-            <param_name>hostname</param_name>
-        </required_inputs>
-        <optional_inputs>
-            <param_name>transceiver</param_name>
-            <param_name>graph_mapper</param_name>
-            <param_name>processor_to_app_data_base_address</param_name>
-        </optional_inputs>
-        <outputs>
-            <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <token part="MemoryIODataLoaded">DataLoaded</token>
-        </outputs>
     </algorithm>
 </algorithms>

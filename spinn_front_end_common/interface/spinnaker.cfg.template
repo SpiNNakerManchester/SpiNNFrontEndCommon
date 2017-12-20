@@ -24,13 +24,12 @@ height = None
 time_scale_factor = None
 
 [Reports]
-# NOTE ***that for bespoke file paths, folders will not be automatically deleted***
 # options are DEFAULT or a file path
-# Note for hard coded locations a "reports" sub directory will be added
+# In all cases oldest folders are automatically deleted to max_reports_kept=
 default_report_file_path = DEFAULT
 
 # options are DEFAULT, or a file path
-# Note for hard coded locations an "application_generated_data_files" sub directory is created
+# In all cases oldest folders are automatically deleted to max_reports_kept=
 default_application_data_file_path = DEFAULT
 
 [Mode]

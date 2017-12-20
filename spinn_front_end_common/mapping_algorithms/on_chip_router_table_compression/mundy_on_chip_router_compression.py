@@ -56,12 +56,10 @@ class MundyOnChipRouterCompression(object):
 
         # figure size of sdram needed for each chip for storing the routing
         # table
-        for routing_table in routing_tables:
+        for routing_table in progress.over(routing_tables, False):
             self._load_routing_table(
                 routing_table, transceiver, app_id, compressor_app_id,
                 compress_only_when_needed, compress_as_much_as_possible)
-            # update progress bar
-            progress.update()
 
         # load the router compressor executable
         executable_targets = self._load_executables(
@@ -155,7 +153,7 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
-            txrx, True, executable_targets.all_core_subsets,
+            txrx, executable_targets.all_core_subsets,
             provenance_file_path)
         for warning in io_warnings:
             logger.warn(warning)

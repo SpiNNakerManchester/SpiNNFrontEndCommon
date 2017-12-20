@@ -1107,13 +1107,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         total_run_timesteps = next_run_timesteps
         if next_run_timesteps is not None:
             total_run_timesteps += self._current_run_timesteps
-            machine_time_steps = (
-                (total_run_timesteps * 1000.0) / self._machine_time_step)
-            if machine_time_steps != int(machine_time_steps):
-                logger.warn(
-                    "The runtime and machine time step combination result in "
-                    "a fractional number of machine time steps")
-            self._no_machine_time_steps = int(math.ceil(machine_time_steps))
+            self._no_machine_time_steps = total_run_timesteps
         else:
             self._no_machine_time_steps = None
             for vertex in self._application_graph.vertices:
@@ -1231,8 +1225,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support"):
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
@@ -1347,8 +1342,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             do_partitioning = False
             if need_virtual_board:
-                algorithms.append("VirtualMachineGenerator")
-                algorithms.append("MallocBasedChipIDAllocator")
+                algorithms.append("VirtualMallocBasedChipIDAllocator")
 
                 # If we are using an allocation server, and we need a virtual
                 # board, we need to use the virtual board to get the number of
@@ -1449,7 +1443,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = PACMANAlgorithmExecutor(
             algorithms=[], optional_algorithms=[], inputs=inputs, tokens=[],
             required_tokens=[], xml_paths=self._xml_paths,
-            required_outputs=outputs,
+            required_outputs=outputs, required_output_tokens=[],
             do_timings=self._do_timings, print_timings=self._print_timings,
             provenance_path=self._pacman_executor_provenance_path)
         executor.execute_mapping()
@@ -1550,8 +1544,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        if self._config.getboolean("Machine",
-                                   "enable_advanced_monitor_support"):
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("FixedRouteRouter")
@@ -1670,14 +1665,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
-        else:
-            # Fill in IP Tag ports (virtual so won't actually be used)
-            for tag in self._tags.ip_tags:
-                if tag.port is None:
-                    tag.port = 65534
-            for tag in self._tags.reverse_ip_tags:
-                if tag.port is None:
-                    tag.port = 64434
 
         self._mapping_time += \
             helpful_functions.convert_time_diff_to_total_milliseconds(
@@ -1724,17 +1711,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             application_graph_changed
         )
 
-        if not application_graph_changed:
+        if not application_graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
                 "ExecutableTargets"]
-            inputs["LoadedReverseIPTagsToken"] = self._last_run_outputs[
-                "LoadedReverseIPTagsToken"]
-            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
-                "LoadedIPTagsToken"]
-            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
-                "LoadedIPTagsToken"]
-            inputs["LoadedIPTagsToken"] = self._last_run_outputs[
-                "LoadedIPTagsToken"]
 
         algorithms = list()
 
@@ -1775,9 +1754,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingCompressionCheckerReport")
 
         # handle extra monitor functionality
-        enable_advanched_monitor = self._config.getboolean(
-            "Machine", "enable_advanced_monitor_support")
-        if enable_advanched_monitor and application_graph_changed:
+        enable_advanched_monitor = (
+            self._config.getboolean(
+                "Machine", "enable_advanced_monitor_support") or
+            self._config.getboolean("Machine", "enable_reinjection"))
+        if (enable_advanched_monitor and
+                (application_graph_changed or not self._has_ran)):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
 
@@ -1785,8 +1767,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
-        optional_algorithms.append("WriteMemoryIOData")
-
         if self._exec_dse_on_host:
             optional_algorithms.append("HostExecuteDataSpecification")
         else:
@@ -1942,7 +1922,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("ProvenanceItems")
 
         # Decide what needs done
-        required_tokens = ["ApplicationRun"]
+        required_tokens = []
+        if not self._use_virtual_board:
+            required_tokens = ["ApplicationRun"]
 
         run_complete = False
         executor = PACMANAlgorithmExecutor(
@@ -2043,12 +2025,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
         logger.info("\n\nAttempting to extract data\n\n")
 
         # Extract router provenance
+        extra_monitor_vertices = None
+        if (self._config.getboolean("Machine",
+                                    "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection")):
+            extra_monitor_vertices = self._last_run_outputs[
+                "MemoryExtraMonitorVertices"]
         router_provenance = RouterProvenanceGatherer()
         prov_items = router_provenance(
             transceiver=self._txrx, machine=self._machine,
             router_tables=self._router_tables,
-            extra_monitor_vertices=(
-                self._last_run_outputs["MemoryExtraMonitorVertices"]),
+            extra_monitor_vertices=extra_monitor_vertices,
             placements=self._placements)
 
         # Find the cores that are not in an expected state
@@ -2102,9 +2089,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
+        iobuf_cores = CoreSubsets()
+        for placement in self._placements:
+            iobuf_cores.add_processor(placement.x, placement.y, placement.p)
+
         iobuf = ChipIOBufExtractor()
         errors, warnings = iobuf(
-            self._txrx, True, unsuccessful_core_subset,
+            self._txrx, iobuf_cores,
             self._provenance_file_path)
 
         # Print the details of error cores
@@ -2737,8 +2728,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Reports", "write_energy_report")
         if take_into_account_chip_power_monitor:
             cores -= self._machine.n_chips
-        take_into_account_extra_monitor_cores = self._read_config_boolean(
-            "Machine", "enable_advanced_monitor_support")
+        take_into_account_extra_monitor_cores = (self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support") or
+                self._config.getboolean("Machine", "enable_reinjection"))
         if take_into_account_extra_monitor_cores:
             cores -= self._machine.n_chips
             cores -= len(self._machine.ethernet_connected_chips)
