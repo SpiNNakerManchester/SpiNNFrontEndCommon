@@ -19,6 +19,7 @@ from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 
+import logging
 import math
 import time
 import struct
@@ -26,6 +27,7 @@ from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
 TIMEOUT_RETRY_LIMIT = 20
+logger = logging.getLogger(__name__)
 
 
 class DataSpeedUpPacketGatherMachineVertex(
@@ -312,8 +314,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             "<III", self.SDP_PACKET_START_SENDING_COMMAND_ID,
             memory_address, length_in_bytes)
 
-        # print "sending to core {}:{}:{}".format(
-        #    placement.x, placement.y, placement.p)
+        # logger.debug("sending to core %d:%d:%d",
+        #              placement.x, placement.y, placement.p)
         message = SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
@@ -519,14 +521,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         offset = self._calculate_offset(seq_num)
 
         # write data
-        true_data_length = (
-            offset + length_of_data - self.SEQUENCE_NUMBER_SIZE)
-        if is_end_of_stream and length_of_data == self.END_FLAG_SIZE_IN_BYTES:
-            pass
-        else:
+        true_data_length = offset + length_of_data - self.SEQUENCE_NUMBER_SIZE
+        if not is_end_of_stream or \
+                length_of_data != self.END_FLAG_SIZE_IN_BYTES:
             self._write_into_view(
-                offset, true_data_length, data,
-                self.SEQUENCE_NUMBER_SIZE,
+                offset, true_data_length, data, self.SEQUENCE_NUMBER_SIZE,
                 length_of_data, seq_num, length_of_data, False)
 
         # add seq num to list
@@ -544,9 +543,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         return seq_nums, finished
 
     def _calculate_offset(self, seq_num):
-        offset = (seq_num * self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
-                  self.WORD_TO_BYTE_CONVERTER)
-        return offset
+        return (seq_num * self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
+                self.WORD_TO_BYTE_CONVERTER)
 
     def _write_into_view(
             self, view_start_position, view_end_position,
@@ -584,8 +582,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         seq_nums = sorted(seq_nums)
         max_needed = self.calculate_max_seq_num()
         if len(seq_nums) > max_needed + 1:
-            raise Exception(
-                "I've received more data than I was expecting!!")
+            raise Exception("I've received more data than I was expecting!!")
         return len(seq_nums) == max_needed + 1
 
     def calculate_max_seq_num(self):
@@ -608,7 +605,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         for seq_num in sorted(seq_nums):
-            print "from list i'm missing sequence num {}".format(seq_num)
+            logger.info("from list i'm missing sequence num %d", seq_num)
 
     def _print_out_packet_data(self, data):
         """ debug prints out the data from the packet
@@ -619,8 +616,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
             str(data))
-        print "converted data back into readable form is {}" \
-            .format(reread_data)
+        logger.info(
+            "converted data back into readable form is %d", reread_data)
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
@@ -631,8 +628,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if len(seq_nums) != max_needed:
-            print "should have received {} sequence numbers, but received " \
-                  "{} sequence numbers".format(max_needed, len(seq_nums))
+            logger.info(
+                "should have received %d sequence numbers, but received "
+                "%d sequence numbers", max_needed, len(seq_nums))
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
@@ -643,5 +641,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param n_packets: how many packets to fire.
         :rtype: None
         """
-        print("send SDP packet with missing sequence numbers: {} of {}".format(
-            packet_count + 1, n_packets))
+        logger.info(
+            "send SDP packet with missing sequence numbers: %d of %d",
+            packet_count + 1, n_packets)
