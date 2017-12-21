@@ -1268,9 +1268,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
-        if self._application_graph.n_vertices > 0:
+        if (self._application_graph is not None and
+                self._application_graph.n_vertices > 0):
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif self._machine_graph.n_vertices > 0:
+        elif (self._machine_graph is not None and
+                self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         # add max sdram size which we're going to allow (debug purposes)
@@ -1361,7 +1363,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     algorithms.append("HBPMaxMachineGenerator")
                     need_virtual_board = True
 
-            if (self._application_graph.n_vertices == 0 and
+            if (self._application_graph is not None and
+                    self._application_graph.n_vertices == 0 and
+                    self._machine_graph is not None and
                     self._machine_graph.n_vertices == 0 and
                     need_virtual_board):
                 if self._config.getboolean(
