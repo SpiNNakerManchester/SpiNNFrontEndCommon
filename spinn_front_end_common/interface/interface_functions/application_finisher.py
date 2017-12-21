@@ -26,7 +26,7 @@ class ApplicationFinisher(object):
 
         # check that the right number of processors are finished
         processors_finished = txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
+            app_id, ExecutableType.USES_SIMULATION_INTERFACE.end_state[0])
         finished_cores = processors_finished
 
         while processors_finished != total_processors:
@@ -47,7 +47,8 @@ class ApplicationFinisher(object):
                         total_processors))
 
             successful_cores_finished = txrx.get_cores_in_state(
-                all_core_subsets, CPUState.FINISHED)
+                all_core_subsets,
+                ExecutableType.USES_SIMULATION_INTERFACE.end_state[0])
 
             for core_subset in all_core_subsets:
                 for processor in core_subset.processor_ids:
@@ -57,7 +58,7 @@ class ApplicationFinisher(object):
                             txrx, processor, core_subset)
 
             processors_finished = txrx.get_core_state_count(
-                app_id, CPUState.FINISHED)
+                app_id, ExecutableType.USES_SIMULATION_INTERFACE.end_state[0])
 
         progress.end()
 
