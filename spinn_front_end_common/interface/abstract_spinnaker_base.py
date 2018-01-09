@@ -120,8 +120,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # split to core sizes
         "_application_graph",
 
+        # the end user application graph, used to hold vertices which need to
+        # be split to core sizes
+        "_original_application_graph",
+
         # the pacman machine graph, used to hold vertices which represent cores
         "_machine_graph",
+
+        # the end user pacman machine graph, used to hold vertices which
+        # represent cores.
+        "_original_machine_graph",
 
         # the mapping interface between application and machine graphs.
         "_graph_mapper",
@@ -393,12 +401,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._graph_label = graph_label
 
         # pacman objects
-        self._application_graph = ApplicationGraph(label=self._graph_label)
-        self._machine_graph = MachineGraph(label=self._graph_label)
+        self._original_application_graph = \
+            ApplicationGraph(label=self._graph_label)
+        self._original_machine_graph = MachineGraph(label=self._graph_label)
+
         self._graph_mapper = None
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
+        self._application_graph = None
+        self._machine_graph = None
         self._tags = None
         self._machine = None
         self._txrx = None
@@ -807,6 +819,28 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         self._run_wait(run_time)
 
+    def _build_graphs_for_usege(self):
+        # sort out app graph
+        self._application_graph = ApplicationGraph(
+            label=self._original_application_graph.label)
+        for vertex in self._original_application_graph.vertices:
+            self._application_graph.add_vertex(vertex)
+        for outgoing_partition in \
+                self._original_application_graph.outgoing_edge_partitions:
+            for edge in outgoing_partition.edges:
+                self._application_graph.add_edge(
+                    edge, outgoing_partition.identifier)
+        # sort out machine graph
+        self._machine_graph = MachineGraph(
+            label=self._original_machine_graph.label)
+        for vertex in self._original_machine_graph.vertices:
+            self._machine_graph.add_vertex(vertex)
+        for outgoing_partition in \
+                self._original_machine_graph.outgoing_edge_partitions:
+            for edge in outgoing_partition.edges:
+                self._machine_graph.add_edge(
+                    edge, outgoing_partition.identifier)
+
     def _run_wait(self, run_time, run_until_complete=False):
         """ The main internal run function
 
@@ -858,6 +892,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # start by performing mapping
         application_graph_changed = self._detect_if_graph_has_changed(True)
 
+        # build the graphs to modify with system requirements
+        if (self._has_reset_last or not self._has_ran or
+                application_graph_changed):
+            self._build_graphs_for_usege()
+            self._add_dependent_verts_and_edges_for_application_graph()
+            self._add_commands_to_command_sender()
+
         # create new sub-folder for reporting data if the graph has changed and
         # reset has been called.
         if (self._has_ran and application_graph_changed and
@@ -873,10 +914,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 raise NotImplementedError(
                     "The network cannot be changed between runs without"
                     " resetting")
-
-            if not self._has_ran:
-                self._add_dependent_verts_and_edges_for_application_graph()
-                self._add_commands_to_command_sender()
 
             # Reset the machine graph if there is an application graph
             if self._application_graph.n_vertices > 0:
@@ -997,7 +1034,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if self._command_sender is None:
                     self._command_sender = CommandSender(
                         "auto_added_command_sender", None)
-                    self.add_application_vertex(self._command_sender)
+                    self._application_graph.add_vertex(self._command_sender)
 
                 # allow the command sender to create key to partition map
                 self._command_sender.add_commands(
@@ -1010,14 +1047,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             edges, partition_ids = \
                 self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
-                self.add_application_edge(edge, partition_id)
+                self._application_graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
             # add any dependent edges and vertices if needed
             if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
                 for dependant_vertex in vertex.dependent_vertices():
-                    self.add_application_vertex(dependant_vertex)
+                    self._application_graph.add_vertex(dependant_vertex)
                     edge_partition_identifiers = vertex.\
                         edge_partition_identifiers_for_dependent_vertex(
                             dependant_vertex)
@@ -1025,7 +1062,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         dependant_edge = ApplicationEdge(
                             pre_vertex=vertex,
                             post_vertex=dependant_vertex)
-                        self.add_application_edge(
+                        self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
@@ -1227,9 +1264,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("PreAllocateResourcesForExtraMonitorSupport")
 
         # add the application and machine graphs as needed
-        if self._application_graph.n_vertices > 0:
+        if (self._application_graph is not None and
+                self._application_graph.n_vertices > 0):
             inputs["MemoryApplicationGraph"] = self._application_graph
-        elif self._machine_graph.n_vertices > 0:
+        elif (self._machine_graph is not None and
+                self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
         # add max sdram size which we're going to allow (debug purposes)
@@ -1320,7 +1359,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     algorithms.append("HBPMaxMachineGenerator")
                     need_virtual_board = True
 
-            if (self._application_graph.n_vertices == 0 and
+            if (self._application_graph is not None and
+                    self._application_graph.n_vertices == 0 and
+                    self._machine_graph is not None and
                     self._machine_graph.n_vertices == 0 and
                     need_virtual_board):
                 if self._config.getboolean(
@@ -1759,6 +1800,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms = list()
         optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
+        optional_algorithms.append("WriteMemoryIOData")
+
         if self._exec_dse_on_host:
             optional_algorithms.append("HostExecuteDataSpecification")
         else:
@@ -2080,9 +2123,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
+        iobuf_cores = CoreSubsets()
+        for placement in self._placements:
+            iobuf_cores.add_processor(placement.x, placement.y, placement.p)
+
         iobuf = ChipIOBufExtractor()
         errors, warnings = iobuf(
-            self._txrx, unsuccessful_core_subset,
+            self._txrx, iobuf_cores,
             self._provenance_file_path)
 
         # Print the details of error cores
@@ -2160,19 +2207,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return xml_paths
 
     def _detect_if_graph_has_changed(self, reset_flags=True):
-        """ Iterates though the graph and looks changes
+        """ Iterates though the original graphs and look for changes
         """
         changed = False
 
         # if application graph is filled, check their changes
-        if self._application_graph.n_vertices != 0:
-            for vertex in self._application_graph.vertices:
+        if self._original_application_graph.n_vertices != 0:
+            for vertex in self._original_application_graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         vertex.mark_no_changes()
-            for partition in self._application_graph.outgoing_edge_partitions:
+            for partition in \
+                    self._original_application_graph.outgoing_edge_partitions:
                 for edge in partition.edges:
                     if isinstance(edge, AbstractChangableAfterRun):
                         if edge.requires_mapping:
@@ -2181,14 +2229,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
-        elif self._machine_graph.n_vertices != 0:
-            for machine_vertex in self._machine_graph.vertices:
+        elif self._original_machine_graph.n_vertices != 0:
+            for machine_vertex in self._original_machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
                         changed = True
                     if reset_flags:
                         machine_vertex.mark_no_changes()
-            for partition in self._machine_graph.outgoing_edge_partitions:
+            for partition in \
+                    self._original_machine_graph.outgoing_edge_partitions:
                 for machine_edge in partition.edges:
                     if isinstance(machine_edge, AbstractChangableAfterRun):
                         if machine_edge.requires_mapping:
@@ -2224,6 +2273,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
     @property
     def machine_graph(self):
         return self._machine_graph
+
+    @property
+    def original_machine_graph(self):
+        return self._original_machine_graph
+
+    @property
+    def original_application_graph(self):
+        return self._original_application_graph
 
     @property
     def application_graph(self):
@@ -2323,7 +2380,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
         """
-        if (self._machine_graph.n_vertices > 0 and
+        if (self._original_machine_graph.n_vertices > 0 and
                 self._graph_mapper is None):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
@@ -2333,7 +2390,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._application_graph.add_vertex(vertex_to_add)
+        self._original_application_graph.add_vertex(vertex_to_add)
 
     def add_machine_vertex(self, vertex):
         """
@@ -2343,7 +2400,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :raises: ConfigurationException when both graphs contain vertices
         """
         # check that there's no application vertices added so far
-        if self._application_graph.n_vertices > 0:
+        if self._original_application_graph.n_vertices > 0:
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
@@ -2352,7 +2409,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "A Virtual Vertex cannot be added after the machine has been"
                 " created")
-        self._machine_graph.add_vertex(vertex)
+        self._original_machine_graph.add_vertex(vertex)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
@@ -2363,7 +2420,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
 
-        self._application_graph.add_edge(
+        self._original_application_graph.add_edge(
             edge_to_add, partition_identifier)
 
     def add_machine_edge(self, edge, partition_id):
@@ -2374,7 +2431,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     edge partition
         :rtype: None
         """
-        self._machine_graph.add_edge(edge, partition_id)
+        self._original_machine_graph.add_edge(edge, partition_id)
 
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
