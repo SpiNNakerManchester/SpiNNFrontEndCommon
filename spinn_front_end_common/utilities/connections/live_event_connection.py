@@ -11,8 +11,9 @@ from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
 
 import logging
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 # The maximum number of 32-bit keys that will fit in a packet
@@ -195,7 +196,7 @@ class LiveEventConnection(DatabaseConnection):
 
             send_port_trigger_message(receiver, board_address)
             logger.info(
-                "Listening for traffic from %s on %s:%d",
+                "Listening for traffic from {} on {}:{}",
                 label, host, port)
 
             if self._machine_vertices:

@@ -2,8 +2,9 @@ import numpy
 import logging
 
 import scipy.stats
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # Define profiler time scale in ms
 _MS_SCALE = (1.0 / 200000.0)
@@ -82,7 +83,7 @@ class ProfileData(object):
         # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:
-            logger.warn("Unknown tag %d in profile data", tag)
+            logger.warn("Unknown tag {} in profile data", tag)
             tag_label = "UNKNOWN"
 
         # Get indices where these tags occur

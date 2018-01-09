@@ -1,6 +1,7 @@
 # spinn front end common
 from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
 from pacman.model.graphs.common import EdgeTrafficType
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models \
     import AbstractProvidesKeyToAtomMapping, AbstractRecordable, \
     AbstractSupportsDatabaseInjection
@@ -11,7 +12,7 @@ import os
 import sqlite3
 import sys
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def _extract_int(x):
@@ -98,7 +99,7 @@ class DatabaseWriter(object):
             c.execute(sql, args)
             return c.lastrowid
         except Exception:
-            logger.error("problem with insertion; argument types are %s",
+            logger.error("problem with insertion; argument types are {}",
                          str(map(type, args)), exc_info=True)
             raise
 

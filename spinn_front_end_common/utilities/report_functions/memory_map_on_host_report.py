@@ -1,7 +1,8 @@
 import logging
 import os
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
@@ -26,7 +27,7 @@ class MemoryMapOnHostReport(object):
                 self._describe_mem_map(f, processor_to_app_data_base_address)
         except IOError:
             logger.error("Generate_placement_reports: Can't open file"
-                         " %s for writing.", file_name)
+                         " {} for writing.", file_name)
 
     @staticmethod
     def _describe_mem_map(f, memory_map):

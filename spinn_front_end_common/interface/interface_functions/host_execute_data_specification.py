@@ -11,10 +11,11 @@ from spinn_storage_handlers import FileDataReader
 import logging
 import struct
 import numpy
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.helpful_functions \
     import write_address_to_user0
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 
@@ -73,7 +74,7 @@ class HostExecuteDataSpecification(object):
             # bytes_used_by_spec, bytes_written_by_spec = \
             executor.execute()
         except DataSpecificationException:
-            logger.error("Error executing data specification for %d, %d, %d",
+            logger.error("Error executing data specification for {}, {}, {}",
                          x, y, p)
             raise
 

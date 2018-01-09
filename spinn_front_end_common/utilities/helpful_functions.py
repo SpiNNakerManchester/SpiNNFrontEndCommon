@@ -17,8 +17,9 @@ import shutil
 from ConfigParser import RawConfigParser
 
 from spinnman.model.enums import CPUState
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 APP_DIRNAME = 'application_generated_data_files'
 FINISHED_FILENAME = "finished"
 REPORTS_DIRNAME = "reports"
@@ -239,7 +240,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
             if files_removed + files_not_closed >= num_files_to_remove:
                 break
         if files_not_closed > max_to_keep / 4:
-            logger.warning("%s has %d old reports that have not been closed",
+            logger.warning("{} has {} old reports that have not been closed",
                            starting_directory, files_not_closed)
 
 

@@ -1,11 +1,12 @@
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 
 # front end common imports
 from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class RouterProvenanceGatherer(object):
@@ -138,7 +139,7 @@ class RouterProvenanceGatherer(object):
                 self._add_totals(router_diagnostic, reinjection_status)
             except Exception:
                 logger.warning(
-                    "Could not read routing diagnostics from %d, %d",
+                    "Could not read routing diagnostics from {}, {}",
                     x, y, exc_info=True)
 
     def _write_router_chip_diagnostic(

@@ -1,4 +1,5 @@
 # spinnman imports
+from spinn_utilities.log import FormatAdapter
 from spinnman.exceptions \
     import SpinnmanIOException, SpinnmanInvalidPacketException, \
     SpinnmanTimeoutException
@@ -13,7 +14,7 @@ from .database_reader import DatabaseReader
 from threading import Thread
 import logging
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class DatabaseConnection(UDPConnection, Thread):
@@ -71,7 +72,7 @@ class DatabaseConnection(UDPConnection, Thread):
     def run(self):
         self._running = True
         logger.info(
-            "%s:%d Waiting for message to indicate that the database is "
+            "{}:{} Waiting for message to indicate that the database is "
             "ready", self.local_ip_address, self.local_port)
         try:
             while self._running:
@@ -85,7 +86,7 @@ class DatabaseConnection(UDPConnection, Thread):
 
     def _process_message(self, address, data):
         # Read the read packet confirmation
-        logger.info("%s:%d Reading database",
+        logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
         database_path = str(data[2:])
 

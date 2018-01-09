@@ -1,4 +1,5 @@
 # spinnman imports
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.command_messages \
     import EventStopRequest, HostSendSequencedData
 
@@ -10,7 +11,7 @@ from collections import deque
 from threading import Lock
 import logging
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # The total number of sequence numbers
 _N_SEQUENCES = 256
@@ -181,7 +182,7 @@ class BuffersSentDeque(object):
         """
         min_sequence = (self._last_received_sequence_number -
                         self._n_sequences_per_transmission)
-        logger.debug("Removing buffers between %d and %d",
+        logger.debug("Removing buffers between {} and {}",
                      min_sequence, self._last_received_sequence_number)
 
         # If we are at the start of the sequence numbers, keep going back up to
@@ -190,7 +191,7 @@ class BuffersSentDeque(object):
             back_min_sequence = min_sequence + _N_SEQUENCES
             while (self._buffers_sent and
                     self._buffers_sent[0].sequence_no > back_min_sequence):
-                logger.debug("Removing buffer with sequence %d",
+                logger.debug("Removing buffer with sequence {}",
                              self._buffers_sent[0].sequence_no)
                 self._buffers_sent.popleft()
 
@@ -198,6 +199,6 @@ class BuffersSentDeque(object):
         while (self._buffers_sent and
                 min_sequence < self._buffers_sent[0].sequence_no <=
                 self._last_received_sequence_number):
-            logger.debug("Removing buffer with sequence %d",
+            logger.debug("Removing buffer with sequence {}",
                          self._buffers_sent[0].sequence_no)
             self._buffers_sent.popleft()

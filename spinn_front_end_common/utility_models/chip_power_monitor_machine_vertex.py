@@ -19,6 +19,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import \
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.helpful_functions \
     import locate_memory_region_for_placement, read_config_int
 from spinn_front_end_common.interface.simulation.simulation_utilities \
@@ -26,7 +27,7 @@ from spinn_front_end_common.interface.simulation.simulation_utilities \
 
 from spinn_utilities.overrides import overrides
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
 
@@ -351,7 +352,7 @@ class ChipPowerMonitorMachineVertex(
             placement, self.SAMPLE_RECORDING_REGION)
         if data_missing:
             logger.warn(
-                "Chip Power monitor has lost data on chip(%d, %d)",
+                "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
 
         # get raw data as a byte array

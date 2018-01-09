@@ -2,6 +2,7 @@
 from multiprocessing.pool import ThreadPool
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import DatabaseConfirmation
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.command_messages \
     import NotificationProtocolPauseStop, NotificationProtocolStartResume
 
@@ -13,7 +14,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import logging
 
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class NotificationProtocol(object):
@@ -64,7 +65,7 @@ class NotificationProtocol(object):
             except Exception:
                 logger.warning(
                     "*** Failed to send start/resume notification to external "
-                    "application on %s:%d about the simulation ***",
+                    "application on {}:{} about the simulation ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
     def send_stop_pause_notification(self):
@@ -82,7 +83,7 @@ class NotificationProtocol(object):
             except Exception:
                 logger.warning(
                     "*** Failed to send stop/pause notification to external "
-                    "application on %s:%d about the simulation ***",
+                    "application on {}:{} about the simulation ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
     # noinspection PyPep8
@@ -138,7 +139,7 @@ class NotificationProtocol(object):
                 c.send_eieio_message(message)
             except Exception:
                 logger.warning(
-                    "*** Failed to notify external application on %s:%d "
+                    "*** Failed to notify external application on {}:{} "
                     "about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
@@ -148,12 +149,12 @@ class NotificationProtocol(object):
                 if self._wait_for_read_confirmation:
                     c.receive_eieio_message()
                     logger.info(
-                        "** Confirmation from %s:%d received, continuing **",
+                        "** Confirmation from {}:{} received, continuing **",
                         c.remote_ip_address, c.remote_port)
             except Exception:
                 logger.warning(
                     "*** Failed to receive notification from external "
-                    "application on %s:%d about the database ***",
+                    "application on {}:{} about the database ***",
                     c.remote_ip_address, c.remote_port, exc_info=True)
 
     def close(self):

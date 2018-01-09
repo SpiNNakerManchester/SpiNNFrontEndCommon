@@ -5,6 +5,7 @@ from spinn_utilities.progress_bar import ProgressBar
 # spinnman imports
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.command_messages \
     import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData, \
     HostDataReadAck
@@ -32,7 +33,7 @@ import threading
 from multiprocessing.pool import ThreadPool
 import logging
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # The minimum size of any message - this is the headers plus one entry
 _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
@@ -199,7 +200,7 @@ class BufferManager(object):
         elif isinstance(packet, EIEIOCommandMessage):
             logger.error(
                 "The command packet is invalid for buffer management: "
-                "command id %d", packet.eieio_header.command)
+                "command id {}", packet.eieio_header.command)
         else:
             logger.error(
                 "The command packet is invalid for buffer management")
@@ -240,7 +241,7 @@ class BufferManager(object):
         utility_functions.send_port_trigger_message(
             connection, tag.board_address)
         logger.info(
-            "Listening for packets using tag %s on %s:%d",
+            "Listening for packets using tag {} on {}:{}",
             tag.tag, connection.local_ip_address, connection.local_port)
         return connection
 

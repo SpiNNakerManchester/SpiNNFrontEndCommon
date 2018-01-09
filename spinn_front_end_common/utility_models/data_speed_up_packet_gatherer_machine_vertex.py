@@ -5,6 +5,7 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.interface.provenance import \
@@ -26,7 +27,7 @@ import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
-log = logging.getLogger(__name__)
+log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
 
 
@@ -599,7 +600,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         last_seq_num = 0
         for seq_num in sorted(seq_nums):
             if seq_num != last_seq_num + 1:
-                log.info("from list I'm missing sequence num %d", seq_num)
+                log.info("from list I'm missing sequence num {}", seq_num)
             last_seq_num = seq_num
 
     def _print_out_packet_data(self, data):
@@ -611,7 +612,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
             str(data))
-        log.info("converted data back into readable form is %s", reread_data)
+        log.info("converted data back into readable form is {}", reread_data)
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
@@ -622,8 +623,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if len(seq_nums) != max_needed:
-            log.info("should have received %d sequence numbers, but received "
-                     "%d sequence numbers", max_needed, len(seq_nums))
+            log.info("should have received {} sequence numbers, but received "
+                     "{} sequence numbers", max_needed, len(seq_nums))
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
@@ -634,5 +635,5 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param n_packets: how many packets to fire.
         :rtype: None
         """
-        log.info("send SDP packet with missing sequence numbers: %s of %s",
+        log.info("send SDP packet with missing sequence numbers: {} of {}",
                  packet_count + 1, n_packets)

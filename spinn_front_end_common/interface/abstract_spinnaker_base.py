@@ -25,6 +25,7 @@ from spinn_front_end_common.abstract_models import \
     AbstractSendMeMulticastCommandsVertex, AbstractRecordable, \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
@@ -78,7 +79,7 @@ from spinn_storage_handlers import __version__ as spinn_storage_version
 from spalloc import __version__ as spalloc_version
 
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 CONFIG_FILE = "spinnaker.cfg"
 
@@ -369,7 +370,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # output locations of binaries to be searched for end user info
         logger.info(
-            "Will search these locations for binaries: %s",
+            "Will search these locations for binaries: {}",
             self._executable_finder.binary_paths)
 
         self._n_chips_required = n_chips_required
@@ -614,7 +615,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     try:
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "True")
-                            logger.info("As mode == \"Debug\", [Reports] %s "
+                            logger.info("As mode == \"Debug\", [Reports] {} "
                                         "has been set to True", option)
                     except ValueError:
                         pass
@@ -626,7 +627,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         if not self._config.get_bool("Reports", option):
                             self._config.set("Reports", option, "False")
                             logger.info(
-                                "As reportsEnabled == \"False\", [Reports] %s "
+                                "As reportsEnabled == \"False\", [Reports] {} "
                                 "has been set to False", option)
                     except ValueError:
                         pass
@@ -963,10 +964,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 loading_done = True
 
         # Run for each of the given steps
-        logger.info("Running for %d steps for a total of %dms",
+        logger.info("Running for {} steps for a total of {}ms",
                     len(steps), run_time)
         for i, step in enumerate(steps):
-            logger.info("Run %d of %d", i + 1, len(steps))
+            logger.info("Run {} of {}", i + 1, len(steps))
             self._do_run(step, loading_done, run_until_complete)
 
         # Indicate that the signal handler needs to act
@@ -2089,7 +2090,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             state = core_info.state
             if state == CPUState.RUN_TIME_EXCEPTION:
                 state = core_info.run_time_error
-            logger.error("%d, %d, %d: %s %s",
+            logger.error("{}, {}, {}: {} {}",
                          x, y, p, state.name, core_info.application_name)
             if core_info.state == CPUState.RUN_TIME_EXCEPTION:
                 logger.error(
@@ -2643,10 +2644,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # if a mode is set, execute
         if turn_off:
             if self._turn_off_board_to_save_power():
-                logger.info("Board turned off based on: %s", config_flag)
+                logger.info("Board turned off based on: {}", config_flag)
         else:
             if self._turn_on_board_if_saving_power():
-                logger.info("Board turned on based on: %s", config_flag)
+                logger.info("Board turned on based on: {}", config_flag)
 
     def _turn_off_board_to_save_power(self):
         """ executes the power saving mode of turning off the spinnaker \
