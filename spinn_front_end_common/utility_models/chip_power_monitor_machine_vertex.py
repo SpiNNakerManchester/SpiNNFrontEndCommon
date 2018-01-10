@@ -35,9 +35,10 @@ BINARY_FILE_NAME = "chip_power_monitor.aplx"
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
-    """ machine vertex for c code representing functionality to record /
-            idle times in a machine graph
+    """ machine vertex for c code representing functionality to record\
+        idle times in a machine graph
     """
+    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     # data regions
     CHIP_POWER_MONITOR_REGIONS = Enum(
@@ -66,7 +67,8 @@ class ChipPowerMonitorMachineVertex(
         :param sampling_frequency: how often to sample
         :type sampling_frequency: microseconds
         """
-        MachineVertex.__init__(self, label=label, constraints=constraints)
+        super(ChipPowerMonitorMachineVertex, self).__init__(
+            label=label, constraints=constraints)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 

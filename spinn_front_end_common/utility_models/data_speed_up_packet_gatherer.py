@@ -7,16 +7,15 @@ from .data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 
 
-class DataSpeedUpPacketGatherApplicationVertex(
+class DataSpeedUpPacketGather(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary):
+    __slots__ = ["_machine_vertex"]
 
     def __init__(self, x, y, ip_address, constraints=None):
-        ApplicationVertex.__init__(
-            self, "multicast speed up application vertex for {}, {}".format(
+        super(DataSpeedUpPacketGather, self).__init__(
+            "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
-        AbstractGeneratesDataSpecification.__init__(self)
-        AbstractHasAssociatedBinary.__init__(self)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
             x, y, ip_address, constraints)
 

@@ -34,6 +34,12 @@ TIMEOUT_RETRY_LIMIT = 20
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
+    __slots__ = [
+        "_connection",
+        "_max_seq_num",
+        "_output",
+        "_provenance_data_items",
+        "_view"]
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
@@ -100,12 +106,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 
     def __init__(self, x, y, ip_address, constraints=None):
-        MachineVertex.__init__(
-            self,
+        super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
             constraints=constraints)
-        AbstractHasAssociatedBinary.__init__(self)
-        AbstractProvidesLocalProvenanceData.__init__(self)
 
         # data holders for the output, and sequence numbers
         self._view = None

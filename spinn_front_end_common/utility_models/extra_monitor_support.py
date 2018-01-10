@@ -6,16 +6,14 @@ from .extra_monitor_support_machine_vertex import \
 from spinn_utilities.overrides import overrides
 
 
-class ExtraMonitorSupportApplicationVertex(
+class ExtraMonitorSupport(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
+    __slots__ = []
 
     def __init__(self, constraints):
-        ApplicationVertex.__init__(
-            self, label="ExtraMonitorSupportApplicationVertex",
-            constraints=constraints)
-        AbstractHasAssociatedBinary.__init__(self)
-        AbstractGeneratesDataSpecification.__init__(self)
+        super(ExtraMonitorSupport, self).__init__(
+            label="ExtraMonitorSupport", constraints=constraints)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,

@@ -4,8 +4,7 @@ from spinn_front_end_common.utilities.constants \
     import PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP
 from spinn_front_end_common.utility_models import \
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp, \
-    ExtraMonitorSupportApplicationVertex, \
-    ExtraMonitorSupportMachineVertex
+    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -14,8 +13,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None, graph_mapper=None):
-        """ inserts edges between verts whom use mc speed up and its local\
-         mc data gatherer
+        """ Inserts edges between vertices who use MC speed up and its local\
+            MC data gatherer
 
         :param machine_graph: the machine graph instance
         :param placements: the placements
@@ -33,8 +32,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
         progress = ProgressBar(
             machine_graph.n_vertices + n_app_vertices,
-            "Inserting edges between vertices which require fr speed up "
-            "functionality. ")
+            "Inserting edges between vertices which require FR speed up "
+            "functionality.")
 
         for vertex in progress.over(machine_graph.vertices, False):
             if isinstance(vertex, ExtraMonitorSupportMachineVertex):
@@ -45,7 +44,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
         if application_graph is not None:
             for vertex in progress.over(application_graph.vertices, False):
-                if isinstance(vertex, ExtraMonitorSupportApplicationVertex):
+                if isinstance(vertex, ExtraMonitorSupport):
                     machine_verts = graph_mapper.get_machine_vertices(vertex)
                     for machine_vertex in machine_verts:
                         self._process_vertex(
@@ -114,7 +113,8 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param source: the source of the edge
         :param destination: destination of the edge
         :param graph: which graph to look in
-        :return: bool true if found, false otherwise
+        :return: Whether the edge was found
+        :rtype: bool
         """
         return any(edge.pre_vertex == source
                    for edge in graph.get_edges_ending_at_vertex(destination))

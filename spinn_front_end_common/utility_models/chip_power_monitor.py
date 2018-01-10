@@ -8,11 +8,12 @@ from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 from spinn_utilities.overrides import overrides
 
 
-class ChipPowerMonitorApplicationVertex(
+class ChipPowerMonitor(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
     """ class for representing idle time recording code in a application graph.
     """
+    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     def __init__(
             self, label, constraints, n_samples_per_recording,
@@ -20,12 +21,14 @@ class ChipPowerMonitorApplicationVertex(
         """ chip power monitor application vertex constructor
 
         :param label: vertex label
+        :type label: str
         :param constraints: constraints for the vertex
-        :param n_samples_per_recording: how many samples to take before /
-            recording to sdram the total
+        :param n_samples_per_recording: \
+            how many samples to take before recording to sdram the total
+        :type n_samples_per_recording: int
         :param sampling_frequency: how many microseconds between sampling
         """
-        ApplicationVertex.__init__(self, label, constraints, 1)
+        super(ChipPowerMonitor, self).__init__(label, constraints, 1)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 

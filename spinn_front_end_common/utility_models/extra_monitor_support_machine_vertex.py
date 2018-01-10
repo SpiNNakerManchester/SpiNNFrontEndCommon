@@ -65,11 +65,8 @@ class ExtraMonitorSupportMachineVertex(
         :param reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
-        MachineVertex.__init__(
-            self, label="ExtraMonitorSupportMachineVertex",
-            constraints=constraints)
-        AbstractHasAssociatedBinary.__init__(self)
-        AbstractGeneratesDataSpecification.__init__(self)
+        super(ExtraMonitorSupportMachineVertex, self).__init__(
+            label="ExtraMonitorSupportMachineVertex", constraints=constraints)
 
         if reinject_multicast is None:
             config = globals_variables.get_simulator().config
@@ -281,14 +278,18 @@ class ExtraMonitorSupportMachineVertex(
         """
         :param placements: placements object
         :param transceiver: spinnman instance
-        :param point_to_point: bool stating if point to point should be set,\
-            or None if left as before
-        :param multicast: bool stating if multicast should be set,\
-            or None if left as before
-        :param nearest_neighbour: bool stating if nearest neighbour should be \
-            set, or None if left as before
-        :param fixed_route: bool stating if fixed route should be set, or \
-            None if left as before.
+        :param point_to_point: \
+            If point to point should be set, or None if left as before
+        :type point_to_point: bool or None
+        :param multicast: \
+            If multicast should be set, or None if left as before
+        :type multicast: bool or None
+        :param nearest_neighbour: \
+            If nearest neighbour should be set, or None if left as before
+        :type nearest_neighbour: bool or None
+        :param fixed_route: \
+            If fixed route should be set, or None if left as before.
+        :type fixed_route: bool or None
         :rtype: None
         """
         # pylint: disable=too-many-arguments
@@ -316,10 +317,10 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set, placements):
         """ converts vertices into core subsets.
 
-        :param extra_monitor_cores_to_set: the vertices to convert to core \
-            subsets
+        :param extra_monitor_cores_to_set: \
+            the vertices to convert to core subsets
         :param placements: the placements object
-        :return: the converts CoreSubSets to the vertices
+        :return: the converted CoreSubSets to the vertices
         """
         core_subsets = CoreSubsets()
         for vertex in extra_monitor_cores_to_set:
