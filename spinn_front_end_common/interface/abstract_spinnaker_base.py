@@ -2114,7 +2114,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             # Extract any written provenance data
             extracter = PlacementsProvenanceGatherer()
-            extracter(self._txrx, placements, True, prov_items)
+            extracter(self._txrx, placements, prov_items)
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
