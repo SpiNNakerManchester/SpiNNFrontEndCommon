@@ -26,6 +26,11 @@ import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
+#===============================================================================
+# from spinn_front_end_common.utility_models.host_data_receiver import host_data_receiver
+# from ctypes import *
+#===============================================================================
+
 TIMEOUT_RETRY_LIMIT = 20
 logger = logging.getLogger(__name__)
 
@@ -118,6 +123,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
 
+        self.tag = None
+
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
@@ -188,6 +195,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # locate the tag id for our data and update with port
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
+        self.tag = iptag.tag
         iptag.port = self._connection.local_port
         spec.write_value(iptag.tag)
 
@@ -248,17 +256,16 @@ class DataSpeedUpPacketGatherMachineVertex(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
                          iteration_name, "iteration_{}".format(i)],
                         n_lost_seq_nums, report=n_lost_seq_nums > 0,
-                        message=(
-                            "During the extraction of data of {} bytes from "
-                            "memory address {}, attempt {} had {} sequences "
-                            "that were lost. These had to be retransmitted and"
-                            " will have slowed down the data extraction "
-                            "process. Reduce the number of executing "
-                            "applications and remove routers between yourself"
-                            " and the SpiNNaker machine to reduce the chance "
-                            "of this occurring."
-                            .format(length_in_bytes, memory_address, i,
-                                    n_lost_seq_nums))))
+                        message=
+                        "During the extraction of data of {} bytes from "
+                        "memory address {}, attempt {} had {} sequences that "
+                        "were lost. These had to be retransmitted and will "
+                        "have slowed down the data extraction process. "
+                        "Reduce the number of executing applications and "
+                        "remove routers between yourself and the SpiNNaker "
+                        "machine to reduce the chance of this occurring."
+                        .format(length_in_bytes, memory_address, i,
+                                n_lost_seq_nums)))
         return prov_items
 
     @staticmethod
@@ -310,292 +317,40 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_in_bytes].append((end - start, [0]))
             return data
 
-        data = struct.pack(
-            "<III", self.SDP_PACKET_START_SENDING_COMMAND_ID,
-            memory_address, length_in_bytes)
-
-        # logger.debug("sending to core %d:%d:%d",
-        #              placement.x, placement.y, placement.p)
         message = SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
                 destination_cpu=placement.p,
-                destination_port=constants.
-                SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                destination_port=0,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
-            data=data)
+            data=None)
 
-        # send
-        self._connection.send_sdp_message(message)
+        connection = transceiver.scamp_connection_selector.get_next_connection(message)
+        chip_x = connection.chip_x
+        chip_y = connection.chip_y
 
-        # receive
-        finished = False
-        seq_nums = set()
-        self._output = bytearray(length_in_bytes)
-        self._view = memoryview(self._output)
-        self._max_seq_num = self.calculate_max_seq_num()
 
-        timeoutcount = 0
-        while not finished:
-            try:
-                data = self._connection.receive(
-                    timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
-                timeoutcount = 0
-                seq_nums, finished = self._process_data(
-                    data, seq_nums, finished, placement, transceiver,
-                    lost_seq_nums)
-            except SpinnmanTimeoutException:
-                if timeoutcount > TIMEOUT_RETRY_LIMIT:
-                    raise exceptions.SpinnFrontEndException(
-                        "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls".format(timeoutcount))
-                timeoutcount += 1
-                remote_port = self._connection.remote_port
-                local_port = self._connection.local_port
-                local_ip = self._connection.local_ip_address
-                remote_ip = self._connection.remote_ip_address
-                self._connection.close()
-                self._connection = SCAMPConnection(
-                    local_port=local_port, remote_port=remote_port,
-                    local_host=local_ip, remote_host=remote_ip)
-                if not finished:
-                    finished = self._determine_and_retransmit_missing_seq_nums(
-                        seq_nums, transceiver, placement, lost_seq_nums)
+        receiver = host_data_receiver()
+        buf = receiver.get_data_for_python(str(connection.remote_ip_address),
+                          int(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
+                          int(placement.x),
+                          int(placement.y),
+                          int(placement.p),
+                          int(length_in_bytes),
+                          int(memory_address),
+                          int(chip_x),
+                          int(chip_y),
+                          int(self.tag))
 
-        end = float(time.time())
-        self._provenance_data_items[
-                placement, memory_address,
-                length_in_bytes].append((end - start, lost_seq_nums))
-        return self._output
 
-    def _calculate_missing_seq_nums(self, seq_nums):
-        """ determines which sequence numbers we've missed
+        return bytearray(buf)
 
-        :param seq_nums: the set already acquired
-        :return: list of missing sequence numbers
-        """
-        missing_seq_nums = list()
-        for seq_num in range(0, self._max_seq_num):
-            if seq_num not in seq_nums:
-                missing_seq_nums.append(seq_num)
-        return missing_seq_nums
+    def get_iptag(self):
+        return self.tag
 
-    def _determine_and_retransmit_missing_seq_nums(
-            self, seq_nums, transceiver, placement, lost_seq_nums):
-        """ Determines if there are any missing sequence numbers, and if so \
-        retransmits the missing sequence numbers back to the core for \
-        retransmission.
-
-        :param seq_nums: the sequence numbers already received
-        :param transceiver: spinnman instance
-        :param placement: placement instance
-        :return: whether all packets are transmitted
-        :rtype: bool
-        """
-        # locate missing sequence numbers from pile
-        missing_seq_nums = self._calculate_missing_seq_nums(seq_nums)
-        lost_seq_nums.append(len(missing_seq_nums))
-        # self._print_missing(missing_seq_nums)
-        if len(missing_seq_nums) == 0:
-            return True
-
-        # figure n packets given the 2 formats
-        n_packets = 1
-        length_via_format2 = \
-            len(missing_seq_nums) - (self.DATA_PER_FULL_PACKET - 2)
-        if length_via_format2 > 0:
-            n_packets += int(math.ceil(
-                float(length_via_format2) /
-                float(self.DATA_PER_FULL_PACKET - 1)))
-
-        # transmit missing sequence as a new SDP packet
-        first = True
-        seq_num_offset = 0
-        for _ in xrange(n_packets):
-            length_left_in_packet = self.DATA_PER_FULL_PACKET
-            offset = 0
-
-            # if first, add n packets to list
-            if first:
-
-                # get left over space / data size
-                size_of_data_left_to_transmit = min(
-                    length_left_in_packet - 2,
-                    len(missing_seq_nums) - seq_num_offset)
-
-                # build data holder accordingly
-                data = bytearray(
-                    (size_of_data_left_to_transmit + 2) *
-                    self.WORD_TO_BYTE_CONVERTER)
-
-                # pack flag and n packets
-                struct.pack_into(
-                    "<I", data, offset,
-                    self.SDP_PACKET_START_MISSING_SEQ_COMMAND_ID)
-                struct.pack_into(
-                    "<I", data, self.WORD_TO_BYTE_CONVERTER, n_packets)
-
-                # update state
-                offset += 2 * self.WORD_TO_BYTE_CONVERTER
-                length_left_in_packet -= 2
-                first = False
-
-            else:  # just add data
-                # get left over space / data size
-                size_of_data_left_to_transmit = min(
-                    self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
-                    len(missing_seq_nums) - seq_num_offset)
-
-                # build data holder accordingly
-                data = bytearray(
-                    (size_of_data_left_to_transmit + 1) *
-                    self.WORD_TO_BYTE_CONVERTER)
-
-                # pack flag
-                struct.pack_into(
-                    "<I", data, offset,
-                    self.SDP_PACKET_MISSING_SEQ_COMMAND_ID)
-                offset += 1 * self.WORD_TO_BYTE_CONVERTER
-                length_left_in_packet -= 1
-
-            # fill data field
-            struct.pack_into(
-                "<{}I".format(size_of_data_left_to_transmit), data, offset,
-                *missing_seq_nums[
-                 seq_num_offset:
-                 seq_num_offset + size_of_data_left_to_transmit])
-            seq_num_offset += length_left_in_packet
-
-            # build SDP message
-            message = SDPMessage(
-                sdp_header=SDPHeader(
-                    destination_chip_x=placement.x,
-                    destination_chip_y=placement.y,
-                    destination_cpu=placement.p,
-                    destination_port=constants.
-                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
-                    flags=SDPFlag.REPLY_NOT_EXPECTED),
-                data=str(data))
-
-            # send message to core
-            transceiver.send_sdp_message(message=message)
-
-            # sleep for ensuring core doesn't lose packets
-            time.sleep(self.TIME_OUT_FOR_SENDING_IN_SECONDS)
-            # self._print_packet_num_being_sent(packet_count, n_packets)
-        return False
-
-    def _process_data(
-            self, data, seq_nums, finished, placement, transceiver,
-            lost_seq_nums):
-        """ Takes a packet and processes it see if we're finished yet
-
-        :param data: the packet data
-        :param seq_nums: the list of sequence numbers received so far
-        :param finished: bool which states if finished or not
-        :param placement: placement object for location on machine
-        :param transceiver: spinnman instance
-        :param lost_seq_nums: the list of n sequence numbers lost per iteration
-        :return: set of data items, if its the first packet, the list of\
-            sequence numbers, the sequence number received and if its finished
-        """
-        # self._print_out_packet_data(data)
-        length_of_data = len(data)
-        first_packet_element = struct.unpack_from(
-            "<I", data, 0)[0]
-
-        # get flags
-        seq_num = first_packet_element & 0x7FFFFFFF
-        is_end_of_stream = (
-            first_packet_element & self.LAST_MESSAGE_FLAG_BIT_MASK) != 0
-
-        # check seq num not insane
-        if seq_num > self._max_seq_num:
-            raise Exception(
-                "got an insane sequence number. got {} when "
-                "the max is {} with a length of {}".format(
-                    seq_num, self._max_seq_num, length_of_data))
-
-        # figure offset for where data is to be put
-        offset = self._calculate_offset(seq_num)
-
-        # write data
-        true_data_length = offset + length_of_data - self.SEQUENCE_NUMBER_SIZE
-        if not is_end_of_stream or \
-                length_of_data != self.END_FLAG_SIZE_IN_BYTES:
-            self._write_into_view(
-                offset, true_data_length, data, self.SEQUENCE_NUMBER_SIZE,
-                length_of_data, seq_num, length_of_data, False)
-
-        # add seq num to list
-        seq_nums.add(seq_num)
-
-        # if received a last flag on its own, its during retransmission.
-        #  check and try again if required
-        if is_end_of_stream:
-            if not self._check(seq_nums):
-                finished = self._determine_and_retransmit_missing_seq_nums(
-                    placement=placement, transceiver=transceiver,
-                    seq_nums=seq_nums, lost_seq_nums=lost_seq_nums)
-            else:
-                finished = True
-        return seq_nums, finished
-
-    def _calculate_offset(self, seq_num):
-        return (seq_num * self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
-                self.WORD_TO_BYTE_CONVERTER)
-
-    def _write_into_view(
-            self, view_start_position, view_end_position,
-            data, data_start_position, data_end_position, seq_num,
-            packet_length, is_final):
-        """ puts data into the view
-
-        :param view_start_position: where in view to start
-        :param view_end_position: where in view to end
-        :param data: the data holder to write from
-        :param data_start_position: where in data holder to start from
-        :param data_end_position: where in data holder to end
-        :param seq_num: the sequence number to figure
-        :rtype: None
-        """
-        if view_end_position > len(self._output):
-            raise Exception(
-                "I'm trying to add to my output data, but am trying to add "
-                "outside my acceptable output positions!!!! max is {} and "
-                "I received request to fill to {} for sequence num {} from max"
-                " sequence num {} length of packet {} and final {}".format(
-                    len(self._output), view_end_position, seq_num,
-                    self._max_seq_num, packet_length, is_final))
-        self._view[view_start_position: view_end_position] = \
-            data[data_start_position:data_end_position]
-
-    def _check(self, seq_nums):
-        """ verifying if the sequence numbers are correct.
-
-        :param seq_nums: the received sequence numbers
-        :return: bool of true or false given if all the sequence numbers have\
-            been received
-        """
-        # hand back
-        seq_nums = sorted(seq_nums)
-        max_needed = self.calculate_max_seq_num()
-        if len(seq_nums) > max_needed + 1:
-            raise Exception("I've received more data than I was expecting!!")
-        return len(seq_nums) == max_needed + 1
-
-    def calculate_max_seq_num(self):
-        """ deduces the max sequence num expected to be received
-
-        :return: int of the biggest sequence num expected
-        """
-
-        n_sequence_nums = float(len(self._output)) / float(
-            self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
-            self.WORD_TO_BYTE_CONVERTER)
-        n_sequence_nums = math.ceil(n_sequence_nums)
-        return int(n_sequence_nums)
+    def get_port(self):
+        return constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value
 
     @staticmethod
     def _print_missing(seq_nums):
