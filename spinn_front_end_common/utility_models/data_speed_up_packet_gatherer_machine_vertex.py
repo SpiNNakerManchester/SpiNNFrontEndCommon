@@ -13,7 +13,7 @@ from spinn_front_end_common.interface.provenance import \
 from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
     ProvenanceDataItem
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
 from spinnman.exceptions import SpinnmanTimeoutException
@@ -294,7 +294,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: byte array of the data
         """
         start = float(time.time())
-        lost_seq_nums = list()
 
         # if asked for no data, just return a empty byte array
         if length_in_bytes == 0:
@@ -321,7 +320,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # logger.debug("sending to core %d:%d:%d",
         #              placement.x, placement.y, placement.p)
-        message = SDPMessage(
+
+        # send
+        self._connection.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
@@ -329,19 +330,25 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_port=constants.
                 SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
-            data=data)
-
-        # send
-        self._connection.send_sdp_message(message)
+            data=data))
 
         # receive
-        finished = False
-        seq_nums = set()
         self._output = bytearray(length_in_bytes)
         self._view = memoryview(self._output)
         self._max_seq_num = self.calculate_max_seq_num()
+        lost_seq_nums = self._receive_data(transceiver, placement)
 
+        end = float(time.time())
+        self._provenance_data_items[
+            placement, memory_address, length_in_bytes].append(
+                (end - start, lost_seq_nums))
+        return self._output
+
+    def _receive_data(self, transceiver, placement):
+        seq_nums = set()
+        lost_seq_nums = list()
         timeoutcount = 0
+        finished = False
         while not finished:
             try:
                 data = self._connection.receive(
@@ -352,27 +359,26 @@ class DataSpeedUpPacketGatherMachineVertex(
                     lost_seq_nums)
             except SpinnmanTimeoutException:
                 if timeoutcount > TIMEOUT_RETRY_LIMIT:
-                    raise exceptions.SpinnFrontEndException(
+                    raise SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
                         "Please try removing firewalls".format(timeoutcount))
+
                 timeoutcount += 1
-                remote_port = self._connection.remote_port
-                local_port = self._connection.local_port
-                local_ip = self._connection.local_ip_address
-                remote_ip = self._connection.remote_ip_address
-                self._connection.close()
-                self._connection = SCAMPConnection(
-                    local_port=local_port, remote_port=remote_port,
-                    local_host=local_ip, remote_host=remote_ip)
+                self.__reset_connection()
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
                         seq_nums, transceiver, placement, lost_seq_nums)
+        return lost_seq_nums
 
-        end = float(time.time())
-        self._provenance_data_items[
-                placement, memory_address,
-                length_in_bytes].append((end - start, lost_seq_nums))
-        return self._output
+    def __reset_connection(self):
+        remote_port = self._connection.remote_port
+        local_port = self._connection.local_port
+        local_ip = self._connection.local_ip_address
+        remote_ip = self._connection.remote_ip_address
+        self._connection.close()
+        self._connection = SCAMPConnection(
+            local_port=local_port, remote_port=remote_port,
+            local_host=local_ip, remote_host=remote_ip)
 
     def _calculate_missing_seq_nums(self, seq_nums):
         """ determines which sequence numbers we've missed
@@ -380,11 +386,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param seq_nums: the set already acquired
         :return: list of missing sequence numbers
         """
-        missing_seq_nums = list()
-        for seq_num in range(0, self._max_seq_num):
-            if seq_num not in seq_nums:
-                missing_seq_nums.append(seq_num)
-        return missing_seq_nums
+        return [sn for sn in xrange(0, self._max_seq_num)
+                if sn not in seq_nums]
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums):
@@ -568,7 +571,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if view_end_position > len(self._output):
             raise Exception(
                 "I'm trying to add to my output data, but am trying to add "
-                "outside my acceptable output positions!!!! max is {} and "
+                "outside my acceptable output positions! max is {} and "
                 "I received request to fill to {} for sequence num {} from max"
                 " sequence num {} length of packet {} and final {}".format(
                     len(self._output), view_end_position, seq_num,

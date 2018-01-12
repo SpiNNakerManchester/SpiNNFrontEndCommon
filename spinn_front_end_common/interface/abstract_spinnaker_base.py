@@ -851,9 +851,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # verify that we can keep doing auto pause and resume
         can_keep_running = True
         if self._has_ran:
-            for executable_type in self._executable_types:
-                if not executable_type.supports_auto_pause_and_resume:
-                    can_keep_running = False
+            can_keep_running = all(
+                executable_type.supports_auto_pause_and_resume 
+                for executable_type in self._executable_types)
 
         if self._has_ran and not can_keep_running:
             raise NotImplementedError(
@@ -916,7 +916,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     " resetting")
 
             # Reset the machine graph if there is an application graph
-            if self._application_graph.n_vertices > 0:
+            if self._application_graph.n_vertices:
                 self._machine_graph = MachineGraph(self._graph_label)
                 self._graph_mapper = None
 
@@ -965,7 +965,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             steps = [n_machine_time_steps]
             self._minimum_step_generated = steps[0]
         else:
-
             if run_time is None:
                 self._state = Simulator_State.FINISHED
                 raise Exception(
@@ -1044,8 +1043,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add the edges from the command sender to the dependent vertices
         if self._command_sender is not None:
-            edges, partition_ids = \
-                self._command_sender.edges_and_partitions()
+            edges, partition_ids = self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
                 self._application_graph.add_edge(edge, partition_id)
 
@@ -1055,10 +1053,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if isinstance(vertex, AbstractVertexWithEdgeToDependentVertices):
                 for dependant_vertex in vertex.dependent_vertices():
                     self._application_graph.add_vertex(dependant_vertex)
-                    edge_partition_identifiers = vertex.\
+                    edge_partition_ids = vertex.\
                         edge_partition_identifiers_for_dependent_vertex(
                             dependant_vertex)
-                    for edge_identifier in edge_partition_identifiers:
+                    for edge_identifier in edge_partition_ids:
                         dependant_edge = ApplicationEdge(
                             pre_vertex=vertex,
                             post_vertex=dependant_vertex)
@@ -1071,6 +1069,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             and breaks simulation into chunks of that long.
 
         :param n_machine_time_steps: the total timer ticks to be ran
+        :type n_machine_time_steps: int
         :return: list of timer steps.
         """
         # Go through the placements and find how much SDRAM is available
@@ -1079,10 +1078,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         vertex_by_chip = defaultdict(list)
 
         # horrible hack. This needs to be fixed somehow
-        provide_injectables(
-            {"MachineTimeStep": self._machine_time_step,
-             "TotalMachineTimeSteps": n_machine_time_steps,
-             "TimeScaleFactor": self._time_scale_factor})
+        provide_injectables({
+            "MachineTimeStep": self._machine_time_step,
+            "TotalMachineTimeSteps": n_machine_time_steps,
+            "TimeScaleFactor": self._time_scale_factor})
 
         for placement in self._placements.placements:
             vertex = placement.vertex
@@ -1104,13 +1103,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         min_time_steps = None
         for x, y in vertex_by_chip:
             vertices_on_chip = vertex_by_chip[x, y]
-            sdram = sdram_tracker[x, y]
-            sdram_per_vertex = int(sdram / len(vertices_on_chip))
-            for vertex in vertices_on_chip:
-                n_time_steps = vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex, self._machine_time_step)
-                if min_time_steps is None or n_time_steps < min_time_steps:
-                    min_time_steps = n_time_steps
+            sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
+            min_time_steps = min(
+                int(vertex.get_n_timesteps_in_buffer_space(
+                    sdram_per_vertex, self._machine_time_step))
+                for vertex in vertices_on_chip)
 
         # clear injectable
         clear_injectables()
@@ -1120,21 +1117,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
-    def _generate_steps(n_machine_time_steps, min_machine_time_steps):
+    def _generate_steps(n_machine_time_steps, time_step_length):
         """ generates the list of timer runs
 
         :param n_machine_time_steps: the total runtime in machine time steps
-        :param min_machine_time_steps: the min allowed per chunk
+        :type n_machine_time_steps: int
+        :param time_step_length: the min allowed per chunk
+        :type time_step_length: int
         :return: list of time steps
         """
-        number_of_full_iterations = int(math.floor(
-            n_machine_time_steps / min_machine_time_steps))
-        left_over_time_steps = int(
-            n_machine_time_steps -
-            (number_of_full_iterations * min_machine_time_steps))
+        n_full_iterations = int(math.floor(
+            n_machine_time_steps / time_step_length))
+        left_over_time_steps = (
+            n_machine_time_steps - n_full_iterations * time_step_length)
 
-        steps = [int(min_machine_time_steps)] * number_of_full_iterations
-        if left_over_time_steps != 0:
+        steps = [int(time_step_length)] * n_full_iterations
+        if left_over_time_steps:
             steps.append(int(left_over_time_steps))
         return steps
 
@@ -1639,8 +1637,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("NetworkSpecificationReport")
 
         # only add the partitioner if there isn't already a machine graph
-        if (self._application_graph.n_vertices > 0 and
-                self._machine_graph.n_vertices == 0):
+        if (self._application_graph.n_vertices and
+                not self._machine_graph.n_vertices):
             full = self._config.get(
                 "Mapping", "application_to_machine_graph_algorithms")
             algorithms.extend(full.replace(" ", "").split(","))
@@ -2190,7 +2188,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._has_reset_last = True
 
     def _create_xml_paths(self, extra_algorithm_xml_paths):
-
         # add the extra xml files from the config file
         xml_paths = self._config.get("Mapping", "extra_xmls_paths")
         if xml_paths == "None":
@@ -2212,7 +2209,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         changed = False
 
         # if application graph is filled, check their changes
-        if self._original_application_graph.n_vertices != 0:
+        if self._original_application_graph.n_vertices:
             for vertex in self._original_application_graph.vertices:
                 if isinstance(vertex, AbstractChangableAfterRun):
                     if vertex.requires_mapping:
@@ -2229,7 +2226,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             edge.mark_no_changes()
 
         # if no application, but a machine graph, check for changes there
-        elif self._original_machine_graph.n_vertices != 0:
+        elif self._original_machine_graph.n_vertices:
             for machine_vertex in self._original_machine_graph.vertices:
                 if isinstance(machine_vertex, AbstractChangableAfterRun):
                     if machine_vertex.requires_mapping:
@@ -2436,7 +2433,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def _shutdown(
             self, turn_off_machine=None, clear_routing_tables=None,
             clear_tags=None):
-
         self._state = Simulator_State.SHUTDOWN
 
         # if on a virtual machine then shut down not needed
@@ -2459,32 +2455,44 @@ class AbstractSpinnakerBase(SimulatorInterface):
             clear_tags = self._config.getboolean("Machine", "clear_tags")
 
         if self._txrx is not None:
-            # if stopping on machine, clear iptags and
-            if clear_tags:
-                for ip_tag in self._tags.ip_tags:
-                    self._txrx.clear_ip_tag(
-                        ip_tag.tag, board_address=ip_tag.board_address)
-                for reverse_ip_tag in self._tags.reverse_ip_tags:
-                    self._txrx.clear_ip_tag(
-                        reverse_ip_tag.tag,
-                        board_address=reverse_ip_tag.board_address)
+            # if stopping on machine, clear iptags and routing table
+            self.__clear(clear_tags, clear_routing_tables)
 
-            # if clearing routing table entries, clear
-            if clear_routing_tables:
-                for router_table in self._router_tables.routing_tables:
-                    if not self._machine.get_chip_at(
-                            router_table.x, router_table.y).virtual:
-                        self._txrx.clear_multicast_routes(
-                            router_table.x, router_table.y)
+        # Fully stop the application
+        self.__stop_app()
 
-            # clear values
-            self._no_sync_changes = 0
+        # stop the transceiver and allocation controller
+        self.__close_transceiver(turn_off_machine)
+        self.__close_allocation_controller()
+        self._state = Simulator_State.SHUTDOWN
 
-            # app stop command
-            if self._txrx is not None and self._app_id is not None:
-                self._txrx.stop_application(self._app_id)
+    def __clear(self, clear_tags, clear_routing_tables):
+        # if stopping on machine, clear iptags and
+        if clear_tags:
+            for ip_tag in self._tags.ip_tags:
+                self._txrx.clear_ip_tag(
+                    ip_tag.tag, board_address=ip_tag.board_address)
+            for reverse_ip_tag in self._tags.reverse_ip_tags:
+                self._txrx.clear_ip_tag(
+                    reverse_ip_tag.tag,
+                    board_address=reverse_ip_tag.board_address)
 
-        # stop the transceiver
+        # if clearing routing table entries, clear
+        if clear_routing_tables:
+            for router_table in self._router_tables.routing_tables:
+                if not self._machine.get_chip_at(
+                        router_table.x, router_table.y).virtual:
+                    self._txrx.clear_multicast_routes(
+                        router_table.x, router_table.y)
+
+        # clear values
+        self._no_sync_changes = 0
+
+    def __stop_app(self):
+        if self._txrx is not None and self._app_id is not None:
+            self._txrx.stop_application(self._app_id)
+
+    def __close_transceiver(self, turn_off_machine):
         if self._txrx is not None:
             if turn_off_machine:
                 logger.info("Turning off machine")
@@ -2492,10 +2500,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx.close(power_off_machine=turn_off_machine)
             self._txrx = None
 
+    def __close_allocation_controller(self):
         if self._machine_allocation_controller is not None:
             self._machine_allocation_controller.close()
             self._machine_allocation_controller = None
-        self._state = Simulator_State.SHUTDOWN
 
     def stop(self, turn_off_machine=None, clear_routing_tables=None,
              clear_tags=None):
@@ -2513,8 +2521,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
         if self._state in [Simulator_State.SHUTDOWN]:
-            msg = "Simulator has already been shutdown"
-            raise ConfigurationException(msg)
+            raise ConfigurationException("Simulator has already been shutdown")
         self._state = Simulator_State.SHUTDOWN
 
         # Keep track of any exception to be re-raised

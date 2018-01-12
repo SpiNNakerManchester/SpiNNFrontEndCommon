@@ -179,10 +179,7 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
                 self._reinject_nearest_neighbour]:
-            if value:
-                spec.write_value(0)
-            else:
-                spec.write_value(1)
+            spec.write_value(int(not value))
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
