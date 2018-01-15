@@ -139,7 +139,7 @@ class ChipPowerMonitorMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         recording_sizes = recording_utilities.get_recording_region_sizes(
-            [int(recording_size)], n_machine_time_steps, minimum_buffer_sdram,
+            [int(recording_size) * n_machine_time_steps], minimum_buffer_sdram,
             maximum_sdram_for_buffering, using_auto_pause_and_resume)
         container.extend(recording_utilities.get_recording_resources(
             recording_sizes, receive_buffer_host, receive_buffer_port))
@@ -238,9 +238,8 @@ class ChipPowerMonitorMachineVertex(
         spec.switch_write_focus(
             region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value)
         recorded_region_sizes = recording_utilities.get_recorded_region_sizes(
-            n_machine_time_steps,
             [self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor)],
+                machine_time_step, time_scale_factor) * n_machine_time_steps],
             [self.MAX_BUFFER_SIZE])
         spec.write_array(recording_utilities.get_recording_header_array(
             recorded_region_sizes,
@@ -309,10 +308,9 @@ class ChipPowerMonitorMachineVertex(
                    'time_scale_factor'})
     def get_minimum_buffer_sdram_usage(
             self, n_machine_time_steps, machine_time_step, time_scale_factor):
-        return recording_utilities.get_minimum_buffer_sdram(
+        return recording_utilities.comp_minimum_buffer_sdram(
             [self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor)],
-            n_machine_time_steps,
+                machine_time_step, time_scale_factor) * n_machine_time_steps],
             globals_variables.get_simulator().config.getint(
                 "Buffers", "minimum_buffer_sdram"))[0]
 
