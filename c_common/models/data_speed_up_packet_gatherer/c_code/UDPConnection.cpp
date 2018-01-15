@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <errno.h>
 
 
 UDPConnection::UDPConnection(
@@ -82,81 +83,33 @@ UDPConnection::UDPConnection(
     this->local_port = ntohs(local_address.sin_port);
 }
 
-int UDPConnection::receive_data(char *data, int length,
-							   int timeout_sec, int timeout_usec) {
+int UDPConnection::receive_data(char *data, int length) {
 
 	int received_length;
 
-	if(timeout_sec >= 0 && timeout_usec >= 0) {
-
-		struct timeval tval;
-		fd_set rset;
-
-		FD_ZERO(&rset);
-		FD_SET(this->sock , &rset);
-
-		tval.tv_sec = timeout_sec;
-		tval.tv_usec = timeout_usec;
-
-		if(select(sock+1, &rset, NULL, NULL, &tval) > 0) {
-
-			received_length = recv(this->sock, (char *) data, length, 0);
-
-			if (received_length < 0) {
-			        printf("receive error: %s\n", strerror(errno));
-			}
-
-			return received_length;
-		}
-
-		throw TimeoutException();
-	}
-
     received_length = recv(this->sock, (char *) data, length, 0);
+
     if (received_length < 0) {
+
+        printf("%s\n", strerror(errno));
         throw "Error receiving data";
+
     }
     return received_length;
 }
 
 int UDPConnection::receive_data_with_address(char *data, int length,
-                                             struct sockaddr *address, int timeout_sec,
-											int timeout_usec) {
+                                             struct sockaddr *address) {
 
 	int received_length;
 
     int address_length = sizeof(*address);
 
-
-    if(timeout_sec >= 0 && timeout_usec >= 0) {
-
-    		struct timeval tval;
-    		fd_set rset;
-
-    		FD_ZERO(&rset);
-    		FD_SET(this->sock , &rset);
-
-    		tval.tv_sec = timeout_sec;
-    		tval.tv_usec = timeout_usec;
-
-    		if(select(sock+1, &rset, NULL, NULL, &tval) > 0) {
-
-    			received_length = recvfrom(this->sock, (char *) data, length, 0,
-                        				   address, (socklen_t *) &address_length);
-
-    			if (received_length < 0) {
-    			        throw "Error receiving data";
-    			}
-
-    			return received_length;
-    		}
-
-    		throw TimeoutException();
-    	}
-
     received_length = recvfrom(this->sock, (char *) data, length, 0,
                                    address, (socklen_t *) &address_length);
     if (received_length < 0) {
+
+        printf("%s\n", strerror(errno));
         throw "Error receiving data";
     }
     return received_length;
@@ -174,6 +127,7 @@ void UDPConnection::send_data(char *data, int length) {
 
 void UDPConnection::send_data_to(char *data, int length,
                                  sockaddr* address) {
+
     if (sendto(this->sock, (const char *) data, length, 0,
                (const struct sockaddr *) address, sizeof(*address)) < 0) {
         throw "Error sending data";

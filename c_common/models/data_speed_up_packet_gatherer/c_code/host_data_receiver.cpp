@@ -29,46 +29,63 @@ static const int END_FLAG = 0xFFFFFFFF;
 static const int LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
 static const int TIMEOUT_RETRY_LIMIT = 20;
 
-
 //vector<uint32_t> missing;
 
 // Constructor
-host_data_receiver::host_data_receiver() {
+host_data_receiver::host_data_receiver(int port_connection, int placement_x, int placement_y, int placement_p,
+		char *hostname, int length_in_bytes, int memory_address, int chip_x, int chip_y, int iptag) {
 
+	this->port_connection = port_connection; 
+	this->placement_x = placement_x; 
+	this->placement_y = placement_y; 
+	this->placement_p = placement_p;
+	this-> hostname = hostname;
+	this->length_in_bytes = (uint32_t)length_in_bytes; 
+	this->memory_address = (uint32_t)memory_address;
+	this->chip_x = chip_x;
+	this->chip_y = chip_y;
+	this->iptag = iptag;
+
+	// allocate queue for messages
+	messqueue = new PQueue<packet>();
+
+	buffer = new char[length_in_bytes];
+
+	this->max_seq_num = calculate_max_seq_num(length_in_bytes);
+
+	rdr.thrown = false;
+	pcr.thrown = false;
 }
 
 // Function for allocating an SCP Message
-char * host_data_receiver::build_scp_req(uint16_t cmd, uint32_t port, int iptag, int strip_sdp, uint32_t ip_address) {
+char * host_data_receiver::build_scp_req(uint16_t cmd, uint32_t port, int strip_sdp, uint32_t ip_address) {
 
 	uint16_t seq = 0;
 	uint32_t arg = 0;
 
-	char *buffer = new char[4*sizeof(uint32_t)];
+	char *buffertmp = new char[4*sizeof(uint32_t)];
 
-	memcpy(buffer, &cmd, sizeof(uint16_t));
-	memcpy(buffer+sizeof(uint16_t), &seq, sizeof(uint16_t));
+	memcpy(buffertmp, &cmd, sizeof(uint16_t));
+	memcpy(buffertmp+sizeof(uint16_t), &seq, sizeof(uint16_t));
 
-	arg = arg | (strip_sdp << 28) | (1 << 16) | iptag;
-	memcpy(buffer+sizeof(uint32_t), &arg, sizeof(uint32_t));
-	memcpy(buffer+2*sizeof(uint32_t), &port, sizeof(uint32_t));
-	memcpy(buffer+3*sizeof(uint32_t), &ip_address, sizeof(uint32_t));
+	arg = arg | (strip_sdp << 28) | (1 << 16) | this->iptag;
+	memcpy(buffertmp+sizeof(uint32_t), &arg, sizeof(uint32_t));
+	memcpy(buffertmp+2*sizeof(uint32_t), &port, sizeof(uint32_t));
+	memcpy(buffertmp+3*sizeof(uint32_t), &ip_address, sizeof(uint32_t));
 
 
-	return buffer;
+	return buffertmp;
 }
 
 
 //Function for asking data to the SpiNNaker system
-void host_data_receiver::send_initial_command(
-        UDPConnection *sender,  int placement_x, int placement_y,
-        int placement_p, int port_connection, uint32_t length_in_bytes,
-        uint32_t memory_address, int chip_x, int chip_y, int iptag, UDPConnection *receiver) {
+void host_data_receiver::send_initial_command(UDPConnection *sender, UDPConnection *receiver) {
 
 	//Build an SCP request to set up the IP Tag associated to this socket
-	char *scp_req = build_scp_req((uint16_t)26, receiver->get_local_port(), iptag, 1, receiver->get_local_ip());
+	char *scp_req = build_scp_req((uint16_t)26, receiver->get_local_port(), 1, receiver->get_local_ip());
 
 	SDPMessage ip_tag_message = SDPMessage(
-		chip_x, chip_y, 0, 0, SDPMessage::REPLY_EXPECTED,
+		this->chip_x, this->chip_y, 0, 0, SDPMessage::REPLY_EXPECTED,
 		255, 255, 255, 0, 0, scp_req, 4*sizeof(uint32_t));
 
 	//Send SCP request
@@ -77,19 +94,19 @@ void host_data_receiver::send_initial_command(
 
 	char buf[300];
 
-	sender->receive_data(buf, 300, 1, 0);
+	sender->receive_data(buf, 300);
 
     // Create Data request SDP packet
 	char start_message_data[3*sizeof(uint32_t)];
 
     // add data
 	memcpy(start_message_data, &SDP_PACKET_START_SENDING_COMMAND_ID, sizeof(uint32_t));
-	memcpy(start_message_data+sizeof(uint32_t), &memory_address, sizeof(uint32_t));
-	memcpy(start_message_data+2*sizeof(uint32_t), &length_in_bytes, sizeof(uint32_t));
+	memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
+	memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
 
     // build SDP message
     SDPMessage message = SDPMessage(
-        placement_x, placement_y, placement_p, port_connection,
+        this->placement_x, this->placement_y, this->placement_p, this->port_connection,
         SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, start_message_data,
         3*sizeof(uint32_t));
 
@@ -100,9 +117,7 @@ void host_data_receiver::send_initial_command(
 
 
 // Function for asking for retransmission of missing sequences
-bool host_data_receiver::retransmit_missing_sequences(
-		UDPConnection *sender, set<uint32_t> *received_seq_nums, int placement_x,
-		int placement_y, int placement_p, int port_connection, uint32_t max_seq_num) {
+bool host_data_receiver::retransmit_missing_sequences(UDPConnection *sender, set<uint32_t> *received_seq_nums) {
 
 		int length_via_format2, seq_num_offset, length_left_in_packet, offset, size_of_data_left_to_transmit;
 		bool first;
@@ -111,13 +126,13 @@ bool host_data_receiver::retransmit_missing_sequences(
 		uint32_t n_packets, i, datasize;
 
 		//Calculate number of missing sequences based on difference between expected and received
-		uint32_t  miss_dim = max_seq_num - received_seq_nums->size();
+		uint32_t  miss_dim = this->max_seq_num - received_seq_nums->size();
 
 		uint32_t *missing_seq = new uint32_t[miss_dim];
 		int j = 0;
 
 		// Calculate missing sequence numbers and add them to "missing"
-		for(i = 0 ; i < max_seq_num; i++) {
+		for(i = 0 ; i < this->max_seq_num; i++) {
 
 			if(received_seq_nums->find(i) == received_seq_nums->end()) {
 
@@ -135,7 +150,6 @@ bool host_data_receiver::retransmit_missing_sequences(
 			return true;
 
 		n_packets = 1;
-		//length_via_format2 = missing.size() - (DATA_PER_FULL_PACKET - 2);
 		length_via_format2 = miss_dim - (DATA_PER_FULL_PACKET - 2);
 
 		if(length_via_format2 > 0)
@@ -154,12 +168,9 @@ bool host_data_receiver::retransmit_missing_sequences(
 			if(first) {
 
 				// Get left over space / data size
-				//size_of_data_left_to_transmit = min(length_left_in_packet - 2, (int)(missing.size())-seq_num_offset);
 				size_of_data_left_to_transmit = min(length_left_in_packet - 2, (int)(miss_dim)-seq_num_offset);
 
 				datasize = (size_of_data_left_to_transmit + 2) * sizeof(uint32_t);
-				// Build data holder
-				//data = (char *)malloc(datasize);
 
 				// Pack flag and n packets
 				memcpy(data, &SDP_PACKET_START_MISSING_SEQ_COMMAND_ID, sizeof(uint32_t));
@@ -174,12 +185,9 @@ bool host_data_receiver::retransmit_missing_sequences(
 			else {
 
 				// Get left over space / data size
-				//size_of_data_left_to_transmit = min(DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM, (int)(missing.size())-seq_num_offset);
 				size_of_data_left_to_transmit = min(DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM, (int)miss_dim-seq_num_offset);
 
 				datasize = (size_of_data_left_to_transmit + 1) * sizeof(uint32_t);
-				// Build data holder
-				//data = (char *)malloc(datasize);
 
 				// Pack flag
 				memcpy(data+offset, &SDP_PACKET_MISSING_SEQ_COMMAND_ID, sizeof(uint32_t));
@@ -189,13 +197,12 @@ bool host_data_receiver::retransmit_missing_sequences(
 			}
 
 			//Data in vector is contiguous(defined as c++ specification), verify only that offset and size to be transmitted are correct
-			//memcpy(data+offset, (&missing)+seq_num_offset, size_of_data_left_to_transmit*sizeof(uint32_t));
 			memcpy(data+offset, missing_seq+seq_num_offset, size_of_data_left_to_transmit*sizeof(uint32_t));
 
 			seq_num_offset += length_left_in_packet;
 
 			SDPMessage message = SDPMessage(
-			        placement_x, placement_y, placement_p, port_connection,
+			        this->placement_x, this->placement_y, this->placement_p, this->port_connection,
 			        SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, data,
 			        datasize);
 
@@ -217,9 +224,6 @@ uint32_t host_data_receiver::calculate_max_seq_num(uint32_t length) {
 
 	n_sequence_number = 0;
 
-	//data_left = length - (DATA_PER_FULL_PACKET - SDP_RETRANSMISSION_HEADER_SIZE)*WORD_TO_BYTE_CONVERTER;
-
-	//extra_n_sequences = (float)data_left / (float)(DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER);
 	extra_n_sequences = (float)length / (float)(DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER);
 
 	n_sequence_number += ceil(extra_n_sequences);
@@ -246,14 +250,11 @@ bool host_data_receiver::check(set<uint32_t> *received_seq_nums, uint32_t max_ne
 
 
 // Function for processing each received packet and checking end of transmission
-void host_data_receiver::process_data(
-		UDPConnection *sender, bool *finished, uint32_t *seq_num,
-		set<uint32_t> *received_seq_nums, char *recvdata, int port_connection,
-		int placement_x, int placement_y, int placement_p, char *buffer,
-		uint32_t *max_seq_num, int datalen, uint32_t *length) {
+void host_data_receiver::process_data(UDPConnection *sender, bool *finished, 
+										set<uint32_t> *received_seq_nums, char *recvdata, int datalen) {
 
 	int length_of_data, i, j;
-	uint32_t last_mc_packet, first_packet_element, offset, true_data_length;
+	uint32_t last_mc_packet, first_packet_element, offset, true_data_length, seq_num;
 	bool is_end_of_stream;
 
 	//Data size of the packet
@@ -261,16 +262,16 @@ void host_data_receiver::process_data(
 
 	memcpy(&first_packet_element, recvdata, sizeof(uint32_t));
 
-	*seq_num = first_packet_element & 0x7FFFFFFF;
+	seq_num = first_packet_element & 0x7FFFFFFF;
 
 	is_end_of_stream = ((first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0) ? true : false;
 
-	if(*seq_num > *max_seq_num) {
+	if(seq_num > this->max_seq_num) {
 
 		throw "Got insane sequence number";
 	}
 
-	offset = (*seq_num) * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER;
+	offset = (seq_num) * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER;
 
 	true_data_length = (offset + length_of_data - SEQUENCE_NUMBER_SIZE);
 
@@ -283,14 +284,13 @@ void host_data_receiver::process_data(
 		memcpy(buffer+offset, recvdata+SEQUENCE_NUMBER_SIZE, (true_data_length-offset));
 	}
 
-	received_seq_nums->insert(*seq_num);
+	received_seq_nums->insert(seq_num);
 
 	if(is_end_of_stream) {
 
-		if(!check(received_seq_nums, *max_seq_num)) {
+		if(!check(received_seq_nums, this->max_seq_num)) {
 
-			*finished = retransmit_missing_sequences(sender, received_seq_nums, placement_x,
-									placement_y, placement_p, port_connection, *max_seq_num);
+			*finished = retransmit_missing_sequences(sender, received_seq_nums);
 		}
 		else {
 
@@ -300,83 +300,138 @@ void host_data_receiver::process_data(
 
 }
 
-// Function externally callable for data gathering. It returns a buffer containing read data
-char * host_data_receiver::get_data(char *hostname, int port_connection, int placement_x, int placement_y, int placement_p,
-				int length_in_bytes, int memory_address, int chip_x, int chip_y, int iptag) {
+void host_data_receiver::reader_thread(UDPConnection *receiver) {
 
-	bool finished;
 	char data[400];
-	int datalen, timeoutcount;
-	uint32_t seq_num, max_seq_num, length;
+	int recvd;
+	packet p;
+
+	// While socket is open add messages to the queue
+	do {
+
+		try {
+
+			recvd = receiver->receive_data(data, 400);
+
+			memcpy(p.content, data, recvd*sizeof(char));
+			p.size = recvd;
+
+		} catch(char const *e) {
+
+			this->rdr.thrown = true;
+			this->rdr.val = e;
+			return;
+		}
+
+		if(recvd)
+			messqueue->push(p);
+
+		//If the other thread trew an exception(no need for mutex, in the worst case this thread will add an additional value to the queue)
+		if(this->pcr.thrown == true)
+			return;
+
+	}while(recvd);
+}
+
+void host_data_receiver::processor_thread(UDPConnection *sender) {
+
+	char data[400];
+	int receivd = 0, timeoutcount = 0, datalen;
+	bool finished = false;
 	set<uint32_t> *received_seq_nums = new set<uint32_t>;
-	time_t start, end;
+	packet p;
+
+	while(!finished) {
+
+		try {
+
+		 	p = messqueue->pop();
+
+		 	memcpy(data, p.content, p.size*sizeof(char));
+		 	datalen = p.size;
+
+
+		 	process_data(sender, &finished, received_seq_nums, data, datalen);
+
+		 }catch(TimeoutQueueException e) {
+
+		 	if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
+
+				this->pcr.thrown = true;
+				this->pcr.val = "Failed to hear from the machine. Please try removing firewalls";
+
+			}
+
+		 	timeoutcount++;
+
+		 	if(!finished) {
+
+					// retransmit missing packets
+					finished = retransmit_missing_sequences(sender, received_seq_nums);
+			}
+
+
+		 }catch(const char *e) {
+
+		 	this->pcr.thrown = true;
+			this->pcr.val = e;
+			return;
+		 }
+
+		 if(this->rdr.thrown == true)
+		 	return;
+	}
+
+	// close socket and inform the reader that transmission is completed
+	delete sender;
+
+	pthread_exit(NULL);
+}
+
+// Function externally callable for data gathering. It returns a buffer containing read data
+char * host_data_receiver::get_data() {
+
+	int datalen, timeoutcount;
 	double seconds_taken;
-	char *buffer;
-
-	finished = false;
-	seq_num = 1;
-	max_seq_num = 0;
-	length = 0;
-
-	time(&start);
 
 	try {
 
 		// create connection
-		UDPConnection *sender =  new UDPConnection(NULL, NULL, 17893, hostname);
+		UDPConnection *sender =  new UDPConnection(NULL, NULL, 17893, this->hostname);
 
 		// send the initial command to start data transmission
-		send_initial_command(sender, placement_x, placement_y, placement_p, port_connection, (uint32_t)length_in_bytes, (uint32_t)memory_address, chip_x, chip_y, iptag, sender);
+		send_initial_command(sender, sender);
 
-		buffer = new char[length_in_bytes];
+		//pthread_create(&reader, NULL, &host_data_receiver::reader_thread, (void *) sender);
+		//pthread_create(&processor, NULL, &host_data_receiver::processor_thread, (void *) sender);
 
-		max_seq_num = calculate_max_seq_num(length_in_bytes);
+		//pthread_join(reader, NULL);
+		//pthread_join(processor, NULL);
 
-		while(!finished) {
+		thread reader(&host_data_receiver::reader_thread, this, sender);
+		thread processor(&host_data_receiver::processor_thread, this, sender);
 
-			try {
-				// receive data
-				datalen = sender->receive_data(data, 400, TIMEOUT_PER_RECEIVE_IN_SECONDS, 0);
+		reader.join();
+		processor.join();
 
-				timeoutcount = 0;
+		if(this->rdr.thrown == true) {
 
-				// process received data
-	        		process_data(
-	        					 sender, &finished, &seq_num, received_seq_nums, data, port_connection,
-							 placement_x, placement_y, placement_p, buffer, &max_seq_num, datalen, &length);
-
-			}catch(TimeoutException e) {
-
-				if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
-
-					throw "Failed to hear from the machine. Please try removing firewalls";
-				}
-				timeoutcount++;
-				delete sender;
-
-				uint32_t loc_port = sender->get_local_port();
-
-				sender = new UDPConnection(loc_port, NULL, 17893, hostname);
-
-				if(!finished) {
-
-					// retransmit missing packets
-					finished = retransmit_missing_sequences(
-							sender, received_seq_nums, placement_x, placement_y,
-							placement_p, port_connection, max_seq_num);
-				}
-			}
+			cout << this->rdr.val << endl;
+			return NULL;
 		}
+		else if(this->pcr.thrown == true) {
+
+			cout << this->pcr.val << endl;
+			return NULL;
+		}
+
+
 	}catch(char const *e) {
 
 		cout << e << endl;
 
 		return NULL;
 	}
-
-	time(&end);
-
-	seconds_taken = difftime(end, start);
 
 	return buffer;
 }
@@ -468,17 +523,14 @@ py::bytes host_data_receiver::get_data_for_python(char *hostname, int port_conne
 
 
 // Function externally callable for data gathering. It can be called by multiple threads simultaneously
-void host_data_receiver::get_data_threadable(char *hostname, int port_connection, int placement_x, int placement_y,
-						int placement_p, char *filepath_read, char *filepath_missing, int length_in_bytes,
-						int memory_address, int chip_x, int chip_y, int iptag) {
+void host_data_receiver::get_data_threadable(char *filepath_read, char *filepath_missing) {
 
 	FILE *fp1, *fp2;
-	char *buffer;
+
+	get_data();
 
 	fp1 = fopen(filepath_read, "wb");
 	//fp2 = fopen(filepath_missing, "w");
-
-	buffer = get_data(hostname, port_connection, placement_x, placement_y, placement_p, length_in_bytes, memory_address, chip_x, chip_y, iptag);
 
 	fwrite(buffer, sizeof(char), length_in_bytes, fp1);
 

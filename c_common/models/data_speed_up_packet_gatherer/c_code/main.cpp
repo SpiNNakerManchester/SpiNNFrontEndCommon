@@ -62,11 +62,10 @@ int main(int argc, char *argv[])  {
     chip_y = atoi(argv[CHIP_Y]);
     iptag = atoi(argv[IPTAG]);
 
-    host_data_receiver collector;
+    host_data_receiver collector(port_connection, placement_x, placement_y, placement_p, hostname,
+                    length_in_bytes, memory_address, chip_x, chip_y, iptag);
 
-    collector.get_data_threadable(hostname, port_connection, placement_x,
-    				placement_y, placement_p, file_pathr, file_pathm,
-    				length_in_bytes, memory_address, chip_x, chip_y, iptag);
+    collector.get_data_threadable(file_pathr, file_pathm);
 
     return 0;
 }
