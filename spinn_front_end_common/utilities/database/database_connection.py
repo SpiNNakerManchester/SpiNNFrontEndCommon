@@ -17,12 +17,18 @@ import logging
 logger = FormatAdapter(logging.getLogger(__name__))
 
 
-class DatabaseConnection(UDPConnection, Thread):
+class DatabaseConnection(UDPConnection):
     """ A connection from the toolchain which will be notified when the \
         database has been written, and can then respond when the database \
         has been read, and further wait for notification that the simulation \
         has started.
     """
+
+    __slots__ = [
+        "_database_callback_functions",
+        "_pause_and_stop_callback_function",
+        "_running",
+        "_start_resume_callback_function"]
 
     def __init__(self, start_resume_callback_function=None,
                  stop_pause_callback_function=None, local_host=None,
@@ -41,18 +47,17 @@ class DatabaseConnection(UDPConnection, Thread):
             notification on (19999 by default)
         :type local_port: int
         """
-        UDPConnection.__init__(
-            self, local_host=local_host, local_port=local_port,
+        super(DatabaseConnection, self).__init__(
+            local_host=local_host, local_port=local_port,
             remote_host=None, remote_port=None)
-        Thread.__init__(
-            self, name="SpyNNakerDatabaseConnection:{}:{}".format(
-                self.local_ip_address, self.local_port))
+        thread = Thread(name="SpyNNakerDatabaseConnection:{}:{}".format(
+            self.local_ip_address, self.local_port), target=self.run)
         self._database_callback_functions = list()
         self._start_resume_callback_function = start_resume_callback_function
         self._pause_and_stop_callback_function = stop_pause_callback_function
         self._running = False
-        self.daemon = True
-        self.start()
+        thread.daemon = True
+        thread.start()
 
     def add_database_callback(self, database_callback_function):
         """ Add a database callback to be called when the database is ready.
@@ -83,6 +88,8 @@ class DatabaseConnection(UDPConnection, Thread):
             logger.error("Failure processing database callback",
                          exc_info=True)
             raise SpinnmanIOException(str(e))
+        finally:
+            self._running = False
 
     def _process_message(self, address, data):
         # Read the read packet confirmation

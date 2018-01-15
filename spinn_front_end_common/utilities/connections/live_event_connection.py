@@ -27,6 +27,21 @@ class LiveEventConnection(DatabaseConnection):
     """ A connection for receiving and sending live events from and to\
         SpiNNaker
     """
+    __slots__ = [
+        "_atom_id_to_key",
+        "_init_callbacks",
+        "_key_to_atom_id_and_label",
+        "_listeners",
+        "_live_event_callbacks",
+        "_live_packet_gather_label",
+        "_machine_vertices",
+        "_pause_stop_callbacks",
+        "_receive_labels",
+        "_receivers",
+        "_send_address_details",
+        "_send_labels",
+        "_sender_connection",
+        "_start_resume_callbacks"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=19999,
@@ -49,8 +64,8 @@ class LiveEventConnection(DatabaseConnection):
         :type local_port: int
         """
         # pylint: disable=too-many-arguments
-        DatabaseConnection.__init__(
-            self, self._start_resume_callback, self._stop_pause_callback,
+        super(LiveEventConnection, self).__init__(
+            self._start_resume_callback, self._stop_pause_callback,
             local_host=local_host, local_port=local_port)
 
         self.add_database_callback(self._read_database_callback)
@@ -242,12 +257,12 @@ class LiveEventConnection(DatabaseConnection):
         self._listeners = dict()
 
     def __launch_thread(self, kind, label, callback):
-        callback_thread = Thread(
+        thread = Thread(
             target=callback, args=(label, self),
             verbose=True,
             name="{} callback thread for live_event_connection {}:{}".format(
                 kind, self._local_port, self._local_ip_address))
-        callback_thread.start()
+        thread.start()
 
     def _start_resume_callback(self):
         for label, callbacks in self._start_resume_callbacks.iteritems():
