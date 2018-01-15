@@ -31,6 +31,8 @@ from pacman.executor.injection_decorator import inject_items
 # from ctypes import *
 #===============================================================================
 
+import subprocess
+
 TIMEOUT_RETRY_LIMIT = 20
 logger = logging.getLogger(__name__)
 
@@ -331,17 +333,36 @@ class DataSpeedUpPacketGatherMachineVertex(
         chip_y = connection.chip_y
 
 
-        receiver = host_data_receiver()
-        buf = receiver.get_data_for_python(str(connection.remote_ip_address),
-                          int(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
-                          int(placement.x),
-                          int(placement.y),
-                          int(placement.p),
-                          int(length_in_bytes),
-                          int(memory_address),
-                          int(chip_x),
-                          int(chip_y),
-                          int(self.tag))
+        #=======================================================================
+        # receiver = host_data_receiver()
+        # buf = receiver.get_data_for_python(str(connection.remote_ip_address),
+        #                   int(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
+        #                   int(placement.x),
+        #                   int(placement.y),
+        #                   int(placement.p),
+        #                   int(length_in_bytes),
+        #                   int(memory_address),
+        #                   int(chip_x),
+        #                   int(chip_y),
+        #                   int(self.tag))
+        #=======================================================================
+
+        p = subprocess.call(["/Users/ghost/git/SpiNNFrontEndCommon/spinn_front_end_common/utility_models/host_data_receiver",
+                          str(connection.remote_ip_address),
+                          str(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
+                          str(placement.x),
+                          str(placement.y),
+                          str(placement.p),
+                          str("./fileout.txt"),
+                          str("./missing.txt"),
+                          str(length_in_bytes),
+                          str(memory_address),
+                          str(chip_x),
+                          str(chip_y),
+                          str(self.tag)])
+
+        with open("./fileout.txt", "r") as fp:
+            buf = fp.read()
 
 
         return bytearray(buf)
