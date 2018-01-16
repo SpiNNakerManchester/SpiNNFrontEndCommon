@@ -53,8 +53,9 @@ host_data_receiver::host_data_receiver(int port_connection, int placement_x, int
 
 	this->max_seq_num = calculate_max_seq_num(length_in_bytes);
 
-	rdr.thrown = false;
-	pcr.thrown = false;
+	this->rdr.thrown = false;
+	this->pcr.thrown = false;
+	this->finished = false;
 }
 
 // Function for allocating an SCP Message
@@ -375,6 +376,7 @@ void host_data_receiver::processor_thread(UDPConnection *sender) {
 
 		 	this->pcr.thrown = true;
 			this->pcr.val = e;
+			delete sender;
 			return;
 		 }
 
@@ -384,8 +386,7 @@ void host_data_receiver::processor_thread(UDPConnection *sender) {
 
 	// close socket and inform the reader that transmission is completed
 	delete sender;
-
-	pthread_exit(NULL);
+	this->finished = true;
 }
 
 // Function externally callable for data gathering. It returns a buffer containing read data
@@ -414,14 +415,14 @@ char * host_data_receiver::get_data() {
 		reader.join();
 		processor.join();
 
-		if(this->rdr.thrown == true) {
-
-			cout << this->rdr.val << endl;
-			return NULL;
-		}
-		else if(this->pcr.thrown == true) {
+		if(this->pcr.thrown == true) {
 
 			cout << this->pcr.val << endl;
+			return NULL;
+		} 
+		else if(this->rdr.thrown == true && this->finished == false) {
+
+			cout << this->rdr.val << endl;
 			return NULL;
 		}
 
@@ -433,7 +434,7 @@ char * host_data_receiver::get_data() {
 		return NULL;
 	}
 
-	return buffer;
+	return this->buffer;
 }
 
 /*
@@ -532,7 +533,7 @@ void host_data_receiver::get_data_threadable(char *filepath_read, char *filepath
 	fp1 = fopen(filepath_read, "wb");
 	//fp2 = fopen(filepath_missing, "w");
 
-	fwrite(buffer, sizeof(char), length_in_bytes, fp1);
+	fwrite(this->buffer, sizeof(char), length_in_bytes, fp1);
 
 	/*vector<uint32_t>::iterator i;
 	char *miss = new char[sizeof(uint32_t) * missing.size()];

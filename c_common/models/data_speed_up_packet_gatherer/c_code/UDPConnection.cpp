@@ -91,8 +91,7 @@ int UDPConnection::receive_data(char *data, int length) {
 
     if (received_length < 0) {
 
-        printf("%s\n", strerror(errno));
-        throw "Error receiving data";
+        throw strerror(errno);
 
     }
     return received_length;
@@ -109,8 +108,7 @@ int UDPConnection::receive_data_with_address(char *data, int length,
                                    address, (socklen_t *) &address_length);
     if (received_length < 0) {
 
-        printf("%s\n", strerror(errno));
-        throw "Error receiving data";
+        throw strerror(errno);
     }
     return received_length;
 }

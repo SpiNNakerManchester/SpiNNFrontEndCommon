@@ -71,6 +71,7 @@ class host_data_receiver {
 		uint32_t max_seq_num;
 		thexc rdr;
 		thexc pcr;
+		bool finished;
 
 
 };
