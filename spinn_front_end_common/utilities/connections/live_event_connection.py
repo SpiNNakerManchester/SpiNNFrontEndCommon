@@ -1,6 +1,7 @@
 from threading import Thread
 from collections import OrderedDict
 
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
 
 from spinnman.utilities.utility_functions import send_port_trigger_message
@@ -44,7 +45,7 @@ class LiveEventConnection(DatabaseConnection):
         "_start_resume_callbacks"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
-                 send_labels=None, local_host=None, local_port=19999,
+                 send_labels=None, local_host=None, local_port=NOTIFY_PORT,
                  machine_vertices=False):
         """
         :param live_packet_gather_label: The label of the LivePacketGather\

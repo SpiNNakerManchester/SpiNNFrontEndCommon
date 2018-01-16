@@ -1,5 +1,6 @@
 # spinnman imports
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinnman.exceptions \
     import SpinnmanIOException, SpinnmanInvalidPacketException, \
     SpinnmanTimeoutException
@@ -32,7 +33,7 @@ class DatabaseConnection(UDPConnection):
 
     def __init__(self, start_resume_callback_function=None,
                  stop_pause_callback_function=None, local_host=None,
-                 local_port=19999):
+                 local_port=NOTIFY_PORT):
         """
 
         :param start_resume_callback_function: A function to be called when \
