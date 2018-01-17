@@ -1892,6 +1892,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             algorithms = list()
 
+        # clear iobuf if were in multirun mode
+        if (self._has_ran and not self._has_reset_last and
+                not self._use_virtual_board and
+                self._config.getboolean("Reports", "clear_iobuf_during_run")):
+            algorithms.append("ChipIOBufClearer")
+
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board and the data hasn't already
         # been regenerated during a load
@@ -1948,12 +1954,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 not self._use_virtual_board and
                 n_machine_time_steps is not None):
             algorithms.append("ChipIOBufExtractor")
-
-        # clear iobuf if were in multirun mode
-        if (self._has_ran and not self._has_reset_last and
-                not self._use_virtual_board and
-                self._config.getboolean("Reports", "clear_iobuf_during_run")):
-            algorithms.append("ChipIOBufClearer")
 
         # add extractor of provenance if needed
         if (self._config.getboolean("Reports", "write_provenance_data") and
