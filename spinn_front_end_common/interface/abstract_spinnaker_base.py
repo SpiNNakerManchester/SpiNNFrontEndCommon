@@ -1797,11 +1797,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingCompressionCheckerReport")
 
         # handle extra monitor functionality
-        enable_advanched_monitor = (
-            self._config.getboolean(
-                "Machine", "enable_advanced_monitor_support") or
-            self._config.getboolean("Machine", "enable_reinjection"))
-        if (enable_advanched_monitor and
+        enable_advanced_monitor = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        if (enable_advanced_monitor and
                 (application_graph_changed or not self._has_ran)):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
