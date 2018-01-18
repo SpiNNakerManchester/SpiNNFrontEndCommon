@@ -52,8 +52,8 @@ class BuffersSentDeque(object):
         :type region: int
         :param sent_stop_message: True if the stop message has been sent
         :type sent_stop_message: bool
-        :param n_sequences_per_tranmission: The number of sequences allowed\
-            in each transmission set
+        :param n_sequences_per_tranmission: \
+            The number of sequences allowed in each transmission set
         :type n_sequences_per_tranmission: int
         """
 

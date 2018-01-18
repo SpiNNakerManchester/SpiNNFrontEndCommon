@@ -40,7 +40,7 @@ class BufferedReceivingData(object):
         """
 
         :param store_to_file: A boolean to identify if the data will be stored\
-                in memory using a byte array or in a temporary file on the disk
+            in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
         """
 
@@ -121,7 +121,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: SpinnakerRequestReadData packet received
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         """
         self._last_packet_received[x, y, p] = packet
 
@@ -136,7 +136,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: SpinnakerRequestReadData packet received
         :rtype:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         """
         return self._last_packet_received[x, y, p]
 
@@ -151,7 +151,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: last HostDataRead packet sent
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
         """
         self._last_packet_sent[x, y, p] = packet
 
@@ -166,7 +166,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: last HostDataRead packet sent
         :rtype:\
-                :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
         """
         return self._last_packet_sent[x, y, p]
 
@@ -210,8 +210,8 @@ class BufferedReceivingData(object):
         :type p: int
         :param region: Region containing the data
         :type region: int
-        :return: an array contained all the data received during the\,
-                simulation, and a flag indicating if any data was missing
+        :return: an array contained all the data received during the\
+            simulation, and a flag indicating if any data was missing
         :rtype: (bytearray, bool)
         """
         missing = None
@@ -231,9 +231,9 @@ class BufferedReceivingData(object):
         :type p: int
         :param region: Region containing the data
         :type region: int
-        :return: all the data received during the simulation,\
-                and a flag indicating if any data was lost
-        :rtype:\
+        :return: all the data received during the simulation, and a flag\
+            indicating if any data was lost
+        :rtype: tuple of \
             (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
              bool)
         """
@@ -337,7 +337,7 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
 
     def clear(self, x, y, p, region_id):
-        """ clears the data from a given data region (only clears things\
+        """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
         :param x: placement x coord

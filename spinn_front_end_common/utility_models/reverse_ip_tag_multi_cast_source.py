@@ -109,9 +109,8 @@ class ReverseIpTagMultiCastSource(
             host about space in the buffer (default is to use any tag)
         """
         # pylint: disable=too-many-arguments, too-many-locals
-        ApplicationVertex.__init__(
-            self, label, constraints, max_atoms_per_core)
-        ProvidesKeyToAtomMappingImpl.__init__(self)
+        super(ReverseIpTagMultiCastSource, self).__init__(
+            label, constraints, max_atoms_per_core)
 
         # basic items
         self._n_atoms = n_keys

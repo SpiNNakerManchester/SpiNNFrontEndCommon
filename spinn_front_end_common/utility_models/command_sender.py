@@ -33,7 +33,7 @@ class CommandSender(
 
     def __init__(self, label, constraints):
 
-        ApplicationVertex.__init__(self, label, constraints, 1)
+        super(CommandSender, self).__init__(label, constraints, 1)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()

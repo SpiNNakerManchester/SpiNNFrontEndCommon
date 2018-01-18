@@ -54,7 +54,8 @@ class LivePacketGatherMachineVertex(
         # pylint: disable=too-many-arguments, too-many-locals
 
         # inheritance
-        MachineVertex.__init__(self, label, constraints=constraints)
+        super(LivePacketGatherMachineVertex, self).__init__(
+            label, constraints=constraints)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),

@@ -55,8 +55,7 @@ class CommandSenderMachineVertex(
             self, constraints, resources_required, label,
             commands_at_start_resume, commands_at_pause_stop, timed_commands):
         # pylint: disable=too-many-arguments
-        ProvidesProvenanceDataFromMachineImpl.__init__(self)
-        MachineVertex.__init__(self, label, constraints)
+        super(CommandSenderMachineVertex, self).__init__(label, constraints)
 
         # container of different types of command
         self._timed_commands = timed_commands

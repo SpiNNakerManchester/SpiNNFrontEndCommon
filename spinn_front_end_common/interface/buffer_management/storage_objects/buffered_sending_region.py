@@ -165,8 +165,8 @@ class BufferedSendingRegion(object):
     def get_n_keys(self, timestamp):
         """ Get the number of keys for a given timestamp
 
-        :param timestamp: the time stamp to check if there's still keys to\
-                transmit
+        :param timestamp: \
+            the time stamp to check if there's still keys to transmit
         """
         if timestamp in self._buffer:
             return len(self._buffer[timestamp])

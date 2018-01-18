@@ -157,10 +157,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             assigned port, which can be read from the database
         """
         # pylint: disable=too-many-arguments, too-many-locals
-        MachineVertex.__init__(self, label, constraints)
-        AbstractReceiveBuffersToHost.__init__(self)
-
-        AbstractProvidesOutgoingPartitionConstraints.__init__(self)
+        super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
+            label, constraints)
 
         self._iptags = None
         self._reverse_iptags = None
@@ -373,34 +371,33 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer.clear()
         if self._send_buffer_times is not None and self._send_buffer_times:
             if hasattr(self._send_buffer_times[0], "__len__"):
-
                 # Works with a list-of-lists
-                for key in range(self._n_keys):
-                    for timeStamp in sorted(self._send_buffer_times[key]):
-                        time_stamp_in_ticks = int(math.ceil(
-                            float(int(timeStamp * 1000.0)) /
-                            machine_time_step))
-                        if self._is_in_range(
-                                time_stamp_in_ticks, first_machine_time_step,
-                                n_machine_time_steps):
-                            self._send_buffer.add_key(
-                                time_stamp_in_ticks, key_to_send + key)
+                self.__fill_send_buffer_2d(
+                    key_to_send, machine_time_step, first_machine_time_step,
+                    n_machine_time_steps)
             else:
-
                 # Work with a single list
-                key_list = [key + key_to_send
-                            for key in xrange(self._n_keys)]
-                for timeStamp in sorted(self._send_buffer_times):
-                    time_stamp_in_ticks = int(math.ceil(
-                        float(int(timeStamp * 1000.0)) /
-                        machine_time_step))
+                self.__fill_send_buffer_1d(
+                    key_to_send, machine_time_step, first_machine_time_step,
+                    n_machine_time_steps)
 
-                    # add to send_buffer collection
-                    if self._is_in_range(
-                            time_stamp_in_ticks, first_machine_time_step,
-                            n_machine_time_steps):
-                        self._send_buffer.add_keys(
-                            time_stamp_in_ticks, key_list)
+    def __fill_send_buffer_2d(
+            self, key_base, time_step, first_time_step, n_time_steps):
+        for key in range(self._n_keys):
+            for time_stamp in sorted(self._send_buffer_times[key]):
+                tick = int(math.ceil(
+                    float(int(time_stamp * 1000.0)) / time_step))
+                if self._is_in_range(tick, first_time_step, n_time_steps):
+                    self._send_buffer.add_key(tick, key_base + key)
+
+    def __fill_send_buffer_1d(
+            self, key_base, time_step, first_time_step, n_time_steps):
+        key_list = [key + key_base for key in xrange(self._n_keys)]
+        for time_stamp in sorted(self._send_buffer_times):
+            tick = int(math.ceil(
+                float(int(time_stamp * 1000.0)) / time_step))
+            if self._is_in_range(tick, first_time_step, n_time_steps):
+                self._send_buffer.add_keys(tick, key_list)
 
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
