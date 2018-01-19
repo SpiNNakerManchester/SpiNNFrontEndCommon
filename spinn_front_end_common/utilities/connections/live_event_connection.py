@@ -1,20 +1,14 @@
 from threading import Thread
-import traceback
 from collections import OrderedDict
-from spinnman.utilities import utility_functions
 
-from spinn_front_end_common.utilities.database.database_connection \
-    import DatabaseConnection
+from spinn_front_end_common.utilities.database import DatabaseConnection
 
-from spinnman.messages.eieio.data_messages.eieio_16bit\
-    .eieio_16bit_data_message import EIEIO16BitDataMessage
-from spinnman.messages.eieio.data_messages.eieio_32bit\
-    .eieio_32bit_data_message import EIEIO32BitDataMessage
-from spinnman.connections.connection_listener import ConnectionListener
-from spinnman.connections.udp_packet_connections.udp_eieio_connection \
-    import UDPEIEIOConnection
-from spinnman.messages.eieio.data_messages.eieio_key_payload_data_element \
-    import EIEIOKeyPayloadDataElement
+from spinnman.utilities.utility_functions import send_port_trigger_message
+from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from spinnman.messages.eieio import EIEIOType
+from spinnman.connections import ConnectionListener
+from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
 
 import logging
 
@@ -152,7 +146,7 @@ class LiveEventConnection(DatabaseConnection):
                     this class, which can be used to send events
         :type pause_stop_callback: function(str, \
                     :py:class:`SpynnakerLiveEventConnection`) -> None
-        :return: None
+        :rtype: None
         """
         self._pause_stop_callbacks[label].append(pause_stop_callback)
 
@@ -167,7 +161,7 @@ class LiveEventConnection(DatabaseConnection):
                 "machine_time_step") / 1000.0
 
         if self._send_labels is not None:
-            self._sender_connection = UDPEIEIOConnection()
+            self._sender_connection = EIEIOConnection()
             for send_label in self._send_labels:
                 ip_address, port = None, None
                 if self._machine_vertices:
@@ -202,22 +196,20 @@ class LiveEventConnection(DatabaseConnection):
                     host, port, strip_sdp, board_address = \
                         database_reader.get_live_output_details(
                             receive_label, self._live_packet_gather_label)
-                if strip_sdp:
-                    if port not in self._receivers:
-                        receiver = UDPEIEIOConnection(local_port=port)
-                        utility_functions.send_port_trigger_message(
-                            receiver, board_address)
-                        listener = ConnectionListener(receiver)
-                        listener.add_callback(self._receive_packet_callback)
-                        listener.start()
-                        self._receivers[port] = receiver
-                        self._listeners[port] = listener
-                    logger.info(
-                        "Listening for traffic from {} on {}:{}".format(
-                            receive_label, host, port))
-                else:
+                if not strip_sdp:
                     raise Exception("Currently, only ip tags which strip the"
                                     " SDP headers are supported")
+                if port not in self._receivers:
+                    receiver = EIEIOConnection(local_port=port)
+                    send_port_trigger_message(receiver, board_address)
+                    listener = ConnectionListener(receiver)
+                    listener.add_callback(self._receive_packet_callback)
+                    listener.start()
+                    self._receivers[port] = receiver
+                    self._listeners[port] = listener
+                logger.info(
+                    "Listening for traffic from {} on {}:{}".format(
+                        receive_label, host, port))
 
                 if self._machine_vertices:
                     key, _ = database_reader.get_machine_live_output_key(
@@ -307,7 +299,7 @@ class LiveEventConnection(DatabaseConnection):
                         (atom_id, label_id) = self._key_to_atom_id_and_label[
                             key]
                         for callback in self._live_event_callbacks[label_id]:
-                            if isinstance(element, EIEIOKeyPayloadDataElement):
+                            if isinstance(element, KeyPayloadDataElement):
                                 callback(
                                     self._receive_labels[label_id], atom_id,
                                     element.payload)
@@ -315,7 +307,7 @@ class LiveEventConnection(DatabaseConnection):
                                 callback(
                                     self._receive_labels[label_id], atom_id)
         except:
-            traceback.print_exc()
+            logger.warn("problem handling received packet", exc_info=True)
 
     def send_event(self, label, atom_id, send_full_keys=False):
         """ Send an event from a single atom
@@ -353,9 +345,9 @@ class LiveEventConnection(DatabaseConnection):
         while pos < len(atom_ids):
 
             if send_full_keys:
-                message = EIEIO32BitDataMessage()
+                message = EIEIODataMessage.create(EIEIOType.KEY_32_BIT)
             else:
-                message = EIEIO16BitDataMessage()
+                message = EIEIODataMessage.create(EIEIOType.KEY_16_BIT)
 
             events_in_packet = 0
             while pos < len(atom_ids) and events_in_packet < max_keys:

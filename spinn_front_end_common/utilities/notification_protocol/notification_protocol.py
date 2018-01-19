@@ -1,21 +1,17 @@
 # spinnman imports
 from multiprocessing.pool import ThreadPool
-from spinnman.connections.udp_packet_connections.\
-    udp_eieio_connection import UDPEIEIOConnection
-from spinnman.messages.eieio.command_messages.database_confirmation import \
-    DatabaseConfirmation
+from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.messages.eieio.command_messages import DatabaseConfirmation
+from spinnman.messages.eieio.command_messages \
+    import NotificationProtocolPauseStop, NotificationProtocolStartResume
 
 # front end common imports
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.constants \
+    import MAX_DATABASE_PATH_LENGTH
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
-import traceback
 
-from spinnman.messages.eieio.command_messages.\
-    notification_protocol_pause_stop import NotificationProtocolPauseStop
-from spinnman.messages.eieio.command_messages.\
-    notification_protocol_start_resume import NotificationProtocolStartResume
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +30,7 @@ class NotificationProtocol(object):
         self._wait_pool = ThreadPool(processes=1)
         self._data_base_message_connections = list()
         for socket_address in socket_addresses:
-            self._data_base_message_connections.append(UDPEIEIOConnection(
+            self._data_base_message_connections.append(EIEIOConnection(
                 local_port=socket_address.listen_port,
                 remote_host=socket_address.notify_host_name,
                 remote_port=socket_address.notify_port_no))
@@ -63,7 +59,15 @@ class NotificationProtocol(object):
             self.wait_for_confirmation()
         eieio_command_message = NotificationProtocolStartResume()
         for connection in self._data_base_message_connections:
-            connection.send_eieio_message(eieio_command_message)
+            try:
+                connection.send_eieio_message(eieio_command_message)
+            except Exception:
+                logger.warning(
+                    "*** Failed to send start/resume notification to"
+                    " external application on"
+                    " {}:{} about the simulation ***".format(
+                        connection.remote_ip_address,
+                        connection.remote_port))
 
     def send_stop_pause_notification(self):
         """ sends the pause / stop notifications when the script has either\
@@ -75,7 +79,15 @@ class NotificationProtocol(object):
                     "to state the simulation has been paused or stopped. ***")
         eieio_command_message = NotificationProtocolPauseStop()
         for connection in self._data_base_message_connections:
-            connection.send_eieio_message(eieio_command_message)
+            try:
+                connection.send_eieio_message(eieio_command_message)
+            except Exception:
+                logger.warning(
+                    "*** Failed to send stop/pause notification to"
+                    " external application on"
+                    " {}:{} about the simulation ***".format(
+                        connection.remote_ip_address,
+                        connection.remote_port))
 
     # noinspection PyPep8
     def send_read_notification(self, database_path):
@@ -106,8 +118,8 @@ class NotificationProtocol(object):
 
                 # add file path to database into command message.
                 number_of_chars = len(database_path)
-                if number_of_chars > constants.MAX_DATABASE_PATH_LENGTH:
-                    raise exceptions.ConfigurationException(
+                if number_of_chars > MAX_DATABASE_PATH_LENGTH:
+                    raise ConfigurationException(
                         "The file path to the database is too large to be "
                         "transmitted via the command packet, "
                         "please set the file path manually and "
@@ -150,7 +162,8 @@ class NotificationProtocol(object):
                                     connection.remote_port))
 
             except Exception:
-                traceback.print_exc()
+                logger.warn("problem when sending DB notification",
+                            exc_info=True)
 
     def close(self):
         """ Closes the thread pool
