@@ -7,9 +7,6 @@ from pacman.model.decorators import overrides
 class ProvidesKeyToAtomMappingImpl(AbstractProvidesKeyToAtomMapping):
     __slots__ = ()
 
-    def __init__(self):
-        pass
-
     @inject_items({
         "graph_mapper": "MemoryGraphMapper"
     })

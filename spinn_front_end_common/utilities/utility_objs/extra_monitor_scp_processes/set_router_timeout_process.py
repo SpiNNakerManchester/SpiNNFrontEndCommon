@@ -6,7 +6,7 @@ from spinnman.processes import AbstractMultiConnectionProcess
 class SetRouterTimeoutProcess(AbstractMultiConnectionProcess):
 
     def __init__(self, connection_selector):
-        AbstractMultiConnectionProcess.__init__(self, connection_selector)
+        super(SetRouterTimeoutProcess, self).__init__(connection_selector)
 
     def set_timeout(self, mantissa, exponent, core_subsets, command_code):
         for core_subset in core_subsets.core_subsets:

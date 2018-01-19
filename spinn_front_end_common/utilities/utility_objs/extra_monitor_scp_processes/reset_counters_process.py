@@ -5,7 +5,7 @@ from spinnman.processes import AbstractMultiConnectionProcess
 
 class ResetCountersProcess(AbstractMultiConnectionProcess):
     def __init__(self, connection_selector):
-        AbstractMultiConnectionProcess.__init__(self, connection_selector)
+        super(ResetCountersProcess, self).__init__(connection_selector)
 
     def reset_counters(self, core_subsets, command_code):
         for core_subset in core_subsets.core_subsets:

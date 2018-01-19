@@ -35,8 +35,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
 
         self._command_code = command_code
 
-        AbstractSCPRequest.__init__(
-            self,
+        super(GetReinjectionStatusMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
@@ -54,10 +53,7 @@ class GetReinjectionStatusMessageResponse(AbstractSCPResponse):
     """
 
     def __init__(self, command_code):
-        """
-        """
-
-        AbstractSCPResponse.__init__(self)
+        super(GetReinjectionStatusMessageResponse, self).__init__()
         self._reinjection_functionality_status = None
         self._command_code = command_code
 

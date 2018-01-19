@@ -31,8 +31,7 @@ class ResetCountersMessage(AbstractSCPRequest):
         """
 
         self._command_code = command_code
-        AbstractSCPRequest.__init__(
-            self,
+        super(ResetCountersMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
                 destination_port=(

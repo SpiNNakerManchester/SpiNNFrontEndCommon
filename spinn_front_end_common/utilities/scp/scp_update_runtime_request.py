@@ -15,16 +15,15 @@ class SCPUpdateRuntimeRequest(AbstractSCPRequest):
         sdp_flags = SDPFlag.REPLY_NOT_EXPECTED
         if expect_response:
             sdp_flags = SDPFlag.REPLY_EXPECTED
-        arg3 = int(bool(expect_response))
 
-        AbstractSCPRequest.__init__(
-            self,
+        super(SCPUpdateRuntimeRequest, self).__init__(
             SDPHeader(
                 flags=sdp_flags, destination_port=destination_port,
                 destination_cpu=p, destination_chip_x=x, destination_chip_y=y),
             SCPRequestHeader(
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE),
-            argument_1=run_time, argument_2=infinite_run, argument_3=arg3)
+            argument_1=run_time, argument_2=infinite_run,
+            argument_3=int(bool(expect_response)))
 
     def get_scp_response(self):
         return CheckOKResponse(

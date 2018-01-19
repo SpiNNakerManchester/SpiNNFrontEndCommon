@@ -35,8 +35,7 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
         """
         # pylint: disable=too-many-arguments
         self._command_code = command_code
-        AbstractSCPRequest.__init__(
-            self,
+        super(SetReinjectionPacketTypesMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
@@ -44,9 +43,10 @@ class SetReinjectionPacketTypesMessage(AbstractSCPRequest):
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=self._command_code),
-            argument_1=multicast, argument_2=point_to_point,
-            argument_3=fixed_route, data=bytearray(
-                struct.pack("<B", nearest_neighbour)))
+            argument_1=int(bool(multicast)),
+            argument_2=int(bool(point_to_point)),
+            argument_3=int(bool(fixed_route)),
+            data=bytearray(struct.pack("<B", nearest_neighbour)))
 
     def get_scp_response(self):
         return CheckOKResponse(

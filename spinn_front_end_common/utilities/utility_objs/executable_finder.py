@@ -27,6 +27,6 @@ class ExecutableFinder(BaseEF):
         """
         if binary_search_paths is None:
             binary_search_paths = list()
-        BaseEF.__init__(self, binary_search_paths)
+        super(ExecutableFinder, self).__init__(binary_search_paths)
         if include_common_binaries_folder:
             self.add_path(os.path.dirname(common_model_binaries.__file__))

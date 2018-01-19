@@ -1,6 +1,11 @@
 class ProvenanceDataItem(object):
     """ Container for provenance data
     """
+    __slots__ = [
+        "_message",
+        "_names",
+        "_report",
+        "_value"]
 
     def __init__(self, names, value, report=False, message=None):
         """

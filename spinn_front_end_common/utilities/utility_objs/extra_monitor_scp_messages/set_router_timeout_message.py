@@ -38,8 +38,7 @@ class SetRouterTimeoutMessage(AbstractSCPRequest):
         """
         # pylint: disable=too-many-arguments
         self._command_code = command_code
-        AbstractSCPRequest.__init__(
-            self,
+        super(SetRouterTimeoutMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
