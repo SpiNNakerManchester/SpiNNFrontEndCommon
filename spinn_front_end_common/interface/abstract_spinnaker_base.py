@@ -2069,17 +2069,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Extract router provenance
         extra_monitor_vertices = None
-        if (self._config.getboolean("Machine",
-                                    "enable_advanced_monitor_support") or
-                self._config.getboolean("Machine", "enable_reinjection")):
-            extra_monitor_vertices = self._last_run_outputs[
-                "MemoryExtraMonitorVertices"]
-        router_provenance = RouterProvenanceGatherer()
-        prov_items = router_provenance(
-            transceiver=self._txrx, machine=self._machine,
-            router_tables=self._router_tables,
-            extra_monitor_vertices=extra_monitor_vertices,
-            placements=self._placements)
+        try:
+            if (self._config.getboolean("Machine",
+                                        "enable_advanced_monitor_support") or
+                    self._config.getboolean("Machine", "enable_reinjection")):
+                extra_monitor_vertices = self._last_run_outputs[
+                    "MemoryExtraMonitorVertices"]
+            router_provenance = RouterProvenanceGatherer()
+            prov_items = router_provenance(
+                transceiver=self._txrx, machine=self._machine,
+                router_tables=self._router_tables,
+                extra_monitor_vertices=extra_monitor_vertices,
+                placements=self._placements)
+        except Exception:
+            logger.error("Error reading router provenance", exc_info=True)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2118,12 +2121,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
-            updater = ChipProvenanceUpdater()
-            updater(self._txrx, self._app_id, non_rte_core_subsets)
+            try:
+                updater = ChipProvenanceUpdater()
+                updater(self._txrx, self._app_id, non_rte_core_subsets)
+            except Exception:
+                logger.error(
+                    "Could not update provenance on chip", exc_info=True)
 
             # Extract any written provenance data
-            extracter = PlacementsProvenanceGatherer()
-            extracter(self._txrx, placements, prov_items)
+            try:
+                extracter = PlacementsProvenanceGatherer()
+                extracter(self._txrx, placements, prov_items)
+            except Exception:
+                logger.error(
+                    "Could not read provenance", exc_info=True)
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
@@ -2137,9 +2148,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             iobuf_cores.add_processor(placement.x, placement.y, placement.p)
 
         iobuf = ChipIOBufExtractor()
-        errors, warnings = iobuf(
-            self._txrx, iobuf_cores,
-            self._provenance_file_path)
+        errors = list()
+        warnings = list()
+        try:
+            errors, warnings = iobuf(
+                self._txrx, iobuf_cores,
+                self._provenance_file_path)
+        except Exception:
+            logger.error("Could not get iobuf", exc_info=True)
 
         # Print the details of error cores
         for (x, y, p), core_info in unsuccessful_cores.iteritems():
