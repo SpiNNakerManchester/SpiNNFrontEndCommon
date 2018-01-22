@@ -2069,6 +2069,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Extract router provenance
         extra_monitor_vertices = None
+        prov_items = list()
         try:
             if (self._config.getboolean("Machine",
                                         "enable_advanced_monitor_support") or
