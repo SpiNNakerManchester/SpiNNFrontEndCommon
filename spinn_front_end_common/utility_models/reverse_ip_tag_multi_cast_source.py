@@ -19,7 +19,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management \
     import recording_utilities
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 # general imports
 import sys
@@ -169,7 +169,7 @@ class ReverseIpTagMultiCastSource(
         return self._n_atoms
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
+    def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         container = ResourceContainer(
             sdram=SDRAMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
@@ -229,15 +229,16 @@ class ReverseIpTagMultiCastSource(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     def generate_data_specification(self, spec, placement):
         placement.vertex.generate_data_specification(spec, placement)
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required, label=None,
-            constraints=None):
+            self, vertex_slice,
+            resources_required,  # @UnusedVariable
+            label=None, constraints=None):
         send_buffer_times = self._send_buffer_times
         if (self._send_buffer_times is not None and
                 len(self._send_buffer_times) > 0):

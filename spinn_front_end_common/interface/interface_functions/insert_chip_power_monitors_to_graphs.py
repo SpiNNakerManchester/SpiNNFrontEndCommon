@@ -1,17 +1,15 @@
 # spinn front end common imports
-from spinn_front_end_common.utility_models.\
-    chip_power_monitor_application_vertex import \
-    ChipPowerMonitorApplicationVertex
-from spinn_front_end_common.utility_models.\
-    chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
+from spinn_front_end_common.utility_models import \
+    ChipPowerMonitorApplicationVertex, ChipPowerMonitorMachineVertex
 
 # pacman imports
-from pacman.model.graphs.common.slice import Slice
-from pacman.model.constraints.placer_constraints.\
-    chip_and_core_constraint import ChipAndCoreConstraint
+from pacman.model.graphs.common import Slice
+from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 
 # utils imports
 from spinn_utilities.progress_bar import ProgressBar
+
+_LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
 class InsertChipPowerMonitorsToGraphs(object):
@@ -31,20 +29,17 @@ class InsertChipPowerMonitorsToGraphs(object):
         """
 
         # create progress bar
-        progress_bar = ProgressBar(
-            len(list(machine.chips)),
-            string_describing_what_being_progressed=(
-                "Adding Chip power monitors to Graph"))
+        progress = ProgressBar(
+            machine.n_chips, "Adding Chip power monitors to Graph")
 
-        for chip in progress_bar.over(machine.chips):
+        for chip in progress.over(machine.chips):
 
             # build constraint
             constraint = ChipAndCoreConstraint(chip.x, chip.y)
 
             # build machine vert
             machine_vertex = ChipPowerMonitorMachineVertex(
-                label="chip_power_monitor_machine_vertex_for_chip({}:{})".
-                format(chip.x, chip.y),
+                label=_LABEL.format("machine", chip.x, chip.y),
                 sampling_frequency=sampling_frequency,
                 n_samples_per_recording=n_samples_per_recording,
                 constraints=[constraint])
@@ -57,13 +52,11 @@ class InsertChipPowerMonitorsToGraphs(object):
 
                 # build app vertex
                 vertex_slice = Slice(0, 0)
-                application_vertex = \
-                    ChipPowerMonitorApplicationVertex(
-                        label="chip_power_monitor_application_vertex_for"
-                              "_chip({}:{})".format(chip.x, chip.y),
-                        constraints=[constraint],
-                        sampling_frequency=sampling_frequency,
-                        n_samples_per_recording=n_samples_per_recording)
+                application_vertex = ChipPowerMonitorApplicationVertex(
+                    label=_LABEL.format("application", chip.x, chip.y),
+                    constraints=[constraint],
+                    sampling_frequency=sampling_frequency,
+                    n_samples_per_recording=n_samples_per_recording)
 
                 # add to graph
                 application_graph.add_vertex(application_vertex)

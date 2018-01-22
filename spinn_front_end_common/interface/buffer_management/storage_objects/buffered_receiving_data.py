@@ -238,6 +238,8 @@ class BufferedReceivingData(object):
         missing = False
         if (x, y, p, region) not in self._end_buffering_state:
             missing = True
+        else:
+            missing = self._end_buffering_state[x, y, p, region].missing_info
         data_pointer = self._data[x, y, p, region]
         return data_pointer, missing
 

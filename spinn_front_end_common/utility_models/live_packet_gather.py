@@ -12,7 +12,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.utilities.utility_objs import ExecutableStartType
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 # spinnman imports
 from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
@@ -89,7 +89,7 @@ class LivePacketGather(
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(
-            self, vertex_slice, resources_required,
+            self, vertex_slice, resources_required,  # @UnusedVariable
             label=None, constraints=None):
         return LivePacketGatherMachineVertex(
             label, self._use_prefix, self._key_prefix, self._prefix_type,
@@ -107,7 +107,7 @@ class LivePacketGather(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @property
     @overrides(ApplicationVertex.n_atoms)
@@ -115,7 +115,7 @@ class LivePacketGather(
         return 1
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
-    def get_resources_used_by_atoms(self, vertex_slice):
+    def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
             sdram=SDRAMResource(
                 LivePacketGatherMachineVertex.get_sdram_usage()),
@@ -125,7 +125,8 @@ class LivePacketGather(
             iptags=[IPtagResource(
                 ip_address=self._ip_address, port=self._port,
                 strip_sdp=self._strip_sdp, tag=self._tag,
-                traffic_identifier="LPG_EVENT_STREAM")])
+                traffic_identifier=(
+                    LivePacketGatherMachineVertex.TRAFFIC_IDENTIFIER))])
 
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification)
     def generate_data_specification(self, spec, placement):

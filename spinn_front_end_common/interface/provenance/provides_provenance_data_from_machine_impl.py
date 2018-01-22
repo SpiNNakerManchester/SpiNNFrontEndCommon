@@ -11,6 +11,8 @@ from data_specification.utility_calls import get_region_base_address_offset
 import struct
 from enum import Enum
 
+_ONE_WORD = struct.Struct("<I")
+
 
 @add_metaclass(AbstractBase)
 class ProvidesProvenanceDataFromMachineImpl(
@@ -70,7 +72,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             app_data_base_address, self._provenance_region_id)
         base_address_buffer = buffer(transceiver.read_memory(
             placement.x, placement.y, base_address_offset, 4))
-        return struct.unpack("<I", base_address_buffer)[0]
+        return _ONE_WORD.unpack(base_address_buffer)[0]
 
     def _read_provenance_data(self, transceiver, placement):
         provenance_address = self._get_provenance_region_address(

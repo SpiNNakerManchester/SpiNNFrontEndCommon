@@ -13,7 +13,7 @@ from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
     AbstractSupportsDatabaseInjection
 from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableStartType
+    import ProvenanceDataItem, ExecutableType
 from spinn_front_end_common.utilities.constants \
     import SYSTEM_BYTES_REQUIREMENT
 
@@ -21,6 +21,9 @@ from spinnman.messages.eieio import EIEIOType
 
 from enum import Enum
 import struct
+
+_ONE_SHORT = struct.Struct("<H")
+_TWO_BYTES = struct.Struct("<BB")
 
 
 class LivePacketGatherMachineVertex(
@@ -33,6 +36,8 @@ class LivePacketGatherMachineVertex(
         names=[('SYSTEM', 0),
                ('CONFIG', 1),
                ('PROVENANCE', 2)])
+
+    TRAFFIC_IDENTIFIER = "LPG_EVENT_STREAM"
 
     N_ADDITIONAL_PROVENANCE_ITEMS = 2
     _CONFIG_SIZE = 48
@@ -56,7 +61,7 @@ class LivePacketGatherMachineVertex(
             iptags=[IPtagResource(
                 ip_address=hostname, port=port,
                 strip_sdp=strip_sdp, tag=tag,
-                traffic_identifier="LPG_EVENT_STREAM")])
+                traffic_identifier=self.TRAFFIC_IDENTIFIER)])
 
         # app specific data items
         self._use_prefix = use_prefix
@@ -137,7 +142,7 @@ class LivePacketGatherMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
@@ -247,8 +252,8 @@ class LivePacketGatherMachineVertex(
         # SDP tag
         iptag = iter(iptags).next()
         spec.write_value(data=iptag.tag)
-        spec.write_value(struct.unpack("<H", struct.pack(
-            "<BB", iptag.destination_y, iptag.destination_x))[0])
+        spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
+            iptag.destination_y, iptag.destination_x))[0])
 
         # number of packets to send per time stamp
         spec.write_value(data=self._number_of_packets_sent_per_time_step)

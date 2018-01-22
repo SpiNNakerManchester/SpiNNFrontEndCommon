@@ -3,36 +3,31 @@ from enum import Enum
 import math
 import logging
 
-from data_specification.enums.data_type import DataType
+from data_specification.enums import DataType
 from pacman.executor.injection_decorator import inject_items, \
     supports_injection
-from pacman.model.graphs.common.slice import Slice
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     CPUCyclesPerTickResource, DTCMResource
 
-from spinn_front_end_common.abstract_models.\
-    abstract_generates_data_specification import \
-    AbstractGeneratesDataSpecification
-from spinn_front_end_common.abstract_models.\
-    abstract_has_associated_binary import \
-    AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import \
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.buffer_management import \
     recording_utilities
-from spinn_front_end_common.interface.buffer_management.buffer_models.\
-    abstract_receive_buffers_to_host import \
+from spinn_front_end_common.interface.buffer_management.buffer_models import \
     AbstractReceiveBuffersToHost
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities.utility_objs.\
-    executable_start_type import \
-    ExecutableStartType
 from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities import helpful_functions
-from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.helpful_functions \
+    import locate_memory_region_for_placement, read_config_int
+from spinn_front_end_common.interface.simulation.simulation_utilities \
+    import get_simulation_header_array
 
 from spinn_utilities.overrides import overrides
 
 logger = logging.getLogger(__name__)
+BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
 
 @supports_injection
@@ -113,7 +108,7 @@ class ChipPowerMonitorMachineVertex(
         using_auto_pause_and_resume = config.getboolean(
             "Buffers", "use_auto_pause_and_resume")
         receive_buffer_host = config.get("Buffers", "receive_buffer_host")
-        receive_buffer_port = helpful_functions.read_config_int(
+        receive_buffer_port = read_config_int(
             config, "Buffers", "receive_buffer_port")
 
         # figure recording size for max run
@@ -163,7 +158,7 @@ class ChipPowerMonitorMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        return ChipPowerMonitorMachineVertex.binary_file_name()
+        return BINARY_FILE_NAME
 
     @staticmethod
     def binary_file_name():
@@ -171,7 +166,7 @@ class ChipPowerMonitorMachineVertex(
 
         :return: basestring
         """
-        return "chip_power_monitor.aplx"
+        return BINARY_FILE_NAME
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
@@ -182,8 +177,9 @@ class ChipPowerMonitorMachineVertex(
                    "machine_time_step", "time_scale_factor",
                    "n_machine_time_steps", "ip_tags"})
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps, ip_tags):
+            self, spec, placement,  # @UnusedVariable
+            machine_time_step, time_scale_factor, n_machine_time_steps,
+            ip_tags):
         self._generate_data_specification(
             spec, machine_time_step, time_scale_factor, n_machine_time_steps,
             ip_tags)
@@ -206,7 +202,7 @@ class ChipPowerMonitorMachineVertex(
         self._reserve_memory_regions(spec)
         self._write_setup_info(
             spec, machine_time_step, time_scale_factor, n_machine_time_steps,
-            Slice(0, 1), ip_tags)
+            ip_tags)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -219,15 +215,14 @@ class ChipPowerMonitorMachineVertex(
         :rtype: None
         """
         spec.switch_write_focus(
-            region=ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
-            CONFIG.value)
+            region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value)
         spec.write_value(self._n_samples_per_recording,
                          data_type=DataType.UINT32)
         spec.write_value(self._sampling_frequency, data_type=DataType.UINT32)
 
     def _write_setup_info(
             self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps, vertex_slice, ip_tags):
+            n_machine_time_steps, ip_tags):
         """ writes the system data as required
 
         :param spec: the dsg spec writer
@@ -236,15 +231,12 @@ class ChipPowerMonitorMachineVertex(
         :rtype: None
         """
         spec.switch_write_focus(
-            region=(
-                ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
-                SYSTEM.value))
-        spec.write_array(simulation_utilities.get_simulation_header_array(
+            region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value)
+        spec.write_array(get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
         spec.switch_write_focus(
-            ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
-            RECORDING.value)
+            region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value)
         recorded_region_sizes = recording_utilities.get_recorded_region_sizes(
             n_machine_time_steps,
             [self._deduce_sdram_requirements_per_timer_tick(
@@ -266,19 +258,14 @@ class ChipPowerMonitorMachineVertex(
 
         # Reserve memory:
         spec.reserve_memory_region(
-            region=(
-                ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
-                SYSTEM.value),
+            region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value,
             size=constants.SYSTEM_BYTES_REQUIREMENT,
             label='system')
         spec.reserve_memory_region(
-            region=(
-                ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
-                CONFIG.value),
+            region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,
             size=self.CONFIG_SIZE_IN_BYTES, label='config')
         spec.reserve_memory_region(
-            region=(ChipPowerMonitorMachineVertex.
-                    CHIP_POWER_MONITOR_REGIONS.RECORDING.value),
+            region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value,
             size=recording_utilities.get_recording_header_size(1),
             label="Recording")
 
@@ -292,14 +279,12 @@ class ChipPowerMonitorMachineVertex(
 
         :return: starttype enum
         """
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.SYSTEM
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
-        return helpful_functions.locate_memory_region_for_placement(
-            placement,
-            ChipPowerMonitorMachineVertex.CHIP_POWER_MONITOR_REGIONS.
-            RECORDING.value, txrx)
+        return locate_memory_region_for_placement(
+            placement, self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value, txrx)
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
@@ -343,8 +328,7 @@ class ChipPowerMonitorMachineVertex(
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
-        return math.ceil(
-            n_entries * ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY)
+        return math.ceil(n_entries * self.RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):
         """ get data from sdram given placement and buffer manager
@@ -355,10 +339,8 @@ class ChipPowerMonitorMachineVertex(
         :rtype: numpy array with 1 dimension
         """
         # for buffering output info is taken form the buffer manager
-        samples, data_missing = \
-            buffer_manager.get_data_for_vertex(
-                placement,
-                ChipPowerMonitorMachineVertex.SAMPLE_RECORDING_REGION)
+        samples, data_missing = buffer_manager.get_data_for_vertex(
+            placement, self.SAMPLE_RECORDING_REGION)
         if data_missing:
             logger.warn(
                 "Chip Power monitor has lost data on chip({}, {})"

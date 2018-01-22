@@ -27,31 +27,26 @@ class GraphProvenanceGatherer(object):
             machine_graph.n_vertices +
             machine_graph.n_outgoing_edge_partitions,
             "Getting provenance data from machine graph")
-        for vertex in machine_graph.vertices:
+        for vertex in progress.over(machine_graph.vertices, False):
             if isinstance(vertex, AbstractProvidesLocalProvenanceData):
                 prov_items.extend(vertex.get_local_provenance_data())
-            progress.update()
-        for partition in machine_graph.outgoing_edge_partitions:
+        for partition in progress.over(machine_graph.outgoing_edge_partitions):
             for edge in partition.edges:
                 if isinstance(edge, AbstractProvidesLocalProvenanceData):
                     prov_items.extend(edge.get_local_provenance_data())
-            progress.update()
-        progress.end()
 
         if application_graph is not None:
             progress = ProgressBar(
                 application_graph.n_vertices +
                 application_graph.n_outgoing_edge_partitions,
                 "Getting provenance data from application graph")
-            for vertex in application_graph.vertices:
+            for vertex in progress.over(application_graph.vertices, False):
                 if isinstance(vertex, AbstractProvidesLocalProvenanceData):
                     prov_items.extend(vertex.get_local_provenance_data())
-                progress.update()
-            for partition in application_graph.outgoing_edge_partitions:
+            for partition in progress.over(
+                    application_graph.outgoing_edge_partitions):
                 for edge in partition.edges:
                     if isinstance(edge, AbstractProvidesLocalProvenanceData):
                         prov_items.extend(edge.get_local_provenance_data())
-                progress.update()
-            progress.end()
 
         return prov_items

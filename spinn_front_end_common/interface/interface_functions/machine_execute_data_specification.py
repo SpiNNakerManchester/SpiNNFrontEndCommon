@@ -14,6 +14,7 @@ import logging
 import struct
 
 logger = logging.getLogger(__name__)
+_FOUR_WORDS = struct.Struct("<4I")
 
 
 class MachineExecuteDataSpecification(object):
@@ -63,8 +64,8 @@ class MachineExecuteDataSpecification(object):
             base_address = transceiver.malloc_sdram(
                 x, y, data_spec_file_size, dse_app_id)
 
-            dse_data_struct_data = struct.pack(
-                "<4I", base_address, data_spec_file_size, app_id,
+            dse_data_struct_data = _FOUR_WORDS.pack(
+                base_address, data_spec_file_size, app_id,
                 write_memory_map_report)
 
             transceiver.write_memory(
@@ -104,5 +105,3 @@ class MachineExecuteDataSpecification(object):
         transceiver.stop_application(dse_app_id)
         transceiver.app_id_tracker.free_id(dse_app_id)
         logger.info("On-chip Data Specification Executor completed")
-
-        return True

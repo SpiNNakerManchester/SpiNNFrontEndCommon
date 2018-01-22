@@ -101,7 +101,8 @@ class LivePacketGatherParameters(object):
         return self._partition_id
 
     def __eq__(self, other):
-        if (self._port == other.port and self._hostname == other.hostname and
+        return (self._port == other.port and
+                self._hostname == other.hostname and
                 self._tag == other.tag and
                 self._board_address == other.board_address and
                 self._strip_sdp == other.strip_sdp and
@@ -117,10 +118,7 @@ class LivePacketGatherParameters(object):
                 self._payload_right_shift == other.payload_right_shift and
                 self._number_of_packets_sent_per_time_step ==
                 other.number_of_packets_sent_per_time_step and
-                self._partition_id == other.partition_id):
-            return True
-        else:
-            return False
+                self._partition_id == other.partition_id)
 
     def __ne__(self, other):
         return not self.__eq__(other)

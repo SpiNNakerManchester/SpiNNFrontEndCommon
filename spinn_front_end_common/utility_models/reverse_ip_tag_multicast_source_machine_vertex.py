@@ -34,7 +34,7 @@ from spinn_front_end_common.interface.provenance \
 from spinn_front_end_common.interface.buffer_management\
     import recording_utilities
 from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableStartType
+    import ProvenanceDataItem, ExecutableType
 
 from spinnman.messages.eieio import EIEIOPrefix
 
@@ -44,6 +44,8 @@ import sys
 import struct
 
 _DEFAULT_MALLOC_REGIONS = 2
+_ONE_WORD = struct.Struct("<I")
+_TWO_SHORTS = struct.Struct("<HH")
 
 
 @supports_injection
@@ -121,7 +123,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 default, any board is chosen)
         :param receive_port: The port on the board that will listen for\
                 incoming event packets (default is to disable this feature;\
-                set a value to enable it)
+                set a value to enable it, or set the reserve_reverse_ip_tag\
+                parameter to True if a random port is to be used)
         :param receive_sdp_port: The SDP port to listen on for incoming event\
                 packets (defaults to 1)
         :param receive_tag: The IP tag to use for receiving live events\
@@ -149,6 +152,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 send buffer is specified)
         :param buffer_notification_tag: The IP tag to use to notify the\
                 host about space in the buffer (default is to use any tag)
+        :param reserve_reverse_ip_tag: True if the source should set up a tag\
+                through which it can receive packets; if port is set to None\
+                this can be used to enable the reception of packets on a\
+                randomly assigned port, which can be read from the database
         """
         MachineVertex.__init__(self, label, constraints)
         AbstractReceiveBuffersToHost.__init__(self)
@@ -176,6 +183,15 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
+            if (len(send_buffer_times) > 0 and
+                    hasattr(send_buffer_times[0], "__len__")):
+                # Working with a list of lists so check length
+                if len(send_buffer_times) != n_keys:
+                    raise ConfigurationException(
+                        "The array or arrays of times {} does not have the "
+                        "expected length of {} "
+                        "".format(send_buffer_times, n_keys))
+
             self._send_buffer_max_space = send_buffer_max_space
             self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
             self._send_buffer_times = send_buffer_times
@@ -209,7 +225,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._buffer_notification_tag = buffer_notification_tag
 
         # set flag for checking if in injection mode
-        self._in_injection_mode = receive_port is not None
+        self._in_injection_mode = \
+            receive_port is not None or reserve_reverse_ip_tag
 
         # Sort out the keys to be used
         self._n_keys = n_keys
@@ -375,7 +392,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
                 # Work with a single list
                 key_list = [
-                    key + key_to_send for key in range(self._n_keys)]
+                    key + key_to_send for key in xrange(self._n_keys)]
                 for timeStamp in sorted(self._send_buffer_times):
                     time_stamp_in_ticks = int(math.ceil(
                         float(int(timeStamp * 1000.0)) /
@@ -529,8 +546,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             spec.write_value(data=buffer_space)
             spec.write_value(data=self._send_buffer_space_before_notify)
             spec.write_value(data=this_tag.tag)
-            spec.write_value(struct.unpack("<I", struct.pack(
-                "<HH", this_tag.destination_y, this_tag.destination_x))[0])
+            spec.write_value(_ONE_WORD.unpack(_TWO_SHORTS.pack(
+                this_tag.destination_y, this_tag.destination_x))[0])
         else:
             spec.write_value(data=0)
             spec.write_value(data=0)
@@ -557,9 +574,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
             "n_machine_time_steps"
         })
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            machine_graph, routing_info, tags, first_machine_time_step,
-            n_machine_time_steps):
+            self, spec, placement,  # @UnusedVariable
+            machine_time_step, time_scale_factor, machine_graph, routing_info,
+            tags, first_machine_time_step, n_machine_time_steps):
 
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(
@@ -594,11 +611,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
-        return ExecutableStartType.USES_SIMULATION_INTERFACE
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):
+    def get_outgoing_partition_constraints(self, partition):  # @UnusedVariable
         if self._virtual_key is not None:
             return list([FixedKeyAndMaskConstraint(
                 [BaseKeyAndMask(self._virtual_key, self._mask)])])
