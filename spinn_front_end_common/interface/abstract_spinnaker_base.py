@@ -1585,8 +1585,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        if (self._config.getboolean("Machine",
-                                    "enable_advanced_monitor_support") or
+        if (self._config.getboolean(
+                "Machine", "enable_advanced_monitor_support") or
                 self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
