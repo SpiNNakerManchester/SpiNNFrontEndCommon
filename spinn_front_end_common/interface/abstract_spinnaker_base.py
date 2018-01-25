@@ -1585,14 +1585,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        if (self._config.getboolean("Machine",
-                                    "enable_advanced_monitor_support") or
+        enable_advanced_monitor = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        if (enable_advanced_monitor or
                 self._config.getboolean("Machine", "enable_reinjection")):
-            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
-            algorithms.append("FixedRouteRouter")
-            inputs['FixedRouteDestinationClass'] = \
-                DataSpeedUpPacketGatherMachineVertex
+            if enable_advanced_monitor:
+                algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+                algorithms.append("FixedRouteRouter")
+                inputs['FixedRouteDestinationClass'] = \
+                    DataSpeedUpPacketGatherMachineVertex
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -1795,11 +1797,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("routingCompressionCheckerReport")
 
         # handle extra monitor functionality
-        enable_advanched_monitor = (
-            self._config.getboolean(
-                "Machine", "enable_advanced_monitor_support") or
-            self._config.getboolean("Machine", "enable_reinjection"))
-        if (enable_advanched_monitor and
+        enable_advanced_monitor = self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support")
+        if (enable_advanced_monitor and
                 (application_graph_changed or not self._has_ran)):
             algorithms.append("LoadFixedRoutes")
             algorithms.append("FixedRouteFromMachineReport")
