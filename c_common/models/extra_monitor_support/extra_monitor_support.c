@@ -664,7 +664,10 @@ void reinjection_configure_router() {
 // data speed up main functions
 //-----------------------------------------------------------------------------
 
-static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
+//! \brief sends a fixed route packet with a payload
+//! \param[in] key: the fr key
+//! \param[in] data: the payload
+static inline void send_fixed_route_packet_payload(uint32_t key, uint32_t data) {
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
 	// Empty body; CC array is volatile
@@ -673,6 +676,18 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
     cc[CC_TXDATA] = data;
     cc[CC_TXKEY] = key;
 }
+
+//! \brief sends a fixed route packet without a payload
+//! \param[in] key: the fr key
+static inline void send_fixed_route_packet_no_payload(uint32_t key){
+    // Wait for a router slot
+    while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
+	// Empty body; CC array is volatile
+    }
+    cc[CC_TCR] = PKT_FR;
+    cc[CC_TXKEY] = key;
+}
+
 
 //! \brief takes a DMA'ed block and transmits its contents as mc packets.
 //! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
@@ -690,7 +705,7 @@ void send_data_block(
         uint32_t current_data =
         	data_to_transmit[current_dma_pointer][data_position];
 
-        send_fixed_route_packet(first_packet_key, current_data);
+        send_fixed_route_packet_payload(first_packet_key, current_data);
 
         // update key to transmit with
         first_packet_key = basic_data_key;
@@ -728,7 +743,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 
 //! \brief sends a end flag via multicast
 void data_speed_up_send_end_flag() {
-    send_fixed_route_packet(end_flag_key, END_FLAG);
+    send_fixed_route_packet_no_payload(end_flag_key);
 }
 
 //! \brief DMA complete callback for reading for original transmission

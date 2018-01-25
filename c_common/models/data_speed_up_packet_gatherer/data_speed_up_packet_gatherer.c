@@ -61,6 +61,13 @@ static uint32_t position_in_store = 0;
 //! sdp message holder for transmissions
 sdp_msg_pure_data my_msg;
 
+//! human readable definitions of the flags for no payload state machine
+typedef enum state_machine_flags {
+    EMPTY = 0, NEXT_SEQ_NUM_COMING = 1, FIRST_DATA = 2
+} state_machine_flags;
+
+//! variable for determining next action from a no payload command
+static uint32_t next_no_payload_command = EMPTY;
 
 //! human readable definitions of each region in SDRAM
 typedef enum regions_e {
@@ -107,7 +114,37 @@ void send_data(){
     data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload) {
+void receive_data_no_payload(uint key, uint payload) {
+    if (next_no_payload_command == EMPTY){
+        if (key == new_sequence_key) {
+            next_no_payload_command = NEXT_SEQ_NUM_COMING;
+        }
+        if (key == end_flag_key){
+            // set end flag bit in seq num
+            data[0] = data[0] + (1 << 31);
+            send_data();
+        }
+        if (key == first_data_key){
+            next_no_payload_command = FIRST_DATA;
+        }
+    }
+    else if (next_no_payload_command == NEXT_SEQ_NUM_COMING){
+        data[0] = payload;
+        seq_num = payload;
+        position_in_store = 1;
+        if (payload > max_seq_num){
+            log_error(
+                "got a funky seq num. max is %d, received %d",
+                max_seq_num, payload);
+        }
+        next_no_payload_command = EMPTY;
+    } else if (next_no_payload_command ==){
+
+    }
+
+}
+
+void receive_data_payload(uint key, uint payload) {
     //log_info("packet!");
     if (key == new_sequence_key) {
         if (position_in_store != 1) {
@@ -216,7 +253,8 @@ void c_main() {
         rt_error(RTE_SWERR);
     }
 
-    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data, MC_PACKET);
+    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data_payload, MC_PACKET);
+    spin1_callback_on(FR_PACKET_RECEIVED, receive_data_no_payload, MC_PACKET);
 
     // start execution
     log_info("Starting\n");
