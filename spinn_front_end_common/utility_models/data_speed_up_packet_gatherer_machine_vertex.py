@@ -26,6 +26,8 @@ import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
+import os
+
 #===============================================================================
 # from spinn_front_end_common.utility_models.host_data_receiver import host_data_receiver
 # from ctypes import *
@@ -347,7 +349,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         #                   int(self.tag))
         #=======================================================================
 
-        p = subprocess.call(["/Users/ghost/git/SpiNNFrontEndCommon/spinn_front_end_common/utility_models/host_data_receiver",
+        pathlist = os.path.realpath(__file__).split("/")
+
+        p = subprocess.call(["/" + "/".join(pathlist[0:len(pathlist)-1]) + "/host_data_receiver",
                           str(connection.remote_ip_address),
                           str(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
                           str(placement.x),
