@@ -101,18 +101,18 @@ void host_data_receiver::send_initial_command(UDPConnection *sender, UDPConnecti
 	sender->receive_data(buf, 300);
 
     // Create Data request SDP packet
-	char start_message_data[sizeof(uint32_t)];
+	char start_message_data[3*sizeof(uint32_t)];
 
     // add data
 	memcpy(start_message_data, &SDP_PACKET_START_SENDING_COMMAND_ID, sizeof(uint32_t));
-	//memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
-	//memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
+	memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
+	memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
 
     // build SDP message
     SDPMessage message = SDPMessage(
         this->placement_x, this->placement_y, this->placement_p, this->port_connection,
         SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, start_message_data,
-        sizeof(uint32_t));
+        3*sizeof(uint32_t));
 
     //send message
     sender->send_data(message.convert_to_byte_array(),
@@ -364,6 +364,8 @@ void host_data_receiver::processor_thread(UDPConnection *sender) {
 
 				this->pcr.thrown = true;
 				this->pcr.val = "Failed to hear from the machine. Please try removing firewalls";
+				delete sender;
+				return;
 
 			}
 
