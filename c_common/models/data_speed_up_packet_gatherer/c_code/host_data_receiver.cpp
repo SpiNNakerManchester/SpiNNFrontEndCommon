@@ -244,7 +244,7 @@ bool host_data_receiver::check(set<uint32_t> *received_seq_nums, uint32_t max_ne
 
 	if(recvsize > (max_needed + 1)) {
 
-		throw "Received more data than expected";
+		throw "ERROR: Received more data than expected";
 	}
 	if(recvsize != (max_needed + 1)) {
 
@@ -273,12 +273,17 @@ void host_data_receiver::process_data(UDPConnection *sender, bool *finished,
 
 	if(seq_num > this->max_seq_num) {
 
-		throw "Got insane sequence number";
+		throw "ERROR: Got insane sequence number";
 	}
 
 	offset = (seq_num) * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER;
 
 	true_data_length = (offset + length_of_data - SEQUENCE_NUMBER_SIZE);
+
+	if(true_data_length > this->length_in_bytes) {
+
+		throw "ERROR: Receiving more data than expected";
+	}
 
 	if(is_end_of_stream && length_of_data == END_FLAG_SIZE_IN_BYTES) {
 
@@ -363,7 +368,7 @@ void host_data_receiver::processor_thread(UDPConnection *sender) {
 		 	if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
 
 				this->pcr.thrown = true;
-				this->pcr.val = "Failed to hear from the machine. Please try removing firewalls";
+				this->pcr.val = "ERROR: Failed to hear from the machine. Please try removing firewalls";
 				delete sender;
 				return;
 
