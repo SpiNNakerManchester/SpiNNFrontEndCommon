@@ -101,22 +101,22 @@ void host_data_receiver::send_initial_command(UDPConnection *sender, UDPConnecti
 	sender->receive_data(buf, 300);
 
     // Create Data request SDP packet
-	char start_message_data[sizeof(uint32_t)];
+	char start_message_data[3*sizeof(uint32_t)];
 
     // add data
 	memcpy(start_message_data, &SDP_PACKET_START_SENDING_COMMAND_ID, sizeof(uint32_t));
-	//memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
-	//memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
+	memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
+	memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
 
     // build SDP message
     SDPMessage message = SDPMessage(
         this->placement_x, this->placement_y, this->placement_p, this->port_connection,
         SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, start_message_data,
-        sizeof(uint32_t));
+        3*sizeof(uint32_t));
 
     //send message
     sender->send_data(message.convert_to_byte_array(),
-                     message.length_in_bytes());
+                      message.length_in_bytes());
 }
 
 
@@ -307,7 +307,6 @@ void host_data_receiver::process_data(UDPConnection *sender, bool *finished,
 
 void host_data_receiver::reader_thread(UDPConnection *receiver) {
 
-	char data[400];
 	int recvd;
 	packet p;
 
@@ -316,9 +315,7 @@ void host_data_receiver::reader_thread(UDPConnection *receiver) {
 
 		try {
 
-			recvd = receiver->receive_data(data, 400);
-
-			memcpy(p.content, data, recvd*sizeof(char));
+			recvd = receiver->receive_data(p.content, 400);
 			p.size = recvd;
 
 		} catch(char const *e) {
@@ -351,12 +348,10 @@ void host_data_receiver::processor_thread(UDPConnection *sender) {
 		try {
 
 		 	p = messqueue->pop();
-
-		 	memcpy(data, p.content, p.size*sizeof(char));
 		 	datalen = p.size;
 
 
-		 	process_data(sender, &finished, received_seq_nums, data, datalen);
+		 	process_data(sender, &finished, received_seq_nums, p.content, datalen);
 
 		 }catch(TimeoutQueueException e) {
 
