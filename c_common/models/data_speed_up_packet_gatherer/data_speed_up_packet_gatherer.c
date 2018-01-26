@@ -118,25 +118,29 @@ void receive_data_no_payload(uint key, uint payload) {
     // expecting a new command
     if (next_no_payload_command == EMPTY){
         if (key == new_sequence_key) {
+            //log_info("new seq start");
             next_no_payload_command = NEXT_SEQ_NUM_COMING;
         }
         if (key == end_flag_key){
             // set end flag bit in seq num
+            //log_info("sending end data");
             data[0] = data[0] + (1 << 31);
             send_data();
         }
         if (key == first_data_key){
+            //log_info("first data start");
             next_no_payload_command = FIRST_DATA;
         }
     } // expecting data from a old command
     else if (next_no_payload_command == NEXT_SEQ_NUM_COMING){
-        data[0] = payload;
-        seq_num = payload;
+        //log_info("first data end with key %d", key);
+        data[0] = key;
+        seq_num = key;
         position_in_store = 1;
-        if (payload > max_seq_num){
+        if (key > max_seq_num){
             log_error(
                 "got a funky seq num. max is %d, received %d",
-                max_seq_num, payload);
+                max_seq_num, key);
         }
         next_no_payload_command = EMPTY;
 
@@ -149,7 +153,7 @@ void receive_data_no_payload(uint key, uint payload) {
         next_no_payload_command = EMPTY;
     }
     else{
-        log_error("Got a strange command in the logic flow.");
+        //log_error("Got a strange command in the logic flow.");
     }
 }
 
@@ -160,18 +164,12 @@ void receive_data_payload(uint key, uint payload) {
     position_in_store += 1;
     if (position_in_store == ITEMS_PER_DATA_PACKET) {
         //log_info("position = %d with seq num %d", position_in_store, seq_num);
-        //log_info("last payload was %d", payload);
+        //log_info("last payload was %d", key);
         send_data();
     }
-
-    data[position_in_store] = payload;
-    position_in_store += 1;
-
-    //log_info("payload is %d", payload);
-    if (position_in_store == ITEMS_PER_DATA_PACKET) {
-        //log_info("position = %d with seq num %d", position_in_store, seq_num);
-        //log_info("last payload was %d", payload);
-        send_data();
+    else{
+        data[position_in_store] = payload;
+        position_in_store += 1;
     }
 }
 

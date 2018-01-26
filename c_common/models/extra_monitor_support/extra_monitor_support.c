@@ -699,10 +699,16 @@ void send_data_block(
 
     // send data
     for (uint data_position = 0; data_position < number_of_elements_to_send;
-            data_position++) {
-        uint32_t current_data =
+            data_position=data_position+2) {
+        uint32_t current_data1 =
         	data_to_transmit[current_dma_pointer][data_position];
-        send_fixed_route_packet_payload(basic_data_key, current_data);
+        uint32_t current_data2 = 0;
+        if (data_position + 1 < number_of_elements_to_send){
+            current_data2 =
+                data_to_transmit[current_dma_pointer][data_position + 1];
+        }
+        send_fixed_route_packet_payload(current_data1, current_data2);
+        //io_printf(IO_BUF, "sending fr packet %d %d \n", current_data1, current_data2);
     }
     //log_info("last data is %d",
     //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
