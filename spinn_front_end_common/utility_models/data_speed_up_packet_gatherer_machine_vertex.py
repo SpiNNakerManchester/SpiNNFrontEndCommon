@@ -107,7 +107,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 
-    def __init__(self, x, y, ip_address, using_python, constraints=None):
+    def __init__(self, x, y, ip_address, data_extractor_use_c_code,
+                 constraints=None):
         MachineVertex.__init__(
             self,
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
@@ -119,7 +120,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = None
         self._max_seq_num = None
         self._output = None
-        self._using_python = using_python
+        self._data_extractor_use_c_code = data_extractor_use_c_code
 
         # Create a connection to be used
         self._connection = SCAMPConnection(
@@ -322,13 +323,13 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_in_bytes].append((end - start, [0]))
             return data
 
-        if self._using_python:
+        if self._data_extractor_use_c_code:
+            return self._execute_c_version(
+                placement, transceiver, length_in_bytes, memory_address)
+        else:
             return self._execute_python_version(
                 placement, transceiver, length_in_bytes, memory_address,
                 lost_seq_nums, start)
-        else:
-            return self._execute_c_version(
-                placement, transceiver, length_in_bytes, memory_address)
 
     def _execute_python_version(
             self, placement, transceiver, length_in_bytes, memory_address,

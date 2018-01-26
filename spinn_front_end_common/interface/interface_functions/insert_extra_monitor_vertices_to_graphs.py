@@ -23,7 +23,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
     """
 
     def __call__(
-            self, machine, machine_graph, using_python, n_cores_to_allocate=1,
+            self, machine, machine_graph, data_extractor_use_c_code,
+            n_cores_to_allocate=1,
             graph_mapper=None, application_graph=None):
         """ inserts vertices to corresponds to the extra monitor cores
 
@@ -31,8 +32,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine_graph: machine graph
         :param n_cores_to_allocate: n cores to allocate for reception
         :param graph_mapper: graph mapper
-        :param using_python: flag that indicates if the gather should use 
-        a c++ impl or a python impl
+        :param data_extractor_use_c_code: flag that indicates if the gather 
+        should use a c++ impl or a python impl
         :param application_graph: app graph.
         :return: vertex to Ethernet connection map
         """
@@ -47,7 +48,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         # progress data receiver for data extraction functionality
         self._handle_data_extraction_vertices(
             progress, machine, application_graph, machine_graph, graph_mapper,
-            vertex_to_ethernet_connected_chip_mapping, using_python)
+            vertex_to_ethernet_connected_chip_mapping,
+            data_extractor_use_c_code)
 
         # handle re injector and chip based data extractor functionality.
         extra_monitor_vertices = self._handle_second_monitor_functionality(
@@ -121,7 +123,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
     def _handle_data_extraction_vertices(
             self, progress, machine, application_graph, machine_graph,
             graph_mapper, vertex_to_ethernet_connected_chip_mapping,
-            using_python):
+            data_extractor_use_c_code):
         """ places vertices for receiving data extraction packets.
 
         :param progress: progress bar
@@ -129,8 +131,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param application_graph: application graph
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
-        :param using_python: boolean which determines if the software should 
-        use the c version for data extraction or python version
+        :param data_extractor_use_c_code: boolean which determines if 
+        the software should use the c version for data extraction or python 
+        version
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map
         :rtype: None
         """
@@ -153,7 +156,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         constraints=[ChipAndCoreConstraint(
                             x=ethernet_connected_chip.x,
                             y=ethernet_connected_chip.y)],
-                        using_python=using_python)
+                        data_extractor_use_c_code=data_extractor_use_c_code)
                     machine_vertex = app_vertex.machine_vertex
                     machine_graph.add_vertex(machine_vertex)
                     application_graph.add_vertex(app_vertex)
@@ -174,7 +177,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         constraints=[ChipAndCoreConstraint(
                             x=ethernet_connected_chip.x,
                             y=ethernet_connected_chip.y)],
-                        using_python=using_python)
+                        data_extractor_use_c_code=data_extractor_use_c_code)
                     machine_graph.add_vertex(machine_vertex)
                 else:
                     machine_vertex = equiv_vertex
