@@ -161,6 +161,9 @@ void receive_data_no_payload(uint key, uint payload) {
         data[position_in_store] = key;
         position_in_store += 1;
         next_no_payload_command = EMPTY;
+        if (position_in_store == ITEMS_PER_DATA_PACKET) {
+            send_data();
+        }
 
     } else{
         log_error("Got a strange command in the logic flow.");
@@ -172,14 +175,12 @@ void receive_data_payload(uint key, uint payload) {
     //log_info(" payload = %d position = %d", payload, position_in_store);
     data[position_in_store] = key;
     position_in_store += 1;
+    data[position_in_store] = payload;
+    position_in_store += 1;
     if (position_in_store == ITEMS_PER_DATA_PACKET) {
         //log_info("position = %d with seq num %d", position_in_store, seq_num);
         //log_info("last payload was %d", key);
         send_data();
-    }
-    else{
-        data[position_in_store] = payload;
-        position_in_store += 1;
     }
 }
 
