@@ -49,6 +49,7 @@ static uint32_t infinite_run;
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
+static uint32_t odd_data_packet_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
@@ -63,7 +64,7 @@ sdp_msg_pure_data my_msg;
 
 //! human readable definitions of the flags for no payload state machine
 typedef enum state_machine_flags {
-    EMPTY = 0, NEXT_SEQ_NUM_COMING = 1, FIRST_DATA = 2
+    EMPTY = 0, NEXT_SEQ_NUM_COMING = 1, FIRST_DATA = 2, ODD_DATA_ITEM = 3
 } state_machine_flags;
 
 //! variable for determining next action from a no payload command
@@ -76,7 +77,7 @@ typedef enum regions_e {
 
 //! human readable definitions of the data in each region
 typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, TAG_ID
+    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, TAG_ID
 } config_elements;
 
 //! values for the priority for each callback
@@ -123,13 +124,17 @@ void receive_data_no_payload(uint key, uint payload) {
         }
         if (key == end_flag_key){
             // set end flag bit in seq num
-            //log_info("sending end data");
+            log_info("sending end data");
+            log_info("position = %d", position_in_store);
             data[0] = data[0] + (1 << 31);
             send_data();
         }
         if (key == first_data_key){
             //log_info("first data start");
             next_no_payload_command = FIRST_DATA;
+        }
+        if (key == odd_data_packet_key){
+            next_no_payload_command = ODD_DATA_ITEM;
         }
     } // expecting data from a old command
     else if (next_no_payload_command == NEXT_SEQ_NUM_COMING){
@@ -151,9 +156,14 @@ void receive_data_no_payload(uint key, uint payload) {
         position_in_store = 1;
         max_seq_num = key;
         next_no_payload_command = EMPTY;
-    }
-    else{
-        //log_error("Got a strange command in the logic flow.");
+
+    } else if (next_no_payload_command == ODD_DATA_ITEM){
+        data[position_in_store] = key;
+        position_in_store += 1;
+        next_no_payload_command = EMPTY;
+
+    } else{
+        log_error("Got a strange command in the logic flow.");
     }
 }
 
@@ -197,6 +207,7 @@ static bool initialize(uint32_t *timer_period) {
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
     end_flag_key = config_address[END_FLAG_KEY];
+    odd_data_packet_key = config_address[ODD_DATA_PACKET_KEY];
 
     my_msg.tag = config_address[TAG_ID];	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet

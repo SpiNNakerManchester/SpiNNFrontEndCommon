@@ -256,7 +256,7 @@ typedef enum data_spec_regions{
 
 //! human readable definitions of each element in the transmission region
 typedef enum data_speed_config_data_elements {
-    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, MB
+    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, MB
 } data_speed_config_data_elements;
 
 //! values for the priority for each callback
@@ -334,6 +334,7 @@ static uint32_t basic_data_key = 0;
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
+static uint32_t odd_data_packet_key = 0;
 
 // ------------------------------------------------------------------------
 // reinjector main functions
@@ -706,9 +707,11 @@ void send_data_block(
         if (data_position + 1 < number_of_elements_to_send){
             current_data2 =
                 data_to_transmit[current_dma_pointer][data_position + 1];
+            send_fixed_route_packet_payload(current_data1, current_data2);
+        }else{
+            send_fixed_route_packet_no_payload(odd_data_packet_key);
+            send_fixed_route_packet_no_payload(current_data1);
         }
-        send_fixed_route_packet_payload(current_data1, current_data2);
-        //io_printf(IO_BUF, "sending fr packet %d %d \n", current_data1, current_data2);
     }
     //log_info("last data is %d",
     //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
@@ -1179,6 +1182,7 @@ void data_speed_up_initialise() {
     new_sequence_key = address[NEW_SEQ_KEY];
     first_data_key = address[FIRST_DATA_KEY];
     end_flag_key = address[END_FLAG_KEY];
+    odd_data_packet_key = address[ODD_DATA_PACKET_KEY];
 
 
     vic_vectors[DMA_SLOT]  = speed_up_handle_dma;

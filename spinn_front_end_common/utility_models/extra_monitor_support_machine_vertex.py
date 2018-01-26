@@ -55,7 +55,7 @@ class ExtraMonitorSupportMachineVertex(
                ('DATA_SPEED_CONFIG', 1)])
 
     _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
-    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * 4
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
 
     _EXTRA_MONITOR_COMMANDS = Enum(
@@ -183,6 +183,8 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(
                 DataSpeedUpPacketGatherMachineVertex.FIRST_DATA_KEY)
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY)
+            spec.write_value(
+                DataSpeedUpPacketGatherMachineVertex.ODD_DATA_PACKET_KEY)
 
     def _generate_reinjection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(

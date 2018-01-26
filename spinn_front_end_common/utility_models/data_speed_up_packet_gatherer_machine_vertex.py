@@ -53,7 +53,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                ('CONFIG', 1)])
 
     # size of config region in bytes
-    CONFIG_SIZE = 16
+    CONFIG_SIZE = 20
 
     # items of data a SDP packet can hold when SCP header removed
     DATA_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -84,11 +84,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     # number of items used up by the re transmit code for its header
     SDP_RETRANSMISSION_HEADER_SIZE = 2
 
-    # base key (really nasty hack to tie in fixed route keys)
+    # base keys (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
     NEW_SEQ_KEY = 0xFFFFFFF8
     FIRST_DATA_KEY = 0xFFFFFFF7
     END_FLAG_KEY = 0xFFFFFFF6
+    ODD_DATA_PACKET_KEY = 0xFFFFFFF5
 
     # to use with mc stuff
     BASE_MASK = 0xFFFFFFFB
@@ -189,14 +190,18 @@ class DataSpeedUpPacketGatherMachineVertex(
             new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
             first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
             end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
+            odd_data_packet_key = base_key + self.ODD_DATA_PACKET_KEY
         else:
             new_seq_key = self.NEW_SEQ_KEY
             first_data_key = self.FIRST_DATA_KEY
             end_flag_key = self.END_FLAG_KEY
+            odd_data_packet_key = self.ODD_DATA_PACKET_KEY
+
         spec.switch_write_focus(self.DATA_REGIONS.CONFIG.value)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(end_flag_key)
+        spec.write_value(odd_data_packet_key)
 
         # locate the tag id for our data and update with port
         iptags = tags.get_ip_tags_for_vertex(self)
@@ -533,7 +538,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: set of data items, if its the first packet, the list of\
             sequence numbers, the sequence number received and if its finished
         """
-        # self._print_out_packet_data(data)
+        #self._print_out_packet_data(data)
         length_of_data = len(data)
         first_packet_element = struct.unpack_from(
             "<I", data, 0)[0]
@@ -594,6 +599,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         if view_end_position > len(self._output):
+            self._print_out_packet_data(data)
             raise Exception(
                 "I'm trying to add to my output data, but am trying to add "
                 "outside my acceptable output positions!!!! max is {} and "
@@ -720,7 +726,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
             str(data))
         logger.info(
-            "converted data back into readable form is %d", reread_data)
+            "converted data back into readable form is {}".format(reread_data))
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
