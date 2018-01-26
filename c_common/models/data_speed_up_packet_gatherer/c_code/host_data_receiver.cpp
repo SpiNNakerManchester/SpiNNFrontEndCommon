@@ -30,6 +30,7 @@ static const int LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
 static const int TIMEOUT_RETRY_LIMIT = 20;
 
 //vector<uint32_t> missing;
+int miss_cnt;
 
 // Constructor
 host_data_receiver::host_data_receiver(int port_connection, int placement_x, int placement_y, int placement_p,
@@ -56,6 +57,8 @@ host_data_receiver::host_data_receiver(int port_connection, int placement_x, int
 	this->rdr.thrown = false;
 	this->pcr.thrown = false;
 	this->finished = false;
+
+	miss_cnt = 0;
 }
 
 // Function for allocating an SCP Message
@@ -98,18 +101,18 @@ void host_data_receiver::send_initial_command(UDPConnection *sender, UDPConnecti
 	sender->receive_data(buf, 300);
 
     // Create Data request SDP packet
-	char start_message_data[3*sizeof(uint32_t)];
+	char start_message_data[sizeof(uint32_t)];
 
     // add data
 	memcpy(start_message_data, &SDP_PACKET_START_SENDING_COMMAND_ID, sizeof(uint32_t));
-	memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
-	memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
+	//memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
+	//memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
 
     // build SDP message
     SDPMessage message = SDPMessage(
         this->placement_x, this->placement_y, this->placement_p, this->port_connection,
         SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, start_message_data,
-        3*sizeof(uint32_t));
+        sizeof(uint32_t));
 
     //send message
     sender->send_data(message.convert_to_byte_array(),
@@ -140,6 +143,7 @@ bool host_data_receiver::retransmit_missing_sequences(UDPConnection *sender, set
 				//missing is only used for statistical purposes
 				//missing.push_back(i);
 				missing_seq[j++] = i;
+				miss_cnt++;
 			}
 		}
 
@@ -531,7 +535,7 @@ void host_data_receiver::get_data_threadable(char *filepath_read, char *filepath
 	get_data();
 
 	fp1 = fopen(filepath_read, "wb");
-	//fp2 = fopen(filepath_missing, "w");
+	fp2 = fopen(filepath_missing, "w");
 
 	fwrite(this->buffer, sizeof(char), length_in_bytes, fp1);
 
@@ -545,8 +549,10 @@ void host_data_receiver::get_data_threadable(char *filepath_read, char *filepath
 		fprintf(fp2, "%u\n", v);
 	}*/
 
+	fprintf(fp2 , "%d\n", miss_cnt);
+
 	fclose(fp1);
-	//fclose(fp2);
+	fclose(fp2);
 
 }
 /*
