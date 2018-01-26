@@ -317,7 +317,6 @@ static uint32_t max_seq_num = 0;
 
 //! retransmission DMA stuff
 static uint32_t retransmit_seq_nums[ITEMS_PER_DATA_PACKET];
-static uint32_t current_dma_pointer = 0;
 static uint32_t position_for_retransmission = 0;
 static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;
@@ -695,8 +694,7 @@ static inline void send_fixed_route_packet_no_payload(uint32_t key){
 //! \param[in] first_packet_key: the first key to transmit with, afterward,
 //! defaults to the default key.
 void send_data_block(
-        uint32_t current_dma_pointer, uint32_t number_of_elements_to_send,
-        uint32_t first_packet_key) {
+        uint32_t current_dma_pointer, uint32_t number_of_elements_to_send) {
     //log_info("first data is %d", data_to_transmit[current_dma_pointer][0]);
 
     // send data
@@ -704,11 +702,7 @@ void send_data_block(
             data_position++) {
         uint32_t current_data =
         	data_to_transmit[current_dma_pointer][data_position];
-
-        send_fixed_route_packet_payload(first_packet_key, current_data);
-
-        // update key to transmit with
-        first_packet_key = basic_data_key;
+        send_fixed_route_packet_payload(basic_data_key, current_data);
     }
     //log_info("last data is %d",
     //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
@@ -718,8 +712,7 @@ void send_data_block(
 //! \param[in] items_to_read the number of word items to read
 //! \param[in] dma_tag the DMA tag associated with this read.
 //!            transmission or retransmission
-//! \param[in] offset where in the data array to start writing to
-void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+void read(uint32_t dma_tag, uint32_t items_to_read) {
     // set off DMA
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
@@ -736,7 +729,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 
     dma_port_last_used = dma_tag;
     dma[DMA_ADRS] = (uint) data_sdram_position;
-    dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
+    dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][0]);
     dma[DMA_DESC] = desc;
 
 }
@@ -750,17 +743,15 @@ void data_speed_up_send_end_flag() {
 void dma_complete_reading_for_original_transmission(){
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
-    uint32_t key_to_transmit = basic_data_key;
     uint32_t items_read_this_time = num_items_read;
 
     // put size in bytes if first send
     //log_info("in original read complete callback");
     if (first_transmission) {
         //io_printf(IO_BUF, "in first\n");
-        data_to_transmit[current_dma_pointer][0] = max_seq_num;
-        key_to_transmit = first_data_key;
+        send_fixed_route_packet_no_payload(first_data_key);
+        send_fixed_route_packet_no_payload(max_seq_num);
         first_transmission = false;
-        items_read_this_time += 1;
     }
 
     // stopping procedure
@@ -786,16 +777,14 @@ void dma_complete_reading_for_original_transmission(){
         }
 
         // set off another read and transmit DMA'ed one
-        read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
+        read(DMA_TAG_READ_FOR_TRANSMISSION, num_items_to_read);
 
         //log_info("sending data");
-        send_data_block(
-        	current_dma_pointer, items_read_this_time, key_to_transmit);
+        send_data_block(current_dma_pointer, items_read_this_time);
         //log_info("finished sending data");
     } else {
         //io_printf(IO_BUF, "sending last data \n");
-        send_data_block(
-        	current_dma_pointer, items_read_this_time, key_to_transmit);
+        send_data_block(current_dma_pointer, items_read_this_time);
         //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
@@ -900,7 +889,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
         if (number_of_missing_seq_nums_in_sdram >
-		position_for_retransmission) {
+		        position_for_retransmission) {
             position_in_read_data = 0;
             retransmission_dma_read();
         }
@@ -926,10 +915,11 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             if (left_over_portion <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
                 retransmitted_seq_num_items_read = left_over_portion + 1;
-                read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
+                read(DMA_TAG_RETRANSMISSION_READING, left_over_portion);
             } else {
-                retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
-                read(DMA_TAG_RETRANSMISSION_READING, 1,
+                retransmitted_seq_num_items_read =
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+                read(DMA_TAG_RETRANSMISSION_READING,
                 	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             }
         } else {        // finished data send, tell host its done
@@ -948,8 +938,8 @@ void dma_complete_reading_retransmission_data() {
     //log_info("just read data for a given missing sequence number");
 
     // set sequence number as first element
-    data_to_transmit[transmit_dma_pointer][0] =
-        missing_seq_num_being_processed;
+    send_fixed_route_packet_no_payload(new_sequence_key);
+    send_fixed_route_packet_no_payload(missing_seq_num_being_processed);
 
     if (missing_seq_num_being_processed > max_seq_num) {
 	io_printf(
@@ -959,8 +949,7 @@ void dma_complete_reading_retransmission_data() {
 
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
-    send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read,
-                    new_sequence_key);
+    send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read);
 
     position_in_read_data += 1;
     the_dma_complete_read_missing_seqeuence_nums();
@@ -1000,10 +989,10 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 
         if (number_of_elements_to_read_from_sdram <
                 ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-            read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+            read(DMA_TAG_READ_FOR_TRANSMISSION,
                 number_of_elements_to_read_from_sdram);
         } else {
-            read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+            read(DMA_TAG_READ_FOR_TRANSMISSION,
                 ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
         }
     }
