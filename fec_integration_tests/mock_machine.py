@@ -18,7 +18,8 @@ class _SCPOKMessage(SDPMessage):
             flags=SDPFlag.REPLY_NOT_EXPECTED, destination_port=0,
             destination_cpu=0, destination_chip_x=x, destination_chip_y=y)
         utils.update_sdp_header_for_udp_send(sdp_header, 0, 0)
-        SDPMessage.__init__(self, sdp_header, data=scp_header.bytestring)
+        super(_SCPOKMessage, self).__init__(
+            sdp_header, data=scp_header.bytestring)
 
 
 class MockMachine(Thread):
@@ -27,14 +28,13 @@ class MockMachine(Thread):
 
     def __init__(self, responses=None):
         """
-
         :param responses:\
             An optional list of responses to send in the order to be sent. \
             If not specified, OK responses will be sent for every request. \
             Note that responses can include "None" which means that no\
             response will be sent to that request
         """
-        Thread.__init__(self)
+        super(MockMachine, self).__init__()
 
         # Set up a connection to be the machine
         self._receiver = UDPConnection()
@@ -61,23 +61,26 @@ class MockMachine(Thread):
     def local_port(self):
         return self._receiver.local_port
 
+    def _do_receive(self):
+        data, address = self._receiver.receive_with_address()
+        self._messages.append(data)
+        sdp_header = SDPHeader.from_bytestring(data, 2)
+        response = None
+        if self._responses:
+            response = self._responses.popleft()
+        else:
+            response = _SCPOKMessage(
+                sdp_header.source_chip_x, sdp_header.source_chip_y)
+        if response is not None:
+            self._receiver.send_to(
+                struct.pack("<2x") + response.bytestring, address)
+
     def run(self):
         self._running = True
         while self._running:
             try:
                 if self._receiver.is_ready_to_receive(10):
-                    data, address = self._receiver.receive_with_address()
-                    self._messages.append(data)
-                    sdp_header = SDPHeader.from_bytestring(data, 2)
-                    response = None
-                    if self._responses:
-                        response = self._responses.popleft()
-                    else:
-                        response = _SCPOKMessage(
-                            sdp_header.source_chip_x, sdp_header.source_chip_y)
-                    if response is not None:
-                        self._receiver.send_to(
-                            struct.pack("<2x") + response.bytestring, address)
+                    self._do_receive()
             except Exception as e:
                 if self._running:
                     traceback.print_exc()

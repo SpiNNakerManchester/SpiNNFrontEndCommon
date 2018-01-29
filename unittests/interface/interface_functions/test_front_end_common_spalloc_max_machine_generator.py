@@ -9,7 +9,7 @@ from spinn_front_end_common.interface.interface_functions \
 class _MockSpallocServer(Thread):
 
     def __init__(self, name, width, height, dead_boards, dead_links, tags):
-        Thread.__init__(self)
+        super(_MockSpallocServer, self).__init__()
         self._name = name
         self._width = width
         self._height = height
