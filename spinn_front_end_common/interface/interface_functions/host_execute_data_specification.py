@@ -24,6 +24,10 @@ class HostExecuteDataSpecification(object):
 
     def __call__(
             self, transceiver, machine, app_id, dsg_targets,
+            uses_advanced_monitors, executable_targets,
+            extra_monitor_cores=None,
+            extra_monitor_to_chip_mapping=None,
+            extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None):
         """
 
@@ -37,6 +41,12 @@ class HostExecuteDataSpecification(object):
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
 
+        # if using extra monitor cores, load system based binaries onto machine
+        if uses_advanced_monitors:
+            cores_to_load = executable_targets.get_cores_for_binary(
+                extra_monitor_cores[0])
+
+
         # create a progress bar for end users
         progress = ProgressBar(
             dsg_targets, "Executing data specifications and loading data")
@@ -45,12 +55,14 @@ class HostExecuteDataSpecification(object):
                 progress.over(dsg_targets.iteritems()):
             # write information for the memory map report
             processor_to_app_data_base_address[x, y, p] = self._execute(
-                transceiver, machine, app_id, x, y, p, data_spec_file_path)
-
+                transceiver, machine, app_id, x, y, p, data_spec_file_path,
+                transceiver.write_memory)
         return processor_to_app_data_base_address
 
-    @staticmethod
-    def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
+    def _execute(
+            self, txrx, machine, app_id, x, y, p, data_spec_path,
+            memory_wirte_function):
+
         # build specification reader
         reader = FileDataReader(data_spec_path)
 
@@ -83,7 +95,7 @@ class HostExecuteDataSpecification(object):
         header = executor.get_header()
         pointer_table = executor.get_pointer_table(start_address)
         data_to_write = numpy.concatenate((header, pointer_table)).tostring()
-        txrx.write_memory(x, y, start_address, data_to_write)
+        memory_wirte_function(x, y, start_address, data_to_write)
         bytes_written_by_spec = len(data_to_write)
 
         # Write each region
@@ -97,7 +109,7 @@ class HostExecuteDataSpecification(object):
 
                     # Write the data to the position
                     position = pointer_table[region_id]
-                    txrx.write_memory(x, y, position, data)
+                    memory_wirte_function(x, y, position, data)
                     bytes_written_by_spec += len(data)
 
         # set user 0 register appropriately to the application data
@@ -109,3 +121,5 @@ class HostExecuteDataSpecification(object):
             'memory_used': bytes_used_by_spec,
             'memory_written': bytes_written_by_spec
         }
+
+    def write_memory(self, chip_x, chip_y, start_address, data_to_write):

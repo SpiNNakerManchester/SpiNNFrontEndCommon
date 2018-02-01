@@ -71,6 +71,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
+    SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID = 200
+    SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID = 2000
+    SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID = 2001
+    SDP_PACKET_SEND_LAST_DATA_IN_COMMAND_ID = 2002
 
     # number of items used up by the re transmit code for its header
     SDP_RETRANSMISSION_HEADER_SIZE = 2
@@ -96,7 +100,31 @@ class DataSpeedUpPacketGatherMachineVertex(
     # the amount of bytes the data length will take up
     LENGTH_OF_DATA_SIZE = 4
 
+    # point where sdp beats data speed up due to overheads
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
+
+    # SDRAM requirement for containing router table entries
+    # 16 bytes per entry:
+    # 4 for a key, 4 for mask,
+    # 8 for word alignment for 18 cores and 6 links (24)
+    SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * 4
+
+    # offset where data in starts on first command
+    OFFSET_AFTER_COMMAND_AND_ADDRESS = 8
+
+    # size fo data to store when first packet with command and address
+    DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM = \
+        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS /
+                                WORD_TO_BYTE_CONVERTER)
+
+    # size for data in to store when not first packet
+    DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM = \
+        DATA_PER_FULL_PACKET - SEQUENCE_NUMBER_SIZE_IN_ITEMS
+
+    # SDRAM requirement for storing missing SDP packets
+    SDRAM_FOR_MISSING_SDP_SEQ_NUMS = int(math.ceil(
+        (120 * 1024 * 1024) /
+        (DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)))
 
     def __init__(self, x, y, ip_address, constraints=None):
         MachineVertex.__init__(
@@ -131,7 +159,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         return ResourceContainer(
             sdram=SDRAMResource(
                 constants.SYSTEM_BYTES_REQUIREMENT +
-                DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
+                DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE +
+                DataSpeedUpPacketGatherMachineVertex.
+                SDRAM_FOR_ROUTER_TABLE_ENTRIES +
+                DataSpeedUpPacketGatherMachineVertex.
+                SDRAM_FOR_MISSING_SDP_SEQ_NUMS),
             iptags=[IPtagResource(
                 port=None, strip_sdp=True,
                 ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
@@ -260,6 +292,46 @@ class DataSpeedUpPacketGatherMachineVertex(
                             .format(length_in_bytes, memory_address, i,
                                     n_lost_seq_nums))))
         return prov_items
+
+    def send_data_to_chip(
+            self, placements, extra_monitor_core, sdram_location, raw_data):
+
+        placement = placements.get_placement_of_vertex(extra_monitor_core)
+
+        data = struct.pack(
+            "<II", self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
+            sdram_location)
+        data = struct.pack_into(
+            data, self.OFFSET_AFTER_COMMAND_AND_ADDRESS,
+            raw_data[0:self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM])
+
+        # logger.debug("sending to core %d:%d:%d",
+        #              placement.x, placement.y, placement.p)
+
+        message = SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=placement.x,
+                destination_chip_y=placement.y,
+                destination_cpu=placement.p,
+                destination_port=constants.
+                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=data)
+
+        # send
+        self._connection.send_sdp_message(message)
+
+        #  send rest of data
+        number_of_packets = int(math.ceil(
+            (len(data) - self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM) /
+            self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM))
+
+        for seq_num in range(number_of_packets):
+            packet_data =
+
+
+
+
 
     @staticmethod
     def set_cores_for_data_extraction(
