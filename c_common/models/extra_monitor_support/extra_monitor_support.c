@@ -56,6 +56,7 @@ extern INT_HANDLER sark_int_han(void);
 #define SEQUENCE_NUMBER_SIZE 1
 
 #define TX_NOT_FULL_MASK 0x10000000
+#define TX_FULL_MASK 0x40000000
 //-----------------------------------------------------------------------------
 //! SDP flags
 //-----------------------------------------------------------------------------
@@ -669,23 +670,27 @@ void reinjection_configure_router() {
 //! \param[in] data: the payload
 static inline void send_fixed_route_packet_payload(uint32_t key, uint32_t data) {
     // Wait for a router slot
+    cc[CC_TCR] = 0;
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
 	// Empty body; CC array is volatile
     }
     cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = data;
     cc[CC_TXKEY] = key;
+    //io_printf(IO_BUF, "sending key %u, payload %u \n", key, data);
 }
 
 //! \brief sends a fixed route packet without a payload
 //! \param[in] key: the fr key
 static inline void send_fixed_route_packet_no_payload(uint32_t key){
     // Wait for a router slot
+    cc[CC_TCR] = 0;
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
 	// Empty body; CC array is volatile
     }
     cc[CC_TCR] = PKT_FR;
     cc[CC_TXKEY] = key;
+    //io_printf(IO_BUF, "sending key %u \n", key);
 }
 
 
@@ -710,7 +715,11 @@ void send_data_block(
             send_fixed_route_packet_payload(current_data1, current_data2);
         }else{
             send_fixed_route_packet_no_payload(odd_data_packet_key);
+            sark_delay_us(1);
             send_fixed_route_packet_no_payload(current_data1);
+            io_printf(IO_BUF, "odd data key is  %d\n", odd_data_packet_key);
+            io_printf(IO_BUF, "last int is %d\n",current_data1);
+
         }
     }
     //log_info("last data is %d",
@@ -1183,6 +1192,15 @@ void data_speed_up_initialise() {
     first_data_key = address[FIRST_DATA_KEY];
     end_flag_key = address[END_FLAG_KEY];
     odd_data_packet_key = address[ODD_DATA_PACKET_KEY];
+
+    io_printf(
+        IO_BUF,
+        "keys: basic key      : %u \n"
+        "      new seq Key    : %u \n"
+        "      first data key : %u \n"
+        "      end flag key   : %u \n"
+        "      odd data key   : %u \n", basic_data_key, new_sequence_key,
+        first_data_key, end_flag_key, odd_data_packet_key);
 
 
     vic_vectors[DMA_SLOT]  = speed_up_handle_dma;

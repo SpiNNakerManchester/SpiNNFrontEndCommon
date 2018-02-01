@@ -82,7 +82,7 @@ typedef enum config_elements {
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
-    MC_PACKET = -1, SDP = 0, DMA = 0
+    FR_PACKET = -1, SDP = 0, DMA = 0
 } callback_priorities;
 
 
@@ -116,25 +116,32 @@ void send_data(){
 }
 
 void receive_data_no_payload(uint key, uint payload) {
+    log_info("received command with key %u", key);
     // expecting a new command
+
     if (next_no_payload_command == EMPTY){
         if (key == new_sequence_key) {
-            //log_info("new seq start");
+            log_info("new seq start");
             next_no_payload_command = NEXT_SEQ_NUM_COMING;
         }
-        if (key == end_flag_key){
+        else if (key == end_flag_key){
             // set end flag bit in seq num
             log_info("sending end data");
             log_info("position = %d", position_in_store);
             data[0] = data[0] + (1 << 31);
             send_data();
         }
-        if (key == first_data_key){
-            //log_info("first data start");
+        else if (key == first_data_key){
+            log_info("first data start");
             next_no_payload_command = FIRST_DATA;
         }
-        if (key == odd_data_packet_key){
+        else if (key == odd_data_packet_key){
+            log_info("odd data start");
             next_no_payload_command = ODD_DATA_ITEM;
+        }
+        else{
+            log_info("strange code, next_no_payload_command is %d",
+                     next_no_payload_command);
         }
     } // expecting data from a old command
     else if (next_no_payload_command == NEXT_SEQ_NUM_COMING){
@@ -150,7 +157,7 @@ void receive_data_no_payload(uint key, uint payload) {
         next_no_payload_command = EMPTY;
 
     } else if (next_no_payload_command == FIRST_DATA){
-        //log_info("resetting seq and position");
+        log_info("resetting seq and position");
         seq_num = FIRST_SEQ_NUM;
         data[0] = seq_num;
         position_in_store = 1;
@@ -158,21 +165,25 @@ void receive_data_no_payload(uint key, uint payload) {
         next_no_payload_command = EMPTY;
 
     } else if (next_no_payload_command == ODD_DATA_ITEM){
+        log_info("odd data process");
         data[position_in_store] = key;
         position_in_store += 1;
+        log_info("position in store %d", position_in_store);
         next_no_payload_command = EMPTY;
         if (position_in_store == ITEMS_PER_DATA_PACKET) {
             send_data();
         }
 
     } else{
-        log_error("Got a strange command in the logic flow.");
+        log_error("Got a strange command in the logic flow."
+                  "next_no_payload_command is %d", next_no_payload_command);
     }
+
 }
 
 void receive_data_payload(uint key, uint payload) {
-
-    //log_info(" payload = %d position = %d", payload, position_in_store);
+    //log_info("next_no_payload_command = %d", next_no_payload_command);
+    //log_info("payload = %d position = %d", payload, position_in_store);
     data[position_in_store] = key;
     position_in_store += 1;
     data[position_in_store] = payload;
@@ -244,8 +255,8 @@ void c_main() {
         rt_error(RTE_SWERR);
     }
 
-    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data_payload, MC_PACKET);
-    spin1_callback_on(FR_PACKET_RECEIVED, receive_data_no_payload, MC_PACKET);
+    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data_payload, FR_PACKET);
+    spin1_callback_on(FR_PACKET_RECEIVED, receive_data_no_payload, FR_PACKET);
 
     // start execution
     log_info("Starting\n");
