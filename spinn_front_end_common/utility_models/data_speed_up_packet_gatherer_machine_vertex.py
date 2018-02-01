@@ -5,6 +5,8 @@ from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
+from spinn_front_end_common.utilities.helpful_functions \
+    import convert_vertices_to_core_subset
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.interface.provenance import \
@@ -18,6 +20,7 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.model.enums.cpu_state import CPUState
 
 import logging
 import math
@@ -269,14 +272,36 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
             15, 15, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
+        extra_monitor_cores_for_router_timeout[0].\
+            set_reinjection_router_emergency_timeout(
+                15, 0, transceiver, placements,
+                extra_monitor_cores_for_router_timeout)
 
     @staticmethod
     def unset_cores_for_data_extraction(
             transceiver, extra_monitor_cores_for_router_timeout,
             placements):
-        extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
-            15, 4, transceiver, placements,
-            extra_monitor_cores_for_router_timeout)
+        try:
+            extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
+                15, 4, transceiver, placements,
+                extra_monitor_cores_for_router_timeout)
+            extra_monitor_cores_for_router_timeout[0].\
+                set_reinjection_router_emergency_timeout(
+                    0, 0, transceiver, placements,
+                    extra_monitor_cores_for_router_timeout)
+        except Exception:
+            logger.error("Error resetting timeouts", exc_info=True)
+            logger.error("Checking if the cores are OK...")
+            core_subsets = convert_vertices_to_core_subset(
+                extra_monitor_cores_for_router_timeout, placements)
+            try:
+                error_cores = transceiver.get_cores_not_in_state(
+                    core_subsets, {CPUState.RUNNING})
+                if len(error_cores) > 0:
+                    logger.error("Cores in an unexpected state: {}".format(
+                        error_cores))
+            except Exception:
+                logger.error("Couldn't get core state", exc_info=True)
 
     def get_data(
             self, transceiver, placement, memory_address, length_in_bytes):

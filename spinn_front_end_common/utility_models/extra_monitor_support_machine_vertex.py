@@ -28,6 +28,8 @@ from spinn_front_end_common.utility_models.\
     DataSpeedUpPacketGatherMachineVertex
 from spinn_machine import CoreSubsets
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.helpful_functions \
+    import convert_vertices_to_core_subset
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -216,7 +218,7 @@ class ExtraMonitorSupportMachineVertex(
         :rtype: None
         """
 
-        core_subsets = self._convert_vertices_to_core_subset(
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
@@ -240,7 +242,7 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: the set of vertices to \
         change the local chip for.
         """
-        core_subsets = self._convert_vertices_to_core_subset(
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
             transceiver.scamp_connection_selector)
@@ -252,7 +254,7 @@ class ExtraMonitorSupportMachineVertex(
             self, transceiver, placements, extra_monitor_cores_to_set):
         """ Resets the counters for re injection
         """
-        core_subsets = self._convert_vertices_to_core_subset(
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
         process.reset_counters(
@@ -281,7 +283,7 @@ class ExtraMonitorSupportMachineVertex(
         :param transceiver: the spinnMan interface
         :rtype: None
         """
-        core_subsets = self._convert_vertices_to_core_subset(
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status_for_core_subsets(
@@ -322,23 +324,3 @@ class ExtraMonitorSupportMachineVertex(
             self._reinject_multicast, self._reinject_nearest_neighbour,
             self._reinject_fixed_route,
             self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
-
-    @staticmethod
-    def _convert_vertices_to_core_subset(
-            extra_monitor_cores_to_set, placements):
-        """ converts vertices into core subsets.
-
-        :param extra_monitor_cores_to_set: the vertices to convert to core \
-        subsets
-        :param placements: the placements object
-        :return: the converts CoreSubSets to the vertices
-        """
-        core_subsets = CoreSubsets()
-        for vertex in extra_monitor_cores_to_set:
-            if not isinstance(vertex, ExtraMonitorSupportMachineVertex):
-                raise Exception(
-                    "can only use ExtraMonitorSupportMachineVertex to set "
-                    "the router time out")
-            placement = placements.get_placement_of_vertex(vertex)
-            core_subsets.add_processor(placement.x, placement.y, placement.p)
-        return core_subsets
