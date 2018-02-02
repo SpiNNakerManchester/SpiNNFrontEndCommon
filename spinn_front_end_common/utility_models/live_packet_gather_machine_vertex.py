@@ -1,5 +1,6 @@
+from spinn_utilities.overrides import overrides
+
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import IPtagResource, ResourceContainer

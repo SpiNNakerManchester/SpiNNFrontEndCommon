@@ -1,7 +1,7 @@
+from spinn_utilities.overrides import overrides
 # pacman imports
 from pacman.model.constraints.placer_constraints\
     import RadialPlacementFromChipConstraint
-from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import IPtagResource, ResourceContainer

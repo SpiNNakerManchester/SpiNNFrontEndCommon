@@ -1,5 +1,5 @@
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.decorators import overrides
 
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification

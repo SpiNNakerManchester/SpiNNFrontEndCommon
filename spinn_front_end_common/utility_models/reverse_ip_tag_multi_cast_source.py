@@ -1,11 +1,11 @@
+from spinn_utilities.overrides import overrides
+
 # pacman imports
-from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from pacman.model.resources import ReverseIPtagResource, IPtagResource
 from pacman.model.constraints.placer_constraints import BoardConstraint
-
 
 # front end common imports
 from spinn_front_end_common.abstract_models \

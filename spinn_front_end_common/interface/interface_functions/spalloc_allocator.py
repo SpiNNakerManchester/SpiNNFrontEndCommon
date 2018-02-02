@@ -1,5 +1,5 @@
 import math
-from pacman.model.decorators import overrides
+from spinn_utilities.overrides import overrides
 
 from spalloc import Job
 from spalloc.states import JobState

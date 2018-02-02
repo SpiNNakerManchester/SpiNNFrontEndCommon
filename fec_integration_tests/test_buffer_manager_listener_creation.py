@@ -1,9 +1,9 @@
 import unittest
+from spinn_utilities.overrides import overrides
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.decorators import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.connections.udp_packet_connections import EIEIOConnection

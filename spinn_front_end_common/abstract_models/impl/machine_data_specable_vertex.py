@@ -1,4 +1,4 @@
-from pacman.model.decorators import overrides
+from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator \
     import supports_injection, inject_items
 

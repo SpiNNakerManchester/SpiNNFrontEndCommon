@@ -1,5 +1,6 @@
+from spinn_utilities.overrides import overrides
+
 # pacman imports
-from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.constraints.key_allocator_constraints \
     import FixedKeyAndMaskConstraint
