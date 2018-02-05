@@ -392,8 +392,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _determine_which_routers_were_used(placement, fixed_routes, machine):
         """ traverses the fixed route paths from a given location to its\
          destination. used for detemrinign which routers were used
-        
-        :param placement: the source to start from 
+
+        :param placement: the source to start from
         :param fixed_routes: the fixed routes for each router
         :param machine: the spinnMachine instance
         :return: list of chip ids
