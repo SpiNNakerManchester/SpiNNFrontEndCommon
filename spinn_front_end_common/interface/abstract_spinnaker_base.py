@@ -1579,16 +1579,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        enable_advanced_monitor = self._config.getboolean(
-            "Machine", "enable_advanced_monitor_support")
-        if (enable_advanced_monitor or
+        if (self._config.getboolean(
+                "Machine", "enable_advanced_monitor_support") or
                 self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
-            if enable_advanced_monitor:
-                algorithms.append("InsertEdgesToExtraMonitorFunctionality")
-                algorithms.append("FixedRouteRouter")
-                inputs['FixedRouteDestinationClass'] = \
-                    DataSpeedUpPacketGatherMachineVertex
+            algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("FixedRouteRouter")
+            inputs['FixedRouteDestinationClass'] = \
+                DataSpeedUpPacketGatherMachineVertex
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:
@@ -2059,17 +2057,21 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Extract router provenance
         extra_monitor_vertices = None
-        if (self._config.getboolean("Machine",
-                                    "enable_advanced_monitor_support") or
-                self._config.getboolean("Machine", "enable_reinjection")):
-            extra_monitor_vertices = self._last_run_outputs[
-                "MemoryExtraMonitorVertices"]
-        router_provenance = RouterProvenanceGatherer()
-        prov_items = router_provenance(
-            transceiver=self._txrx, machine=self._machine,
-            router_tables=self._router_tables,
-            extra_monitor_vertices=extra_monitor_vertices,
-            placements=self._placements)
+        prov_items = list()
+        try:
+            if (self._config.getboolean("Machine",
+                                        "enable_advanced_monitor_support") or
+                    self._config.getboolean("Machine", "enable_reinjection")):
+                extra_monitor_vertices = self._last_run_outputs[
+                    "MemoryExtraMonitorVertices"]
+            router_provenance = RouterProvenanceGatherer()
+            prov_items = router_provenance(
+                transceiver=self._txrx, machine=self._machine,
+                router_tables=self._router_tables,
+                extra_monitor_vertices=extra_monitor_vertices,
+                placements=self._placements)
+        except Exception:
+            logger.error("Error reading router provenance", exc_info=True)
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2086,6 +2088,27 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     executable_type.end_state)
                 for (x, y, p), _ in unsuccessful_cores.iteritems():
                     unsuccessful_core_subset.add_processor(x, y, p)
+
+        # Print the details of error cores
+        for (x, y, p), core_info in unsuccessful_cores.iteritems():
+            state = core_info.state
+            rte_state = ""
+            if state == CPUState.RUN_TIME_EXCEPTION:
+                rte_state = " ({})".format(core_info.run_time_error.name)
+            logger.error("{}, {}, {}: {}{} {}".format(
+                x, y, p, state.name, rte_state, core_info.application_name))
+            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
+                logger.error(
+                    "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}".format(
+                        core_info.registers[0], core_info.registers[1],
+                        core_info.registers[2], core_info.registers[3]))
+                logger.error(
+                    "r4=0x{:08X} r5=0x{:08X} r6=0x{:08X} r7=0x{:08X}".format(
+                        core_info.registers[4], core_info.registers[5],
+                        core_info.registers[6], core_info.registers[7]))
+                logger.error("PSR=0x{:08X} SR=0x{:08X} LR=0x{:08X}".format(
+                    core_info.processor_state_register,
+                    core_info.stack_pointer, core_info.link_register))
 
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
@@ -2107,12 +2130,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 non_rte_core_subsets.add_processor(x, y, p)
 
             # Attempt to force the cores to write provenance and exit
-            updater = ChipProvenanceUpdater()
-            updater(self._txrx, self._app_id, non_rte_core_subsets)
+            try:
+                updater = ChipProvenanceUpdater()
+                updater(self._txrx, self._app_id, non_rte_core_subsets)
+            except Exception:
+                logger.error(
+                    "Could not update provenance on chip", exc_info=True)
 
             # Extract any written provenance data
-            extracter = PlacementsProvenanceGatherer()
-            extracter(self._txrx, placements, prov_items)
+            try:
+                extracter = PlacementsProvenanceGatherer()
+                extracter(self._txrx, placements, prov_items)
+            except Exception:
+                logger.error(
+                    "Could not read provenance", exc_info=True)
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
@@ -2126,29 +2157,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             iobuf_cores.add_processor(placement.x, placement.y, placement.p)
 
         iobuf = ChipIOBufExtractor()
-        errors, warnings = iobuf(
-            self._txrx, iobuf_cores,
-            self._provenance_file_path)
-
-        # Print the details of error cores
-        for (x, y, p), core_info in unsuccessful_cores.iteritems():
-            state = core_info.state
-            if state == CPUState.RUN_TIME_EXCEPTION:
-                state = core_info.run_time_error
-            logger.error("{}, {}, {}: {} {}",
-                         x, y, p, state.name, core_info.application_name)
-            if core_info.state == CPUState.RUN_TIME_EXCEPTION:
-                logger.error(
-                    "r0=0x{:08X} r1=0x{:08X} r2=0x{:08X} r3=0x{:08X}".format(
-                        core_info.registers[0], core_info.registers[1],
-                        core_info.registers[2], core_info.registers[3]))
-                logger.error(
-                    "r4=0x{:08X} r5=0x{:08X} r6=0x{:08X} r7=0x{:08X}".format(
-                        core_info.registers[4], core_info.registers[5],
-                        core_info.registers[6], core_info.registers[7]))
-                logger.error("PSR=0x{:08X} SR=0x{:08X} LR=0x{:08X}".format(
-                    core_info.processor_state_register,
-                    core_info.stack_pointer, core_info.link_register))
+        try:
+            errors, warnings = iobuf(
+                self._txrx, iobuf_cores,
+                self._provenance_file_path)
+        except Exception:
+            logger.error("Could not get iobuf", exc_info=True)
+            errors, warnings = [], []
 
         # Print the IOBUFs
         self._print_iobuf(errors, warnings)
