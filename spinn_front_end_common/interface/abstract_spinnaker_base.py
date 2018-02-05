@@ -852,7 +852,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         can_keep_running = True
         if self._has_ran:
             can_keep_running = all(
-                executable_type.supports_auto_pause_and_resume 
+                executable_type.supports_auto_pause_and_resume
                 for executable_type in self._executable_types)
 
         if self._has_ran and not can_keep_running:

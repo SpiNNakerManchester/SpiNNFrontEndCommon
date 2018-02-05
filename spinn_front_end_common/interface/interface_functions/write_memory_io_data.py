@@ -86,17 +86,17 @@ class WriteMemoryIOData(object):
             "x" and "y" properties (e.g., a Placement)
         :return: The next available tag
         """
-        xy = (xy.x, xy.y)
-        if xy not in self._next_tag:
+        key = (xy.x, xy.y)
+        if key not in self._next_tag:
             # Find the maximum tag already in use across the three areas
             max_tag = 0
             for area in (SV.sdram_heap_address, SV.system_ram_heap_address,
                          SV.system_sdram_heap_address):
                 for tag in self.__get_used_tags(transceiver, xy.x, xy.y, area):
                     max_tag = max(max_tag, tag)
-            self._next_tag[xy] = max_tag + 1
-        next_tag = self._next_tag[xy]
-        self._next_tag[xy] = next_tag + 1
+            self._next_tag[key] = max_tag + 1
+        next_tag = self._next_tag[key]
+        self._next_tag[key] = next_tag + 1
         return next_tag
 
     def __local_get_next_tag(self, xy):
