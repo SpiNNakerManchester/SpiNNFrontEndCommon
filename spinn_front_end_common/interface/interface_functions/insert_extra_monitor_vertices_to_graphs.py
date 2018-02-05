@@ -23,13 +23,15 @@ class InsertExtraMonitorVerticesToGraphs(object):
     """
 
     def __call__(
-            self, machine, machine_graph, n_cores_to_allocate=1,
+            self, machine, machine_graph, default_report_directory,
+            n_cores_to_allocate=1,
             graph_mapper=None, application_graph=None):
         """ inserts vertices to corresponds to the extra monitor cores
 
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
         :param n_cores_to_allocate: n cores to allocate for reception
+        :param default_report_directory: the directory where reports go
         :param graph_mapper: graph mapper
         :param application_graph: app graph.
         :return: vertex to Ethernet connection map
@@ -45,7 +47,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         # progress data receiver for data extraction functionality
         self._handle_data_extraction_vertices(
             progress, machine, application_graph, machine_graph, graph_mapper,
-            vertex_to_ethernet_connected_chip_mapping)
+            vertex_to_ethernet_connected_chip_mapping,
+            default_report_directory)
 
         # handle re injector and chip based data extractor functionality.
         extra_monitor_vertices = self._handle_second_monitor_functionality(
@@ -118,13 +121,16 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _handle_data_extraction_vertices(
             self, progress, machine, application_graph, machine_graph,
-            graph_mapper, vertex_to_ethernet_connected_chip_mapping):
+            graph_mapper, vertex_to_ethernet_connected_chip_mapping,
+            default_report_directory):
         """ places vertices for receiving data extraction packets.
 
         :param progress: progress bar
         :param machine: machine instance
         :param application_graph: application graph
         :param machine_graph: machine graph
+        :param default_report_directory: the default directory for where\
+         reports are to be written
         :param graph_mapper: graph mapper
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map
         :rtype: None
@@ -145,6 +151,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         x=ethernet_connected_chip.x,
                         y=ethernet_connected_chip.y,
                         ip_address=ethernet_connected_chip.ip_address,
+                        report_default_directory=default_report_directory,
                         constraints=[ChipAndCoreConstraint(
                             x=ethernet_connected_chip.x,
                             y=ethernet_connected_chip.y)])
@@ -167,7 +174,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         ip_address=ethernet_connected_chip.ip_address,
                         constraints=[ChipAndCoreConstraint(
                             x=ethernet_connected_chip.x,
-                            y=ethernet_connected_chip.y)])
+                            y=ethernet_connected_chip.y)],
+                        report_default_directory=default_report_directory)
                     machine_graph.add_vertex(machine_vertex)
                 else:
                     machine_vertex = equiv_vertex

@@ -12,7 +12,8 @@ class BufferManagerCreator(object):
             self, placements, tags, txrx, store_data_in_file,
             uses_advanced_monitors, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
-            extra_monitor_cores_to_ethernet_connection_map=None, machine=None):
+            extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
+            fixed_routes=None):
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager
@@ -23,7 +24,8 @@ class BufferManagerCreator(object):
             extra_monitor_cores_to_ethernet_connection_map=(
                 extra_monitor_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
-            machine=machine, uses_advanced_monitors=uses_advanced_monitors)
+            machine=machine, uses_advanced_monitors=uses_advanced_monitors,
+            fixed_routes=fixed_routes)
 
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):
