@@ -29,7 +29,6 @@ static const int END_FLAG = 0xFFFFFFFF;
 static const int LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
 static const int TIMEOUT_RETRY_LIMIT = 20;
 
-//vector<uint32_t> missing;
 int miss_cnt;
 
 // Constructor
@@ -67,18 +66,17 @@ char * host_data_receiver::build_scp_req(uint16_t cmd, uint32_t port, int strip_
 	uint16_t seq = 0;
 	uint32_t arg = 0;
 
-	char *buffertmp = new char[4*sizeof(uint32_t)];
+	uint32_t *buffertmp = new uint32_t[4];
 
 	memcpy(buffertmp, &cmd, sizeof(uint16_t));
 	memcpy(buffertmp+sizeof(uint16_t), &seq, sizeof(uint16_t));
 
 	arg = arg | (strip_sdp << 28) | (1 << 16) | this->iptag;
-	memcpy(buffertmp+sizeof(uint32_t), &arg, sizeof(uint32_t));
-	memcpy(buffertmp+2*sizeof(uint32_t), &port, sizeof(uint32_t));
-	memcpy(buffertmp+3*sizeof(uint32_t), &ip_address, sizeof(uint32_t));
+	buffertmp[1] = arg;
+	buffertmp[2] = port;
+	buffertmp[3] = ip_address;
 
-
-	return buffertmp;
+	return (char *)buffertmp;
 }
 
 
@@ -101,17 +99,17 @@ void host_data_receiver::send_initial_command(UDPConnection *sender, UDPConnecti
 	sender->receive_data(buf, 300);
 
     // Create Data request SDP packet
-	char start_message_data[3*sizeof(uint32_t)];
+	uint32_t start_message_data[3];
 
     // add data
-	memcpy(start_message_data, &SDP_PACKET_START_SENDING_COMMAND_ID, sizeof(uint32_t));
-	memcpy(start_message_data+sizeof(uint32_t), &this->memory_address, sizeof(uint32_t));
-	memcpy(start_message_data+2*sizeof(uint32_t), &this->length_in_bytes, sizeof(uint32_t));
+    start_message_data[0] = SDP_PACKET_START_SENDING_COMMAND_ID;
+    start_message_data[1] = this->memory_address;
+    start_message_data[2] = this->length_in_bytes;
 
     // build SDP message
     SDPMessage message = SDPMessage(
         this->placement_x, this->placement_y, this->placement_p, this->port_connection,
-        SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, start_message_data,
+        SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, (char *)start_message_data,
         3*sizeof(uint32_t));
 
     //send message
@@ -125,7 +123,7 @@ bool host_data_receiver::retransmit_missing_sequences(UDPConnection *sender, set
 
 		int length_via_format2, seq_num_offset, length_left_in_packet, offset, size_of_data_left_to_transmit;
 		bool first;
-		char data[DATA_PER_FULL_PACKET * sizeof(uint32_t)];
+		uint32_t data[DATA_PER_FULL_PACKET];
 		unsigned char miss_seq;
 		uint32_t n_packets, i, datasize;
 
@@ -140,8 +138,6 @@ bool host_data_receiver::retransmit_missing_sequences(UDPConnection *sender, set
 
 			if(received_seq_nums->find(i) == received_seq_nums->end()) {
 
-				//missing is only used for statistical purposes
-				//missing.push_back(i);
 				missing_seq[j++] = i;
 				miss_cnt++;
 			}
@@ -178,11 +174,11 @@ bool host_data_receiver::retransmit_missing_sequences(UDPConnection *sender, set
 				datasize = (size_of_data_left_to_transmit + 2) * sizeof(uint32_t);
 
 				// Pack flag and n packets
-				memcpy(data, &SDP_PACKET_START_MISSING_SEQ_COMMAND_ID, sizeof(uint32_t));
-				memcpy(data+sizeof(uint32_t), &n_packets, sizeof(uint32_t));
+				data[0] = SDP_PACKET_START_MISSING_SEQ_COMMAND_ID;
+				data[1] = n_packets;
 
 				// Update state
-				offset += 2*sizeof(uint32_t);
+				offset += 2;
 				length_left_in_packet -= 2;
 				first = false;
 			}
@@ -195,20 +191,19 @@ bool host_data_receiver::retransmit_missing_sequences(UDPConnection *sender, set
 				datasize = (size_of_data_left_to_transmit + 1) * sizeof(uint32_t);
 
 				// Pack flag
-				memcpy(data+offset, &SDP_PACKET_MISSING_SEQ_COMMAND_ID, sizeof(uint32_t));
+				data[offset] = SDP_PACKET_MISSING_SEQ_COMMAND_ID;
 
-				offset += sizeof(uint32_t);
+				offset += 1;
 				length_left_in_packet -= 1;
 			}
 
-			//Data in vector is contiguous(defined as c++ specification), verify only that offset and size to be transmitted are correct
-			memcpy(data+offset, missing_seq+seq_num_offset, size_of_data_left_to_transmit*sizeof(uint32_t));
+			memcpy(((char *)data)+offset*sizeof(uint32_t), missing_seq+seq_num_offset, size_of_data_left_to_transmit*sizeof(uint32_t));
 
 			seq_num_offset += length_left_in_packet;
 
 			SDPMessage message = SDPMessage(
 			        this->placement_x, this->placement_y, this->placement_p, this->port_connection,
-			        SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, data,
+			        SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0, (char *)data,
 			        datasize);
 
 			sender->send_data(message.convert_to_byte_array(), message.length_in_bytes());
@@ -321,9 +316,7 @@ void host_data_receiver::reader_thread(UDPConnection *receiver) {
 
 		try {
 
-			recvd = receiver->receive_data(data, 400);
-
-			memcpy(p.content, data, recvd*sizeof(char));
+			recvd = receiver->receive_data(p.content, 400);
 			p.size = recvd;
 
 		} catch(char const *e) {
@@ -356,12 +349,10 @@ void host_data_receiver::processor_thread(UDPConnection *sender) {
 		try {
 
 		 	p = messqueue->pop();
-
-		 	memcpy(data, p.content, p.size*sizeof(char));
 		 	datalen = p.size;
 
 
-		 	process_data(sender, &finished, received_seq_nums, data, datalen);
+		 	process_data(sender, &finished, received_seq_nums, p.content, datalen);
 
 		 }catch(TimeoutQueueException e) {
 
@@ -409,16 +400,10 @@ char * host_data_receiver::get_data() {
 	try {
 
 		// create connection
-		UDPConnection *sender =  new UDPConnection(NULL, NULL, 17893, this->hostname);
+		UDPConnection *sender =  new UDPConnection(0, NULL, 17893, this->hostname);
 
 		// send the initial command to start data transmission
 		send_initial_command(sender, sender);
-
-		//pthread_create(&reader, NULL, &host_data_receiver::reader_thread, (void *) sender);
-		//pthread_create(&processor, NULL, &host_data_receiver::processor_thread, (void *) sender);
-
-		//pthread_join(reader, NULL);
-		//pthread_join(processor, NULL);
 
 		thread reader(&host_data_receiver::reader_thread, this, sender);
 		thread processor(&host_data_receiver::processor_thread, this, sender);
@@ -453,82 +438,9 @@ char * host_data_receiver::get_data() {
 py::bytes host_data_receiver::get_data_for_python(char *hostname, int port_connection, int placement_x, int placement_y, int placement_p,
 				int length_in_bytes, int memory_address, int chip_x, int chip_y, int iptag) {
 
-	bool finished;
-	char data[400];
-	int datalen, timeoutcount;
-	uint32_t seq_num, max_seq_num, length;
-	set<uint32_t> *received_seq_nums = new set<uint32_t>;
-	time_t start, end;
-	double seconds_taken;
-	char *buffer;
+	get_data();
 
-	finished = false;
-	seq_num = 1;
-	max_seq_num = 0;
-	length = 0;
-
-	time(&start);
-
-	try {
-
-		// create connection
-		UDPConnection *sender =  new UDPConnection(NULL, NULL, 17893, hostname);
-
-		// send the initial command to start data transmission
-		send_initial_command(sender, placement_x, placement_y, placement_p, port_connection, (uint32_t)length_in_bytes, (uint32_t)memory_address, chip_x, chip_y, iptag, sender);
-
-		buffer = new char[length_in_bytes];
-
-		max_seq_num = calculate_max_seq_num(length_in_bytes);
-
-		while(!finished) {
-
-			try {
-				// receive data
-				datalen = sender->receive_data(data, 400, TIMEOUT_PER_RECEIVE_IN_SECONDS, 0);
-
-				timeoutcount = 0;
-
-				// process received data
-	        		process_data(
-	        					 sender, &finished, &seq_num, received_seq_nums, data, port_connection,
-							 placement_x, placement_y, placement_p, buffer, &max_seq_num, datalen, &length);
-
-			}catch(TimeoutException e) {
-
-				if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
-
-					throw "Failed to hear from the machine. Please try removing firewalls";
-				}
-				timeoutcount++;
-
-				//delete sender;
-
-				//uint32_t loc_port = sender->get_local_port();
-
-				//sender = new UDPConnection(loc_port, NULL, 17893, hostname);
-
-				if(!finished) {
-
-					// retransmit missing packets
-					finished = retransmit_missing_sequences(
-							sender, received_seq_nums, placement_x, placement_y,
-							placement_p, port_connection, max_seq_num);
-				}
-			}
-		}
-	}catch(char const *e) {
-
-		cout << e << endl;
-		//This will cause the simulation to fail, otherwise it will get wrong data!
-		return NULL;
-	}
-
-	time(&end);
-
-	seconds_taken = difftime(end, start);
-
-	std::string *str = new string((const char *)buffer, length_in_bytes);
+	std::string *str = new string((const char *)this->buffer, length_in_bytes);
 
 	return py::bytes(*str);
 }*/
@@ -545,16 +457,6 @@ void host_data_receiver::get_data_threadable(char *filepath_read, char *filepath
 	fp2 = fopen(filepath_missing, "w");
 
 	fwrite(this->buffer, sizeof(char), length_in_bytes, fp1);
-
-	/*vector<uint32_t>::iterator i;
-	char *miss = new char[sizeof(uint32_t) * missing.size()];
-	int offset = 0;
-
-	for(i = missing.begin() ; i != missing.end() ; i++) {
-
-		uint32_t v = (uint32_t)*i;
-		fprintf(fp2, "%u\n", v);
-	}*/
 
 	fprintf(fp2 , "%d\n", miss_cnt);
 
