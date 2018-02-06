@@ -670,7 +670,7 @@ void reinjection_configure_router() {
 //! \param[in] data: the payload
 static inline void send_fixed_route_packet_payload(uint32_t key, uint32_t data) {
     // Wait for a router slot
-    cc[CC_TCR] = 0;
+    //cc[CC_TCR] = 0;
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
 	// Empty body; CC array is volatile
     }
@@ -684,7 +684,7 @@ static inline void send_fixed_route_packet_payload(uint32_t key, uint32_t data) 
 //! \param[in] key: the fr key
 static inline void send_fixed_route_packet_no_payload(uint32_t key){
     // Wait for a router slot
-    cc[CC_TCR] = 0;
+    //cc[CC_TCR] = 0;
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
 	// Empty body; CC array is volatile
     }
