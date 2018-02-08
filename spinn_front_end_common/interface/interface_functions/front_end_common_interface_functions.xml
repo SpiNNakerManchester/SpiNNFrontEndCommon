@@ -602,6 +602,14 @@
                 <param_name>app_id</param_name>
                 <param_type>APPID</param_type>
             </parameter>
+            <parameter>
+                <param_name>uses_advanced_monitors=</param_name>
+                <param_type>UsingAdvancedMonitorSupport</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>write_memory_map_report</param_name>
@@ -609,6 +617,10 @@
             <param_name>transceiver</param_name>
             <param_name>app_id</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>uses_advanced_monitors</param_name>
+            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+        </optional_inputs>
         <outputs>
             <token part="DSGDataLoaded">DataLoaded</token>
         </outputs>
@@ -1834,6 +1846,14 @@
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
+            <parameter>
+                <param_name>uses_advanced_monitors=</param_name>
+                <param_type>UsingAdvancedMonitorSupport</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+                <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>graph</param_name>
@@ -1846,6 +1866,8 @@
             <param_name>transceiver</param_name>
             <param_name>graph_mapper</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
+            <param_name>uses_advanced_monitors</param_name>
+            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>

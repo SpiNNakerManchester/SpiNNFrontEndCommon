@@ -27,7 +27,8 @@ class WriteMemoryIOData(object):
 
     def __call__(
             self, graph, placements, app_id, app_data_runtime_folder, hostname,
-            transceiver=None, graph_mapper=None,
+            transceiver=None, graph_mapper=None, uses_advanced_monitors=False,
+            extra_monitor_cores_to_ethernet_connection_map=None,
             processor_to_app_data_base_address=None):
         """
 
@@ -54,20 +55,52 @@ class WriteMemoryIOData(object):
             for placement in progress.over(placements.placements):
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
+
+                # select the mode of writing and therefore buffer size
+                write_memory_function, buffer_size = \
+                    self._get_write_function_and_buffer_size(
+                        uses_advanced_monitors, placement.x, placement.y,
+                        transceiver,
+                        extra_monitor_cores_to_ethernet_connection_map)
+
                 self._write_data_for_vertex(
                     transceiver, placement, associated_vertex, app_id,
                     app_data_runtime_folder, hostname,
-                    processor_to_app_data_base_address)
+                    processor_to_app_data_base_address, write_memory_function,
+                    buffer_size)
         elif isinstance(graph, MachineGraph):
             for placement in progress.over(placements.placements):
+
+                # select the mode of writing and therefore buffer size
+                write_memory_function, buffer_size = \
+                    self._get_write_function_and_buffer_size(
+                        uses_advanced_monitors, placement.x, placement.y,
+                        transceiver,
+                        extra_monitor_cores_to_ethernet_connection_map)
+
                 self._write_data_for_vertex(
                     transceiver, placement, placement.vertex, app_id,
                     app_data_runtime_folder, hostname,
-                    processor_to_app_data_base_address)
+                    processor_to_app_data_base_address, write_memory_function,
+                    buffer_size)
 
         return processor_to_app_data_base_address
 
-    def _get_used_tags(self, transceiver, x, y, heap_address):
+    @staticmethod
+    def _get_write_function_and_buffer_size(
+            uses_advanced_monitors, x, y, transceiver,
+            extra_monitor_cores_to_ethernet_connection_map):
+        # determine which function to use for writing memory
+        write_memory_function = transceiver.write_memory
+        buffer_size = 256
+        if uses_advanced_monitors:
+            gatherer = extra_monitor_cores_to_ethernet_connection_map[x, y]
+            write_memory_function = gatherer.send_data_into_spinnaker
+            buffer_size = 120 * 2024 * 1024
+        return write_memory_function, buffer_size
+
+    @staticmethod
+    def _get_used_tags(transceiver, x, y, heap_address):
         """ Get the tags that have already been used on the given chip
 
         :param transceiver: The transceiver to use to get the data
@@ -102,7 +135,8 @@ class WriteMemoryIOData(object):
 
     def _write_data_for_vertex(
             self, transceiver, placement, vertex, app_id,
-            app_data_runtime_folder, hostname, base_address_map):
+            app_data_runtime_folder, hostname, base_address_map,
+            write_memory_function, buffer_size):
         """ Write the data for the given vertex, if it supports the interface
 
 
@@ -116,6 +150,10 @@ class WriteMemoryIOData(object):
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address
+        :param write_memory_function: the function used to write data to\ 
+         spinnaker
+        :param buffer_size: the size of the memory buffer before it writes it\
+         to spinnaker
         """
         if isinstance(vertex, AbstractUsesMemoryIO):
             size = vertex.get_memory_io_data_size()
@@ -125,6 +163,7 @@ class WriteMemoryIOData(object):
                     placement.x, placement.y, size, app_id, tag)
                 end_address = start_address + size
                 with MemoryIO(transceiver, placement.x, placement.y,
+                              write_memory_function,
                               start_address, end_address) as io:
                     vertex.write_data_to_memory_io(io, tag)
             else:

@@ -318,7 +318,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                                     n_lost_seq_nums))))
         return prov_items
 
-    def send_data_into_spinnaker(self, x, y, start_address, data_to_write):
+    def send_data_into_spinnaker(
+            self, x, y, start_address, data_to_write, n_bytes=None, offset=0,
+            is_filename=False):
 
         data = struct.pack(
             "<II", self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
