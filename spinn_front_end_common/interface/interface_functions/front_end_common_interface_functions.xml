@@ -537,8 +537,8 @@
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_to_chip_mapping</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
-            <token>DSGSystemDataLoaded</token>
-            <token>SystemBinariesLoaded</token>
+            <token part="DSGSystemDataLoaded">DataLoaded</token>
+            <token part="SystemBinariesLoaded">DataLoaded</token>
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
@@ -566,8 +566,8 @@
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
-                <param_name>processor_to_app_data_base_address</param_name>
-                <param_type>ProcessorToAppDataBaseAddress</param_type>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -575,10 +575,8 @@
             <param_name>machine</param_name>
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
+            <param_name>executable_targets</param_name>
         </required_inputs>
-        <optional_inputs>
-            <param_name>processor_to_app_data_base_address</param_name>
-        </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
             <token part="DSGSystemDataLoaded">DataLoaded</token>
@@ -636,7 +634,7 @@
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
-            <token>DataLoaded</token>
+            <token part="DSGAppDataLoaded">DataLoaded</token>
         </required_inputs>
         <outputs>
             <token part="ApplicationBinariesLoaded">BinariesLoaded</token>
@@ -663,7 +661,8 @@
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
-            <token>DSGSystemDataLoaded</token>
+            <token part="DSGSystemDataLoaded">DataLoaded</token>
+            <token part="MulticastRoutesLoaded">DataLoaded</token>
         </required_inputs>
         <outputs>
             <token part="SystemBinariesLoaded">BinariesLoaded</token>
