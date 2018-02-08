@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 _FOUR_WORDS = struct.Struct("<4I")
 
 
-class MachineExecuteDataSpecification(object):
+class MachineExecuteOtherDataSpecification(object):
     """ Executes the machine based data specification
     """
 
