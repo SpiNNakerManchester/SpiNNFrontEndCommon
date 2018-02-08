@@ -1,3 +1,4 @@
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
@@ -190,7 +191,8 @@ class MundyOnChipRouterCompression(object):
 
         # build executable targets
         executable_targets = ExecutableTargets()
-        executable_targets.add_subsets(_BINARY_PATH, core_subsets)
+        executable_targets.add_subsets(_BINARY_PATH, core_subsets,
+                                       ExecutableType.RUNNING)
 
         txrx.execute_application(executable_targets, compressor_app_id)
         return executable_targets
