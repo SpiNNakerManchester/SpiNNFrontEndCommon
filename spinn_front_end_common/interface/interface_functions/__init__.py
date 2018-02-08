@@ -16,16 +16,19 @@ from .graph_measurer import GraphMeasurer
 from .graph_provenance_gatherer import GraphProvenanceGatherer
 from .hbp_allocator import HBPAllocator
 from .hbp_max_machine_generator import HBPMaxMachineGenerator
-from .host_execute_data_specification \
-    import HostExecuteDataSpecification
+from .host_execute_other_data_specification \
+    import HostExecuteOtherDataSpecification
+from .host_execute_system_data_specification \
+    import HostExecuteSystemDataSpecification
 from .insert_edges_to_live_packet_gatherers \
     import InsertEdgesToLivePacketGatherers
 from .insert_live_packet_gatherers_to_graphs \
     import InsertLivePacketGatherersToGraphs
-from .load_other_executable_images import LoadExecutableImages
+from .load_other_executable_images import LoadOtherExecutableImages
+from .load_system_executable_images import LoadSystemExecutableImages
 from .locate_executable_start_type import LocateExecutableStartType
-from .machine_execute_data_specification \
-    import MachineExecuteDataSpecification
+from .machine_execute_other_data_specification \
+    import MachineExecuteOtherDataSpecification
 from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer \
@@ -55,12 +58,13 @@ __all__ = [
     "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HBPMaxMachineGenerator",
-    "HostExecuteDataSpecification",
+    "HostExecuteOtherDataSpecification",
+    "HostExecuteSystemDataSpecification",
     "InsertEdgesToLivePacketGatherers",
     "InsertLivePacketGatherersToGraphs",
-    "LoadExecutableImages",
+    "LoadOtherExecutableImages", "LoadSystemExecutableImages",
     "LocateExecutableStartType",
-    "MachineExecuteDataSpecification",
+    "MachineExecuteOtherDataSpecification",
     "MachineGenerator", "NotificationProtocol",
     "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForLivePacketGatherers",
