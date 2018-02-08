@@ -34,6 +34,27 @@ class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
 
+    __slots__ = (
+
+        # data holder for output
+        "_view",
+
+        # the max seq num expected given a data retrieval
+        "_max_seq_num",
+
+        # holder of data from out
+        "_output",
+
+        # store of the extra monitors to location. helpful in data in
+        "_extra_monitors_by_chip",
+
+        # connection for comming with the c code
+        "_connection",
+
+        # provenance holder
+        "_provenance_data_items"
+    )
+
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
@@ -126,7 +147,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         (120 * 1024 * 1024) /
         (DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)))
 
-    def __init__(self, x, y, ip_address, constraints=None):
+    def __init__(self, x, y, ip_address, extra_monitors_by_chip,
+                 constraints=None):
         MachineVertex.__init__(
             self,
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
@@ -138,6 +160,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = None
         self._max_seq_num = None
         self._output = None
+
+        # store of the extra monitors to location. helpful in data in
+        self._extra_monitors_by_chip = extra_monitors_by_chip
 
         # Create a connection to be used
         self._connection = SCAMPConnection(
@@ -293,26 +318,24 @@ class DataSpeedUpPacketGatherMachineVertex(
                                     n_lost_seq_nums))))
         return prov_items
 
-    def send_data_to_chip(
-            self, placements, extra_monitor_core, sdram_location, raw_data):
-
-        placement = placements.get_placement_of_vertex(extra_monitor_core)
+    def send_data_into_spinnaker(self, x, y, start_address, data_to_write):
 
         data = struct.pack(
             "<II", self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
-            sdram_location)
+            start_address)
         data = struct.pack_into(
             data, self.OFFSET_AFTER_COMMAND_AND_ADDRESS,
-            raw_data[0:self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM])
+            data_to_write[0:self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM])
 
         # logger.debug("sending to core %d:%d:%d",
         #              placement.x, placement.y, placement.p)
+        extra_monitor = self._extra_monitors_by_chip[x, y]
 
         message = SDPMessage(
             sdp_header=SDPHeader(
-                destination_chip_x=placement.x,
-                destination_chip_y=placement.y,
-                destination_cpu=placement.p,
+                destination_chip_x=x,
+                destination_chip_y=y,
+                destination_cpu=extra_monitor.placement.p,
                 destination_port=constants.
                     SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
@@ -326,15 +349,15 @@ class DataSpeedUpPacketGatherMachineVertex(
             (len(data) - self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM) /
             self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM))
 
-        for seq_num in range(number_of_packets):
-            packet_data =
+        #for seq_num in range(number_of_packets):
+        #    packet_data =
 
 
 
 
 
     @staticmethod
-    def set_cores_for_data_extraction(
+    def set_cores_for_data_streaming(
             transceiver, extra_monitor_cores_for_router_timeout,
             placements):
         # set time out
@@ -343,7 +366,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             extra_monitor_cores_for_router_timeout)
 
     @staticmethod
-    def unset_cores_for_data_extraction(
+    def unset_cores_for_data_streaming(
             transceiver, extra_monitor_cores_for_router_timeout,
             placements):
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(

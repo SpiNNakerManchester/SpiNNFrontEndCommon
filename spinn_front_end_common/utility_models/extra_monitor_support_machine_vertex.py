@@ -46,7 +46,10 @@ class ExtraMonitorSupportMachineVertex(
         "_reinject_nearest_neighbour",
 
         # if we reinject fixed route packets
-        "_reinject_fixed_route"
+        "_reinject_fixed_route",
+
+        # placement holder for ease of access
+        "_placement"
     )
 
     _EXTRA_MONITOR_DSG_REGIONS = Enum(
@@ -96,6 +99,9 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
 
+        # placement holder for ease of access
+        self._placement = None
+
     @property
     def reinject_multicast(self):
         return self._reinject_multicast
@@ -116,6 +122,10 @@ class ExtraMonitorSupportMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self.static_resources_required()
+
+    @property
+    def placement(self):
+        return self._placement
 
     @staticmethod
     def static_resources_required():
@@ -149,7 +159,13 @@ class ExtraMonitorSupportMachineVertex(
                additional_arguments={"routing_info", "machine_graph"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph):
+        # storing for future usage
+        self._placement = placement
+
+        # write reinjection functionality
         self._generate_reinjection_functionality_data_specification(spec)
+
+        # write data out functionality
         self._generate_data_speed_up_functionality_data_specification(
             spec, routing_info, machine_graph)
         spec.end_specification()

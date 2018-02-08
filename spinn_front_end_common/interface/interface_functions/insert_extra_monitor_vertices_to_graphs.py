@@ -42,15 +42,15 @@ class InsertExtraMonitorVerticesToGraphs(object):
         vertex_to_ethernet_connected_chip_mapping = dict()
         vertex_to_chip_map = dict()
 
-        # progress data receiver for data extraction functionality
-        self._handle_data_extraction_vertices(
-            progress, machine, application_graph, machine_graph, graph_mapper,
-            vertex_to_ethernet_connected_chip_mapping)
-
         # handle re injector and chip based data extractor functionality.
         extra_monitor_vertices = self._handle_second_monitor_functionality(
             progress, machine, application_graph, machine_graph, graph_mapper,
             vertex_to_chip_map)
+
+        # progress data receiver for data extraction functionality
+        self._handle_data_extraction_vertices(
+            progress, machine, application_graph, machine_graph, graph_mapper,
+            vertex_to_ethernet_connected_chip_mapping, vertex_to_chip_map)
 
         return (vertex_to_ethernet_connected_chip_mapping,
                 extra_monitor_vertices, vertex_to_chip_map)
@@ -118,7 +118,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _handle_data_extraction_vertices(
             self, progress, machine, application_graph, machine_graph,
-            graph_mapper, vertex_to_ethernet_connected_chip_mapping):
+            graph_mapper, vertex_to_ethernet_connected_chip_mapping,
+            vertex_to_chip_map):
         """ places vertices for receiving data extraction packets.
 
         :param progress: progress bar
@@ -127,6 +128,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map
+        :param vertex_to_chip_map: map between chip and extra monitor
         :rtype: None
         """
         # insert machine vertices
@@ -147,7 +149,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         ip_address=ethernet_connected_chip.ip_address,
                         constraints=[ChipAndCoreConstraint(
                             x=ethernet_connected_chip.x,
-                            y=ethernet_connected_chip.y)])
+                            y=ethernet_connected_chip.y)],
+                        extra_monitors_by_chip=vertex_to_chip_map)
                     machine_vertex = app_vertex.machine_vertex
                     machine_graph.add_vertex(machine_vertex)
                     application_graph.add_vertex(app_vertex)
@@ -167,7 +170,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                         ip_address=ethernet_connected_chip.ip_address,
                         constraints=[ChipAndCoreConstraint(
                             x=ethernet_connected_chip.x,
-                            y=ethernet_connected_chip.y)])
+                            y=ethernet_connected_chip.y)],
+                        extra_monitors_by_chip=vertex_to_chip_map)
                     machine_graph.add_vertex(machine_vertex)
                 else:
                     machine_vertex = equiv_vertex
