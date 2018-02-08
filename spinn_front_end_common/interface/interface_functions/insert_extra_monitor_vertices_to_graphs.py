@@ -72,7 +72,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
         extra_monitor_vertices = list()
 
-        for chip in progress.over(machine.chips):
+        for chip in progress.over(machine.chips, finish_at_end=False):
             if not chip.virtual:
                 equiv_machine_vertex = self._exists_equiv_vertex(
                         chip.x, chip.y, machine_graph,
@@ -133,7 +133,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         """
         # insert machine vertices
         for ethernet_connected_chip in progress.over(
-                machine.ethernet_connected_chips, finish_at_end=False):
+                machine.ethernet_connected_chips):
 
             # add to application graph if possible
             machine_vertex = None
