@@ -1,7 +1,9 @@
 # dsg imports
-from data_specification import utility_calls
+from data_specification import utility_calls, DataSpecificationExecutor
 
 # front end common imports
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.exceptions import DataSpecificationException
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 # SpiNMachine imports
@@ -14,8 +16,10 @@ import logging
 import struct
 import datetime
 import shutil
+import numpy
 from ConfigParser import RawConfigParser
 
+from spinn_storage_handlers import FileDataReader
 from spinnman.model.enums import CPUState
 
 logger = logging.getLogger(__name__)
@@ -345,6 +349,98 @@ def _handle_model_binaries(
         for core_subset in core_subsets:
             cores.add_core_subset(core_subset)
     return cores
+
+
+def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
+    """ flood fills a binary to spinnaker on a given app_id \
+    given the executable targets and binary. 
+    
+    :param executable_targets: the executable targets object
+    :param binary: the binary to flood fill
+    :param txrx: spinnman instance
+    :param app_id: the app id to load it on
+    :return: the number of cores it was loaded onto
+    """
+    core_subset = executable_targets.get_cores_for_binary(binary)
+    txrx.execute_flood(
+        core_subset, binary, app_id, wait=True, is_filename=True)
+    return len(core_subset)
+
+
+def execute_dse_allocate_sdram_and_write_to_spinnaker(
+        txrx, machine, app_id, x, y, p, data_spec_path,
+        memory_write_function):
+    """
+    
+    :param txrx: 
+    :param machine: 
+    :param app_id: 
+    :param x: 
+    :param y: 
+    :param p: 
+    :param data_spec_path: 
+    :param memory_write_function: 
+    :return: 
+    """
+
+    # build specification reader
+    reader = FileDataReader(data_spec_path)
+
+    # maximum available memory
+    # however system updates the memory available
+    # independently, so the check on the space available actually
+    # happens when memory is allocated
+    chip = machine.get_chip_at(x, y)
+    memory_available = chip.sdram.size
+
+    # generate data spec executor
+    executor = DataSpecificationExecutor(reader, memory_available)
+
+    # run data spec executor
+    try:
+        # bytes_used_by_spec, bytes_written_by_spec = \
+        executor.execute()
+    except DataSpecificationException:
+        logger.error("Error executing data specification for {}, {}, {}"
+                     .format(x, y, p))
+        raise
+
+    bytes_used_by_spec = executor.get_constructed_data_size()
+
+    # allocate memory where the app data is going to be written; this
+    # raises an exception in case there is not enough SDRAM to allocate
+    start_address = txrx.malloc_sdram(x, y, bytes_used_by_spec, app_id)
+
+    # Write the header and pointer table and load it
+    header = executor.get_header()
+    pointer_table = executor.get_pointer_table(start_address)
+    data_to_write = numpy.concatenate((header, pointer_table)).tostring()
+    memory_write_function(x, y, start_address, data_to_write)
+    bytes_written_by_spec = len(data_to_write)
+
+    # Write each region
+    for region_id in xrange(MAX_MEM_REGIONS):
+        region = executor.get_region(region_id)
+        if region is not None:
+            max_pointer = region.max_write_pointer
+            if not region.unfilled and max_pointer > 0:
+                # Get the data up to what has been written
+                data = region.region_data[:max_pointer]
+
+                # Write the data to the position
+                position = pointer_table[region_id]
+                memory_write_function(x, y, position, data)
+                bytes_written_by_spec += len(data)
+
+    # set user 0 register appropriately to the application data
+    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
+    start_address_encoded = buffer(_ONE_WORD.pack(start_address))
+    txrx.write_memory(x, y, user_0_address, start_address_encoded)
+    return {
+        'start_address': start_address,
+        'memory_used': bytes_used_by_spec,
+        'memory_written': bytes_written_by_spec
+    }
 
 
 def read_config(config, section, item):
