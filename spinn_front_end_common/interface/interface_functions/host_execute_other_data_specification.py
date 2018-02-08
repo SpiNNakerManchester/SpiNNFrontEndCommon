@@ -44,8 +44,8 @@ class HostExecuteOtherDataSpecification(object):
         # create a progress bar for end users
         progress = ProgressBar(
             executable_targets.total_processors + 1 -
-            len(executable_targets.get_binaries_of_executable_type(
-                ExecutableType.SYSTEM)),
+            executable_targets.get_n_cores_for_executable_type(
+                ExecutableType.SYSTEM),
             "Executing data specifications and loading data for "
             "application vertices")
 

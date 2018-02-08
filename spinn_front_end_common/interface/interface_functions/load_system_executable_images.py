@@ -18,8 +18,8 @@ class LoadSystemExecutableImages(object):
         """
 
         progress = ProgressBar(
-            len(executable_targets.get_binaries_of_executable_type(
-                ExecutableType.SYSTEM)),
+            executable_targets.get_n_cores_for_executable_type(
+                ExecutableType.SYSTEM),
             "Loading system executables onto the machine")
 
         for binary in executable_targets.get_binaries_of_executable_type(
@@ -27,6 +27,4 @@ class LoadSystemExecutableImages(object):
             progress.update(
                 helpful_functions.flood_fill_binary_to_spinnaker(
                     executable_targets, binary, transceiver, app_id))
-
-        progress.update()
         progress.end()

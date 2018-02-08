@@ -22,8 +22,8 @@ class LoadOtherExecutableImages(object):
 
         progress = ProgressBar(
             executable_targets.total_processors + 1 -
-            len(executable_targets.get_binaries_of_executable_type(
-                ExecutableType.SYSTEM)),
+            executable_targets.get_n_cores_for_executable_type(
+                ExecutableType.SYSTEM),
             "Loading application executables onto the machine")
 
         # only load executables not of system type.
