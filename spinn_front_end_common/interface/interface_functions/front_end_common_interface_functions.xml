@@ -545,7 +545,7 @@
             <token part="DSGAppDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
-    <algorithm name="HostExecuteSystenDataSpecification">
+    <algorithm name="HostExecuteSystemDataSpecification">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>HostExecuteSystemDataSpecification</python_class>
         <input_definitions>
