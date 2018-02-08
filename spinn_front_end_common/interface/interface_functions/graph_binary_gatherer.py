@@ -46,4 +46,4 @@ class GraphBinaryGatherer(object):
 
         executable_targets.add_processor(
             binary_path, placement.x, placement.y, placement.p,
-            associated_vertex.get_binary_start_type)
+            associated_vertex.get_binary_start_type())
