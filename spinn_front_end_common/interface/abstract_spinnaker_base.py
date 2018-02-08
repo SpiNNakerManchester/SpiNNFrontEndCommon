@@ -1809,9 +1809,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms.append("WriteMemoryIOData")
 
         if self._exec_dse_on_host:
-            optional_algorithms.append("HostExecuteDataSpecification")
+            optional_algorithms.append("HostExecuteSystemDataSpecification")
+            optional_algorithms.append("HostExecuteOtherDataSpecification")
+
         else:
-            optional_algorithms.append("MachineExecuteDataSpecification")
+            optional_algorithms.append("HostExecuteSystemDataSpecification")
+            optional_algorithms.append("MachineExecuteOtherDataSpecification")
 
         # Reload any parameters over the loaded data if we have already
         # run and not using a virtual board
@@ -1822,7 +1825,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         optional_algorithms.append("GraphBinaryGatherer")
 
         # algorithms needed for loading the binaries to the SpiNNaker machine
-        optional_algorithms.append("LoadExecutableImages")
+        optional_algorithms.append("LoadOtherExecutableImages")
+        if enable_advanced_monitor:
+            optional_algorithms.append("LoadSystemExecutableImages")
 
         # Something probably a report needs the routing tables
         # This report is one way to get them if done on machine
