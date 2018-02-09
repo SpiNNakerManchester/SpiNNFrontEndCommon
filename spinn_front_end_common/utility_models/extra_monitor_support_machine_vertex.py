@@ -240,7 +240,7 @@ class ExtraMonitorSupportMachineVertex(
             timeout_mantissa, timeout_exponent, core_subsets,
             self._EXTRA_MONITOR_COMMANDS.SET_ROUTER_TIMEOUT)
 
-    def set_reinjection_router_emergency_timeout(
+    def set_router_emergency_timeout(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
             extra_monitor_cores_to_set):
         """ Sets the timeout of the routers
