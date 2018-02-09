@@ -8,3 +8,5 @@
 .settings
 .cproject
 Debug
+/.cache
+.coverage
