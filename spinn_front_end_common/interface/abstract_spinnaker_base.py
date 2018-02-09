@@ -1590,6 +1590,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.getboolean("Machine", "enable_reinjection")):
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
+            algorithms.append("DataInMulticastRoutingGenerator")
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
@@ -1749,8 +1750,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         tokens = list(self._mapping_tokens)
         inputs["WriteMemoryMapReportFlag"] = (
             self._config.getboolean("Reports", "write_memory_map_report") and
-            application_graph_changed
-        )
+            application_graph_changed)
 
         if not application_graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
