@@ -154,11 +154,14 @@ class ExtraMonitorSupportMachineVertex(
         return "extra_monitor_support.aplx"
 
     @inject_items({"routing_info": "MemoryRoutingInfos",
-                   "machine_graph": "MemoryMachineGraph"})
+                   "machine_graph": "MemoryMachineGraph",
+                   "data_in_routing_tables": "DataInMulticastRoutingTables"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
-               additional_arguments={"routing_info", "machine_graph"})
+               additional_arguments={
+                   "routing_info", "machine_graph", "data_in_routing_tables"})
     def generate_data_specification(
-            self, spec, placement, routing_info, machine_graph):
+            self, spec, placement, routing_info, machine_graph,
+            data_in_routing_tables):
         # storing for future usage
         self._placement = placement
 
