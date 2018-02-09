@@ -55,11 +55,13 @@ class ExtraMonitorSupportMachineVertex(
     _EXTRA_MONITOR_DSG_REGIONS = Enum(
         value="_EXTRA_MONITOR_DSG_REGIONS",
         names=[('CONFIG', 0),
-               ('DATA_SPEED_CONFIG', 1)])
+               ('DATA_OUT_SPEED_CONFIG', 1),
+               ("DATA_IN_SPEED_CONFIG", 2)])
 
-    _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
+    _CONFIG_REGION_RE_INJECTOR_SIZE_IN_BYTES = 4 * 4
     _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
+    _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 4 * 4) + 4
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -131,11 +133,13 @@ class ExtraMonitorSupportMachineVertex(
     def static_resources_required():
         return ResourceContainer(sdram=SDRAMResource(
             sdram=ExtraMonitorSupportMachineVertex.
-            _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES +
+            _CONFIG_REGION_RE_INJECTOR_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
             _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
-            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES))
+            _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
+            ExtraMonitorSupportMachineVertex.
+            _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -169,18 +173,33 @@ class ExtraMonitorSupportMachineVertex(
         self._generate_reinjection_functionality_data_specification(spec)
 
         # write data out functionality
-        self._generate_data_speed_up_functionality_data_specification(
+        self._generate_data_out_speed_up_functionality_data_specification(
             spec, routing_info, machine_graph)
-        spec.end_specification()
 
-    def _generate_data_speed_up_functionality_data_specification(
+        # write data in functionality
+        self._generate_data_in_speed_up_functionality_data_specification(
+            spec, data_in_routing_tables, placement)
+
+        spec.end_specification()
+        
+    def _generate_data_in_speed_up_functionality_data_specification(
+            self, spec, data_in_routing_tables, placement):
+        spec.reserve_memory_region(
+            region=self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value,
+            size=self._MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING,
+            label="Data in speed up functionality config region")
+        spec.switch_write_focus(
+            self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value)
+
+
+    def _generate_data_out_speed_up_functionality_data_specification(
             self, spec, routing_info, machine_graph):
         spec.reserve_memory_region(
-            region=self._EXTRA_MONITOR_DSG_REGIONS.DATA_SPEED_CONFIG.value,
+            region=self._EXTRA_MONITOR_DSG_REGIONS.DATA_OUT_SPEED_CONFIG.value,
             size=self._CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES,
             label="data_speed functionality config region")
         spec.switch_write_focus(
-            self._EXTRA_MONITOR_DSG_REGIONS.DATA_SPEED_CONFIG.value)
+            self._EXTRA_MONITOR_DSG_REGIONS.DATA_OUT_SPEED_CONFIG.value)
 
         if DataSpeedUpPacketGatherMachineVertex.TRAFFIC_TYPE == \
                 EdgeTrafficType.MULTICAST:
@@ -206,7 +225,7 @@ class ExtraMonitorSupportMachineVertex(
     def _generate_reinjection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(
             region=self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value,
-            size=self._CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES,
+            size=self._CONFIG_REGION_RE_INJECTOR_SIZE_IN_BYTES,
             label="re-injection functionality config region")
 
         spec.switch_write_focus(self._EXTRA_MONITOR_DSG_REGIONS.CONFIG.value)
