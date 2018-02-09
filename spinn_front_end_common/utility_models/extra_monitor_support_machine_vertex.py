@@ -26,7 +26,7 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utility_models.\
     data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
-from spinn_machine import CoreSubsets
+from spinn_machine import CoreSubsets, Router
 from spinn_utilities.overrides import overrides
 
 
@@ -61,7 +61,13 @@ class ExtraMonitorSupportMachineVertex(
     _CONFIG_REGION_RE_INJECTOR_SIZE_IN_BYTES = 4 * 4
     _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
-    _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 4 * 4) + 4
+    _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 * 4) + 4
+    # SDRAM requirement for containing router table entries
+    # 16 bytes per entry:
+    # 4 for a key, 4 for mask,
+    # 4 for word alignment for 18 cores and 6 links
+    # (24 bits, for word aligning)
+    _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * 4
 
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
@@ -139,7 +145,8 @@ class ExtraMonitorSupportMachineVertex(
             ExtraMonitorSupportMachineVertex.
             _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
-            _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING))
+            _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
+            ExtraMonitorSupportMachineVertex._SDRAM_FOR_ROUTER_TABLE_ENTRIES))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -191,6 +198,15 @@ class ExtraMonitorSupportMachineVertex(
         spec.switch_write_focus(
             self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value)
 
+        # write table entries
+        table = data_in_routing_tables.get_routing_table_for_chip(
+            placement.x, placement.y)
+        spec.write_value(table.number_of_entries)
+        for entry in table.multicast_routing_entries:
+            spec.write_value(entry.routing_entry_key)
+            spec.write_value(entry.mask)
+            spec.write_value(
+                Router.convert_routing_table_entry_to_spinnaker_route(entry))
 
     def _generate_data_out_speed_up_functionality_data_specification(
             self, spec, routing_info, machine_graph):

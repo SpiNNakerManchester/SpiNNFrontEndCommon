@@ -133,12 +133,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES = 300
 
-    # SDRAM requirement for containing router table entries
-    # 16 bytes per entry:
-    # 4 for a key, 4 for mask,
-    # 8 for word alignment for 18 cores and 6 links (24)
-    SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * 4
-
     # offset where data in starts on first command (
     # command, base_address, x&y, max_seq_number)
     OFFSET_AFTER_COMMAND_AND_ADDRESS = 16
@@ -200,8 +194,6 @@ class DataSpeedUpPacketGatherMachineVertex(
             sdram=SDRAMResource(
                 constants.SYSTEM_BYTES_REQUIREMENT +
                 DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE +
-                DataSpeedUpPacketGatherMachineVertex.
-                SDRAM_FOR_ROUTER_TABLE_ENTRIES +
                 DataSpeedUpPacketGatherMachineVertex.
                 SDRAM_FOR_MISSING_SDP_SEQ_NUMS),
             iptags=[IPtagResource(
@@ -412,6 +404,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data_to_write: the data to write
         :rtype: None 
         """
+        print "SENDING DATA VIA EXTRA MONITORS"
 
         # where in data we've sent up to
         position_in_data = 0
