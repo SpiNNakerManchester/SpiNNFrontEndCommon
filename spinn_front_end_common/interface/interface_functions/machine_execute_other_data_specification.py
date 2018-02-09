@@ -1,4 +1,6 @@
 from data_specification import data_spec_sender
+from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
@@ -25,32 +27,34 @@ class MachineExecuteOtherDataSpecification(object):
 
     def __call__(
             self, write_memory_map_report, dsg_targets, transceiver, app_id,
-            uses_advanced_monitors=False,
+            uses_advanced_monitors=False, machine=None,
             extra_monitor_cores_to_ethernet_connection_map=None):
         """
         :param write_memory_map_report: bool for writing memory report
         :param dsg_targets: the mapping between placement and dsg file
         :param transceiver: SpiNNMan instance
         :param app_id: the app id
+        :param machine: the SpiNNMachine instance
         :param uses_advanced_monitors: flag for using extra monitors
         :param extra_monitor_cores_to_ethernet_connection_map:\
         extra monitor to ethernet chip map
         """
         return self.spinnaker_based_data_specification_execution(
             write_memory_map_report, dsg_targets, transceiver, app_id,
-            uses_advanced_monitors,
+            uses_advanced_monitors, machine,
             extra_monitor_cores_to_ethernet_connection_map)
 
     @staticmethod
     def spinnaker_based_data_specification_execution(
             write_memory_map_report, dsg_targets, transceiver, app_id,
-            uses_advanced_monitors,
+            uses_advanced_monitors, machine,
             extra_monitor_cores_to_ethernet_connection_map):
         """
         :param write_memory_map_report: bool for writing memory report
         :param dsg_targets: the mapping between placement and dsg file
         :param transceiver: SpiNNMan instance
         :param app_id: the app id
+        :param machine: the SpiNNMachine instance
         :param uses_advanced_monitors: flag for using extra monitors
         :param extra_monitor_cores_to_ethernet_connection_map:\
         extra monitor to ethernet chip map
@@ -85,10 +89,12 @@ class MachineExecuteOtherDataSpecification(object):
                 len(dse_data_struct_data))
 
             # determine which function to use for writing large memory
-            write_memory_function = transceiver.write_memory
-            if uses_advanced_monitors:
-                gatherer = extra_monitor_cores_to_ethernet_connection_map[x, y]
-                write_memory_function = gatherer.send_data_into_spinnaker
+            write_memory_function = DataSpeedUpPacketGatherMachineVertex. \
+                locate_correct_write_data_function_for_chip_location(
+                machine=machine, x=x, y=y, transceiver=transceiver,
+                uses_advanced_monitors=uses_advanced_monitors,
+                extra_monitor_cores_to_ethernet_connection_map=
+                extra_monitor_cores_to_ethernet_connection_map)
 
             write_memory_function(
                 x, y, base_address, data_spec_file_path, is_filename=True)

@@ -172,7 +172,7 @@ class BufferManager(object):
                 self._machine, placement_x, placement_y,
                 self._extra_monitor_cores_to_ethernet_connection_map)
             return receiver.get_data(
-                transceiver, self._placements.get_placement_of_vertex(sender),
+                self._placements.get_placement_of_vertex(sender),
                 address, length)
         else:
             return transceiver.read_memory(

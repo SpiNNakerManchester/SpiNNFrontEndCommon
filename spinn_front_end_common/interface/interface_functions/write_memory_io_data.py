@@ -2,6 +2,8 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.machine import MachineGraph
 
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
+from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import \
+    DataSpeedUpPacketGatherMachineVertex
 
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -29,7 +31,7 @@ class WriteMemoryIOData(object):
             self, graph, placements, app_id, app_data_runtime_folder, hostname,
             transceiver=None, graph_mapper=None, uses_advanced_monitors=False,
             extra_monitor_cores_to_ethernet_connection_map=None,
-            processor_to_app_data_base_address=None):
+            processor_to_app_data_base_address=None, machine=None):
         """
 
         :param graph: The graph to process
@@ -60,7 +62,7 @@ class WriteMemoryIOData(object):
                 write_memory_function, buffer_size = \
                     self._get_write_function_and_buffer_size(
                         uses_advanced_monitors, placement.x, placement.y,
-                        transceiver,
+                        transceiver, machine,
                         extra_monitor_cores_to_ethernet_connection_map)
 
                 self._write_data_for_vertex(
@@ -75,7 +77,7 @@ class WriteMemoryIOData(object):
                 write_memory_function, buffer_size = \
                     self._get_write_function_and_buffer_size(
                         uses_advanced_monitors, placement.x, placement.y,
-                        transceiver,
+                        transceiver, machine,
                         extra_monitor_cores_to_ethernet_connection_map)
 
                 self._write_data_for_vertex(
@@ -88,14 +90,18 @@ class WriteMemoryIOData(object):
 
     @staticmethod
     def _get_write_function_and_buffer_size(
-            uses_advanced_monitors, x, y, transceiver,
+            uses_advanced_monitors, x, y, transceiver, machine,
             extra_monitor_cores_to_ethernet_connection_map):
+
         # determine which function to use for writing memory
-        write_memory_function = transceiver.write_memory
+        write_memory_function = DataSpeedUpPacketGatherMachineVertex. \
+            locate_correct_write_data_function_for_chip_location(
+                machine=machine, x=x, y=y, transceiver=transceiver,
+                uses_advanced_monitors=uses_advanced_monitors,
+                extra_monitor_cores_to_ethernet_connection_map=
+                extra_monitor_cores_to_ethernet_connection_map)
         buffer_size = 256
         if uses_advanced_monitors:
-            gatherer = extra_monitor_cores_to_ethernet_connection_map[x, y]
-            write_memory_function = gatherer.send_data_into_spinnaker
             buffer_size = 120 * 2024 * 1024
         return write_memory_function, buffer_size
 

@@ -12,7 +12,7 @@ class DataSpeedUpPacketGatherApplicationVertex(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary):
 
-    def __init__(self, x, y, ip_address, extra_monitors_by_chip,
+    def __init__(self, x, y, ip_address, extra_monitors_by_chip, transceiver,
                  constraints=None):
         ApplicationVertex.__init__(
             self, "multicast speed up application vertex for {}, {}".format(
@@ -20,7 +20,7 @@ class DataSpeedUpPacketGatherApplicationVertex(
         AbstractGeneratesDataSpecification.__init__(self)
         AbstractHasAssociatedBinary.__init__(self)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
-            x, y, ip_address, extra_monitors_by_chip, constraints)
+            x, y, ip_address, extra_monitors_by_chip, transceiver, constraints)
 
     @property
     def machine_vertex(self):

@@ -122,10 +122,15 @@
                 <param_name>n_cores_to_allocate</param_name>
                 <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
+            <param_name>transceiver</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
@@ -603,12 +608,16 @@
                 <param_type>APPID</param_type>
             </parameter>
             <parameter>
-                <param_name>uses_advanced_monitors=</param_name>
+                <param_name>uses_advanced_monitors</param_name>
                 <param_type>UsingAdvancedMonitorSupport</param_type>
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -620,6 +629,7 @@
         <optional_inputs>
             <param_name>uses_advanced_monitors</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>machine</param_name>
         </optional_inputs>
         <outputs>
             <token part="DSGDataLoaded">DataLoaded</token>
@@ -1847,12 +1857,16 @@
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
             <parameter>
-                <param_name>uses_advanced_monitors=</param_name>
+                <param_name>uses_advanced_monitors</param_name>
                 <param_type>UsingAdvancedMonitorSupport</param_type>
             </parameter>
             <parameter>
                 <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -1868,6 +1882,7 @@
             <param_name>processor_to_app_data_base_address</param_name>
             <param_name>uses_advanced_monitors</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>machine</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>

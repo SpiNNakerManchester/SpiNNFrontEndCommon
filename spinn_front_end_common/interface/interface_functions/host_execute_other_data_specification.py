@@ -82,10 +82,12 @@ class HostExecuteOtherDataSpecification(object):
             y = core_subset.y
 
             # determine which function to use for writing memory
-            write_memory_function = transceiver.write_memory
-            if uses_advanced_monitors:
-                gatherer = extra_monitor_cores_to_ethernet_connection_map[x, y]
-                write_memory_function = gatherer.send_data_into_spinnaker
+            write_memory_function = DataSpeedUpPacketGatherMachineVertex.\
+                locate_correct_write_data_function_for_chip_location(
+                    machine=machine, x=x, y=y, transceiver=transceiver,
+                    uses_advanced_monitors=uses_advanced_monitors,
+                    extra_monitor_cores_to_ethernet_connection_map=
+                    extra_monitor_cores_to_ethernet_connection_map)
 
             # execute dse, allocate sdram and write to spinnaker via correct
             # write function
