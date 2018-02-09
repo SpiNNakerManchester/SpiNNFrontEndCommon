@@ -2,6 +2,38 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://github.com/SpiNNakerManchester/PACMAN
             https://raw.githubusercontent.com/SpiNNakerManchester/PACMAN/master/pacman/operations/algorithms_metadata_schema.xsd">
+    <algorithm name="DataInMulticastRoutingGenerator">
+        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
+        <python_class>DataInMulticastRoutingGenerator</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>machine</param_name>
+                <param_type>MemoryExtendedMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>extra_monitor_cores</param_name>
+                <param_type>MemoryExtraMonitorToChipMapping</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>board_version</param_name>
+                <param_type>BoardVersion</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>machine</param_name>
+            <param_name>extra_monitor_cores</param_name>
+            <param_name>placements</param_name>
+            <param_name>board_version</param_name>
+        </required_inputs>
+        <outputs>
+            <param_type>DataInMulticastRoutingTables</param_type>
+            <param_type>DataInMulticastKeyToChipMap</param_type>
+        </outputs>
+    </algorithm>
     <algorithm name="ProcessPartitionConstraints">
         <python_module>spinn_front_end_common.interface.interface_functions.process_partition_constraints</python_module>
         <python_class>ProcessPartitionConstraints</python_class>

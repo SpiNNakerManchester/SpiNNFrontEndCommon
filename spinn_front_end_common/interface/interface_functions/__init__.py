@@ -46,6 +46,8 @@ from .spalloc_max_machine_generator \
 from .tags_loader import TagsLoader
 from .tdma_agenda_builder import TDMAAgendaBuilder
 from .virtual_machine_generator import VirtualMachineGenerator
+from .data_in_multicast_routing_generator import \
+    DataInMulticastRoutingGenerator
 
 __all__ = [
     "ApplicationFinisher",
@@ -72,5 +74,5 @@ __all__ = [
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
     "SpallocMaxMachineGenerator", "TagsLoader",
-    "TDMAAgendaBuilder",
+    "TDMAAgendaBuilder", "DataInMulticastRoutingGenerator",
     "VirtualMachineGenerator"]
