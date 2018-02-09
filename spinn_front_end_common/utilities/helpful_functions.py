@@ -370,17 +370,19 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
 def execute_dse_allocate_sdram_and_write_to_spinnaker(
         txrx, machine, app_id, x, y, p, data_spec_path,
         memory_write_function):
-    """
+    """ uncompress the DSE file, allocates sdram from the Machine, and\
+     writes data to SpiNNaker. 
     
-    :param txrx: 
-    :param machine: 
-    :param app_id: 
-    :param x: 
-    :param y: 
-    :param p: 
-    :param data_spec_path: 
-    :param memory_write_function: 
-    :return: 
+    :param txrx: SPiNNMan instance
+    :param machine: SPINNMachine instance
+    :param app_id: the app id to alocate sdram on
+    :param x: chip x
+    :param y: chip y
+    :param p: processor id
+    :param data_spec_path: file path to the dse script. 
+    :param memory_write_function: which function to call to write memory on\
+     spinnaker
+    :return: dict of 'start_address', 'memory_used', 'memory_written'
     """
 
     # build specification reader
@@ -435,7 +437,7 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
     # set user 0 register appropriately to the application data
     user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
     start_address_encoded = buffer(_ONE_WORD.pack(start_address))
-    txrx.write_memory(x, y, user_0_address, start_address_encoded)
+    memory_write_function(x, y, user_0_address, start_address_encoded)
     return {
         'start_address': start_address,
         'memory_used': bytes_used_by_spec,
