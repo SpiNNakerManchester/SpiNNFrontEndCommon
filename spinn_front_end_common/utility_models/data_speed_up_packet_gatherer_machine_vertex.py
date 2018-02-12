@@ -121,6 +121,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
 
+        # Stored reinjection status for resetting timeouts
+        self._last_reinjection_status = None
+
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
@@ -264,30 +267,43 @@ class DataSpeedUpPacketGatherMachineVertex(
                                     n_lost_seq_nums))))
         return prov_items
 
-    @staticmethod
     def set_cores_for_data_extraction(
-            transceiver, extra_monitor_cores_for_router_timeout,
+            self, transceiver, extra_monitor_cores_for_router_timeout,
             placements):
+
+        # Store the last reinjection status for resetting
+        # NOTE: This assumes the status is the same on all cores
+        self._last_reinjection_status = \
+            extra_monitor_cores_for_router_timeout[0].get_reinjection_status()
+
         # set time out
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
             15, 15, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
         extra_monitor_cores_for_router_timeout[0].\
             set_reinjection_router_emergency_timeout(
-                15, 0, transceiver, placements,
+                1, 1, transceiver, placements,
                 extra_monitor_cores_for_router_timeout)
 
-    @staticmethod
     def unset_cores_for_data_extraction(
-            transceiver, extra_monitor_cores_for_router_timeout,
+            self, transceiver, extra_monitor_cores_for_router_timeout,
             placements):
+        if self._last_reinjection_status is None:
+            logger.warn(
+                "Cores have not been set for data extraction, so can't be"
+                " unset")
         try:
+            mantissa, exponent = \
+                self._last_reinjection_status.router_timeout_parameters()
             extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
-                15, 4, transceiver, placements,
+                mantissa, exponent, transceiver, placements,
                 extra_monitor_cores_for_router_timeout)
+            mantissa, exponent = \
+                self._last_reinjection_status\
+                .router_emergency_timeout_parameters()
             extra_monitor_cores_for_router_timeout[0].\
                 set_reinjection_router_emergency_timeout(
-                    0, 0, transceiver, placements,
+                    mantissa, exponent, transceiver, placements,
                     extra_monitor_cores_for_router_timeout)
         except Exception:
             logger.error("Error resetting timeouts", exc_info=True)

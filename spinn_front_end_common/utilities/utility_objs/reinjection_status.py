@@ -80,10 +80,26 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._router_timeout)
 
     @property
+    def router_timeout_parameters(self):
+        """ The WAIT1 timeout value of the router as mantissa and exponent
+        """
+        mantissa = self._router_timeout & 0xF
+        exponent = (self._router_timeout >> 4) & 0xF
+        return mantissa, exponent
+
+    @property
     def router_emergency_timeout(self):
         """ The WAIT2 timeout value of the router in cycles
         """
         return _decode_router_timeout_value(self._router_emergency_timeout)
+
+    @property
+    def router_emergency_timeout_parameters(self):
+        """ The WAIT2 timeout value of the router as mantissa and exponent
+        """
+        mantissa = self._router_emergency_timeout & 0xF
+        exponent = (self._router_emergency_timeout >> 4) & 0xF
+        return mantissa, exponent
 
     @property
     def n_dropped_packets(self):
