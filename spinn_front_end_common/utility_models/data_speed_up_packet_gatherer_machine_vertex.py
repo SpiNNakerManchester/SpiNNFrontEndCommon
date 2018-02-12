@@ -274,7 +274,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
         self._last_reinjection_status = \
-            extra_monitor_cores_for_router_timeout[0].get_reinjection_status()
+            extra_monitor_cores_for_router_timeout[0].get_reinjection_status(
+                placements, transceiver)
 
         # set time out
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
