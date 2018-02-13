@@ -14,6 +14,8 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.reset_counters_process import \
     ResetCountersProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.set_application_mc_routes_process import \
+    SetApplicationMCRoutesProcess
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_packet_types_process import \
     SetPacketTypesProcess
@@ -23,6 +25,8 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_router_timeout_process import \
     SetRouterTimeoutProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.set_system_mc_routes_process import \
+    SetSystemMCRoutesProcess
 from spinn_front_end_common.utility_models.\
     data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
@@ -76,7 +80,9 @@ class ExtraMonitorSupportMachineVertex(
                ("SET_PACKET_TYPES", 2),
                ("GET_STATUS", 3),
                ("RESET_COUNTERS", 4),
-               ("EXIT", 5)])
+               ("EXIT", 5),
+               ("LOAD_APP_MC_ROUTES", 6),
+               ("LOAD_SYSTEM_MC_ROUTES", 7)])
 
     def __init__(
             self, constraints, reinject_multicast=None,
@@ -376,6 +382,43 @@ class ExtraMonitorSupportMachineVertex(
             self._reinject_multicast, self._reinject_nearest_neighbour,
             self._reinject_fixed_route,
             self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
+
+    def set_up_system_mc_routes(
+            self, placements, extra_monitor_cores_for_data, transceiver):
+        """ gets the extra monitor cores to load up the system based mc routes
+         (used by data in)
+
+        :param placements: the placements object
+        :param extra_monitor_cores_for_data: the extra monitor cores to get\
+         status from
+        :param transceiver: the spinnMan interface
+        :rtype: None
+        """
+        core_subsets = self._convert_vertices_to_core_subset(
+            extra_monitor_cores_for_data, placements)
+        process = SetSystemMCRoutesProcess(
+            transceiver.scamp_connection_selector)
+        return process.set_system_mc_routes(
+            core_subsets, self._EXTRA_MONITOR_COMMANDS.LOAD_SYSTEM_MC_ROUTES)
+
+    def set_up_application_mc_routes(
+            self, placements, extra_monitor_cores_for_data, transceiver):
+        """ gets the extra monitor cores to load up the application based mc routes
+         (used by data in)
+
+        :param placements: the placements object
+        :param extra_monitor_cores_for_data: the extra monitor cores to get\
+         status from
+        :param transceiver: the spinnMan interface
+        :rtype: None
+        """
+        core_subsets = self._convert_vertices_to_core_subset(
+            extra_monitor_cores_for_data, placements)
+        process = SetApplicationMCRoutesProcess(
+            transceiver.scamp_connection_selector)
+        return process.set_application_mc_routes(
+            core_subsets,
+            self._EXTRA_MONITOR_COMMANDS.LOAD_APPLICATION_MC_ROUTES)
 
     @staticmethod
     def _convert_vertices_to_core_subset(

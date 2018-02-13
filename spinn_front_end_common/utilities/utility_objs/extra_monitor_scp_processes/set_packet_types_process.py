@@ -18,6 +18,8 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
         :param nearest_neighbour: bool stating if nearest neighbour should be \
         set
         :param fixed_route: bool stating if fixed route should be set
+        :param command_code: the command code used by extra monitor cores 
+        for setting packet types
         :rtype: None
         """
 

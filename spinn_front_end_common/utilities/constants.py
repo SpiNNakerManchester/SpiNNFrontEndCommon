@@ -71,7 +71,10 @@ SDP_PORTS = Enum(
         ("EXTRA_MONITOR_CORE_REINJECTION", 4),
 
         # extra monitor core data transfer functionality
-        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5)]
+        ("EXTRA_MONITOR_CORE_DATA_SPEED_UP", 5),
+
+        # extra monitor core data in speed up functionality
+        ("EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP", 6)]
 )
 
 # output buffering operations
