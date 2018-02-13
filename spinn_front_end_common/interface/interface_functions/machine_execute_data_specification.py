@@ -1,4 +1,4 @@
-from data_specification import data_spec_sender
+from data_specification.data_spec_sender import data_specification_executor
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
@@ -92,9 +92,7 @@ class MachineExecuteDataSpecification(object):
         return dse_app_id, core_subset
 
     def _execute_data_specs(self, txrx, cores, app_id, dse_app_id):
-        dse_executor = os.path.join(
-            os.path.dirname(data_spec_sender),
-            'data_specification_executor.aplx')
+        dse_executor = data_specification_executor()
         txrx.execute_flood(cores, dse_executor, app_id, is_filename=True)
 
         logger.info(
