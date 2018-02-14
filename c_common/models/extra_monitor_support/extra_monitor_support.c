@@ -70,11 +70,33 @@ extern INT_HANDLER sark_int_han(void);
 //! other missing SDP sequence numbers in SDP
 #define SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS 1001
 
+//! read in application mc routes
+#define SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING 6
+
+//! load application mc routes
+#define SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES 7
+
+//! load system mc routes
+#define SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES 8
+
 //! timeout for trying to end SDP packet
 #define SDP_TIMEOUT 1000
 
 //! extra length adjustment for the SDP header
 #define LENGTH_OF_SDP_HEADER 8
+
+//-----------------------------------------------------------------------------
+// speed up Data in stuff
+//-----------------------------------------------------------------------------
+
+//! max router entries
+#define N_ROUTER_ENTRIES = 1024
+
+//! sdram requirement to store all router entries.
+#define SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES = N_ROUTER_ENTRIES * 16
+
+//! size of a sdram router entry
+#define SIZE_OF_ROUTER_ENTRY_IN_SDRAM = 12
 
 //-----------------------------------------------------------------------------
 // reinjection functionality magic numbers
@@ -107,6 +129,9 @@ extern INT_HANDLER sark_int_han(void);
 
 // DMA slot
 #define DMA_SLOT           SLOT_3
+
+// MC payload slot
+#define MC_PAYLOAD_SLOT    SLOT_4
 
 #define RTR_BLOCKED_BIT    25
 #define RTR_DOVRFLW_BIT    30
@@ -196,6 +221,18 @@ typedef enum sending_data_sdp_data_positions {
     LENGTH_OF_DATA_READ = 2
 } sending_data_sdp_data_positions;
 
+//! \brief data positions in sdram for data in config
+typedef enum data_in_data_items {
+    ADDRESS_MC_KEY = 0,
+    DATA_MC_KEY = 1,
+    SYSTEM_ROUTER_ENTRIES_START = 2
+} data_in_data_items;
+
+//! \brief router entry positions in sdram
+typedef enum router_entry_positions {
+    ROUTER_ENTRY_KEY = 0, ROUTER_ENTRY_MASK = 1, ROUTER_ENTRY_ROUTE = 2
+} router_entry_positions;
+
 //! \brief position in SDP message for missing sequence numbers
 typedef enum missing_seq_num_sdp_data_positions {
     POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 1,
@@ -246,12 +283,14 @@ typedef enum positions_in_memory_for_the_reinject_flags {
 //! values for port numbers this core will respond to
 typedef enum functionality_to_port_num_map {
     RE_INJECTION_FUNCTIONALITY = 4,
-    DATA_SPEED_UP_FUNCTIONALITY = 5
+    DATA_OUT_SPEED_UP_FUNCTIONALITY = 5,
+    DATA_IN_SPEED_UP_FUNCTIONALITY = 6,
 } functionality_to_port_num_map;
 
 typedef enum data_spec_regions{
     CONFIG_REINJECTION = 0,
-    CONFIG_DATA_SPEED_UP = 1
+    CONFIG_DATA_OUT_SPEED_UP = 1,
+    CONFIG_DATA_IN_SPEED_UP = 2
 } data_spec_regions;
 
 //! human readable definitions of each element in the transmission region
@@ -296,7 +335,18 @@ volatile isr_t* const vic_vectors  = (isr_t *) (VIC_BASE + 0x100);
 volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 
 // ------------------------------------------------------------------------
-// global variables for data speed up functionality
+// global variables for data in speed up functionality
+// ------------------------------------------------------------------------
+
+//! data in variables
+address_t application_routers_sdram_address = NULL;
+uint data_in_address_key = 0;
+uint data_in_data_key = 0;
+address_t data_in_write_address = NULL;
+uint data_in_write_pointer = 0;
+
+// ------------------------------------------------------------------------
+// global variables for data out speed up functionality
 // ------------------------------------------------------------------------
 
 //! transmission stuff
@@ -659,9 +709,122 @@ void reinjection_configure_router() {
     rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
 }
 
+//-----------------------------------------------------------------------------
+// data in speed up main functions
+//-----------------------------------------------------------------------------
+
+//! \brief process a mc packet with payload
+INT_HANDLER data_in_process_mc_payload_packet(){
+    // get data from comm controller
+    uint data = cc[CC_RXDATA];
+    uint key = cc[CC_RXKEY];
+
+    // check if key is address or data key
+    // address key means the payload is where to start writing from
+    if (key == data_in_address_key){
+        data_in_write_address = data;
+        data_in_write_pointer = 0;
+    } // data keys require writing to next point in sdram
+    else if(key == data_in_data_key){
+        data_in_write_address[data_in_write_pointer] = data;
+        data_in_write_pointer += 1;
+        if (data_in_write_pointer >
+                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE){
+            io_printf(IO_BUF, "think ive gone too far in writing data!!!\n");
+        }
+    }
+    else{
+        io_printf(
+            IO_BUF,
+            "failed to recongise mc key %u. Only understand keys %u, %u\n",
+            key, data_in_address_key, data_in_data_key);
+    }
+}
+
+
+//! \brief sets up system routes on router. required by the data in speed
+//! up functionality
+void data_in_speed_up_load_in_system_tables() {
+    // clear the currently loaded routing table entries
+    if (rtr_mc_clear(0, N_ROUTER_ENTRIES) != 1){
+       io_printf(IO_BUF,
+            "failed to \n",);
+    }
+
+    // get sdram location for system routing tables
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    address_t address =
+        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
+
+    // read in routing table entries
+    uint n_entries_to_write = address[SYSTEM_ROUTER_ENTRIES_START];
+
+    // read in each entry from sdram and dump into next entry in mc router
+    for(   uint entry_id = 0;
+           entry_id < address[SYSTEM_ROUTER_ENTRIES_START];
+           entry_id++){
+        uint poisiton = SYSTEM_ROUTER_ENTRIES_START +
+                        (entry_id * SIZE_OF_ROUTER_ENTRY_IN_SDRAM);
+
+
+    }
+
+
+
+}
+
+
+//! \brief sets up application routes on router. required by data in speed up
+//! functionality
+void data_in_speed_up_load_in_application_routes(){
+
+}
+
+//! \brief reads in routers entries and places in application sdram location
+void data_in_read_router(){
+	position_in_sdram = 0;
+	for(uint entry_id = 0; entry_id < N_ROUTER_ENTRIES; entry_id ++){
+	    rtr_entry_t entry;
+	    uint success = rtr_mc_get(entry_id, *entry);
+	    if (success != 1){
+	        io_printf(IO_BUF, "failed to read application routing entry %d\n",
+	                  entry_id);
+	    }
+	}
+
+	// move to sdram
+	memcpy(application_routers_sdram_address[position_in_sdram],
+	       entry, sizeof(rtr_entry_t));
+	// update sdram tracker
+	position_in_sdram += (sizeof(rtr_entry_t) / WORD_TO_BYTE_MULTIPLIER);
+}
+
+//! \brief the handler for all messages coming in for data in speed up
+//! functionality.
+//! \param[in] msg: the SDP message (without SCP header)
+void handle_data_in_speed_up(sdp_msg_pure_data *msg) {
+    if (msg->data[COMMAND_ID_POSITION] ==
+            SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
+        data_in_read_router();
+    }
+    else if(msg->data[COMMAND_ID_POSITION] ==
+            SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
+        data_in_speed_up_load_in_application_routes();
+    }
+    else if(msg->data[COMMAND_ID_POSITION] ==
+            SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
+        data_in_speed_up_load_in_system_tables();
+    }
+    else{
+       io_printf(
+           IO_BUF,
+           "received unknown SDP packet in data in speed up port\n");
+    }
+}
 
 //-----------------------------------------------------------------------------
-// data speed up main functions
+// data out speed up main functions
 //-----------------------------------------------------------------------------
 
 static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
@@ -959,7 +1122,7 @@ void dma_complete_writing_missing_seq_to_sdram() {
 //! \brief the handler for all messages coming in for data speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_speed_up(sdp_msg_pure_data *msg) {
+void handle_data_out_speed_up(sdp_msg_pure_data *msg) {
 
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
 
@@ -1049,7 +1212,9 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
             }
         }
     } else {
-        io_printf(IO_BUF, "received unknown SDP packet\n");
+        io_printf(
+            IO_BUF,
+            "received unknown SDP packet in data out speed up port\n");
     }
 }
 
@@ -1106,8 +1271,11 @@ void __wrap_sark_int(void *pc) {
 
                 sark_msg_send(msg, 10);
                 break;
-            case DATA_SPEED_UP_FUNCTIONALITY:
-                handle_data_speed_up((sdp_msg_pure_data *) msg);
+            case DATA_OUT_SPEED_UP_FUNCTIONALITY:
+                handle_data_out_speed_up((sdp_msg_pure_data *) msg);
+                break;
+            case DATA_IN_SPEED_UP_FUNCTIONALITY:
+                handle_data_in_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
                 io_printf(IO_BUF, "port %d\n",
@@ -1160,11 +1328,11 @@ void reinjection_initialise() {
 }
 
 //! \brief sets up data required by the data speed up functionality
-void data_speed_up_initialise() {
+void data_out_speed_up_initialise() {
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     address_t address =
         (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
+    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_OUT_SPEED_UP]);
     basic_data_key = address[MY_KEY];
     new_sequence_key = address[NEW_SEQ_KEY];
     first_data_key = address[FIRST_DATA_KEY];
@@ -1188,6 +1356,36 @@ void data_speed_up_initialise() {
     dma[DMA_CTRL] = 0x3f; // Abort pending and active transfers
     dma[DMA_CTRL] = 0x0d; // clear possible transfer done and restart
     dma[DMA_GCTL] = 0x000c00; // enable DMA done interrupt
+}
+
+
+//! \brief sets up data required by the data in speed up functionality
+void data_in_speed_up_initialise(){
+    application_routers_sdram_address = sark_xalloc(
+        sv->sdram_heap, SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES, 0,
+		ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+	if (application_routers_sdram_address == NULL){
+	    io_printf(
+	        IO_BUF,
+	        "failed to allocate SDRAM for Application mc router entries\n");
+	    rt_error(RTE_SWERR);
+	}
+
+	cpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    address_t address =
+        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
+
+	data_in_address_key = address[ADDRESS_MC_KEY];
+	data_in_data_key = address[DATA_MC_KEY];
+
+	data_in_read_router();
+
+	// set up mc interupts to deal with data writing
+	MC_PAYLOAD_SLOT
+	vic_vectors[MC_PAYLOAD_SLOT]  = data_in_process_mc_payload_packet;
+    vic_controls[MC_PAYLOAD_SLOT] = 0x20 | CC_MC_INT;
+
 }
 
 //-----------------------------------------------------------------------------
@@ -1217,8 +1415,11 @@ void c_main() {
     // set up reinjection functionality
     reinjection_initialise();
 
-    // set up data speed up functionality
-    data_speed_up_initialise();
+    // set up data out speed up functionality
+    data_out_speed_up_initialise();
+
+    // set up data in speed up functionality
+    data_in_speed_up_initialise();
 
     // Enable interrupts and timer
     vic[VIC_ENABLE] = int_select;
