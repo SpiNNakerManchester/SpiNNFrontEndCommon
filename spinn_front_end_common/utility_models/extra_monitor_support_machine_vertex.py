@@ -65,7 +65,9 @@ class ExtraMonitorSupportMachineVertex(
     _CONFIG_REGION_RE_INJECTOR_SIZE_IN_BYTES = 4 * 4
     _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
+    _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 8
     _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 * 4) + 4
+
     # SDRAM requirement for containing router table entries
     # 16 bytes per entry:
     # 4 for a key, 4 for mask,
@@ -81,8 +83,9 @@ class ExtraMonitorSupportMachineVertex(
                ("GET_STATUS", 3),
                ("RESET_COUNTERS", 4),
                ("EXIT", 5),
-               ("LOAD_APP_MC_ROUTES", 6),
-               ("LOAD_SYSTEM_MC_ROUTES", 7)])
+               ("READ_APPLICATION_ROUTING_TABLE", 6),
+               ("LOAD_APP_MC_ROUTES", 7),
+               ("LOAD_SYSTEM_MC_ROUTES", 8)])
 
     def __init__(
             self, constraints, reinject_multicast=None,
@@ -152,7 +155,9 @@ class ExtraMonitorSupportMachineVertex(
             _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
             _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
-            ExtraMonitorSupportMachineVertex._SDRAM_FOR_ROUTER_TABLE_ENTRIES))
+            ExtraMonitorSupportMachineVertex._SDRAM_FOR_ROUTER_TABLE_ENTRIE +
+            ExtraMonitorSupportMachineVertex.
+            _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES))
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -172,13 +177,15 @@ class ExtraMonitorSupportMachineVertex(
 
     @inject_items({"routing_info": "MemoryRoutingInfos",
                    "machine_graph": "MemoryMachineGraph",
-                   "data_in_routing_tables": "DataInMulticastRoutingTables"})
+                   "data_in_routing_tables": "DataInMulticastRoutingTables",
+                   "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
-                   "routing_info", "machine_graph", "data_in_routing_tables"})
+                   "routing_info", "machine_graph", "data_in_routing_tables",
+                   "mc_data_chips_to_keys"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
-            data_in_routing_tables):
+            data_in_routing_tables, mc_data_chips_to_keys):
         # storing for future usage
         self._placement = placement
 
@@ -191,18 +198,32 @@ class ExtraMonitorSupportMachineVertex(
 
         # write data in functionality
         self._generate_data_in_speed_up_functionality_data_specification(
-            spec, data_in_routing_tables, placement)
+            spec, data_in_routing_tables, placement, mc_data_chips_to_keys)
 
         spec.end_specification()
         
     def _generate_data_in_speed_up_functionality_data_specification(
-            self, spec, data_in_routing_tables, placement):
+            self, spec, data_in_routing_tables, placement,
+            mc_data_chips_to_keys):
+        """ data in spec
+        
+        :param spec: spec file
+        :param data_in_routing_tables: routing tables for all chips 
+        :param placement: this placement
+        :param mc_data_chips_to_keys: keys to chips map
+        :rtype: None 
+        """
         spec.reserve_memory_region(
             region=self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value,
-            size=self._MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING,
+            size=(self._MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
+                  self._CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES),
             label="Data in speed up functionality config region")
         spec.switch_write_focus(
             self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value)
+
+        # write address key and data key
+        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y])
+        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] + 1)
 
         # write table entries
         table = data_in_routing_tables.get_routing_table_for_chip(
