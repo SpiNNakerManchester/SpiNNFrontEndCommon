@@ -15,9 +15,11 @@ class DataInMulticastRoutingGenerator(object):
     """
 
     RANDOM_PROCESSOR = 4
+    N_KEYS_PER_PARTITION_ID = 2
+    KEY_START_VALUE = 2
     FAKE_ETHERNET_CHIP_X = 0
     FAKE_ETHERNET_CHIP_Y = 0
-    ROUTING_MASK = 0xFFFFFFFF
+    ROUTING_MASK = 0xFFFFFFFE
 
     def __call__(self, machine, extra_monitor_cores, placements,
                  board_version):
@@ -57,7 +59,6 @@ class DataInMulticastRoutingGenerator(object):
         :return: dict of chip x and chip yto key to get there
         :rtype: dict
         """
-        key_to_destination_map = dict()
         for fake_chip_x, fake_chip_y in \
                 routing_tables_by_partition.get_routers():
             partitions_in_table = routing_tables_by_partition.\
@@ -202,7 +203,7 @@ class DataInMulticastRoutingGenerator(object):
 
         # deal with edges, each one being in a unique partition id, to
         # allow unique routing to each chip.
-        counter = 1
+        counter = self.KEY_START_VALUE
         for vertex in destination_vertices:
             fake_graph.add_edge(
                 MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
@@ -210,7 +211,7 @@ class DataInMulticastRoutingGenerator(object):
             fake_placement = fake_placements.get_placement_of_vertex(vertex)
             destination_to_partition_identifer_map[
                 fake_placement.x, fake_placement.y] = counter
-            counter += 1
+            counter += self.N_KEYS_PER_PARTITION_ID
 
         return (fake_graph, fake_placements, fake_machine,
                 destination_to_partition_identifer_map)
