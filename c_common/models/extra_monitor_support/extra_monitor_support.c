@@ -90,13 +90,13 @@ extern INT_HANDLER sark_int_han(void);
 //-----------------------------------------------------------------------------
 
 //! max router entries
-#define N_ROUTER_ENTRIES = 1024
+#define N_ROUTER_ENTRIES 1024
 
 //! sdram requirement to store all router entries.
-#define SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES = N_ROUTER_ENTRIES * 16
+#define SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES N_ROUTER_ENTRIES * 16
 
 //! size of a sdram router entry
-#define SIZE_OF_ROUTER_ENTRY_IN_SDRAM = 12
+#define SIZE_OF_ROUTER_ENTRY_IN_SDRAM 12
 
 //-----------------------------------------------------------------------------
 // reinjection functionality magic numbers
@@ -713,6 +713,15 @@ void reinjection_configure_router() {
 // data in speed up main functions
 //-----------------------------------------------------------------------------
 
+void _clear_router(){
+    // clear the currently loaded routing table entries
+    if (rtr_mc_clear(0, N_ROUTER_ENTRIES) != 1){
+       io_printf(IO_BUF, "failed to clear the router\n");
+       rt_error(RTE_SWERR);
+    }
+}
+
+
 //! \brief process a mc packet with payload
 INT_HANDLER data_in_process_mc_payload_packet(){
     // get data from comm controller
@@ -722,7 +731,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     // check if key is address or data key
     // address key means the payload is where to start writing from
     if (key == data_in_address_key){
-        data_in_write_address = data;
+        data_in_write_address = (address_t) data;
         data_in_write_pointer = 0;
     } // data keys require writing to next point in sdram
     else if(key == data_in_data_key){
@@ -741,49 +750,34 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     }
 }
 
-
-//! \brief sets up system routes on router. required by the data in speed
-//! up functionality
-void data_in_speed_up_load_in_system_tables() {
-    // clear the currently loaded routing table entries
-    if (rtr_mc_clear(0, N_ROUTER_ENTRIES) != 1){
-       io_printf(IO_BUF,
-            "failed to \n",);
-    }
-
-    // get sdram location for system routing tables
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
-
-    // read in routing table entries
-    uint n_entries_to_write = address[SYSTEM_ROUTER_ENTRIES_START];
-
+//! \brief private method for writing router entries to the router.
+//! \param[in] sdram_address: the sdram address where the router entries reside
+//! \param[in] n_entries: how many router entries to read in
+void _data_in_load_router_entries(address_t sdram_address, uint n_entries){
     // read in each entry from sdram and dump into next entry in mc router
-    for(   uint entry_id = 0;
-           entry_id < address[SYSTEM_ROUTER_ENTRIES_START];
-           entry_id++){
-        uint poisiton = SYSTEM_ROUTER_ENTRIES_START +
-                        (entry_id * SIZE_OF_ROUTER_ENTRY_IN_SDRAM);
+    for( uint entry_id = 0; entry_id < n_entries; entry_id++){
+        uint position = (entry_id * (
+            SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
 
-
+        if (rtr_mc_set(
+                entry_id,
+                sdram_address[position + ROUTER_ENTRY_KEY],
+                sdram_address[position + ROUTER_ENTRY_MASK],
+                sdram_address[position + ROUTER_ENTRY_ROUTE]) != 1){
+            io_printf(
+                IO_BUF,
+                "failed to write router entry %d, with key %u, mask %u, "
+                "route %u\n",
+                entry_id, sdram_address[position + ROUTER_ENTRY_KEY],
+                sdram_address[position + ROUTER_ENTRY_MASK],
+                sdram_address[position + ROUTER_ENTRY_ROUTE]);
+        }
     }
-
-
-
-}
-
-
-//! \brief sets up application routes on router. required by data in speed up
-//! functionality
-void data_in_speed_up_load_in_application_routes(){
-
 }
 
 //! \brief reads in routers entries and places in application sdram location
 void data_in_read_router(){
-	position_in_sdram = 0;
+	uint position_in_sdram = 0;
 	for(uint entry_id = 0; entry_id < N_ROUTER_ENTRIES; entry_id ++){
 	    rtr_entry_t entry;
 	    uint success = rtr_mc_get(entry_id, *entry);
@@ -794,10 +788,53 @@ void data_in_read_router(){
 	}
 
 	// move to sdram
-	memcpy(application_routers_sdram_address[position_in_sdram],
-	       entry, sizeof(rtr_entry_t));
+	application_routers_sdram_address[
+	    position_in_sdram + ROUTER_ENTRY_KEY] = entry.key;
+	application_routers_sdram_address[
+	    position_in_sdram + ROUTER_ENTRY_MASK] = entry.mask;
+	application_routers_sdram_address[
+	    position_in_sdram + ROUTER_ENTRY_ROUTE] = entry.route;
+
 	// update sdram tracker
-	position_in_sdram += (sizeof(rtr_entry_t) / WORD_TO_BYTE_MULTIPLIER);
+	position_in_sdram +=
+	    SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
+}
+
+
+//! \brief sets up system routes on router. required by the data in speed
+//! up functionality
+void data_in_speed_up_load_in_system_tables() {
+    // read in router table into app store in sdram (in case its changed
+    // since last time)
+    data_in_read_router();
+
+    // clear the currently loaded routing table entries to avoid conflicts
+    _clear_router();
+
+    // get sdram location for system routing tables
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    address_t address =
+        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
+
+    // read in routing table entries
+    uint n_entries_to_write = address[SYSTEM_ROUTER_ENTRIES_START];
+
+    _data_in_load_router_entries(
+        &address[SYSTEM_ROUTER_ENTRIES_START],
+        address[SYSTEM_ROUTER_ENTRIES_START]);
+}
+
+
+//! \brief sets up application routes on router. required by data in speed up
+//! functionality
+void data_in_speed_up_load_in_application_routes(){
+    // clear the currently loaded routing table entries
+    _clear_router();
+
+    // load app router entries from sdram
+    _data_in_load_router_entries(
+        &application_routers_sdram_address, N_ROUTER_ENTRIES);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
