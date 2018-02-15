@@ -67,6 +67,7 @@ class ExtraMonitorSupportMachineVertex(
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
     _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 8
     _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 * 4) + 4
+    _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
     # SDRAM requirement for containing router table entries
     # 16 bytes per entry:
@@ -178,14 +179,15 @@ class ExtraMonitorSupportMachineVertex(
     @inject_items({"routing_info": "MemoryRoutingInfos",
                    "machine_graph": "MemoryMachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
-                   "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap"})
+                   "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
+                   "app_id": "APPID"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "routing_info", "machine_graph", "data_in_routing_tables",
-                   "mc_data_chips_to_keys"})
+                   "mc_data_chips_to_keys", "app_id"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
-            data_in_routing_tables, mc_data_chips_to_keys):
+            data_in_routing_tables, mc_data_chips_to_keys, app_id):
         # storing for future usage
         self._placement = placement
 
@@ -198,19 +200,21 @@ class ExtraMonitorSupportMachineVertex(
 
         # write data in functionality
         self._generate_data_in_speed_up_functionality_data_specification(
-            spec, data_in_routing_tables, placement, mc_data_chips_to_keys)
+            spec, data_in_routing_tables, placement, mc_data_chips_to_keys,
+            app_id)
 
         spec.end_specification()
         
     def _generate_data_in_speed_up_functionality_data_specification(
             self, spec, data_in_routing_tables, placement,
-            mc_data_chips_to_keys):
+            mc_data_chips_to_keys, app_id):
         """ data in spec
         
         :param spec: spec file
         :param data_in_routing_tables: routing tables for all chips 
         :param placement: this placement
-        :param mc_data_chips_to_keys: keys to chips map
+        :param mc_data_chips_to_keys: data in keys to chips map.
+        :param app_id: The app id expected to write entries with
         :rtype: None 
         """
         spec.reserve_memory_region(
@@ -232,8 +236,11 @@ class ExtraMonitorSupportMachineVertex(
         for entry in table.multicast_routing_entries:
             spec.write_value(entry.routing_entry_key)
             spec.write_value(entry.mask)
-            spec.write_value(
-                Router.convert_routing_table_entry_to_spinnaker_route(entry))
+            route = app_id << self._BIT_SHIFT_TO_MOVE_APP_ID
+            route = \
+                route & Router.convert_routing_table_entry_to_spinnaker_route(
+                    entry)
+            spec.write_value(route)
 
     def _generate_data_out_speed_up_functionality_data_specification(
             self, spec, routing_info, machine_graph):

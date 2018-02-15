@@ -787,13 +787,18 @@ void data_in_read_router(){
 	                  entry_id);
 	    }
 
+        // merge app id into route for writing back at later time
+	    uint route_and_app_id = 0;
+	    route_and_app_id = (entry->free & 0x000000FF) << 24;
+	    route_and_app_id = route_and_app_id & entry->route;
+
         // move to sdram
         application_routers_sdram_address[
             position_in_sdram + ROUTER_ENTRY_KEY] = entry->key;
         application_routers_sdram_address[
             position_in_sdram + ROUTER_ENTRY_MASK] = entry->mask;
         application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_ROUTE] = entry->route;
+            position_in_sdram + ROUTER_ENTRY_ROUTE] = route_and_app_id;
 
         // update sdram tracker
         position_in_sdram +=
