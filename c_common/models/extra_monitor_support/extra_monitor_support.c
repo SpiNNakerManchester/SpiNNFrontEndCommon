@@ -98,6 +98,15 @@ extern INT_HANDLER sark_int_han(void);
 //! size of a sdram router entry
 #define SIZE_OF_ROUTER_ENTRY_IN_SDRAM 12
 
+//! hardcoded invalud router entry state for key
+#define INVALID_ROUTER_ENTRY_KEY 0xFFFFFFFF
+
+//! hardcoded invalid router entry state for mask
+#define INVALID_ROUTER_ENTRY_MASK 0
+
+//! hardcoded invalid router entry state for route
+#define INVALID_ROUTER_ENTRY_ROUTE 0xFF000000
+
 //-----------------------------------------------------------------------------
 // reinjection functionality magic numbers
 //-----------------------------------------------------------------------------
@@ -758,18 +767,29 @@ void data_in_read_and_load_router_entries(address_t sdram_address, uint n_entrie
         uint position = (entry_id * (
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
 
-        if (rtr_mc_set(
-                entry_id,
-                sdram_address[position + ROUTER_ENTRY_KEY],
-                sdram_address[position + ROUTER_ENTRY_MASK],
-                sdram_address[position + ROUTER_ENTRY_ROUTE]) != 1){
-            io_printf(
-                IO_BUF,
-                "failed to write router entry %d, with key %u, mask %u, "
-                "route %u\n",
-                entry_id, sdram_address[position + ROUTER_ENTRY_KEY],
-                sdram_address[position + ROUTER_ENTRY_MASK],
-                sdram_address[position + ROUTER_ENTRY_ROUTE]);
+        // check for invalid entries (possible during alloc and free or
+        // just not filled in.
+        if(sdram_address[position + ROUTER_ENTRY_KEY] !=
+                INVALID_ROUTER_ENTRY_KEY &
+                sdram_address[position + ROUTER_ENTRY_MASK] !=
+                INVALID_ROUTER_ENTRY_MASK &
+                sdram_address[position + ROUTER_ENTRY_ROUTE] !=
+                INVALID_ROUTER_ENTRY_ROUTE){
+
+            // try setting the valid router entry
+            if (rtr_mc_set(
+                    entry_id,
+                    sdram_address[position + ROUTER_ENTRY_KEY],
+                    sdram_address[position + ROUTER_ENTRY_MASK],
+                    sdram_address[position + ROUTER_ENTRY_ROUTE]) != 1){
+                io_printf(
+                    IO_BUF,
+                    "failed to write router entry %d, with key %u, mask %u, "
+                    "route %u\n",
+                    entry_id, sdram_address[position + ROUTER_ENTRY_KEY],
+                    sdram_address[position + ROUTER_ENTRY_MASK],
+                    sdram_address[position + ROUTER_ENTRY_ROUTE]);
+            }
         }
     }
 }
