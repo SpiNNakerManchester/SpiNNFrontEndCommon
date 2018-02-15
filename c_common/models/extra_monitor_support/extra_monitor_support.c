@@ -367,7 +367,6 @@ static uint32_t max_seq_num = 0;
 
 //! retransmission DMA stuff
 static uint32_t retransmit_seq_nums[ITEMS_PER_DATA_PACKET];
-static uint32_t current_dma_pointer = 0;
 static uint32_t position_for_retransmission = 0;
 static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;
@@ -753,7 +752,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 //! \brief private method for writing router entries to the router.
 //! \param[in] sdram_address: the sdram address where the router entries reside
 //! \param[in] n_entries: how many router entries to read in
-void _data_in_load_router_entries(address_t sdram_address, uint n_entries){
+void data_in_read_and_load_router_entries(address_t sdram_address, uint n_entries){
     // read in each entry from sdram and dump into next entry in mc router
     for( uint entry_id = 0; entry_id < n_entries; entry_id++){
         uint position = (entry_id * (
@@ -778,26 +777,28 @@ void _data_in_load_router_entries(address_t sdram_address, uint n_entries){
 //! \brief reads in routers entries and places in application sdram location
 void data_in_read_router(){
 	uint position_in_sdram = 0;
+	rtr_entry_t *entry = NULL;
+	entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
+
 	for(uint entry_id = 0; entry_id < N_ROUTER_ENTRIES; entry_id ++){
-	    rtr_entry_t entry;
-	    uint success = rtr_mc_get(entry_id, *entry);
+	    uint success = rtr_mc_get(entry_id, entry);
 	    if (success != 1){
 	        io_printf(IO_BUF, "failed to read application routing entry %d\n",
 	                  entry_id);
 	    }
-	}
 
-	// move to sdram
-	application_routers_sdram_address[
-	    position_in_sdram + ROUTER_ENTRY_KEY] = entry.key;
-	application_routers_sdram_address[
-	    position_in_sdram + ROUTER_ENTRY_MASK] = entry.mask;
-	application_routers_sdram_address[
-	    position_in_sdram + ROUTER_ENTRY_ROUTE] = entry.route;
+        // move to sdram
+        application_routers_sdram_address[
+            position_in_sdram + ROUTER_ENTRY_KEY] = entry->key;
+        application_routers_sdram_address[
+            position_in_sdram + ROUTER_ENTRY_MASK] = entry->mask;
+        application_routers_sdram_address[
+            position_in_sdram + ROUTER_ENTRY_ROUTE] = entry->route;
 
-	// update sdram tracker
-	position_in_sdram +=
-	    SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
+        // update sdram tracker
+        position_in_sdram +=
+            SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
+    }
 }
 
 
@@ -817,10 +818,8 @@ void data_in_speed_up_load_in_system_tables() {
         (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
 
-    // read in routing table entries
-    uint n_entries_to_write = address[SYSTEM_ROUTER_ENTRIES_START];
-
-    _data_in_load_router_entries(
+    // read in and load routing table entries
+    data_in_read_and_load_router_entries(
         &address[SYSTEM_ROUTER_ENTRIES_START],
         address[SYSTEM_ROUTER_ENTRIES_START]);
 }
@@ -833,8 +832,8 @@ void data_in_speed_up_load_in_application_routes(){
     _clear_router();
 
     // load app router entries from sdram
-    _data_in_load_router_entries(
-        &application_routers_sdram_address, N_ROUTER_ENTRIES);
+    data_in_read_and_load_router_entries(
+        (address_t)&application_routers_sdram_address, N_ROUTER_ENTRIES);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
@@ -1408,7 +1407,7 @@ void data_in_speed_up_initialise(){
 	    rt_error(RTE_SWERR);
 	}
 
-	cpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+	vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     address_t address =
         (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
@@ -1418,8 +1417,7 @@ void data_in_speed_up_initialise(){
 
 	data_in_read_router();
 
-	// set up mc interupts to deal with data writing
-	MC_PAYLOAD_SLOT
+	// set up mc interrupts to deal with data writing
 	vic_vectors[MC_PAYLOAD_SLOT]  = data_in_process_mc_payload_packet;
     vic_controls[MC_PAYLOAD_SLOT] = 0x20 | CC_MC_INT;
 
