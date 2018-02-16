@@ -342,7 +342,7 @@ class ChipPowerMonitorMachineVertex(
         samples, data_missing = buffer_manager.get_data_for_vertex(
             placement, self.SAMPLE_RECORDING_REGION)
         if data_missing:
-            logger.warn(
+            logger.warning(
                 "Chip Power monitor has lost data on chip({}, {})"
                 .format(placement.x, placement.y))
 
