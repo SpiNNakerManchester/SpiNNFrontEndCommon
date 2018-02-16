@@ -140,7 +140,7 @@ class DataInMulticastRoutingGenerator(object):
 
         fake_graph = MachineGraph(label="routing fake_graph")
         fake_placements = Placements()
-        destination_to_partition_identifer_map = dict()
+        destination_to_partition_identifier_map = dict()
 
         # build fake setup for the routing
         eth_x = ethernet_connected_chip.x
@@ -205,16 +205,18 @@ class DataInMulticastRoutingGenerator(object):
         # allow unique routing to each chip.
         counter = self.KEY_START_VALUE
         for vertex in destination_vertices:
-            fake_graph.add_edge(
-                MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
-                counter)
-            fake_placement = fake_placements.get_placement_of_vertex(vertex)
-            destination_to_partition_identifer_map[
-                fake_placement.x, fake_placement.y] = counter
-            counter += self.N_KEYS_PER_PARTITION_ID
+            if vertex != vertex_source:
+                fake_graph.add_edge(
+                    MachineEdge(pre_vertex=vertex_source, post_vertex=vertex),
+                    counter)
+                fake_placement = fake_placements.get_placement_of_vertex(
+                    vertex)
+                destination_to_partition_identifier_map[
+                    fake_placement.x, fake_placement.y] = counter
+                counter += self.N_KEYS_PER_PARTITION_ID
 
         return (fake_graph, fake_placements, fake_machine,
-                destination_to_partition_identifer_map)
+                destination_to_partition_identifier_map)
 
     @staticmethod
     def do_routing(fake_placements, fake_graph, fake_machine):

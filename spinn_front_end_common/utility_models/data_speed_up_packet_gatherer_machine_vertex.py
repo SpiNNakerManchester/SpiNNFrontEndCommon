@@ -300,10 +300,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(len(chips_on_board))
 
         # write each chip x and y and base key
-        for chip in chips_on_board:
-            spec.write_value(chip.x)
-            spec.write_value(chip.y)
-            spec.write_value(mc_data_chips_to_keys[chip.x, chip.y])
+        for (chip_x, chip_y) in chips_on_board:
+            spec.write_value(chip_x)
+            spec.write_value(chip_y)
+            spec.write_value(mc_data_chips_to_keys[chip_x, chip_y])
 
         # End-of-Spec:
         spec.end_specification()
@@ -330,9 +330,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             label="config")
         spec.reserve_memory_region(
             region=DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.
-            MC_KEY_MAP.value,
+            DATA_IN_CHIP_TO_KEY_SPACE.value,
             size=DataSpeedUpPacketGatherMachineVertex.
-            DATA_IN_CHIP_TO_KEY_SPACE,
+            SIZE_DATA_IN_CHIP_TO_KEY_SPACE,
             label="mc_key_map")
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)

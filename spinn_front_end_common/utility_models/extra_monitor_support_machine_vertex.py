@@ -156,7 +156,7 @@ class ExtraMonitorSupportMachineVertex(
             _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
             _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
-            ExtraMonitorSupportMachineVertex._SDRAM_FOR_ROUTER_TABLE_ENTRIE +
+            ExtraMonitorSupportMachineVertex._SDRAM_FOR_ROUTER_TABLE_ENTRIES +
             ExtraMonitorSupportMachineVertex.
             _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES))
 
