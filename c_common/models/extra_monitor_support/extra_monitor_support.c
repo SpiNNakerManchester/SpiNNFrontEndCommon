@@ -770,9 +770,9 @@ void data_in_read_and_load_router_entries(address_t sdram_address, uint n_entrie
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
         if(sdram_address[position + ROUTER_ENTRY_KEY] !=
-                INVALID_ROUTER_ENTRY_KEY &
+                INVALID_ROUTER_ENTRY_KEY &&
                 sdram_address[position + ROUTER_ENTRY_MASK] !=
-                INVALID_ROUTER_ENTRY_MASK &
+                INVALID_ROUTER_ENTRY_MASK &&
                 sdram_address[position + ROUTER_ENTRY_ROUTE] !=
                 INVALID_ROUTER_ENTRY_ROUTE){
 
