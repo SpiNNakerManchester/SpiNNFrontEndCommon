@@ -72,7 +72,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_missing_seq_nums_data_in",
     )
 
-    # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     # dsg data regions
@@ -108,10 +107,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     TIMEOUT_PER_RECEIVE_IN_SECONDS = 1
     TIME_OUT_FOR_SENDING_IN_SECONDS = 0.01
 
-    # command ids for the SDP packets
+    # command ids for the SDP packets for data out
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
+
+    # command ids for the SDP packets for data in
     SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID = 200
     SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID = 2000
     SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID = 2001
@@ -164,13 +165,14 @@ class DataSpeedUpPacketGatherMachineVertex(
     DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM = \
         DATA_PER_FULL_PACKET - OFFSET_AFTER_COMMAND_AND_SEQUENCE
 
-    # SDRAM requirement for storing missing SDP packets
+    # SDRAM requirement for storing missing SDP packets seq nums
     SDRAM_FOR_MISSING_SDP_SEQ_NUMS = int(math.ceil(
         (120 * 1024 * 1024) /
         (DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)))
 
     # size of data in key space
-    SIZE_DATA_IN_CHIP_TO_KEY_SPACE = 3 * 4 * 48
+    # x, y, key (all ints) for possible 48 chips,
+    SIZE_DATA_IN_CHIP_TO_KEY_SPACE = (3 * 4 * 48) + 4
 
     # end flag for missing seq nums
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
@@ -291,8 +293,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         # write mc chip key map
         spec.switch_write_focus(
             self.DATA_REGIONS.DATA_IN_CHIP_TO_KEY_SPACE.value)
-        for chip in machine.get_chips_on_board(machine.get_chip_at(
-                placement.x, placement.y)):
+        chips_on_board = list(machine.get_chips_on_board(
+            machine.get_chip_at(placement.x, placement.y)))
+
+        # write how many chips to read
+        spec.write_value(len(chips_on_board))
+
+        # write each chip x and y and base key
+        for chip in chips_on_board:
             spec.write_value(chip.x)
             spec.write_value(chip.y)
             spec.write_value(mc_data_chips_to_keys[chip.x, chip.y])
