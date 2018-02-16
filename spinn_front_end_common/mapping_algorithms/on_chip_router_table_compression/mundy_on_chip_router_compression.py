@@ -156,7 +156,7 @@ class MundyOnChipRouterCompression(object):
             txrx, executable_targets.all_core_subsets,
             provenance_file_path)
         for warning in io_warnings:
-            logger.warn(warning)
+            logger.warning(warning)
         for error in io_errors:
             logger.error(error)
         txrx.stop_application(compressor_app_id)

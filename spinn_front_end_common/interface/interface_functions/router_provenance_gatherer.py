@@ -135,7 +135,7 @@ class RouterProvenanceGatherer(object):
                     router_table))
                 self._add_totals(router_diagnostic, reinjection_status)
             except Exception as e:
-                logger.warn(
+                logger.warning(
                     "Could not read routing diagnostics from {}, {}: {}"
                     .format(x, y, e))
 
