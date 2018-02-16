@@ -1762,8 +1762,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Add algorithm to clear routing tables and set up routing
         if not self._use_virtual_board and application_graph_changed:
             algorithms.append("RoutingSetup")
-            # Get the executable targets
-            algorithms.append("GraphBinaryGatherer")
+
+        # Get the executable targets
+        algorithms.append("GraphBinaryGatherer")
 
         loading_algorithm = helpful_functions.read_config(
             self._config, "Mapping", "loading_algorithms")

@@ -53,7 +53,9 @@ class HostExecuteOtherDataSpecification(object):
         executable_types = executable_targets.executable_types_in_binary_set()
         for executable_type in executable_types:
             if executable_type != ExecutableType.SYSTEM:
-                for binary in executable_targets.binaries:
+                for binary in \
+                        executable_targets.get_binaries_of_executable_type(
+                            executable_type):
                     self._execute_dse_for_binary(
                         binary, executable_targets, transceiver, machine,
                         app_id, progress, processor_to_app_data_base_address,

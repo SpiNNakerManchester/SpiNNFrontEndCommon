@@ -30,7 +30,9 @@ class LoadOtherExecutableImages(object):
         executable_types = executable_targets.executable_types_in_binary_set()
         for executable_type in executable_types:
             if executable_type != ExecutableType.SYSTEM:
-                for binary in executable_targets.binaries:
+                for binary in executable_targets.\
+                        get_binaries_of_executable_type(
+                            executable_type):
                     progress.update(
                         helpful_functions.flood_fill_binary_to_spinnaker(
                             executable_targets, binary, transceiver, app_id))
