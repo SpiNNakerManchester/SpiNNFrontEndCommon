@@ -151,19 +151,20 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # offset where data in starts on first command (
     # command, base_address, x&y, max_seq_number)
-    OFFSET_AFTER_COMMAND_AND_ADDRESS = 16
+    OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES = 16
 
     # offset where data starts after a command id and seq number
-    OFFSET_AFTER_COMMAND_AND_SEQUENCE = 8
+    OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES = 8
 
     # size fo data to store when first packet with command and address
     DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM = \
-        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS /
+        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES /
                                 WORD_TO_BYTE_CONVERTER)
 
     # size for data in to store when not first packet
     DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM = \
-        DATA_PER_FULL_PACKET - OFFSET_AFTER_COMMAND_AND_SEQUENCE
+        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
+                                WORD_TO_BYTE_CONVERTER)
 
     # SDRAM requirement for storing missing SDP packets seq nums
     SDRAM_FOR_MISSING_SDP_SEQ_NUMS = int(math.ceil(
@@ -489,7 +490,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             start_address, chip_data, number_of_packets)
         struct.pack_into(
             "<{}I".format(self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM),
-            data, self.OFFSET_AFTER_COMMAND_AND_ADDRESS,
+            data, self.OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES,
             *data_to_write[
                 position_in_data:self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM])
 
@@ -613,7 +614,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         for missing_seq_num in self._missing_seq_nums_data_in:
             message, length = self._calculate_data_in_data_from_seq_number(
                 data_to_write, missing_seq_num,
-                self.SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID)
+                self.SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID, 0)
             self._connection.send_sdp_message(message)
 
         self._missing_seq_nums_data_in = list()
@@ -622,34 +623,38 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_end_flag()
 
     def _calculate_data_in_data_from_seq_number(
-            self, data_to_write, seq_num, command_id):
+            self, data_to_write, seq_num, command_id, position):
         """ determine the data needed to be sent to the SpiNNaker machine\
          given a seq num
         
         :param data_to_write: the data to write to the spinnaker machine
         :param seq_num: the seq num to ge tthe data for
+        :param position: the position in the data to write to spinnaker
         :return: SDP message and how much data has been written
         :rtype: SDP message
         """
 
-        # determine offset
-        offset = 0
-        if seq_num != 0:
-            first_message_offset = self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM
-            rest_of_packets_offset = \
-                seq_num * self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM
-            offset = first_message_offset + rest_of_packets_offset
-
         # check for last packet
         packet_data_length = self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM
-        if offset + packet_data_length > len(data_to_write):
-            packet_data_length = len(data_to_write) - offset
+        if position + packet_data_length > len(data_to_write):
+            packet_data_length = len(data_to_write) - position
+
+        packet_length = self.DATA_PER_FULL_PACKET
+        if packet_length != (
+                packet_data_length +
+                    (self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
+                     self.WORD_TO_BYTE_CONVERTER)):
+            packet_length = packet_data_length + (
+                self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
+                self.WORD_TO_BYTE_CONVERTER)
 
         # create stuct
-        packet_data = struct.pack("<II", command_id, seq_num)
-        packet_data = struct.pack_into(
-            "<{}I".format(packet_data_length), packet_data, offset,
-            data_to_write)
+        packet_data = bytearray(packet_length * self.WORD_TO_BYTE_CONVERTER)
+        struct.pack_into("<II", packet_data, 0, command_id, seq_num)
+        struct.pack_into(
+            "<{}I".format(packet_data_length), packet_data,
+            self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES,
+            *data_to_write[position:position+packet_data_length])
 
         # send sdp packet
         message = SDPMessage(
@@ -697,7 +702,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             message, length_to_write = \
                 self._calculate_data_in_data_from_seq_number(
                     data_to_write, seq_num,
-                    self.SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID)
+                    self.SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID,
+                    position_in_data)
             position_in_data += length_to_write
 
             self._connection.send_sdp_message(message)
