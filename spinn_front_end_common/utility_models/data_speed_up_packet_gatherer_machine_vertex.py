@@ -424,10 +424,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
 
         # if not worth using extra monitors, send via sdp
-        if n_bytes < self.THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES:
+        if n_bytes is not None and n_bytes < \
+                self.THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES:
             self._transceiver.write_memory(
                 x=x, y=y, base_address=base_address, n_bytes=n_bytes,
                 data=data, offset=offset, is_filename=is_filename)
+
         else:
             # if file, read in and then process as normal
             if is_filename:
@@ -441,10 +443,18 @@ class DataSpeedUpPacketGatherMachineVertex(
                     data = reader.readall()
                 else:
                     data = reader.read(n_bytes)
+            elif n_bytes is None:
+                n_bytes = len(data)
 
-            # send raw data
-            self._send_data_via_extra_monitors(
-                x, y, base_address, data[offset:n_bytes + offset])
+            if (n_bytes <
+                    self.THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_INPUT_IN_BYTES):
+                self._transceiver.write_memory(
+                    x=x, y=y, base_address=base_address, n_bytes=n_bytes,
+                    data=data, offset=offset, is_filename=is_filename)
+            else:
+                # send raw data
+                self._send_data_via_extra_monitors(
+                    x, y, base_address, data[offset:n_bytes + offset])
 
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
@@ -457,7 +467,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data_to_write: the data to write
         :rtype: None 
         """
-        print "SENDING DATA VIA EXTRA MONITORS"
+        print "SENDING DATA VIA EXTRA MONITORS\n"
 
         # where in data we've sent up to
         position_in_data = 0
@@ -471,12 +481,16 @@ class DataSpeedUpPacketGatherMachineVertex(
         chip_data = ((destination_chip_x < 16) & destination_chip_y)
 
         # send first packet to lpg, stating where to send it to
-        data = struct.pack(
-            "<IIII", self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
+        data = bytearray(
+            self.DATA_PER_FULL_PACKET * self.WORD_TO_BYTE_CONVERTER)
+
+        struct.pack_into(
+            "<IIII", data, 0, self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
             start_address, chip_data, number_of_packets)
-        data = struct.pack_into(
+        struct.pack_into(
+            "<{}I".format(self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM),
             data, self.OFFSET_AFTER_COMMAND_AND_ADDRESS,
-            data_to_write[
+            *data_to_write[
                 position_in_data:self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM])
 
         # update where in data we've sent up to
