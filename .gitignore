@@ -9,3 +9,5 @@
 .cproject
 Debug
 lastfailed
+/.cache
+.coverage
