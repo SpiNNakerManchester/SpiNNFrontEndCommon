@@ -489,13 +489,18 @@ class DataSpeedUpPacketGatherMachineVertex(
             "<IIII", data, 0, self.SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID,
             start_address, chip_data, number_of_packets)
         struct.pack_into(
-            "<{}I".format(self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM),
+            "<{}B".format(self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
+                          self.WORD_TO_BYTE_CONVERTER),
             data, self.OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES,
             *data_to_write[
-                position_in_data:self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM])
+                position_in_data:(
+                    self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
+                    self.WORD_TO_BYTE_CONVERTER)])
+        self._print_out_packet_data(data)
 
         # update where in data we've sent up to
-        position_in_data = self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM
+        position_in_data = (self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
+                            self.WORD_TO_BYTE_CONVERTER)
 
         message = SDPMessage(
             sdp_header=SDPHeader(
@@ -635,26 +640,26 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
 
         # check for last packet
-        packet_data_length = self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM
+        packet_data_length = (self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
+                              self.WORD_TO_BYTE_CONVERTER)
         if position + packet_data_length > len(data_to_write):
             packet_data_length = len(data_to_write) - position
 
-        packet_length = self.DATA_PER_FULL_PACKET
-        if packet_length != (
-                packet_data_length +
-                    (self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
-                     self.WORD_TO_BYTE_CONVERTER)):
-            packet_length = packet_data_length + (
-                self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
-                self.WORD_TO_BYTE_CONVERTER)
+        packet_length = self.DATA_PER_FULL_PACKET * self.WORD_TO_BYTE_CONVERTER
+        if packet_length != (packet_data_length +
+                             self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES):
+            packet_length = (packet_data_length +
+                             self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES)
 
-        # create stuct
-        packet_data = bytearray(packet_length * self.WORD_TO_BYTE_CONVERTER)
+        # create sruct
+        packet_data = bytearray(packet_length)
         struct.pack_into("<II", packet_data, 0, command_id, seq_num)
         struct.pack_into(
-            "<{}I".format(packet_data_length), packet_data,
+            "<{}B".format(packet_data_length), packet_data,
             self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES,
             *data_to_write[position:position+packet_data_length])
+
+        self._print_out_packet_data(packet_data)
 
         # send sdp packet
         message = SDPMessage(
@@ -1096,7 +1101,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
             str(data))
         logger.info(
-            "converted data back into readable form is %d", reread_data)
+            "converted data back into readable form is {}".format(reread_data))
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):

@@ -779,15 +779,16 @@ void data_in_read_and_load_router_entries(
                 INVALID_ROUTER_ENTRY_ROUTE){
 
             // try setting the valid router entry
-            io_printf(
-                IO_BUF, "setting key %u at %u, mask %u at %u, route %u at %u position %u\n",
-                sdram_address[position + ROUTER_ENTRY_KEY],
-                position + ROUTER_ENTRY_KEY,
-                sdram_address[position + ROUTER_ENTRY_MASK],
-                position + ROUTER_ENTRY_MASK,
-                sdram_address[position + ROUTER_ENTRY_ROUTE],
-                position + ROUTER_ENTRY_ROUTE,
-                position);
+            //io_printf(
+            //    IO_BUF, "setting key %u at %u, mask %u at %u, "
+            //            "route %u at %u position %u\n",
+            //    sdram_address[position + ROUTER_ENTRY_KEY],
+            //    position + ROUTER_ENTRY_KEY,
+            //    sdram_address[position + ROUTER_ENTRY_MASK],
+            //    position + ROUTER_ENTRY_MASK,
+            //    sdram_address[position + ROUTER_ENTRY_ROUTE],
+            //    position + ROUTER_ENTRY_ROUTE,
+            //    position);
             if (rtr_mc_set(
                     entry_id,
                     sdram_address[position + ROUTER_ENTRY_KEY],
@@ -843,11 +844,11 @@ void data_in_read_router(){
 void data_in_speed_up_load_in_system_tables() {
     // read in router table into app store in sdram (in case its changed
     // since last time)
-    io_printf(IO_BUF, "read router\n");
+    //io_printf(IO_BUF, "read router\n");
     data_in_read_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
-    io_printf(IO_BUF, "clear router\n");
+    //io_printf(IO_BUF, "clear router\n");
     _clear_router();
 
     // get sdram location for system routing tables
@@ -857,11 +858,11 @@ void data_in_speed_up_load_in_system_tables() {
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
 
     // read in and load routing table entries
-    io_printf(IO_BUF, "load system routes\n");
+    //io_printf(IO_BUF, "load system routes\n");
     data_in_read_and_load_router_entries(
         &address[SYSTEM_ROUTER_ENTRIES_START],
         address[N_SYSTEM_ROUTER_ENTRIES]);
-    io_printf(IO_BUF, "finsihed data in setup\n");
+    //io_printf(IO_BUF, "finsihed data in setup\n");
 }
 
 
