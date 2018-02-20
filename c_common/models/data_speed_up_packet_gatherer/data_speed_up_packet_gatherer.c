@@ -333,8 +333,12 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
     // use as not important
     use(port);
 
+    log_info("received packet at port %d", port);
+
     // convert mailbox into correct sdp format
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
+
+    log_info("command code is %d", msg->data[COMMAND_ID_POSITION]);
 
     // check for seperate commands
     if (msg->data[COMMAND_ID_POSITION] ==

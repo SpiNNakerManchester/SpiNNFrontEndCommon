@@ -234,7 +234,8 @@ typedef enum sending_data_sdp_data_positions {
 typedef enum data_in_data_items {
     ADDRESS_MC_KEY = 0,
     DATA_MC_KEY = 1,
-    SYSTEM_ROUTER_ENTRIES_START = 2
+    N_SYSTEM_ROUTER_ENTRIES = 2,
+    SYSTEM_ROUTER_ENTRIES_START = 3
 } data_in_data_items;
 
 //! \brief router entry positions in sdram
@@ -761,7 +762,8 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 //! \brief private method for writing router entries to the router.
 //! \param[in] sdram_address: the sdram address where the router entries reside
 //! \param[in] n_entries: how many router entries to read in
-void data_in_read_and_load_router_entries(address_t sdram_address, uint n_entries){
+void data_in_read_and_load_router_entries(
+        address_t sdram_address, uint n_entries){
     // read in each entry from sdram and dump into next entry in mc router
     for( uint entry_id = 0; entry_id < n_entries; entry_id++){
         uint position = (entry_id * (
@@ -777,6 +779,15 @@ void data_in_read_and_load_router_entries(address_t sdram_address, uint n_entrie
                 INVALID_ROUTER_ENTRY_ROUTE){
 
             // try setting the valid router entry
+            io_printf(
+                IO_BUF, "setting key %u at %u, mask %u at %u, route %u at %u position %u\n",
+                sdram_address[position + ROUTER_ENTRY_KEY],
+                position + ROUTER_ENTRY_KEY,
+                sdram_address[position + ROUTER_ENTRY_MASK],
+                position + ROUTER_ENTRY_MASK,
+                sdram_address[position + ROUTER_ENTRY_ROUTE],
+                position + ROUTER_ENTRY_ROUTE,
+                position);
             if (rtr_mc_set(
                     entry_id,
                     sdram_address[position + ROUTER_ENTRY_KEY],
@@ -832,9 +843,11 @@ void data_in_read_router(){
 void data_in_speed_up_load_in_system_tables() {
     // read in router table into app store in sdram (in case its changed
     // since last time)
+    io_printf(IO_BUF, "read router\n");
     data_in_read_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
+    io_printf(IO_BUF, "clear router\n");
     _clear_router();
 
     // get sdram location for system routing tables
@@ -844,9 +857,11 @@ void data_in_speed_up_load_in_system_tables() {
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
 
     // read in and load routing table entries
+    io_printf(IO_BUF, "load system routes\n");
     data_in_read_and_load_router_entries(
         &address[SYSTEM_ROUTER_ENTRIES_START],
-        address[SYSTEM_ROUTER_ENTRIES_START]);
+        address[N_SYSTEM_ROUTER_ENTRIES]);
+    io_printf(IO_BUF, "finsihed data in setup\n");
 }
 
 
@@ -1440,7 +1455,7 @@ void data_in_speed_up_initialise(){
 	data_in_address_key = address[ADDRESS_MC_KEY];
 	data_in_data_key = address[DATA_MC_KEY];
 
-	data_in_read_router();
+	data_in_speed_up_load_in_system_tables();
 
 	// set up mc interrupts to deal with data writing
 	vic_vectors[MC_PAYLOAD_SLOT]  = data_in_process_mc_payload_packet;
