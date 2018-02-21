@@ -22,7 +22,10 @@
 #define MESSAGE_DELAY_TIME_WHEN_FAIL 1
 
 //! How many mc packets are to be received per sdp packet
-#define ITEMS_PER_DATA_INDEX  68
+#define ITEMS_PER_DATA_INDEX 68
+
+//! convert between words to bytes
+#define WORD_TO_BYTE_MULTIPLIER 4
 
 //-----------------------------------------------------------------------------
 // DATA IN MAGIC NUMBERS
@@ -63,6 +66,21 @@
 // location of command ids in sdp message
 #define COMMAND_ID_POSITION 0
 
+//! offset with just command and seq in bytes
+#define OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES 8
+
+//! offset with command, x, y, address in bytes
+#define OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES 16
+
+//! size of data stored in packet with command and address
+#define DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM ITEMS_PER_DATA_INDEX - (\
+    OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES / WORD_TO_BYTE_MULTIPLIER)
+
+//! size of data stored in packet with command and seq
+#define DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM ITEMS_PER_DATA_INDEX - (\
+    OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /  WORD_TO_BYTE_MULTIPLIER)
+
+
 //-----------------------------------------------------------------------------
 // DATA OUT MAGIC NUMBERS
 //-----------------------------------------------------------------------------
@@ -72,9 +90,6 @@
 
 //! extra length adjustment for the sdp header
 #define LENGTH_OF_SDP_HEADER 8
-
-//! convert between words to bytes
-#define WORD_TO_BYTE_MULTIPLIER 4
 
 //! end flag bit shift
 #define DATA_OUT_END_FLAG_BIT_SHIFT 31
@@ -94,7 +109,7 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     uint16_t srce_addr;		// SDP source address
 
     // User data (272 bytes when no scp header)
-    uint32_t data[ITEMS_PER_DATA_INDEX ];
+    uint32_t data[ITEMS_PER_DATA_INDEX];
 
     uint32_t _PAD;		// Private padding
 } sdp_msg_pure_data;
@@ -127,7 +142,7 @@ static uint32_t seq_num = FIRST_SEQ_NUM;
 static uint32_t max_seq_num = 0;
 
 //! data holders for the sdp packet
-static uint32_t data[ITEMS_PER_DATA_INDEX ];
+static uint32_t data[ITEMS_PER_DATA_INDEX];
 static uint32_t position_in_store = 0;
 
 //! sdp message holder for transmissions
@@ -209,7 +224,7 @@ void process_first_sdp_message_into_mc_messages(
         //         msg.data[SDRAM_ADDRESS]);
         while(!spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
-                msg.data[SDRAM_ADDRESS], WITH_PAYLOAD)){
+                sdram_address, WITH_PAYLOAD)){
             spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
         }
     }
@@ -346,7 +361,18 @@ void process_missing_seq_nums_and_request_retransmission(){
 
 //! \brief calculates 
 uint calculate_sdram_address_from_seq_num(uint seq_num){
-
+    if (seq_num == 0){
+        return 0;
+    }
+    if (seq_num == 1){
+        return DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER;
+    }
+    else{
+        return (
+            DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER + (
+                WORD_TO_BYTE_MULTIPLIER *
+                DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num));
+    }
 }
 
 //! \brief processes sdp messages
@@ -382,10 +408,10 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
         // send mc messages for first packet
         process_first_sdp_message_into_mc_messages(
             *msg, chip_x, chip_y, true, START_OF_DATA_FIRST_SDP,
-            msg.data[SDRAM_ADDRESS]);
+            msg->data[SDRAM_ADDRESS]);
 
         last_seen_seq_num = 0;
-        start_sdram_address = msg.data[SDRAM_ADDRESS];
+        start_sdram_address = msg->data[SDRAM_ADDRESS];
     }
     else if (msg->data[COMMAND_ID_POSITION] ==
             SDP_SEND_SEQ_DATA_COMMAND_ID){
@@ -394,10 +420,12 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
         bool send_sdram_address = false;
         uint this_sdram_address = 0;
 
+        // if not next in line, figure sdram address, send and reset tracker
         if (last_seen_seq_num != msg->data[SEQ_NUM] - 1){
             send_sdram_address = true;
             this_sdram_address = calculate_sdram_address_from_seq_num(
                 msg->data[SEQ_NUM]);
+            last_seen_seq_num = msg->data[SEQ_NUM];
         }
 
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
