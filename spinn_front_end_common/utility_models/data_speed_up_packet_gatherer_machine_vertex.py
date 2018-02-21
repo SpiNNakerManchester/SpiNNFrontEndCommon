@@ -619,13 +619,26 @@ class DataSpeedUpPacketGatherMachineVertex(
         for missing_seq_num in self._missing_seq_nums_data_in:
             message, length = self._calculate_data_in_data_from_seq_number(
                 data_to_write, missing_seq_num,
-                self.SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID, 0)
+                self.SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID, None)
             self._connection.send_sdp_message(message)
 
         self._missing_seq_nums_data_in = list()
         self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
         self._send_end_flag()
+
+    def _calculate_position_from_seq_number(self, seq_num):
+        if seq_num == 0:
+            return 0
+        if seq_num == 1:
+            return self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * \
+                self.WORD_TO_BYTE_CONVERTER
+        else:
+            return (
+                self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
+                self.WORD_TO_BYTE_CONVERTER + (
+                    self.WORD_TO_BYTE_CONVERTER *
+                    self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num))
 
     def _calculate_data_in_data_from_seq_number(
             self, data_to_write, seq_num, command_id, position):
@@ -635,6 +648,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data_to_write: the data to write to the spinnaker machine
         :param seq_num: the seq num to ge tthe data for
         :param position: the position in the data to write to spinnaker
+        :type position: int or None
         :return: SDP message and how much data has been written
         :rtype: SDP message
         """
@@ -642,6 +656,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         # check for last packet
         packet_data_length = (self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
                               self.WORD_TO_BYTE_CONVERTER)
+
+        if position is None:
+            position = self._calculate_position_from_seq_number(seq_num)
+
         if position + packet_data_length > len(data_to_write):
             packet_data_length = len(data_to_write) - position
 
