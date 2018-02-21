@@ -110,6 +110,8 @@ static bit_field_t missing_seq_nums_store = NULL;
 static bool received_address_packet = false;
 static uint size_of_bitfield = 0;
 static uint total_received_seq_nums = 0;
+static uint last_seen_seq_num = 0;
+static uint start_sdram_address = 0;
 
 //-----------------------------------------------------------------------------
 // DATA OUT VARIABLES
@@ -190,20 +192,21 @@ typedef enum callback_priorities{
 //! \param[in] chip_y: the chip y coord where this data is headed to
 void process_first_sdp_message_into_mc_messages(
         sdp_msg_pure_data msg, uint chip_x, uint chip_y,
-        bool send_sdram_address, uint start_of_data_sdp_position){
+        bool send_sdram_address, uint start_of_data_sdp_position,
+        uint sdram_address){
     // determine size of data to send
-    log_info("starting process sdp message");
+    //log_info("starting process sdp message");
     uint n_elements = (
         (msg.length - ((start_of_data_sdp_position * WORD_TO_BYTE_MULTIPLIER) +
                        LENGTH_OF_SDP_HEADER)) / WORD_TO_BYTE_MULTIPLIER);
-    log_info("n elements %d", n_elements);
+    //log_info("n elements %d", n_elements);
 
     // send mc message with SDRAM location to correct chip
-    log_info("send sdram address %d", send_sdram_address);
+    //log_info("send sdram address %d", send_sdram_address);
     if (send_sdram_address){
-        log_info("key is %u payload %u",
-                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
-                 msg.data[SDRAM_ADDRESS]);
+        //log_info("key is %u payload %u",
+        //         data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
+        //         msg.data[SDRAM_ADDRESS]);
         while(!spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
                 msg.data[SDRAM_ADDRESS], WITH_PAYLOAD)){
@@ -212,11 +215,11 @@ void process_first_sdp_message_into_mc_messages(
     }
 
     // send mc messages containing rest of sdp data
-    log_info("sending data");
+    //log_info("sending data");
     for(uint data_index = 0; data_index < n_elements; data_index++){
-        log_info("sending data with key %u payload %u",
-                  data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
-                  msg.data[start_of_data_sdp_position + data_index]);
+        //log_info("sending data with key %u payload %u",
+        //          data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
+        //          msg.data[start_of_data_sdp_position + data_index]);
         while(!spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
                 msg.data[start_of_data_sdp_position + data_index],
@@ -341,6 +344,11 @@ void process_missing_seq_nums_and_request_retransmission(){
     }
 }
 
+//! \brief calculates 
+uint calculate_sdram_address_from_seq_num(uint seq_num){
+
+}
+
 //! \brief processes sdp messages
 //! \param[in] mailbox: the sdp message
 //! \param[in] port: the port assocated with this sdp message
@@ -373,19 +381,32 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         // send mc messages for first packet
         process_first_sdp_message_into_mc_messages(
-            *msg, chip_x, chip_y, true, START_OF_DATA_FIRST_SDP);
+            *msg, chip_x, chip_y, true, START_OF_DATA_FIRST_SDP,
+            msg.data[SDRAM_ADDRESS]);
+
+        last_seen_seq_num = 0;
+        start_sdram_address = msg.data[SDRAM_ADDRESS];
     }
     else if (msg->data[COMMAND_ID_POSITION] ==
             SDP_SEND_SEQ_DATA_COMMAND_ID){
 
         // store seq number in store for later processing
+        bool send_sdram_address = false;
+        uint this_sdram_address = 0;
+
+        if (last_seen_seq_num != msg->data[SEQ_NUM] - 1){
+            send_sdram_address = true;
+            this_sdram_address = calculate_sdram_address_from_seq_num(
+                msg->data[SEQ_NUM]);
+        }
 
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
         total_received_seq_nums ++;
 
         // transmit data to chip
         process_first_sdp_message_into_mc_messages(
-            *msg, chip_x, chip_y, false, START_OF_DATA_IN_DATA_SDP);
+            *msg, chip_x, chip_y, send_sdram_address,
+            START_OF_DATA_IN_DATA_SDP, this_sdram_address);
     }
 
     else if (msg->data[COMMAND_ID_POSITION] ==
