@@ -107,6 +107,21 @@ extern INT_HANDLER sark_int_han(void);
 //! hardcoded invalid router entry state for route
 #define INVALID_ROUTER_ENTRY_ROUTE 0xFF000000
 
+//! system router entry key
+#define SYSTEM_ROUTER_ENTRY_KEY 0xffff5555
+
+//! system router entry mask
+#define SYSTEM_ROUTER_ENTRY_MASK 0xffffffff
+
+//! system router entry route
+#define SYSTEM_ROUTER_ENTRY_ROUTE 1 << 6
+
+//! mask to get app id from free entry of rtr_entry_t
+#define APP_ID_MASK_FROM_FREE 0x000000FF
+
+//! offset for getting app id from free
+#define APP_ID_OFFSET_FROM_FREE 24
+
 //-----------------------------------------------------------------------------
 // reinjection functionality magic numbers
 //-----------------------------------------------------------------------------
@@ -765,7 +780,11 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 void data_in_read_and_load_router_entries(
         address_t sdram_address, uint n_entries){
     // read in each entry from sdram and dump into next entry in mc router
-    for( uint entry_id = 0; entry_id < n_entries; entry_id++){
+    if(rtr_mc_set(0, SYSTEM_ROUTER_ENTRY_KEY, SYSTEM_ROUTER_ENTRY_MASK,
+                  SYSTEM_ROUTER_ENTRY_ROUTE) != 1){
+        io_printf(IO_BUF, "failed to write router system entry \n");
+    }
+    for( uint entry_id = 1; entry_id < n_entries; entry_id++){
         uint position = (entry_id * (
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
 
@@ -821,7 +840,8 @@ void data_in_read_router(){
 
         // merge app id into route for writing back at later time
 	    uint route_and_app_id = 0;
-	    route_and_app_id = (entry->free & 0x000000FF) << 24;
+	    route_and_app_id =
+	        (entry->free & APP_ID_MASK_FROM_FREE) << APP_ID_OFFSET_FROM_FREE;
 	    route_and_app_id = route_and_app_id & entry->route;
 
         // move to sdram
