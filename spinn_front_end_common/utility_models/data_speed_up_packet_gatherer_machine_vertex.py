@@ -617,7 +617,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
             str(data))
         logger.info(
-            "converted data back into readable form is %d", reread_data)
+            "converted data back into readable form is %s", reread_data)
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
