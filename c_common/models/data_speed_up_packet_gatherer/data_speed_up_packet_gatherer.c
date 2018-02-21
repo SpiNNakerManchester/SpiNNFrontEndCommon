@@ -116,32 +116,32 @@ void send_data(){
 }
 
 void receive_data_no_payload(uint key, uint payload) {
-    log_info("received command with key %u", key);
+    //log_info("received command with key %u", key);
     // expecting a new command
 
     if (next_no_payload_command == EMPTY){
         if (key == new_sequence_key) {
-            log_info("new seq start");
+            //log_info("new seq start");
             next_no_payload_command = NEXT_SEQ_NUM_COMING;
         }
         else if (key == end_flag_key){
             // set end flag bit in seq num
-            log_info("sending end data");
-            log_info("position = %d", position_in_store);
+            //log_info("sending end data");
+            //log_info("position = %d", position_in_store);
             data[0] = data[0] + (1 << 31);
             send_data();
         }
         else if (key == first_data_key){
-            log_info("first data start");
+            //log_info("first data start");
             next_no_payload_command = FIRST_DATA;
         }
         else if (key == odd_data_packet_key){
-            log_info("odd data start");
+            //log_info("odd data start");
             next_no_payload_command = ODD_DATA_ITEM;
         }
         else{
-            log_info("strange code, next_no_payload_command is %d",
-                     next_no_payload_command);
+            //log_info("strange code, next_no_payload_command is %d",
+            //         next_no_payload_command);
         }
     } // expecting data from a old command
     else if (next_no_payload_command == NEXT_SEQ_NUM_COMING){
@@ -157,7 +157,7 @@ void receive_data_no_payload(uint key, uint payload) {
         next_no_payload_command = EMPTY;
 
     } else if (next_no_payload_command == FIRST_DATA){
-        log_info("resetting seq and position");
+        //log_info("resetting seq and position");
         seq_num = FIRST_SEQ_NUM;
         data[0] = seq_num;
         position_in_store = 1;
@@ -165,10 +165,10 @@ void receive_data_no_payload(uint key, uint payload) {
         next_no_payload_command = EMPTY;
 
     } else if (next_no_payload_command == ODD_DATA_ITEM){
-        log_info("odd data process");
+        //log_info("odd data process");
         data[position_in_store] = key;
         position_in_store += 1;
-        log_info("position in store %d", position_in_store);
+        //log_info("position in store %d", position_in_store);
         next_no_payload_command = EMPTY;
         if (position_in_store == ITEMS_PER_DATA_PACKET) {
             send_data();
