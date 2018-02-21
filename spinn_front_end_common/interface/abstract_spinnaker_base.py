@@ -869,7 +869,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
         self._raise_keyboard_interrupt = True
-        sys.excepthook = sys.__excepthook__
+        gettrace = sys.gettrace()
+        if gettrace is None:
+            sys.excepthook = sys.__excepthook__
+        else:
+            logger.info("Not setting exception handler as in debug mode")
 
         logger.info("Starting execution process")
 
@@ -1019,7 +1023,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
-        sys.excepthook = self.exception_handler
+        gettrace = sys.gettrace()
+        if gettrace is None:
+            sys.excepthook = self.exception_handler
+        else:
+            logger.info("Not replacing exception handler as in debug mode")
 
         # update counter for runs (used by reports and app data)
         self._n_calls_to_run += 1
