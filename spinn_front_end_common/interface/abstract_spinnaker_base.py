@@ -671,6 +671,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergySavings", "turn_off_board_after_discovery", "False")
                 logger.info("[EnergySavings]turn_off_board_after_discovery has"
                             " been set to False as s using virtual boards")
+            if self._config.getboolean(
+                    "Reports", "write_board_chip_report") is True:
+                self._config.set("Reports", "write_board_chip_report", "False")
+                logger.info("[Reports]write_board_chip_report has been set to"
+                            " False as using virtual boards")
 
     def _set_up_output_folders(self):
         """ Sets up the outgoing folders (reports and app data) by creating\
@@ -1618,6 +1623,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "write_routing_tables_from_machine_report"):
                 optional_algorithms.append(
                     "RoutingTableFromMachineReport")
+
+            # only add board chip report if requested
+            if self._config.getboolean("Reports", "write_board_chip_report"):
+                algorithms.append("BoardChipReport")
 
             # only add partitioner report if using an application graph
             if (self._config.getboolean(
