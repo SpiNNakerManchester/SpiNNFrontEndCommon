@@ -66,47 +66,45 @@ class WriteMemoryIOData(object):
 
         return processor_to_app_data_base_address
 
-    def __get_used_tags(self, transceiver, x, y, heap_address):
+    def __get_used_tags(self, transceiver, placement, heap_address):
         """ Get the tags that have already been used on the given chip
 
         :param transceiver: The transceiver to use to get the data
-        :param x: The x-coordinate of the chip
-        :param y: The y-coordinate of the chip
+        :param placement: The x,y-coordinates of the chip, as a Placement
         :param heap_address: The address of the heap to query for tags
         :return: A tuple of used tags
         """
-        heap = transceiver.get_heap(x, y, heap=heap_address)
+        heap = transceiver.get_heap(placement.x, placement.y,
+                                    heap=heap_address)
         return (element.tag for element in heap if not element.is_free)
 
-    def __remote_get_next_tag(self, transceiver, xy):
+    def __remote_get_next_tag(self, transceiver, placement):
         """ Get the next SDRAM tag to use for the Memory IO on a given chip
 
         :param transceiver: The transceiver to use to query for used tags
-        :param xy: The x- and y-coordinates of the chip, as an object that\
-            "x" and "y" properties (e.g., a Placement)
+        :param placement: The x,y-coordinates of the chip, as a Placement
         :return: The next available tag
         """
-        key = (xy.x, xy.y)
+        key = (placement.x, placement.y)
         if key not in self._next_tag:
             # Find the maximum tag already in use across the three areas
             max_tag = 0
             for area in (SV.sdram_heap_address, SV.system_ram_heap_address,
                          SV.system_sdram_heap_address):
-                for tag in self.__get_used_tags(transceiver, xy.x, xy.y, area):
+                for tag in self.__get_used_tags(transceiver, placement, area):
                     max_tag = max(max_tag, tag)
             self._next_tag[key] = max_tag + 1
         next_tag = self._next_tag[key]
         self._next_tag[key] = next_tag + 1
         return next_tag
 
-    def __local_get_next_tag(self, xy):
+    def __local_get_next_tag(self, placement):
         """ Get the next SDRAM tag to use for the File IO on a given chip
 
-        :param xy: The x- and y-coordinates of the chip, as an object that\
-            "x" and "y" properties (e.g., a Placement)
+        :param placement: The x,y-coordinates of the chip, as a Placement
         :return: The next available tag
         """
-        key = (xy.x, xy.y)  # could be other fields too
+        key = (placement.x, placement.y)  # could be other fields too
         next_tag = self._next_tag.get(key, 1)
         self._next_tag[key] = next_tag + 1
         return next_tag

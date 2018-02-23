@@ -240,7 +240,7 @@ class ReverseIpTagMultiCastSource(
             resources_required,  # @UnusedVariable
             label=None, constraints=None):
         send_buffer_times = self._send_buffer_times
-        if send_buffer_times is not None and send_buffer_times:
+        if send_buffer_times is not None and len(send_buffer_times):
             if hasattr(send_buffer_times[0], "__len__"):
                 send_buffer_times = send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]

@@ -1122,23 +1122,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
-    def _generate_steps(n_machine_time_steps, time_step_length):
-        """ generates the list of timer runs
+    def _generate_steps(n_steps, n_steps_per_segment):
+        """ Generates the list of "timer" runs. These are usually in terms of\
+            time steps, but need not be.
 
-        :param n_machine_time_steps: the total runtime in machine time steps
-        :type n_machine_time_steps: int
-        :param time_step_length: the min allowed per chunk
-        :type time_step_length: int
+        :param n_steps: the total runtime in machine time steps
+        :type n_steps: int
+        :param n_steps_per_segment: the min allowed per chunk
+        :type n_steps_per_segment: int
         :return: list of time steps
         """
-        n_full_iterations = int(math.floor(
-            n_machine_time_steps / time_step_length))
-        left_over_time_steps = (
-            n_machine_time_steps - n_full_iterations * time_step_length)
+        n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
+        left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
 
-        steps = [int(time_step_length)] * n_full_iterations
-        if left_over_time_steps:
-            steps.append(int(left_over_time_steps))
+        steps = [int(n_steps_per_segment)] * n_full_iterations
+        if left_over_steps:
+            steps.append(int(left_over_steps))
         return steps
 
     def _calculate_number_of_machine_time_steps(self, next_run_timesteps):

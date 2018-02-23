@@ -369,7 +369,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         if self._send_buffer is not None:
             self._send_buffer.clear()
-        if self._send_buffer_times is not None and self._send_buffer_times:
+        if (self._send_buffer_times is not None and
+                len(self._send_buffer_times)):
             if hasattr(self._send_buffer_times[0], "__len__"):
                 # Works with a list-of-lists
                 self.__fill_send_buffer_2d(
