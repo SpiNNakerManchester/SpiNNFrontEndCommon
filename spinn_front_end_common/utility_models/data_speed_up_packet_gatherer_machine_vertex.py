@@ -11,7 +11,8 @@ from spinn_front_end_common.interface.provenance import \
     AbstractProvidesLocalProvenanceData
 from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
     ProvenanceDataItem
-from spinn_front_end_common.utilities.constants import SDP_PORTS, SYSTEM_BYTES_REQUIREMENT
+from spinn_front_end_common.utilities.constants \
+    import SDP_PORTS, SYSTEM_BYTES_REQUIREMENT
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
