@@ -241,9 +241,9 @@ class ExtraMonitorSupportMachineVertex(
                 route | Router.convert_routing_table_entry_to_spinnaker_route(
                     entry)
             spec.write_value(route)
-            print "key {}".format(entry.routing_entry_key)
-            print "mask {}".format(entry.mask)
-            print "route {}".format(route)
+            # print "key {}".format(entry.routing_entry_key)
+            # print "mask {}".format(entry.mask)
+            # print "route {}".format(route)
 
     def _generate_data_out_speed_up_functionality_data_specification(
             self, spec, routing_info, machine_graph):
