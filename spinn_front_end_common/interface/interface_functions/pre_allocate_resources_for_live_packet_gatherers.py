@@ -4,7 +4,7 @@ from pacman.model.resources import PreAllocatedResourceContainer
 from pacman.model.resources import SpecificChipSDRAMResource
 from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
-from spinn_front_end_common.utility_models.live_packet_gather_machine_vertex \
+from spinn_front_end_common.utility_models \
     import LivePacketGatherMachineVertex as LPGVertex
 from spinn_utilities.progress_bar import ProgressBar
 
@@ -57,6 +57,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
     @staticmethod
     def _add_chip_lpg_reqs(
             lpg_parameters, chip, lpg_sdram, sdrams, cores, iptags):
+        # pylint: disable=too-many-arguments
         sdram_reqs = 0
         core_reqs = 0
 
@@ -71,7 +72,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
                     traffic_identifier=LPGVertex.TRAFFIC_IDENTIFIER))
 
-        if sdram_reqs > 0:
+        if sdram_reqs:
             sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))
-        if core_reqs > 0:
+        if core_reqs:
             cores.append(CoreResource(chip, core_reqs))

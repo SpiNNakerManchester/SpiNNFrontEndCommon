@@ -2,6 +2,7 @@
 from multiprocessing.pool import ThreadPool
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.command_messages import DatabaseConfirmation
+from spinn_utilities.log import FormatAdapter
 from spinnman.messages.eieio.command_messages \
     import NotificationProtocolPauseStop, NotificationProtocolStartResume
 
@@ -13,7 +14,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import logging
 
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class NotificationProtocol(object):
@@ -36,25 +37,25 @@ class NotificationProtocol(object):
                 remote_port=socket_address.notify_port_no))
 
     def wait_for_confirmation(self):
-        """ if asked to wait for confirmation, waits for all external systems\
+        """ If asked to wait for confirmation, waits for all external systems\
             to confirm that they are configured and have read the database
 
         :rtype: None
         """
-        logger.info("*** Awaiting for a response from an external source "
-                    "to state its ready for the simulation to start ***")
+        logger.info("** Awaiting for a response from an external source "
+                    "to state its ready for the simulation to start **")
         self._wait_pool.close()
         self._wait_pool.join()
 
     def send_start_resume_notification(self):
-        """ either waits till all sources have confirmed read the database and\
-            are configured, and/or just sends the start notification\
+        """ Either waits till all sources have confirmed read the database\
+            and are configured, and/or just sends the start notification\
             (when the system is executing)
 
         :rtype: None
         """
-        logger.info("*** Sending start / resume message to external sources "
-                    "to state the simulation has started or resumed. ***")
+        logger.info("** Sending start / resume message to external sources "
+                    "to state the simulation has started or resumed. **")
         if self._wait_for_read_confirmation:
             self.wait_for_confirmation()
         eieio_command_message = NotificationProtocolStartResume()
@@ -64,17 +65,17 @@ class NotificationProtocol(object):
             except Exception:
                 logger.warning(
                     "*** Failed to send start/resume notification to external "
-                    "application on {}:{} about the simulation ***".format(
-                        c.remote_ip_address, c.remote_port), exc_info=True)
+                    "application on {}:{} about the simulation ***",
+                    c.remote_ip_address, c.remote_port, exc_info=True)
 
     def send_stop_pause_notification(self):
-        """ sends the pause / stop notifications when the script has either\
+        """ Sends the pause / stop notifications when the script has either\
             finished or paused
 
         :rtype: None
         """
-        logger.info("*** Sending pause / stop message to external sources "
-                    "to state the simulation has been paused or stopped. ***")
+        logger.info("** Sending pause / stop message to external sources "
+                    "to state the simulation has been paused or stopped. **")
         eieio_command_message = NotificationProtocolPauseStop()
         for c in self._data_base_message_connections:
             try:
@@ -82,14 +83,13 @@ class NotificationProtocol(object):
             except Exception:
                 logger.warning(
                     "*** Failed to send stop/pause notification to external "
-                    "application on {}:{} about the simulation ***".format(
-                        c.remote_ip_address, c.remote_port), exc_info=True)
+                    "application on {}:{} about the simulation ***",
+                    c.remote_ip_address, c.remote_port, exc_info=True)
 
     # noinspection PyPep8
     def send_read_notification(self, database_path):
-        """ sends notifications to all devices which have expressed an\
+        """ Sends notifications to all devices which have expressed an\
             interest in when the database has been written
-
 
         :param database_path: the path to the database file
         :rtype: None
@@ -99,7 +99,7 @@ class NotificationProtocol(object):
                                         args=[database_path])
 
     def _send_read_notification(self, database_path):
-        """ sends notifications to a list of socket addresses that the\
+        """ Sends notifications to a list of socket addresses that the\
             database has been written. Message also includes the path to the\
             database
 
@@ -130,8 +130,8 @@ class NotificationProtocol(object):
 
         # Send command and wait for response
         logger.info(
-            "*** Notifying external sources that the database is ready for "
-            "reading ***")
+            "** Notifying external sources that the database is ready for "
+            "reading **")
 
         # noinspection PyBroadException
         for c in self._data_base_message_connections:
@@ -140,8 +140,8 @@ class NotificationProtocol(object):
             except Exception:
                 logger.warning(
                     "*** Failed to notify external application on {}:{} "
-                    "about the database ***".format(
-                        c.remote_ip_address, c.remote_port), exc_info=True)
+                    "about the database ***",
+                    c.remote_ip_address, c.remote_port, exc_info=True)
 
         # if the system needs to wait, try receiving a packet back
         for c in self._data_base_message_connections:
@@ -149,13 +149,13 @@ class NotificationProtocol(object):
                 if self._wait_for_read_confirmation:
                     c.receive_eieio_message()
                     logger.info(
-                        "*** Confirmation from {}:{} received, continuing ***"
-                        .format(c.remote_ip_address, c.remote_port))
+                        "** Confirmation from {}:{} received, continuing **",
+                        c.remote_ip_address, c.remote_port)
             except Exception:
                 logger.warning(
                     "*** Failed to receive notification from external "
-                    "application on {}:{} about the database ***".format(
-                        c.remote_ip_address, c.remote_port), exc_info=True)
+                    "application on {}:{} about the database ***",
+                    c.remote_ip_address, c.remote_port, exc_info=True)
 
     def close(self):
         """ Closes the thread pool

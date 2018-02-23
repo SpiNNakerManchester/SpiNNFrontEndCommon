@@ -19,7 +19,7 @@ class VirtualMachineGenerator(object):
         :param n_cpus_per_chip: The number of cores to put on each chip
         :param with_monitors: If true, CPU 0 will be marked as a monitor
         """
-
+        # pylint: disable=too-many-arguments
         machine = VirtualMachine(
             width=width, height=height,
             with_wrap_arounds=virtual_has_wrap_arounds,
