@@ -194,7 +194,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # store of the extra monitors to location. helpful in data in
         self._extra_monitors_by_chip = extra_monitors_by_chip
-        self._total_expected_missing_seq_packets = None
+        self._total_expected_missing_seq_packets = 0
         self._have_received_missing_seq_count_packet = False
         self._missing_seq_nums_data_in = list()
 
@@ -475,8 +475,11 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # how many packets after first one we need to send
         number_of_packets = int(math.ceil(
-            (len(data_to_write) - self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM) /
-            self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM))
+            ((len(data_to_write) - (
+                self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
+                self.WORD_TO_BYTE_CONVERTER)) /
+             (self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
+              self.WORD_TO_BYTE_CONVERTER)))) + 1
 
         # compressed destination chip data
         chip_data = ((destination_chip_x < 16) & destination_chip_y)
@@ -516,7 +519,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._connection.send_sdp_message(message)
 
         # send initial attempt at sending all the data
-        self._send_all_data(number_of_packets, data_to_write, position_in_data)
+        self._send_all_data_based_packets(
+            number_of_packets, data_to_write, position_in_data)
 
         # verify completed
         received_confirmation = False
@@ -578,7 +582,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: bool
         """
         position = 0
-        command_id = struct.unpack("<I", data)
+        command_id = struct.unpack_from("<I", data, 0)[0]
         position += self.COMMAND_ID_SIZE
 
         # process first missing
@@ -587,7 +591,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # find total missing
             self._total_expected_missing_seq_packets += \
-                struct.unpack_from("<I", data, position)
+                struct.unpack_from("<I", data, position)[0]
             position += self.MISSING_SEQ_PACKET_COUNT_SIZE
             self._have_received_missing_seq_count_packet = True
 
@@ -628,6 +632,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_end_flag()
 
     def _calculate_position_from_seq_number(self, seq_num):
+        """ calculates where in the raw data to start reading from, given a 
+        seq number
+        
+        :param seq_num: the seq num to determine position from 
+        :return: the position in the byte data
+        """
         if seq_num == 0:
             return 0
         if seq_num == 1:
@@ -657,19 +667,19 @@ class DataSpeedUpPacketGatherMachineVertex(
         packet_data_length = (self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
                               self.WORD_TO_BYTE_CONVERTER)
 
+        # dertermine position in data if not given
         if position is None:
             position = self._calculate_position_from_seq_number(seq_num)
 
+        # if less than a full packet worth of data, adjust length
         if position + packet_data_length > len(data_to_write):
             packet_data_length = len(data_to_write) - position
 
-        packet_length = self.DATA_PER_FULL_PACKET * self.WORD_TO_BYTE_CONVERTER
-        if packet_length != (packet_data_length +
-                             self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES):
-            packet_length = (packet_data_length +
-                             self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES)
+        # determine the true packet length (with header)
+        packet_length = (packet_data_length +
+                         self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES)
 
-        # create sruct
+        # create struct
         packet_data = bytearray(packet_length)
         struct.pack_into("<II", packet_data, 0, command_id, seq_num)
         struct.pack_into(
@@ -677,19 +687,21 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES,
             *data_to_write[position:position+packet_data_length])
 
-        self._print_out_packet_data(packet_data)
+        # debug
+        # self._print_out_packet_data(packet_data)
 
-        # send sdp packet
+        # build sdp packet
         message = SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=self._placement.x,
                 destination_chip_y=self._placement.y,
                 destination_cpu=self._placement.p,
                 destination_port=constants.SDP_PORTS.
-                EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=packet_data)
 
+        # return message for sending, and the length in data sent
         return message, packet_data_length
 
     def _send_end_flag(self):
@@ -704,12 +716,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_y=self._placement.y,
                 destination_cpu=self._placement.p,
                 destination_port=constants.SDP_PORTS.
-                EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=packet_data)
         self._connection.send_sdp_message(message)
 
-    def _send_all_data(
+    def _send_all_data_based_packets(
             self, number_of_packets, data_to_write, position_in_data):
         """ sends all the data as one block 
         
@@ -719,20 +731,22 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None 
         """
         #  send rest of data
-        for seq_num in range(number_of_packets):
+        total_data_length = len(data_to_write)
+        for seq_num in range(1, number_of_packets + 1):
 
             # put in command flag and seq num
-            message, length_to_write = \
+            message, length_to_send = \
                 self._calculate_data_in_data_from_seq_number(
                     data_to_write, seq_num,
                     self.SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID,
                     position_in_data)
-            position_in_data += length_to_write
+            position_in_data += length_to_send
 
+            # send the message
             self._connection.send_sdp_message(message)
 
             # check for end flag
-            if position_in_data == len(data_to_write):
+            if position_in_data == total_data_length:
                 self._send_end_flag()
 
     @staticmethod
