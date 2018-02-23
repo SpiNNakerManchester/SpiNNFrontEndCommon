@@ -79,7 +79,7 @@ class ProfileData(object):
 
             tag_label = self._tag_labels.get(tag, None)
             if tag_label is None:
-                logger.warn("Unknown tag {} in profile data".format(tag))
+                logger.warning("Unknown tag {} in profile data".format(tag))
                 tag_label = "UNKNOWN"
 
             # Get indices where these tags occur
@@ -93,11 +93,11 @@ class ProfileData(object):
             # If the first exit is before the first
             # Entry, add a dummy entry at beginning
             if tag_exit_times_ms[0] < tag_entry_times_ms[0]:
-                logger.warn("Profile starts mid-tag")
+                logger.warning("Profile starts mid-tag")
                 tag_entry_times_ms = numpy.append(0.0, tag_entry_times_ms)
 
             if len(tag_entry_times_ms) > len(tag_exit_times_ms):
-                logger.warn("profile finishes mid-tag")
+                logger.warning("profile finishes mid-tag")
                 tag_entry_times_ms = tag_entry_times_ms[
                     :len(tag_exit_times_ms) - len(tag_entry_times_ms)]
 

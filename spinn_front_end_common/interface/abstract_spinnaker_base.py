@@ -748,8 +748,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
         if hostname is not None:
             self._hostname = hostname
-            logger.warn("The machine name from setup call is overriding the "
-                        "machine name defined in the config file")
+            logger.warning("The machine name from setup call is overriding "
+                           "the machine name defined in the config file")
         else:
             self._hostname = self._read_config("Machine", "machine_name")
             self._spalloc_server = self._read_config(
@@ -1210,7 +1210,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._app_data_top_simulation_folder,
                     self._report_simulation_top_directory)
             except Exception:
-                logger.warn("problem when shutting down", exc_info=True)
+                logger.warning("problem when shutting down", exc_info=True)
             raise ex_type, ex_value, ex_traceback
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
@@ -1375,7 +1375,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     need_virtual_board):
                 if self._config.getboolean(
                         "Mode", "violate_no_vertex_in_graphs_restriction"):
-                    logger.warn(
+                    logger.warning(
                         "you graph has no vertices in it, but you have "
                         "requested that we still execute.")
                 else:
@@ -1522,7 +1522,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 inputs["MemoryGraphMapper"] = self._graph_mapper
         elif self._config.getboolean(
                 "Mode", "violate_no_vertex_in_graphs_restriction"):
-            logger.warn(
+            logger.warning(
                 "you graph has no vertices in it, but you have requested that"
                 " we still execute.")
             inputs["MemoryApplicationGraph"] = self._application_graph
@@ -1925,18 +1925,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Sort out reload if needed
         if self._config.getboolean("Reports", "write_reload_steps"):
-            logger.warn("Reload script is not supported in this version")
+            logger.warning("Reload script is not supported in this version")
 
         outputs = [
             "NoSyncChanges"
         ]
 
         if self._use_virtual_board:
-            logger.warn(
+            logger.warning(
                 "Application will not actually be run as on a virtual board")
         elif (len(self._executable_types) == 1 and
                 ExecutableType.NO_APPLICATION in self._executable_types):
-            logger.warn(
+            logger.warning(
                 "Application will not actually be run as there is nothing to "
                 "actually run")
         else:
@@ -2192,7 +2192,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
     @staticmethod
     def _print_iobuf(errors, warnings):
         for warning in warnings:
-            logger.warn(warning)
+            logger.warning(warning)
         for error in errors:
             logger.error(error)
 
@@ -2704,7 +2704,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 if not initial_message_printed and initial_message is not None:
                     print initial_message
                     initial_message_printed = True
-                logger.warn(item.message)
+                logger.warning(item.message)
 
     def _read_config(self, section, item):
         return helpful_functions.read_config(self._config, section, item)
