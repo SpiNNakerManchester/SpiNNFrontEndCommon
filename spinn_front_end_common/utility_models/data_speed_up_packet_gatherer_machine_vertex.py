@@ -11,7 +11,7 @@ from spinn_front_end_common.interface.provenance import \
     AbstractProvidesLocalProvenanceData
 from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
     ProvenanceDataItem
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import SDP_PORTS, SYSTEM_BYTES_REQUIREMENT
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -30,6 +30,16 @@ from pacman.executor.injection_decorator import inject_items
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
 
+# dsg data regions
+_DATA_REGIONS = Enum(
+    value="DATA_REGIONS",
+    names=[('SYSTEM', 0),
+           ('CONFIG', 1)])
+
+# precompiled structures
+_ONE_WORD = struct.Struct("<I")
+_THREE_WORDS = struct.Struct("<III")
+
 
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
@@ -43,12 +53,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
-
-    # dsg data regions
-    DATA_REGIONS = Enum(
-        value="DATA_REGIONS",
-        names=[('SYSTEM', 0),
-               ('CONFIG', 1)])
 
     # size of config region in bytes
     CONFIG_SIZE = 16
@@ -73,6 +77,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     # time outs used by the protocol for separate bits
     TIMEOUT_PER_RECEIVE_IN_SECONDS = 1
     TIME_OUT_FOR_SENDING_IN_SECONDS = 0.01
+
+    # The SDP port that we use
+    SDP_PORT = SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value
 
     # command ids for the SDP packets
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
@@ -134,7 +141,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def static_resources_required():
         return ResourceContainer(
             sdram=SDRAMResource(
-                constants.SYSTEM_BYTES_REQUIREMENT +
+                SYSTEM_BYTES_REQUIREMENT +
                 DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
             iptags=[IPtagResource(
                 port=None, strip_sdp=True,
@@ -164,14 +171,14 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=too-many-arguments, arguments-differ
 
         # Setup words + 1 for flags + 1 for recording size
-        setup_size = constants.SYSTEM_BYTES_REQUIREMENT
+        setup_size = SYSTEM_BYTES_REQUIREMENT
 
         # Create the data regions for hello world
         DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(
             spec, setup_size)
 
         # write data for the simulation data item
-        spec.switch_write_focus(self.DATA_REGIONS.SYSTEM.value)
+        spec.switch_write_focus(_DATA_REGIONS.SYSTEM.value)
         spec.write_array(simulation_utilities.get_simulation_header_array(
             self.get_binary_file_name(), machine_time_step, time_scale_factor))
 
@@ -186,7 +193,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             new_seq_key = self.NEW_SEQ_KEY
             first_data_key = self.FIRST_DATA_KEY
             end_flag_key = self.END_FLAG_KEY
-        spec.switch_write_focus(self.DATA_REGIONS.CONFIG.value)
+        spec.switch_write_focus(_DATA_REGIONS.CONFIG.value)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(end_flag_key)
@@ -210,13 +217,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         spec.reserve_memory_region(
-            region=DataSpeedUpPacketGatherMachineVertex.
-            DATA_REGIONS.SYSTEM.value,
+            region=_DATA_REGIONS.SYSTEM.value,
             size=system_size,
             label='systemInfo')
         spec.reserve_memory_region(
-            region=DataSpeedUpPacketGatherMachineVertex.DATA_REGIONS.
-            CONFIG.value,
+            region=_DATA_REGIONS.CONFIG.value,
             size=DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE,
             label="config")
 
@@ -314,8 +319,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_in_bytes].append((end - start, [0]))
             return data
 
-        data = struct.pack(
-            "<III", self.SDP_PACKET_START_SENDING_COMMAND_ID,
+        data = _THREE_WORDS.pack(
+            self.SDP_PACKET_START_SENDING_COMMAND_ID,
             memory_address, length_in_bytes)
 
         # logger.debug("sending to core %d:%d:%d",
@@ -327,8 +332,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
                 destination_cpu=placement.p,
-                destination_port=constants.
-                SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                destination_port=self.SDP_PORT,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=data))
 
@@ -440,11 +444,10 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self.WORD_TO_BYTE_CONVERTER)
 
                 # pack flag and n packets
-                struct.pack_into(
-                    "<I", data, offset,
-                    self.SDP_PACKET_START_MISSING_SEQ_COMMAND_ID)
-                struct.pack_into(
-                    "<I", data, self.WORD_TO_BYTE_CONVERTER, n_packets)
+                _ONE_WORD.pack_into(
+                    data, offset, self.SDP_PACKET_START_MISSING_SEQ_COMMAND_ID)
+                _ONE_WORD.pack_into(
+                    data, self.WORD_TO_BYTE_CONVERTER, n_packets)
 
                 # update state
                 offset += 2 * self.WORD_TO_BYTE_CONVERTER
@@ -463,9 +466,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                     self.WORD_TO_BYTE_CONVERTER)
 
                 # pack flag
-                struct.pack_into(
-                    "<I", data, offset,
-                    self.SDP_PACKET_MISSING_SEQ_COMMAND_ID)
+                _ONE_WORD.pack_into(
+                    data, offset, self.SDP_PACKET_MISSING_SEQ_COMMAND_ID)
                 offset += 1 * self.WORD_TO_BYTE_CONVERTER
                 length_left_in_packet -= 1
 
@@ -483,8 +485,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     destination_chip_x=placement.x,
                     destination_chip_y=placement.y,
                     destination_cpu=placement.p,
-                    destination_port=constants.
-                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                    destination_port=self.SDP_PORT,
                     flags=SDPFlag.REPLY_NOT_EXPECTED),
                 data=str(data)))
 
@@ -510,7 +511,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=too-many-arguments
         # self._print_out_packet_data(data)
         length_of_data = len(data)
-        first_packet_element = struct.unpack_from("<I", data, 0)[0]
+        first_packet_element = _ONE_WORD.unpack_from(data, 0)[0]
 
         # get flags
         seq_num = first_packet_element & 0x7FFFFFFF
