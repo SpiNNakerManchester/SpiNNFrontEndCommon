@@ -93,7 +93,7 @@ extern INT_HANDLER sark_int_han(void);
 #define N_ROUTER_ENTRIES 1024
 
 //! sdram requirement to store all router entries.
-#define SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES N_ROUTER_ENTRIES * 16
+#define SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES (N_ROUTER_ENTRIES - 1) * 16
 
 //! size of a sdram router entry
 #define SIZE_OF_ROUTER_ENTRY_IN_SDRAM 12
@@ -106,15 +106,6 @@ extern INT_HANDLER sark_int_han(void);
 
 //! hardcoded invalid router entry state for route
 #define INVALID_ROUTER_ENTRY_ROUTE 0xFF000000
-
-//! system router entry key
-#define SYSTEM_ROUTER_ENTRY_KEY 0xffff5555
-
-//! system router entry mask
-#define SYSTEM_ROUTER_ENTRY_MASK 0xffffffff
-
-//! system router entry route
-#define SYSTEM_ROUTER_ENTRY_ROUTE 1 << 6
 
 //! mask to get app id from free entry of rtr_entry_t
 #define APP_ID_MASK_FROM_FREE 0x000000FF
@@ -739,7 +730,7 @@ void reinjection_configure_router() {
 
 void _clear_router(){
     // clear the currently loaded routing table entries
-    if (rtr_mc_clear(0, N_ROUTER_ENTRIES) != 1){
+    if (rtr_mc_clear(1, N_ROUTER_ENTRIES - 1) != 1){
        io_printf(IO_BUF, "failed to clear the router\n");
        rt_error(RTE_SWERR);
     }
@@ -779,13 +770,9 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 //! \param[in] n_entries: how many router entries to read in
 void data_in_read_and_load_router_entries(
         address_t sdram_address, uint n_entries){
-    // read in each entry from sdram and dump into next entry in mc router
-    if(rtr_mc_set(0, SYSTEM_ROUTER_ENTRY_KEY, SYSTEM_ROUTER_ENTRY_MASK,
-                  SYSTEM_ROUTER_ENTRY_ROUTE) != 1){
-        io_printf(IO_BUF, "failed to write router system entry \n");
-    }
+
     for( uint entry_id = 1; entry_id < n_entries; entry_id++){
-        uint position = (entry_id * (
+        uint position = ((entry_id - 1) * (
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
 
         // check for invalid entries (possible during alloc and free or
@@ -798,16 +785,17 @@ void data_in_read_and_load_router_entries(
                 INVALID_ROUTER_ENTRY_ROUTE){
 
             // try setting the valid router entry
-            //io_printf(
-            //    IO_BUF, "setting key %u at %u, mask %u at %u, "
-            //            "route %u at %u position %u\n",
-            //    sdram_address[position + ROUTER_ENTRY_KEY],
-            //    position + ROUTER_ENTRY_KEY,
-            //    sdram_address[position + ROUTER_ENTRY_MASK],
-            //    position + ROUTER_ENTRY_MASK,
-            //    sdram_address[position + ROUTER_ENTRY_ROUTE],
-            //    position + ROUTER_ENTRY_ROUTE,
-            //    position);
+            io_printf(
+                IO_BUF, "setting key %u at %u, mask %u at %u, "
+                        "route %u at %u position %u\n",
+                sdram_address[position + ROUTER_ENTRY_KEY],
+                position + ROUTER_ENTRY_KEY,
+                sdram_address[position + ROUTER_ENTRY_MASK],
+                position + ROUTER_ENTRY_MASK,
+                sdram_address[position + ROUTER_ENTRY_ROUTE],
+                position + ROUTER_ENTRY_ROUTE,
+                position);
+
             if (rtr_mc_set(
                     entry_id,
                     sdram_address[position + ROUTER_ENTRY_KEY],
@@ -831,7 +819,7 @@ void data_in_read_router(){
 	rtr_entry_t *entry = NULL;
 	entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
 
-	for(uint entry_id = 0; entry_id < N_ROUTER_ENTRIES; entry_id ++){
+	for(uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id ++){
 	    uint success = rtr_mc_get(entry_id, entry);
 	    if (success != 1){
 	        io_printf(IO_BUF, "failed to read application routing entry %d\n",
@@ -894,29 +882,27 @@ void data_in_speed_up_load_in_application_routes(){
 
     // load app router entries from sdram
     data_in_read_and_load_router_entries(
-        (address_t)&application_routers_sdram_address, N_ROUTER_ENTRIES);
+        application_routers_sdram_address, N_ROUTER_ENTRIES - 1);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_in_speed_up(sdp_msg_pure_data *msg) {
-    if (msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
+void handle_data_in_speed_up(sdp_msg_t *msg) {
+    if (msg->cmd_rc == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
         data_in_read_router();
     }
-    else if(msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
+    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
         data_in_speed_up_load_in_application_routes();
     }
-    else if(msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
+    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
         data_in_speed_up_load_in_system_tables();
     }
     else{
        io_printf(
            IO_BUF,
-           "received unknown SDP packet in data in speed up port\n");
+           "received unknown SDP packet in data in speed up port with"
+           "command id %d\n", msg->data[COMMAND_ID_POSITION]);
     }
 }
 
@@ -1372,7 +1358,7 @@ void __wrap_sark_int(void *pc) {
                 handle_data_out_speed_up((sdp_msg_pure_data *) msg);
                 break;
             case DATA_IN_SPEED_UP_FUNCTIONALITY:
-                handle_data_in_speed_up((sdp_msg_pure_data *) msg);
+                handle_data_in_speed_up(msg);
                 break;
             default:
                 io_printf(IO_BUF, "port %d\n",

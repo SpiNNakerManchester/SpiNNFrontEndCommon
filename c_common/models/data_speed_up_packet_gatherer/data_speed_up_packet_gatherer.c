@@ -307,10 +307,11 @@ uint data_in_n_missing_seq_packets(){
 //! \param[in] position_in_data: where in msg we are.
 uint update_and_send_sdp_if_required(
         uint missing_seq_num, uint position_in_data){
-        log_info("adding missing seq num %d\n", missing_seq_num);
+    log_info("adding missing seq num %d\n", missing_seq_num);
     my_msg.data[position_in_data] = missing_seq_num;
     position_in_data ++;
     if (position_in_data == ITEMS_PER_DATA_INDEX){
+        log_info("sending missing data packet");
         my_msg.length = LENGTH_OF_SDP_HEADER + (
             position_in_data * WORD_TO_BYTE_MULTIPLIER);
         while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
@@ -342,12 +343,12 @@ void process_missing_seq_nums_and_request_retransmission(){
     }
     // sending missing seq nums
     else{
-        log_info("sending missing packets");
+        log_info("looking for missing packets");
         my_msg.data[COMMAND_ID_POSITION] =
             SDP_PACKET_SEND_FIRST_MISSING_SEQ_DATA_IN_COMMAND_ID;
         my_msg.data[N_MISSING_SEQ_PACKETS] = data_in_n_missing_seq_packets();
         uint position_in_data = DATA_STARTS;
-        for(uint bit=0; bit < size_of_bitfield; bit ++){
+        for(uint bit=0; bit < max_seq_num; bit ++){
             if(!bit_field_test(missing_seq_nums_store, bit)){
                 position_in_data = update_and_send_sdp_if_required(
                     bit + 1, position_in_data);
@@ -358,7 +359,7 @@ void process_missing_seq_nums_and_request_retransmission(){
         if (position_in_data > DATA_STARTS){
             my_msg.length = LENGTH_OF_SDP_HEADER + (
                 position_in_data * WORD_TO_BYTE_MULTIPLIER);
-            log_info("sending final packet");
+            log_info("sending missing final packet");
             while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
                 spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
             }
@@ -435,6 +436,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
             last_seen_seq_num = msg->data[SEQ_NUM];
         }
 
+        log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
         total_received_seq_nums ++;
 

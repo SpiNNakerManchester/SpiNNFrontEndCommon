@@ -1,4 +1,5 @@
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_machine import CoreSubsets
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_front_end_common.utilities import helpful_functions
 
@@ -27,6 +28,7 @@ class LoadOtherExecutableImages(object):
             "Loading application executables onto the machine")
 
         # only load executables not of system type.
+        none_system_core_subsets = CoreSubsets()
         executable_types = executable_targets.executable_types_in_binary_set()
         for executable_type in executable_types:
             if executable_type != ExecutableType.SYSTEM:
@@ -36,13 +38,15 @@ class LoadOtherExecutableImages(object):
                     progress.update(
                         helpful_functions.flood_fill_binary_to_spinnaker(
                             executable_targets, binary, transceiver, app_id))
+                    none_system_core_subsets.add_core_subsets(
+                        executable_targets.get_cores_for_binary(binary))
 
-        self._start_simulation(executable_targets, transceiver, app_id)
+        self._start_simulation(transceiver, app_id, none_system_core_subsets)
         progress.update()
         progress.end()
 
     @staticmethod
-    def _start_simulation(executable_targets, txrx, app_id):
+    def _start_simulation(txrx, app_id, none_system_core_subsets):
         txrx.wait_for_cores_to_be_in_state(
-            executable_targets.all_core_subsets, app_id, [CPUState.READY])
+            none_system_core_subsets, app_id, [CPUState.READY])
         txrx.send_signal(app_id, Signal.START)

@@ -115,7 +115,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     # command ids for the SDP packets for data in
     SDP_PACKET_SEND_DATA_TO_LOCATION_COMMAND_ID = 200
     SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID = 2000
-    SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID = 2001
     SDP_PACKET_SEND_LAST_DATA_IN_COMMAND_ID = 2002
     SDP_PACKET_RECEIVE_FIRST_MISSING_SEQ_DATA_IN_COMMAND_ID = 2003
     SDP_PACKET_RECEIVE_MISSING_SEQ_DATA_IN_COMMAND_ID = 2004
@@ -499,7 +498,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                 position_in_data:(
                     self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
                     self.WORD_TO_BYTE_CONVERTER)])
-        self._print_out_packet_data(data)
+
+        # debug
+        # self._print_out_packet_data(data)
 
         # update where in data we've sent up to
         position_in_data = (self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
@@ -584,6 +585,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         position = 0
         command_id = struct.unpack_from("<I", data, 0)[0]
         position += self.COMMAND_ID_SIZE
+        print "received packet with id {}\n".format(command_id)
 
         # process first missing
         if command_id == \
@@ -623,7 +625,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         for missing_seq_num in self._missing_seq_nums_data_in:
             message, length = self._calculate_data_in_data_from_seq_number(
                 data_to_write, missing_seq_num,
-                self.SDP_PACKET_SEND_MISSING_SEQ_NUMS_BACK_COMMAND_ID, None)
+                self.SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID, None)
             self._connection.send_sdp_message(message)
 
         self._missing_seq_nums_data_in = list()
@@ -688,7 +690,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             *data_to_write[position:position+packet_data_length])
 
         # debug
-        # self._print_out_packet_data(packet_data)
+        self._print_out_packet_data(packet_data)
 
         # build sdp packet
         message = SDPMessage(
@@ -769,6 +771,19 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores_for_router_timeout[0].set_router_emergency_timeout(
             0, 0, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
+
+    @staticmethod
+    def set_application_routing_tables(
+            transceiver, extra_monitor_cores, placements):
+        """ sets all chips to have app table reloaded
+        
+        :param transceiver: the SpiNNMan instance
+        :param extra_monitor_cores: the extra monitor cores to set 
+        :param placements: placements object
+        :rtype: None 
+        """
+        extra_monitor_cores[0].set_up_application_mc_routes(
+            placements, extra_monitor_cores, transceiver)
 
     @staticmethod
     def unset_cores_for_data_streaming(

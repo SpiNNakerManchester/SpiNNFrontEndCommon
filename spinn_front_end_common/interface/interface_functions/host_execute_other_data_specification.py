@@ -65,6 +65,11 @@ class HostExecuteOtherDataSpecification(object):
 
         # reset router timeouts
         if uses_advanced_monitors:
+            # reset router tables
+            DataSpeedUpPacketGatherMachineVertex. \
+                set_application_routing_tables(
+                    transceiver, extra_monitor_cores, placements)
+            # reset router timeouts
             DataSpeedUpPacketGatherMachineVertex.\
                 unset_cores_for_data_streaming(
                     transceiver, extra_monitor_cores, placements)
