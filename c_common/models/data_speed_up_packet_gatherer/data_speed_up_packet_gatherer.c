@@ -402,13 +402,13 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
             SDP_SEND_DATA_TO_LOCATION_COMMAND_ID){
 
         // translate elements to variables
-        log_info("starting data in command");
+        //log_info("starting data in command");
         chip_x = msg->data[CHIP_DATA] >> BIT_SHIFT_CHIP_X_COORD;
         chip_y = msg->data[CHIP_DATA] & BIT_MASK_FOR_CHIP_Y_COORD;
         received_address_packet = true;
         max_seq_num = msg->data[MAX_SEQ_NUM];
-        log_info("got chip ids of %d, %d, and max seq of %d",
-                 chip_x, chip_y, max_seq_num);
+        //log_info("got chip ids of %d, %d, and max seq of %d",
+        //         chip_x, chip_y, max_seq_num);
 
         // allocate sdram location for holding the seq numbers
         process_sdram_location_for_seq_nums(max_seq_num);
@@ -436,7 +436,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
             last_seen_seq_num = msg->data[SEQ_NUM];
         }
 
-        log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
+        //log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
         total_received_seq_nums ++;
 

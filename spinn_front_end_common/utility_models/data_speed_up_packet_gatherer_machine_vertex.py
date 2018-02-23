@@ -627,6 +627,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data_to_write, missing_seq_num,
                 self.SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID, None)
             self._connection.send_sdp_message(message)
+            time.sleep(0.02)
 
         self._missing_seq_nums_data_in = list()
         self._total_expected_missing_seq_packets = 0
@@ -650,7 +651,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
                 self.WORD_TO_BYTE_CONVERTER + (
                     self.WORD_TO_BYTE_CONVERTER *
-                    self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num))
+                    self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
+                    (seq_num - 1)))
 
     def _calculate_data_in_data_from_seq_number(
             self, data_to_write, seq_num, command_id, position):
@@ -676,6 +678,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         # if less than a full packet worth of data, adjust length
         if position + packet_data_length > len(data_to_write):
             packet_data_length = len(data_to_write) - position
+
+        if packet_data_length < 0:
+            raise Exception()
 
         # determine the true packet length (with header)
         packet_length = (packet_data_length +
@@ -746,6 +751,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # send the message
             self._connection.send_sdp_message(message)
+            time.sleep(0.02)
 
             # check for end flag
             if position_in_data == total_data_length:
