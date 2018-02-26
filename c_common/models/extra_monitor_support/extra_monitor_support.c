@@ -1376,7 +1376,9 @@ void __wrap_sark_int(void *pc) {
                 msg->dest_addr = msg->srce_addr;
                 msg->srce_addr = dest_addr2;
 
-                sark_msg_send(msg, 10);
+                if(sark_msg_send(msg, 10) != 1){
+                    sark_delay_us(1);
+                };
                 handle_data_in_speed_up(command_code);
                 break;
             default:
