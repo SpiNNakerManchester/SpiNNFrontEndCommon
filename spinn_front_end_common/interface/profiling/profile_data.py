@@ -34,12 +34,12 @@ class ProfileData(object):
 
     def __init__(self, tag_labels):
         """
-
         :param tag_labels: A list of labels indexed by tag id
         :type tag_labels: list(str)
         """
         self._tag_labels = tag_labels
         self._tags = dict()
+        self._max_time = None
 
     def add_data(self, data):
         """ Add profiling data read from the profile section
@@ -83,7 +83,7 @@ class ProfileData(object):
         # pylint: disable=too-many-arguments
         tag_label = self._tag_labels.get(tag, None)
         if tag_label is None:
-            logger.warn("Unknown tag {} in profile data", tag)
+            logger.warning("Unknown tag {} in profile data", tag)
             tag_label = "UNKNOWN"
 
         # Get indices where these tags occur
@@ -97,11 +97,11 @@ class ProfileData(object):
         # If the first exit is before the first
         # Entry, add a dummy entry at beginning
         if tag_exit_times[0] < tag_entry_times[0]:
-            logger.warn("Profile starts mid-tag")
+            logger.warning("Profile starts mid-tag")
             tag_entry_times = numpy.append(0.0, tag_entry_times)
 
         if len(tag_entry_times) > len(tag_exit_times):
-            logger.warn("profile finishes mid-tag")
+            logger.warning("profile finishes mid-tag")
             tag_entry_times = tag_entry_times[
                 :len(tag_exit_times) - len(tag_entry_times)]
 

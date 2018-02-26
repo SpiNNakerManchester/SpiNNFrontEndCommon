@@ -772,7 +772,7 @@ class BufferManager(object):
                 if not self._finished:
                     self._retrieve_and_store_data(packet)
         except Exception:
-            logger.warn("problem when handling data", exc_info=True)
+            logger.warning("problem when handling data", exc_info=True)
 
     def _retrieve_and_store_data(self, packet):
         """ Following a SpinnakerRequestReadData packet, the data stored\

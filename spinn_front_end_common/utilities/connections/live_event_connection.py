@@ -282,7 +282,7 @@ class LiveEventConnection(DatabaseConnection):
             else:
                 self.__handle_no_time_packet(packet)
         except Exception:
-            logger.warn("problem handling received packet", exc_info=True)
+            logger.warning("problem handling received packet", exc_info=True)
 
     def __handle_time_packet(self, packet):
         key_times_labels = OrderedDict()
