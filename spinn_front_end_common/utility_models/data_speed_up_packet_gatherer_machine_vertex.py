@@ -50,6 +50,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
         "_connection",
+        "_last_reinjection_status",
         "_max_seq_num",
         "_output",
         "_provenance_data_items",
@@ -301,7 +302,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, transceiver, extra_monitor_cores_for_router_timeout,
             placements):
         if self._last_reinjection_status is None:
-            logger.warn(
+            log.warning(
                 "Cores have not been set for data extraction, so can't be"
                 " unset")
         try:
@@ -310,26 +311,25 @@ class DataSpeedUpPacketGatherMachineVertex(
             extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
                 mantissa, exponent, transceiver, placements,
                 extra_monitor_cores_for_router_timeout)
-            mantissa, exponent = \
-                self._last_reinjection_status\
+            mantissa, exponent = self._last_reinjection_status\
                 .router_emergency_timeout_parameters()
             extra_monitor_cores_for_router_timeout[0].\
                 set_reinjection_router_emergency_timeout(
                     mantissa, exponent, transceiver, placements,
                     extra_monitor_cores_for_router_timeout)
         except Exception:
-            logger.error("Error resetting timeouts", exc_info=True)
-            logger.error("Checking if the cores are OK...")
+            log.error("Error resetting timeouts", exc_info=True)
+            log.error("Checking if the cores are OK...")
             core_subsets = convert_vertices_to_core_subset(
                 extra_monitor_cores_for_router_timeout, placements)
             try:
                 error_cores = transceiver.get_cores_not_in_state(
                     core_subsets, {CPUState.RUNNING})
-                if len(error_cores) > 0:
-                    logger.error("Cores in an unexpected state: {}".format(
+                if error_cores:
+                    log.error("Cores in an unexpected state: {}".format(
                         error_cores))
             except Exception:
-                logger.error("Couldn't get core state", exc_info=True)
+                log.error("Couldn't get core state", exc_info=True)
 
     def get_data(
             self, transceiver, placement, memory_address, length_in_bytes):
