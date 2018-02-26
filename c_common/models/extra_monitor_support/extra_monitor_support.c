@@ -888,21 +888,25 @@ void data_in_speed_up_load_in_application_routes(){
 //! \brief the handler for all messages coming in for data in speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_in_speed_up(sdp_msg_t *msg) {
-    if (msg->cmd_rc == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
+//! \return: complete code if successful
+void handle_data_in_speed_up(uint16_t command_code) {
+    if (command_code == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
         data_in_read_router();
+        io_printf(IO_BUF, "reading application router entries from router\n");
     }
-    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
+    else if(command_code == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
         data_in_speed_up_load_in_application_routes();
+        io_printf(IO_BUF, "loading application router entries into router\n");
     }
-    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
+    else if(command_code == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
         data_in_speed_up_load_in_system_tables();
+        io_printf(IO_BUF, "loading system router entries into router\n");
     }
     else{
        io_printf(
            IO_BUF,
            "received unknown SDP packet in data in speed up port with"
-           "command id %d\n", msg->data[COMMAND_ID_POSITION]);
+           "command id %d\n", command_code);
     }
 }
 
@@ -1343,6 +1347,7 @@ void __wrap_sark_int(void *pc) {
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
                 msg->length = 12 + handle_reinjection_command(msg);
+
                 uint dest_port = msg->dest_port;
                 uint dest_addr = msg->dest_addr;
 
@@ -1357,8 +1362,22 @@ void __wrap_sark_int(void *pc) {
             case DATA_OUT_SPEED_UP_FUNCTIONALITY:
                 handle_data_out_speed_up((sdp_msg_pure_data *) msg);
                 break;
-            case DATA_IN_SPEED_UP_FUNCTIONALITY:
-                handle_data_in_speed_up(msg);
+            case DATA_IN_SPEED_UP_FUNCTIONALITY: ; // empty statement
+                uint command_code = msg->cmd_rc;
+                msg->cmd_rc = RC_OK;
+                msg->length = 12;
+
+                uint dest_port2 = msg->dest_port;
+                uint dest_addr2 = msg->dest_addr;
+
+                msg->dest_port = msg->srce_port;
+                msg->srce_port = dest_port2;
+
+                msg->dest_addr = msg->srce_addr;
+                msg->srce_addr = dest_addr2;
+
+                sark_msg_send(msg, 10);
+                handle_data_in_speed_up(command_code);
                 break;
             default:
                 io_printf(IO_BUF, "port %d\n",
