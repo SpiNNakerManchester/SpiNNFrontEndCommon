@@ -80,7 +80,7 @@ class EnergyReport(object):
             spalloc
         :rtype: None
         """
-
+        # pylint: disable=too-many-arguments, too-many-locals
         if buffer_manager is None:
             logger.info("Skipping Energy report as no buffer_manager set")
             return
@@ -143,11 +143,12 @@ class EnergyReport(object):
         :param packet_cost: packet cost
         :param load_time_cost: load time cost
         :param data_extraction_cost: data extraction cost
-        :param runtime_total_ms: runtime with time scale factor\
-            taken into account
+        :param runtime_total_ms: \
+            Runtime with time scale factor taken into account
         :param f: file writer
         :rtype: None
         """
+        # pylint: disable=too-many-arguments, too-many-locals
 
         # total the energy costs
         total_joules = (
@@ -219,6 +220,7 @@ class EnergyReport(object):
         :return: machine_active_cost, machine_idle_chips_cost, \
             fpga_cost, packet_cost, load_time_cost, extraction_time_cost
         """
+        # pylint: disable=too-many-arguments, too-many-locals
 
         # write warning about accuracy etc
         self._write_warning(f)
@@ -317,6 +319,7 @@ class EnergyReport(object):
         :param runtime_total_ms:
         :return: power usage of fpgas
         """
+        # pylint: disable=too-many-arguments
 
         # if not spalloc, then could be any type of board
         if spalloc_server is None and remote_spinnaker_url is None:
@@ -330,7 +333,7 @@ class EnergyReport(object):
 
             # if the spinn4 or spinn5 board, need to verify if wrap-arounds
             # are there, if not then assume fpgas are turned off.
-            elif int(version) in (4, 5):
+            if int(version) in (4, 5):
 
                 # how many fpgas are active
                 n_operational_fpgas = self._board_n_operational_fpgas(
@@ -341,16 +344,17 @@ class EnergyReport(object):
                     return self._print_out_fpga_cost(
                         total_runtime, n_operational_fpgas, f, version,
                         runtime_total_ms)
-                else:  # no active fpgas
-                    f.write(
-                        "The FPGA's on the SpiNN-{} board are turned off and "
-                        "therefore the energy used by the FPGA is 0\n".format(
-                            version))
-                    return 0, 0
-            else:  # no idea where we are
-                raise ConfigurationException(
-                    "Do not know what the FPGA setup is for this version of "
-                    "SpiNNaker machine.")
+                # no active fpgas
+                f.write(
+                    "The FPGA's on the SpiNN-{} board are turned off and "
+                    "therefore the energy used by the FPGA is 0\n".format(
+                        version))
+                return 0, 0
+
+            # no idea where we are; version unrecognised
+            raise ConfigurationException(
+                "Do not know what the FPGA setup is for this version of "
+                "SpiNNaker machine.")
         else:  # spalloc machine, need to check each board
             total_fpgas = 0
             for ethernet_connected_chip in machine.ethernet_connected_chips:
@@ -371,6 +375,7 @@ class EnergyReport(object):
         :param runtime_total_ms: runtime in milliseconds
         :return: power usage
         """
+        # pylint: disable=too-many-arguments
         power_usage_total = (
             total_runtime * self.MILLIWATTS_PER_FPGA * n_operational_fpgas)
         power_usage_runtime = (
@@ -402,6 +407,7 @@ class EnergyReport(object):
         :param ethernet_connected_chip: the ethernet chip to look from
         :return: number of fpgas on, on this board
         """
+        # pylint: disable=too-many-locals
 
         # positions to check for active links
         left_additions = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4)]
@@ -451,6 +457,7 @@ class EnergyReport(object):
         :param machine: machine rep
         :return: 0 if not on, 1 if on
         """
+        # pylint: disable=too-many-arguments
         for shift_group, link_ids in zip(shifts, overall_link_ids):
             for shift in shift_group:
                 new_x = (ethernet_chip_x + shift[0]) % (machine_max_x + 1)
@@ -493,6 +500,7 @@ class EnergyReport(object):
         :param f: file writer
         :return: energy cost
         """
+        # pylint: disable=too-many-arguments
 
         # locate chip power monitor
         chip_power_monitor = self._get_chip_power_monitor(chip, placements)
@@ -596,6 +604,7 @@ class EnergyReport(object):
         :param load_time: the time of the entire load time phase in ms
         :return: load time energy value in Joules
         """
+        # pylint: disable=too-many-arguments
 
         # find time in milliseconds
         total_time_ms = 0.0
@@ -650,6 +659,7 @@ class EnergyReport(object):
         :param active_chips:
         :return: cost of data extraction in Joules
         """
+        # pylint: disable=too-many-arguments
 
         # find time
         total_time_ms = 0.0
@@ -708,6 +718,7 @@ class EnergyReport(object):
         :param n_frames: number of frames used by this machine
         :return: energy in joules
         """
+        # pylint: disable=too-many-arguments
 
         # if spalloc or hbp
         if machine_allocation_controller is not None:

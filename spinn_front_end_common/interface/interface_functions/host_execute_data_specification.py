@@ -11,8 +11,11 @@ from spinn_storage_handlers import FileDataReader
 import logging
 import struct
 import numpy
+from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.helpful_functions \
+    import write_address_to_user0
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 
@@ -34,6 +37,7 @@ class HostExecuteDataSpecification(object):
 
         :return: map of placement and dsg data, and loaded data flag.
         """
+        # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
 
@@ -51,6 +55,8 @@ class HostExecuteDataSpecification(object):
 
     @staticmethod
     def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
+        # pylint: disable=too-many-arguments, too-many-locals
+
         # build specification reader
         reader = FileDataReader(data_spec_path)
 
@@ -58,19 +64,18 @@ class HostExecuteDataSpecification(object):
         # however system updates the memory available
         # independently, so the check on the space available actually
         # happens when memory is allocated
-        chip = machine.get_chip_at(x, y)
-        memory_available = chip.sdram.size
 
         # generate data spec executor
-        executor = DataSpecificationExecutor(reader, memory_available)
+        executor = DataSpecificationExecutor(
+            reader, machine.get_chip_at(x, y).sdram.size)
 
         # run data spec executor
         try:
             # bytes_used_by_spec, bytes_written_by_spec = \
             executor.execute()
         except DataSpecificationException:
-            logger.error("Error executing data specification for {}, {}, {}"
-                         .format(x, y, p))
+            logger.error("Error executing data specification for {}, {}, {}",
+                         x, y, p)
             raise
 
         bytes_used_by_spec = executor.get_constructed_data_size()
@@ -96,14 +101,11 @@ class HostExecuteDataSpecification(object):
                     data = region.region_data[:max_pointer]
 
                     # Write the data to the position
-                    position = pointer_table[region_id]
-                    txrx.write_memory(x, y, position, data)
+                    txrx.write_memory(x, y, pointer_table[region_id], data)
                     bytes_written_by_spec += len(data)
 
         # set user 0 register appropriately to the application data
-        user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
-        start_address_encoded = buffer(_ONE_WORD.pack(start_address))
-        txrx.write_memory(x, y, user_0_address, start_address_encoded)
+        write_address_to_user0(txrx, x, y, p, start_address)
         return {
             'start_address': start_address,
             'memory_used': bytes_used_by_spec,
