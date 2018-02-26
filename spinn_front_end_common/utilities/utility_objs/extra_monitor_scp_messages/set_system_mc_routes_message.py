@@ -31,7 +31,7 @@ class SetSystemMCRoutesMessage(AbstractSCPRequest):
         AbstractSCPRequest.__init__(
             self,
             SDPHeader(
-                flags=SDPFlag.REPLY_NOT_EXPECTED,
+                flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
                     constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.
                     value),
