@@ -1,41 +1,37 @@
 import math
-import logging
-import sys
-from threading import Thread
+from spinn_utilities.overrides import overrides
 
 from spalloc import Job
 from spalloc.states import JobState
+from spinn_front_end_common.abstract_models.impl \
+    import MachineAllocationController
 from spinn_front_end_common.abstract_models \
     import AbstractMachineAllocationController
 
-logger = logging.getLogger(__name__)
 
-
-class _SpallocJobController(Thread, AbstractMachineAllocationController):
-
+class _SpallocJobController(MachineAllocationController):
     __slots__ = [
-        # thread flag to allow it to be killed when the main thread dies
-        "daemon",
-
         # the spalloc job object
         "_job",
-
-        # boolean flag for telling this thread when the system has ended
-        "_exited"
+        # the current job's old state
+        "_state"
     ]
 
     def __init__(self, job):
-        Thread.__init__(self, name="SpallocJobController")
-        self.daemon = True
+        if job is None:
+            raise Exception("must have a real job")
         self._job = job
-        self._exited = False
+        self._state = job.state
+        super(_SpallocJobController, self).__init__("SpallocJobController")
 
+    @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
         # Does Nothing in this allocator - machines are held until exit
         pass
 
+    @overrides(AbstractMachineAllocationController.close)
     def close(self):
-        self._exited = True
+        super(_SpallocJobController, self).close()
         self._job.destroy()
 
     @property
@@ -50,26 +46,18 @@ class _SpallocJobController(Thread, AbstractMachineAllocationController):
     def where_is_machine(self, chip_x, chip_y):
         return self._job.where_is_machine(chip_y=chip_y, chip_x=chip_x)
 
-    def _wait_for_state_change(self, old_state):
+    @overrides(MachineAllocationController._wait)
+    def _wait(self):
         try:
-            if self._job is not None:
-                return self._job.wait_for_state_change(old_state)
+            if self._state != JobState.destroyed:
+                self._state = self._job.wait_for_state_change(self._state)
         except TypeError:
             pass
-        return old_state
+        return self._state != JobState.destroyed
 
-    def run(self):
-        state = self._job.state
-        while state != JobState.destroyed and not self._exited:
-            state = self._wait_for_state_change(state)
-
+    @overrides(MachineAllocationController._teardown)
+    def _teardown(self):
         self._job.close()
-
-        if not self._exited:
-            logger.error(
-                "The allocated machine has been released before the end of"
-                " the script - this script will now exit")
-            sys.exit(1)
 
 
 class SpallocAllocator(object):
@@ -94,12 +82,13 @@ class SpallocAllocator(object):
         :param spalloc_port: The optional port number to speak to spalloc
         :param spalloc_machine: The optional spalloc machine to use
         """
+        # pylint: disable=too-many-arguments
 
         # Work out how many boards are needed
         n_boards = float(n_chips) / self._N_CHIPS_PER_BOARD
 
-        # If the number of boards rounded up is less than 10% bigger than the
-        # actual number of boards, add another board just in case
+        # If the number of boards rounded up is less than 10% of a board bigger
+        # than the actual number of boards, add another board just in case.
         if math.ceil(n_boards) - n_boards < 0.1:
             n_boards += 1
         n_boards = int(math.ceil(n_boards))
@@ -115,7 +104,6 @@ class SpallocAllocator(object):
 
         job, hostname = self._launch_job(n_boards, spalloc_kw_args)
         machine_allocation_controller = _SpallocJobController(job)
-        machine_allocation_controller.start()
 
         return (
             hostname, self._MACHINE_VERSION, None, None, None, None, False,

@@ -39,7 +39,6 @@ class MundyOnChipRouterCompression(object):
             provenance_file_path, compress_only_when_needed=True,
             compress_as_much_as_possible=False):
         """
-
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface
         :param machine: the spinnaker machine representation
@@ -47,6 +46,7 @@ class MundyOnChipRouterCompression(object):
         :param provenance_file_path: the path to where to write the data
         :return: flag stating routing compression and loading has been done
         """
+        # pylint: disable=too-many-arguments
 
         # build progress bar
         progress = ProgressBar(
@@ -100,6 +100,7 @@ class MundyOnChipRouterCompression(object):
     def _load_routing_table(
             self, table, txrx, app_id, compressor_app_id,
             compress_only_when_needed, compress_as_much_as_possible):
+        # pylint: disable=too-many-arguments
         data = self._build_data(
             table, app_id, compress_only_when_needed,
             compress_as_much_as_possible)
@@ -163,8 +164,7 @@ class MundyOnChipRouterCompression(object):
         txrx.app_id_tracker.free_id(compressor_app_id)
 
     @staticmethod
-    def _load_executables(
-            routing_tables, compressor_app_id, txrx, machine):
+    def _load_executables(routing_tables, compressor_app_id, txrx, machine):
         """ loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
@@ -207,10 +207,12 @@ class MundyOnChipRouterCompression(object):
             If True, the compressor will only compress if the table doesn't\
             fit in the current router space, otherwise it will just load\
             the table
+        :type compress_only_when_needed: bool
         :param compress_as_much_as_possible:\
             If False, the compressor will only reduce the table until it fits\
             in the router space, otherwise it will try to reduce until it\
             until it can't reduce it any more
+        :type compress_as_much_as_possible: bool
         :return: The byte array of data
         """
 
@@ -240,8 +242,7 @@ class MundyOnChipRouterCompression(object):
         :return: return the source value
         """
         if entry.defaultable:
-            return list(entry.link_ids)[0] + 3 % 6
-        elif len(entry.link_ids) > 0:
+            return (list(entry.link_ids)[0] + 3) % 6
+        elif entry.link_ids:
             return list(entry.link_ids)[0]
-        else:
-            return 0
+        return 0

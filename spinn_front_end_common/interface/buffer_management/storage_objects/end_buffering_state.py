@@ -14,13 +14,12 @@ class EndBufferingState(object):
         "_buffering_out_fsm_state"
     ]
 
-    def __init__(
-            self, buffering_out_fsm_state, list_channel_buffer_state):
+    def __init__(self, buffering_out_fsm_state, list_channel_buffer_state):
         """
 
         :param buffering_out_fsm_state: Final sequence number received
         :param list_channel_buffer_state: a list of channel state, where each\
-                channel is stored in a ChannelBufferState object
+            channel is stored in a ChannelBufferState object
         """
         self._buffering_out_fsm_state = buffering_out_fsm_state
         self._list_channel_buffer_state = list_channel_buffer_state

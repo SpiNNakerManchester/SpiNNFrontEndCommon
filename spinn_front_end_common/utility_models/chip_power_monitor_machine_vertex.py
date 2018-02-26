@@ -19,6 +19,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import \
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.utilities.helpful_functions \
     import locate_memory_region_for_placement, read_config_int
 from spinn_front_end_common.interface.simulation.simulation_utilities \
@@ -26,7 +27,7 @@ from spinn_front_end_common.interface.simulation.simulation_utilities \
 
 from spinn_utilities.overrides import overrides
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
 
@@ -34,9 +35,10 @@ BINARY_FILE_NAME = "chip_power_monitor.aplx"
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
-    """ machine vertex for c code representing functionality to record /
-            idle times in a machine graph
+    """ machine vertex for c code representing functionality to record\
+        idle times in a machine graph
     """
+    __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
     # data regions
     CHIP_POWER_MONITOR_REGIONS = Enum(
@@ -65,7 +67,8 @@ class ChipPowerMonitorMachineVertex(
         :param sampling_frequency: how often to sample
         :type sampling_frequency: microseconds
         """
-        MachineVertex.__init__(self, label=label, constraints=constraints)
+        super(ChipPowerMonitorMachineVertex, self).__init__(
+            label=label, constraints=constraints)
         self._n_samples_per_recording = n_samples_per_recording
         self._sampling_frequency = sampling_frequency
 
@@ -87,6 +90,7 @@ class ChipPowerMonitorMachineVertex(
                    'time_scale_factor'})
     def resources_required(
             self, n_machine_time_steps, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return self.get_resources(
             n_machine_time_steps, machine_time_step, time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
@@ -99,6 +103,8 @@ class ChipPowerMonitorMachineVertex(
 
         :return:Resource container
         """
+        # pylint: disable=too-many-locals
+
         # get config
         config = globals_variables.get_simulator().config
 
@@ -180,6 +186,7 @@ class ChipPowerMonitorMachineVertex(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, n_machine_time_steps,
             ip_tags):
+        # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
             spec, machine_time_step, time_scale_factor, n_machine_time_steps,
             ip_tags)
@@ -196,6 +203,7 @@ class ChipPowerMonitorMachineVertex(
         :param ip_tags: iptags
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         spec.comment("\n*** Spec for ChipPowerMonitor Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:
@@ -230,6 +238,7 @@ class ChipPowerMonitorMachineVertex(
         :param time_scale_factor: the time scale factor
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         spec.switch_write_focus(
             region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value)
         spec.write_array(get_simulation_header_array(
@@ -295,6 +304,7 @@ class ChipPowerMonitorMachineVertex(
                additional_arguments={"time_scale_factor"})
     def get_n_timesteps_in_buffer_space(
             self, buffer_space, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return recording_utilities.get_n_timesteps_in_buffer_space(
             buffer_space,
             [self._deduce_sdram_requirements_per_timer_tick(
@@ -309,6 +319,7 @@ class ChipPowerMonitorMachineVertex(
                    'time_scale_factor'})
     def get_minimum_buffer_sdram_usage(
             self, n_machine_time_steps, machine_time_step, time_scale_factor):
+        # pylint: disable=arguments-differ
         return recording_utilities.get_minimum_buffer_sdram(
             [self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor)],
@@ -333,7 +344,7 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_data(self, placement, buffer_manager):
         """ get data from sdram given placement and buffer manager
 
-        :param placement: the location on machien to get data from
+        :param placement: the location on machine to get data from
         :param buffer_manager: the buffer manager that might have data
         :return: results
         :rtype: numpy array with 1 dimension
@@ -343,8 +354,8 @@ class ChipPowerMonitorMachineVertex(
             placement, self.SAMPLE_RECORDING_REGION)
         if data_missing:
             logger.warning(
-                "Chip Power monitor has lost data on chip({}, {})"
-                .format(placement.x, placement.y))
+                "Chip Power monitor has lost data on chip({}, {})",
+                placement.x, placement.y)
 
         # get raw data as a byte array
         record_raw = samples.read_all()

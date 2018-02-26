@@ -1,13 +1,11 @@
-from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_messages.get_reinjection_status_message import \
-    GetReinjectionStatusMessage
-from spinnman.processes.abstract_multi_connection_process import \
-    AbstractMultiConnectionProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
+    import GetReinjectionStatusMessage
+from spinnman.processes import AbstractMultiConnectionProcess
 
 
 class ReadStatusProcess(AbstractMultiConnectionProcess):
     def __init__(self, connection_selector):
-        AbstractMultiConnectionProcess.__init__(self, connection_selector)
+        super(ReadStatusProcess, self).__init__(connection_selector)
         self._reinjection_status = dict()
 
     def handle_reinjection_status_response(self, response):

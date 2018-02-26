@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class DPRIFlags(Enum):
-    """ SCP Dropped Packet Reinjection Packet type flags
+    """ SCP Dropped Packet Reinjection (DPRI) packet type flags
     """
     MULTICAST = 1
     POINT_TO_POINT = 2
@@ -10,8 +10,10 @@ class DPRIFlags(Enum):
     FIXED_ROUTE = 8
 
     def __new__(cls, value, doc=""):
+        # pylint: disable=protected-access
         obj = object.__new__(cls)
         obj._value_ = value
+        obj.__doc__ = doc
         return obj
 
     def __init__(self, value, doc=""):

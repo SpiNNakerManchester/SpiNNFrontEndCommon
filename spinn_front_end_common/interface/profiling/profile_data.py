@@ -2,8 +2,9 @@ import numpy
 import logging
 
 import scipy.stats
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 # Define profiler time scale in ms
 _MS_SCALE = (1.0 / 200000.0)
@@ -17,11 +18,10 @@ class ProfileData(object):
     """ A container for profile data
     """
 
-    START_TIME = 0
-    DURATION = 1
+    START_TIME = _START_TIME
+    DURATION = _DURATION
 
     __slots__ = (
-
         # A dictionary of tag label to numpy array of start times and durations
         "_tags",
 
@@ -34,12 +34,12 @@ class ProfileData(object):
 
     def __init__(self, tag_labels):
         """
-
         :param tag_labels: A list of labels indexed by tag id
         :type tag_labels: list(str)
         """
         self._tag_labels = tag_labels
         self._tags = dict()
+        self._max_time = None
 
     def add_data(self, data):
         """ Add profiling data read from the profile section
@@ -63,9 +63,9 @@ class ProfileData(object):
         sample_exit_indices = numpy.where(sample_flags == 0)
 
         # Convert count-down times to count up times from 1st sample
-        sample_times = numpy.subtract(sample_times[0], sample_times)
         sample_times_ms = numpy.multiply(
-            sample_times, _MS_SCALE, dtype=numpy.float)
+            numpy.subtract(sample_times[0], sample_times),
+            _MS_SCALE, dtype=numpy.float)
 
         # Slice tags and times into entry and exits
         entry_tags = sample_tags[sample_entry_indices]
@@ -74,43 +74,46 @@ class ProfileData(object):
         exit_times_ms = sample_times_ms[sample_exit_indices]
 
         # Loop through unique tags
-        unique_tags = numpy.unique(sample_tags)
-        for tag in unique_tags:
+        for tag in numpy.unique(sample_tags):
+            self._add_tag_data(
+                entry_tags, entry_times_ms, exit_tags, exit_times_ms, tag)
 
-            tag_label = self._tag_labels.get(tag, None)
-            if tag_label is None:
-                logger.warning("Unknown tag {} in profile data".format(tag))
-                tag_label = "UNKNOWN"
+    def _add_tag_data(
+            self, entry_tags, entry_times, exit_tags, exit_times, tag):
+        # pylint: disable=too-many-arguments
+        tag_label = self._tag_labels.get(tag, None)
+        if tag_label is None:
+            logger.warning("Unknown tag {} in profile data", tag)
+            tag_label = "UNKNOWN"
 
-            # Get indices where these tags occur
-            tag_entry_indices = numpy.where(entry_tags == tag)
-            tag_exit_indices = numpy.where(exit_tags == tag)
+        # Get indices where these tags occur
+        tag_entry_indices = numpy.where(entry_tags == tag)
+        tag_exit_indices = numpy.where(exit_tags == tag)
 
-            # Use these to get subset for this tag
-            tag_entry_times_ms = entry_times_ms[tag_entry_indices]
-            tag_exit_times_ms = exit_times_ms[tag_exit_indices]
+        # Use these to get subset for this tag
+        tag_entry_times = entry_times[tag_entry_indices]
+        tag_exit_times = exit_times[tag_exit_indices]
 
-            # If the first exit is before the first
-            # Entry, add a dummy entry at beginning
-            if tag_exit_times_ms[0] < tag_entry_times_ms[0]:
-                logger.warning("Profile starts mid-tag")
-                tag_entry_times_ms = numpy.append(0.0, tag_entry_times_ms)
+        # If the first exit is before the first
+        # Entry, add a dummy entry at beginning
+        if tag_exit_times[0] < tag_entry_times[0]:
+            logger.warning("Profile starts mid-tag")
+            tag_entry_times = numpy.append(0.0, tag_entry_times)
 
-            if len(tag_entry_times_ms) > len(tag_exit_times_ms):
-                logger.warning("profile finishes mid-tag")
-                tag_entry_times_ms = tag_entry_times_ms[
-                    :len(tag_exit_times_ms) - len(tag_entry_times_ms)]
+        if len(tag_entry_times) > len(tag_exit_times):
+            logger.warning("profile finishes mid-tag")
+            tag_entry_times = tag_entry_times[
+                :len(tag_exit_times) - len(tag_entry_times)]
 
-            # Subtract entry times from exit times to get durations of each
-            # call
-            tag_durations_ms = numpy.subtract(
-                tag_exit_times_ms, tag_entry_times_ms)
+        # Subtract entry times from exit times to get durations of each
+        # call in ms
+        tag_durations = numpy.subtract(tag_exit_times, tag_entry_times)
 
-            # Add entry times and durations to dictionary
-            self._tags[tag_label] = (tag_entry_times_ms, tag_durations_ms)
+        # Add entry times and durations to dictionary
+        self._tags[tag_label] = (tag_entry_times, tag_durations)
 
-            # Keep track of the maximum time
-            self._max_time = numpy.max(tag_entry_times_ms + tag_durations_ms)
+        # Keep track of the maximum time
+        self._max_time = numpy.max(tag_entry_times + tag_durations)
 
     @property
     def tags(self):
