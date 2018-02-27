@@ -219,9 +219,9 @@ void process_first_sdp_message_into_mc_messages(
     // send mc message with SDRAM location to correct chip
     //log_info("send sdram address %d", send_sdram_address);
     if (send_sdram_address){
-        //log_info("key is %u payload %u",
-        //         data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
-        //         msg.data[SDRAM_ADDRESS]);
+        log_info("key is %u payload %u",
+                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
+                 msg.data[SDRAM_ADDRESS]);
         while(!spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
                 sdram_address, WITH_PAYLOAD)){
@@ -232,9 +232,9 @@ void process_first_sdp_message_into_mc_messages(
     // send mc messages containing rest of sdp data
     //log_info("sending data");
     for(uint data_index = 0; data_index < n_elements; data_index++){
-        //log_info("sending data with key %u payload %u",
-        //          data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
-        //          msg.data[start_of_data_sdp_position + data_index]);
+        log_info("sending data with key %u payload %u",
+                  data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
+                  msg.data[start_of_data_sdp_position + data_index]);
         while(!spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
                 msg.data[start_of_data_sdp_position + data_index],
@@ -390,7 +390,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
     // use as not important
     use(port);
 
-    //log_info("received packet at port %d", port);
+    log_info("received packet at port %d", port);
 
     // convert mailbox into correct sdp format
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
@@ -420,6 +420,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         last_seen_seq_num = 0;
         start_sdram_address = msg->data[SDRAM_ADDRESS];
+        log_info("prcessed\n");
     }
     else if (msg->data[COMMAND_ID_POSITION] ==
             SDP_SEND_SEQ_DATA_COMMAND_ID){
@@ -436,7 +437,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
             last_seen_seq_num = msg->data[SEQ_NUM];
         }
 
-        //log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
+        log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
         total_received_seq_nums ++;
 
@@ -460,6 +461,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
     // free the message to stop overload
     spin1_msg_free((sdp_msg_t *) msg);
+    log_info("freed message");
 }
 
 
