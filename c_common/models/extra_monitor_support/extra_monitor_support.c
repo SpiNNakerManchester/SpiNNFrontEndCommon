@@ -487,6 +487,7 @@ INT_HANDLER reinjection_ready_to_send_callback() {
 
 //! \brief the callback plugin for handling dropped packets
 INT_HANDLER reinjection_dropped_packet_callback() {
+
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
     uint pld = rtr[RTR_DDAT];
@@ -506,6 +507,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
             ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
 
         // check for overflow from router
+        io_printf(IO_BUF, "dropped processing\n");
         if (rtr_dstat & RTR_DOVRFLW_MASK) {
             n_missed_dropped_packets += 1;
         } else {
@@ -751,7 +753,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     if (key == data_in_address_key){
         io_printf(IO_BUF, "address key\n");
         if (data_in_write_address == NULL){
-            io_printf(IO_BUF, "setting up address\n");
+            io_printf(IO_BUF, "setting up address to %u\n", data);
             data_in_write_pointer = data;
             data_in_write_pointer = 0;
         }
@@ -778,8 +780,10 @@ INT_HANDLER data_in_process_mc_payload_packet(){
             "failed to recongise mc key %u. Only understand keys %u, %u\n",
             key, data_in_address_key, data_in_data_key);
     }
+    io_printf(IO_BUF, "telling vic to restart\n");
     // and tell VIC we're done
     vic[VIC_VADDR] = (uint) vic;
+    io_printf(IO_BUF, "told vic to restart\n");
 }
 
 //! \brief private method for writing router entries to the router.

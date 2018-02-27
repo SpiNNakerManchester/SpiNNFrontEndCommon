@@ -222,9 +222,9 @@ void process_first_sdp_message_into_mc_messages(
         log_info("key is %u payload %u",
                  data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
                  msg.data[SDRAM_ADDRESS]);
-        while(!spin1_send_mc_packet(
+        while(spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
-                sdram_address, WITH_PAYLOAD)){
+                sdram_address, WITH_PAYLOAD) == 0){
             spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
         }
     }
@@ -235,10 +235,10 @@ void process_first_sdp_message_into_mc_messages(
         log_info("sending data with key %u payload %u",
                   data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
                   msg.data[start_of_data_sdp_position + data_index]);
-        while(!spin1_send_mc_packet(
+        while(spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
                 msg.data[start_of_data_sdp_position + data_index],
-                WITH_PAYLOAD)){
+                WITH_PAYLOAD) == 0){
             spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
         }
     }
