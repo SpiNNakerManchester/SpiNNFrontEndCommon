@@ -743,13 +743,18 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
 
+    io_printf(IO_BUF, "received mc with key %u, data %u\n", key, data);
+
     // check if key is address or data key
     // address key means the payload is where to start writing from
     if (key == data_in_address_key){
+        io_printf(IO_BUF, "address key\n");
         data_in_write_address = (address_t) data;
         data_in_write_pointer = 0;
     } // data keys require writing to next point in sdram
     else if(key == data_in_data_key){
+        io_printf(IO_BUF, "data key, and pos %d\n", data_in_write_pointer);
+
         data_in_write_address[data_in_write_pointer] = data;
         data_in_write_pointer += 1;
         if (data_in_write_pointer >
@@ -763,6 +768,8 @@ INT_HANDLER data_in_process_mc_payload_packet(){
             "failed to recongise mc key %u. Only understand keys %u, %u\n",
             key, data_in_address_key, data_in_data_key);
     }
+    // and tell VIC we're done
+    vic[VIC_VADDR] = (uint) vic;
 }
 
 //! \brief private method for writing router entries to the router.
@@ -1510,18 +1517,27 @@ void c_main() {
 
     // set up VIC callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for WDOG)
+
+    //WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+    //WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+    // adding new functionality which needs new interrupts, needs to adjust
+    // the flag below, before setting up initialisations
+    //WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+    //WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT) |
-        (1 << DMA_DONE_INT);
+        (1 << DMA_DONE_INT) | (1 << CC_MC_INT);
+
+    // disable the interrupts
     vic[VIC_DISABLE] = int_select;
     vic[VIC_DISABLE] = (1 << CC_TNF_INT);
 
-    // set up reinjection functionality
+    // set up reinjection functionality (warning above)
     reinjection_initialise();
 
-    // set up data out speed up functionality
+    // set up data out speed up functionality (warning above)
     data_out_speed_up_initialise();
 
-    // set up data in speed up functionality
+    // set up data in speed up functionality (warning above)
     data_in_speed_up_initialise();
 
     // Enable interrupts and timer
