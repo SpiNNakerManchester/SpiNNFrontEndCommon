@@ -358,6 +358,7 @@ volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 address_t application_routers_sdram_address = NULL;
 uint data_in_address_key = 0;
 uint data_in_data_key = 0;
+uint data_in_start_key = 0;
 address_t data_in_write_address = NULL;
 uint data_in_write_pointer = 0;
 
@@ -743,24 +744,33 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
 
-    io_printf(IO_BUF, "received mc with key %u, data %u\n", key, data);
+    //io_printf(IO_BUF, "received mc with key %u, data %u\n", key, data);
 
     // check if key is address or data key
     // address key means the payload is where to start writing from
     if (key == data_in_address_key){
         io_printf(IO_BUF, "address key\n");
-        data_in_write_address = (address_t) data;
-        data_in_write_pointer = 0;
+        if (data_in_write_address == NULL){
+            io_printf(IO_BUF, "setting up address\n");
+            data_in_write_pointer = data;
+            data_in_write_pointer = 0;
+        }
+        else{
+            io_printf(IO_BUF, "updating address\n");
+            data_in_write_pointer =
+                (data - (uint) data_in_write_address) /
+                WORD_TO_BYTE_MULTIPLIER;
+        }
     } // data keys require writing to next point in sdram
     else if(key == data_in_data_key){
         io_printf(IO_BUF, "data key, and pos %d\n", data_in_write_pointer);
-
         data_in_write_address[data_in_write_pointer] = data;
         data_in_write_pointer += 1;
-        if (data_in_write_pointer >
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE){
-            io_printf(IO_BUF, "think ive gone too far in writing data!!!\n");
-        }
+    }
+    else if (key == data_in_start_key){
+        io_printf(IO_BUF, "starting key\n");
+        data_in_write_address = NULL;
+        data_in_write_pointer = 0;
     }
     else{
         io_printf(
