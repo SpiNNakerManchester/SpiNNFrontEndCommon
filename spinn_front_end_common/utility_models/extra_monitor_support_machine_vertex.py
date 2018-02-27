@@ -65,7 +65,7 @@ class ExtraMonitorSupportMachineVertex(
     _CONFIG_REGION_RE_INJECTOR_SIZE_IN_BYTES = 4 * 4
     _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 4 * 4
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
-    _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 8
+    _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES = 12
     _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 * 4) + 4
     _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
@@ -87,6 +87,12 @@ class ExtraMonitorSupportMachineVertex(
                ("READ_APPLICATION_ROUTING_TABLE", 6),
                ("LOAD_APPLICATION_MC_ROUTES", 7),
                ("LOAD_SYSTEM_MC_ROUTES", 8)])
+
+    _KEY_OFFSETS = Enum(
+        value="EXTRA_MONITOR_KEY_OFFSETS_TO_COMMANDS",
+        names=[("ADDRESS_KEY_OFFSET", 0,
+                "DATA_KEY_OFFSET", 1,
+                "RESTART_KEY_OFFSET", 2)])
 
     def __init__(
             self, constraints, reinject_multicast=None,
@@ -226,8 +232,12 @@ class ExtraMonitorSupportMachineVertex(
             self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value)
 
         # write address key and data key
-        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y])
-        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] + 1)
+        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
+                         self._KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
+        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
+                         self._KEY_OFFSETS.DATA_KEY_OFFSET)
+        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
+                         self._KEY_OFFSETS.RESTART_KEY_OFFSET)
 
         # write table entries
         table = data_in_routing_tables.get_routing_table_for_chip(

@@ -15,11 +15,11 @@ class DataInMulticastRoutingGenerator(object):
     """
 
     RANDOM_PROCESSOR = 4
-    N_KEYS_PER_PARTITION_ID = 2
-    KEY_START_VALUE = 2
+    N_KEYS_PER_PARTITION_ID = 4
+    KEY_START_VALUE = 4
     FAKE_ETHERNET_CHIP_X = 0
     FAKE_ETHERNET_CHIP_Y = 0
-    ROUTING_MASK = 0xFFFFFFFE
+    ROUTING_MASK = 0xFFFFFFFC
 
     def __call__(self, machine, extra_monitor_cores, placements,
                  board_version):

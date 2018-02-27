@@ -178,7 +178,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
     def __init__(self, x, y, ip_address, extra_monitors_by_chip, transceiver,
-                 constraints=None):
+                 default_report_folder, constraints=None):
         MachineVertex.__init__(
             self,
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
@@ -205,6 +205,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._provenance_data_items = defaultdict(list)
         self._transceiver = transceiver
         self._placement = None
+
+
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -275,6 +277,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
             first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
             end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
+
         else:
             new_seq_key = self.NEW_SEQ_KEY
             first_data_key = self.FIRST_DATA_KEY
@@ -627,7 +630,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data_to_write, missing_seq_num,
                 self.SDP_PACKET_SEND_SEQ_DATA_COMMAND_ID, None)
             self._connection.send_sdp_message(message)
-            time.sleep(0.02)
+            #time.sleep(0.02)
 
         self._missing_seq_nums_data_in = list()
         self._total_expected_missing_seq_packets = 0
