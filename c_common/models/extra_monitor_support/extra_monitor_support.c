@@ -753,7 +753,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     // check if key is address or data key
     // address key means the payload is where to start writing from
     if (key == data_in_address_key){
-        io_printf(IO_BUF, "address key\n");
+        //io_printf(IO_BUF, "address key\n");
         if (data_in_write_address == NULL){
             //io_printf(IO_BUF, "setting up address to %u\n", data);
             data_in_write_address = data;

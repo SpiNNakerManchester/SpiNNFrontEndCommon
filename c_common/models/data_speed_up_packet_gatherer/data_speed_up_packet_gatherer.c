@@ -336,10 +336,11 @@ void process_missing_seq_nums_and_request_retransmission(){
         my_msg.data[COMMAND_ID_POSITION] =
             SDP_PACKET_SEND_FINISHED_DATA_IN_COMMAND_ID;
         my_msg.length = COMMAND_ID_SIZE_IN_BYTES + LENGTH_OF_SDP_HEADER;
-        log_info("legnth of end data = %d\n", my_msg.length);
+        log_info("length of end data = %d\n", my_msg.length);
         while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
 	        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
         }
+        log_info("sent end flag");
     }
     // sending missing seq nums
     else{
@@ -392,7 +393,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
     // use as not important
     use(port);
 
-    log_info("received packet at port %d", port);
+    //log_info("received packet at port %d", port);
 
     // convert mailbox into correct sdp format
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
