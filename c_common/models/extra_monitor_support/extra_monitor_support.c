@@ -507,7 +507,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
             ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
 
         // check for overflow from router
-        io_printf(IO_BUF, "dropped processing\n");
+        //io_printf(IO_BUF, "dropped processing\n");
         if (rtr_dstat & RTR_DOVRFLW_MASK) {
             n_missed_dropped_packets += 1;
         } else {
@@ -745,6 +745,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     // get data from comm controller
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
+    uint rx_status = cc[CC_RSR];
 
     //io_printf(IO_BUF, "received mc with key %u, data %u\n", key, data);
 
