@@ -90,9 +90,9 @@ class ExtraMonitorSupportMachineVertex(
 
     _KEY_OFFSETS = Enum(
         value="EXTRA_MONITOR_KEY_OFFSETS_TO_COMMANDS",
-        names=[("ADDRESS_KEY_OFFSET", 0,
-                "DATA_KEY_OFFSET", 1,
-                "RESTART_KEY_OFFSET", 2)])
+        names=[("ADDRESS_KEY_OFFSET", 0),
+               ("DATA_KEY_OFFSET", 1),
+               ("RESTART_KEY_OFFSET", 2)])
 
     def __init__(
             self, constraints, reinject_multicast=None,
@@ -235,9 +235,9 @@ class ExtraMonitorSupportMachineVertex(
         spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
                          self._KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
         spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
-                         self._KEY_OFFSETS.DATA_KEY_OFFSET)
+                         self._KEY_OFFSETS.DATA_KEY_OFFSET.value)
         spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
-                         self._KEY_OFFSETS.RESTART_KEY_OFFSET)
+                         self._KEY_OFFSETS.RESTART_KEY_OFFSET.value)
 
         # write table entries
         table = data_in_routing_tables.get_routing_table_for_chip(
