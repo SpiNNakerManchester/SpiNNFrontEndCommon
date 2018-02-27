@@ -219,9 +219,9 @@ void process_first_sdp_message_into_mc_messages(
     // send mc message with SDRAM location to correct chip
     //log_info("send sdram address %d", send_sdram_address);
     if (send_sdram_address){
-        log_info("key is %u payload %u",
-                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
-                 msg.data[SDRAM_ADDRESS]);
+        //log_info("key is %u payload %u",
+        //         data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
+        //         msg.data[SDRAM_ADDRESS]);
         while(spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
                 sdram_address, WITH_PAYLOAD) == 0){
@@ -232,9 +232,9 @@ void process_first_sdp_message_into_mc_messages(
     // send mc messages containing rest of sdp data
     //log_info("sending data");
     for(uint data_index = 0; data_index < n_elements; data_index++){
-        log_info("sending data with key %u payload %u",
-                  data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
-                  msg.data[start_of_data_sdp_position + data_index]);
+        //log_info("sending data with key %u payload %u",
+        //          data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
+        //          msg.data[start_of_data_sdp_position + data_index]);
         while(spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
                 msg.data[start_of_data_sdp_position + data_index],
@@ -352,6 +352,7 @@ void process_missing_seq_nums_and_request_retransmission(){
             if(!bit_field_test(missing_seq_nums_store, bit)){
                 position_in_data = update_and_send_sdp_if_required(
                     bit + 1, position_in_data);
+                log_info("missing seq %d", bit+1);
             }
         }
         // send final message if required
@@ -370,13 +371,14 @@ void process_missing_seq_nums_and_request_retransmission(){
 //! \brief calculates 
 uint calculate_sdram_address_from_seq_num(uint seq_num){
     if (seq_num == 0){
-        return 0;
+        return start_sdram_address;
     }
     if (seq_num == 1){
-        return DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER;
+        return start_sdram_address + (
+            DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER);
     }
     else{
-        return (
+        return start_sdram_address + (
             DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER + (
                 WORD_TO_BYTE_MULTIPLIER *
                 DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num));
@@ -420,7 +422,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         last_seen_seq_num = 0;
         start_sdram_address = msg->data[SDRAM_ADDRESS];
-        log_info("prcessed\n");
+        //log_info("prcessed\n");
     }
     else if (msg->data[COMMAND_ID_POSITION] ==
             SDP_SEND_SEQ_DATA_COMMAND_ID){
@@ -431,15 +433,17 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         // if not next in line, figure sdram address, send and reset tracker
         if (last_seen_seq_num != msg->data[SEQ_NUM] - 1){
+            log_info("last seq was %d, what we have is %d",
+                last_seen_seq_num, msg->data[SEQ_NUM] - 1);
             send_sdram_address = true;
             this_sdram_address = calculate_sdram_address_from_seq_num(
                 msg->data[SEQ_NUM]);
-            last_seen_seq_num = msg->data[SEQ_NUM];
         }
 
-        log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
+        //log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
         total_received_seq_nums ++;
+        last_seen_seq_num = msg->data[SEQ_NUM];
 
         // transmit data to chip
         process_first_sdp_message_into_mc_messages(
@@ -461,7 +465,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
     // free the message to stop overload
     spin1_msg_free((sdp_msg_t *) msg);
-    log_info("freed message");
+    //log_info("freed message");
 }
 
 
