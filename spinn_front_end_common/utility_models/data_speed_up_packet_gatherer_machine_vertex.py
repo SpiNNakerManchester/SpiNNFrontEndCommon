@@ -775,7 +775,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             15, 15, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
         extra_monitor_cores_for_router_timeout[0].set_router_emergency_timeout(
-            0, 0, transceiver, placements,
+            1, 1, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
 
     @staticmethod
@@ -808,7 +808,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             15, 4, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
         extra_monitor_cores_for_router_timeout[0].set_router_emergency_timeout(
-            0, 0, transceiver, placements,
+            1, 1, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
 
     def get_data(
