@@ -178,7 +178,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
     def __init__(self, x, y, ip_address, extra_monitors_by_chip, transceiver,
-                 default_report_folder, constraints=None):
+                 default_report_folder, write_data_in_report,
+                 constraints=None):
         MachineVertex.__init__(
             self,
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
@@ -206,7 +207,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._transceiver = transceiver
         self._placement = None
 
-
+        if write_data_in_report:
+            pass
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -811,7 +813,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             15, 4, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
         extra_monitor_cores_for_router_timeout[0].set_router_emergency_timeout(
-            1, 1, transceiver, placements,
+            0, 0, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
 
     def get_data(

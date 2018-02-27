@@ -172,7 +172,7 @@ typedef enum data_positions_in_data_sdp_packet{
 
 //! human readable definitions of the offsets for key elements
 typedef enum key_offsets{
-    SDRAM_KEY_OFFSET = 0, DATA_KEY_OFFSET = 1
+    SDRAM_KEY_OFFSET = 0, DATA_KEY_OFFSET = 1, RESTART_KEY_OFFSET = 2
 }key_offsets;
 
 //! human readable definitions of each region in SDRAM
@@ -416,13 +416,24 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
         // allocate sdram location for holding the seq numbers
         process_sdram_location_for_seq_nums(max_seq_num);
 
+        // send start key, so that monitor is configured to start
+        while(spin1_send_mc_packet(
+                data_in_mc_key_map[chip_x][chip_y] + RESTART_KEY_OFFSET, 0,
+                WITH_PAYLOAD) == 0){
+            spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+        }
+
         // send mc messages for first packet
         process_first_sdp_message_into_mc_messages(
             *msg, chip_x, chip_y, true, START_OF_DATA_FIRST_SDP,
             msg->data[SDRAM_ADDRESS]);
 
+        // set start of last seq number
         last_seen_seq_num = 0;
+
+        // store where the sdram started, for out of order udp packets.
         start_sdram_address = msg->data[SDRAM_ADDRESS];
+
         //log_info("prcessed\n");
     }
     else if (msg->data[COMMAND_ID_POSITION] ==
@@ -441,7 +452,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
                 msg->data[SEQ_NUM]);
         }
 
-        //log_info("recieved seq number %d\n", msg->data[SEQ_NUM]);
+        //log_info("received seq number %d\n", msg->data[SEQ_NUM]);
         bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
         total_received_seq_nums ++;
         last_seen_seq_num = msg->data[SEQ_NUM];
@@ -460,7 +471,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
         process_missing_seq_nums_and_request_retransmission();
     }
     else{
-        log_info("Failed to recongise command id %u",
+        log_info("Failed to recognise command id %u",
                  msg->data[COMMAND_ID_POSITION]);
     }
 
@@ -522,7 +533,7 @@ void data_out_receive_data(uint key, uint payload) {
         }
     } else {
 
-        //log_info(" payload = %d posiiton = %d", payload, position_in_store);
+        //log_info(" payload = %d position = %d", payload, position_in_store);
         data[position_in_store] = payload;
         position_in_store += 1;
         //log_info("payload is %d", payload);

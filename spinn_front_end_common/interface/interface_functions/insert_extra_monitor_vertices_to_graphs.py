@@ -175,7 +175,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                             x=ethernet_connected_chip.x,
                             y=ethernet_connected_chip.y)],
                         extra_monitors_by_chip=vertex_to_chip_map,
-                        transceiver=transceiver)
+                        transceiver=transceiver,
+                        default_report_folder=None, write_data_in_report=None)
                     machine_graph.add_vertex(machine_vertex)
                 else:
                     machine_vertex = equiv_vertex

@@ -240,8 +240,9 @@ typedef enum sending_data_sdp_data_positions {
 typedef enum data_in_data_items {
     ADDRESS_MC_KEY = 0,
     DATA_MC_KEY = 1,
-    N_SYSTEM_ROUTER_ENTRIES = 2,
-    SYSTEM_ROUTER_ENTRIES_START = 3
+    RESTART_MC_KEY = 2,
+    N_SYSTEM_ROUTER_ENTRIES = 3,
+    SYSTEM_ROUTER_ENTRIES_START = 4
 } data_in_data_items;
 
 //! \brief router entry positions in sdram
@@ -746,7 +747,6 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     // get data from comm controller
     uint data = cc[CC_RXDATA];
     uint key = cc[CC_RXKEY];
-    uint rx_status = cc[CC_RSR];
 
     //io_printf(IO_BUF, "received mc with key %u, data %u\n", key, data);
 
@@ -756,7 +756,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
         //io_printf(IO_BUF, "address key\n");
         if (data_in_write_address == NULL){
             //io_printf(IO_BUF, "setting up address to %u\n", data);
-            data_in_write_address = data;
+            data_in_write_address = (address_t) data;
             data_in_write_pointer = 0;
 
         }
@@ -1506,6 +1506,7 @@ void data_in_speed_up_initialise(){
 
 	data_in_address_key = address[ADDRESS_MC_KEY];
 	data_in_data_key = address[DATA_MC_KEY];
+	data_in_start_key = address[RESTART_MC_KEY];
 
 	data_in_speed_up_load_in_system_tables();
 
