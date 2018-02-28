@@ -1650,9 +1650,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # write data in speed up report if required
         if (self._config.getboolean(
                 "Reports", "write_data_in_speed_up_report")):
-            inputs["DataInSpeedUpReportFlag"] = True
+            inputs["WriteDataInSpeedUpReportFlag"] = True
         else:
-            inputs["DataInSpeedUpReportFlag"] = False
+            inputs["WriteDataInSpeedUpReportFlag"] = False
 
         # only add the partitioner if there isn't already a machine graph
         if (self._application_graph.n_vertices and
