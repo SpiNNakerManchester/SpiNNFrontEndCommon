@@ -19,7 +19,7 @@ class DataSpeedUpPacketGather(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
-            x, y, ip_address, report_default_directory, 
+            x, y, ip_address, report_default_directory,
             write_data_speed_up_report, constraints)
 
     @property
