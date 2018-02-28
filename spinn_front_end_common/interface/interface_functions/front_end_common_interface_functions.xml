@@ -151,6 +151,14 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
+                <param_name>default_report_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_data_speed_up_report</param_name>
+                <param_type>WriteDataSpeedUpReportFlag</param_type>
+            </parameter>
+            <parameter>
                 <param_name>n_cores_to_allocate</param_name>
                 <param_type>MCGathererCoresToAllocate</param_type>
             </parameter>
@@ -163,6 +171,8 @@
             <param_name>machine</param_name>
             <param_name>machine_graph</param_name>
             <param_name>transceiver</param_name>
+            <param_name>default_report_directory</param_name>
+            <param_name>write_data_speed_up_report</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
@@ -1113,6 +1123,10 @@
                 <param_name>uses_advanced_monitors</param_name>
                 <param_type>UsingAdvancedMonitorSupport</param_type>
             </parameter>
+            <parameter>
+                <param_name>fixed_routes</param_name>
+                <param_type>MemoryFixedRoutes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>placements</param_name>
@@ -1125,6 +1139,7 @@
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
             <param_name>extra_monitor_to_chip_mapping</param_name>
+            <param_name>fixed_routes</param_name>
             <param_name>machine</param_name>
         </optional_inputs>
         <outputs>

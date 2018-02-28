@@ -96,6 +96,9 @@ class BufferManager(object):
         # monitor cores via chip id
         "_extra_monitor_cores_by_chip",
 
+        # fixed routes, used by the speed up functionality for reports
+        "_fixed_routes",
+
         # machine object
         "_machine",
 
@@ -105,7 +108,7 @@ class BufferManager(object):
 
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  extra_monitor_cores_to_ethernet_connection_map,
-                 extra_monitor_to_chip_mapping, machine,
+                 extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, store_to_file=False):
         """
 
@@ -129,6 +132,7 @@ class BufferManager(object):
         self._extra_monitor_cores_to_ethernet_connection_map = \
             extra_monitor_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
+        self._fixed_routes = fixed_routes
         self._machine = machine
         self._uses_advanced_monitors = uses_advanced_monitors
 
@@ -176,7 +180,8 @@ class BufferManager(object):
             self._machine, placement_x, placement_y,
             self._extra_monitor_cores_to_ethernet_connection_map)
         return receiver.get_data(
-            self._placements.get_placement_of_vertex(sender), address, length)
+            self._placements.get_placement_of_vertex(sender),
+            address, length, self._fixed_routes)
 
     def receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers

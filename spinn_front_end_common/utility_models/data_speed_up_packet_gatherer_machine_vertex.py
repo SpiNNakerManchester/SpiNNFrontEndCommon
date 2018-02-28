@@ -27,6 +27,7 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
 
 from collections import defaultdict
+import os
 import logging
 import math
 import time
@@ -82,10 +83,22 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_missing_seq_nums_data_in",
 
         # store for the last reinjection status
-        "_last_reinjection_status"
+        "_last_reinjection_status",
+
+        # path to the report
+        "_report_path",
+
+        #bool that flags if the report should be written
+        "_write_data_speed_up_report",
+
+        #??????????
+        "_view"
     )
 
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
+
+    # report name for tracking used routers
+    REPORT_NAME = "routers_used_in_speed_up_process.txt"
 
     # dsg data regions
     DATA_REGIONS = Enum(
@@ -191,8 +204,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
     def __init__(self, x, y, ip_address, extra_monitors_by_chip, transceiver,
-                 default_report_folder, write_data_in_report,
-                 constraints=None):
+                 report_default_directory, write_data_speed_up_report,
+                 write_data_in_report, constraints=None):
         MachineVertex.__init__(
             self,
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
@@ -222,6 +235,11 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         if write_data_in_report:
             pass
+
+        # create report if it doesn't already exist
+        self._report_path = \
+            os.path.join(report_default_directory, self.REPORT_NAME)
+        self._write_data_speed_up_report = write_data_speed_up_report
 
         # Stored reinjection status for resetting timeouts
         self._last_reinjection_status = None
@@ -841,12 +859,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 " unset")
         try:
             mantissa, exponent = \
-                self._last_reinjection_status.router_timeout_parameters()
+                self._last_reinjection_status.router_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
                 mantissa, exponent, transceiver, placements,
                 extra_monitor_cores_for_router_timeout)
             mantissa, exponent = self._last_reinjection_status\
-                .router_emergency_timeout_parameters()
+                .router_emergency_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].\
                 set_reinjection_router_emergency_timeout(
                     mantissa, exponent, transceiver, placements,
@@ -866,12 +884,14 @@ class DataSpeedUpPacketGatherMachineVertex(
                 log.error("Couldn't get core state", exc_info=True)
 
     def get_data(
-            self, placement, memory_address, length_in_bytes):
+            self, placement, memory_address, length_in_bytes, fixed_routes):
         """ Gets data from a given core and memory address.
 
         :param placement: placement object for where to get data from
         :param memory_address: the address in SDRAM to start reading from
         :param length_in_bytes: the length of data to read in bytes
+        :param fixed_routes: the fixed routes, used in the report of which\
+            chips were used by the speed up process
         :return: byte array of the data
         """
         start = float(time.time())
@@ -924,6 +944,15 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._provenance_data_items[
             placement, memory_address, length_in_bytes].append(
                 (end - start, lost_seq_nums))
+
+        # create report elements
+        if self._write_data_speed_up_report:
+            routers_been_in_use = self._determine_which_routers_were_used(
+                placement, fixed_routes,
+                self._transceiver.get_machine_details())
+            self._write_routers_used_into_report(
+                self._report_path, routers_been_in_use, placement)
+
         return self._output
 
     def _receive_data(self, placement):
@@ -961,6 +990,48 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._connection = SCAMPConnection(
             local_port=local_port, remote_port=remote_port,
             local_host=local_ip, remote_host=remote_ip)
+
+    def _determine_which_routers_were_used(placement, fixed_routes, machine):
+        """ traverses the fixed route paths from a given location to its\
+         destination. used for determining which routers were used
+
+        :param placement: the source to start from
+        :param fixed_routes: the fixed routes for each router
+        :param machine: the spinnMachine instance
+        :return: list of chip ids
+        """
+        routers = list()
+        routers.append((placement.x, placement.y))
+        entry = fixed_routes[(placement.x, placement.y)]
+        chip_x = placement.x
+        chip_y = placement.y
+        while len(entry.processor_ids) == 0:
+            # can assume one link, as its a minimum spanning tree going to
+            # the root
+            machine_link = machine.get_chip_at(
+                chip_x, chip_y).router.get_link(next(iter(entry.link_ids)))
+            chip_x = machine_link.destination_x
+            chip_y = machine_link.destination_y
+            routers.append((chip_x, chip_y))
+            entry = fixed_routes[(chip_x, chip_y)]
+        return routers
+
+    @staticmethod
+    def _write_routers_used_into_report(
+            report_path, routers_been_in_use, placement):
+        """ writes the used routers into a report
+        :param report_path: the path to the report file
+        :param routers_been_in_use: the routers been in use
+        :param placement: the first placement used
+        :rtype: None
+        """
+        writer_behaviour = "w"
+        if os.path.isfile(report_path):
+            writer_behaviour = "a"
+
+        with open(report_path, writer_behaviour) as writer:
+            writer.write("[{}:{}:{}] = {}\n".format(
+                placement.x, placement.y, placement.p, routers_been_in_use))
 
     def _calculate_incoming_missing_seq_nums(self, seq_nums):
         """ determines which sequence numbers we've missed

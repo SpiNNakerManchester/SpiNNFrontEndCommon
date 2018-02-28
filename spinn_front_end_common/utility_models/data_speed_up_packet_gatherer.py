@@ -13,8 +13,8 @@ class DataSpeedUpPacketGather(
     __slots__ = ["_machine_vertex"]
 
     def __init__(self, x, y, ip_address, extra_monitors_by_chip, transceiver,
-                 write_data_in_report, default_report_folder,
-                 constraints=None):
+                 report_default_directory, write_data_speed_up_report,
+                 write_data_in_report, constraints=None):
         ApplicationVertex.__init__(
             self, "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
@@ -24,8 +24,9 @@ class DataSpeedUpPacketGather(
             x=x, y=y, ip_address=ip_address,
             extra_monitors_by_chip=extra_monitors_by_chip,
             transceiver=transceiver, constraints=constraints,
-            write_data_in_report=write_data_in_report,
-            default_report_folder=default_report_folder)
+            report_default_directory=report_default_directory,
+            write_data_speed_up_report=write_data_speed_up_report,
+            write_data_in_report=write_data_in_report)
 
     @property
     def machine_vertex(self):

@@ -224,7 +224,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self._install_virtual_key(n_keys)
 
     def _install_send_buffer(self, n_keys, send_buffer_times, target_address):
-        if send_buffer_times and hasattr(send_buffer_times[0], "__len__"):
+        if (len(send_buffer_times) and
+                hasattr(send_buffer_times[0], "__len__")):
             # Working with a list of lists so check length
             if len(send_buffer_times) != n_keys:
                 raise ConfigurationException(
