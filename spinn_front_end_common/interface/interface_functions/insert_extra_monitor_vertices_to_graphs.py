@@ -14,13 +14,17 @@ class InsertExtraMonitorVerticesToGraphs(object):
     """
 
     def __call__(
-            self, machine, machine_graph, n_cores_to_allocate=1,
+            self, machine, machine_graph, default_report_directory,
+            write_data_speed_up_report, n_cores_to_allocate=1,
             graph_mapper=None, application_graph=None):
         """ inserts vertices to correspond to the extra monitor cores
 
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
         :param n_cores_to_allocate: n cores to allocate for reception
+        :param default_report_directory: the directory where reports go
+        :param write_data_speed_up_report:\
+            determine whether to write the report for data speed up
         :param graph_mapper: graph mapper
         :param application_graph: app graph.
         :return: vertex to Ethernet connection map
@@ -37,7 +41,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         # progress data receiver for data extraction functionality
         self._handle_data_extraction_vertices(
             progress, machine, application_graph, machine_graph, graph_mapper,
-            vertex_to_ethernet_connected_chip_mapping)
+            vertex_to_ethernet_connected_chip_mapping,
+            default_report_directory, write_data_speed_up_report)
 
         # handle re injector and chip based data extractor functionality.
         extra_monitor_vertices = self._handle_second_monitor_functionality(
@@ -101,13 +106,18 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     def _handle_data_extraction_vertices(
             self, progress, machine, application_graph, machine_graph,
-            graph_mapper, vertex_to_ethernet_connected_chip_mapping):
+            graph_mapper, vertex_to_ethernet_connected_chip_mapping,
+            default_report_directory, write_data_speed_up_report):
         """ places vertices for receiving data extraction packets.
 
         :param progress: progress bar
         :param machine: machine instance
         :param application_graph: application graph
         :param machine_graph: machine graph
+        :param default_report_directory: the default directory for where\
+            reports are to be written
+        :param write_data_speed_up_report:\
+            determine whether to write the report for data speed up
         :param graph_mapper: graph mapper
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map
         :rtype: None
@@ -123,7 +133,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     ethernet_chip.x, ethernet_chip.y, application_graph,
                     DataSpeedUpPacketGather)
                 if equiv_vertex is None:
-                    app_vertex = self.__new_app_gatherer(ethernet_chip)
+                    app_vertex = self.__new_app_gatherer(
+                        ethernet_chip, default_report_directory,
+                        write_data_speed_up_report)
                     machine_vertex = app_vertex.machine_vertex
                     machine_graph.add_vertex(machine_vertex)
                     application_graph.add_vertex(app_vertex)
@@ -136,7 +148,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     ethernet_chip.x, ethernet_chip.y, machine_graph,
                     DataSpeedUpPacketGather)
                 if machine_vertex is None:
-                    machine_vertex = self.__new_mach_gatherer(ethernet_chip)
+                    machine_vertex = self.__new_mach_gatherer(
+                        ethernet_chip, default_report_directory,
+                        write_data_speed_up_report)
                     machine_graph.add_vertex(machine_vertex)
 
             # update mapping for edge builder
@@ -155,17 +169,25 @@ class InsertExtraMonitorVerticesToGraphs(object):
             ChipAndCoreConstraint(x=chip.x, y=chip.y)])
 
     @staticmethod
-    def __new_app_gatherer(ethernet_chip):
+    def __new_app_gatherer(
+            ethernet_chip, default_report_directory,
+            write_data_speed_up_report):
         return DataSpeedUpPacketGather(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
-                x=ethernet_chip.x, y=ethernet_chip.y)])
+                x=ethernet_chip.x, y=ethernet_chip.y)],
+            report_default_directory=default_report_directory,
+            write_data_speed_up_report=write_data_speed_up_report)
 
     @staticmethod
-    def __new_mach_gatherer(ethernet_chip):
+    def __new_mach_gatherer(
+            ethernet_chip, default_report_directory,
+            write_data_speed_up_report):
         return DataSpeedUpPacketGatherMachineVertex(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
             constraints=[ChipAndCoreConstraint(
-                x=ethernet_chip.x, y=ethernet_chip.y)])
+                x=ethernet_chip.x, y=ethernet_chip.y)],
+            report_default_directory=default_report_directory,
+            write_data_speed_up_report=write_data_speed_up_report)

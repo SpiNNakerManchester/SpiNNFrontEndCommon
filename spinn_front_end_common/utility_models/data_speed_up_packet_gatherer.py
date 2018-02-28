@@ -12,12 +12,15 @@ class DataSpeedUpPacketGather(
         AbstractHasAssociatedBinary):
     __slots__ = ["_machine_vertex"]
 
-    def __init__(self, x, y, ip_address, constraints=None):
+    def __init__(
+            self, x, y, ip_address, report_default_directory,
+            write_data_speed_up_report, constraints=None):
         super(DataSpeedUpPacketGather, self).__init__(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
-            x, y, ip_address, constraints)
+            x, y, ip_address, report_default_directory,
+            write_data_speed_up_report, constraints)
 
     @property
     def machine_vertex(self):
