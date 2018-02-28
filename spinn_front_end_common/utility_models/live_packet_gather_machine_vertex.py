@@ -1,5 +1,6 @@
+from spinn_utilities.overrides import overrides
+
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.decorators import overrides
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import IPtagResource, ResourceContainer
@@ -51,8 +52,11 @@ class LivePacketGatherMachineVertex(
             number_of_packets_sent_per_time_step=0,
             hostname=None, port=None, strip_sdp=None, board_address=None,
             tag=None, constraints=None):
+        # pylint: disable=too-many-arguments, too-many-locals
+
         # inheritance
-        MachineVertex.__init__(self, label, constraints=constraints)
+        super(LivePacketGatherMachineVertex, self).__init__(
+            label, constraints=constraints)
 
         self._resources_required = ResourceContainer(
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
@@ -154,9 +158,9 @@ class LivePacketGatherMachineVertex(
             "machine_time_step", "time_scale_factor", "tags"
         })
     def generate_data_specification(
-            self, spec, placement, machine_time_step, time_scale_factor,
-            tags):
-
+            self, spec, placement,  # @UnusedVariable
+            machine_time_step, time_scale_factor, tags):
+        # pylint: disable=too-many-arguments, arguments-differ
         spec.comment("\n*** Spec for LivePacketGather Instance ***\n\n")
 
         # Construct the data images needed for the Neuron:

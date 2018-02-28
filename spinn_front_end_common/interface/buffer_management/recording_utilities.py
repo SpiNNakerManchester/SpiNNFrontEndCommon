@@ -106,7 +106,6 @@ def get_recording_region_sizes(
     :rtype: list of int
     """
     if use_auto_pause_and_resume:
-
         # If auto pause and resume is enabled, find the minimum sizes
         return get_minimum_buffer_sdram(
             buffered_sdram, minimum_sdram_for_buffering)
@@ -140,14 +139,11 @@ def get_recording_resources(
     :rtype:\
         :py:class:`pacman.model.resources.ResourceContainer`
     """
-
     ip_tags = list()
     if buffering_ip_address is not None:
         ip_tags.append(IPtagResource(
             buffering_ip_address, buffering_port, True, notification_tag,
-            TRAFFIC_IDENTIFIER
-        ))
-
+            TRAFFIC_IDENTIFIER))
     # return the resources including the SDRAM requirements
     return ResourceContainer(
         iptags=ip_tags,
@@ -207,7 +203,7 @@ def get_recording_header_array(
     buffering_output_dest_y = 0
     if buffering_tag is not None:
         buffering_output_tag = buffering_tag
-    elif ip_tags is not None and len(ip_tags) > 0:
+    elif ip_tags:
         buffering_output_tag = None
         for tag in ip_tags:
             if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
@@ -215,7 +211,7 @@ def get_recording_header_array(
                 buffering_output_dest_x = tag.destination_x
                 buffering_output_dest_y = tag.destination_y
                 break
-        if buffering_output_tag is None:
+        else:
             raise Exception("Buffering tag not found")
 
     # See recording.h/recording_initialise for data included in the header
@@ -307,6 +303,6 @@ def get_recorded_region_ids(buffered_sdram_per_timestep):
     :rtype: list of int
     """
     return [
-        i for i in range(len(buffered_sdram_per_timestep))
-        if buffered_sdram_per_timestep[i] > 0
-    ]
+        region_id
+        for region_id in range(len(buffered_sdram_per_timestep))
+        if buffered_sdram_per_timestep[region_id] > 0]

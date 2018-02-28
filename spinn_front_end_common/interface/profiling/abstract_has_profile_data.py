@@ -6,6 +6,7 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 class AbstractHasProfileData(object):
     """ Indicates an object that can record a profile
     """
+    __slots__ = ()
 
     @abstractmethod
     def get_profile_data(self, transceiver, placement):

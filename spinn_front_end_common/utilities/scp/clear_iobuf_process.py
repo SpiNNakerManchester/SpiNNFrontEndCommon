@@ -8,7 +8,7 @@ from spinnman.processes import AbstractMultiConnectionProcess
 class ClearIOBUFProcess(AbstractMultiConnectionProcess):
 
     def __init__(self, connection_selector):
-        AbstractMultiConnectionProcess.__init__(self, connection_selector)
+        super(ClearIOBUFProcess, self).__init__(connection_selector)
         self._progress = None
 
     def receive_response(self, response):  # @UnusedVariable

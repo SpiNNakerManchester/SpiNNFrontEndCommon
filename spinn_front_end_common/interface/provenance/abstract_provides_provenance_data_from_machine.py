@@ -11,9 +11,6 @@ class AbstractProvidesProvenanceDataFromMachine(object):
 
     __slots__ = ()
 
-    def __init__(self):
-        pass
-
     @abstractmethod
     def get_provenance_data_from_machine(self, transceiver, placement):
         """ Get an iterable of provenance data items
