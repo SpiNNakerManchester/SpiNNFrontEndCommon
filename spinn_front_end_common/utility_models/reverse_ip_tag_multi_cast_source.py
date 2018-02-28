@@ -1,11 +1,11 @@
+from spinn_utilities.overrides import overrides
+
 # pacman imports
-from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import ResourceContainer, SDRAMResource
 from pacman.model.resources import ReverseIPtagResource, IPtagResource
 from pacman.model.constraints.placer_constraints import BoardConstraint
-
 
 # front end common imports
 from spinn_front_end_common.abstract_models \
@@ -67,51 +67,50 @@ class ReverseIpTagMultiCastSource(
             # Extra flag for input without a reserved port
             reserve_reverse_ip_tag=False):
         """
-
         :param n_keys: The number of keys to be sent via this multicast source
         :param label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
         :param board_address: The IP address of the board on which to place\
-                this vertex if receiving data, either buffered or live (by\
-                default, any board is chosen)
+            this vertex if receiving data, either buffered or live (by\
+            default, any board is chosen)
         :param receive_port: The port on the board that will listen for\
-                incoming event packets (default is to disable this feature;\
-                set a value to enable it)
+            incoming event packets (default is to disable this feature; set a\
+            value to enable it)
         :param receive_sdp_port: The SDP port to listen on for incoming event\
-                packets (defaults to 1)
+            packets (defaults to 1)
         :param receive_tag: The IP tag to use for receiving live events\
-                (uses any by default)
+            (uses any by default)
         :param receive_rate: The estimated rate of packets that will be sent\
-                by this source
+            by this source
         :param virtual_key: The base multicast key to send received events\
-                with (assigned automatically by default)
+            with (assigned automatically by default)
         :param prefix: The prefix to "or" with generated multicast keys\
-                (default is no prefix)
+            (default is no prefix)
         :param prefix_type: Whether the prefix should apply to the upper or\
-                lower half of the multicast keys (default is upper half)
+            lower half of the multicast keys (default is upper half)
         :param check_keys: True if the keys of received events should be\
-                verified before sending (default False)
+            verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\
-                should be sent (one array for each key, default disabled)
+            should be sent (one array for each key, default disabled)
         :param send_buffer_partition_id: The id of the partition containing\
-                the edges down which the events are to be sent
+            the edges down which the events are to be sent
         :param send_buffer_max_space: The maximum amount of space to use of\
-                the SDRAM on the machine (default is 1MB)
+            the SDRAM on the machine (default is 1MB)
         :param send_buffer_space_before_notify: The amount of space free in\
-                the sending buffer before the machine will ask the host for\
-                more data (default setting is optimised for most cases)
+            the sending buffer before the machine will ask the host for more\
+            data (default setting is optimised for most cases)
         :param buffer_notification_ip_address: The IP address of the host\
-                that will send new buffers (must be specified if a send buffer\
-                is specified or if recording will be used)
+            that will send new buffers (must be specified if a send buffer is\
+            specified or if recording will be used)
         :param buffer_notification_port: The port that the host that will\
-                send new buffers is listening on (must be specified if a\
-                send buffer is specified, or if recording will be used)
+            send new buffers is listening on (must be specified if a send\
+            buffer is specified, or if recording will be used)
         :param buffer_notification_tag: The IP tag to use to notify the\
-                host about space in the buffer (default is to use any tag)
+            host about space in the buffer (default is to use any tag)
         """
-        ApplicationVertex.__init__(
-            self, label, constraints, max_atoms_per_core)
-        ProvidesKeyToAtomMappingImpl.__init__(self)
+        # pylint: disable=too-many-arguments, too-many-locals
+        super(ReverseIpTagMultiCastSource, self).__init__(
+            label, constraints, max_atoms_per_core)
 
         # basic items
         self._n_atoms = n_keys
@@ -200,8 +199,9 @@ class ReverseIpTagMultiCastSource(
         self._send_buffer_times = send_buffer_times
         for (vertex_slice, vertex) in self._machine_vertices:
             send_buffer_times_to_set = self._send_buffer_times
+            # pylint: disable=len-as-condition
             if (self._send_buffer_times is not None and
-                    len(self._send_buffer_times) > 0):
+                    len(self._send_buffer_times)):
                 if hasattr(self._send_buffer_times[0], "__len__"):
                     send_buffer_times_to_set = self._send_buffer_times[
                         vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
@@ -240,10 +240,9 @@ class ReverseIpTagMultiCastSource(
             resources_required,  # @UnusedVariable
             label=None, constraints=None):
         send_buffer_times = self._send_buffer_times
-        if (self._send_buffer_times is not None and
-                len(self._send_buffer_times) > 0):
-            if hasattr(self._send_buffer_times[0], "__len__"):
-                send_buffer_times = self._send_buffer_times[
+        if send_buffer_times is not None and len(send_buffer_times):
+            if hasattr(send_buffer_times[0], "__len__"):
+                send_buffer_times = send_buffer_times[
                     vertex_slice.lo_atom:vertex_slice.hi_atom + 1]
         vertex = ReverseIPTagMulticastSourceMachineVertex(
             n_keys=vertex_slice.n_atoms,

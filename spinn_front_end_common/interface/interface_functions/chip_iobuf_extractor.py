@@ -64,6 +64,7 @@ class ChipIOBufExtractor(object):
 
     @staticmethod
     def _add_value_if_match(regex, line, entries, x, y, p):
+        # pylint: disable=too-many-arguments
         match = regex.match(line)
         if match:
             entries.append("{}, {}, {}: {} ({})".format(

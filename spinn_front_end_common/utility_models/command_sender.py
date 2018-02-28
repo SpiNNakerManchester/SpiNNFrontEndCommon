@@ -1,5 +1,6 @@
+from spinn_utilities.overrides import overrides
+
 # pacman imports
-from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.constraints.key_allocator_constraints \
     import FixedKeyAndMaskConstraint
@@ -33,7 +34,7 @@ class CommandSender(
 
     def __init__(self, label, constraints):
 
-        ApplicationVertex.__init__(self, label, constraints, 1)
+        super(CommandSender, self).__init__(label, constraints, 1)
 
         self._timed_commands = list()
         self._commands_at_start_resume = list()
@@ -49,16 +50,16 @@ class CommandSender(
         """ Add commands to be sent down a given edge
 
         :param start_resume_commands: The commands to send when the simulation\
-                starts or resumes from pause
+            starts or resumes from pause
         :type start_resume_commands: iterable of\
-                :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
         :param pause_stop_commands: the commands to send when the simulation\
-                stops or pauses after running
+            stops or pauses after running
         :type pause_stop_commands: iterable of\
-                :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
         :param timed_commands: The commands to send at specific times
         :type timed_commands: iterable of\
-                :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
         :param vertex_to_send_to: The vertex these commands are to be sent to
         """
 
@@ -99,6 +100,7 @@ class CommandSender(
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps):
+        # pylint: disable=too-many-arguments, arguments-differ
         placement.vertex.generate_data_specification(
             spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps)

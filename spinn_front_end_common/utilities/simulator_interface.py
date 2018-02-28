@@ -11,7 +11,7 @@ class SimulatorInterface(object):
     __slots__ = ()
 
     @abstractmethod
-    def add_socket_address(self, x):
+    def add_socket_address(self, socket_address):
         pass
 
     @abstractproperty

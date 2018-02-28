@@ -9,7 +9,9 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes.read_status_process import \
+    extra_monitor_scp_processes import \
+    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess, \
+    SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess, \
     ReadStatusProcess
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.reset_counters_process import \
@@ -32,6 +34,8 @@ from spinn_front_end_common.utility_models.\
     DataSpeedUpPacketGatherMachineVertex
 from spinn_machine import CoreSubsets, Router
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.helpful_functions \
+    import convert_vertices_to_core_subset
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -39,19 +43,14 @@ class ExtraMonitorSupportMachineVertex(
         AbstractGeneratesDataSpecification):
 
     __slots__ = (
-
         # if we reinject mc packets
         "_reinject_multicast",
-
         # if we reinject point to point packets
         "_reinject_point_to_point",
-
         # if we reinject nearest neighbour packets
         "_reinject_nearest_neighbour",
-
         # if we reinject fixed route packets
         "_reinject_fixed_route",
-
         # placement holder for ease of access
         "_placement"
     )
@@ -103,15 +102,13 @@ class ExtraMonitorSupportMachineVertex(
         :param constraints: constraints on this vertex
         :param reinject_multicast: if we reinject mc packets
         :param reinject_point_to_point: if we reinject point to point packets
-        :param reinject_nearest_neighbour: if we reinject nearest neighbour \
-        packets
+        :param reinject_nearest_neighbour: if we reinject nearest neighbour\
+            packets
         :param reinject_fixed_route: if we reinject fixed route packets
         """
-        MachineVertex.__init__(
-            self, label="ExtraMonitorSupportMachineVertex",
-            constraints=constraints)
-        AbstractHasAssociatedBinary.__init__(self)
-        AbstractGeneratesDataSpecification.__init__(self)
+        # pylint: disable=too-many-arguments
+        super(ExtraMonitorSupportMachineVertex, self).__init__(
+            label="ExtraMonitorSupportMachineVertex", constraints=constraints)
 
         if reinject_multicast is None:
             config = globals_variables.get_simulator().config
@@ -194,6 +191,7 @@ class ExtraMonitorSupportMachineVertex(
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
             data_in_routing_tables, mc_data_chips_to_keys, app_id):
+        # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
 
@@ -210,7 +208,7 @@ class ExtraMonitorSupportMachineVertex(
             app_id)
 
         spec.end_specification()
-        
+
     def _generate_data_in_speed_up_functionality_data_specification(
             self, spec, data_in_routing_tables, placement,
             mc_data_chips_to_keys, app_id):
@@ -296,16 +294,13 @@ class ExtraMonitorSupportMachineVertex(
                 self._reinject_multicast, self._reinject_point_to_point,
                 self._reinject_fixed_route,
                 self._reinject_nearest_neighbour]:
-            if value:
-                spec.write_value(0)
-            else:
-                spec.write_value(1)
+            spec.write_value(int(not value))
 
     def set_router_time_outs(
             self, timeout_mantissa, timeout_exponent, transceiver, placements,
             extra_monitor_cores_to_set):
-        """ supports setting of the router time outs for a set of chips via
-         their extra monitor cores.
+        """ Supports setting of the router time outs for a set of chips via\
+            their extra monitor cores.
 
         :param timeout_mantissa: what timeout mantissa to set it to
         :type timeout_exponent: int
@@ -316,8 +311,8 @@ class ExtraMonitorSupportMachineVertex(
         :param extra_monitor_cores_to_set: which vertices to use
         :rtype: None
         """
-
-        core_subsets = self._convert_vertices_to_core_subset(
+        # pylint: disable=too-many-arguments
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterTimeoutProcess(
             transceiver.scamp_connection_selector)
@@ -330,18 +325,19 @@ class ExtraMonitorSupportMachineVertex(
             extra_monitor_cores_to_set):
         """ Sets the timeout of the routers
 
-        :param timeout_mantissa: The mantissa of the timeout value, between 0\
-                and 15
+        :param timeout_mantissa: \
+            The mantissa of the timeout value, between 0 and 15
         :type timeout_mantissa: int
-        :param timeout_exponent: The exponent of the timeout value, between 0\
-                and 15
+        :param timeout_exponent: \
+            The exponent of the timeout value, between 0 and 15
         :type timeout_exponent: int
         :param transceiver: the spinnMan instance
         :param placements: the placements object
-        :param extra_monitor_cores_to_set: the set of vertices to \
-        change the local chip for.
+        :param extra_monitor_cores_to_set: \
+            the set of vertices to change the local chip for.
         """
-        core_subsets = self._convert_vertices_to_core_subset(
+        # pylint: disable=too-many-arguments
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = SetRouterEmergencyTimeoutProcess(
             transceiver.scamp_connection_selector)
@@ -353,7 +349,7 @@ class ExtraMonitorSupportMachineVertex(
             self, transceiver, placements, extra_monitor_cores_to_set):
         """ Resets the counters for re injection
         """
-        core_subsets = self._convert_vertices_to_core_subset(
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_to_set, placements)
         process = ResetCountersProcess(transceiver.scamp_connection_selector)
         process.reset_counters(
@@ -377,12 +373,12 @@ class ExtraMonitorSupportMachineVertex(
         """ gets the reinjection status from a set of extra monitor cores
 
         :param placements: the placements object
-        :param extra_monitor_cores_for_data: the extra monitor cores to get\
-         status from
+        :param extra_monitor_cores_for_data: \
+            the extra monitor cores to get status from
         :param transceiver: the spinnMan interface
         :rtype: None
         """
-        core_subsets = self._convert_vertices_to_core_subset(
+        core_subsets = convert_vertices_to_core_subset(
             extra_monitor_cores_for_data, placements)
         process = ReadStatusProcess(transceiver.scamp_connection_selector)
         return process.get_reinjection_status_for_core_subsets(
@@ -392,19 +388,23 @@ class ExtraMonitorSupportMachineVertex(
             self, placements, transceiver, point_to_point=None, multicast=None,
             nearest_neighbour=None, fixed_route=None):
         """
-
         :param placements: placements object
         :param transceiver: spinnman instance
-        :param point_to_point: bool stating if point to point should be set,\
-         or None if left as before
-        :param multicast: bool stating if multicast should be set,\
-         or None if left as before
-        :param nearest_neighbour: bool stating if nearest neighbour should be \
-        set, or None if left as before
-        :param fixed_route: bool stating if fixed route should be set, or \
-        None if left as before.
+        :param point_to_point: \
+            If point to point should be set, or None if left as before
+        :type point_to_point: bool or None
+        :param multicast: \
+            If multicast should be set, or None if left as before
+        :type multicast: bool or None
+        :param nearest_neighbour: \
+            If nearest neighbour should be set, or None if left as before
+        :type nearest_neighbour: bool or None
+        :param fixed_route: \
+            If fixed route should be set, or None if left as before.
+        :type fixed_route: bool or None
         :rtype: None
         """
+        # pylint: disable=too-many-arguments
         if multicast is not None:
             self._reinject_multicast = multicast
         if point_to_point is not None:

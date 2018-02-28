@@ -103,7 +103,7 @@ class _MockTransceiver(object):
 class MyVertex(MachineVertex, AbstractUsesMemoryIO):
 
     def __init__(self):
-        MachineVertex.__init__(self)
+        super(MyVertex, self).__init__()
         self._test_tag = None
         self._tag = None
 

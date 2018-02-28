@@ -22,6 +22,12 @@ from .host_execute_system_data_specification \
     import HostExecuteSystemDataSpecification
 from .insert_edges_to_live_packet_gatherers \
     import InsertEdgesToLivePacketGatherers
+from .insert_chip_power_monitors_to_graphs \
+    import InsertChipPowerMonitorsToGraphs
+from .insert_edges_to_extra_monitor_functionality \
+    import InsertEdgesToExtraMonitorFunctionality
+from .insert_extra_monitor_vertices_to_graphs \
+    import InsertExtraMonitorVerticesToGraphs
 from .insert_live_packet_gatherers_to_graphs \
     import InsertLivePacketGatherersToGraphs
 from .load_other_executable_images import LoadOtherExecutableImages
@@ -33,8 +39,14 @@ from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer \
     import PlacementsProvenanceGatherer
+from .pre_allocate_resources_for_chip_power_monitor \
+    import PreAllocateResourcesForChipPowerMonitor
 from .pre_allocate_resources_for_live_packet_gatherers \
     import PreAllocateResourcesForLivePacketGatherers
+from .preallocate_resources_for_extra_monitor_support \
+    import PreAllocateResourcesForExtraMonitorSupport
+from .process_partition_constraints import ProcessPartitionConstraints
+from .profile_data_gatherer import ProfileDataGatherer
 from .provenance_json_writer import ProvenanceJSONWriter
 from .provenance_xml_writer import ProvenanceXMLWriter
 from .router_provenance_gatherer import RouterProvenanceGatherer
@@ -56,20 +68,25 @@ __all__ = [
     "ChipIOBufExtractor", "ChipProvenanceUpdater",
     "ChipRuntimeUpdater", "DatabaseInterface",
     "DSGRegionReloader", "EdgeToNKeysMapper",
-    "GraphBinaryGatherer",
-    "GraphDataSpecificationWriter",
+    "GraphBinaryGatherer", "GraphDataSpecificationWriter",
     "GraphMeasurer", "GraphProvenanceGatherer",
     "HBPAllocator", "HBPMaxMachineGenerator",
     "HostExecuteOtherDataSpecification",
     "HostExecuteSystemDataSpecification",
+    "InsertChipPowerMonitorsToGraphs",
+    "InsertEdgesToExtraMonitorFunctionality",
     "InsertEdgesToLivePacketGatherers",
+    "InsertExtraMonitorVerticesToGraphs",
     "InsertLivePacketGatherersToGraphs",
     "LoadOtherExecutableImages", "LoadSystemExecutableImages",
-    "LocateExecutableStartType",
+    "LocateExecutableStartType", "LoadFixedRoutes",
     "MachineExecuteOtherDataSpecification",
     "MachineGenerator", "NotificationProtocol",
     "PlacementsProvenanceGatherer",
     "PreAllocateResourcesForLivePacketGatherers",
+    "PreAllocateResourcesForChipPowerMonitor",
+    "PreAllocateResourcesForExtraMonitorSupport",
+    "ProcessPartitionConstraints", "ProfileDataGatherer",
     "ProvenanceJSONWriter", "ProvenanceXMLWriter",
     "RouterProvenanceGatherer", "RoutingSetup",
     "RoutingTableLoader", "SpallocAllocator",
