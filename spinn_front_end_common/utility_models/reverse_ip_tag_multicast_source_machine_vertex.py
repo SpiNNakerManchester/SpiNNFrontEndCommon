@@ -1,7 +1,7 @@
-from pacman.executor.injection_decorator import inject_items
-from pacman.executor.injection_decorator import supports_injection
-from pacman.executor.injection_decorator import inject
-from pacman.model.decorators import overrides
+from spinn_utilities.overrides import overrides
+
+from pacman.executor.injection_decorator \
+    import inject_items, supports_injection, inject
 from pacman.model.constraints.key_allocator_constraints \
     import FixedKeyAndMaskConstraint
 from pacman.model.constraints.placer_constraints import BoardConstraint
@@ -114,53 +114,51 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Extra flag for receiving packets without a port
             reserve_reverse_ip_tag=False):
         """
-
         :param n_keys: The number of keys to be sent via this multicast source
         :param label: The label of this vertex
         :param constraints: Any initial constraints to this vertex
         :param board_address: The IP address of the board on which to place\
-                this vertex if receiving data, either buffered or live (by\
-                default, any board is chosen)
+            this vertex if receiving data, either buffered or live (by\
+            default, any board is chosen)
         :param receive_port: The port on the board that will listen for\
-                incoming event packets (default is to disable this feature;\
-                set a value to enable it, or set the reserve_reverse_ip_tag\
-                parameter to True if a random port is to be used)
+            incoming event packets (default is to disable this feature; set a\
+            value to enable it, or set the reserve_reverse_ip_tag parameter\
+            to True if a random port is to be used)
         :param receive_sdp_port: The SDP port to listen on for incoming event\
-                packets (defaults to 1)
+            packets (defaults to 1)
         :param receive_tag: The IP tag to use for receiving live events\
-                (uses any by default)
+            (uses any by default)
         :param virtual_key: The base multicast key to send received events\
-                with (assigned automatically by default)
+            with (assigned automatically by default)
         :param prefix: The prefix to "or" with generated multicast keys\
-                (default is no prefix)
+            (default is no prefix)
         :param prefix_type: Whether the prefix should apply to the upper or\
-                lower half of the multicast keys (default is upper half)
+            lower half of the multicast keys (default is upper half)
         :param check_keys: True if the keys of received events should be\
-                verified before sending (default False)
+            verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\
-                should be sent (one array for each key, default disabled)
+            should be sent (one array for each key, default disabled)
         :param send_buffer_max_space: The maximum amount of space to use of\
-                the SDRAM on the machine (default is 1MB)
+            the SDRAM on the machine (default is 1MB)
         :param send_buffer_space_before_notify: The amount of space free in\
-                the sending buffer before the machine will ask the host for\
-                more data (default setting is optimised for most cases)
-        :param buffer_notification_ip_address: The IP address of the host\
-                that will send new buffers (must be specified if a send buffer\
-                is specified)
+            the sending buffer before the machine will ask the host for more\
+            data (default setting is optimised for most cases)
+        :param buffer_notification_ip_address: The IP address of the host that\
+            will send new buffers (must be specified if a send buffer is\
+            specified)
         :param buffer_notification_port: The port that the host that will\
-                send new buffers is listening on (must be specified if a\
-                send buffer is specified)
+            send new buffers is listening on (must be specified if a send\
+            buffer is specified)
         :param buffer_notification_tag: The IP tag to use to notify the\
-                host about space in the buffer (default is to use any tag)
+            host about space in the buffer (default is to use any tag)
         :param reserve_reverse_ip_tag: True if the source should set up a tag\
-                through which it can receive packets; if port is set to None\
-                this can be used to enable the reception of packets on a\
-                randomly assigned port, which can be read from the database
+            through which it can receive packets; if port is set to None this\
+            can be used to enable the reception of packets on a randomly\
+            assigned port, which can be read from the database
         """
-        MachineVertex.__init__(self, label, constraints)
-        AbstractReceiveBuffersToHost.__init__(self)
-
-        AbstractProvidesOutgoingPartitionConstraints.__init__(self)
+        # pylint: disable=too-many-arguments, too-many-locals
+        super(ReverseIPTagMulticastSourceMachineVertex, self).__init__(
+            label, constraints)
 
         self._iptags = None
         self._reverse_iptags = None
@@ -178,40 +176,18 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Work out if buffers are being sent
         self._send_buffer = None
         self._send_buffer_partition_id = send_buffer_partition_id
+        self._send_buffer_max_space = send_buffer_max_space
         if send_buffer_times is None:
             self._send_buffer_times = None
-            self._send_buffer_max_space = send_buffer_max_space
             self._send_buffers = None
         else:
-            if (len(send_buffer_times) > 0 and
-                    hasattr(send_buffer_times[0], "__len__")):
-                # Working with a list of lists so check length
-                if len(send_buffer_times) != n_keys:
-                    raise ConfigurationException(
-                        "The array or arrays of times {} does not have the "
-                        "expected length of {} "
-                        "".format(send_buffer_times, n_keys))
-
-            self._send_buffer_max_space = send_buffer_max_space
-            self._send_buffer = BufferedSendingRegion(send_buffer_max_space)
-            self._send_buffer_times = send_buffer_times
-
-            self._iptags = [IPtagResource(
-                ip_address=buffer_notification_ip_address,
-                port=buffer_notification_port, strip_sdp=True,
-                tag=buffer_notification_tag,
-                traffic_identifier=TRAFFIC_IDENTIFIER)]
-            if board_address is not None:
-                self.add_constraint(BoardConstraint(board_address))
-            self._send_buffers = {
-                self._REGIONS.SEND_BUFFER.value:
-                self._send_buffer
-            }
+            self._install_send_buffer(n_keys, send_buffer_times, (
+                buffer_notification_ip_address, buffer_notification_port,
+                buffer_notification_tag, board_address))
 
         # buffered out parameters
-        self._send_buffer_space_before_notify = send_buffer_space_before_notify
-        if self._send_buffer_space_before_notify > send_buffer_max_space:
-            self._send_buffer_space_before_notify = send_buffer_max_space
+        self._send_buffer_space_before_notify = max((
+            send_buffer_space_before_notify, send_buffer_max_space))
 
         # Set up for recording (if requested)
         self._record_buffer_size = 0
@@ -245,36 +221,57 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If the user has specified a virtual key
         if self._virtual_key is not None:
+            self._install_virtual_key(n_keys)
 
-            # check that virtual key is valid
-            if self._virtual_key < 0:
+    def _install_send_buffer(self, n_keys, send_buffer_times, target_address):
+        if send_buffer_times and hasattr(send_buffer_times[0], "__len__"):
+            # Working with a list of lists so check length
+            if len(send_buffer_times) != n_keys:
                 raise ConfigurationException(
-                    "Virtual keys must be positive")
+                    "The array or arrays of times {} does not have the "
+                    "expected length of {}".format(send_buffer_times, n_keys))
 
-            # Get a mask and maximum number of keys for the number of keys
-            # requested
-            self._mask, max_key = self._calculate_mask(n_keys)
+        self._send_buffer = BufferedSendingRegion(self._send_buffer_max_space)
+        self._send_buffer_times = send_buffer_times
 
-            # Check that the number of keys and the virtual key don't interfere
-            if n_keys > max_key:
+        (ip_address, port, tag, board_address) = target_address
+        self._iptags = [IPtagResource(
+            ip_address=ip_address, port=port, strip_sdp=True, tag=tag,
+            traffic_identifier=TRAFFIC_IDENTIFIER)]
+        if board_address is not None:
+            self.add_constraint(BoardConstraint(board_address))
+        self._send_buffers = {
+            self._REGIONS.SEND_BUFFER.value:
+            self._send_buffer
+        }
+
+    def _install_virtual_key(self, n_keys):
+        # check that virtual key is valid
+        if self._virtual_key < 0:
+            raise ConfigurationException("Virtual keys must be positive")
+
+        # Get a mask and maximum number of keys for the number of keys
+        # requested
+        self._mask, max_key = self._calculate_mask(n_keys)
+
+        # Check that the number of keys and the virtual key don't interfere
+        if n_keys > max_key:
+            raise ConfigurationException(
+                "The mask calculated from the number of keys will not work "
+                "with the virtual key specified")
+
+        if self._prefix is not None:
+            # Check that the prefix doesn't change the virtual key in the
+            # masked area
+            masked_key = (self._virtual_key | self._prefix) & self._mask
+            if self._virtual_key != masked_key:
                 raise ConfigurationException(
-                    "The mask calculated from the number of keys will "
-                    "not work with the virtual key specified")
-
-            if self._prefix is not None:
-
-                # Check that the prefix doesn't change the virtual key in the
-                # masked area
-                masked_key = (self._virtual_key | self._prefix) & self._mask
-                if self._virtual_key != masked_key:
-                    raise ConfigurationException(
-                        "The number of keys, virtual key and key prefix"
-                        " settings don't work together")
-            else:
-
-                # If no prefix was generated, generate one
-                self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
-                self._prefix = self._virtual_key
+                    "The number of keys, virtual key and key prefix settings "
+                    "don't work together")
+        else:
+            # If no prefix was generated, generate one
+            self._prefix_type = EIEIOPrefix.UPPER_HALF_WORD
+            self._prefix = self._virtual_key
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -356,10 +353,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def _is_in_range(
             self, time_stamp_in_ticks,
             first_machine_time_step, n_machine_time_steps):
-        return (
-            (n_machine_time_steps is None) or (
-                first_machine_time_step <= time_stamp_in_ticks <
-                n_machine_time_steps))
+        return (n_machine_time_steps is None) or (
+            first_machine_time_step <= time_stamp_in_ticks <
+            n_machine_time_steps)
 
     def _fill_send_buffer(
             self, machine_time_step, first_machine_time_step,
@@ -374,36 +370,35 @@ class ReverseIPTagMulticastSourceMachineVertex(
         if self._send_buffer is not None:
             self._send_buffer.clear()
         if (self._send_buffer_times is not None and
-                len(self._send_buffer_times) != 0):
+                len(self._send_buffer_times)):
             if hasattr(self._send_buffer_times[0], "__len__"):
-
                 # Works with a list-of-lists
-                for key in range(self._n_keys):
-                    for timeStamp in sorted(self._send_buffer_times[key]):
-                        time_stamp_in_ticks = int(math.ceil(
-                            float(int(timeStamp * 1000.0)) /
-                            machine_time_step))
-                        if self._is_in_range(
-                                time_stamp_in_ticks, first_machine_time_step,
-                                n_machine_time_steps):
-                            self._send_buffer.add_key(
-                                time_stamp_in_ticks, key_to_send + key)
+                self.__fill_send_buffer_2d(
+                    key_to_send, machine_time_step, first_machine_time_step,
+                    n_machine_time_steps)
             else:
-
                 # Work with a single list
-                key_list = [
-                    key + key_to_send for key in xrange(self._n_keys)]
-                for timeStamp in sorted(self._send_buffer_times):
-                    time_stamp_in_ticks = int(math.ceil(
-                        float(int(timeStamp * 1000.0)) /
-                        machine_time_step))
+                self.__fill_send_buffer_1d(
+                    key_to_send, machine_time_step, first_machine_time_step,
+                    n_machine_time_steps)
 
-                    # add to send_buffer collection
-                    if self._is_in_range(
-                            time_stamp_in_ticks, first_machine_time_step,
-                            n_machine_time_steps):
-                        self._send_buffer.add_keys(
-                            time_stamp_in_ticks, key_list)
+    def __fill_send_buffer_2d(
+            self, key_base, time_step, first_time_step, n_time_steps):
+        for key in range(self._n_keys):
+            for time_stamp in sorted(self._send_buffer_times[key]):
+                tick = int(math.ceil(
+                    float(int(time_stamp * 1000.0)) / time_step))
+                if self._is_in_range(tick, first_time_step, n_time_steps):
+                    self._send_buffer.add_key(tick, key_base + key)
+
+    def __fill_send_buffer_1d(
+            self, key_base, time_step, first_time_step, n_time_steps):
+        key_list = [key + key_base for key in xrange(self._n_keys)]
+        for time_stamp in sorted(self._send_buffer_times):
+            tick = int(math.ceil(
+                float(int(time_stamp * 1000.0)) / time_step))
+            if self._is_in_range(tick, first_time_step, n_time_steps):
+                self._send_buffer.add_keys(tick, key_list)
 
     @staticmethod
     def _generate_prefix(virtual_key, prefix_type):
@@ -577,7 +572,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             self, spec, placement,  # @UnusedVariable
             machine_time_step, time_scale_factor, machine_graph, routing_info,
             tags, first_machine_time_step, n_machine_time_steps):
-
+        # pylint: disable=too-many-arguments, arguments-differ
         self._update_virtual_key(routing_info, machine_graph)
         self._fill_send_buffer(
             machine_time_step, first_machine_time_step, n_machine_time_steps)

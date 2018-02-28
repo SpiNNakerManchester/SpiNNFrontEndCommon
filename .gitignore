@@ -8,3 +8,6 @@
 .settings
 .cproject
 Debug
+lastfailed
+/.cache
+.coverage

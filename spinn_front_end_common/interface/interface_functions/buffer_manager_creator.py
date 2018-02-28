@@ -14,6 +14,7 @@ class BufferManagerCreator(object):
             extra_monitor_to_chip_mapping=None,
             extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
             fixed_routes=None):
+        # pylint: disable=too-many-arguments
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager

@@ -33,6 +33,7 @@ class ProvidesProvenanceDataFromMachineImpl(
                ("TIMER_TIC_HAS_OVERRUN", 3),
                ("MAX_NUMBER_OF_TIMER_TIC_OVERRUN", 4)]
     )
+    NUM_PROVENANCE_DATA_ENTRIES = len(PROVENANCE_DATA_ENTRIES)
 
     @abstractproperty
     def _provenance_region_id(self):
@@ -51,15 +52,14 @@ class ProvidesProvenanceDataFromMachineImpl(
     def reserve_provenance_data_region(self, spec):
         spec.reserve_memory_region(
             self._provenance_region_id,
-            (len(self.PROVENANCE_DATA_ENTRIES) +
-                self._n_additional_data_items) * 4,
+            self.get_provenance_data_size(self._n_additional_data_items),
             label="Provenance", empty=True)
 
     @staticmethod
     def get_provenance_data_size(n_additional_data_items):
         return (
-            (len(ProvidesProvenanceDataFromMachineImpl
-                 .PROVENANCE_DATA_ENTRIES) + n_additional_data_items) * 4)
+            (ProvidesProvenanceDataFromMachineImpl.NUM_PROVENANCE_DATA_ENTRIES
+             + n_additional_data_items) * 4)
 
     def _get_provenance_region_address(self, transceiver, placement):
 
@@ -81,7 +81,7 @@ class ProvidesProvenanceDataFromMachineImpl(
             placement.x, placement.y, provenance_address,
             self.get_provenance_data_size(self._n_additional_data_items)))
         return struct.unpack_from("<{}I".format(
-            len(self.PROVENANCE_DATA_ENTRIES) + self._n_additional_data_items),
+            self.NUM_PROVENANCE_DATA_ENTRIES + self._n_additional_data_items),
             data)
 
     @staticmethod
@@ -186,8 +186,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         return data_items
 
     def _get_remaining_provenance_data_items(self, provenance_data):
-        return provenance_data[
-            len(self.PROVENANCE_DATA_ENTRIES):]
+        return provenance_data[self.NUM_PROVENANCE_DATA_ENTRIES:]
 
     def get_provenance_data_from_machine(self, transceiver, placement):
         provenance_data = self._read_provenance_data(

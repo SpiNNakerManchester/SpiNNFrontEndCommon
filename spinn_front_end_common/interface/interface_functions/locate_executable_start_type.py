@@ -7,7 +7,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class LocateExecutableStartType(object):
     def __call__(self, graph, placements, graph_mapper=None):
-        if len(graph.vertices) == 0:
+        if not graph.vertices:
             return [ExecutableType.NO_APPLICATION]
 
         binary_start_types = dict()
@@ -43,7 +43,7 @@ class LocateExecutableStartType(object):
                             binary_start_types[placement_binary_start_type])
 
         # only got apps with no binary, such as external devices. return no app
-        if len(binary_start_types) == 0:
+        if not binary_start_types:
             return [ExecutableType.NO_APPLICATION]
 
         return binary_start_types

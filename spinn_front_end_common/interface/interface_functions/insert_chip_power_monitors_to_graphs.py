@@ -1,6 +1,6 @@
 # spinn front end common imports
 from spinn_front_end_common.utility_models import \
-    ChipPowerMonitorApplicationVertex, ChipPowerMonitorMachineVertex
+    ChipPowerMonitor, ChipPowerMonitorMachineVertex
 
 # pacman imports
 from pacman.model.graphs.common import Slice
@@ -27,6 +27,7 @@ class InsertChipPowerMonitorsToGraphs(object):
         :param machine_graph: the machine graph
         :return: mapping between LPG params and LPG vertex
         """
+        # pylint: disable=too-many-arguments
 
         # create progress bar
         progress = ProgressBar(
@@ -52,7 +53,7 @@ class InsertChipPowerMonitorsToGraphs(object):
 
                 # build app vertex
                 vertex_slice = Slice(0, 0)
-                application_vertex = ChipPowerMonitorApplicationVertex(
+                application_vertex = ChipPowerMonitor(
                     label=_LABEL.format("application", chip.x, chip.y),
                     constraints=[constraint],
                     sampling_frequency=sampling_frequency,
