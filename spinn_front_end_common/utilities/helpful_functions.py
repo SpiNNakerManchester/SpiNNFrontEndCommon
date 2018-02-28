@@ -451,14 +451,7 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
                 bytes_written_by_spec += len(data)
 
     # set user 0 register appropriately to the application data
-    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
-    start_address_encoded = buffer(_ONE_WORD.pack(start_address))
-    memory_write_function(x, y, user_0_address, start_address_encoded)
-    return {
-        'start_address': start_address,
-        'memory_used': bytes_used_by_spec,
-        'memory_written': bytes_written_by_spec
-    }
+    write_address_to_user0(address=start_address, x=x, y=y, p=p, txrx=txrx)
 
 
 def read_config(config, section, item):
@@ -585,7 +578,7 @@ def determine_flow_states(executable_types, no_sync_changes):
 def convert_vertices_to_core_subset(vertices, placements):
     """ Converts vertices into core subsets.
 
-    :param extra_monitor_cores_to_set:\
+    :param vertices:\
         the vertices to convert to core subsets
     :param placements: the placements object
     :return: the CoreSubSets of the vertices

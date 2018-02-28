@@ -80,6 +80,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # holder for missing seq nums for data in
         "_missing_seq_nums_data_in",
+
+        # store for the last reinjection status
+        "_last_reinjection_status"
     )
 
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
@@ -528,8 +531,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_x=self._placement.x,
                 destination_chip_y=self._placement.y,
                 destination_cpu=self._placement.p,
-                destination_port=constants.SDP_PORTS.
-                EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                destination_port=SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.
+                value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=data)
 
@@ -552,7 +555,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     data, data_to_write)
             except SpinnmanTimeoutException:
                 if time_out_count > TIMEOUT_RETRY_LIMIT:
-                    raise exceptions.SpinnFrontEndException(
+                    raise SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
                         "Please try removing firewalls".format(time_out_count))
                 time_out_count += 1
@@ -720,7 +723,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_x=self._placement.x,
                 destination_chip_y=self._placement.y,
                 destination_cpu=self._placement.p,
-                destination_port=constants.SDP_PORTS.
+                destination_port=SDP_PORTS.
                 EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=packet_data)
@@ -739,7 +742,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_x=self._placement.x,
                 destination_chip_y=self._placement.y,
                 destination_cpu=self._placement.p,
-                destination_port=constants.SDP_PORTS.
+                destination_port=SDP_PORTS.
                 EXTRA_MONITOR_CORE_DATA_IN_SPEED_UP.value,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=packet_data)

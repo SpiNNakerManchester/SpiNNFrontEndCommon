@@ -1,13 +1,15 @@
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import \
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 
 import logging
 import struct
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 
@@ -33,12 +35,16 @@ class HostExecuteOtherDataSpecification(object):
 
         :return: map of placement and dsg data, and loaded data flag.
         """
+        # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
 
         # if using extra monitors, set up routing timeouts
+        receiver = None
         if uses_advanced_monitors:
-            DataSpeedUpPacketGatherMachineVertex.set_cores_for_data_streaming(
+            receiver = extra_monitor_cores_to_ethernet_connection_map.\
+                itervalues().next()
+            receiver.set_cores_for_data_streaming(
                 transceiver, extra_monitor_cores, placements)
 
         # create a progress bar for end users
@@ -66,13 +72,11 @@ class HostExecuteOtherDataSpecification(object):
         # reset router timeouts
         if uses_advanced_monitors:
             # reset router tables
-            DataSpeedUpPacketGatherMachineVertex. \
-                set_application_routing_tables(
-                    transceiver, extra_monitor_cores, placements)
+            receiver.set_application_routing_tables(
+                transceiver, extra_monitor_cores, placements)
             # reset router timeouts
-            DataSpeedUpPacketGatherMachineVertex.\
-                unset_cores_for_data_streaming(
-                    transceiver, extra_monitor_cores, placements)
+            receiver.unset_cores_for_data_streaming(
+                transceiver, extra_monitor_cores, placements)
 
         return processor_to_app_data_base_address
 

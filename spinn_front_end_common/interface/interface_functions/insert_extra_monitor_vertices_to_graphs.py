@@ -181,4 +181,5 @@ class InsertExtraMonitorVerticesToGraphs(object):
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
-            transceiver=transceiver)
+            transceiver=transceiver, default_report_folder=None,
+            write_data_in_report=None)

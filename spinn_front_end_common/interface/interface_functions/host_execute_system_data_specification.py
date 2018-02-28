@@ -1,11 +1,12 @@
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
 
 import logging
 import struct
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 
 
@@ -29,6 +30,7 @@ class HostExecuteSystemDataSpecification(object):
 
         :return: map of placement and dsg data, and loaded data flag.
         """
+        # pylint: disable=too-many-arguments
 
         processor_to_app_data_base_address = dict()
 
