@@ -320,12 +320,12 @@ class DataSpeedUpPacketGatherMachineVertex(
                 " unset")
         try:
             mantissa, exponent = \
-                self._last_reinjection_status.router_timeout_parameters()
+                self._last_reinjection_status.router_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
                 mantissa, exponent, transceiver, placements,
                 extra_monitor_cores_for_router_timeout)
             mantissa, exponent = self._last_reinjection_status\
-                .router_emergency_timeout_parameters()
+                .router_emergency_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].\
                 set_reinjection_router_emergency_timeout(
                     mantissa, exponent, transceiver, placements,
