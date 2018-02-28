@@ -52,6 +52,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_output",
         "_provenance_data_items",
         "_report_path",
+        "_write_data_speed_up_report",
         "_view"]
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
@@ -118,8 +119,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 
-    def __init__(self, x, y, ip_address, report_default_directory,
-                 constraints=None):
+    def __init__(
+            self, x, y, ip_address, report_default_directory,
+            write_data_speed_up_report, constraints=None):
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
             constraints=constraints)
@@ -139,6 +141,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # create report if it doesn't already exist
         self._report_path = \
             os.path.join(report_default_directory, self.REPORT_NAME)
+        self._write_data_speed_up_report = write_data_speed_up_report
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -362,10 +365,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 (end - start, lost_seq_nums))
 
         # create report elements
-        routers_been_in_use = self._determine_which_routers_were_used(
-            placement, fixed_routes, transceiver.get_machine_details())
-        self._write_routers_used_into_report(
-            self._report_path, routers_been_in_use, placement)
+        if self._write_data_speed_up_report:
+            routers_been_in_use = self._determine_which_routers_were_used(
+                placement, fixed_routes, transceiver.get_machine_details())
+            self._write_routers_used_into_report(
+                self._report_path, routers_been_in_use, placement)
 
         return self._output
 
