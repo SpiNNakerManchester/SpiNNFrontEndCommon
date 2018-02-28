@@ -51,6 +51,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_max_seq_num",
         "_output",
         "_provenance_data_items",
+        "_report_path",
         "_view"]
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
