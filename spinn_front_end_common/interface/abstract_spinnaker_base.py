@@ -1547,6 +1547,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "Database", "send_start_notification")
         inputs["SendStopNotifications"] = self._config.getboolean(
             "Database", "send_stop_notification")
+        inputs["WriteDataSpeedUpReportFlag"] = self._config.getboolean(
+            "Reports", "write_data_speed_up_report")
 
         # add paths for each file based version
         inputs["FileCoreAllocationsFilePath"] = os.path.join(
