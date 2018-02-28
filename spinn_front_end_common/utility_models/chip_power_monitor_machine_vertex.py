@@ -320,7 +320,6 @@ class ChipPowerMonitorMachineVertex(
             self, n_machine_time_steps, machine_time_step, time_scale_factor):
         # pylint: disable=arguments-differ
         return recording_utilities.get_minimum_buffer_sdram(
-        return recording_utilities.comp_minimum_buffer_sdram(
             [self._deduce_sdram_requirements_per_timer_tick(
                 machine_time_step, time_scale_factor) * n_machine_time_steps],
             globals_variables.get_simulator().config.getint(
