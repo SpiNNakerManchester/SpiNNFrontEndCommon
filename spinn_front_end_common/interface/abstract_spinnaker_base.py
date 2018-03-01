@@ -145,6 +145,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # communication
         "_routing_infos",
 
+        # the holder for the fixed routes generated, if there are any
+        "_fixed_routes",
+
         # The holder for the ip and reverse iptags used by the simulation
         "_tags",
 
@@ -409,6 +412,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
+        self._fixed_routes = None
         self._application_graph = None
         self._machine_graph = None
         self._tags = None
@@ -1585,9 +1589,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        if (self._config.getboolean(
-                "Machine", "enable_advanced_monitor_support") or
-                self._config.getboolean("Machine", "enable_reinjection")):
+        add_data_speed_up = (self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support") or
+            self._config.getboolean("Machine", "enable_reinjection"))
+        if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("FixedRouteRouter")
@@ -1673,6 +1678,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "MemoryMachineGraph", "ExecutableTypes"
         ]
 
+        if add_data_speed_up:
+            outputs.append("MemoryFixedRoutes")
+
         if self._application_graph.n_vertices > 0:
             outputs.append("MemoryGraphMapper")
 
@@ -1703,6 +1711,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")
+
+        if add_data_speed_up:
+            self._fixed_routes = executor.get_item("MemoryFixedRoutes")
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
@@ -2311,6 +2322,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
     @property
     def routing_infos(self):
         return self._routing_infos
+
+    @property
+    def fixed_routes(self):
+        return self._fixed_routes
 
     @property
     def placements(self):
