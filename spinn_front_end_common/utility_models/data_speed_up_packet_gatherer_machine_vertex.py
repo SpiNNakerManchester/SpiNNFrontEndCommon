@@ -815,11 +815,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placements, transceiver)
 
         # set time out
-        extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
-            15, 15, transceiver, placements,
-            extra_monitor_cores_for_router_timeout)
         extra_monitor_cores_for_router_timeout[0].set_router_emergency_timeout(
             1, 1, transceiver, placements,
+            extra_monitor_cores_for_router_timeout)
+        extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
+            15, 15, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
 
     @staticmethod
@@ -866,7 +866,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             mantissa, exponent = self._last_reinjection_status\
                 .router_emergency_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].\
-                set_reinjection_router_emergency_timeout(
+                set_router_emergency_timeout(
                     mantissa, exponent, transceiver, placements,
                     extra_monitor_cores_for_router_timeout)
         except Exception:

@@ -734,9 +734,17 @@ void reinjection_configure_router() {
 
 void _clear_router(){
     // clear the currently loaded routing table entries
-    if (rtr_mc_clear(1, N_ROUTER_ENTRIES - 1) != 1){
-       io_printf(IO_BUF, "failed to clear the router\n");
-       rt_error(RTE_SWERR);
+    for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id++){
+        //io_printf(IO_BUF, "clearing entry %d \n", entry_id);
+        rtr_entry_t *entry = NULL;
+        entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
+	    uint success = rtr_mc_get(entry_id, entry);
+	    if(entry->key == INVALID_ROUTER_ENTRY_KEY &&
+	       entry->mask == INVALID_ROUTER_ENTRY_MASK){
+	    }
+	    else{
+	        rtr_free(entry_id, 1);
+	    }
     }
 }
 
@@ -795,12 +803,30 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 void data_in_read_and_load_router_entries(
         address_t sdram_address, uint n_entries){
 
-    for( uint entry_id = 1; entry_id < n_entries; entry_id++){
+    //io_printf(IO_BUF, "n entries %u \n", n_entries);
+    uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
+    //io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
+
+    uint cpsr = sark_lock_get(LOCK_RTR);
+    //io_printf(IO_BUF, "got lock \n");
+
+    for( uint entry_id = start_entry_id; entry_id < n_entries; entry_id++){
         uint position = ((entry_id - 1) * (
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
 
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
+        io_printf(
+                IO_BUF, "setting key %u at %u, mask %u at %u, "
+                        "route %u at %u position %u for entry %u\n",
+                sdram_address[position + ROUTER_ENTRY_KEY],
+                position + ROUTER_ENTRY_KEY,
+                sdram_address[position + ROUTER_ENTRY_MASK],
+                position + ROUTER_ENTRY_MASK,
+                sdram_address[position + ROUTER_ENTRY_ROUTE],
+                position + ROUTER_ENTRY_ROUTE,
+                position, entry_id);
+
         if(sdram_address[position + ROUTER_ENTRY_KEY] !=
                 INVALID_ROUTER_ENTRY_KEY &&
                 sdram_address[position + ROUTER_ENTRY_MASK] !=
@@ -809,16 +835,7 @@ void data_in_read_and_load_router_entries(
                 INVALID_ROUTER_ENTRY_ROUTE){
 
             // try setting the valid router entry
-            io_printf(
-                IO_BUF, "setting key %u at %u, mask %u at %u, "
-                        "route %u at %u position %u\n",
-                sdram_address[position + ROUTER_ENTRY_KEY],
-                position + ROUTER_ENTRY_KEY,
-                sdram_address[position + ROUTER_ENTRY_MASK],
-                position + ROUTER_ENTRY_MASK,
-                sdram_address[position + ROUTER_ENTRY_ROUTE],
-                position + ROUTER_ENTRY_ROUTE,
-                position);
+            io_printf(IO_BUF, "writing entry \n ");
 
             if (rtr_mc_set(
                     entry_id,
@@ -835,6 +852,7 @@ void data_in_read_and_load_router_entries(
             }
         }
     }
+    sark_lock_free(cpsr, LOCK_RTR);
 }
 
 //! \brief reads in routers entries and places in application sdram location
@@ -852,22 +870,27 @@ void data_in_read_router(){
 
         // merge app id into route for writing back at later time
 	    uint route_and_app_id = 0;
+	    if (entry->route == 0){
+	        route_and_app_id = INVALID_ROUTER_ENTRY_ROUTE;
+	    }
 	    route_and_app_id =
 	        (entry->free & APP_ID_MASK_FROM_FREE) << APP_ID_OFFSET_FROM_FREE;
 	    route_and_app_id = route_and_app_id & entry->route;
 
+	    //io_printf(IO_BUF, "route and app id, %u \n", entry->route);
         // move to sdram
         application_routers_sdram_address[
             position_in_sdram + ROUTER_ENTRY_KEY] = entry->key;
         application_routers_sdram_address[
             position_in_sdram + ROUTER_ENTRY_MASK] = entry->mask;
         application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_ROUTE] = route_and_app_id;
+            position_in_sdram + ROUTER_ENTRY_ROUTE] = entry->route;
 
         // update sdram tracker
         position_in_sdram +=
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
     }
+    //io_printf(IO_BUF, "finished read of app table\n");
 }
 
 
@@ -882,6 +905,7 @@ void data_in_speed_up_load_in_system_tables() {
     // clear the currently loaded routing table entries to avoid conflicts
     //io_printf(IO_BUF, "clear router\n");
     _clear_router();
+    //io_printf(IO_BUF, "cleared router\n");
 
     // get sdram location for system routing tables
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
@@ -891,10 +915,14 @@ void data_in_speed_up_load_in_system_tables() {
 
     // read in and load routing table entries
     //io_printf(IO_BUF, "load system routes\n");
+
+    //io_printf(IO_BUF, "system router entry address %u\n",
+    //          &address[SYSTEM_ROUTER_ENTRIES_START]);
+
     data_in_read_and_load_router_entries(
         &address[SYSTEM_ROUTER_ENTRIES_START],
         address[N_SYSTEM_ROUTER_ENTRIES]);
-    //io_printf(IO_BUF, "finsihed data in setup\n");
+    //io_printf(IO_BUF, "finished data in setup\n");
 }
 
 
@@ -915,16 +943,16 @@ void data_in_speed_up_load_in_application_routes(){
 //! \return: complete code if successful
 void handle_data_in_speed_up(uint16_t command_code) {
     if (command_code == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
-        data_in_read_router();
         io_printf(IO_BUF, "reading application router entries from router\n");
+        data_in_read_router();
     }
     else if(command_code == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
-        data_in_speed_up_load_in_application_routes();
         io_printf(IO_BUF, "loading application router entries into router\n");
+        data_in_speed_up_load_in_application_routes();
     }
     else if(command_code == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
-        data_in_speed_up_load_in_system_tables();
         io_printf(IO_BUF, "loading system router entries into router\n");
+        data_in_speed_up_load_in_system_tables();
     }
     else{
        io_printf(

@@ -30,9 +30,8 @@ class LoadSystemExecutableImages(object):
             progress.update(
                 helpful_functions.flood_fill_binary_to_spinnaker(
                     executable_targets, binary, transceiver, app_id))
-
             transceiver.wait_for_cores_to_be_in_state(
                 executable_targets.get_cores_for_binary(binary), app_id,
                 [CPUState.READY])
-            transceiver.send_signal(app_id, Signal.START)
+        transceiver.send_signal(app_id, Signal.START)
         progress.end()
