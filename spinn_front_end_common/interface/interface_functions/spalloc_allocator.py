@@ -106,8 +106,8 @@ class SpallocAllocator(object):
         machine_allocation_controller = _SpallocJobController(job)
 
         return (
-            hostname, self._MACHINE_VERSION, None, None, None, None, False,
-            False, None, None, None, machine_allocation_controller
+            hostname, self._MACHINE_VERSION, None, False,
+            False, None, None, machine_allocation_controller
         )
 
     def _launch_job(self, n_boards, spalloc_kw_args):
