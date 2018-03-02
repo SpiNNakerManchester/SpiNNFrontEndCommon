@@ -52,8 +52,9 @@ class _HBPJobController(MachineAllocationController):
             "machineName": machine_name, "on": bool(power_on)})
 
     def _where_is(self, machine_name, chip_x, chip_y):
-        requests.get(self._where_is_url, params={
-            "machineName": machine_name, "chipX": chip_x, "chipY": chip_y})
+        return requests.get(self._where_is_url, params={
+            "machineName": machine_name, "chipX": chip_x,
+            "chipY": chip_y}).json()
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
