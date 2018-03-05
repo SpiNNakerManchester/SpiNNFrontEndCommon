@@ -204,7 +204,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
 
     # throttle on the transmission
-    TRANSMISSION_THROTTLE_TIME = 0.001
+    TRANSMISSION_THROTTLE_TIME = 0.0
+    #TRANSMISSION_THROTTLE_TIME = 0.00000001
 
     # precompiled structures
     _ONE_WORD = struct.Struct("<I")
@@ -482,7 +483,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                     " time took \t\t mbs \t\t missing seq nums\n")
                 writer.write(
                     "------------------------------------------------"
-                    "----------------------------------------\n")
+                    "------------------------------------------------"
+                    "-------------------------------------------------\n")
 
         mega_bits = float((data_size * 8.0) / (1024.0 * 1024.0))
         mbs = mega_bits / time_took
@@ -588,7 +590,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # send first message
         connection.send_sdp_message(message)
-        time.sleep(self.TRANSMISSION_THROTTLE_TIME)
+        #time.sleep(self.TRANSMISSION_THROTTLE_TIME)
 
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
