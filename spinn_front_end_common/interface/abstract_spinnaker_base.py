@@ -1287,10 +1287,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["MachineTimeStep"] = self._machine_time_step
         inputs["TimeScaleFactor"] = self._time_scale_factor
 
+        # Set up common machine details
+        self._handle_machine_common_config(inputs)
+
         # If we are using a directly connected machine, add the details to get
         # the machine and transceiver
         if self._hostname is not None:
-            self._handle_machine_common_config(inputs)
             inputs["IPAddress"] = self._hostname
             inputs["BMPDetails"] = self._read_config("Machine", "bmp_names")
             inputs["AutoDetectBMPFlag"] = self._config.getboolean(
@@ -1314,7 +1316,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._machine_tokens = executor.get_completed_tokens()
 
         if self._use_virtual_board:
-            self._handle_machine_common_config(inputs)
             inputs["IPAddress"] = "virtual"
             inputs["NumberOfBoards"] = self._read_config_int(
                 "Machine", "number_of_boards")
