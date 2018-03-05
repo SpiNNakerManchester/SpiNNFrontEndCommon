@@ -479,7 +479,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         if not os.path.isfile(report_path):
             with open(report_path, "w") as writer:
                 writer.write(
-                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
+                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t"
                     " time took \t\t mbs \t\t missing seq nums\n")
                 writer.write(
                     "------------------------------------------------"
@@ -491,7 +491,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         with open(report_path, writer_behaviour) as writer:
             writer.write(
-                "{}\t\t {}\t\t {}\t\t {}\t\t\t {}\t\t {}\t\t {}\n".format(
+                "{}\t\t {}\t\t {}\t\t {}\t\t {}\t\t {}\t\t {}\n".format(
                     x, y, address_written_to, data_size, time_took,
                     mbs, missing_seq_nums))
 
