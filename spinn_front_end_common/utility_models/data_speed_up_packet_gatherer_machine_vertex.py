@@ -87,8 +87,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         # path for the data in report
         "_data_in_report_path",
 
-        # bool that flags if the report should be written
+        # bool that flags if the report should be written for data out
         "_write_data_speed_up_report",
+
+        # bool that flags if the report should be written for data in
+        "_write_data_in_report",
 
         # easier access interface for byte writing
         "_view"
@@ -253,6 +256,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             os.path.join(report_default_directory, self.DATA_IN_REPORT_NAME)
 
         self._write_data_speed_up_report = write_data_speed_up_report
+        self._write_data_in_report = write_data_in_report
 
         # Stored reinjection status for resetting timeouts
         self._last_reinjection_status = None
@@ -473,7 +477,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             return transceiver.write_memory
 
     @staticmethod
-    def _write_data_in_report(
+    def _generate_data_in_report(
             report_path, time_took, data_size, x, y,
             address_written_to, missing_seq_nums):
         """ writes the data in report for this stage
@@ -534,10 +538,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             end = float(time.time())
 
             # write report
-            self._write_data_in_report(
-                x=x, y=y, report_path=self._data_in_report_path,
-                data_size=n_bytes, address_written_to=base_address,
-                missing_seq_nums=[[]], time_took=float(end - start))
+            if self._write_data_in_report:
+                self._generate_data_in_report(
+                    x=x, y=y, report_path=self._data_in_report_path,
+                    data_size=n_bytes, address_written_to=base_address,
+                    missing_seq_nums=[[]], time_took=float(end - start))
             return True
         return False
 
@@ -587,11 +592,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             end = float(time.time())
 
             # write report
-            self._write_data_in_report(
-                x=x, y=y, report_path=self._data_in_report_path,
-                data_size=n_bytes, address_written_to=base_address,
-                missing_seq_nums=self._missing_seq_nums_data_in,
-                time_took=float(end - start))
+            if self._write_data_in_report:
+                self._generate_data_in_report(
+                    x=x, y=y, report_path=self._data_in_report_path,
+                    data_size=n_bytes, address_written_to=base_address,
+                    missing_seq_nums=self._missing_seq_nums_data_in,
+                    time_took=float(end - start))
 
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
