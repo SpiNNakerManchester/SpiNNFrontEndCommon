@@ -383,7 +383,7 @@ void process_missing_seq_nums_and_request_retransmission(){
         while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
 	        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
         }
-        log_info("sent end flag");
+        //log_info("sent end flag");
     }
     // sending missing seq nums
     else{
@@ -483,8 +483,10 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
         }
 
         //log_info("received seq number %d\n", msg->data[SEQ_NUM]);
-        bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
-        total_received_seq_nums ++;
+        if (!bit_field_test(missing_seq_nums_store, msg->data[SEQ_NUM] -1)){
+            bit_field_set(missing_seq_nums_store, msg->data[SEQ_NUM] -1);
+            total_received_seq_nums ++;
+        }
         last_seen_seq_num = msg->data[SEQ_NUM];
 
         // transmit data to chip
