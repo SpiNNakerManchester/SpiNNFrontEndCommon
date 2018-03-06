@@ -96,7 +96,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # throttle on the transmission
     #TRANSMISSION_THROTTLE_TIME = 0.0
-    TRANSMISSION_THROTTLE_TIME = 0.000001
+    TRANSMISSION_THROTTLE_TIME = 0.00000001
 
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
@@ -257,6 +257,17 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Stored reinjection status for resetting timeouts
         self._last_reinjection_status = None
+
+    def _throttled_send(self, message, connection):
+        """ slows down transmissions to allow spinnaker to keep up.
+
+        :param message: message to send
+        :param connection: the connection to send down
+        :return: 
+        """
+        # send first message
+        connection.send_sdp_message(message)
+        time.sleep(self.TRANSMISSION_THROTTLE_TIME)
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -582,17 +593,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data_size=n_bytes, address_written_to=base_address,
                 missing_seq_nums=self._missing_seq_nums_data_in,
                 time_took=float(end - start))
-
-    def _throttled_send(self, message, connection):
-        """ slows down transmissions to allow spinnaker to keep up.
-        
-        :param message: message to send
-        :param connection: the connection to send down
-        :return: 
-        """
-        # send first message
-        connection.send_sdp_message(message)
-        time.sleep(self.TRANSMISSION_THROTTLE_TIME)
 
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,

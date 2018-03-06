@@ -205,11 +205,11 @@ typedef enum callback_priorities{
 //! \param[in] msg: the sdp message with no scp header
 //! \param[in] chip_x: the chip_x coord where this data is headed to
 //! \param[in] chip_y: the chip y coord where this data is headed to
-//! \param[in] send_sdram_address: bool flag for if we should send the sdram \
-//!                                address of this set of data
+//! \param[in] send_sdram_address: bool flag for if we should send the sdram
+//                                 address of this set of data
 //! \param[in] start_of_data_sdp_position: where data is in the sdp message
-//! \param[in] sdram_address: the sdram address where this block of data is \
-//!                           to be written on
+//! \param[in] sdram_address: the sdram address where this block of data is
+//                            to be written on
 void process_sdp_message_into_mc_messages(
         sdp_msg_pure_data msg, uint chip_x, uint chip_y,
         bool send_sdram_address, uint start_of_data_sdp_position,
@@ -333,6 +333,37 @@ uint update_and_send_sdp_if_required(
     return position_in_data;
 }
 
+//! \brief calculates the new sdram location for a given seq num
+//! \param[in] seq_num: the seq num to figure offset for
+//! \return the new sdram location.
+uint calculate_sdram_address_from_seq_num(uint seq_num){
+    log_info("seq num is %d", seq_num);
+    if (seq_num == 0){
+        log_info("first packet");
+        return start_sdram_address;
+    }
+    if (seq_num == 1){
+        log_info("first data packet");
+        return start_sdram_address + (
+            DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER);
+    }
+    else{
+        log_info("start address is %d, first packet size is %d, seq num offset is %d",
+            start_sdram_address, DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER,
+            WORD_TO_BYTE_MULTIPLIER * DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num);
+        log_info("part 1 =%d, part 2 =%d part 3 =%d part 4= %d, part5 = %d",
+                 WORD_TO_BYTE_MULTIPLIER, DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM, seq_num,
+                 WORD_TO_BYTE_MULTIPLIER * DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM,
+                 DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num);
+        uint value = 66 * 3939;
+        log_info("issue %d", value);
+        return start_sdram_address + (
+            (DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER) +
+            (WORD_TO_BYTE_MULTIPLIER *
+             DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num));
+    }
+}
+
 //! \brief searches through received seq nums and transmits missing ones back 
 //! to host for retransmission
 void process_missing_seq_nums_and_request_retransmission(){
@@ -375,23 +406,6 @@ void process_missing_seq_nums_and_request_retransmission(){
                 spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
             }
         }
-    }
-}
-
-//! \brief calculates 
-uint calculate_sdram_address_from_seq_num(uint seq_num){
-    if (seq_num == 0){
-        return start_sdram_address;
-    }
-    if (seq_num == 1){
-        return start_sdram_address + (
-            DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER);
-    }
-    else{
-        return start_sdram_address + (
-            DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM * WORD_TO_BYTE_MULTIPLIER + (
-                WORD_TO_BYTE_MULTIPLIER *
-                DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM * seq_num));
     }
 }
 
@@ -442,6 +456,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         // store where the sdram started, for out of order udp packets.
         start_sdram_address = msg->data[SDRAM_ADDRESS];
+        log_info("start address = %d", start_sdram_address);
 
         //log_info("prcessed\n");
     }
@@ -454,11 +469,12 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         // if not next in line, figure sdram address, send and reset tracker
         if (last_seen_seq_num != msg->data[SEQ_NUM] - 1){
-            //log_info("last seq was %d, what we have is %d",
-            //    last_seen_seq_num, msg->data[SEQ_NUM] - 1);
+            log_info("last seq was %d, what we have is %d",
+                last_seen_seq_num, msg->data[SEQ_NUM]);
             send_sdram_address = true;
             this_sdram_address = calculate_sdram_address_from_seq_num(
                 msg->data[SEQ_NUM]);
+            log_info("the new sdram address is %d", this_sdram_address);
         }
 
         //log_info("received seq number %d\n", msg->data[SEQ_NUM]);
