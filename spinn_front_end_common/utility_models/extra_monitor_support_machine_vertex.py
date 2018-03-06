@@ -1,3 +1,4 @@
+import logging
 from enum import Enum
 
 from pacman.executor.injection_decorator import inject_items
@@ -9,14 +10,12 @@ from spinn_front_end_common.abstract_models import \
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import \
-    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess, \
-    SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess, \
-    ReadStatusProcess
+    extra_monitor_scp_processes import ReadStatusProcess
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.reset_counters_process import \
     ResetCountersProcess
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.set_application_mc_routes_process import \
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes.set_application_mc_routes_process import \
     SetApplicationMCRoutesProcess
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_packet_types_process import \
@@ -27,15 +26,19 @@ from spinn_front_end_common.utilities.utility_objs.\
 from spinn_front_end_common.utilities.utility_objs.\
     extra_monitor_scp_processes.set_router_timeout_process import \
     SetRouterTimeoutProcess
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_processes.set_system_mc_routes_process import \
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_processes.set_system_mc_routes_process import \
     SetSystemMCRoutesProcess
 from spinn_front_end_common.utility_models.\
     data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 from spinn_machine import CoreSubsets, Router
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.helpful_functions \
     import convert_vertices_to_core_subset
+
+log = FormatAdapter(logging.getLogger(__name__))
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -249,9 +252,9 @@ class ExtraMonitorSupportMachineVertex(
                 route | Router.convert_routing_table_entry_to_spinnaker_route(
                     entry)
             spec.write_value(route)
-            # print "key {}".format(entry.routing_entry_key)
-            # print "mask {}".format(entry.mask)
-            # print "route {}".format(route)
+            # log.info("key {}".format(entry.routing_entry_key))
+            # log.info("mask {}".format(entry.mask))
+            # log.info("route {}".format(route))
 
     def _generate_data_out_speed_up_functionality_data_specification(
             self, spec, routing_info, machine_graph):

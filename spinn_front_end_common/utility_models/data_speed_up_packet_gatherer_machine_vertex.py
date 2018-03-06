@@ -94,6 +94,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_view"
     )
 
+    # throttle on the transmission
+    #TRANSMISSION_THROTTLE_TIME = 0.0
+    TRANSMISSION_THROTTLE_TIME = 0.000001
+
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
     # report name for tracking used routers
@@ -202,10 +206,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # end flag for missing seq nums
     MISSING_SEQ_NUMS_END_FLAG = 0xFFFFFFFF
-
-    # throttle on the transmission
-    TRANSMISSION_THROTTLE_TIME = 0.0
-    #TRANSMISSION_THROTTLE_TIME = 0.00000001
 
     # precompiled structures
     _ONE_WORD = struct.Struct("<I")
@@ -357,6 +357,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             spec.write_value(chip_x)
             spec.write_value(chip_y)
             spec.write_value(mc_data_chips_to_keys[chip_x, chip_y])
+            # log.info("for chip {}:{} base key is {}".format(
+            #    chip_x, chip_y, mc_data_chips_to_keys[chip_x, chip_y]))
 
         # End-of-Spec:
         spec.end_specification()
@@ -590,7 +592,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # send first message
         connection.send_sdp_message(message)
-        #time.sleep(self.TRANSMISSION_THROTTLE_TIME)
+        time.sleep(self.TRANSMISSION_THROTTLE_TIME)
 
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
@@ -603,7 +605,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param data_to_write: the data to write
         :rtype: None
         """
-        print "SENDING DATA VIA EXTRA MONITORS\n"
 
         # where in data we've sent up to
         position_in_data = 0
@@ -617,7 +618,7 @@ class DataSpeedUpPacketGatherMachineVertex(
               self.WORD_TO_BYTE_CONVERTER)))) + 1
 
         # compressed destination chip data
-        chip_data = ((destination_chip_x < 16) & destination_chip_y)
+        chip_data = ((destination_chip_x << 16) | destination_chip_y)
 
         # send first packet to lpg, stating where to send it to
         data = bytearray(
@@ -729,7 +730,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         position = 0
         command_id = struct.unpack_from("<I", data, 0)[0]
         position += self.COMMAND_ID_SIZE
-        print "received packet with id {}\n".format(command_id)
+        # log.info("received packet with id {}\n".format(command_id))
 
         # process first missing
         if command_id == \

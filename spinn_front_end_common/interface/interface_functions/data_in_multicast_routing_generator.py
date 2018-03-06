@@ -70,6 +70,7 @@ class DataInMulticastRoutingGenerator(object):
 
             multicast_routing_table = MulticastRoutingTable(
                 real_chip_x, real_chip_y)
+
             for partition in partitions_in_table:
 
                 # build routing table entries

@@ -739,6 +739,10 @@ void _clear_router(){
         rtr_entry_t *entry = NULL;
         entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
 	    uint success = rtr_mc_get(entry_id, entry);
+        if(success == 0){
+            io_printf(IO_BUF, "failed to get entry %d \n", entry_id);
+            rt_error(RTE_SWERR);
+        }
 	    if(entry->key == INVALID_ROUTER_ENTRY_KEY &&
 	       entry->mask == INVALID_ROUTER_ENTRY_MASK){
 	    }
@@ -816,16 +820,16 @@ void data_in_read_and_load_router_entries(
 
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
-        io_printf(
-                IO_BUF, "setting key %u at %u, mask %u at %u, "
-                        "route %u at %u position %u for entry %u\n",
-                sdram_address[position + ROUTER_ENTRY_KEY],
-                position + ROUTER_ENTRY_KEY,
-                sdram_address[position + ROUTER_ENTRY_MASK],
-                position + ROUTER_ENTRY_MASK,
-                sdram_address[position + ROUTER_ENTRY_ROUTE],
-                position + ROUTER_ENTRY_ROUTE,
-                position, entry_id);
+        //io_printf(
+        //        IO_BUF, "setting key %u at %u, mask %u at %u, "
+        //                "route %u at %u position %u for entry %u\n",
+        //        sdram_address[position + ROUTER_ENTRY_KEY],
+        //        position + ROUTER_ENTRY_KEY,
+        //        sdram_address[position + ROUTER_ENTRY_MASK],
+        //        position + ROUTER_ENTRY_MASK,
+        //        sdram_address[position + ROUTER_ENTRY_ROUTE],
+        //        position + ROUTER_ENTRY_ROUTE,
+        //        position, entry_id);
 
         if(sdram_address[position + ROUTER_ENTRY_KEY] !=
                 INVALID_ROUTER_ENTRY_KEY &&
@@ -835,7 +839,7 @@ void data_in_read_and_load_router_entries(
                 INVALID_ROUTER_ENTRY_ROUTE){
 
             // try setting the valid router entry
-            io_printf(IO_BUF, "writing entry \n ");
+            //io_printf(IO_BUF, "writing entry \n ");
 
             if (rtr_mc_set(
                     entry_id,
@@ -941,25 +945,29 @@ void data_in_speed_up_load_in_application_routes(){
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
 //! \return: complete code if successful
-void handle_data_in_speed_up(uint16_t command_code) {
-    if (command_code == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
+uint handle_data_in_speed_up(sdp_msg_t *msg) {
+    if (msg->cmd_rc == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
         io_printf(IO_BUF, "reading application router entries from router\n");
         data_in_read_router();
+        msg->cmd_rc = RC_OK;
     }
-    else if(command_code == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
+    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
         io_printf(IO_BUF, "loading application router entries into router\n");
         data_in_speed_up_load_in_application_routes();
+        msg->cmd_rc = RC_OK;
     }
-    else if(command_code == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
+    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
         io_printf(IO_BUF, "loading system router entries into router\n");
         data_in_speed_up_load_in_system_tables();
+        msg->cmd_rc = RC_OK;
     }
     else{
        io_printf(
            IO_BUF,
            "received unknown SDP packet in data in speed up port with"
-           "command id %d\n", command_code);
+           "command id %d\n", msg->cmd_rc);
     }
+    return 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -1394,7 +1402,9 @@ void __wrap_sark_int(void *pc) {
             sark_msg_cpy(msg, shm_msg);
             sark_shmsg_free(shm_msg);
 
-            io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+            io_printf(
+                IO_BUF,
+                "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
 
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
@@ -1415,9 +1425,7 @@ void __wrap_sark_int(void *pc) {
                 handle_data_out_speed_up((sdp_msg_pure_data *) msg);
                 break;
             case DATA_IN_SPEED_UP_FUNCTIONALITY: ; // empty statement
-                uint command_code = msg->cmd_rc;
-                msg->cmd_rc = RC_OK;
-                msg->length = 12;
+                msg->length = 12 + handle_data_in_speed_up(msg);
 
                 uint dest_port2 = msg->dest_port;
                 uint dest_addr2 = msg->dest_addr;
@@ -1431,7 +1439,6 @@ void __wrap_sark_int(void *pc) {
                 if(sark_msg_send(msg, 10) != 1){
                     sark_delay_us(1);
                 };
-                handle_data_in_speed_up(command_code);
                 break;
             default:
                 io_printf(IO_BUF, "port %d\n",
