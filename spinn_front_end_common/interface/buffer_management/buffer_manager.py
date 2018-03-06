@@ -603,7 +603,8 @@ class BufferManager(object):
 
         # Ensure that any transfers in progress are complete first
         with self._thread_lock_buffer_out:
-            self._get_data_for_vertex_locked(placement, recording_region_id)
+            return self._get_data_for_vertex_locked(
+                placement, recording_region_id)
 
     def _get_data_for_vertex_locked(self, placement, recording_region_id):
         """ Get the data for a vertex; must be locked first
