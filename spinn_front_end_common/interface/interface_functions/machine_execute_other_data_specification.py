@@ -1,5 +1,5 @@
-from data_specification import data_spec_sender
-from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import \
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 from data_specification.data_spec_sender import data_specification_executor
 
@@ -73,7 +73,8 @@ class MachineExecuteOtherDataSpecification(object):
         self._execute_data_specs(transceiver, core_subset, app_id, dse_app_id)
         logger.info("On-chip Data Specification Executor completed")
 
-    def _load_data_specs(self, txrx, dsg_targets, app_id, write_report,
+    @staticmethod
+    def _load_data_specs(txrx, dsg_targets, app_id, write_report,
                          uses_advanced_monitors, machine,
                          extra_monitor_cores_to_ethernet_connection_map):
         # pylint: disable=too-many-locals
@@ -110,10 +111,10 @@ class MachineExecuteOtherDataSpecification(object):
             # determine which function to use for writing large memory
             write_memory_function = DataSpeedUpPacketGatherMachineVertex. \
                 locate_correct_write_data_function_for_chip_location(
-                machine=machine, x=x, y=y, transceiver=txrx,
-                uses_advanced_monitors=uses_advanced_monitors,
-                extra_monitor_cores_to_ethernet_connection_map=
-                extra_monitor_cores_to_ethernet_connection_map)
+                    machine=machine, x=x, y=y, transceiver=txrx,
+                    uses_advanced_monitors=uses_advanced_monitors,
+                    extra_monitor_cores_to_ethernet_connection_map=(
+                        extra_monitor_cores_to_ethernet_connection_map))
 
             write_memory_function(
                 x, y, file_data_addr, file_path, is_filename=True)
@@ -122,7 +123,8 @@ class MachineExecuteOtherDataSpecification(object):
 
         return dse_app_id, core_subset
 
-    def _execute_data_specs(self, txrx, cores, app_id, dse_app_id):
+    @staticmethod
+    def _execute_data_specs(txrx, cores, app_id, dse_app_id):
         dse_executor = data_specification_executor()
         txrx.execute_flood(cores, dse_executor, app_id, is_filename=True)
 

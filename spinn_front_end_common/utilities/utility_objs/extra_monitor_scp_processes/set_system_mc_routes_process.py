@@ -1,4 +1,5 @@
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages.set_system_mc_routes_message import \
+from spinn_front_end_common.utilities.utility_objs.\
+    extra_monitor_scp_messages.set_system_mc_routes_message import \
     SetSystemMCRoutesMessage
 from spinnman.processes.abstract_multi_connection_process \
     import AbstractMultiConnectionProcess
@@ -12,7 +13,7 @@ class SetSystemMCRoutesProcess(AbstractMultiConnectionProcess):
     def set_system_mc_routes(self, core_subsets, command_code):
         """
         :param core_subsets: sets of cores to send command to
-        :param command_code: the command code used by extra monitor cores 
+        :param command_code: the command code used by extra monitor cores
         for setting the system mc routes
         :rtype: None
         """

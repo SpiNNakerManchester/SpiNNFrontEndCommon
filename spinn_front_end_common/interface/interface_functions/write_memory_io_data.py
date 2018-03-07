@@ -2,13 +2,14 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.machine import MachineGraph
 
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
-from spinn_front_end_common.utility_models.data_speed_up_packet_gatherer_machine_vertex import \
+from spinn_front_end_common.utility_models.\
+    data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 
 from spinn_utilities.progress_bar import ProgressBar
 
 from spinnman.utilities.io import MemoryIO, FileIO
-from spinnman.messages.spinnaker_boot import SystemVariableDefinition as SV
+from spinnman.messages.spinnaker_boot import SystemVariableDefinition as Sv
 
 import os
 
@@ -95,15 +96,15 @@ class WriteMemoryIOData(object):
             locate_correct_write_data_function_for_chip_location(
                 machine=machine, x=x, y=y, transceiver=transceiver,
                 uses_advanced_monitors=uses_advanced_monitors,
-                extra_monitor_cores_to_ethernet_connection_map=
-                extra_monitor_cores_to_ethernet_connection_map)
+                extra_monitor_cores_to_ethernet_connection_map=(
+                    extra_monitor_cores_to_ethernet_connection_map))
         buffer_size = 256
         if uses_advanced_monitors:
             buffer_size = 120 * 2024 * 1024
         return write_memory_function, buffer_size
 
     @staticmethod
-    def _get_used_tags(transceiver, placement, heap_address):
+    def __get_used_tags(transceiver, placement, heap_address):
         """ Get the tags that have already been used on the given chip
 
         :param transceiver: The transceiver to use to get the data
@@ -126,8 +127,8 @@ class WriteMemoryIOData(object):
         if key not in self._next_tag:
             # Find the maximum tag already in use across the three areas
             max_tag = 0
-            for area in (SV.sdram_heap_address, SV.system_ram_heap_address,
-                         SV.system_sdram_heap_address):
+            for area in (Sv.sdram_heap_address, Sv.system_ram_heap_address,
+                         Sv.system_sdram_heap_address):
                 for tag in self.__get_used_tags(transceiver, placement, area):
                     max_tag = max(max_tag, tag)
             self._next_tag[key] = max_tag + 1
@@ -162,7 +163,7 @@ class WriteMemoryIOData(object):
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address
-        :param write_memory_function: the function used to write data to\ 
+        :param write_memory_function: the function used to write data to\
          spinnaker
         """
         # pylint: disable=too-many-arguments

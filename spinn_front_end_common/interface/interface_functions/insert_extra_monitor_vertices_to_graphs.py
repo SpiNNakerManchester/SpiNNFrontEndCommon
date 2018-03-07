@@ -195,7 +195,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
             write_data_speed_up_report=write_data_speed_up_report,
             write_data_in_report=write_data_in_speed_up_report)
 
-
     @staticmethod
     def __new_mach_gatherer(
             ethernet_chip, vertex_to_chip_map, transceiver,

@@ -11,7 +11,7 @@ from spinn_utilities.progress_bar import ProgressBar
 
 class DataInMulticastRoutingGenerator(object):
     """ generates routing table entries used by the data in processes with the\
-    extra monitor cores. 
+    extra monitor cores.
     """
 
     RANDOM_PROCESSOR = 4
@@ -51,7 +51,7 @@ class DataInMulticastRoutingGenerator(object):
             machine):
         """ from the routing. use the partition id as key, and build mc\
          routing tables
-        
+
         :param routing_tables: the routing tables to store routing tables in
         :param routing_tables_by_partition: the routing output
         :param ethernet_chip: the ethernet chip being used
@@ -89,7 +89,7 @@ class DataInMulticastRoutingGenerator(object):
     @staticmethod
     def _calculate_fake_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
         """ converts between real and board based fake chip ids
-        
+
         :param chip_x: the real chip x in the real machine
         :param chip_y: the chip chip y in the real machine
         :param eth_x: the ethernet x to make board based
@@ -115,14 +115,14 @@ class DataInMulticastRoutingGenerator(object):
         :param eth_x: the ethernet x to locate real machine space
         :param eth_y: the ethernet y to locate real machine space
         :param machine: the real machine
-        :return: chip x and y for the real chip 
+        :return: chip x and y for the real chip
         :rtype: int and int
         """
         real_x = fake_x + eth_x
         if real_x >= machine.max_chip_x + 1:
             real_x -= machine.max_chip_x
         real_y = fake_y + eth_y
-        if real_y >= machine.max_chip_y +1:
+        if real_y >= machine.max_chip_y + 1:
             real_y -= machine.max_chip_y
         return real_x, real_y
 
@@ -130,7 +130,7 @@ class DataInMulticastRoutingGenerator(object):
             self, ethernet_connected_chip, machine, extra_monitor_cores,
             placements, board_version):
         """ generate the fake network for each board
-        
+
         :param ethernet_connected_chip: the ethernet chip to fire from
         :param machine: the real SpiNNMachine instance
         :param extra_monitor_cores: the extra monitor cores
@@ -222,7 +222,7 @@ class DataInMulticastRoutingGenerator(object):
     @staticmethod
     def do_routing(fake_placements, fake_graph, fake_machine):
         """ executes the routing
-        
+
         :param fake_placements: the fake placements
         :param fake_graph: the fake graph
         :param fake_machine: the fake machine

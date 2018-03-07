@@ -97,8 +97,8 @@ class HostExecuteOtherDataSpecification(object):
                 locate_correct_write_data_function_for_chip_location(
                     machine=machine, x=x, y=y, transceiver=transceiver,
                     uses_advanced_monitors=uses_advanced_monitors,
-                    extra_monitor_cores_to_ethernet_connection_map=
-                    extra_monitor_cores_to_ethernet_connection_map)
+                    extra_monitor_cores_to_ethernet_connection_map=(
+                        extra_monitor_cores_to_ethernet_connection_map))
 
             # execute dse, allocate sdram and write to spinnaker via correct
             # write function

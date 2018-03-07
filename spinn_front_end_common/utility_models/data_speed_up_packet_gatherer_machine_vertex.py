@@ -266,7 +266,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param message: message to send
         :param connection: the connection to send down
-        :return: 
+        :rtype: None
         """
         # send first message
         connection.send_sdp_message(message)
@@ -453,18 +453,19 @@ class DataSpeedUpPacketGatherMachineVertex(
     def locate_correct_write_data_function_for_chip_location(
             uses_advanced_monitors, machine, x, y, transceiver,
             extra_monitor_cores_to_ethernet_connection_map):
-        """ supports other components figuring out which gather and function 
+        """ supports other components figuring out which gather and function \
         to call for writing data onto spinnaker
-        
-        :param uses_advanced_monitors: bool saying if the system is using\ 
+
+        :param uses_advanced_monitors: bool saying if the system is using\
          advanced monitors
         :param machine: the SpiNNMachine instance
         :param x: the chip x coordinate to write data to
         :param y: the chip y coordinate to write data to
-        :param extra_monitor_cores_to_ethernet_connection_map: 
+        :param extra_monitor_cores_to_ethernet_connection_map: mapping between\
+         cores and connections
         :param transceiver: the SpiNNMan instance
         :return: a write function of either a LPG or the spinnMan
-        :rtype: function
+        :rtype: func
         """
         if uses_advanced_monitors:
             chip = machine.get_chip_at(x, y)
@@ -514,7 +515,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def sent_via_sdp(self, n_bytes, x, y, base_address, data, offset):
         """ attempts to send by sdp, if better via speed up, it returns false.\
          true otherwise
-        
+
         :param n_bytes: data size
         :param x: placement x
         :param y: placement y
@@ -549,16 +550,16 @@ class DataSpeedUpPacketGatherMachineVertex(
     def send_data_into_spinnaker(
             self, x, y, base_address, data, n_bytes=None, offset=0,
             is_filename=False):
-        """ sends a block of data into spinnaker to a given chip 
-        
+        """ sends a block of data into spinnaker to a given chip
+
         :param x: chip x for data
         :param y: chip y for data
-        :param base_address: the address in SDRAM to start writing memory 
+        :param base_address: the address in SDRAM to start writing memory
         :param data: the data to write
         :param n_bytes: how many bytes to read, or None if not set
         :param offset: where in the data to start from
         :param is_filename: bool stating if data is actually a file.
-        :rtype: None 
+        :rtype: None
         """
 
         # if file, read in and then process as normal
@@ -603,10 +604,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, destination_chip_x, destination_chip_y, start_address,
             data_to_write):
         """ sends data using the extra monitor cores
-        
+
         :param destination_chip_x: chip x
         :param destination_chip_y: chip y
-        :param start_address: start address in sdram to write data to 
+        :param start_address: start address in sdram to write data to
         :param data_to_write: the data to write
         :rtype: None
         """
@@ -651,8 +652,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_chip_x=self._placement.x,
                 destination_chip_y=self._placement.y,
                 destination_cpu=self._placement.p,
-                destination_port=
-                SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+                destination_port=(
+                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=data)
 
@@ -702,11 +703,11 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _read_in_missing_seq_nums(self, data, data_to_write, position):
         """ handles a missing seq num packet from spinnaker
-        
+
         :param data: the data to translate into missing seq nums
         :param data_to_write: the data to write
         :param position: the position in the data to write.
-        :rtype: None 
+        :rtype: None
         """
         # find how many elements are in this packet
         n_elements = (len(data) - position) / self.LENGTH_OF_DATA_SIZE
@@ -726,8 +727,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _outgoing_process_packet(self, data, data_to_write):
         """ processes a packet from SpiNNaker
-        
-        :param data: the packet data 
+
+        :param data: the packet data
         :param data_to_write: the data to write to spinnaker
         :return: if the packet contains a confirmation of complete
         :rtype: bool
@@ -768,9 +769,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _outgoing_retransmit_missing_seq_nums(self, data_to_write):
         """ transmits back into spinnaker the missing data based off missing\
         seq nums
-        
-        :param data_to_write: the data to write. 
-        :rtype: None 
+
+        :param data_to_write: the data to write.
+        :rtype: None
         """
         for missing_seq_num in self._missing_seq_nums_data_in[-1]:
             message, length = self._calculate_data_in_data_from_seq_number(
@@ -784,10 +785,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._send_end_flag()
 
     def _calculate_position_from_seq_number(self, seq_num):
-        """ calculates where in the raw data to start reading from, given a 
+        """ calculates where in the raw data to start reading from, given a \
         seq number
-        
-        :param seq_num: the seq num to determine position from 
+
+        :param seq_num: the seq num to determine position from
         :return: the position in the byte data
         """
         if seq_num == 0:
@@ -807,7 +808,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, data_to_write, seq_num, command_id, position):
         """ determine the data needed to be sent to the SpiNNaker machine\
          given a seq num
-        
+
         :param data_to_write: the data to write to the spinnaker machine
         :param seq_num: the seq num to ge tthe data for
         :param position: the position in the data to write to spinnaker
@@ -879,12 +880,12 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _send_all_data_based_packets(
             self, number_of_packets, data_to_write, position_in_data):
-        """ sends all the data as one block 
-        
+        """ sends all the data as one block
+
         :param number_of_packets: the number of packets expected to send
         :param data_to_write: the data to send
         :param position_in_data: where in the data we are currently up to.
-        :rtype: None 
+        :rtype: None
         """
         #  send rest of data
         total_data_length = len(data_to_write)
@@ -910,12 +911,12 @@ class DataSpeedUpPacketGatherMachineVertex(
             placements):
         """ helper method for setting the router timeouts to a state usable\
          for data streaming
-        
+
         :param transceiver: the SpiNNMan instance
         :param extra_monitor_cores_for_router_timeout: the extra monitor cores\
-         to set 
+         to set
         :param placements: placements object
-        :rtype: None 
+        :rtype: None
         """
 
         # Store the last reinjection status for resetting
@@ -936,11 +937,11 @@ class DataSpeedUpPacketGatherMachineVertex(
     def set_application_routing_tables(
             transceiver, extra_monitor_cores, placements):
         """ sets all chips to have app table reloaded
-        
+
         :param transceiver: the SpiNNMan instance
-        :param extra_monitor_cores: the extra monitor cores to set 
+        :param extra_monitor_cores: the extra monitor cores to set
         :param placements: placements object
-        :rtype: None 
+        :rtype: None
         """
         extra_monitor_cores[0].set_up_application_mc_routes(
             placements, extra_monitor_cores, transceiver)
@@ -953,9 +954,9 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         :param transceiver: the SpiNNMan instance
         :param extra_monitor_cores_for_router_timeout: the extra monitor cores\
-         to set 
+         to set
         :param placements: placements object
-        :rtype: None 
+        :rtype: None
         """
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
             15, 4, transceiver, placements,
@@ -1051,7 +1052,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         lost_seq_nums = self._receive_data(placement)
         self._max_seq_num = self._incoming_calculate_max_seq_num()
 
-        time_out_count = 0
         end = float(time.time())
         self._provenance_data_items[
             placement, memory_address, length_in_bytes].append(
@@ -1070,7 +1070,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _receive_data(self, placement):
         seq_nums = set()
         lost_seq_nums = list()
-        timeoutcount = 0
+        time_out_count = 0
         finished = False
         while not finished:
             try:
@@ -1084,7 +1084,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if time_out_count > TIMEOUT_RETRY_LIMIT:
                     raise SpinnFrontEndException(
                         "Failed to hear from the machine during {} attempts. "
-                        "Please try removing firewalls".format(timeoutcount))
+                        "Please try removing firewalls".format(time_out_count))
 
                 time_out_count += 1
                 self.__reset_connection()
@@ -1314,7 +1314,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _incoming_calculate_offset(self, seq_num):
         """ figures where in the view to write data given a seq num
-        
+
         :param seq_num: the seq num to figure the position of
         :return: the position where to start writing
         :rtype: int

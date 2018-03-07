@@ -13,7 +13,7 @@ class SetApplicationMCRoutesProcess(AbstractMultiConnectionProcess):
     def set_application_mc_routes(self, core_subsets, command_code):
         """
         :param core_subsets: sets of cores to send command to
-        :param command_code: the command code used by extra monitor cores 
+        :param command_code: the command code used by extra monitor cores
         for setting the application mc routes
         :rtype: None
         """

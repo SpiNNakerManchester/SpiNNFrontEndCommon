@@ -216,13 +216,13 @@ class ExtraMonitorSupportMachineVertex(
             self, spec, data_in_routing_tables, placement,
             mc_data_chips_to_keys, app_id):
         """ data in spec
-        
+
         :param spec: spec file
-        :param data_in_routing_tables: routing tables for all chips 
+        :param data_in_routing_tables: routing tables for all chips
         :param placement: this placement
         :param mc_data_chips_to_keys: data in keys to chips map.
         :param app_id: The app id expected to write entries with
-        :rtype: None 
+        :rtype: None
         """
         spec.reserve_memory_region(
             region=self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value,

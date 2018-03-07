@@ -369,8 +369,8 @@ def _handle_model_binaries(
 
 def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     """ flood fills a binary to spinnaker on a given app_id \
-    given the executable targets and binary. 
-    
+    given the executable targets and binary.
+
     :param executable_targets: the executable targets object
     :param binary: the binary to flood fill
     :param txrx: spinnman instance
@@ -387,15 +387,15 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
         txrx, machine, app_id, x, y, p, data_spec_path,
         memory_write_function):
     """ uncompress the DSE file, allocates sdram from the Machine, and\
-     writes data to SpiNNaker. 
-    
+     writes data to SpiNNaker.
+
     :param txrx: SPiNNMan instance
     :param machine: SPINNMachine instance
     :param app_id: the app id to alocate sdram on
     :param x: chip x
     :param y: chip y
     :param p: processor id
-    :param data_spec_path: file path to the dse script. 
+    :param data_spec_path: file path to the dse script.
     :param memory_write_function: which function to call to write memory on\
      spinnaker
     :return: dict of 'start_address', 'memory_used', 'memory_written'
