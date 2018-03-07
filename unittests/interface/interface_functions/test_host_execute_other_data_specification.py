@@ -1,16 +1,19 @@
 import unittest
 from tempfile import mktemp
 
+from spinn_front_end_common.utilities.utility_objs.executable_type import \
+    ExecutableType
 from spinn_machine.virtual_machine import VirtualMachine
 
 from spinn_storage_handlers.file_data_writer import FileDataWriter
 from data_specification import constants
 
 from spinn_front_end_common.interface.interface_functions \
-    import HostExecuteDataSpecification
+    import HostExecuteOtherDataSpecification
 
 from data_specification.data_specification_generator \
     import DataSpecificationGenerator
+from spinnman.model import ExecutableTargets
 
 
 class _MockCPUInfo(object):
@@ -61,10 +64,10 @@ class _MockTransceiver(object):
         self._regions_written.append((base_address, data))
 
 
-class TestHostExecuteDataSpecification(unittest.TestCase):
+class TestHostExecuteOtherDataSpecification(unittest.TestCase):
 
     def test_call(self):
-        executor = HostExecuteDataSpecification()
+        executor = HostExecuteOtherDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={(0, 0, 0): 1000})
         machine = VirtualMachine(2, 2)
 
@@ -84,8 +87,12 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         spec.end_specification()
 
         # Execute the spec
+        targets = ExecutableTargets()
+        targets.add_processor("text.aplx", 0, 0, 0,
+                              ExecutableType.USES_SIMULATION_INTERFACE)
         dsg_targets = {(0, 0, 0): temp_spec}
-        executor.__call__(transceiver, machine, 30, dsg_targets)
+        executor.__call__(
+            transceiver, machine, 30, dsg_targets, False, targets)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
