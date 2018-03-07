@@ -807,29 +807,35 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 void data_in_read_and_load_router_entries(
         address_t sdram_address, uint n_entries){
 
-    //io_printf(IO_BUF, "n entries %u \n", n_entries);
+    io_printf(IO_BUF, "n entries %u \n", n_entries);
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
-    //io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
+    if(start_entry_id == 0){
+        io_printf(IO_BUF, "received error with requesting %d router entries."
+                          " Shutting down\n", n_entries);
+        rt_error(RTE_SWERR);
+    }
+    io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
 
     uint cpsr = sark_lock_get(LOCK_RTR);
     //io_printf(IO_BUF, "got lock \n");
 
-    for( uint entry_id = start_entry_id; entry_id < n_entries; entry_id++){
+    for( uint entry_id = start_entry_id; entry_id < n_entries + start_entry_id;
+            entry_id++){
         uint position = ((entry_id - 1) * (
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
 
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
-        //io_printf(
-        //        IO_BUF, "setting key %u at %u, mask %u at %u, "
-        //                "route %u at %u position %u for entry %u\n",
-        //        sdram_address[position + ROUTER_ENTRY_KEY],
-        //        position + ROUTER_ENTRY_KEY,
-        //        sdram_address[position + ROUTER_ENTRY_MASK],
-        //        position + ROUTER_ENTRY_MASK,
-        //        sdram_address[position + ROUTER_ENTRY_ROUTE],
-        //        position + ROUTER_ENTRY_ROUTE,
-        //        position, entry_id);
+        io_printf(
+                IO_BUF, "setting key %u at %u, mask %u at %u, "
+                        "route %u at %u position %u for entry %u\n",
+                sdram_address[position + ROUTER_ENTRY_KEY],
+                position + ROUTER_ENTRY_KEY,
+                sdram_address[position + ROUTER_ENTRY_MASK],
+                position + ROUTER_ENTRY_MASK,
+                sdram_address[position + ROUTER_ENTRY_ROUTE],
+                position + ROUTER_ENTRY_ROUTE,
+                position, entry_id);
 
         if(sdram_address[position + ROUTER_ENTRY_KEY] !=
                 INVALID_ROUTER_ENTRY_KEY &&
@@ -894,6 +900,7 @@ void data_in_read_router(){
         position_in_sdram +=
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
     }
+    sark_free(entry);
     //io_printf(IO_BUF, "finished read of app table\n");
 }
 
@@ -938,7 +945,7 @@ void data_in_speed_up_load_in_application_routes(){
 
     // load app router entries from sdram
     data_in_read_and_load_router_entries(
-        application_routers_sdram_address, N_ROUTER_ENTRIES - 1);
+        application_routers_sdram_address, N_ROUTER_ENTRIES - 2);
 }
 
 //! \brief the handler for all messages coming in for data in speed up

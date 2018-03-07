@@ -373,8 +373,8 @@ void process_missing_seq_nums_and_request_retransmission(){
 
     // check that missing seq transmission is actually needed, or
     // have we finished
-    //log_info(" total recieved = %d, max seq is %d\n",
-    //         total_received_seq_nums, max_seq_num);
+    log_info(" total recieved = %d, max seq is %d\n",
+             total_received_seq_nums, max_seq_num);
     if (total_received_seq_nums == max_seq_num){
         my_msg.data[COMMAND_ID_POSITION] =
             SDP_PACKET_SEND_FINISHED_DATA_IN_COMMAND_ID;
@@ -383,7 +383,9 @@ void process_missing_seq_nums_and_request_retransmission(){
         while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, SDP_TIMEOUT)) {
 	        spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
         }
-        //log_info("sent end flag");
+        log_info("sent end flag");
+        sark_free(missing_seq_nums_store);
+        total_received_seq_nums = 0;
     }
     // sending missing seq nums
     else{
@@ -497,9 +499,11 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
     else if (msg->data[COMMAND_ID_POSITION] ==
             SDP_SEND_MISSING_SEQ_NUMS_BACK_TO_HOST_COMMAND_ID){
+        log_info("checking for missing");
         process_missing_seq_nums_and_request_retransmission();
     }
     else if (msg->data[COMMAND_ID_POSITION] == SDP_LAST_DATA_IN_COMMAND_ID){
+        log_info("recieved final flag");
         process_missing_seq_nums_and_request_retransmission();
     }
     else{
