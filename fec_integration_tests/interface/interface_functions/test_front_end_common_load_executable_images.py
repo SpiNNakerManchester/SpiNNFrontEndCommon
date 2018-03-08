@@ -1,5 +1,6 @@
 from spinn_front_end_common.interface.interface_functions \
-    import LoadExecutableImages
+    import LoadOtherExecutableImages
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
 from collections import defaultdict
@@ -36,14 +37,20 @@ class TestFrontEndCommonLoadExecutableImages(unittest.TestCase):
 
     def test_front_end_common_load_executable_images(self):
         transceiver = _MockTransceiver(self)
-        loader = LoadExecutableImages()
+        loader = LoadOtherExecutableImages()
         targets = ExecutableTargets()
-        targets.add_processor("test.aplx", 0, 0, 0)
-        targets.add_processor("test.aplx", 0, 0, 1)
-        targets.add_processor("test.aplx", 0, 0, 2)
-        targets.add_processor("test2.aplx", 0, 1, 0)
-        targets.add_processor("test2.aplx", 0, 1, 1)
-        targets.add_processor("test2.aplx", 0, 1, 2)
+        targets.add_processor(
+            "test.aplx", 0, 0, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "test.aplx", 0, 0, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "test.aplx", 0, 0, 2, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "test2.aplx", 0, 1, 0, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "test2.aplx", 0, 1, 1, ExecutableType.USES_SIMULATION_INTERFACE)
+        targets.add_processor(
+            "test2.aplx", 0, 1, 2, ExecutableType.USES_SIMULATION_INTERFACE)
         loader.__call__(targets, 30, transceiver)
 
 
