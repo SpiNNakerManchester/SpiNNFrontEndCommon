@@ -478,7 +478,7 @@ class EnergyReport(object):
         :raises Exception: if it can't find the monitor
         """
         # start at top, as more likely it was placed on the top
-        for processor_id in xrange(17, -1, -1):
+        for processor_id in range(17, -1, -1):
             processor = chip.get_processor_with_id(processor_id)
             if processor is not None and placements.is_processor_occupied(
                     chip.x, chip.y, processor_id):
@@ -525,7 +525,7 @@ class EnergyReport(object):
                     self.MILLIWATTS_PER_CHIP_ACTIVE_OVERHEAD / 18)
 
         # detailed report print out
-        for core in xrange(0, 18):
+        for core in range(0, 18):
             f.write(
                 "processor {}:{}:{} used {} Joules of energy by being active "
                 "during the execution of the simulation\n".format(

@@ -67,8 +67,10 @@ import logging
 import math
 import os
 import signal
+from six import iteritems, iterkeys, reraise
 import sys
 
+# Version number imports
 from numpy import __version__ as numpy_version
 try:
     from scipy import __version__ as scipy_version
@@ -1200,7 +1202,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            ex_type, ex_value, ex_traceback = sys.exc_info()
+            exc_info = sys.exc_info()
             try:
                 self._shutdown()
                 helpful_functions.write_finished_file(
@@ -1208,7 +1210,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._report_simulation_top_directory)
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
-            raise ex_type, ex_value, ex_traceback
+            reraise(*exc_info)
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if self._machine is not None:
@@ -1926,8 +1928,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                  exc_info=True)
 
             # reraise exception
-            ex_type, ex_value, ex_traceback = e_inf
-            raise ex_type, ex_value, ex_traceback
+            reraise(*e_inf)
 
     def _create_execute_workflow(
             self, n_machine_time_steps, loading_done, run_until_complete):
@@ -2107,11 +2108,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 unsuccessful_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for (x, y, p), _ in unsuccessful_cores.iteritems():
+                for x, y, p in iterkeys(unsuccessful_cores):
                     unsuccessful_core_subset.add_processor(x, y, p)
 
         # Print the details of error cores
-        for (x, y, p), core_info in unsuccessful_cores.iteritems():
+        for (x, y, p), core_info in iteritems(unsuccessful_cores):
             state = core_info.state
             rte_state = ""
             if state == CPUState.RUN_TIME_EXCEPTION:
@@ -2134,7 +2135,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
             (x, y, p)
-            for (x, y, p), core_info in unsuccessful_cores.iteritems()
+            for (x, y, p), core_info in iteritems(unsuccessful_cores)
             if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
                 core_info.state != CPUState.WATCHDOG)]
 
@@ -2621,8 +2622,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._report_simulation_top_directory)
 
         if exc_info is not None:
-            ex_type, ex_value, ex_traceback = exc_info
-            raise ex_type, ex_value, ex_traceback
+            reraise(*exc_info)
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
@@ -2717,7 +2717,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         for item in items:
             if item.report:
                 if not initial_message_printed and initial_message is not None:
-                    print initial_message
+                    print(initial_message)
                     initial_message_printed = True
                 logger.warning(item.message)
 

@@ -28,6 +28,7 @@ import time
 import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
+from six.moves import xrange
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20

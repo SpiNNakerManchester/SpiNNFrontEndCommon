@@ -129,7 +129,7 @@ def test_memory_io():
     placements.add_placement(Placement(vertex, 0, 0, 1))
     transceiver = _MockTransceiver()
     temp = tempfile.mkdtemp()
-    print "ApplicationDataFolder =", temp
+    print("ApplicationDataFolder = {}".format(temp))
     inputs = {
         "MemoryTransceiver": transceiver,
         "MemoryMachineGraph": graph,

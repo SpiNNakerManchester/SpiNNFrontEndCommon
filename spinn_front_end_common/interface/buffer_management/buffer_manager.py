@@ -32,6 +32,7 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
 import threading
 from multiprocessing.pool import ThreadPool
 import logging
+from six.moves import xrange
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

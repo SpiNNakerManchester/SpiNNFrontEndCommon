@@ -311,7 +311,7 @@ class DatabaseWriter(object):
                     self.__insert_app_vertex(
                         vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
-                    self.__insert_app_vertex(vertex, sys.maxint, 0)
+                    self.__insert_app_vertex(vertex, sys.maxsize, 0)
 
             # add edges
             for vertex in application_graph.vertices:
