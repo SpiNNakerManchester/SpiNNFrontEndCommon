@@ -362,6 +362,7 @@ uint data_in_data_key = 0;
 uint data_in_start_key = 0;
 address_t data_in_write_address = NULL;
 uint data_in_write_pointer = 0;
+rtr_entry_t* router_entry = NULL;
 
 // ------------------------------------------------------------------------
 // global variables for data out speed up functionality
@@ -736,15 +737,13 @@ void _clear_router(){
     // clear the currently loaded routing table entries
     for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id++){
         //io_printf(IO_BUF, "clearing entry %d \n", entry_id);
-        rtr_entry_t *entry = NULL;
-        entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
-	    uint success = rtr_mc_get(entry_id, entry);
+	    uint success = rtr_mc_get(entry_id, router_entry);
         if (success == 0){
             io_printf(IO_BUF, "failed to get entry %d \n", entry_id);
             rt_error(RTE_SWERR);
         }
-	    if (entry->key == INVALID_ROUTER_ENTRY_KEY &&
-	       entry->mask == INVALID_ROUTER_ENTRY_MASK){
+	    if (router_entry->key == INVALID_ROUTER_ENTRY_KEY &&
+	        router_entry->mask == INVALID_ROUTER_ENTRY_MASK){
 	    }
 	    else{
 	        rtr_free(entry_id, 1);
@@ -816,9 +815,6 @@ void data_in_read_and_load_router_entries(
     }
     io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
 
-    uint cpsr = sark_lock_get(LOCK_RTR);
-    //io_printf(IO_BUF, "got lock \n");
-
     for (uint entry_id = start_entry_id; entry_id < n_entries + start_entry_id;
             entry_id++){
         uint position = ((entry_id - 1) * (
@@ -862,45 +858,32 @@ void data_in_read_and_load_router_entries(
             }
         }
     }
-    sark_lock_free(cpsr, LOCK_RTR);
 }
 
 //! \brief reads in routers entries and places in application sdram location
 void data_in_read_router(){
 	uint position_in_sdram = 0;
-	rtr_entry_t *entry = NULL;
-	entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
 
 	for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id ++){
-	    uint success = rtr_mc_get(entry_id, entry);
+	    uint success = rtr_mc_get(entry_id, router_entry);
 	    if (success != 1){
 	        io_printf(IO_BUF, "failed to read application routing entry %d\n",
 	                  entry_id);
 	    }
 
-        // merge app id into route for writing back at later time
-	    uint route_and_app_id = 0;
-	    if (entry->route == 0){
-	        route_and_app_id = INVALID_ROUTER_ENTRY_ROUTE;
-	    }
-	    route_and_app_id =
-	        (entry->free & APP_ID_MASK_FROM_FREE) << APP_ID_OFFSET_FROM_FREE;
-	    route_and_app_id = route_and_app_id & entry->route;
-
 	    //io_printf(IO_BUF, "route and app id, %u \n", entry->route);
         // move to sdram
         application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_KEY] = entry->key;
+            position_in_sdram + ROUTER_ENTRY_KEY] = router_entry->key;
         application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_MASK] = entry->mask;
+            position_in_sdram + ROUTER_ENTRY_MASK] = router_entry->mask;
         application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_ROUTE] = entry->route;
+            position_in_sdram + ROUTER_ENTRY_ROUTE] = router_entry->route;
 
         // update sdram tracker
         position_in_sdram +=
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
     }
-    sark_free(entry);
     //io_printf(IO_BUF, "finished read of app table\n");
 }
 
@@ -1443,9 +1426,7 @@ void __wrap_sark_int(void *pc) {
                 msg->dest_addr = msg->srce_addr;
                 msg->srce_addr = dest_addr2;
 
-                if (sark_msg_send(msg, 10) != 1){
-                    sark_delay_us(1);
-                };
+                sark_msg_send(msg, 10);
                 break;
             default:
                 io_printf(IO_BUF, "port %d\n",
