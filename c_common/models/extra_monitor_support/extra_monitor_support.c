@@ -945,7 +945,7 @@ void data_in_speed_up_load_in_application_routes(){
 
     // load app router entries from sdram
     data_in_read_and_load_router_entries(
-        application_routers_sdram_address, N_ROUTER_ENTRIES - 2);
+        application_routers_sdram_address, N_ROUTER_ENTRIES - 1);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
