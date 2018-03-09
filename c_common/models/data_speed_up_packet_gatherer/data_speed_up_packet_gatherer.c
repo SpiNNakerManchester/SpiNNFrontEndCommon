@@ -233,7 +233,7 @@ void process_sdp_message_into_mc_messages(
         //         msg.data[SDRAM_ADDRESS]);
         //log_info("firing with key %d",
         //         data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET);
-        while(spin1_send_mc_packet(
+        while (spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + SDRAM_KEY_OFFSET,
                 sdram_address, WITH_PAYLOAD) == 0){
             spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
@@ -244,11 +244,11 @@ void process_sdp_message_into_mc_messages(
     //log_info("sending data");
     // log_info("firing with key %d",
     //         data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET);
-    for(uint data_index = 0; data_index < n_elements; data_index++){
+    for (uint data_index = 0; data_index < n_elements; data_index++){
         //log_info("sending data with key %u payload %u",
         //          data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
         //          msg.data[start_of_data_sdp_position + data_index]);
-        while(spin1_send_mc_packet(
+        while (spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + DATA_KEY_OFFSET,
                 msg.data[start_of_data_sdp_position + data_index],
                 WITH_PAYLOAD) == 0){
@@ -294,7 +294,7 @@ void process_sdram_location_for_seq_nums(uint max_seq_num){
     }
     else{
         log_info("allocate to dtcm");
-        if(!allocate_to_dtcm(max_seq_num)){
+        if (!allocate_to_dtcm(max_seq_num)){
             log_info("trying sdram as dtcm alloc failed");
             allocate_to_sdram(max_seq_num);
         }
@@ -367,7 +367,7 @@ uint calculate_sdram_address_from_seq_num(uint seq_num){
     }
 }
 
-//! \brief searches through received seq nums and transmits missing ones back 
+//! \brief searches through received seq nums and transmits missing ones back
 //! to host for retransmission
 void process_missing_seq_nums_and_request_retransmission(){
 
@@ -394,8 +394,8 @@ void process_missing_seq_nums_and_request_retransmission(){
             SDP_PACKET_SEND_FIRST_MISSING_SEQ_DATA_IN_COMMAND_ID;
         my_msg.data[N_MISSING_SEQ_PACKETS] = data_in_n_missing_seq_packets();
         uint position_in_data = DATA_STARTS;
-        for(uint bit=0; bit < max_seq_num; bit ++){
-            if(!bit_field_test(missing_seq_nums_store, bit)){
+        for (uint bit=0; bit < max_seq_num; bit ++){
+            if (!bit_field_test(missing_seq_nums_store, bit)){
                 position_in_data = update_and_send_sdp_if_required(
                     bit + 1, position_in_data);
                 //log_info("missing seq %d", bit+1);
@@ -445,7 +445,7 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
         process_sdram_location_for_seq_nums(max_seq_num);
 
         // send start key, so that monitor is configured to start
-        while(spin1_send_mc_packet(
+        while (spin1_send_mc_packet(
                 data_in_mc_key_map[chip_x][chip_y] + RESTART_KEY_OFFSET, 0,
                 WITH_PAYLOAD) == 0){
             spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
@@ -645,7 +645,7 @@ static bool initialize_data_in() {
     address_t chip_to_key_space_sdram_loc = data_specification_get_region(
         DATA_IN_CHIP_TO_KEY_SPACE, address);
 
-    for(uint chip_count = 0; chip_count <
+    for (uint chip_count = 0; chip_count <
             chip_to_key_space_sdram_loc[N_CHIPS]; chip_count++){
 
         uint x_coord = chip_to_key_space_sdram_loc[

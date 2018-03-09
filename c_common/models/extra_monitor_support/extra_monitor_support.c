@@ -739,11 +739,11 @@ void _clear_router(){
         rtr_entry_t *entry = NULL;
         entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
 	    uint success = rtr_mc_get(entry_id, entry);
-        if(success == 0){
+        if (success == 0){
             io_printf(IO_BUF, "failed to get entry %d \n", entry_id);
             rt_error(RTE_SWERR);
         }
-	    if(entry->key == INVALID_ROUTER_ENTRY_KEY &&
+	    if (entry->key == INVALID_ROUTER_ENTRY_KEY &&
 	       entry->mask == INVALID_ROUTER_ENTRY_MASK){
 	    }
 	    else{
@@ -779,7 +779,7 @@ INT_HANDLER data_in_process_mc_payload_packet(){
                 WORD_TO_BYTE_MULTIPLIER;
         }
     } // data keys require writing to next point in sdram
-    else if(key == data_in_data_key){
+    else if (key == data_in_data_key){
         //io_printf(IO_BUF, "data key, and pos %d\n", data_in_write_pointer);
         data_in_write_address[data_in_write_pointer] = data;
         data_in_write_pointer += 1;
@@ -809,7 +809,7 @@ void data_in_read_and_load_router_entries(
 
     io_printf(IO_BUF, "n entries %u \n", n_entries);
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
-    if(start_entry_id == 0){
+    if (start_entry_id == 0){
         io_printf(IO_BUF, "received error with requesting %d router entries."
                           " Shutting down\n", n_entries);
         rt_error(RTE_SWERR);
@@ -819,7 +819,7 @@ void data_in_read_and_load_router_entries(
     uint cpsr = sark_lock_get(LOCK_RTR);
     //io_printf(IO_BUF, "got lock \n");
 
-    for( uint entry_id = start_entry_id; entry_id < n_entries + start_entry_id;
+    for (uint entry_id = start_entry_id; entry_id < n_entries + start_entry_id;
             entry_id++){
         uint position = ((entry_id - 1) * (
             SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER));
@@ -837,7 +837,7 @@ void data_in_read_and_load_router_entries(
                 position + ROUTER_ENTRY_ROUTE,
                 position, entry_id);
 
-        if(sdram_address[position + ROUTER_ENTRY_KEY] !=
+        if (sdram_address[position + ROUTER_ENTRY_KEY] !=
                 INVALID_ROUTER_ENTRY_KEY &&
                 sdram_address[position + ROUTER_ENTRY_MASK] !=
                 INVALID_ROUTER_ENTRY_MASK &&
@@ -871,7 +871,7 @@ void data_in_read_router(){
 	rtr_entry_t *entry = NULL;
 	entry = (rtr_entry_t*) sark_alloc(1, sizeof(rtr_entry_t));
 
-	for(uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id ++){
+	for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id ++){
 	    uint success = rtr_mc_get(entry_id, entry);
 	    if (success != 1){
 	        io_printf(IO_BUF, "failed to read application routing entry %d\n",
@@ -958,12 +958,12 @@ uint handle_data_in_speed_up(sdp_msg_t *msg) {
         data_in_read_router();
         msg->cmd_rc = RC_OK;
     }
-    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
+    else if (msg->cmd_rc == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
         io_printf(IO_BUF, "loading application router entries into router\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
     }
-    else if(msg->cmd_rc == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
+    else if (msg->cmd_rc == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
         io_printf(IO_BUF, "loading system router entries into router\n");
         data_in_speed_up_load_in_system_tables();
         msg->cmd_rc = RC_OK;
@@ -1431,7 +1431,7 @@ void __wrap_sark_int(void *pc) {
             case DATA_OUT_SPEED_UP_FUNCTIONALITY:
                 handle_data_out_speed_up((sdp_msg_pure_data *) msg);
                 break;
-            case DATA_IN_SPEED_UP_FUNCTIONALITY: ; // empty statement
+            case DATA_IN_SPEED_UP_FUNCTIONALITY:
                 msg->length = 12 + handle_data_in_speed_up(msg);
 
                 uint dest_port2 = msg->dest_port;
@@ -1443,7 +1443,7 @@ void __wrap_sark_int(void *pc) {
                 msg->dest_addr = msg->srce_addr;
                 msg->srce_addr = dest_addr2;
 
-                if(sark_msg_send(msg, 10) != 1){
+                if (sark_msg_send(msg, 10) != 1){
                     sark_delay_us(1);
                 };
                 break;
