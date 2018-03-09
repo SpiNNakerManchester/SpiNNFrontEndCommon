@@ -54,10 +54,9 @@ class MemoryMapOnHostChipReport(object):
         # Convert the map to a human-readable description
         f.write("On chip data specification executor\n\n")
         for i in range(MAX_MEM_REGIONS):
-            region_address = int(_ONE_WORD.unpack_from(
-                memmap_data, i * 4)[0])
-            f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n"
-                    .format(i, region_address))
+            region_address, = _ONE_WORD.unpack_from(memmap_data, i * 4)
+            f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
+                i, region_address))
 
     def _get_app_pointer_table(self, txrx, x, y, table_pointer):
         encoded_address = txrx.read_memory(x, y, table_pointer, 4)

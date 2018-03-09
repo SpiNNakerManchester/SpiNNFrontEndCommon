@@ -109,8 +109,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     FIRST_DATA_KEY_OFFSET = 2
     END_FLAG_KEY_OFFSET = 3
 
-    # the size in bytes of the end flag
+    # the end flag is set when the high bit of the sequence number word is set
     LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
+    # corresponding mask for the actual sequence numbers
+    SEQUENCE_NUMBER_MASK = 0x7fffffff
 
     # the amount of bytes the n bytes takes up
     N_PACKETS_SIZE = 4
@@ -580,10 +582,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=too-many-arguments
         # self._print_out_packet_data(data)
         length_of_data = len(data)
-        first_packet_element = _ONE_WORD.unpack_from(data, 0)[0]
+        first_packet_element, = _ONE_WORD.unpack_from(data, 0)
 
         # get flags
-        seq_num = first_packet_element & 0x7FFFFFFF
+        seq_num = first_packet_element & self.SEQUENCE_NUMBER_MASK
         is_end_of_stream = (
             first_packet_element & self.LAST_MESSAGE_FLAG_BIT_MASK) != 0
 
@@ -693,7 +695,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
-            str(data))
+            data)
         log.info("converted data back into readable form is {}", reread_data)
 
     @staticmethod

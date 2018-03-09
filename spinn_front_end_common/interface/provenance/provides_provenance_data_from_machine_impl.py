@@ -70,16 +70,16 @@ class ProvidesProvenanceDataFromMachineImpl(
         # Get the provenance region base address
         base_address_offset = get_region_base_address_offset(
             app_data_base_address, self._provenance_region_id)
-        base_address_buffer = buffer(transceiver.read_memory(
-            placement.x, placement.y, base_address_offset, 4))
-        return _ONE_WORD.unpack(base_address_buffer)[0]
+        base_address = transceiver.read_memory(
+            placement.x, placement.y, base_address_offset, 4)
+        return _ONE_WORD.unpack(base_address)[0]
 
     def _read_provenance_data(self, transceiver, placement):
         provenance_address = self._get_provenance_region_address(
             transceiver, placement)
-        data = buffer(transceiver.read_memory(
+        data = transceiver.read_memory(
             placement.x, placement.y, provenance_address,
-            self.get_provenance_data_size(self._n_additional_data_items)))
+            self.get_provenance_data_size(self._n_additional_data_items))
         return struct.unpack_from("<{}I".format(
             self.NUM_PROVENANCE_DATA_ENTRIES + self._n_additional_data_items),
             data)

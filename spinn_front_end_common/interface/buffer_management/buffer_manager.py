@@ -464,7 +464,7 @@ class BufferManager(object):
         # If there is any space left, add padding
         if bytes_to_go > 0:
             padding_packet = PaddingRequest()
-            n_packets = bytes_to_go / padding_packet.get_min_packet_length()
+            n_packets = bytes_to_go // padding_packet.get_min_packet_length()
             data = padding_packet.bytestring
             data *= n_packets
             all_data += data

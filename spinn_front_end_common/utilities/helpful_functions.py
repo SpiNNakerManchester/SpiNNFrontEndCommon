@@ -237,7 +237,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
                 files_not_closed += 1
             if files_removed + files_not_closed >= num_files_to_remove:
                 break
-        if files_not_closed > max_to_keep / 4:
+        if files_not_closed > max_to_keep // 4:
             logger.warning("{} has {} old reports that have not been closed",
                            starting_directory, files_not_closed)
 
