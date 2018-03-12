@@ -27,8 +27,8 @@ class MemoryMapOnHostReport(object):
             with open(file_name, "w") as f:
                 self._describe_mem_map(f, processor_to_app_data_base_address)
         except IOError:
-            logger.error("Generate_placement_reports: Can't open file"
-                         " {} for writing.", file_name)
+            logger.exception("Generate_placement_reports: Can't open file"
+                             " {} for writing.", file_name)
 
     @staticmethod
     def _describe_mem_map(f, memory_map):

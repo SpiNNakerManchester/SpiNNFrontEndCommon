@@ -226,7 +226,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _reserve_memory_regions(spec, system_size):
-        """ Writes the DSG regions memory sizes. Static so that it can be used
+        """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
         :param spec: spec file
@@ -415,7 +415,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def _determine_which_routers_were_used(placement, fixed_routes, machine):
         """ traverses the fixed route paths from a given location to its\
-         destination. used for determining which routers were used
+            destination. used for determining which routers were used
 
         :param placement: the source to start from
         :param fixed_routes: the fixed routes for each router
@@ -442,6 +442,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _write_routers_used_into_report(
             report_path, routers_been_in_use, placement):
         """ writes the used routers into a report
+
         :param report_path: the path to the report file
         :param routers_been_in_use: the routers been in use
         :param placement: the first placement used

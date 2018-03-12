@@ -39,8 +39,8 @@ class MemoryMapOnHostChipReport(object):
                 with open(file_name, "w") as f:
                     self._describe_mem_map(f, transceiver, x, y, p)
             except IOError:
-                logger.error("Generate_placement_reports: Can't open file"
-                             " {} for writing.", file_name)
+                logger.exception("Generate_placement_reports: Can't open file"
+                                 " {} for writing.", file_name)
 
     def _describe_mem_map(self, f, txrx, x, y, p):
         # pylint: disable=too-many-arguments

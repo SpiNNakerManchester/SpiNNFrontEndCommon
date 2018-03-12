@@ -2093,7 +2093,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 extra_monitor_vertices=extra_monitor_vertices,
                 placements=self._placements)
         except Exception:
-            logger.error("Error reading router provenance", exc_info=True)
+            logger.exception("Error reading router provenance")
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2156,16 +2156,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 updater = ChipProvenanceUpdater()
                 updater(self._txrx, self._app_id, non_rte_core_subsets)
             except Exception:
-                logger.error(
-                    "Could not update provenance on chip", exc_info=True)
+                logger.exception("Could not update provenance on chip")
 
             # Extract any written provenance data
             try:
                 extracter = PlacementsProvenanceGatherer()
                 extracter(self._txrx, placements, prov_items)
             except Exception:
-                logger.error(
-                    "Could not read provenance", exc_info=True)
+                logger.exception("Could not read provenance")
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
@@ -2181,10 +2179,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores,
-                self._provenance_file_path)
+                self._txrx, iobuf_cores, self._provenance_file_path)
         except Exception:
-            logger.error("Could not get iobuf", exc_info=True)
+            logger.exception("Could not get iobuf")
             errors, warnings = [], []
 
         # Print the IOBUFs
@@ -2597,8 +2594,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             e, exc_info[2], executor.get_item(
                                 "ExecutableTargets"))
                 except Exception:
-                    logger.error("Error when attempting to recover from error",
-                                 exc_info=True)
+                    logger.exception(
+                        "Error when attempting to recover from error")
 
         if self._config.getboolean("Reports", "write_energy_report"):
             self._do_energy_report()

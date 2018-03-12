@@ -196,12 +196,12 @@ class BufferManager(object):
             try:
                 self.__request_buffers(packet)
             except Exception:
-                logger.error("problem when sending messages", exc_info=True)
+                logger.exception("problem when sending messages")
         elif isinstance(packet, SpinnakerRequestReadData):
             try:
                 self.__request_read_data(packet)
             except Exception:
-                logger.error("problem when handling data", exc_info=True)
+                logger.exception("problem when handling data")
         elif isinstance(packet, EIEIOCommandMessage):
             logger.error(
                 "The command packet is invalid for buffer management: "

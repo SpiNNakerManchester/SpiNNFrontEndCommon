@@ -99,8 +99,8 @@ class DatabaseWriter(object):
             c.execute(sql, args)
             return c.lastrowid
         except Exception:
-            logger.error("problem with insertion; argument types are {}",
-                         str(map(type, args)), exc_info=True)
+            logger.exception("problem with insertion; argument types are {}",
+                             str(map(type, args)))
             raise
 
     def create_schema(self):
