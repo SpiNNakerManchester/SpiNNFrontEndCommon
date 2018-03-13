@@ -47,6 +47,7 @@ class GraphDataSpecificationWriter(object):
 
         :return: dsg targets (map of placement tuple and filename)
         """
+        # pylint: disable=too-many-arguments
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
@@ -90,6 +91,7 @@ class GraphDataSpecificationWriter(object):
         :param machine: the python representation of the spinnaker machine
         :return: True if the vertex was data specable, False otherwise
         """
+        # pylint: disable=too-many-arguments
 
         # if the vertex can generate a DSG, call it
         if not isinstance(vertex, AbstractGeneratesDataSpecification):

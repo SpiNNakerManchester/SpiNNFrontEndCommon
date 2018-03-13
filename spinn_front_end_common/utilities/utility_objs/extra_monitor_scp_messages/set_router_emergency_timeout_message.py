@@ -10,10 +10,10 @@ class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
         reinjection
     """
 
-    __slots__ = (
+    __slots__ = [
         # command code
         "_command_code"
-    )
+    ]
 
     def __init__(self, x, y, p, timeout_mantissa, timeout_exponent,
                  command_code):
@@ -22,21 +22,24 @@ class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-                0 and 17
+        :param p: \
+            The processor running the extra monitor vertex, between 0 and 17
         :type p: int
-        :param timeout_mantissa: The mantissa of the timeout value, \
-                between 0 and 15
+        :param timeout_mantissa: \
+            The mantissa of the timeout value, between 0 and 15
         :type timeout_mantissa: int
-        :param timeout_exponent: The exponent of the timeout value, \
-                between 0 and 15
-        :param command_code: the code used by the extra monitor vertex for \
-        setting the emergency timeout value
+        :param timeout_exponent: \
+            The exponent of the timeout value, between 0 and 15
+        :type timeout_exponent: int
+        :param command_code: \
+            The code used by the extra monitor vertex for setting the\
+            emergency timeout value.
+        :type command_code: \
+            :py:class:`spinnman.messages.scp.scp_command.SCPCommand`
         """
-
+        # pylint: disable=too-many-arguments
         self._command_code = command_code
-        AbstractSCPRequest.__init__(
-            self,
+        super(SetRouterEmergencyTimeoutMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(

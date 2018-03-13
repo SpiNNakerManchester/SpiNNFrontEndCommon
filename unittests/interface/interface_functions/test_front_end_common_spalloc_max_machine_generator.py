@@ -9,7 +9,7 @@ from spinn_front_end_common.interface.interface_functions \
 class _MockSpallocServer(Thread):
 
     def __init__(self, name, width, height, dead_boards, dead_links, tags):
-        Thread.__init__(self)
+        super(_MockSpallocServer, self).__init__()
         self._name = name
         self._width = width
         self._height = height
@@ -45,7 +45,7 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
             "test", 1, 1, [(0, 0, 1), (0, 0, 2)], [], ["default"])
         server.start()
         generator = SpallocMaxMachineGenerator()
-        machine = generator.__call__("localhost", server.port)
+        machine = generator("localhost", server.port)
         self.assertEqual(machine.max_chip_x, 7)
         self.assertEqual(machine.max_chip_y, 7)
 
@@ -54,7 +54,7 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
             "test", 1, 1, [], [], ["default"])
         server.start()
         generator = SpallocMaxMachineGenerator()
-        machine = generator.__call__("localhost", server.port)
+        machine = generator("localhost", server.port)
         self.assertEqual(machine.max_chip_x, 11)
         self.assertEqual(machine.max_chip_y, 11)
 
@@ -63,7 +63,7 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
             "test", 3, 2, [], [], ["test"])
         server.start()
         generator = SpallocMaxMachineGenerator()
-        machine = generator.__call__("localhost", server.port, "test")
+        machine = generator("localhost", server.port, "test")
         self.assertEqual(machine.max_chip_x, (12 * 3) - 1)
         self.assertEqual(machine.max_chip_y, (12 * 2) - 1)
 

@@ -1,12 +1,16 @@
 class ProvenanceDataItem(object):
     """ Container for provenance data
     """
+    __slots__ = [
+        "_message",
+        "_names",
+        "_report",
+        "_value"]
 
     def __init__(self, names, value, report=False, message=None):
         """
-
-        :param names: A list of strings representing the hierarchy of naming\
-                    of this item
+        :param names: \
+            A list of strings representing the naming hierarchy of this item
         :param value: The value of the item
         :param report: True if the item should be reported to the user
         :param message: The message to send to the end user if report is True

@@ -17,7 +17,7 @@ class LivePacketGatherParameters(object):
             payload_as_time_stamps, use_payload_prefix, payload_prefix,
             payload_right_shift, number_of_packets_sent_per_time_step,
             partition_id):
-
+        # pylint: disable=too-many-arguments, too-many-locals
         self._port = port
         self._hostname = hostname
         self._tag = tag

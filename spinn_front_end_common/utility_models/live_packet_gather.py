@@ -1,7 +1,7 @@
+from spinn_utilities.overrides import overrides
 # pacman imports
 from pacman.model.constraints.placer_constraints\
     import RadialPlacementFromChipConstraint
-from pacman.model.decorators import overrides
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
 from pacman.model.resources import IPtagResource, ResourceContainer
@@ -19,8 +19,8 @@ from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 
 
 class LivePacketGather(
-        AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
-        ApplicationVertex):
+        ApplicationVertex, AbstractGeneratesDataSpecification,
+        AbstractHasAssociatedBinary):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
         a spinnaker machine.
@@ -36,6 +36,7 @@ class LivePacketGather(
             label=None):
         """
         """
+        # pylint: disable=too-many-arguments, too-many-locals
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and
                 use_payload_prefix and payload_as_time_stamps):
@@ -59,7 +60,7 @@ class LivePacketGather(
         if label is None:
             label = "Live Packet Gatherer"
 
-        ApplicationVertex.__init__(self, label, constraints, 1)
+        super(LivePacketGather, self).__init__(label, constraints, 1)
 
         # Try to place this near the Ethernet
         self.add_constraint(RadialPlacementFromChipConstraint(0, 0))
