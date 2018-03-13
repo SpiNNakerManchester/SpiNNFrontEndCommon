@@ -453,6 +453,12 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
     # set user 0 register appropriately to the application data
     write_address_to_user0(address=start_address, x=x, y=y, p=p, txrx=txrx)
 
+    return {
+        'start_address': start_address,
+        'memory_used': bytes_used_by_spec,
+        'memory_written': bytes_written_by_spec
+    }
+
 
 def read_config(config, section, item):
     """ Get the string value of a config item, returning None if the value\

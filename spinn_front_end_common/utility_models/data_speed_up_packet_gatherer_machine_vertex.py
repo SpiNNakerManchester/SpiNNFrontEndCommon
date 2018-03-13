@@ -1049,8 +1049,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # receive
         self._output = bytearray(length_in_bytes)
         self._view = memoryview(self._output)
-        lost_seq_nums = self._receive_data(placement)
         self._max_seq_num = self._incoming_calculate_max_seq_num()
+        lost_seq_nums = self._receive_data(placement)
 
         end = float(time.time())
         self._provenance_data_items[
