@@ -4,6 +4,7 @@
 #include <debug.h>
 #include <simulation.h>
 #include <spin1_api.h>
+#include <string.h>
 
 // Globals
 static sdp_msg_t g_event_message;
@@ -466,7 +467,6 @@ bool configure_sdp_msg(void) {
     temp_header |= (packet_type << 10);
 
     header_len = 2;
-    temp_ptr = (void *) sdp_msg_aer_header[1];
 
     // pointers for AER packet header, prefix and data
     if (apply_prefix) {

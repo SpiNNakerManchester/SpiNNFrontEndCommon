@@ -90,7 +90,7 @@ class BufferManager(object):
         # the extra monitor cores which support faster data extraction
         "_extra_monitor_cores",
 
-        # the extra_monitor to ethernet connection map
+        # the extra_monitor to Ethernet connection map
         "_extra_monitor_cores_to_ethernet_connection_map",
 
         # monitor cores via chip id
@@ -580,7 +580,7 @@ class BufferManager(object):
                 if progress is not None:
                     progress.update()
 
-        # unset time out
+        # revert time out
         if self._uses_advanced_monitors:
             for receiver in receivers:
                 receiver.unset_cores_for_data_streaming(
@@ -591,6 +591,23 @@ class BufferManager(object):
     def get_data_for_vertex(self, placement, recording_region_id):
         """ Get a handle to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
+
+        :param placement: the placement to get the data from
+        :type placement: pacman.model.placements.Placement
+        :param recording_region_id: desired recording data region
+        :type recording_region_id: int
+        :return: object which will contain the data
+        :rtype:\
+            :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
+        """
+
+        # Ensure that any transfers in progress are complete first
+        with self._thread_lock_buffer_out:
+            return self._get_data_for_vertex_locked(
+                placement, recording_region_id)
+
+    def _get_data_for_vertex_locked(self, placement, recording_region_id):
+        """ Get the data for a vertex; must be locked first
 
         :param placement: the placement to get the data from
         :type placement: pacman.model.placements.Placement
@@ -662,8 +679,10 @@ class BufferManager(object):
             # now read_ptr is updated, check memory to read
             if read_ptr < write_ptr:
                 length = write_ptr - read_ptr
-                # logger.debug("Reading {} bytes from {}, {}: {}".format(
-                #    length, placement.x, placement.y, hex(read_ptr)))
+                logger.debug(
+                    "< Reading {} bytes from {}, {}, {}: {} for region {}",
+                    length, placement.x, placement.y, placement.p,
+                    hex(read_ptr), recording_region_id)
                 data = self._request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
@@ -676,8 +695,10 @@ class BufferManager(object):
                 if length < 0:
                     raise exceptions.ConfigurationException(
                         "The amount of data to read is negative!")
-                # logger.debug("Reading {} bytes from {}, {}: {}".format(
-                #    length, placement.x, placement.y, hex(read_ptr)))
+                logger.debug(
+                    "> Reading {} bytes from {}, {}, {}: {} for region {}",
+                    length, placement.x, placement.y, placement.p,
+                    hex(read_ptr), recording_region_id)
                 data = self._request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
@@ -686,8 +707,10 @@ class BufferManager(object):
                     data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
-                # logger.debug("Reading {} bytes from {}, {}: {}".format(
-                #    length, placement.x, placement.y, hex(read_ptr)))
+                logger.debug(
+                    "Reading {} bytes from {}, {}, {}: {} for region {}",
+                    length, placement.x, placement.y, placement.p,
+                    hex(read_ptr), recording_region_id)
                 data = self._request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
@@ -698,8 +721,10 @@ class BufferManager(object):
             elif (read_ptr == write_ptr and
                     last_operation == BUFFERING_OPERATIONS.BUFFER_WRITE.value):
                 length = end_ptr - read_ptr
-                # logger.debug("Reading {} bytes from {}, {}: {}".format(
-                #     length, placement.x, placement.y, hex(read_ptr)))
+                logger.debug(
+                    "= Reading {} bytes from {}, {}, {}: {} for region {}",
+                    length, placement.x, placement.y, placement.p,
+                    hex(read_ptr), recording_region_id)
                 data = self._request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
@@ -708,8 +733,10 @@ class BufferManager(object):
                     data)
                 read_ptr = start_ptr
                 length = write_ptr - read_ptr
-                # logger.debug("Reading {} bytes from {}, {}: {}".format(
-                #     length, placement.x, placement.y, hex(read_ptr)))
+                logger.debug(
+                    "Reading {} bytes from {}, {}, {}: {} for region {}",
+                    length, placement.x, placement.y, placement.p,
+                    hex(read_ptr), recording_region_id)
                 data = self._request_data(
                     transceiver=self._transceiver, placement_x=placement.x,
                     address=read_ptr, length=length, placement_y=placement.y)
@@ -766,11 +793,11 @@ class BufferManager(object):
         end_state.set_update_completed()
 
     def _process_buffered_in_packet(self, packet):
-        # logger.debug(
-        #     "received {} read request(s) with sequence: {},"
-        #     " from chip ({},{}, core {}".format(
-        #         packet.n_requests, packet.sequence_no,
-        #        packet.x, packet.y, packet.p))
+        logger.debug(
+            "received {} read request(s) with sequence: {},"
+            " from chip ({},{}, core {}",
+            packet.n_requests, packet.sequence_no,
+            packet.x, packet.y, packet.p)
         try:
             with self._thread_lock_buffer_out:
                 if not self._finished:
@@ -845,13 +872,16 @@ class BufferManager(object):
             start_address = packet.start_address(i)
             region_id = packet.region_id(i)
             channel = packet.channel(i)
-            # logger.debug(
-            #     "Buffer receive Reading {} bytes from {}, {}: {}".format(
-            #         length, x, y, hex(start_address)))
+            logger.debug(
+                "Buffer receive Reading {} bytes from {}, {}, {}:"
+                " {} for region {}, channel {}",
+                length, x, y, p, hex(start_address), region_id, channel)
+
+            # Note this *always* uses the transceiver, as fast data transfer
+            # isn't guaranteed to work whilst a simulation is running!
             self._received_data.store_data_in_region_buffer(
-                x, y, p, region_id, self._request_data(
-                    transceiver=self._transceiver, placement_x=x,
-                    placement_y=y, address=start_address, length=length))
+                x, y, p, region_id, self._transceiver.read_memory(
+                    x, y, start_address, length))
             channels.append(channel)
             region_ids.append(region_id)
             space_read.append(length)
