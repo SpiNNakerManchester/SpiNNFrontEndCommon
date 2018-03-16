@@ -29,6 +29,7 @@ class InsertLivePacketGatherersToGraphs(object):
         :param machine_graph: the machine graph
         :return: mapping between LPG params and LPG vertex
         """
+        # pylint: disable=too-many-arguments
 
         # create progress bar
         progress = ProgressBar(
@@ -41,28 +42,26 @@ class InsertLivePacketGatherersToGraphs(object):
 
         # for every Ethernet connected chip, add the gatherers required
         for chip in progress.over(machine.ethernet_connected_chips):
-            for lpg_params in live_packet_gatherer_parameters:
-                if (lpg_params.board_address is None or
-                        lpg_params.board_address == chip.ip_address):
-                    lpg_params_to_vertices[lpg_params][chip.x, chip.y] = \
+            for params in live_packet_gatherer_parameters:
+                if (params.board_address is None or
+                        params.board_address == chip.ip_address):
+                    lpg_params_to_vertices[params][chip.x, chip.y] = \
                         self._add_lpg_vertex(application_graph, graph_mapper,
-                                             machine_graph, chip, lpg_params)
+                                             machine_graph, chip, params)
 
         return lpg_params_to_vertices
 
-    def _add_lpg_vertex(self, app_graph, mapper, m_graph, chip, lpg_params):
+    def _add_lpg_vertex(self, app_graph, mapper, m_graph, chip, params):
+        # pylint: disable=too-many-arguments
         if app_graph is not None:
-            vtx_slice = Slice(0, 0)
-            app_vtx = self._create_vertex(LivePacketGather, lpg_params)
+            _slice = Slice(0, 0)
+            app_vtx = self._create_vertex(LivePacketGather, params)
             app_graph.add_vertex(app_vtx)
-            resources_required = app_vtx.get_resources_used_by_atoms(
-                vtx_slice)
-            m_vtx = app_vtx.create_machine_vertex(
-                vtx_slice, resources_required)
-            mapper.add_vertex_mapping(m_vtx, vtx_slice, app_vtx)
+            resources = app_vtx.get_resources_used_by_atoms(_slice)
+            m_vtx = app_vtx.create_machine_vertex(_slice, resources)
+            mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
-            m_vtx = self._create_vertex(
-                LivePacketGatherMachineVertex, lpg_params)
+            m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
 
         m_vtx.add_constraint(ChipAndCoreConstraint(x=chip.x, y=chip.y))
         m_graph.add_vertex(m_vtx)

@@ -25,7 +25,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param graph_mapper: the graph mapper between app and machine graph
         :rtype: None
         """
-
+        # pylint: disable=too-many-arguments
         progress = ProgressBar(
             live_packet_gatherer_parameters,
             string_describing_what_being_progressed=(
@@ -44,6 +44,8 @@ class InsertEdgesToLivePacketGatherers(object):
     def _connect_lpg_vertex(
             self, app_graph, mapper, machine, placements, m_graph, vertex,
             lpg_to_vertex, lpg_params):
+        # pylint: disable=too-many-arguments
+
         # Find all Live Gatherer machine vertices
         m_lpgs = lpg_to_vertex[lpg_params]
 
@@ -86,6 +88,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param partition_id: the partition id to add to the edge
         :return: machine edge and the LPG vertex
         """
+        # pylint: disable=too-many-arguments
 
         # locate the LPG that's closest to this vertex
         machine_lpg = self._find_closest_live_packet_gatherer(
@@ -112,6 +115,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :return the application edge for this vertex and LPG
         :rtype: ApplicationEdge
         """
+        # pylint: disable=too-many-arguments
 
         # locate app vertex for LPG
         lpg_app_vertex = graph_mapper.get_application_vertex(machine_lpg)

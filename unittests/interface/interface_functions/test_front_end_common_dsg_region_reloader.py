@@ -22,9 +22,6 @@ class _TestMachineVertex(MachineVertex):
     """ A simple machine vertex for testing
     """
 
-    def __init__(self):
-        MachineVertex.__init__(self)
-
     def resources_required(self):
         return ResourceContainer()
 
@@ -36,11 +33,10 @@ class _TestApplicationVertex(
 
     def __init__(self, n_atoms, reload_region_data):
         """
-
         :param n_atoms: The number of atoms in the vertex
         :param reload_region_data: list of tuples of (region_id, data to write)
         """
-        ApplicationVertex.__init__(self)
+        super(_TestApplicationVertex, self).__init__()
         self._n_atoms = n_atoms
         self._regenerate_call_count = 0
         self._requires_regions_to_be_reloaded = True

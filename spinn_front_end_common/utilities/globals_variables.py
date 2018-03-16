@@ -43,9 +43,9 @@ def has_simulator():
 
 
 def set_failed_state(new_failed_state):
+    # pylint: disable=unidiomatic-typecheck
     global _failed_state
     if _failed_state is None:
         _failed_state = new_failed_state
-    else:
-        if type(new_failed_state) != type(_failed_state):
-            raise ValueError("You may only setup/init one type of simulator")
+    elif type(new_failed_state) != type(_failed_state):
+        raise ValueError("You may only setup/init one type of simulator")

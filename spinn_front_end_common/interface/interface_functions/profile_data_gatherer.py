@@ -23,7 +23,7 @@ class ProfileDataGatherer(object):
         :param run_time_ms: runtime in ms
         :param machine_time_step: machine time step in ms
         """
-
+        # pylint: disable=too-many-arguments
         machine_time_step_ms = machine_time_step / 1000
 
         progress = ProgressBar(
@@ -32,17 +32,16 @@ class ProfileDataGatherer(object):
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractHasProfileData):
-
                 # get data
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
-
-                if len(profile_data.tags) > 0:
+                if profile_data.tags:
                     self._write(placement, profile_data, run_time_ms,
                                 machine_time_step_ms, provenance_file_path)
 
     def _write(self, p, profile_data, run_time_ms,
                machine_time_step_ms, directory):
+        # pylint: disable=too-many-arguments
         max_tag_len = max([len(tag) for tag in profile_data.tags])
 
         # write data

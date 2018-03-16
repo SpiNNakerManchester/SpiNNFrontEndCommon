@@ -35,10 +35,6 @@ class _MockTransceiver(object):
 
 
 class _TestVertex(MachineVertex):
-
-    def __init__(self):
-        MachineVertex.__init__(self, None)
-
     def resources_required(self):
         return ResourceContainer(0)
 
