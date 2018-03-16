@@ -1,25 +1,26 @@
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.decorators import overrides
 
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
+from .data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
 
 
-class DataSpeedUpPacketGatherApplicationVertex(
+class DataSpeedUpPacketGather(
         ApplicationVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary):
+    __slots__ = ["_machine_vertex"]
 
-    def __init__(self, x, y, ip_address, constraints=None):
-        ApplicationVertex.__init__(
-            self, "multicast speed up application vertex for {}, {}".format(
+    def __init__(
+            self, x, y, ip_address, report_default_directory,
+            write_data_speed_up_report, constraints=None):
+        super(DataSpeedUpPacketGather, self).__init__(
+            "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
-        AbstractGeneratesDataSpecification.__init__(self)
-        AbstractHasAssociatedBinary.__init__(self)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
-            x, y, ip_address, constraints)
+            x, y, ip_address, report_default_directory,
+            write_data_speed_up_report, constraints)
 
     @property
     def machine_vertex(self):

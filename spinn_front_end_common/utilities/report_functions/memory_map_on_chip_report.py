@@ -38,6 +38,7 @@ class MemoryMapOnChipReport(object):
                 self._write_processor_memory_map(f, transceiver, x, y, p)
 
     def _write_processor_memory_map(self, f, txrx, x, y, p):
+        # pylint: disable=too-many-arguments
         f.write("On chip data specification executor\n\n")
 
         report_data_address = self._get_report_data_address(txrx, x, y, p)

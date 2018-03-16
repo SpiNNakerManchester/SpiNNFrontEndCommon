@@ -59,18 +59,13 @@ def get_recording_data_size(recorded_region_sizes):
 
 
 def get_minimum_buffer_sdram(
-        buffered_sdram_per_timestep, n_machine_time_steps=None,
-        minimum_sdram_for_buffering=(1024 * 1024)):
+        buffered_sdram, minimum_sdram_for_buffering=(1024 * 1024)):
     """ Get the minimum buffer SDRAM
 
-    :param buffered_sdram_per_timestep:\
-        The maximum number of bytes to use per timestep of recording,\
-        per recorded region.  Disabled regions can specify 0.
-    :type buffered_sdram_per_timestep: list of int
-    :param n_machine_time_steps:\
-        The number of machine time steps for the simulation.  Can be None if\
-        use_auto_pause_and_resume is True
-    :type n_machine_time_steps: int
+    :param buffered_sdram:\
+        The maximum number of bytes to use per recorded region.\
+        Disabled regions can specify 0.
+    :type buffered_sdram: list of int
     :param minimum_sdram_for_buffering:\
         The minimum SDRAM to reserve per recorded region for buffering
     :type minimum_sdram_for_buffering: int
@@ -84,28 +79,21 @@ def get_minimum_buffer_sdram(
     # - If the sdram is 0 then 0
     # - If n_machine_time_steps is None then minimum_sdram_for_buffering
     return [
-        min(sdram * n_machine_time_steps, minimum_sdram_for_buffering)
-        if sdram > 0 and n_machine_time_steps is not None
-        else 0 if sdram == 0 else minimum_sdram_for_buffering
-        for sdram in buffered_sdram_per_timestep
+        min(sdram, minimum_sdram_for_buffering)
+        for sdram in buffered_sdram
     ]
 
 
 def get_recording_region_sizes(
-        buffered_sdram_per_timestep, n_machine_time_steps=None,
-        minimum_sdram_for_buffering=(1024 * 1024),
+        buffered_sdram, minimum_sdram_for_buffering=(1024 * 1024),
         maximum_sdram_for_buffering=None, use_auto_pause_and_resume=True):
     """ Get the size of each recording region to be passed in to\
         get_recording_resources, based on the details of the simulation
 
-    :param buffered_sdram_per_timestep:\
-        The maximum number of bytes to use per timestep of recording,\
-        per recorded region.  Disabled regions can specify 0.
-    :type buffered_sdram_per_timestep: list of int
-    :param n_machine_time_steps:\
-        The number of machine time steps for the simulation.  Can be None if\
-        use_auto_pause_and_resume is True
-    :type n_machine_time_steps: int
+    :param buffered_sdram:\
+        The maximum number of bytes to use of recording, per recorded region.
+        Disabled regions can specify 0.
+    :type buffered_sdram: list of int
     :param minimum_sdram_for_buffering:\
         The minimum SDRAM to reserve per recorded region for buffering
     :type minimum_sdram_for_buffering: int
@@ -118,17 +106,14 @@ def get_recording_region_sizes(
     :rtype: list of int
     """
     if use_auto_pause_and_resume:
-
         # If auto pause and resume is enabled, find the minimum sizes
         return get_minimum_buffer_sdram(
-            buffered_sdram_per_timestep, n_machine_time_steps,
-            minimum_sdram_for_buffering)
+            buffered_sdram, minimum_sdram_for_buffering)
     else:
 
         # If auto pause and resume is disabled, use the actual region size
         return get_recorded_region_sizes(
-            n_machine_time_steps, buffered_sdram_per_timestep,
-            maximum_sdram_for_buffering)
+            buffered_sdram, maximum_sdram_for_buffering)
 
 
 def get_recording_resources(
@@ -154,14 +139,11 @@ def get_recording_resources(
     :rtype:\
         :py:class:`pacman.model.resources.ResourceContainer`
     """
-
     ip_tags = list()
     if buffering_ip_address is not None:
         ip_tags.append(IPtagResource(
             buffering_ip_address, buffering_port, True, notification_tag,
-            TRAFFIC_IDENTIFIER
-        ))
-
+            TRAFFIC_IDENTIFIER))
     # return the resources including the SDRAM requirements
     return ResourceContainer(
         iptags=ip_tags,
@@ -171,16 +153,12 @@ def get_recording_resources(
 
 
 def get_recorded_region_sizes(
-        n_machine_time_steps, buffered_sdram_per_timestep,
-        maximum_sdram_for_buffering=None):
+        buffered_sdram, maximum_sdram_for_buffering=None):
     """ Get the size of each recording region to be passed in to\
         get_recording_header_array
 
-    :param n_machine_time_steps:\
-        The duration of the simulation segment in time steps
-    :type n_machine_time_steps: int
-    :param buffered_sdram_per_timestep:\
-        The maximum SDRAM used per timestep in bytes per region
+    :param buffered_sdram:\
+        The maximum SDRAM used in bytes per region
     :type buffered_sdram_per_timestep: list of int
     :param maximum_sdram_for_buffering:\
         The maximum size of each buffer, or None if no maximum
@@ -190,16 +168,13 @@ def get_recorded_region_sizes(
 
     # The size of each buffer is the actual size needed for the number of
     # timesteps, or the maximum for buffering if a maximum is specified
-    if n_machine_time_steps is None:
-        data = [0 for _ in buffered_sdram_per_timestep]
-        return data
     return [
-        n_machine_time_steps * sdram
+        sdram
         if (maximum_sdram_for_buffering is None or
             maximum_sdram_for_buffering[i] == 0 or
-            (n_machine_time_steps * sdram) < maximum_sdram_for_buffering[i])
+            sdram < maximum_sdram_for_buffering[i])
         else maximum_sdram_for_buffering[i]
-        for i, sdram in enumerate(buffered_sdram_per_timestep)
+        for i, sdram in enumerate(buffered_sdram)
     ]
 
 
@@ -228,7 +203,7 @@ def get_recording_header_array(
     buffering_output_dest_y = 0
     if buffering_tag is not None:
         buffering_output_tag = buffering_tag
-    elif ip_tags is not None and len(ip_tags) > 0:
+    elif ip_tags:
         buffering_output_tag = None
         for tag in ip_tags:
             if tag.traffic_identifier == TRAFFIC_IDENTIFIER:
@@ -236,7 +211,7 @@ def get_recording_header_array(
                 buffering_output_dest_x = tag.destination_x
                 buffering_output_dest_y = tag.destination_y
                 break
-        if buffering_output_tag is None:
+        else:
             raise Exception("Buffering tag not found")
 
     # See recording.h/recording_initialise for data included in the header
@@ -328,6 +303,6 @@ def get_recorded_region_ids(buffered_sdram_per_timestep):
     :rtype: list of int
     """
     return [
-        i for i in range(len(buffered_sdram_per_timestep))
-        if buffered_sdram_per_timestep[i] > 0
-    ]
+        region_id
+        for region_id in range(len(buffered_sdram_per_timestep))
+        if buffered_sdram_per_timestep[region_id] > 0]

@@ -4,8 +4,9 @@ from data_specification.constants import MAX_MEM_REGIONS
 import logging
 import os
 import struct
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
 MEM_MAP_SUBDIR_NAME = "memory_map_reports"
 MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
@@ -39,9 +40,10 @@ class MemoryMapOnHostChipReport(object):
                     self._describe_mem_map(f, transceiver, x, y, p)
             except IOError:
                 logger.error("Generate_placement_reports: Can't open file"
-                             " {} for writing.".format(file_name))
+                             " {} for writing.", file_name)
 
     def _describe_mem_map(self, f, txrx, x, y, p):
+        # pylint: disable=too-many-arguments
         # Read the memory map data from the given core
         user_0_addr = txrx.get_user_0_register_address_from_core(x, y, p)
         pointer_table_addr = self._get_app_pointer_table(

@@ -55,8 +55,8 @@ class AbstractSendsBuffersFromHost(object):
 
         :param region: The region to determine if there is more data for
         :type region: int
-        :return: True if there is more data, False otherwise
-        :rtype: int
+        :return: Whether there is more data
+        :rtype: bool
         """
 
     @abstractmethod
@@ -79,8 +79,7 @@ class AbstractSendsBuffersFromHost(object):
         :type region: int
         :param timestamp: The timestamp to determine if there are more keys for
         :type timestamp: int
-        :return: True if there are more keys to send for the parameters, False\
-                    otherwise
+        :return: Whether there are more keys to send for the parameters
         :rtype: bool
         """
 
@@ -101,14 +100,13 @@ class AbstractSendsBuffersFromHost(object):
 
         :param region: The region to get the next key from
         :type region: int
-        :return: True if there are no keys to send for the region, False\
-                    otherwise
+        :return: Whether there are no keys to send for the region
         :rtype: bool
         """
 
     @abstractmethod
     def rewind(self, region):
-        """ Rewinds the internal buffer in preparation of re-sending
+        """ Rewinds the internal buffer in preparation of re-sending\
             the spikes
 
         :param region: The region to rewind
