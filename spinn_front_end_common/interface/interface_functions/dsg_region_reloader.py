@@ -21,6 +21,8 @@ class DSGRegionReloader(object):
     """ Regenerates Data Specifications
     """
 
+    _DELETE_TEMP_DIRS = True
+
     def __call__(
             self, transceiver, placements, hostname, report_directory,
             write_text_specs, application_data_file_path, graph_mapper=None):
@@ -41,17 +43,8 @@ class DSGRegionReloader(object):
 
         # build file paths for reloaded stuff
         reloaded_dsg_data_files_file_path = \
-            helpful_functions.generate_unique_folder_name(
-                application_data_file_path, "reloaded_data_regions", "")
-        reloaded_dsg_report_files_file_path = \
-            helpful_functions.generate_unique_folder_name(
-                report_directory, "reloaded_data_regions", "")
-
-        # build new folders
-        if not os.path.exists(reloaded_dsg_data_files_file_path):
-            os.makedirs(reloaded_dsg_data_files_file_path)
-        if not os.path.exists(reloaded_dsg_report_files_file_path):
-            os.makedirs(reloaded_dsg_report_files_file_path)
+            self._subdir(application_data_file_path)
+        reloaded_dsg_report_files_file_path = self._subdir(report_directory)
 
         application_vertices_to_reset = set()
 
@@ -88,10 +81,19 @@ class DSGRegionReloader(object):
         for vertex in application_vertices_to_reset:
             vertex.mark_regions_reloaded()
 
-        if os.path.exists(reloaded_dsg_data_files_file_path):
+        # FIXME: Needs correct logic for whether to delete
+        if self._DELETE_TEMP_DIRS:
             shutil.rmtree(reloaded_dsg_data_files_file_path)
-        if os.path.exists(reloaded_dsg_report_files_file_path):
             shutil.rmtree(reloaded_dsg_report_files_file_path)
+
+    @staticmethod
+    def _subdir(base_dir):
+        new_dir_name = helpful_functions.generate_unique_folder_name(
+            base_dir, "reloaded_data_regions", "")
+        # Directory should not exist at this point
+        os.makedirs(new_dir_name)
+        # Directory will exist at this point
+        return new_dir_name
 
     @staticmethod
     def _regenerate_data_spec_for_vertices(
