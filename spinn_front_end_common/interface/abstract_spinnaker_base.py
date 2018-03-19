@@ -1000,8 +1000,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._has_reset_last):
 
             # Data generation needs to be done if not already done
-            if not self._has_ran or application_graph_changed:
-                self._do_data_generation(steps[0])
+            self._do_data_generation(steps[0])
 
             # If we are using a virtual board, don't load
             if not self._use_virtual_board:
