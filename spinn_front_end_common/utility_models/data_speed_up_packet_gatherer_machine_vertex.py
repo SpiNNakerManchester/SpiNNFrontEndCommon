@@ -368,8 +368,10 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # write each chip x and y and base key
         for (chip_x, chip_y) in chips_on_board:
-            spec.write_value(chip_x)
-            spec.write_value(chip_y)
+            board_chip_x, board_chip_y = self._calculate_fake_chip_id(
+                chip_x, chip_y, placement.x, placement.y, machine)
+            spec.write_value(board_chip_x)
+            spec.write_value(board_chip_y)
             spec.write_value(mc_data_chips_to_keys[chip_x, chip_y])
             # log.info("for chip {}:{} base key is {}".format(
             #    chip_x, chip_y, mc_data_chips_to_keys[chip_x, chip_y]))
@@ -600,6 +602,26 @@ class DataSpeedUpPacketGatherMachineVertex(
                     missing_seq_nums=self._missing_seq_nums_data_in,
                     time_took=float(end - start))
 
+    @staticmethod
+    def _calculate_fake_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
+        """ converts between real and board based fake chip ids
+
+        :param chip_x: the real chip x in the real machine
+        :param chip_y: the chip chip y in the real machine
+        :param eth_x: the ethernet x to make board based
+        :param eth_y: the ethernet y to make board based
+        :param machine: the real machine
+        :return: chip x and y for the real chip as if it was 1 board machine
+        :rtype: int and int
+        """
+        fake_x = chip_x - eth_x
+        if fake_x < 0:
+            fake_x += machine.max_chip_x + 1
+        fake_y = chip_y - eth_y
+        if fake_y < 0:
+            fake_y += machine.max_chip_y + 1
+        return fake_x, fake_y
+
     def _send_data_via_extra_monitors(
             self, destination_chip_x, destination_chip_y, start_address,
             data_to_write):
@@ -623,8 +645,16 @@ class DataSpeedUpPacketGatherMachineVertex(
              (self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
               self.WORD_TO_BYTE_CONVERTER)))) + 1
 
+        # determine board chip ids, as the LPG does not know machine scope ids
+        board_destination_chip_x, board_destination_chip_y = \
+            self._calculate_fake_chip_id(
+                destination_chip_x, destination_chip_y,
+                self._placement.x, self._placement.y,
+                self._transceiver.get_machine_details())
+
         # compressed destination chip data
-        chip_data = ((destination_chip_x << 16) | destination_chip_y)
+        chip_data = (
+            (board_destination_chip_x << 16) | board_destination_chip_y)
 
         # send first packet to lpg, stating where to send it to
         data = bytearray(
