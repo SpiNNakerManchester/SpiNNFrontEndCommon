@@ -71,13 +71,6 @@ class ExtraMonitorSupportMachineVertex(
     _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING = (48 * 3 * 4) + 4
     _BIT_SHIFT_TO_MOVE_APP_ID = 24
 
-    # SDRAM requirement for containing router table entries
-    # 16 bytes per entry:
-    # 4 for a key, 4 for mask,
-    # 4 for word alignment for 18 cores and 6 links
-    # (24 bits, for word aligning)
-    _SDRAM_FOR_ROUTER_TABLE_ENTRIES = 1024 * 4 * 4
-
     _EXTRA_MONITOR_COMMANDS = Enum(
         value="EXTRA_MONITOR_COMMANDS",
         names=[("SET_ROUTER_TIMEOUT", 0),
@@ -162,7 +155,6 @@ class ExtraMonitorSupportMachineVertex(
             _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES +
             ExtraMonitorSupportMachineVertex.
             _MAX_DATA_SIZE_FOR_DATA_IN_MULTICAST_ROUTING +
-            ExtraMonitorSupportMachineVertex._SDRAM_FOR_ROUTER_TABLE_ENTRIES +
             ExtraMonitorSupportMachineVertex.
             _CONFIG_DATA_IN_KEYS_SDRAM_IN_BYTES))
 

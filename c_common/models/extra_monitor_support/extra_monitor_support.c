@@ -209,6 +209,13 @@ typedef struct {
     uint pld;
 } dumped_packet_t;
 
+//! basic data for a router entry
+typedef struct {
+    uint key;
+    uint mask;
+    uint route;
+} basic_router_entry_t;
+
 //! packet queue type
 typedef struct {
     uint head;
@@ -355,14 +362,26 @@ volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 // global variables for data in speed up functionality
 // ------------------------------------------------------------------------
 
-//! data in variables
-address_t application_routers_sdram_address = NULL;
+//! key used for new address in data in protocol
 uint data_in_address_key = 0;
+
+//! key used for data in data in protocol
 uint data_in_data_key = 0;
+
+//! key used for starting in data in protocol
 uint data_in_start_key = 0;
+
+//! the address in sdram where to write to
 address_t data_in_write_address = NULL;
+
+//! position from the data in write address to start from
 uint data_in_write_pointer = 0;
+
+//! entry holder for each time a entry is needed
 rtr_entry_t* router_entry = NULL;
+
+basic_router_entry_t* application_router_entries = NULL;
+
 
 // ------------------------------------------------------------------------
 // global variables for data out speed up functionality
@@ -801,10 +820,9 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 }
 
 //! \brief private method for writing router entries to the router.
-//! \param[in] sdram_address: the sdram address where the router entries reside
+//! \param[in] address: the address where the router entries reside
 //! \param[in] n_entries: how many router entries to read in
-void data_in_read_and_load_router_entries(
-        address_t sdram_address, uint n_entries){
+void data_in_read_and_load_router_entries(address_t address, uint n_entries){
 
     io_printf(IO_BUF, "n entries %u \n", n_entries);
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
@@ -825,19 +843,19 @@ void data_in_read_and_load_router_entries(
         io_printf(
                 IO_BUF, "setting key %u at %u, mask %u at %u, "
                         "route %u at %u position %u for entry %u\n",
-                sdram_address[position + ROUTER_ENTRY_KEY],
+                address[position + ROUTER_ENTRY_KEY],
                 position + ROUTER_ENTRY_KEY,
-                sdram_address[position + ROUTER_ENTRY_MASK],
+                address[position + ROUTER_ENTRY_MASK],
                 position + ROUTER_ENTRY_MASK,
-                sdram_address[position + ROUTER_ENTRY_ROUTE],
+                address[position + ROUTER_ENTRY_ROUTE],
                 position + ROUTER_ENTRY_ROUTE,
                 position, entry_id);
 
-        if (sdram_address[position + ROUTER_ENTRY_KEY] !=
+        if (address[position + ROUTER_ENTRY_KEY] !=
                 INVALID_ROUTER_ENTRY_KEY &&
-                sdram_address[position + ROUTER_ENTRY_MASK] !=
+                address[position + ROUTER_ENTRY_MASK] !=
                 INVALID_ROUTER_ENTRY_MASK &&
-                sdram_address[position + ROUTER_ENTRY_ROUTE] !=
+                address[position + ROUTER_ENTRY_ROUTE] !=
                 INVALID_ROUTER_ENTRY_ROUTE){
 
             // try setting the valid router entry
@@ -845,24 +863,25 @@ void data_in_read_and_load_router_entries(
 
             if (rtr_mc_set(
                     entry_id,
-                    sdram_address[position + ROUTER_ENTRY_KEY],
-                    sdram_address[position + ROUTER_ENTRY_MASK],
-                    sdram_address[position + ROUTER_ENTRY_ROUTE]) != 1){
+                    address[position + ROUTER_ENTRY_KEY],
+                    address[position + ROUTER_ENTRY_MASK],
+                    address[position + ROUTER_ENTRY_ROUTE]) != 1){
                 io_printf(
                     IO_BUF,
                     "failed to write router entry %d, with key %u, mask %u, "
                     "route %u\n",
-                    entry_id, sdram_address[position + ROUTER_ENTRY_KEY],
-                    sdram_address[position + ROUTER_ENTRY_MASK],
-                    sdram_address[position + ROUTER_ENTRY_ROUTE]);
+                    entry_id, address[position + ROUTER_ENTRY_KEY],
+                    address[position + ROUTER_ENTRY_MASK],
+                    address[position + ROUTER_ENTRY_ROUTE]);
             }
         }
     }
+    io_printf(IO_BUF, "finished loading \n");
 }
 
 //! \brief reads in routers entries and places in application sdram location
 void data_in_read_router(){
-	uint position_in_sdram = 0;
+	uint position = 0;
 
 	for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id ++){
 	    uint success = rtr_mc_get(entry_id, router_entry);
@@ -873,16 +892,12 @@ void data_in_read_router(){
 
 	    //io_printf(IO_BUF, "route and app id, %u \n", entry->route);
         // move to sdram
-        application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_KEY] = router_entry->key;
-        application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_MASK] = router_entry->mask;
-        application_routers_sdram_address[
-            position_in_sdram + ROUTER_ENTRY_ROUTE] = router_entry->route;
+        application_router_entries[position].key = router_entry->key;
+        application_router_entries[position].mask = router_entry->mask;
+        application_router_entries[position].route = router_entry->route;
 
         // update sdram tracker
-        position_in_sdram +=
-            SIZE_OF_ROUTER_ENTRY_IN_SDRAM / WORD_TO_BYTE_MULTIPLIER;
+        position += 1;
     }
     //io_printf(IO_BUF, "finished read of app table\n");
 }
@@ -894,7 +909,7 @@ void data_in_speed_up_load_in_system_tables() {
     // read in router table into app store in sdram (in case its changed
     // since last time)
     //io_printf(IO_BUF, "read router\n");
-    data_in_read_router();
+    //data_in_read_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
     //io_printf(IO_BUF, "clear router\n");
@@ -908,7 +923,7 @@ void data_in_speed_up_load_in_system_tables() {
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
 
     // read in and load routing table entries
-    //io_printf(IO_BUF, "load system routes\n");
+    io_printf(IO_BUF, "load system routes\n");
 
     //io_printf(IO_BUF, "system router entry address %u\n",
     //          &address[SYSTEM_ROUTER_ENTRIES_START]);
@@ -916,7 +931,7 @@ void data_in_speed_up_load_in_system_tables() {
     data_in_read_and_load_router_entries(
         &address[SYSTEM_ROUTER_ENTRIES_START],
         address[N_SYSTEM_ROUTER_ENTRIES]);
-    //io_printf(IO_BUF, "finished data in setup\n");
+    io_printf(IO_BUF, "finished data in setup\n");
 }
 
 
@@ -928,7 +943,7 @@ void data_in_speed_up_load_in_application_routes(){
 
     // load app router entries from sdram
     data_in_read_and_load_router_entries(
-        application_routers_sdram_address, N_ROUTER_ENTRIES - 1);
+        (address_t)&application_router_entries, N_ROUTER_ENTRIES - 1);
 }
 
 //! \brief the handler for all messages coming in for data in speed up
@@ -1512,15 +1527,6 @@ void data_out_speed_up_initialise() {
 
 //! \brief sets up data required by the data in speed up functionality
 void data_in_speed_up_initialise(){
-    application_routers_sdram_address = sark_xalloc(
-        sv->sdram_heap, SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES, 0,
-		ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
-	if (application_routers_sdram_address == NULL){
-	    io_printf(
-	        IO_BUF,
-	        "failed to allocate SDRAM for Application mc router entries\n");
-	    rt_error(RTE_SWERR);
-	}
 
 	vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     address_t address =
@@ -1531,11 +1537,21 @@ void data_in_speed_up_initialise(){
 	data_in_data_key = address[DATA_MC_KEY];
 	data_in_start_key = address[RESTART_MC_KEY];
 
+	application_router_entries = sark_xalloc(
+        sark.heap, 1023 * sizeof(basic_router_entry_t), 0,
+        ALLOC_LOCK);
+    if (application_router_entries == NULL){
+        io_printf(
+            IO_BUF, "failed to allocate dtcm for application table entries\n");
+        rt_error(RTE_SWERR);
+    }
+
 	data_in_speed_up_load_in_system_tables();
 
 	// set up mc interrupts to deal with data writing
 	vic_vectors[MC_PAYLOAD_SLOT]  = data_in_process_mc_payload_packet;
     vic_controls[MC_PAYLOAD_SLOT] = 0x20 | CC_MC_INT;
+     io_printf(IO_BUF, "fin\n");
 
 }
 
