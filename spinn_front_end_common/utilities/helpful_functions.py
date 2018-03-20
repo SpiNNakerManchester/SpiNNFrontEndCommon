@@ -416,7 +416,6 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
 
     # run data spec executor
     try:
-        # bytes_used_by_spec, bytes_written_by_spec = \
         executor.execute()
     except DataSpecificationException:
         logger.error("Error executing data specification for {}, {}, {}"
@@ -437,7 +436,7 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
     bytes_written_by_spec = len(data_to_write)
 
     # Write each region
-    for region_id in xrange(MAX_MEM_REGIONS):
+    for region_id in range(MAX_MEM_REGIONS):
         region = executor.get_region(region_id)
         if region is not None:
             max_pointer = region.max_write_pointer
