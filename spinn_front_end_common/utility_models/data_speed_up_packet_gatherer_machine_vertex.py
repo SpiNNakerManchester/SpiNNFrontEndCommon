@@ -760,11 +760,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._read_in_missing_seq_nums(data, data_to_write, position)
 
         # process the confirmation of all data received
-        if command_id == self.SDP_PACKET_RECEIVE_FINISHED_DATA_IN_COMMAND_ID:
-            return True
-
-        # if not confirmation packet, need to carry on
-        return False
+        return (command_id ==
+                self.SDP_PACKET_RECEIVE_FINISHED_DATA_IN_COMMAND_ID)
 
     def _outgoing_retransmit_missing_seq_nums(self, data_to_write):
         """ transmits back into spinnaker the missing data based off missing\
