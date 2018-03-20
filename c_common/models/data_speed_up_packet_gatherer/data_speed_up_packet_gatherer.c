@@ -373,8 +373,8 @@ void process_missing_seq_nums_and_request_retransmission(){
 
     // check that missing seq transmission is actually needed, or
     // have we finished
-    log_info(" total recieved = %d, max seq is %d\n",
-             total_received_seq_nums, max_seq_num);
+    //log_info(" total recieved = %d, max seq is %d\n",
+    //         total_received_seq_nums, max_seq_num);
     if (total_received_seq_nums == max_seq_num){
         my_msg.data[COMMAND_ID_POSITION] =
             SDP_PACKET_SEND_FINISHED_DATA_IN_COMMAND_ID;
