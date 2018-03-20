@@ -31,13 +31,18 @@ class DataInMulticastRoutingGenerator(object):
 
         # create routing table holder
         routing_tables = MulticastRoutingTables()
-        key_to_destination_map = None
+        key_to_destination_map = dict()
 
         for ethernet_chip in progress.over(machine.ethernet_connected_chips):
             fake_graph, fake_placements, fake_machine, \
-                key_to_destination_map = self._create_fake_network(
+                key_to_destination_map_new = self._create_fake_network(
                     ethernet_chip, machine, extra_monitor_cores, placements,
                     board_version)
+
+            # update dict for key mapping
+            key_to_destination_map.update(key_to_destination_map_new)
+
+            # do routing
             routing_tables_by_partition = self.do_routing(
                 fake_graph=fake_graph, fake_placements=fake_placements,
                 fake_machine=fake_machine)
@@ -212,8 +217,14 @@ class DataInMulticastRoutingGenerator(object):
                     counter)
                 fake_placement = fake_placements.get_placement_of_vertex(
                     vertex)
-                destination_to_partition_identifier_map[
-                    fake_placement.x, fake_placement.y] = counter
+
+                # adjust to real chip ids
+                real_x, real_y = self._calculate_real_chip_id(
+                    fake_placement.x, fake_placement.y,
+                    ethernet_connected_chip.x, ethernet_connected_chip.y,
+                    machine)
+                destination_to_partition_identifier_map[real_x, real_y] = \
+                    counter
                 counter += self.N_KEYS_PER_PARTITION_ID
 
         return (fake_graph, fake_placements, fake_machine,
