@@ -1,3 +1,5 @@
+from six import itervalues
+
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utility_models.\
@@ -42,8 +44,8 @@ class HostExecuteOtherDataSpecification(object):
         # if using extra monitors, set up routing timeouts
         receiver = None
         if uses_advanced_monitors:
-            receiver = extra_monitor_cores_to_ethernet_connection_map.\
-                itervalues().next()
+            receiver = next(
+                itervalues(extra_monitor_cores_to_ethernet_connection_map))
             receiver.set_cores_for_data_streaming(
                 transceiver, extra_monitor_cores, placements)
 
