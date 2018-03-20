@@ -47,13 +47,12 @@ class HostExecuteSystemDataSpecification(object):
             for core_subset in core_subsets:
                 x = core_subset.x
                 y = core_subset.y
-                for p in core_subset.processor_ids:
+                for p in progress.over(core_subset.processor_ids, False):
                     # write information for the memory map report
                     data = helpful_functions.\
                         execute_dse_allocate_sdram_and_write_to_spinnaker(
                             transceiver, machine, app_id, x, y, p,
                             dsg_targets[(x, y, p)],  transceiver.write_memory)
                     processor_to_app_data_base_address[x, y, p] = data
-                    progress.update()
         progress.end()
         return processor_to_app_data_base_address
