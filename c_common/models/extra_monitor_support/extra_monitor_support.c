@@ -110,6 +110,9 @@ extern INT_HANDLER sark_int_han(void);
 //! offset for getting app id from free
 #define APP_ID_OFFSET_FROM_FREE 24
 
+//! hardcoded value for how many in progress DMA's can be supported at one time
+#define MAX_DMAS_IN_PROGRESS_SUPPORTED 1
+
 //-----------------------------------------------------------------------------
 // reinjection functionality magic numbers
 //-----------------------------------------------------------------------------
@@ -230,7 +233,9 @@ typedef enum dma_tags_for_data_speed_up {
     //! DMA complete tag for the reading from sdram of data to be retransmitted
     DMA_TAG_RETRANSMISSION_READING = 2,
     //! DMA complete tag for writing the missing SEQ numbers to SDRAM
-    DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS = 3
+    DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS = 3,
+    //! DMA complete tag for data in DMA
+    DMA_TAG_FOR_WRITING_DATA_WITH_DATA_IN = 4
 } dma_tags_for_data_speed_up;
 
 //! \brief message positions for the separate data speed up SDP messages
@@ -244,7 +249,7 @@ typedef enum sending_data_sdp_data_positions {
 typedef enum data_in_data_items {
     ADDRESS_MC_KEY = 0,
     DATA_MC_KEY = 1,
-    RESTART_MC_KEY = 2,
+    END_STREAM_MC_KEY = 2,
     N_SYSTEM_ROUTER_ENTRIES = 3,
     SYSTEM_ROUTER_ENTRIES_START = 4
 } data_in_data_items;
@@ -365,11 +370,11 @@ uint data_in_address_key = 0;
 //! key used for data in data in protocol
 uint data_in_data_key = 0;
 
-//! key used for starting in data in protocol
-uint data_in_start_key = 0;
+//! key used for ending a stream in data in protocol
+uint data_in_end_key = 0;
 
 //! the address in sdram where to write to
-address_t data_in_write_address = NULL;
+uint data_in_write_address = 0;
 
 //! position from the data in write address to start from
 uint data_in_write_pointer = 0;
@@ -377,7 +382,20 @@ uint data_in_write_pointer = 0;
 //! entry holder for each time a entry is needed
 rtr_entry_t* router_entry = NULL;
 
+//! holder of application entries
 basic_router_entry_t* application_router_entries = NULL;
+
+//! DMA buffers for data in
+static uint32_t *data_in_data_to_write[N_DMA_BUFFERS];
+
+//! position in a data in dma buffer
+static uint32_t position_in_data_in_store = 0;
+
+//! which dma buffer to use for data in
+static uint32_t data_in_dma_buffer = 0;
+
+//! how many dma's are currently in progress for data in
+static uint32_t data_in_dmas_in_progress = 0;
 
 
 // ------------------------------------------------------------------------
@@ -545,8 +563,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
                 // add to the count the number of active bits from this dumped
                 // packet, as this indicates how many links this packet was
                 // meant to go to.
-                n_link_dumped_packets +=
-                    __builtin_popcount(is_link_dump);
+                n_link_dumped_packets += __builtin_popcount(is_link_dump);
             }
         }
 
@@ -767,6 +784,39 @@ void _clear_router(){
     }
 }
 
+//! \brief writes data from data in via a dma buffer
+void dma_received_data(){
+    // set off dma and update pointers
+    while (data_in_dmas_in_progress == MAX_DMAS_IN_PROGRESS_SUPPORTED){
+        cpu_wfi();
+    }
+
+    //io_printf(
+    //    IO_BUF,
+    //    "dmaing with start address of  %u, calculated address of %u for"
+    //    "data size of %u\n",
+    //    data_in_write_address,
+    //    (uint) data_in_write_address + (
+    //        (data_in_write_pointer * WORD_TO_BYTE_MULTIPLIER) -
+    //        position_in_data_in_store * WORD_TO_BYTE_MULTIPLIER),
+    //    position_in_data_in_store);
+
+    uint desc =
+	    DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_WRITE << 19 |
+	    (position_in_data_in_store * WORD_TO_BYTE_MULTIPLIER);
+    dma_port_last_used = DMA_TAG_FOR_WRITING_DATA_WITH_DATA_IN;
+    dma[DMA_ADRS] =
+        (uint) data_in_write_address + (
+            (data_in_write_pointer * WORD_TO_BYTE_MULTIPLIER) -
+            position_in_data_in_store * WORD_TO_BYTE_MULTIPLIER);
+    dma[DMA_ADRT] = (uint) &(data_in_data_to_write[data_in_dma_buffer][0]);
+    dma[DMA_DESC] = desc;
+    data_in_dmas_in_progress += 1;
+    data_in_dma_buffer = (data_in_dma_buffer + 1) % N_DMA_BUFFERS;
+    position_in_data_in_store = 0;
+
+}
+
 
 //! \brief process a mc packet with payload
 INT_HANDLER data_in_process_mc_payload_packet(){
@@ -781,13 +831,14 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     // address key means the payload is where to start writing from
     if (key == data_in_address_key){
         //io_printf(IO_BUF, "address key\n");
-        if (data_in_write_address == NULL){
+        if (data_in_write_address == 0){
             //io_printf(IO_BUF, "setting up address to %u\n", data);
-            data_in_write_address = (address_t) data;
+            data_in_write_address = data;
             data_in_write_pointer = 0;
-
         }
         else{
+            //io_printf(IO_BUF, "setting off dma\n");
+            dma_received_data();
             //io_printf(IO_BUF, "updating address\n");
             data_in_write_pointer =
                 (data - (uint) data_in_write_address) /
@@ -796,13 +847,25 @@ INT_HANDLER data_in_process_mc_payload_packet(){
     } // data keys require writing to next point in sdram
     else if (key == data_in_data_key){
         //io_printf(IO_BUF, "data key, and pos %d\n", data_in_write_pointer);
-        data_in_write_address[data_in_write_pointer] = data;
+        data_in_data_to_write[data_in_dma_buffer]
+            [position_in_data_in_store] = data;
+        position_in_data_in_store += 1;
         data_in_write_pointer += 1;
+
+        // store data via dma if full
+        // io_printf(IO_BUF, "storing data in via dma \n");
+        if (position_in_data_in_store == ITEMS_PER_DATA_PACKET){
+            dma_received_data();
+        }
     }
-    else if (key == data_in_start_key){
-        io_printf(IO_BUF, "starting key\n");
-        data_in_write_address = NULL;
+    else if (key == data_in_end_key){
+        //io_printf(IO_BUF, "ending key\n");
+        if (position_in_data_in_store != 0){
+            dma_received_data();
+        }
+        data_in_write_address = 0;
         data_in_write_pointer = 0;
+        position_in_data_in_store = 0;
     }
     else{
         io_printf(
@@ -821,14 +884,14 @@ INT_HANDLER data_in_process_mc_payload_packet(){
 //! \param[in] n_entries: how many router entries to read in
 void data_in_read_and_load_router_entries(address_t address, uint n_entries){
 
-    io_printf(IO_BUF, "n entries %u \n", n_entries);
+    //io_printf(IO_BUF, "n entries %u \n", n_entries);
     uint start_entry_id = rtr_alloc_id(n_entries, sark_app_id());
     if (start_entry_id == 0){
         io_printf(IO_BUF, "received error with requesting %d router entries."
                           " Shutting down\n", n_entries);
         rt_error(RTE_SWERR);
     }
-    io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
+    //io_printf(IO_BUF, "got start entry id of %d\n", start_entry_id);
 
     for (uint entry_id = start_entry_id; entry_id < n_entries + start_entry_id;
             entry_id++){
@@ -837,16 +900,16 @@ void data_in_read_and_load_router_entries(address_t address, uint n_entries){
 
         // check for invalid entries (possible during alloc and free or
         // just not filled in.
-        io_printf(
-                IO_BUF, "setting key %u at %u, mask %u at %u, "
-                        "route %u at %u position %u for entry %u\n",
-                address[position + ROUTER_ENTRY_KEY],
-                position + ROUTER_ENTRY_KEY,
-                address[position + ROUTER_ENTRY_MASK],
-                position + ROUTER_ENTRY_MASK,
-                address[position + ROUTER_ENTRY_ROUTE],
-                position + ROUTER_ENTRY_ROUTE,
-                position, entry_id);
+        //io_printf(
+        //        IO_BUF, "setting key %u at %u, mask %u at %u, "
+        //                "route %u at %u position %u for entry %u\n",
+        //        address[position + ROUTER_ENTRY_KEY],
+        //        position + ROUTER_ENTRY_KEY,
+        //        address[position + ROUTER_ENTRY_MASK],
+        //        position + ROUTER_ENTRY_MASK,
+        //        address[position + ROUTER_ENTRY_ROUTE],
+        //        position + ROUTER_ENTRY_ROUTE,
+        //        position, entry_id);
 
         if (address[position + ROUTER_ENTRY_KEY] !=
                 INVALID_ROUTER_ENTRY_KEY &&
@@ -873,7 +936,7 @@ void data_in_read_and_load_router_entries(address_t address, uint n_entries){
             }
         }
     }
-    io_printf(IO_BUF, "finished loading \n");
+    //io_printf(IO_BUF, "finished loading \n");
 }
 
 //! \brief reads in routers entries and places in application sdram location
@@ -887,8 +950,6 @@ void data_in_read_router(){
 	                  entry_id);
 	    }
 
-	    //io_printf(IO_BUF, "route and app id, %u \n", entry->route);
-        // move to sdram
         application_router_entries[position].key = router_entry->key;
         application_router_entries[position].mask = router_entry->mask;
         application_router_entries[position].route = router_entry->route;
@@ -906,7 +967,7 @@ void data_in_speed_up_load_in_system_tables() {
     // read in router table into app store in sdram (in case its changed
     // since last time)
     //io_printf(IO_BUF, "read router\n");
-    //data_in_read_router();
+    data_in_read_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
     //io_printf(IO_BUF, "clear router\n");
@@ -920,7 +981,7 @@ void data_in_speed_up_load_in_system_tables() {
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_IN_SPEED_UP]);
 
     // read in and load routing table entries
-    io_printf(IO_BUF, "load system routes\n");
+    //io_printf(IO_BUF, "load system routes\n");
 
     //io_printf(IO_BUF, "system router entry address %u\n",
     //          &address[SYSTEM_ROUTER_ENTRIES_START]);
@@ -928,7 +989,7 @@ void data_in_speed_up_load_in_system_tables() {
     data_in_read_and_load_router_entries(
         &address[SYSTEM_ROUTER_ENTRIES_START],
         address[N_SYSTEM_ROUTER_ENTRIES]);
-    io_printf(IO_BUF, "finished data in setup\n");
+    //io_printf(IO_BUF, "finished data in setup\n");
 }
 
 
@@ -949,17 +1010,17 @@ void data_in_speed_up_load_in_application_routes(){
 //! \return: complete code if successful
 uint handle_data_in_speed_up(sdp_msg_t *msg) {
     if (msg->cmd_rc == SDP_COMMAND_FOR_READING_IN_APPLICATION_MC_ROUTING){
-        io_printf(IO_BUF, "reading application router entries from router\n");
+        //io_printf(IO_BUF, "reading application router entries from router\n");
         data_in_read_router();
         msg->cmd_rc = RC_OK;
     }
     else if (msg->cmd_rc == SDP_COMMAND_FOR_LOADING_APPLICATION_MC_ROUTES){
-        io_printf(IO_BUF, "loading application router entries into router\n");
+        //io_printf(IO_BUF, "loading application router entries into router\n");
         data_in_speed_up_load_in_application_routes();
         msg->cmd_rc = RC_OK;
     }
     else if (msg->cmd_rc == SDP_COMMAND_FOR_LOADING_SYSTEM_MC_ROUTES){
-        io_printf(IO_BUF, "loading system router entries into router\n");
+        //io_printf(IO_BUF, "loading system router entries into router\n");
         data_in_speed_up_load_in_system_tables();
         msg->cmd_rc = RC_OK;
     }
@@ -1379,6 +1440,8 @@ INT_HANDLER speed_up_handle_dma(){
         dma_complete_reading_retransmission_data();
     } else if (dma_port_last_used == DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS) {
         dma_complete_writing_missing_seq_to_sdram();
+    } else if (dma_port_last_used == DMA_TAG_FOR_WRITING_DATA_WITH_DATA_IN){
+        data_in_dmas_in_progress -= 1;
     } else {
         io_printf(IO_BUF, "NOT VALID DMA CALLBACK PORT!!!!\n");
     }
@@ -1532,8 +1595,9 @@ void data_in_speed_up_initialise(){
 
 	data_in_address_key = address[ADDRESS_MC_KEY];
 	data_in_data_key = address[DATA_MC_KEY];
-	data_in_start_key = address[RESTART_MC_KEY];
+	data_in_end_key = address[END_STREAM_MC_KEY];
 
+    // allocate space for storing the application routing tables
 	application_router_entries = sark_xalloc(
         sark.heap, 1023 * sizeof(basic_router_entry_t), 0,
         ALLOC_LOCK);
@@ -1543,6 +1607,18 @@ void data_in_speed_up_initialise(){
         rt_error(RTE_SWERR);
     }
 
+    // allocate space for the dma for data in
+    for (uint32_t i = 0; i < 2; i++) {
+        data_in_data_to_write[i] = (uint32_t*) sark_xalloc(
+            sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
+        ALLOC_LOCK);
+        if (data_in_data_to_write[i] == NULL){
+            io_printf(IO_BUF, "failed to allocate dtcm for DMA buffers\n");
+            rt_error(RTE_SWERR);
+        }
+    }
+
+    // read app table, load system table
 	data_in_speed_up_load_in_system_tables();
 
 	// set up mc interrupts to deal with data writing

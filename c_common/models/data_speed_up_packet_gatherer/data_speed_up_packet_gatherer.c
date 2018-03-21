@@ -176,7 +176,7 @@ typedef enum data_positions_in_data_sdp_packet{
 
 //! human readable definitions of the offsets for key elements
 typedef enum key_offsets{
-    SDRAM_KEY_OFFSET = 0, DATA_KEY_OFFSET = 1, RESTART_KEY_OFFSET = 2
+    SDRAM_KEY_OFFSET = 0, DATA_KEY_OFFSET = 1, END_KEY_OFFSET = 2
 }key_offsets;
 
 //! human readable definitions of each region in SDRAM
@@ -386,6 +386,13 @@ void process_missing_seq_nums_and_request_retransmission(){
         log_info("sent end flag");
         sark_free(missing_seq_nums_store);
         total_received_seq_nums = 0;
+
+        // send end key to extra monitor core on destination chip
+        while (!spin1_send_mc_packet(
+                data_in_mc_key_map[chip_x][chip_y] + END_KEY_OFFSET, 0,
+                WITH_PAYLOAD) == 0){
+            spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
+        }
     }
     // sending missing seq nums
     else{
@@ -443,13 +450,6 @@ void data_in_receive_sdp_data(uint mailbox, uint port) {
 
         // allocate sdram location for holding the seq numbers
         process_sdram_location_for_seq_nums(max_seq_num);
-
-        // send start key, so that monitor is configured to start
-        while (spin1_send_mc_packet(
-                data_in_mc_key_map[chip_x][chip_y] + RESTART_KEY_OFFSET, 0,
-                WITH_PAYLOAD) == 0){
-            spin1_delay_us(MESSAGE_DELAY_TIME_WHEN_FAIL);
-        }
 
         // send mc messages for first packet
         process_sdp_message_into_mc_messages(
