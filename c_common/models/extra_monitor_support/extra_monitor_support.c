@@ -92,9 +92,6 @@ extern INT_HANDLER sark_int_han(void);
 //! max router entries
 #define N_ROUTER_ENTRIES 1024
 
-//! sdram requirement to store all router entries.
-#define SDRAM_REQUIREMENT_FOR_APPLICATION_MC_ROUTES (N_ROUTER_ENTRIES - 1) * 16
-
 //! size of a sdram router entry
 #define SIZE_OF_ROUTER_ENTRY_IN_SDRAM 12
 
@@ -127,7 +124,7 @@ extern INT_HANDLER sark_int_han(void);
 #define TICK_PERIOD        10
 
 // dumped packet queue length
-#define PKT_QUEUE_SIZE     4096
+#define PKT_QUEUE_SIZE     3584
 
 //-----------------------------------------------------------------------------
 // VIC stuff
