@@ -49,6 +49,7 @@ static uint32_t infinite_run;
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
+static uint32_t odd_data_packet_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
@@ -61,6 +62,13 @@ static uint32_t position_in_store = 0;
 //! sdp message holder for transmissions
 sdp_msg_pure_data my_msg;
 
+//! human readable definitions of the flags for no payload state machine
+typedef enum state_machine_flags {
+    EMPTY = 0, NEXT_SEQ_NUM_COMING = 1, FIRST_DATA = 2, ODD_DATA_ITEM = 3
+} state_machine_flags;
+
+//! variable for determining next action from a no payload command
+static uint32_t next_no_payload_command = EMPTY;
 
 //! human readable definitions of each region in SDRAM
 typedef enum regions_e {
@@ -69,12 +77,12 @@ typedef enum regions_e {
 
 //! human readable definitions of the data in each region
 typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, TAG_ID
+    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, TAG_ID
 } config_elements;
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
-    MC_PACKET = -1, SDP = 0, DMA = 0
+    FR_PACKET = -1, SDP = 0, DMA = 0
 } callback_priorities;
 
 
@@ -83,8 +91,8 @@ void resume_callback() {
 }
 
 void send_data(){
-    log_info("last element is %d", data[position_in_store - 1]);
-    log_info("first element is %d", data[0]);
+    //log_info("last element is %d", data[position_in_store - 1]);
+    //log_info("first element is %d", data[0]);
 
     spin1_memcpy(&my_msg.data, data,
 	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
@@ -102,59 +110,90 @@ void send_data(){
 	// Empty body
     }
 
-    log_info("done");
+    //log_info("done");
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload) {
-    log_info("packet!");
-    if (key == new_sequence_key) {
-        if (position_in_store != 1) {
+void receive_data_no_payload(uint key, uint payload) {
+    //log_info("received command with key %u", key);
+    // expecting a new command
+    use(payload);
+
+    if (next_no_payload_command == EMPTY){
+        if (key == new_sequence_key) {
+            //log_info("new seq start");
+            next_no_payload_command = NEXT_SEQ_NUM_COMING;
+        }
+        else if (key == end_flag_key){
+            // set end flag bit in seq num
+            //log_info("sending end data");
+            //log_info("position = %d", position_in_store);
+            data[0] = data[0] + (1 << 31);
             send_data();
         }
-        //log_info("finding new seq num %d", payload);
-        //log_info("position in store is %d", position_in_store);
-        data[0] = payload;
-        seq_num = payload;
+        else if (key == first_data_key){
+            //log_info("first data start");
+            next_no_payload_command = FIRST_DATA;
+        }
+        else if (key == odd_data_packet_key){
+            //log_info("odd data start");
+            next_no_payload_command = ODD_DATA_ITEM;
+        }
+        else{
+            //log_info("strange code, next_no_payload_command is %d",
+            //         next_no_payload_command);
+        }
+    } // expecting data from a old command
+    else if (next_no_payload_command == NEXT_SEQ_NUM_COMING){
+        //log_info("first data end with key %d", key);
+        data[0] = key;
+        seq_num = key;
         position_in_store = 1;
-
-        if (payload > max_seq_num){
+        if (key > max_seq_num){
             log_error(
                 "got a funky seq num. max is %d, received %d",
-                max_seq_num, payload);
+                max_seq_num, key);
         }
-    } else {
+        next_no_payload_command = EMPTY;
 
-        //log_info(" payload = %d posiiton = %d", payload, position_in_store);
-        data[position_in_store] = payload;
+    } else if (next_no_payload_command == FIRST_DATA){
+        //log_info("resetting seq and position");
+        seq_num = FIRST_SEQ_NUM;
+        data[0] = seq_num;
+        position_in_store = 1;
+        max_seq_num = key;
+        next_no_payload_command = EMPTY;
+
+    } else if (next_no_payload_command == ODD_DATA_ITEM){
+        //log_info("odd data process");
+        data[position_in_store] = key;
         position_in_store += 1;
-        //log_info("payload is %d", payload);
-
-        if (key == first_data_key) {
-            //log_info("resetting seq and position");
-            seq_num = FIRST_SEQ_NUM;
-            data[0] = seq_num;
-            position_in_store = 1;
-            max_seq_num = payload;
-        }
-
-        if (key == end_flag_key){
-            // set end flag bit in seq num
-            data[0] = data[0] + (1 << 31);
-
-            // adjust size as last payload not counted
-            position_in_store = position_in_store - 1;
-
-            //log_info("position = %d with seq num %d", position_in_store, seq_num);
-            //log_info("last payload was %d", payload);
-            send_data();
-        } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
-            //log_info("position = %d with seq num %d", position_in_store, seq_num);
-            //log_info("last payload was %d", payload);
+        //log_info("position in store %d", position_in_store);
+        next_no_payload_command = EMPTY;
+        if (position_in_store == ITEMS_PER_DATA_PACKET) {
             send_data();
         }
+
+    } else{
+        log_error("Got a strange command in the logic flow."
+                  "next_no_payload_command is %d", next_no_payload_command);
+    }
+
+}
+
+void receive_data_payload(uint key, uint payload) {
+    //log_info("next_no_payload_command = %d", next_no_payload_command);
+    //log_info("payload = %d position = %d", payload, position_in_store);
+    data[position_in_store] = key;
+    position_in_store += 1;
+    data[position_in_store] = payload;
+    position_in_store += 1;
+    if (position_in_store == ITEMS_PER_DATA_PACKET) {
+        //log_info("position = %d with seq num %d", position_in_store, seq_num);
+        //log_info("last payload was %d", key);
+        send_data();
     }
 }
 
@@ -182,6 +221,7 @@ static bool initialize(uint32_t *timer_period) {
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
     end_flag_key = config_address[END_FLAG_KEY];
+    odd_data_packet_key = config_address[ODD_DATA_PACKET_KEY];
 
     my_msg.tag = config_address[TAG_ID];	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet
@@ -217,7 +257,8 @@ void c_main() {
         rt_error(RTE_SWERR);
     }
 
-    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data, MC_PACKET);
+    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data_payload, FR_PACKET);
+    spin1_callback_on(FR_PACKET_RECEIVED, receive_data_no_payload, FR_PACKET);
 
     // start execution
     log_info("Starting\n");

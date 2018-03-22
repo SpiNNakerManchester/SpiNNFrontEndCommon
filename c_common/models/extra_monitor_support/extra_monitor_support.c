@@ -56,6 +56,7 @@ extern INT_HANDLER sark_int_han(void);
 #define SEQUENCE_NUMBER_SIZE 1
 
 #define TX_NOT_FULL_MASK 0x10000000
+#define TX_FULL_MASK 0x40000000
 //-----------------------------------------------------------------------------
 //! SDP flags
 //-----------------------------------------------------------------------------
@@ -256,7 +257,7 @@ typedef enum data_spec_regions{
 
 //! human readable definitions of each element in the transmission region
 typedef enum data_speed_config_data_elements {
-    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, MB
+    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, MB
 } data_speed_config_data_elements;
 
 //! values for the priority for each callback
@@ -335,6 +336,7 @@ static uint32_t basic_data_key = 0;
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
+static uint32_t odd_data_packet_key = 0;
 
 // ------------------------------------------------------------------------
 // reinjector main functions
@@ -675,15 +677,34 @@ void reinjection_configure_router() {
 // data speed up main functions
 //-----------------------------------------------------------------------------
 
-static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
+//! \brief sends a fixed route packet with a payload
+//! \param[in] key: the fr key
+//! \param[in] data: the payload
+static inline void send_fixed_route_packet_payload(uint32_t key, uint32_t data) {
+    cc[CC_TCR] = PKT_FR_PL;
+
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
-    // Empty body; CC array is volatile
+	// Empty body; CC array is volatile
     }
-    cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = data;
     cc[CC_TXKEY] = key;
+    //io_printf(IO_BUF, "sending key %u, payload %u \n", key, data);
 }
+
+//! \brief sends a fixed route packet without a payload
+//! \param[in] key: the fr key
+static inline void send_fixed_route_packet_no_payload(uint32_t key){
+    cc[CC_TCR] = PKT_FR;
+
+    // Wait for a router slot
+    while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
+	// Empty body; CC array is volatile
+    }
+    cc[CC_TXKEY] = key;
+    //io_printf(IO_BUF, "sending key %u \n", key);
+}
+
 
 //! \brief takes a DMA'ed block and transmits its contents as mc packets.
 //! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
@@ -691,20 +712,26 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 //! \param[in] first_packet_key: the first key to transmit with, afterward,
 //! defaults to the default key.
 void send_data_block(
-        uint32_t current_dma_pointer, uint32_t number_of_elements_to_send,
-        uint32_t first_packet_key) {
+        uint32_t current_dma_pointer, uint32_t number_of_elements_to_send) {
     //log_info("first data is %d", data_to_transmit[current_dma_pointer][0]);
 
     // send data
     for (uint data_position = 0; data_position < number_of_elements_to_send;
-            data_position++) {
-        uint32_t current_data =
-            data_to_transmit[current_dma_pointer][data_position];
+            data_position=data_position+2) {
+        uint32_t current_data1 =
+        	data_to_transmit[current_dma_pointer][data_position];
+        uint32_t current_data2 = 0;
+        if (data_position + 1 < number_of_elements_to_send){
+            current_data2 =
+                data_to_transmit[current_dma_pointer][data_position + 1];
+            send_fixed_route_packet_payload(current_data1, current_data2);
+        }else{
+            send_fixed_route_packet_no_payload(odd_data_packet_key);
+            send_fixed_route_packet_no_payload(current_data1);
+            //io_printf(IO_BUF, "odd data key is  %d\n", odd_data_packet_key);
+            //io_printf(IO_BUF, "last int is %d\n",current_data1);
 
-        send_fixed_route_packet(first_packet_key, current_data);
-
-        // update key to transmit with
-        first_packet_key = basic_data_key;
+        }
     }
     //log_info("last data is %d",
     //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
@@ -714,13 +741,12 @@ void send_data_block(
 //! \param[in] items_to_read the number of word items to read
 //! \param[in] dma_tag the DMA tag associated with this read.
 //!            transmission or retransmission
-//! \param[in] offset where in the data array to start writing to
-void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+void read(uint32_t dma_tag, uint32_t items_to_read) {
     // set off DMA
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
     address_t data_sdram_position = (address_t)
-        &store_address[position_in_store];
+	    &store_address[position_in_store];
 
     // update positions as needed
     position_in_store += items_to_read;
@@ -728,35 +754,33 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 
     // set off DMA
     uint desc = DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-        (items_to_read * WORD_TO_BYTE_MULTIPLIER);
+	    (items_to_read * WORD_TO_BYTE_MULTIPLIER);
 
     dma_port_last_used = dma_tag;
     dma[DMA_ADRS] = (uint) data_sdram_position;
-    dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
+    dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][0]);
     dma[DMA_DESC] = desc;
 
 }
 
-//! \brief sends a end flag via multicast
+//! \brief sends a end flag via fixed route
 void data_speed_up_send_end_flag() {
-    send_fixed_route_packet(end_flag_key, END_FLAG);
+    send_fixed_route_packet_no_payload(end_flag_key);
 }
 
 //! \brief DMA complete callback for reading for original transmission
 void dma_complete_reading_for_original_transmission(){
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
-    uint32_t key_to_transmit = basic_data_key;
     uint32_t items_read_this_time = num_items_read;
 
     // put size in bytes if first send
     //log_info("in original read complete callback");
     if (first_transmission) {
         //io_printf(IO_BUF, "in first\n");
-        data_to_transmit[current_dma_pointer][0] = max_seq_num;
-        key_to_transmit = first_data_key;
+        send_fixed_route_packet_no_payload(first_data_key);
+        send_fixed_route_packet_no_payload(max_seq_num);
         first_transmission = false;
-        items_read_this_time += 1;
     }
 
     // stopping procedure
@@ -767,37 +791,35 @@ void dma_complete_reading_for_original_transmission(){
         //io_printf(IO_BUF, "setting off another DMA\n");
         //log_info("setting off another DMA");
         uint32_t num_items_to_read =
-            ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+        	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
 
         uint32_t next_position_in_store = position_in_store +
-            (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+        	(ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
 
         // if less data needed request less data
         if (next_position_in_store >= number_of_elements_to_read_from_sdram) {
             num_items_to_read = number_of_elements_to_read_from_sdram -
-                position_in_store;
+        	    position_in_store;
             //log_info("reading %d items", num_items_to_read);
             //log_info("position in store = %d, new position in store = %d",
             //         position_in_store, next_position_in_store);
         }
 
         // set off another read and transmit DMA'ed one
-        read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
+        read(DMA_TAG_READ_FOR_TRANSMISSION, num_items_to_read);
 
         //log_info("sending data");
-        send_data_block(
-            current_dma_pointer, items_read_this_time, key_to_transmit);
+        send_data_block(current_dma_pointer, items_read_this_time);
         //log_info("finished sending data");
     } else {
         //io_printf(IO_BUF, "sending last data \n");
-        send_data_block(
-            current_dma_pointer, items_read_this_time, key_to_transmit);
+        send_data_block(current_dma_pointer, items_read_this_time);
         //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
         data_speed_up_send_end_flag();
 
-        io_printf(IO_BUF, "finished sending original data with end flag\n");
+        //io_printf(IO_BUF, "finished sending original data with end flag\n");
         has_finished = true;
         number_of_missing_seq_sdp_packets = 0;
     }
@@ -838,8 +860,8 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     if (first){
         number_of_missing_seq_sdp_packets =
             data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
-        io_printf(IO_BUF, "total missing sdp messges = %u",
-                  number_of_missing_seq_sdp_packets);
+        //io_printf(IO_BUF, "total missing sdp messges = %u",
+        //          number_of_missing_seq_sdp_packets);
 
         //uint32_t total_missing_seq_nums = (
         //    (ITEMS_PER_DATA_PACKET - 2) +
@@ -883,8 +905,8 @@ void retransmission_dma_read() {
 
     // set off DMA via SARK commands
     //log_info("setting off DMA");
-    io_printf(IO_BUF, "Retransmission DMA Read %u bytes from 0x%08x\n",
-        ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER, data_sdram_position);
+    //io_printf(IO_BUF, "Retransmission DMA Read %u bytes from 0x%08x\n",
+    //    ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER, data_sdram_position);
     uint desc =
         DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
         (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER);
@@ -927,16 +949,17 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             if (left_over_portion <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
                 retransmitted_seq_num_items_read = left_over_portion + 1;
-                read(DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
+                read(DMA_TAG_RETRANSMISSION_READING, left_over_portion);
             } else {
-                retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
-                read(DMA_TAG_RETRANSMISSION_READING, 1,
-                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                retransmitted_seq_num_items_read =
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+                read(DMA_TAG_RETRANSMISSION_READING,
+                	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             }
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
             in_re_transmission_mode = false;
-            io_printf(IO_BUF, "Finished retransmission\n");
+            //io_printf(IO_BUF, "Finished retransmission\n");
             missing_sdp_seq_num_sdram_address = NULL;
             position_in_read_data = 0;
             position_for_retransmission = 0;
@@ -951,8 +974,8 @@ void dma_complete_reading_retransmission_data() {
     //log_info("just read data for a given missing sequence number");
 
     // set sequence number as first element
-    data_to_transmit[transmit_dma_pointer][0] =
-        missing_seq_num_being_processed;
+    send_fixed_route_packet_no_payload(new_sequence_key);
+    send_fixed_route_packet_no_payload(missing_seq_num_being_processed);
 
     if (missing_seq_num_being_processed > max_seq_num) {
         io_printf(
@@ -962,8 +985,7 @@ void dma_complete_reading_retransmission_data() {
 
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
-    send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read,
-                    new_sequence_key);
+    send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read);
 
     position_in_read_data += 1;
     the_dma_complete_read_missing_seqeuence_nums();
@@ -980,7 +1002,7 @@ void dma_complete_writing_missing_seq_to_sdram() {
 void handle_data_speed_up(sdp_msg_pure_data *msg) {
     if (!has_finished){
         sark_msg_free((sdp_msg_t *) msg);
-        io_printf(IO_BUF, "ignoring packet, as still transmitting\n");
+        //io_printf(IO_BUF, "ignoring packet, as still transmitting\n");
     }
     else{
         if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
@@ -1008,16 +1030,16 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
             //          number_of_elements_to_read_from_sdram);
 
 
-            io_printf(
-                IO_BUF, "Sending %d bytes of data from 0x%08x using %d "
-                "packets", bytes_to_read_write, store_address, max_seq_num);
+            //io_printf(
+            //    IO_BUF, "Sending %d bytes of data from 0x%08x using %d "
+            //    "packets", bytes_to_read_write, store_address, max_seq_num);
 
             if (number_of_elements_to_read_from_sdram <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-                read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                read(DMA_TAG_READ_FOR_TRANSMISSION,
                     number_of_elements_to_read_from_sdram);
             } else {
-                read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                read(DMA_TAG_READ_FOR_TRANSMISSION,
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             }
         }
@@ -1027,15 +1049,15 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 msg->data[COMMAND_ID_POSITION] ==
                 SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS) {
             //log_info("starting re send mode");
-            io_printf(
-                IO_BUF,
-                "Received retransmission commmand %d, missing seq sdp "
-                "packets = %d, in retransmission mode = %d "
-                "have_received_start_missing_seq_packet = %d\n",
-                msg->data[COMMAND_ID_POSITION],
-                number_of_missing_seq_sdp_packets,
-                in_re_transmission_mode,
-                have_received_start_missing_seq_packet);
+            //io_printf(
+            //    IO_BUF,
+            //    "Received retransmission commmand %d, missing seq sdp "
+            //    "packets = %d, in retransmission mode = %d "
+            //    "have_received_start_missing_seq_packet = %d\n",
+            //    msg->data[COMMAND_ID_POSITION],
+            //    number_of_missing_seq_sdp_packets,
+            //    in_re_transmission_mode,
+            //    have_received_start_missing_seq_packet);
 
             // if already in a retransmission phase, don't process as normal
             if (msg->data[COMMAND_ID_POSITION] ==
@@ -1043,8 +1065,8 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                         number_of_missing_seq_sdp_packets != 0) {
                     sark_msg_free((sdp_msg_t *) msg);
                     if (!in_re_transmission_mode) {
-                        io_printf(IO_BUF,
-                                  "Force Start of retransmission packet\n");
+                        //io_printf(IO_BUF,
+                        //          "Force Start of retransmission packet\n");
                         number_of_missing_seq_sdp_packets = 0;
                         missing_sdp_seq_num_sdram_address[
                             number_of_missing_seq_nums_in_sdram] = END_FLAG;
@@ -1066,7 +1088,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                          number_of_missing_seq_sdp_packets != 0))) {
 
                     // put missing sequence numbers into sdram
-                    io_printf(IO_BUF, "Storing sequences\n");
+                    //io_printf(IO_BUF, "Storing sequences\n");
                     store_missing_seq_nums(
                         msg->data,
                         (msg->length - LENGTH_OF_SDP_HEADER) /
@@ -1075,7 +1097,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                             SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
 
                     //log_info("free message");
-                    io_printf(IO_BUF, "freeing SDP packet\n");
+                    //io_printf(IO_BUF, "freeing SDP packet\n");
                     sark_msg_free((sdp_msg_t *) msg);
 
                     // if got all missing packets, start retransmitting them\
@@ -1084,7 +1106,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                         // packets all received, add finish flag for DMA \
                         // stoppage
 
-                        io_printf(IO_BUF, "starting resend process\n");
+                        //io_printf(IO_BUF, "starting resend process\n");
                         missing_sdp_seq_num_sdram_address[
                             number_of_missing_seq_nums_in_sdram] = END_FLAG;
                         number_of_missing_seq_nums_in_sdram += 1;
@@ -1096,17 +1118,14 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                         in_re_transmission_mode = true;
                         retransmission_dma_read();
                     } else {
-                        io_printf(IO_BUF,
-                                  "Sleeping for next retransmission packet\n");
+                        //io_printf(IO_BUF,
+                        //          "Sleeping for next retransmission packet\n");
                     }
-                } else {
-                    sark_msg_free((sdp_msg_t *) msg);
                 }
             }
-            sark_msg_free((sdp_msg_t *) msg);
         } else {
             io_printf(IO_BUF, "received unknown SDP packet\n");
-            sark_msg_free((sdp_msg_t *) msg);
+
         }
     }
 }
@@ -1150,7 +1169,7 @@ void __wrap_sark_int(void *pc) {
 
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
-                io_printf(IO_BUF, "Reinjector SDP\n");
+                //io_printf(IO_BUF, "Reinjector SDP\n");
                 msg->length = 12 + handle_reinjection_command(msg);
                 uint dest_port = msg->dest_port;
                 uint dest_addr = msg->dest_addr;
@@ -1164,13 +1183,14 @@ void __wrap_sark_int(void *pc) {
                 sark_msg_send(msg, 10);
                 break;
             case DATA_SPEED_UP_FUNCTIONALITY:
-                io_printf(IO_BUF, "Speed up SDP\n");
+                //io_printf(IO_BUF, "Speed up SDP\n");
                 handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
-                io_printf(IO_BUF, "port %d\n",
-                          (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                //io_printf(IO_BUF, "not happy port %d\n",
+                //          (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
         	// Do nothing
+        	     rt_error(RTE_SWERR);
             }
             sark_msg_free(msg);
         } else {
@@ -1227,6 +1247,16 @@ void data_speed_up_initialise() {
     new_sequence_key = address[NEW_SEQ_KEY];
     first_data_key = address[FIRST_DATA_KEY];
     end_flag_key = address[END_FLAG_KEY];
+    odd_data_packet_key = address[ODD_DATA_PACKET_KEY];
+
+    io_printf(
+        IO_BUF,
+        "keys: basic key      : %u \n"
+        "      new seq Key    : %u \n"
+        "      first data key : %u \n"
+        "      end flag key   : %u \n"
+        "      odd data key   : %u \n", basic_data_key, new_sequence_key,
+        first_data_key, end_flag_key, odd_data_packet_key);
 
 
     vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
