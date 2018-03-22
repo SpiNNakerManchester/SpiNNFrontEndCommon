@@ -38,8 +38,7 @@ class ChipProvenanceUpdater(object):
         idle_cores = txrx.get_cores_in_state(
             all_core_subsets, CPUState.IDLE)
 
-        if (len(error_cores) != 0 or len(watchdog_cores) != 0 or
-                len(idle_cores) != 0):
+        if error_cores or watchdog_cores or idle_cores:
             raise ConfigurationException(
                 "Some cores have crashed. RTE cores {}, watch-dogged cores {},"
                 " idle cores {}".format(
@@ -54,6 +53,7 @@ class ChipProvenanceUpdater(object):
 
     def _update_provenance(self, txrx, total_processors, processors_completed,
                            all_core_subsets, app_id, progress):
+        # pylint: disable=too-many-arguments
         left_to_do_cores = total_processors - processors_completed
         attempts = 0
         while processors_completed != total_processors and attempts < _LIMIT:

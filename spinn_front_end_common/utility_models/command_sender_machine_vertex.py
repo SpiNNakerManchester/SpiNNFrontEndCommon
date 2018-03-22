@@ -1,7 +1,7 @@
 from enum import Enum
 from collections import Counter
 
-from pacman.model.decorators import overrides
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.provenance \
@@ -54,8 +54,8 @@ class CommandSenderMachineVertex(
     def __init__(
             self, constraints, resources_required, label,
             commands_at_start_resume, commands_at_pause_stop, timed_commands):
-        ProvidesProvenanceDataFromMachineImpl.__init__(self)
-        MachineVertex.__init__(self, label, constraints)
+        # pylint: disable=too-many-arguments
+        super(CommandSenderMachineVertex, self).__init__(label, constraints)
 
         # container of different types of command
         self._timed_commands = timed_commands
@@ -80,8 +80,8 @@ class CommandSenderMachineVertex(
 
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
-
+            n_machine_time_steps):  # @UnusedVariable
+        # pylint: disable=too-many-arguments
         timed_commands_size = \
             self.get_timed_commands_bytes(self._timed_commands)
         start_resume_commands_size = \
@@ -105,7 +105,7 @@ class CommandSenderMachineVertex(
         # Write setup region
         # Find the maximum number of commands per timestep
         max_n_commands = 0
-        if len(self._timed_commands) > 0:
+        if self._timed_commands:
             counter = Counter(self._timed_commands)
             max_n_commands = counter.most_common(1)[0][1]
         max_n_commands = max([
