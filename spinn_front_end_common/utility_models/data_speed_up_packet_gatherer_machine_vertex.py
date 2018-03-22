@@ -98,7 +98,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     )
 
     # throttle on the transmission
-    TRANSMISSION_THROTTLE_TIME = 0.000001
+    TRANSMISSION_THROTTLE_TIME = 0.00001
 
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
 
