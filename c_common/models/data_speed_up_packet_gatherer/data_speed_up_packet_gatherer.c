@@ -83,8 +83,8 @@ void resume_callback() {
 }
 
 void send_data(){
-    //log_info("last element is %d", data[position_in_store - 1]);
-    //log_info("first element is %d", data[0]);
+    log_info("last element is %d", data[position_in_store - 1]);
+    log_info("first element is %d", data[0]);
 
     spin1_memcpy(&my_msg.data, data,
 	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
@@ -102,13 +102,14 @@ void send_data(){
 	// Empty body
     }
 
+    log_info("done");
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
 }
 
 void receive_data(uint key, uint payload) {
-    //log_info("packet!");
+    log_info("packet!");
     if (key == new_sequence_key) {
         if (position_in_store != 1) {
             send_data();

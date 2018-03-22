@@ -310,7 +310,7 @@ static uint32_t transmit_dma_pointer = 0;
 static uint32_t position_in_store = 0;
 static uint32_t num_items_read = 0;
 static bool first_transmission = true;
-static bool has_finished = false;
+static bool has_finished = true;
 static uint32_t retransmitted_seq_num_items_read = 0;
 
 //! retransmission stuff
@@ -327,6 +327,7 @@ static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;
 static uint32_t dma_port_last_used = 0;
 static bool in_re_transmission_mode = false;
+static bool have_received_start_missing_seq_packet = false;
 
 //! SDP message holder for transmissions
 sdp_msg_pure_data my_msg;
@@ -801,7 +802,7 @@ void dma_complete_reading_for_original_transmission(){
         // send end flag.
         data_speed_up_send_end_flag();
 
-        //log_info("finished sending original data with end flag");
+        io_printf(IO_BUF, "finished sending original data with end flag\n");
         has_finished = true;
         number_of_missing_seq_sdp_packets = 0;
     }
@@ -842,6 +843,8 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     if (first){
         number_of_missing_seq_sdp_packets =
             data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
+        io_printf(IO_BUF, "total missing sdp messges = %u",
+                  number_of_missing_seq_sdp_packets);
 
         //uint32_t total_missing_seq_nums = (
         //    (ITEMS_PER_DATA_PACKET - 2) +
@@ -863,6 +866,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
             sv->sdram_heap, size_of_data, 0,
         ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
+        have_received_start_missing_seq_packet = true;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
     }
@@ -942,6 +946,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             position_in_read_data = 0;
             position_for_retransmission = 0;
             number_of_missing_seq_nums_in_sdram = 0;
+            have_received_start_missing_seq_packet = false;
         }
     }
 }
@@ -978,115 +983,135 @@ void dma_complete_writing_missing_seq_to_sdram() {
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
 void handle_data_speed_up(sdp_msg_pure_data *msg) {
-
-    if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
-
-        //io_printf(IO_BUF, "starting the send of original data\n");
-        // set sdram position and length
-        store_address = (address_t*) msg->data[SDRAM_POSITION];
-        bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
+    if (!has_finished){
         sark_msg_free((sdp_msg_t *) msg);
-
-        float max_seq_num_value = (float)bytes_to_read_write / (float)(67 * 4);
-        max_seq_num = ceil(max_seq_num_value);
-        //io_printf(IO_BUF, "address %d, bytes to write %d\n", store_address,
-        //          bytes_to_read_write);
-
-        // reset states
-        first_transmission = true;
-        transmit_dma_pointer = 0;
-        position_in_store = 0;
-        number_of_elements_to_read_from_sdram =
-            (uint)(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
-        //io_printf(IO_BUF, "elements to read %d \n",
-        //          number_of_elements_to_read_from_sdram);
-
-
-        io_printf(
-            IO_BUF, "Sending %d bytes of data from 0x%08x using %d packets",
-            bytes_to_read_write, store_address, max_seq_num);
-
-        if (number_of_elements_to_read_from_sdram <
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-            read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
-                number_of_elements_to_read_from_sdram);
-        } else {
-            read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
-        }
+        io_printf(IO_BUF, "ignoring packet, as still transmitting\n");
     }
-    // start or continue to gather missing packet list
-    else if (msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS ||
-            msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS) {
-        //log_info("starting re send mode");
-        io_printf(
-            IO_BUF,
-            "Received retransmission commmand %d, missing seq sdp packets = %d,"
-            " in retransmission mode = %d\n",
-            msg->data[COMMAND_ID_POSITION], number_of_missing_seq_sdp_packets,
-            in_re_transmission_mode);
+    else{
+        if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
 
-        // if already in a retransmission phase, don't process as normal
-        if (msg->data[COMMAND_ID_POSITION] ==
-                    SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS &&
-                    number_of_missing_seq_sdp_packets != 0) {
-                sark_msg_free((sdp_msg_t *) msg);
-                if (!in_re_transmission_mode) {
-                    io_printf(IO_BUF, "Force Start of retransmission packet\n");
-                    number_of_missing_seq_sdp_packets = 0;
-                    missing_sdp_seq_num_sdram_address[
-                        number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                    number_of_missing_seq_nums_in_sdram += 1;
-                    position_in_read_data = 0;
-                    position_for_retransmission = 0;
-                    in_re_transmission_mode = true;
-                    retransmission_dma_read();
-                }
-        } else {
+            //io_printf(IO_BUF, "starting the send of original data\n");
+            // set sdram position and length
+            has_finished = false;
+            store_address = (address_t*) msg->data[SDRAM_POSITION];
+            bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
+            sark_msg_free((sdp_msg_t *) msg);
 
-            // reset state, as could be here from multiple attempts
-            if (!in_re_transmission_mode) {
+            float max_seq_num_value =
+                (float)bytes_to_read_write / (float)(67 * 4);
+            max_seq_num = ceil(max_seq_num_value);
+            //io_printf(IO_BUF, "address %d, bytes to write %d\n", store_address,
+            //          bytes_to_read_write);
 
-                // put missing sequence numbers into sdram
-                io_printf(IO_BUF, "Storing sequences\n");
-                store_missing_seq_nums(
-                    msg->data,
-                    (msg->length - LENGTH_OF_SDP_HEADER) /
-                     WORD_TO_BYTE_MULTIPLIER,
-                    msg->data[COMMAND_ID_POSITION] ==
-                        SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
+            // reset states
+            first_transmission = true;
+            transmit_dma_pointer = 0;
+            position_in_store = 0;
+            number_of_elements_to_read_from_sdram =
+                (uint)(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
+            //io_printf(IO_BUF, "elements to read %d \n",
+            //          number_of_elements_to_read_from_sdram);
 
-                //log_info("free message");
-                io_printf(IO_BUF, "freeing SDP packet\n");
-                sark_msg_free((sdp_msg_t *) msg);
 
-                // if got all missing packets, start retransmitting them to host
-                if (number_of_missing_seq_sdp_packets == 0) {
-                    // packets all received, add finish flag for DMA stoppage
+            io_printf(
+                IO_BUF, "Sending %d bytes of data from 0x%08x using %d "
+                "packets", bytes_to_read_write, store_address, max_seq_num);
 
-                    io_printf(IO_BUF, "starting resend process\n");
-                    missing_sdp_seq_num_sdram_address[
-                        number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                    number_of_missing_seq_nums_in_sdram += 1;
-                    position_in_read_data = 0;
-                    position_for_retransmission = 0;
-
-                    //log_info("start retransmission");
-                    // start DMA off
-                    in_re_transmission_mode = true;
-                    retransmission_dma_read();
-                } else {
-                    io_printf(IO_BUF, "Sleeping for next retransmission packet\n");
-                }
+            if (number_of_elements_to_read_from_sdram <
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
+                read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                    number_of_elements_to_read_from_sdram);
             } else {
-                sark_msg_free((sdp_msg_t *) msg);
+                read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             }
         }
-    } else {
-        io_printf(IO_BUF, "received unknown SDP packet\n");
-        sark_msg_free((sdp_msg_t *) msg);
+        // start or continue to gather missing packet list
+        else if (msg->data[COMMAND_ID_POSITION] ==
+                SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS ||
+                msg->data[COMMAND_ID_POSITION] ==
+                SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS) {
+            //log_info("starting re send mode");
+            io_printf(
+                IO_BUF,
+                "Received retransmission commmand %d, missing seq sdp "
+                "packets = %d, in retransmission mode = %d "
+                "have_received_start_missing_seq_packet = %d\n",
+                msg->data[COMMAND_ID_POSITION],
+                number_of_missing_seq_sdp_packets,
+                in_re_transmission_mode,
+                have_received_start_missing_seq_packet);
+
+            // if already in a retransmission phase, don't process as normal
+            if (msg->data[COMMAND_ID_POSITION] ==
+                        SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS &&
+                        number_of_missing_seq_sdp_packets != 0) {
+                    sark_msg_free((sdp_msg_t *) msg);
+                    if (!in_re_transmission_mode) {
+                        io_printf(IO_BUF,
+                                  "Force Start of retransmission packet\n");
+                        number_of_missing_seq_sdp_packets = 0;
+                        missing_sdp_seq_num_sdram_address[
+                            number_of_missing_seq_nums_in_sdram] = END_FLAG;
+                        number_of_missing_seq_nums_in_sdram += 1;
+                        position_in_read_data = 0;
+                        position_for_retransmission = 0;
+                        in_re_transmission_mode = true;
+                        retransmission_dma_read();
+                    }
+            } else {
+
+                // reset state, as could be here from multiple attempts
+                if (!in_re_transmission_mode && (
+                        (!have_received_start_missing_seq_packet &&
+                         number_of_missing_seq_sdp_packets == 0 &&
+                         msg->data[COMMAND_ID_POSITION] ==
+                            SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS) ||
+                        (have_received_start_missing_seq_packet &&
+                         number_of_missing_seq_sdp_packets != 0))) {
+
+                    // put missing sequence numbers into sdram
+                    io_printf(IO_BUF, "Storing sequences\n");
+                    store_missing_seq_nums(
+                        msg->data,
+                        (msg->length - LENGTH_OF_SDP_HEADER) /
+                         WORD_TO_BYTE_MULTIPLIER,
+                        msg->data[COMMAND_ID_POSITION] ==
+                            SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
+
+                    //log_info("free message");
+                    io_printf(IO_BUF, "freeing SDP packet\n");
+                    sark_msg_free((sdp_msg_t *) msg);
+
+                    // if got all missing packets, start retransmitting them\
+                    // to host
+                    if (number_of_missing_seq_sdp_packets == 0) {
+                        // packets all received, add finish flag for DMA \
+                        // stoppage
+
+                        io_printf(IO_BUF, "starting resend process\n");
+                        missing_sdp_seq_num_sdram_address[
+                            number_of_missing_seq_nums_in_sdram] = END_FLAG;
+                        number_of_missing_seq_nums_in_sdram += 1;
+                        position_in_read_data = 0;
+                        position_for_retransmission = 0;
+
+                        //log_info("start retransmission");
+                        // start DMA off
+                        in_re_transmission_mode = true;
+                        retransmission_dma_read();
+                    } else {
+                        io_printf(IO_BUF,
+                                  "Sleeping for next retransmission packet\n");
+                    }
+                } else {
+                    sark_msg_free((sdp_msg_t *) msg);
+                }
+            }
+        } else {
+            io_printf(IO_BUF, "received unknown SDP packet\n");
+            sark_msg_free((sdp_msg_t *) msg);
+        }
     }
 }
 
