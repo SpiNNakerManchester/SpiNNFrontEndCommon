@@ -1,6 +1,10 @@
 import subprocess
 import os
 
+DATA_OUT_OUT_FILE = "./fileout.txt"
+DATA_OUT_MISSING_SEQ_NUMS_FILE = "./missing.txt"
+DATA_OUT_BINARY_NAME = "/host_data_receiver"
+
 
 def run_host_data_receiver(
         remote_ip_address, port_value, placement_x, placement_y, placement_p,
@@ -40,22 +44,22 @@ def run_host_data_receiver(
     path_list = os.path.realpath(__file__).split("/")
 
     subprocess.call([
-        "/" + "/".join(path_list[0:len(path_list) - 1]) +
-        "/host_data_receiver",
+        "/" + "/".join(path_list[0:len(path_list) - 1]) + DATA_OUT_BINARY_NAME,
         str(remote_ip_address),
         str(port_value),
         str(placement_x),
         str(placement_y),
         str(placement_p),
-        str("./fileout.txt"),
-        str("./missing.txt"),
+        str(DATA_OUT_OUT_FILE),
+        str(DATA_OUT_MISSING_SEQ_NUMS_FILE),
         str(length_in_bytes),
         str(memory_address),
         str(connection_chip_x),
         str(connection_chip_y),
         str(tag)])
 
-    with open("./fileout.txt", "r") as fp:
+    # read in all data
+    with open(DATA_OUT_OUT_FILE, "r") as fp:
         buf = fp.read()
 
     return buf

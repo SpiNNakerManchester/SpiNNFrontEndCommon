@@ -16,6 +16,7 @@ from spinn_front_end_common.utilities.constants \
     import SDP_PORTS, SYSTEM_BYTES_REQUIREMENT
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinn_front_end_common.common_host_binaries import run_host_data_receiver
 
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
@@ -739,64 +740,25 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: byte array
         """
 
-        message = SDPMessage(
-            sdp_header=SDPHeader(
-                destination_chip_x=placement.x,
-                destination_chip_y=placement.y,
-                destination_cpu=placement.p,
-                destination_port=0,
-                flags=SDPFlag.REPLY_NOT_EXPECTED),
-            data=None)
-
         connection = \
-            transceiver.scamp_connection_selector.get_next_connection(message)
+            transceiver.scamp_connection_selector.get_next_connection(
+                SDPMessage(
+                    sdp_header=SDPHeader(
+                        destination_chip_x=placement.x,
+                        destination_chip_y=placement.y,
+                        destination_cpu=placement.p,
+                        destination_port=0,
+                        flags=SDPFlag.REPLY_NOT_EXPECTED),
+                    data=None))
 
-
-        chip_x = connection.chip_x
-        chip_y = connection.chip_y
-
-        # =======================================================================
-        # receiver = host_data_receiver()
-        # buf = receiver.get_data_for_python(str(connection.remote_ip_address),
-        #                   int(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
-        #                   int(placement.x),
-        #                   int(placement.y),
-        #                   int(placement.p),
-        #                   int(length_in_bytes),
-        #                   int(memory_address),
-        #                   int(chip_x),
-        #                   int(chip_y),
-        #                   int(self._tag))
-        # =======================================================================
-
-        path_list = os.path.realpath(__file__).split("/")
-
-        p = subprocess.call([
-            "/" + "/".join(path_list[0:len(path_list) - 1]) +
-            "/host_data_receiver",
-            str(connection.remote_ip_address),
-            str(SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
-            str(placement.x),
-            str(placement.y),
-            str(placement.p),
-            str("./fileout.txt"),
-            str("./missing.txt"),
-            str(length_in_bytes),
-            str(memory_address),
-            str(chip_x),
-            str(chip_y),
-            str(self._tag)])
-
-        with open("./fileout.txt", "r") as fp:
-            buf = fp.read()
-
-        return bytearray(buf)
-
-    def get_iptag(self):
-        return self._tag
-
-    def get_port(self):
-        return SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value
+        return bytearray(run_host_data_receiver(
+            remote_ip_address=connection.remote_ip_address,
+            port_value=SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
+            placement_x=placement.x, placement_y=placement.y,
+            placement_p=placement.p, length_in_bytes=length_in_bytes,
+            memory_address=memory_address, tag=self._tag,
+            connection_chip_x=connection.chip_x,
+            connection_chip_y=connection.chip_y))
 
     @staticmethod
     def _print_missing(seq_nums):

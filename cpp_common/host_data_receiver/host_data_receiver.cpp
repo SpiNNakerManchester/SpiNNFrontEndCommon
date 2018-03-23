@@ -99,7 +99,8 @@ void host_data_receiver::send_initial_command(
     //Build an SCP request to set up the IP Tag associated to this socket
     char *scp_req = build_scp_req((uint16_t) 26, receiver->get_local_port(),
             1, receiver->get_local_ip());
-    fprintf(stderr, "port%d\n", receiver->get_local_port());
+
+    //fprintf(stderr, "port%d\n", receiver->get_local_port());
 
     SDPMessage ip_tag_message = SDPMessage(this->chip_x, this->chip_y, 0, 0,
             SDPMessage::REPLY_EXPECTED, 255, 255, 255, 0, 0, scp_req,
