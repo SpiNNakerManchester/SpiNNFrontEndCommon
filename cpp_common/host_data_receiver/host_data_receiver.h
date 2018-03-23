@@ -15,9 +15,9 @@
 #include <thread>
 //#include <pybind11/pybind11.h>
 
-#include "SDPHeader.h"
-#include "SDPMessage.h"
-#include "UDPConnection.h"
+#include "../common/SDPHeader.h"
+#include "../common/SDPMessage.h"
+#include "../common/UDPConnection.h"
 #include "PQueue.h"
 
 class host_data_receiver {
