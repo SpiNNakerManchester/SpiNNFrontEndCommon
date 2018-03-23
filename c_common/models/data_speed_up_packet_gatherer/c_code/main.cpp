@@ -1,26 +1,27 @@
 #include "host_data_receiver.h"
 
-int main(int argc, char *argv[])  {
-
+int main(int argc, char *argv[])
+{
     // constants for arguments
     static const int N_ARGS = 13;
     static const int IP_ADDRESS_SIZE = 24;
     static const int FILE_PATH_SIZE = 1024;
 
     // enum for arg positions
-    enum arg_placements{
+    enum arg_placements {
         PLACEMENT_X_POSITION = 3,
         PLACEMENT_Y_POSITION = 4,
         PLACEMENT_P_POSITION = 5,
         PORT_NUMBER_POSITION = 2,
         HOSTNAME_POSITION = 1,
         FILE_PATH_READ_POSITION = 6,
-		FILE_PATH_MISS_POSITION = 7,
-		LENGTH_IN_BYTES = 8,
-		MEMORY_ADDRESS = 9,
-		CHIP_X = 10,
-		CHIP_Y = 11,
-		IPTAG = 12};
+        FILE_PATH_MISS_POSITION = 7,
+        LENGTH_IN_BYTES = 8,
+        MEMORY_ADDRESS = 9,
+        CHIP_X = 10,
+        CHIP_Y = 11,
+        IPTAG = 12
+    };
 
     // variables
     int i;
@@ -40,10 +41,8 @@ int main(int argc, char *argv[])  {
     int chip_y = 0;
     int iptag = 0;
 
-
-
     // placement x, placement y, placement p, port, host, data loc
-    if(argc != N_ARGS) {
+    if (argc != N_ARGS) {
         printf("not the correct number of parameters");
         return 1;
     }
@@ -62,9 +61,9 @@ int main(int argc, char *argv[])  {
     chip_y = atoi(argv[CHIP_Y]);
     iptag = atoi(argv[IPTAG]);
 
-    host_data_receiver collector(
-        port_connection, placement_x, placement_y, placement_p, hostname,
-        length_in_bytes, memory_address, chip_x, chip_y, iptag);
+    host_data_receiver collector(port_connection, placement_x, placement_y,
+            placement_p, hostname, length_in_bytes, memory_address, chip_x,
+            chip_y, iptag);
 
     collector.get_data_threadable(file_pathr, file_pathm);
 
