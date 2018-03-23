@@ -26,6 +26,7 @@ import logging
 import math
 import time
 import struct
+import subprocess
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
 
@@ -53,7 +54,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_provenance_data_items",
         "_report_path",
         "_write_data_speed_up_report",
-        "_view"]
+        "_view",
+        "_tag",
+        "_data_extractor_use_c_code"]
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
     TRAFFIC_TYPE = EdgeTrafficType.FIXED_ROUTE
@@ -62,7 +65,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     REPORT_NAME = "routers_used_in_speed_up_process.txt"
 
     # size of config region in bytes
-    CONFIG_SIZE = 16
+    CONFIG_SIZE = 20
 
     # items of data a SDP packet can hold when SCP header removed
     DATA_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -96,11 +99,12 @@ class DataSpeedUpPacketGatherMachineVertex(
     # number of items used up by the re transmit code for its header
     SDP_RETRANSMISSION_HEADER_SIZE = 2
 
-    # base key (really nasty hack to tie in fixed route keys)
+    # base keys (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
     NEW_SEQ_KEY = 0xFFFFFFF8
     FIRST_DATA_KEY = 0xFFFFFFF7
     END_FLAG_KEY = 0xFFFFFFF6
+    ODD_DATA_PACKET_KEY = 0xFFFFFFF5
 
     # to use with mc stuff
     BASE_MASK = 0xFFFFFFFB
@@ -120,8 +124,9 @@ class DataSpeedUpPacketGatherMachineVertex(
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 
     def __init__(
-            self, x, y, ip_address, report_default_directory,
-            write_data_speed_up_report, constraints=None):
+            self, x, y, ip_address, data_extractor_use_c_code,
+            report_default_directory, write_data_speed_up_report,
+            constraints=None):
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
             constraints=constraints)
@@ -130,6 +135,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._view = None
         self._max_seq_num = None
         self._output = None
+        self._tag = None
+        self._data_extractor_use_c_code = data_extractor_use_c_code
 
         # Create a connection to be used
         self._connection = SCAMPConnection(
@@ -203,18 +210,23 @@ class DataSpeedUpPacketGatherMachineVertex(
             new_seq_key = base_key + self.NEW_SEQ_KEY_OFFSET
             first_data_key = base_key + self.FIRST_DATA_KEY_OFFSET
             end_flag_key = base_key + self.END_FLAG_KEY_OFFSET
+            odd_data_packet_key = base_key + self.ODD_DATA_PACKET_KEY
         else:
             new_seq_key = self.NEW_SEQ_KEY
             first_data_key = self.FIRST_DATA_KEY
             end_flag_key = self.END_FLAG_KEY
+            odd_data_packet_key = self.ODD_DATA_PACKET_KEY
+
         spec.switch_write_focus(_DATA_REGIONS.CONFIG.value)
         spec.write_value(new_seq_key)
         spec.write_value(first_data_key)
         spec.write_value(end_flag_key)
+        spec.write_value(odd_data_packet_key)
 
         # locate the tag id for our data and update with port
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
+        self._tag = iptag.tag
         iptag.port = self._connection.local_port
         spec.write_value(iptag.tag)
 
@@ -272,17 +284,16 @@ class DataSpeedUpPacketGatherMachineVertex(
                         [top_level_name, "lost_seq_nums", chip_name, last_name,
                          iteration_name, "iteration_{}".format(i)],
                         n_lost_seq_nums, report=n_lost_seq_nums > 0,
-                        message=(
-                            "During the extraction of data of {} bytes from "
-                            "memory address {}, attempt {} had {} sequences "
-                            "that were lost. These had to be retransmitted and"
-                            " will have slowed down the data extraction "
-                            "process. Reduce the number of executing "
-                            "applications and remove routers between yourself"
-                            " and the SpiNNaker machine to reduce the chance "
-                            "of this occurring."
-                            .format(length_in_bytes, memory_address, i,
-                                    n_lost_seq_nums))))
+                        message=
+                        "During the extraction of data of {} bytes from "
+                        "memory address {}, attempt {} had {} sequences that "
+                        "were lost. These had to be retransmitted and will "
+                        "have slowed down the data extraction process. "
+                        "Reduce the number of executing applications and "
+                        "remove routers between yourself and the SpiNNaker "
+                        "machine to reduce the chance of this occurring."
+                        .format(length_in_bytes, memory_address, i,
+                                n_lost_seq_nums)))
         return prov_items
 
     @staticmethod
@@ -293,6 +304,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
             15, 15, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
+        extra_monitor_cores_for_router_timeout[0].\
+            set_reinjection_router_emergency_timeout(
+            15, 0, transceiver, placements,
+            extra_monitor_cores_for_router_timeout)
 
     @staticmethod
     def unset_cores_for_data_extraction(
@@ -300,6 +315,10 @@ class DataSpeedUpPacketGatherMachineVertex(
             placements):
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
             15, 4, transceiver, placements,
+            extra_monitor_cores_for_router_timeout)
+        extra_monitor_cores_for_router_timeout[0].\
+            set_reinjection_router_emergency_timeout(
+            0, 0, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
 
     def get_data(
@@ -335,6 +354,26 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placement, memory_address,
                 length_in_bytes].append((end - start, [0]))
             return data
+
+        if self._data_extractor_use_c_code:
+            return self._execute_c_version(
+                placement, transceiver, length_in_bytes, memory_address)
+        else:
+            return self._execute_python_version(
+                placement, transceiver, length_in_bytes, memory_address,
+                start, fixed_routes)
+
+    def _execute_python_version(
+            self, placement, transceiver, length_in_bytes, memory_address,
+            start, fixed_routes):
+        """ executes the c++ version of the reception
+        :param placement: placement object
+        :param transceiver: spinnman instance
+        :param length_in_bytes: length in bytes to read
+        :param memory_address: memory address to read from
+        :return: byte array
+        :rtype: byte array
+        """
 
         data = _THREE_WORDS.pack(
             self.SDP_PACKET_START_SENDING_COMMAND_ID,
@@ -638,6 +677,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         # pylint: disable=too-many-arguments
         if view_end_position > len(self._output):
+            self._print_out_packet_data(data)
             raise Exception(
                 "I'm trying to add to my output data, but am trying to add "
                 "outside my acceptable output positions! max is {} and "
@@ -673,6 +713,76 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.WORD_TO_BYTE_CONVERTER)
         n_sequence_nums = math.ceil(n_sequence_nums)
         return int(n_sequence_nums)
+
+    def _execute_c_version(
+            self, placement, transceiver, length_in_bytes, memory_address):
+        """ executes the c++ version of the reception
+        
+        :param placement: placement object
+        :param transceiver: spinnman instance
+        :param length_in_bytes: length in bytes to read
+        :param memory_address: memory address to read from
+        :return: byte array
+        :rtype: byte array
+        """
+
+        message = SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=placement.x,
+                destination_chip_y=placement.y,
+                destination_cpu=placement.p,
+                destination_port=0,
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=None)
+
+        connection = \
+            transceiver.scamp_connection_selector.get_next_connection(message)
+        chip_x = connection.chip_x
+        chip_y = connection.chip_y
+
+
+        #=======================================================================
+        # receiver = host_data_receiver()
+        # buf = receiver.get_data_for_python(str(connection.remote_ip_address),
+        #                   int(constants.SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
+        #                   int(placement.x),
+        #                   int(placement.y),
+        #                   int(placement.p),
+        #                   int(length_in_bytes),
+        #                   int(memory_address),
+        #                   int(chip_x),
+        #                   int(chip_y),
+        #                   int(self._tag))
+        #=======================================================================
+
+        path_list = os.path.realpath(__file__).split("/")
+
+        p = subprocess.call([
+            "/" + "/".join(path_list[0:len(path_list)-1]) +
+            "/host_data_receiver",
+            str(connection.remote_ip_address),
+            str(SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
+            str(placement.x),
+            str(placement.y),
+            str(placement.p),
+            str("./fileout.txt"),
+            str("./missing.txt"),
+            str(length_in_bytes),
+            str(memory_address),
+            str(chip_x),
+            str(chip_y),
+            str(self._tag)])
+
+        with open("./fileout.txt", "r") as fp:
+            buf = fp.read()
+
+        return bytearray(buf)
+
+    def get_iptag(self):
+        return self._tag
+
+    def get_port(self):
+        return SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value
 
     @staticmethod
     def _print_missing(seq_nums):

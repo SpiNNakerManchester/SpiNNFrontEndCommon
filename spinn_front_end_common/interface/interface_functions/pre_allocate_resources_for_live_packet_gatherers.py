@@ -20,8 +20,9 @@ class PreAllocateResourcesForLivePacketGatherers(object):
 
         :param live_packet_gatherer_parameters:\
             the LPG parameters requested by the script
-        :param previous_allocated_resources: other pre-allocated resources
+        :param pre_allocated_resources: other pre-allocated resources
         :param machine: the spinnaker machine as discovered
+        :param using_python: 
         :return: pre allocated resources
         """
 
