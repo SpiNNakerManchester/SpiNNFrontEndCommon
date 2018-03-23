@@ -1,10 +1,10 @@
-INSTALL_DIRS = front_end_common_lib
-BUILD_DIRS = models
+INSTALL_DIRS = host_data_receiver
+BUILD_DIRS = host_data_receiver
 
 all: install build
 	
 build: install $(BUILD_DIRS)
-	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d || exit $$?; done
+	@for d in $(BUILD_DIRS); do $(MAKE) -C $$d build || exit $$?; done
 
 install: $(INSTALL_DIRS)
 	@for d in $(INSTALL_DIRS); do $(MAKE) -C $$d install || exit $$?; done

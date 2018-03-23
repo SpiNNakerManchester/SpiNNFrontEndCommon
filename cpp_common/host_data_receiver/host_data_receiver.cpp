@@ -17,7 +17,7 @@ static const int TIMEOUT_PER_SENDING_IN_MICROSECONDS = 10000;
 
 // consts for data and converting between words and bytes
 //static const int SDRAM_READING_SIZE_IN_BYTES_CONVERTER = 1024 * 1024;
-static const int DATA_PER_FULL_PACKET = #include <host_data_receiver.h>68;
+static const int DATA_PER_FULL_PACKET = 68;
 static const int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = DATA_PER_FULL_PACKET
         - 1;
 static const int WORD_TO_BYTE_CONVERTER = 4;

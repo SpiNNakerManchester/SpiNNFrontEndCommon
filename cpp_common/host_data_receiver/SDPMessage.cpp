@@ -15,7 +15,7 @@ SDPMessage::SDPMessage(
         int length)
 {
     this->data = data;
-    this->data_length = length;#include <SDPMessage.h>
+    this->data_length = length;
     this->header = (SDPHeader *) malloc(sizeof(SDPHeader));
 
     *(this->header) = SDPHeader(destination_chip_x, destination_chip_y,

@@ -15,7 +15,7 @@ SDPHeader::SDPHeader(
     this->destination_chip_x = (uint8_t) destination_chip_x;
     this->destination_chip_y = (uint8_t) destination_chip_y;
     this->destination_chip_p = (uint8_t) destination_chip_p;
-    this->destination_port = (uint8_t) destinatio#include <SDPHeader.h>n_port;
+    this->destination_port = (uint8_t) destination_port;
     this->flags = (uint8_t) flags;
     this->tag = (uint8_t) tag;
     this->source_port = (uint8_t) source_port;
