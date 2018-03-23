@@ -25,7 +25,6 @@ from spinnman.connections.udp_packet_connections import SCAMPConnection
 from collections import defaultdict
 import os
 import logging
-import subprocess
 import math
 import time
 import struct
@@ -385,7 +384,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :param transceiver: spinnman instance
         :param length_in_bytes: length in bytes to read
         :param memory_address: memory address to read from
-        :param fixed_routes: the fixed routes 
+        :param fixed_routes: the fixed routes
         :return: byte array
         :rtype: byte array
         """

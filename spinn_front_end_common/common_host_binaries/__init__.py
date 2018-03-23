@@ -10,21 +10,22 @@ def run_host_data_receiver(
         remote_ip_address, port_value, placement_x, placement_y, placement_p,
         length_in_bytes, memory_address, tag, connection_chip_x,
         connection_chip_y):
-    """ runs the host receiver c code as a sub process 
-    
-    :param remote_ip_address: the remote ip address 
-    :param port_value: 
-    :param placement_x: 
-    :param placement_y: 
-    :param placement_p: 
-    :param length_in_bytes: 
-    :param memory_address: 
-    :param tag: 
-    :param connection_chip_x: 
-    :param connection_chip_y: 
-    :return: 
-    
-    
+    """ runs the host receiver c code as a sub process
+
+    :param remote_ip_address: the remote ip address for the spinnaker machine
+    :param port_value: the port value for data out packets
+    :param placement_x: the x coordinate for where data is going to
+    :param placement_y: the y coordinate for where data is going to
+    :param placement_p: the p coordinate for where data is going to
+    :param length_in_bytes: the number of bytes to extract
+    :param memory_address: the memory address to start reading from
+    :param tag: the iptag to utilise
+    :param connection_chip_x: the chip x of the connection we're going to use
+    :param connection_chip_y: the chip y of the connection we're going to use
+    :return: a string of the data
+    :rtype string
+
+
     """
     # =======================================================================
     # receiver = host_data_receiver()
