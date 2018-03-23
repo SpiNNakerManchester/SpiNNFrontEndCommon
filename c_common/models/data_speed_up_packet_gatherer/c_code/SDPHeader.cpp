@@ -67,4 +67,3 @@ int SDPHeader::length_bytes()
 {
     return this->length;
 }
-

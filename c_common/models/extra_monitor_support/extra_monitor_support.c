@@ -1100,10 +1100,10 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                     //io_printf(IO_BUF, "freeing SDP packet\n");
                     sark_msg_free((sdp_msg_t *) msg);
 
-                    // if got all missing packets, start retransmitting them\
+                    // if got all missing packets, start retransmitting them
                     // to host
                     if (number_of_missing_seq_sdp_packets == 0) {
-                        // packets all received, add finish flag for DMA \
+                        // packets all received, add finish flag for DMA
                         // stoppage
 
                         //io_printf(IO_BUF, "starting resend process\n");

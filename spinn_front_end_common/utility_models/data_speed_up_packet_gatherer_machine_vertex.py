@@ -376,7 +376,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _execute_python_version(
             self, placement, transceiver, length_in_bytes, memory_address,
             start, fixed_routes):
-        """ executes the c++ version of the reception
+        """ executes the python version of the reception
         :param placement: placement object
         :param transceiver: spinnman instance
         :param length_in_bytes: length in bytes to read

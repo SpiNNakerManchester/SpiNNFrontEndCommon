@@ -11,7 +11,7 @@ class SDPHeader {
 public:
     SDPHeader(
             int destination_chip_x,
-            int destination_chip_y,#include <SDPMessage.h#include <UDPConnection.h>>
+            int destination_chip_y,
             int destination_chip_p,
             int destination_port,
             int flags,

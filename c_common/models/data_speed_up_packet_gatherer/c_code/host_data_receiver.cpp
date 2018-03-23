@@ -163,16 +163,18 @@ bool host_data_receiver::retransmit_missing_sequences(
     miss_dim = (uint32_t) j;
 
     //No missing sequences
-    if (miss_dim == 0)
+    if (miss_dim == 0){
         return true;
+    }
 
     n_packets = 1;
     length_via_format2 = miss_dim - (DATA_PER_FULL_PACKET - 2);
 
-    if (length_via_format2 > 0)
+    if (length_via_format2 > 0){
         n_packets += (uint32_t) ceil(
                 (float) (length_via_format2)
                         / (float) (DATA_PER_FULL_PACKET - 1));
+    }
 
     // Transmit missing sequences as a new SDP Packet
     first = true;
@@ -338,13 +340,15 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
             return;
         }
 
-        if (recvd)
+        if (recvd){
             messqueue->push(p);
+        }
 
         //If the other thread threw an exception(no need for mutex, in the
         // worst case this thread will add an additional value to the queue)
-        if (this->pcr.thrown == true)
+        if (this->pcr.thrown == true){
             return;
+        }
 
     } while (recvd);
 }
@@ -389,8 +393,9 @@ void host_data_receiver::processor_thread(UDPConnection *sender)
             return;
         }
 
-        if (this->rdr.thrown == true)
+        if (this->rdr.thrown == true){
             return;
+        }
     }
 
     // close socket and inform the reader that transmission is completed
