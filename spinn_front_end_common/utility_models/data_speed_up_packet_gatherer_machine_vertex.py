@@ -1,10 +1,11 @@
 from spinn_utilities.overrides import overrides
+from spinn_utilities.log import FormatAdapter
 
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
-from spinn_utilities.log import FormatAdapter
+
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.interface.provenance import \
@@ -29,6 +30,8 @@ import time
 import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
+
+
 # ===============================================================================
 # from spinn_front_end_common.utility_models.host_data_receiver import \
 # host_data_receiver
@@ -747,6 +750,8 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         connection = \
             transceiver.scamp_connection_selector.get_next_connection(message)
+
+
         chip_x = connection.chip_x
         chip_y = connection.chip_y
 
