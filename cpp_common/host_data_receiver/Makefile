@@ -1,4 +1,4 @@
-INSTALL_LOCATION=../../../../spinn_front_end_common/utility_models
+INSTALL_LOCATION=../../spinn_front_end_common/common_host_binaries
 
 SRCS=SDPHeader.cpp SDPMessage.cpp UDPConnection.cpp host_data_receiver.cpp main.cpp
 HEADERS=PQueue.h SDPHeader.h SDPMessage.h UDPConnection.h host_data_receiver.h
