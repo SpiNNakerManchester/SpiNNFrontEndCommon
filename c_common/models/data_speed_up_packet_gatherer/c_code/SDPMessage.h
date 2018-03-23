@@ -7,9 +7,9 @@ class SDPMessage{
 
     public:
         SDPMessage(int destination_chip_x, int destination_chip_y,
-                int destination_chip_p, int destination_port, int flags,
-                int tag, int source_port, int source_cpu, int source_chip_x,
-                int source_chip_y, char * data, int length);
+                   int destination_chip_p, int destination_port, int flags,
+                   int tag, int source_port, int source_cpu, int source_chip_x,
+                   int source_chip_y, char * data, int length);
         //~SDPMessage();
 
         char * convert_to_byte_array();

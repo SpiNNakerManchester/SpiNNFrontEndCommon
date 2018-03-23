@@ -10,8 +10,9 @@ class SDPHeader{
 
 	public:
 		SDPHeader(int destination_chip_x, int destination_chip_y,
-        		int destination_chip_p, int destination_port, int flags, int tag, 
-        		int source_port, int source_cpu, int source_chip_x, int source_chip_y);
+        		  int destination_chip_p, int destination_port, int flags,
+        		  int tag, int source_port, int source_cpu, int source_chip_x,
+        		  int source_chip_y);
 		//~SDPHeader();
 
 		char * convert_byte_array();

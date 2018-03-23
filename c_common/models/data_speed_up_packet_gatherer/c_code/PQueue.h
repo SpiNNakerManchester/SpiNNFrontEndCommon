@@ -10,16 +10,12 @@
 
 using namespace std::literals::chrono_literals;
 
-struct TimeoutQueueException : public std::exception {
-
-  
-};
+struct TimeoutQueueException : public std::exception {};
 
 template <typename T>
 class PQueue {
 
  public:
-  
   T pop() {
 
     std::unique_lock<std::mutex> mlock(mutex_);

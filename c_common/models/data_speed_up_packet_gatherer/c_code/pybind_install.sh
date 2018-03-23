@@ -11,6 +11,7 @@ cmake ..
 make
 filename=$(find . -name "host_data_receiver*so")
 mv $filename host_data_receiver.so
-cp host_data_receiver.so ../../../../../../spinn_front_end_common/utility_models/
+cp host_data_receiver.so \
+   ../../../../../../spinn_front_end_common/utility_models/
 cd ../..
 rm -rf pybind11-demo
