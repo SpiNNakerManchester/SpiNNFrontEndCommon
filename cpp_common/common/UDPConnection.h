@@ -51,10 +51,6 @@ public:
             char *remote_host = NULL);
     ~UDPConnection();
     int receive_data(char *data, int length);
-    int receive_data_with_address(
-            char *data,
-            int length,
-            struct sockaddr *address);
     void send_data(char *data, int length);
     void send_data_to(char *data, int length, struct sockaddr* address);
     uint32_t get_local_port();

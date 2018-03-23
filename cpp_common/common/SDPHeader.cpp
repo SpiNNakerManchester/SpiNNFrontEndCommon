@@ -28,7 +28,6 @@ SDPHeader::SDPHeader(
 char * SDPHeader::convert_byte_array()
 {
     uint8_t tmp;
-    uint8_t *a;
     char * message_data = (char *) malloc(this->length);
 
     //Build SDP Header
@@ -36,10 +35,9 @@ char * SDPHeader::convert_byte_array()
     //Dest_chip_x - Source_chip_y - Source_chip_x
 
     tmp = 0;
+    message_data[0] = 0;
+    message_data[1] = 0;
 
-    memcpy(message_data, &tmp, sizeof(uint8_t));
-
-    memcpy(message_data + sizeof(uint8_t), &tmp, sizeof(uint8_t));
     memcpy(message_data + 2 * sizeof(uint8_t), &this->flags, sizeof(uint8_t));
     memcpy(message_data + 3 * sizeof(uint8_t), &this->tag, sizeof(uint8_t));
 
