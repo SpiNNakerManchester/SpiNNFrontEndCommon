@@ -23,23 +23,24 @@ typedef unsigned short ushort;
 #include <string.h>
 #include <iostream>
 #include <cstdint>
+#include <vector>
+#include "SDPMessage.h"
 
 using namespace std;
 
-static inline struct sockaddr *get_address(char *ip_address, int port)
+static inline struct sockaddr *get_address(const char *ip_address, int port)
 {
-    struct hostent *lookup_address = gethostbyname(ip_address);
+    hostent *lookup_address = gethostbyname(ip_address);
     if (lookup_address == NULL) {
         throw "local_host address not found";
     }
-    struct sockaddr_in *local_address = (struct sockaddr_in *) malloc(
-            sizeof(struct sockaddr_in));
+    sockaddr_in *local_address = new sockaddr_in();
     local_address->sin_family = AF_INET;
-    memcpy(&(local_address->sin_addr.s_addr), lookup_address->h_addr,
+    memcpy(&local_address->sin_addr.s_addr, lookup_address->h_addr,
             lookup_address->h_length);
     local_address->sin_port = htons(port);
 
-    return (struct sockaddr *) local_address;
+    return (sockaddr *) local_address;
 }
 
 class UDPConnection {
@@ -51,12 +52,21 @@ public:
             char *remote_host = NULL);
     ~UDPConnection();
     int receive_data(char *data, int length);
+    int receive_data(vector<uint8_t> &data);
     int receive_data_with_address(
             char *data,
             int length,
             struct sockaddr *address);
-    void send_data(char *data, int length);
-    void send_data_to(char *data, int length, struct sockaddr* address);
+    int receive_data_with_address(
+	    vector<uint8_t> &data,
+            struct sockaddr &address);
+    void send_data(const char *data, int length);
+    void send_data(const vector<uint8_t> &data);
+    void send_message(SDPMessage &message);
+    void send_data_to(
+	    const char *data, int length, const struct sockaddr* address);
+    void send_data_to(
+	    const vector<uint8_t> &data, const struct sockaddr &address);
     uint32_t get_local_port();
     uint32_t get_local_ip();
 

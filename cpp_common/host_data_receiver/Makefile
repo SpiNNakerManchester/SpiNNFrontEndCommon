@@ -12,7 +12,7 @@ all: install
 
 build: $(TARGET)
 $(TARGET): $(SRCS) $(HEADERS)
-	$(CXX) -o $@ $(SRCS) -std=c++14 $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $(SRCS) -std=c++14 $(LIBS)
 
 install: $(TARGET)
 	$(INSTALL) -c $(TARGET) $(INSTALL_LOCATION)
