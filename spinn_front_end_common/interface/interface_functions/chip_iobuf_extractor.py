@@ -45,13 +45,19 @@ class ChipIOBufExtractor(object):
                 mode = "a"
 
             # write iobuf to file.
-            with open(file_name, mode) as writer:
-                writer.write(iobuf.iobuf)
+            self._replace_string(iobuf.iobuf, file_name, mode)
 
         # check iobuf for errors
         for io_buffer in progress.over(io_buffers):
             self._check_iobuf_for_error(io_buffer, error_entries, warn_entries)
         return error_entries, warn_entries
+
+    def _replace_string(self, iobuf, file_name, mode):
+        with open(file_name, mode) as writer:
+            for line in iobuf.split("\n"):
+                writer.write("*")
+                writer.write(line)
+                writer.write("\n")
 
     def _check_iobuf_for_error(self, iobuf, error_entries, warn_entries):
         lines = iobuf.iobuf.split("\n")
