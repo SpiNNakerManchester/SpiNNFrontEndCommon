@@ -1,4 +1,5 @@
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.make_tools.replacer import Replacer
 import re
 import os
 
@@ -26,6 +27,7 @@ class ChipIOBufExtractor(object):
             self, core_subsets, transceiver, provenance_file_path):
         progress = ProgressBar(
             len(core_subsets), "Extracting IOBUF from the machine")
+        replacer = Replacer()
         error_entries = list()
         warn_entries = list()
 
@@ -45,19 +47,14 @@ class ChipIOBufExtractor(object):
                 mode = "a"
 
             # write iobuf to file.
-            self._replace_string(iobuf.iobuf, file_name, mode)
+            with open(file_name, mode) as writer:
+                for line in iobuf.iobuf.split("\n"):
+                    writer.write(replacer.replace(line))
 
         # check iobuf for errors
         for io_buffer in progress.over(io_buffers):
             self._check_iobuf_for_error(io_buffer, error_entries, warn_entries)
         return error_entries, warn_entries
-
-    def _replace_string(self, iobuf, file_name, mode):
-        with open(file_name, mode) as writer:
-            for line in iobuf.split("\n"):
-                writer.write("*")
-                writer.write(line)
-                writer.write("\n")
 
     def _check_iobuf_for_error(self, iobuf, error_entries, warn_entries):
         lines = iobuf.iobuf.split("\n")
