@@ -1,5 +1,6 @@
 #include "host_data_receiver.h"
 #include <vector>
+#include <cassert>
 
 using namespace std;
 //namespace py = pybind11;
@@ -44,33 +45,23 @@ host_data_receiver::host_data_receiver(
         int chip_x,
         int chip_y,
         int iptag)
+    : port_connection(port_connection),
+      placement_x(placement_x), placement_y(placement_y),
+      placement_p(placement_p), hostname(hostname),
+      length_in_bytes((uint32_t) length_in_bytes),
+      memory_address((uint32_t) memory_address),
+      chip_x(chip_x), chip_y(chip_y), iptag(iptag),
+      buffer(length_in_bytes)
 {
-    this->port_connection = port_connection;
-    this->placement_x = placement_x;
-    this->placement_y = placement_y;
-    this->placement_p = placement_p;
-    this->hostname = hostname;
-    this->length_in_bytes = (uint32_t) length_in_bytes;
-    this->memory_address = (uint32_t) memory_address;
-    this->chip_x = chip_x;
-    this->chip_y = chip_y;
-    this->iptag = iptag;
-
-    // allocate queue for messages
-    messqueue = new PQueue<packet>();
-
-    buffer = new char[length_in_bytes];
-
-    this->max_seq_num = calculate_max_seq_num(length_in_bytes);
-    this->rdr.thrown = false;
-    this->pcr.thrown = false;
-    this->finished = false;
-
+    max_seq_num = calculate_max_seq_num(length_in_bytes);
+    rdr.thrown = false;
+    pcr.thrown = false;
+    finished = false;
     miss_cnt = 0;
 }
 
 void host_data_receiver::receive_message(
-	UDPConnection &receiver, vector<uint8_t> working_buffer)
+	UDPConnection &receiver, vector<uint8_t> &working_buffer)
 {
     working_buffer.resize(300);
     receiver.receive_data(working_buffer);
@@ -90,6 +81,7 @@ void host_data_receiver::send_initial_command(
 	uint32_t port;
 	uint32_t ip;
     };
+    assert(sizeof(SetIPTagMessage) == 16);
     SetIPTagMessage scp_req;
     scp_req.cmd = SET_IP_TAG;
     scp_req.seq = 0;
@@ -212,8 +204,7 @@ bool host_data_receiver::retransmit_missing_sequences(
             length_left_in_packet -= 1;
         }
 
-        memcpy(((char *) data) + offset * sizeof(uint32_t),
-                missing_seq + seq_num_offset,
+        memcpy(&data[offset], missing_seq + seq_num_offset,
                 size_of_data_left_to_transmit * sizeof(uint32_t));
 
         seq_num_offset += length_left_in_packet;
@@ -257,14 +248,13 @@ void host_data_receiver::process_data(
         UDPConnection &sender,
         bool &finished,
         set<uint32_t> &received_seq_nums,
-        char *recvdata,
-        int datalen)
+        vector<uint8_t> &recvdata)
 {
     //Data size of the packet
-    int length_of_data = datalen;
+    int length_of_data = recvdata.size();
 
     uint32_t first_packet_element;
-    memcpy(&first_packet_element, recvdata, sizeof(uint32_t));
+    memcpy(&first_packet_element, recvdata.data(), sizeof(uint32_t));
 
     // Unpack the first word
     uint32_t seq_num = first_packet_element & 0x7FFFFFFF;
@@ -287,7 +277,7 @@ void host_data_receiver::process_data(
     if (is_end_of_stream && (length_of_data == END_FLAG_SIZE_IN_BYTES)) {
         // empty
     } else {
-        memcpy(buffer + offset, recvdata + SEQUENCE_NUMBER_SIZE,
+        memcpy(buffer.data() + offset, recvdata.data() + SEQUENCE_NUMBER_SIZE,
                 true_data_length - offset);
     }
 
@@ -307,14 +297,12 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 {
     // While socket is open add messages to the queue
     try {
-	int recvd;
-	packet p;
+	std::vector<uint8_t> packet;
 
 	do {
-            recvd = receiver->receive_data(p.content, 400);
-            p.size = recvd;
-	    if (recvd) {
-		messqueue->push(p);
+	    packet.resize(400);
+	    if (receiver->receive_data(packet)) {
+		messqueue.push(packet);
 	    }
 
 	    // If the other thread threw an exception (no need for mutex, in
@@ -323,28 +311,23 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 	    if (pcr.thrown) {
 		return;
 	    }
-	} while (recvd);
+	} while (!packet.empty() && !finished);
     } catch (char const *e) {
 	rdr.val = e;
 	rdr.thrown = true;
-	return;
     }
 }
 
 void host_data_receiver::processor_thread(UDPConnection *sender)
 {
-    int timeoutcount = 0, datalen;
+    int timeoutcount = 0;
     bool finished = false;
     set<uint32_t> received_seq_nums;
-    packet p;
 
-    while (!finished) {
+    while (!finished && !rdr.thrown) {
         try {
-            p = messqueue->pop();
-            datalen = p.size;
-
-            process_data(*sender, finished, received_seq_nums, p.content,
-                    datalen);
+	    std::vector<uint8_t> p = messqueue.pop();
+            process_data(*sender, finished, received_seq_nums, p);
         } catch (TimeoutQueueException e) {
             if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
                 pcr.val = "ERROR: Failed to hear from the machine. "
@@ -365,25 +348,17 @@ void host_data_receiver::processor_thread(UDPConnection *sender)
             pcr.thrown = true;
             return;
         }
-
-        if (rdr.thrown) {
-            return;
-        }
     }
-
-    // close socket and inform the reader that transmission is completed
-    delete sender;
-    finished = true;
 }
 
 // Function externally callable for data gathering. It returns a buffer
 // containing read data
-char *host_data_receiver::get_data()
+const uint8_t *host_data_receiver::get_data()
 {
     try {
-        // create connection
 	{
-	    UDPConnection sender(0, NULL, 17893, hostname);
+	    // create connection
+	    UDPConnection sender(0, NULL, 17893, hostname.c_str());
 
 	    // send the initial command to start data transmission
 	    send_initial_command(sender, sender);
@@ -395,37 +370,38 @@ char *host_data_receiver::get_data()
 
 	    reader.join();
 	    processor.join();
+	    // The socket is closed automatically at this point
 	}
 
         if (pcr.thrown) {
-            cout << pcr.val << endl;
+            cerr << pcr.val << endl;
             return NULL;
         } else if (rdr.thrown && !finished) {
-            cout << rdr.val << endl;
+            cerr << rdr.val << endl;
             return NULL;
         }
+	return buffer.data();
     } catch (char const *e) {
-        cout << e << endl;
+        cerr << e << endl;
         return NULL;
     }
-
-    return buffer;
 }
 
-/*
- //Same behavior of get_data() function, but returns a valid type for python
- code
- py::bytes host_data_receiver::get_data_for_python(
- char *hostname, int port_connection, int placement_x, int placement_y,
- int placement_p, int length_in_bytes, int memory_address, int chip_x,
- int chip_y, int iptag) {
+#if 0
+// Same behaviour of get_data() function, but returns a valid type for python
+// code
+py::bytes host_data_receiver::get_data_for_python(
+	char *hostname, int port_connection, int placement_x, int placement_y,
+	int placement_p, int length_in_bytes, int memory_address, int chip_x,
+	int chip_y, int iptag) {
+    auto data_buffer = get_data();
 
- get_data();
+    std::string *str = new string(
+	    (const char *) data_buffer, length_in_bytes);
 
- std::string *str = new string((const char *)this->buffer, length_in_bytes);
-
- return py::bytes(*str);
- }*/
+    return py::bytes(*str);
+}
+#endif
 
 // Function externally callable for data gathering. It can be called by
 // multiple threads simultaneously
@@ -435,29 +411,28 @@ void host_data_receiver::get_data_threadable(
 {
     FILE *fp1, *fp2;
 
-    get_data();
+    auto data_buffer = get_data();
 
     fp1 = fopen(filepath_read, "wb");
     fp2 = fopen(filepath_missing, "w");
 
-    fwrite(this->buffer, sizeof(char), length_in_bytes, fp1);
+    fwrite(data_buffer, sizeof(uint8_t), length_in_bytes, fp1);
 
     fprintf(fp2, "%d\n", miss_cnt);
 
     fclose(fp1);
     fclose(fp2);
 }
-/*
- //Python Binding
 
- PYBIND11_MODULE(host_data_receiver, m) {
+#if 0
+//Python Binding
 
- m.doc() = "C++ data speed up packet gatherer machine vertex";
-
- py::class_<host_data_receiver>(m, "host_data_receiver")
- .def(py::init<>())
- .def("get_data_threadable", &host_data_receiver::get_data_threadable)
- .def("get_data", &host_data_receiver::get_data)
- .def("get_data_for_python", &host_data_receiver::get_data_for_python);
- }
- */
+PYBIND11_MODULE(host_data_receiver, m) {
+    m.doc() = "C++ data speed up packet gatherer machine vertex";
+    py::class_<host_data_receiver>(m, "host_data_receiver")
+	 .def(py::init<>())
+	 .def("get_data_threadable", &host_data_receiver::get_data_threadable)
+	 .def("get_data", &host_data_receiver::get_data)
+	 .def("get_data_for_python", &host_data_receiver::get_data_for_python);
+}
+#endif

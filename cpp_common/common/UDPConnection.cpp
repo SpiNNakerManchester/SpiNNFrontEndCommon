@@ -6,6 +6,10 @@
 #include <time.h>
 #include <errno.h>
 #include <vector>
+#include <chrono>
+
+using namespace std;
+using namespace std::literals::chrono_literals; // BLACK MAGIC!
 
 // Extra magic for Windows.
 static void initSocketLibrary(void) {
@@ -26,11 +30,33 @@ static void initSocketLibrary(void) {
     initialised = true;
 }
 
+template<class SockType, class TimeRep, class TimePeriod>
+static void setSocketTimeout(
+	SockType sock, chrono::duration<TimeRep, TimePeriod> d)
+{
+#ifdef WIN32
+    auto ms = chrono::duration_cast<chrono::milliseconds>(d);
+    DWORD timeout = (DWORD) ms.count();
+#else
+    auto sec = chrono::duration_cast<chrono::seconds>(d);
+    struct timeval timeout;
+    timeout.tv_sec = sec.count();
+    timeout.tv_usec = chrono::duration_cast<chrono::microseconds>(
+	    d - sec).count();
+#endif
+    int err = setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
+	    (const char*) &timeout, sizeof(timeout));
+    if (err < 0) {
+	throw "Socket timeout could not be set";
+    }
+}
+
 UDPConnection::UDPConnection(
         int local_port,
-        char *local_host,
+        const char *local_host,
         int remote_port,
-        char *remote_host)
+        const char *remote_host)
+    : local_ip_address(htonl(INADDR_ANY))
 {
     initSocketLibrary();
     sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -38,59 +64,41 @@ UDPConnection::UDPConnection(
         throw "Socket could not be created";
     }
 
-    local_ip_address = htonl(INADDR_ANY);
+    sockaddr local_address;
     if (local_host != NULL && local_host[0] != '\0') {
-        hostent *lookup_address = gethostbyname(local_host);
-        if (lookup_address == NULL) {
-            throw "local_host address not found";
-        }
-
-        memcpy(&local_ip_address, lookup_address->h_addr,
-                lookup_address->h_length);
+	local_address = get_address(local_host, local_port);
+    } else {
+	sockaddr_in *local = (sockaddr_in *) &local_address;
+	local->sin_family = AF_INET;
+	local->sin_addr.s_addr = htonl(INADDR_ANY);
+	local->sin_port = htons(local_port);
     }
 
-    sockaddr_in local_address;
-    local_address.sin_family = AF_INET;
-    local_address.sin_addr.s_addr = this->local_ip_address;
-    local_address.sin_port = htons(local_port);
-
+    // TODO: What is the correct timeout for a receiver socket?
+    setSocketTimeout(sock, 500ms);
     bind(sock, (struct sockaddr *) &local_address, sizeof(local_address));
 
     can_send = false;
     remote_ip_address = 0;
-    remote_port = 0;
+    this->remote_port = 0;
 
     if (remote_host != NULL && remote_port != 0) {
         can_send = true;
         this->remote_port = remote_port;
-
-        struct hostent *lookup_address = gethostbyname(remote_host);
-        if (lookup_address == NULL) {
-
-            throw "remote_host address not found";
-        }
-
-        memcpy(&this->remote_ip_address, lookup_address->h_addr,
-                lookup_address->h_length);
-
-        struct sockaddr_in remote_address;
-        remote_address.sin_family = AF_INET;
-        remote_address.sin_addr.s_addr = this->remote_ip_address;
-        remote_address.sin_port = htons(remote_port);
-
-        if (connect(sock, (struct sockaddr *) &remote_address,
-                sizeof(remote_address)) < 0) {
+        sockaddr remote_address = get_address(remote_host, remote_port);
+        if (connect(sock, &remote_address, sizeof(remote_address)) < 0) {
             throw "Error connecting to remote address";
         }
     }
 
-    socklen_t local_address_length = sizeof(local_address);
-    if (getsockname(sock, (struct sockaddr *) &local_address,
+    sockaddr_in local_inet_addr;
+    socklen_t local_address_length = sizeof(local_inet_addr);
+    if (getsockname(sock, (struct sockaddr *) &local_inet_addr,
             &local_address_length) < 0) {
         throw "Error getting local socket address";
     }
-    this->local_ip_address = local_address.sin_addr.s_addr;
-    this->local_port = ntohs(local_address.sin_port);
+    this->local_ip_address = local_inet_addr.sin_addr.s_addr;
+    this->local_port = ntohs(local_inet_addr.sin_port);
 }
 
 int UDPConnection::receive_data(char *data, int length)
@@ -98,20 +106,28 @@ int UDPConnection::receive_data(char *data, int length)
     int received_length = recv(sock, (char *) data, length, 0);
 
     if (received_length < 0) {
-        throw strerror(errno);
+	if (errno == EWOULDBLOCK || errno == EAGAIN) {
+	    received_length = 0;
+	} else {
+	    throw strerror(errno);
+	}
     }
     return received_length;
 }
 
-int UDPConnection::receive_data(std::vector<uint8_t> &data)
+bool UDPConnection::receive_data(vector<uint8_t> &data)
 {
     int received_length = recv(sock, (char *) data.data(), data.size(), 0);
 
     if (received_length < 0) {
-        throw strerror(errno);
+	if (errno == EWOULDBLOCK || errno == EAGAIN) {
+	    received_length = 0;
+	} else {
+	    throw strerror(errno);
+	}
     }
     data.resize(received_length);
-    return received_length;
+    return received_length > 0;
 }
 
 int UDPConnection::receive_data_with_address(
@@ -124,22 +140,31 @@ int UDPConnection::receive_data_with_address(
     int received_length = recvfrom(sock, (char *) data, length, 0, address,
             (socklen_t *) &address_length);
     if (received_length < 0) {
-        throw strerror(errno);
+	if (errno == EWOULDBLOCK || errno == EAGAIN) {
+	    received_length = 0;
+	} else {
+	    throw strerror(errno);
+	}
     }
     return received_length;
 }
 
-int UDPConnection::receive_data_with_address(
-	std::vector<uint8_t> &data,
+bool UDPConnection::receive_data_with_address(
+	vector<uint8_t> &data,
         struct sockaddr &address)
 {
     int address_length = sizeof(address);
     int received_length = recvfrom(sock, (char *) data.data(), data.size(),
 	    0, &address, (socklen_t *) &address_length);
     if (received_length < 0) {
-        throw strerror(errno);
+	if (errno == EWOULDBLOCK || errno == EAGAIN) {
+	    received_length = 0;
+	} else {
+	    throw strerror(errno);
+	}
     }
-    return received_length;
+    data.resize(received_length);
+    return received_length > 0;
 }
 
 void UDPConnection::send_data(const char *data, int length)
@@ -151,7 +176,7 @@ void UDPConnection::send_data(const char *data, int length)
     }
 }
 
-void UDPConnection::send_data(const std::vector<uint8_t> &data)
+void UDPConnection::send_data(const vector<uint8_t> &data)
 {
     int a = send(sock, (const char *) data.data(), data.size(), 0);
 
@@ -162,7 +187,7 @@ void UDPConnection::send_data(const std::vector<uint8_t> &data)
 
 void UDPConnection::send_message(SDPMessage &message)
 {
-    std::vector<uint8_t> buffer;
+    vector<uint8_t> buffer;
     message.convert_to_byte_vector(buffer);
     send_data(buffer);
 }
@@ -177,7 +202,7 @@ void UDPConnection::send_data_to(
 }
 
 void UDPConnection::send_data_to(
-	const std::vector<uint8_t> &data, const sockaddr &address)
+	const vector<uint8_t> &data, const sockaddr &address)
 {
     if (sendto(sock, (const char *) data.data(), data.size(), 0,
             (const struct sockaddr *) &address, sizeof(address)) < 0) {
