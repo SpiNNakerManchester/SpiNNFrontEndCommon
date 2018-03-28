@@ -4,12 +4,15 @@ dist: trusty
 
 addons:
   apt:
+    sources:
+      - ubuntu-toolchain-r-test
     packages:
       - libc6:i386
       - vera++
       - libxml2-utils
       - gcc-arm-none-eabi
       - libnewlib-arm-none-eabi
+      - g++-5
 
 cache: pip
 
@@ -54,7 +57,7 @@ script:
   - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh
   # C 
   - make -C c_common
-  - make -C cpp_common
+  - make -C cpp_common CXX="g++-5"
   - support/run-vera.sh c_common
   - support/run-vera.sh cpp_common
   # Docs
