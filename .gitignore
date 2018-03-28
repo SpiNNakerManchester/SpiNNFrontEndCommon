@@ -11,3 +11,4 @@ Debug
 lastfailed
 /.cache
 .coverage
+.DS_Store
