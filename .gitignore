@@ -12,3 +12,5 @@ lastfailed
 /.cache
 .coverage
 .DS_Store
+*.o
+*.a
