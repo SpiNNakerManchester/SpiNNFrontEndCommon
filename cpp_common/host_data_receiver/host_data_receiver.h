@@ -13,7 +13,10 @@
 #include <ctime>
 #include <cstdint>
 #include <thread>
+
+#if 0
 //#include <pybind11/pybind11.h>
+#endif
 
 #include "../common/SDPHeader.h"
 #include "../common/SDPMessage.h"
@@ -22,71 +25,62 @@
 
 class host_data_receiver {
 public:
+    static const int SET_IP_TAG = 26;
+
     host_data_receiver(
             int port_connection,
             int placement_x,
             int placement_y,
             int placement_p,
-            char *hostname,
+            const char *hostname,
             int length_in_bytes,
             int memory_address,
             int chip_x,
             int chip_y,
             int iptag);
-    char * get_data();
-    void get_data_threadable(char *filepath_read, char *filepath_missing);
-    //pybind11::bytes get_data_for_python(
-    //    char *hostname, int port_connection, int placement_x,
-    //    int placement_y, int placement_p, int length_in_bytes,
-    //    int memory_address, int chip_x, int chip_y, int iptag);
+    const uint8_t *get_data();
+    void get_data_threadable(
+	    const char *filepath_read, const char *filepath_missing);
+#if 0
+    pybind11::bytes get_data_for_python(
+	    char *hostname, int port_connection, int placement_x,
+	    int placement_y, int placement_p, int length_in_bytes,
+	    int memory_address, int chip_x, int chip_y, int iptag);
+#endif
 
 private:
-    char * build_scp_req(
-            uint16_t cmd,
-            uint32_t port,
-            int strip_sdp,
-            uint32_t ip_address);
-    void send_initial_command(UDPConnection *sender, UDPConnection *receiver);
+    void send_initial_command(UDPConnection &sender, UDPConnection &receiver);
+    void receive_message(UDPConnection &receiver, vector<uint8_t> &buffer);
     bool retransmit_missing_sequences(
-            UDPConnection *sender,
-            set<uint32_t> *received_seq_nums);
+            UDPConnection &sender, set<uint32_t> &received_seq_nums);
     uint32_t calculate_max_seq_num(uint32_t length);
-    bool check(set<uint32_t> *received_seq_nums, uint32_t max_needed);
+    bool check(set<uint32_t> &received_seq_nums, uint32_t max_needed);
     void process_data(
-            UDPConnection *sender,
-            bool *finished,
-            set<uint32_t> *received_seq_nums,
-            char *recvdata,
-            int datalen);
+            UDPConnection &sender, bool &finished,
+            set<uint32_t> &received_seq_nums, vector<uint8_t> &recvdata);
     void reader_thread(UDPConnection *receiver);
     void processor_thread(UDPConnection *sender);
 
-    typedef struct packet {
-        char content[400];
-        int size;
-    } packet;
-
     //Used to verify if one of the thread threw any exception
-    typedef struct thexc {
+    struct thexc {
         const char *val;
-        bool thrown;
-    } thexc;
+        volatile bool thrown;
+    };
 
     int port_connection;
     int placement_x;
     int placement_y;
     int placement_p;
-    char *hostname;
+    string hostname;
     uint32_t length_in_bytes;
     uint32_t memory_address;
     int chip_x;
     int chip_y;
     int iptag;
-    PQueue<packet> *messqueue;
-    char *buffer;
+    PQueue<vector<uint8_t>> messqueue;
+    vector<uint8_t> buffer;
     uint32_t max_seq_num;
-    thexc rdr;
-    thexc pcr;
+    thexc rdr, pcr;
     bool finished;
 };
 

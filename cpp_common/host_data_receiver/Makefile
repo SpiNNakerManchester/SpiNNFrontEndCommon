@@ -1,18 +1,18 @@
 INSTALL_LOCATION=../../spinn_front_end_common/common_host_binaries
+COMMON=../common
 
-SRCS=../common/SDPHeader.cpp ../common/SDPMessage.cpp\
-     ../common/UDPConnection.cpp host_data_receiver.cpp main.cpp
-HEADERS=PQueue.h ../common/SDPHeader.h ../common/SDPMessage.h\
-        ../common/UDPConnection.h host_data_receiver.h
+SRCS=host_data_receiver.cpp main.cpp
+HEADERS=$(COMMON)/SDPHeader.h $(COMMON)/SDPMessage.h\
+        $(COMMON)/UDPConnection.h PQueue.h host_data_receiver.h
 TARGET=host_data_receiver
-LIBS=-lpthread
+LIBS=-lpthread -L$(COMMON) -lcommon
 INSTALL ?= install
 
 all: install
 
 build: $(TARGET)
-$(TARGET): $(SRCS) $(HEADERS)
-	$(CXX) -o $@ $(SRCS) -std=c++14 $(LIBS)
+$(TARGET): $(SRCS) $(HEADERS) $(COMMON)/libcommon.a
+	$(CXX) $(CXXFLAGS) -o $@ $(SRCS) -std=c++14 $(LIBS)
 
 install: $(TARGET)
 	$(INSTALL) -c $(TARGET) $(INSTALL_LOCATION)

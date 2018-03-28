@@ -11,5 +11,8 @@ Debug
 lastfailed
 /.cache
 .coverage
+.DS_Store
+*.o
+*.a
 /java_common_2/nbproject/private/
 /java_common_2/dist/

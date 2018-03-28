@@ -18,10 +18,10 @@ class PQueue {
 
 public:
     T pop() {
-        std::unique_lock < std::mutex > mlock(mutex_);
+        std::unique_lock<std::mutex> mlock(mutex_);
 
         while (queue_.empty()) {
-            if ((cond_.wait_for(mlock, 10 * 100ms)) == cv_status::timeout){
+            if (cond_.wait_for(mlock, 10 * 100ms) == cv_status::timeout) {
                 throw TimeoutQueueException();
             }
         }
@@ -33,7 +33,7 @@ public:
     }
 
     void push(const T& item) {
-        std::unique_lock < std::mutex > mlock(mutex_);
+        std::unique_lock<std::mutex> mlock(mutex_);
         queue_.push(item);
         mlock.unlock();
         cond_.notify_one();
