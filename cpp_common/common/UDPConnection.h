@@ -7,8 +7,6 @@
 #else
 #include <windows.h>
 #include <ws2tcpip.h>
-#define bzero(b, len)     (memset((b), '\0', (len)), (void) 0)
-#define bcopy(b1, b2, len) (memmove((b2), (b1), (len)), (void) 0)
 #define close(sock)
 
 #define SHUT_RD   SD_RECEIVE
@@ -29,35 +27,17 @@ typedef unsigned short ushort;
 
 using namespace std;
 
-static inline struct sockaddr get_address(const char *ip_address, int port)
-{
-    hostent *lookup_address = gethostbyname(ip_address);
-    if (lookup_address == NULL) {
-        throw "host address not found";
-    }
-    union {
-	sockaddr sa;
-	sockaddr_in in;
-    } local_address;
-    local_address.in.sin_family = AF_INET;
-    memcpy(&local_address.in.sin_addr.s_addr, lookup_address->h_addr,
-            lookup_address->h_length);
-    local_address.in.sin_port = htons(port);
-
-    return local_address.sa;
-}
-
 class UDPConnection {
 public:
     UDPConnection(
             int local_port = 0,
-            const char *local_host = NULL,
+            const char *local_host = nullptr,
             int remote_port = 0,
-            const char *remote_host = NULL);
+            const char *remote_host = nullptr);
     UDPConnection(
 	    int remote_port,
             string &remote_host)
-	: UDPConnection(0, NULL, remote_port, remote_host.c_str()) {}
+	: UDPConnection(0, nullptr, remote_port, remote_host.c_str()) {}
 
     ~UDPConnection();
     int receive_data(char *data, int length);

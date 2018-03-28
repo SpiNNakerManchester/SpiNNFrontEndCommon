@@ -51,6 +51,24 @@ static void setSocketTimeout(
     }
 }
 
+static inline struct sockaddr get_address(const char *ip_address, int port)
+{
+    hostent *lookup_address = gethostbyname(ip_address);
+    if (lookup_address == nullptr) {
+        throw "host address not found";
+    }
+    union {
+	sockaddr sa;
+	sockaddr_in in;
+    } local_address;
+    local_address.in.sin_family = AF_INET;
+    memcpy(&local_address.in.sin_addr.s_addr, lookup_address->h_addr,
+            lookup_address->h_length);
+    local_address.in.sin_port = htons(port);
+
+    return local_address.sa;
+}
+
 UDPConnection::UDPConnection(
         int local_port,
         const char *local_host,
@@ -65,7 +83,7 @@ UDPConnection::UDPConnection(
     }
 
     sockaddr local_address;
-    if (local_host != NULL && local_host[0] != '\0') {
+    if (local_host != nullptr && local_host[0] != '\0') {
 	local_address = get_address(local_host, local_port);
     } else {
 	sockaddr_in *local = (sockaddr_in *) &local_address;
@@ -82,7 +100,7 @@ UDPConnection::UDPConnection(
     remote_ip_address = 0;
     this->remote_port = 0;
 
-    if (remote_host != NULL && remote_port != 0) {
+    if (remote_host != nullptr && remote_port != 0) {
         can_send = true;
         this->remote_port = remote_port;
         sockaddr remote_address = get_address(remote_host, remote_port);

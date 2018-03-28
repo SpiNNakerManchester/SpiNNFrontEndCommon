@@ -7,7 +7,7 @@ private:
     char **argv;
 public:
     Arguments(int argc, char **argv) : argc(argc), argv(argv) {}
-    char *operator[](int index) {
+    const char *operator[](int index) {
 	if (index >= 0 && index < argc) {
 	    return argv[argc];
 	}
@@ -60,10 +60,6 @@ int main(int argc, char *argv[])
     int port_connection = 0;
     int length_in_bytes = 0;
     int memory_address = 0;
-    char *hostname = NULL;
-    char *file_pathr = NULL;
-    char *file_pathm = NULL;
-    //FILE * stored_data;
     int chip_x = 0;
     int chip_y = 0;
     int iptag = 0;
@@ -83,9 +79,9 @@ int main(int argc, char *argv[])
     parse_arg(args, PORT_NUMBER_POSITION, port_connection);
     parse_arg(args, LENGTH_IN_BYTES, length_in_bytes);
     parse_arg(args, MEMORY_ADDRESS, memory_address);
-    hostname = args[HOSTNAME_POSITION];
-    file_pathr = args[FILE_PATH_READ_POSITION];
-    file_pathm = args[FILE_PATH_MISS_POSITION];
+    const char *hostname = args[HOSTNAME_POSITION];
+    const char *file_pathr = args[FILE_PATH_READ_POSITION];
+    const char *file_pathm = args[FILE_PATH_MISS_POSITION];
     parse_arg(args, CHIP_X, chip_x);
     parse_arg(args, CHIP_Y, chip_y);
     parse_arg(args, IPTAG, iptag);

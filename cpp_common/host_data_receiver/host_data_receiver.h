@@ -13,7 +13,10 @@
 #include <ctime>
 #include <cstdint>
 #include <thread>
+
+#if 0
 //#include <pybind11/pybind11.h>
+#endif
 
 #include "../common/SDPHeader.h"
 #include "../common/SDPMessage.h"
@@ -29,18 +32,21 @@ public:
             int placement_x,
             int placement_y,
             int placement_p,
-            char *hostname,
+            const char *hostname,
             int length_in_bytes,
             int memory_address,
             int chip_x,
             int chip_y,
             int iptag);
     const uint8_t *get_data();
-    void get_data_threadable(char *filepath_read, char *filepath_missing);
-    //pybind11::bytes get_data_for_python(
-    //    char *hostname, int port_connection, int placement_x,
-    //    int placement_y, int placement_p, int length_in_bytes,
-    //    int memory_address, int chip_x, int chip_y, int iptag);
+    void get_data_threadable(
+	    const char *filepath_read, const char *filepath_missing);
+#if 0
+    pybind11::bytes get_data_for_python(
+	    char *hostname, int port_connection, int placement_x,
+	    int placement_y, int placement_p, int length_in_bytes,
+	    int memory_address, int chip_x, int chip_y, int iptag);
+#endif
 
 private:
     void send_initial_command(UDPConnection &sender, UDPConnection &receiver);

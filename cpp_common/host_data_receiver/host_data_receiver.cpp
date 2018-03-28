@@ -3,7 +3,6 @@
 #include <cassert>
 
 using namespace std;
-//namespace py = pybind11;
 
 //Constants
 static const uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
@@ -39,7 +38,7 @@ host_data_receiver::host_data_receiver(
         int placement_x,
         int placement_y,
         int placement_p,
-        char *hostname,
+        const char *hostname,
         int length_in_bytes,
         int memory_address,
         int chip_x,
@@ -47,7 +46,8 @@ host_data_receiver::host_data_receiver(
         int iptag)
     : port_connection(port_connection),
       placement_x(placement_x), placement_y(placement_y),
-      placement_p(placement_p), hostname(hostname),
+      placement_p(placement_p),
+      hostname(hostname != nullptr ? hostname : ""),
       length_in_bytes((uint32_t) length_in_bytes),
       memory_address((uint32_t) memory_address),
       chip_x(chip_x), chip_y(chip_y), iptag(iptag),
@@ -358,15 +358,15 @@ const uint8_t *host_data_receiver::get_data()
     try {
 	{
 	    // create connection
-	    UDPConnection sender(0, NULL, 17893, hostname.c_str());
+	    UDPConnection connection(17893, hostname);
 
 	    // send the initial command to start data transmission
-	    send_initial_command(sender, sender);
+	    send_initial_command(connection, connection);
 
 	    thread reader(
-		    &host_data_receiver::reader_thread, this, &sender);
+		    &host_data_receiver::reader_thread, this, &connection);
 	    thread processor(
-		    &host_data_receiver::processor_thread, this, &sender);
+		    &host_data_receiver::processor_thread, this, &connection);
 
 	    reader.join();
 	    processor.join();
@@ -375,39 +375,23 @@ const uint8_t *host_data_receiver::get_data()
 
         if (pcr.thrown) {
             cerr << pcr.val << endl;
-            return NULL;
+            return nullptr;
         } else if (rdr.thrown && !finished) {
             cerr << rdr.val << endl;
-            return NULL;
+            return nullptr;
         }
 	return buffer.data();
     } catch (char const *e) {
         cerr << e << endl;
-        return NULL;
+        return nullptr;
     }
 }
-
-#if 0
-// Same behaviour of get_data() function, but returns a valid type for python
-// code
-py::bytes host_data_receiver::get_data_for_python(
-	char *hostname, int port_connection, int placement_x, int placement_y,
-	int placement_p, int length_in_bytes, int memory_address, int chip_x,
-	int chip_y, int iptag) {
-    auto data_buffer = get_data();
-
-    std::string *str = new string(
-	    (const char *) data_buffer, length_in_bytes);
-
-    return py::bytes(*str);
-}
-#endif
 
 // Function externally callable for data gathering. It can be called by
 // multiple threads simultaneously
 void host_data_receiver::get_data_threadable(
-        char *filepath_read,
-        char *filepath_missing)
+        const char *filepath_read,
+        const char *filepath_missing)
 {
     FILE *fp1, *fp2;
 
@@ -425,8 +409,23 @@ void host_data_receiver::get_data_threadable(
 }
 
 #if 0
-//Python Binding
+namespace py = pybind11;
 
+// Same behaviour of get_data() function, but returns a valid type for python
+// code
+py::bytes host_data_receiver::get_data_for_python(
+	char *hostname, int port_connection, int placement_x, int placement_y,
+	int placement_p, int length_in_bytes, int memory_address, int chip_x,
+	int chip_y, int iptag) {
+    auto data_buffer = get_data();
+
+    std::string *str = new string(
+	    (const char *) data_buffer, length_in_bytes);
+
+    return py::bytes(*str);
+}
+
+//Python Binding
 PYBIND11_MODULE(host_data_receiver, m) {
     m.doc() = "C++ data speed up packet gatherer machine vertex";
     py::class_<host_data_receiver>(m, "host_data_receiver")
