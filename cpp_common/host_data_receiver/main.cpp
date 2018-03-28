@@ -21,11 +21,8 @@ public:
 static inline void parse_arg(Arguments &args, int index, int &variable)
 {
     try {
-	printf("arg is %d\n", args[index]);
 	std::string s(args[index]);
-	printf("dop\n");
 	variable = std::stoi(s);
-	printf("s\n");
     } catch (std::invalid_argument &e) {
 	cout << e.what() << endl;
 	exit(1);
@@ -76,30 +73,22 @@ int main(int argc, char *argv[])
     }
 
     // get arguments
-    printf("arg1\n");
     parse_arg(args, PLACEMENT_X_POSITION, placement_x);
-    printf("arg2\n");
     parse_arg(args, PLACEMENT_Y_POSITION, placement_y);
-    printf("arg3\n");
     parse_arg(args, PLACEMENT_P_POSITION, placement_p);
-    printf("arg3\n");
     parse_arg(args, PORT_NUMBER_POSITION, port_connection);
     parse_arg(args, LENGTH_IN_BYTES, length_in_bytes);
     parse_arg(args, MEMORY_ADDRESS, memory_address);
-    printf("arg6\n");
     const char *hostname = args[HOSTNAME_POSITION];
     const char *file_pathr = args[FILE_PATH_READ_POSITION];
     const char *file_pathm = args[FILE_PATH_MISS_POSITION];
-    printf("arg9\n");
     parse_arg(args, CHIP_X, chip_x);
     parse_arg(args, CHIP_Y, chip_y);
     parse_arg(args, IPTAG, iptag);
-    printf("arg12\n");
 
     host_data_receiver collector(port_connection, placement_x, placement_y,
             placement_p, hostname, length_in_bytes, memory_address, chip_x,
             chip_y, iptag);
-    printf("arg13\n");
 
     collector.get_data_threadable(file_pathr, file_pathm);
 
