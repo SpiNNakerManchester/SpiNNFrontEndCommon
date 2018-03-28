@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.abstract_models.abstract_rewrites_data_specification import AbstractRewritesDataSpecification
 
 from data_specification.utility_calls \
     import get_data_spec_and_file_writer_filename
@@ -55,6 +56,7 @@ class GraphDataSpecificationWriter(object):
 
         progress = ProgressBar(
             placements.n_placements, "Generating data specifications")
+        vertices_to_reset = list()
         for placement in progress.over(placements.placements):
             # Try to generate the data spec for the placement
             generated = self._generate_data_spec_for_vertices(
@@ -62,15 +64,26 @@ class GraphDataSpecificationWriter(object):
                 report_default_directory, write_text_specs,
                 app_data_runtime_folder, machine)
 
+            if generated and isinstance(
+                    placement.vertex, AbstractRewritesDataSpecification):
+                vertices_to_reset.append(placement.vertex)
+
             # If the spec wasn't generated directly, and there is an
             # application vertex, try with that
             if not generated and graph_mapper is not None:
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
-                self._generate_data_spec_for_vertices(
+                generated = self._generate_data_spec_for_vertices(
                     placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder, machine)
+                if generated and isinstance(
+                        associated_vertex, AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(placement.vertex)
+
+        # Ensure that the vertices know their regions have been reloaded
+        for vertex in vertices_to_reset:
+            vertex.mark_regions_reloaded()
 
         return dsg_targets
 
