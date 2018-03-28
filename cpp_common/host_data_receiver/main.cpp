@@ -8,10 +8,10 @@ private:
 public:
     Arguments(int argc, char **argv) : argc(argc), argv(argv) {}
     const char *operator[](int index) {
-	if (index >= 0 && index < argc) {
-	    return argv[argc];
+	if (index < 0 || index >= argc) {
+	    throw std::invalid_argument("no such argument");
 	}
-	throw std::invalid_argument("no such argument");
+	return argv[index];
     }
     int length() {
 	return argc;
