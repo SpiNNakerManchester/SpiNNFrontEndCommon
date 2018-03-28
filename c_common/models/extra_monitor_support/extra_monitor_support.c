@@ -56,7 +56,6 @@ extern INT_HANDLER sark_int_han(void);
 #define SEQUENCE_NUMBER_SIZE 1
 
 #define TX_NOT_FULL_MASK 0x10000000
-#define TX_FULL_MASK 0x40000000
 //-----------------------------------------------------------------------------
 //! SDP flags
 //-----------------------------------------------------------------------------
@@ -680,7 +679,8 @@ void reinjection_configure_router() {
 //! \brief sends a fixed route packet with a payload
 //! \param[in] key: the fr key
 //! \param[in] data: the payload
-static inline void send_fixed_route_packet_payload(uint32_t key, uint32_t data) {
+static inline void send_fixed_route_packet_payload(
+        uint32_t key, uint32_t data) {
     cc[CC_TCR] = PKT_FR_PL;
 
     // Wait for a router slot
@@ -837,8 +837,8 @@ void write_missing_sdp_seq_nums_into_sdram(
         uint32_t data[], ushort length, uint32_t start_offset) {
     for (ushort offset=start_offset; offset < length; offset ++) {
         missing_sdp_seq_num_sdram_address[
-        number_of_missing_seq_nums_in_sdram +
-        (offset - start_offset)] = data[offset];
+            number_of_missing_seq_nums_in_sdram +
+            (offset - start_offset)] = data[offset];
         if (data[offset] > max_seq_num){
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
             data[offset], max_seq_num);
@@ -939,7 +939,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             position_in_store = missing_seq_num_being_processed *
                 (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             uint32_t left_over_portion =
-                bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER -
+                (bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER) -
                 position_in_store;
 
             //io_printf(IO_BUF, "for seq %d, pos = %d, left %d\n",
@@ -948,7 +948,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
 
             if (left_over_portion <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-                retransmitted_seq_num_items_read = left_over_portion + 1;
+                retransmitted_seq_num_items_read = left_over_portion;
                 read(DMA_TAG_RETRANSMISSION_READING, left_over_portion);
             } else {
                 retransmitted_seq_num_items_read =
