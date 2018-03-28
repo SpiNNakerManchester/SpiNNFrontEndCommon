@@ -45,5 +45,4 @@ class GraphBinaryGatherer(object):
             raise exceptions.ExecutableNotFoundException(binary_name)
 
         executable_targets.add_processor(
-            binary_path, placement.x, placement.y, placement.p,
-            associated_vertex.get_binary_start_type())
+            binary_path, placement.x, placement.y, placement.p)
