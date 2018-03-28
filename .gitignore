@@ -12,3 +12,4 @@ lastfailed
 /.cache
 .coverage
 /java_common_2/nbproject/private/
+/java_common_2/dist/
