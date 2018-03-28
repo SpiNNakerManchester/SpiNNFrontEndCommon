@@ -218,7 +218,7 @@ bool host_data_receiver::retransmit_missing_sequences(
         usleep(TIMEOUT_PER_SENDING_IN_MICROSECONDS);
     }
 
-    delete[] missing_seq;
+    delete [] missing_seq;
     return false;
 }
 

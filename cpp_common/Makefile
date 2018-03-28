@@ -9,7 +9,7 @@ build: common/libcommon.a
 common/libcommon.a:
 	$(MAKE) -C common libcommon.a
 
-install:
+install: build
 	@for d in $(INSTALL_DIRS); do $(MAKE) -C $$d install || exit $$?; done
 
 clean:
