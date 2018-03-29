@@ -50,6 +50,7 @@ static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
 static uint32_t odd_data_packet_key = 0;
+static bool using_8_bytes_fr_protocol = false;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
@@ -77,7 +78,8 @@ typedef enum regions_e {
 
 //! human readable definitions of the data in each region
 typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, TAG_ID
+    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, TAG_ID,
+    USING_8_BYTE_PROTOCOL
 } config_elements;
 
 //! values for the priority for each callback
@@ -116,7 +118,68 @@ void send_data(){
     data[0] = seq_num;
 }
 
-void receive_data_no_payload(uint key, uint payload) {
+//! \brief receive data when using the old protocol where only 4 bytes of a
+//! fr packet has data inside it
+//! \param[in] key: fr key
+//! \param[in] payload: fr payload
+//! \return None
+void four_bytes_receive_data(uint key, uint payload){
+    //log_info("packet!");
+    if (key == new_sequence_key) {
+        if (position_in_store != 1) {
+            send_data();
+        }
+        //log_info("finding new seq num %d", payload);
+        //log_info("position in store is %d", position_in_store);
+        data[0] = payload;
+        seq_num = payload;
+        position_in_store = 1;
+
+        if (payload > max_seq_num){
+            log_error(
+                "got a funky seq num. max is %d, received %d",
+                max_seq_num, payload);
+        }
+    } else {
+
+        //log_info(" payload = %d posiiton = %d", payload, position_in_store);
+        data[position_in_store] = payload;
+        position_in_store += 1;
+        //log_info("payload is %d", payload);
+
+        if (key == first_data_key) {
+            //log_info("resetting seq and position");
+            seq_num = FIRST_SEQ_NUM;
+            data[0] = seq_num;
+            position_in_store = 1;
+            max_seq_num = payload;
+        }
+
+        if (key == end_flag_key){
+            // set end flag bit in seq num
+            data[0] = data[0] + (1 << 31);
+
+            // adjust size as last payload not counted
+            position_in_store = position_in_store - 1;
+
+            //log_info("position = %d with seq num %d", position_in_store, seq_num);
+            //log_info("last payload was %d", payload);
+            send_data();
+        } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
+            //log_info("position = %d with seq num %d", position_in_store, seq_num);
+            //log_info("last payload was %d", payload);
+            send_data();
+        }
+    }
+}
+
+//! \brief receive data when using the new protocol where all 8 bytes of a
+//! fr packet has data inside it. This component is the none payload part of
+//! that protocol
+//! \param[in] key: fr key
+//! \param[in] payload: fr payload
+//! \return None
+void eight_bytes_receive_data_no_payload(uint key, uint payload) {
     //log_info("received command with key %u", key);
     // expecting a new command
     use(payload);
@@ -183,7 +246,13 @@ void receive_data_no_payload(uint key, uint payload) {
 
 }
 
-void receive_data_payload(uint key, uint payload) {
+//! \brief receive data when using the new protocol where all 8 bytes of a
+//! fr packet has data inside it. This component is the payload part of
+//! that protocol
+//! \param[in] key: fr key
+//! \param[in] payload: fr payload
+//! \return None
+void eight_bytes_receive_data_payload(uint key, uint payload) {
     //log_info("next_no_payload_command = %d", next_no_payload_command);
     //log_info("payload = %d position = %d", payload, position_in_store);
     data[position_in_store] = key;
@@ -222,6 +291,14 @@ static bool initialize(uint32_t *timer_period) {
     first_data_key = config_address[FIRST_DATA_KEY];
     end_flag_key = config_address[END_FLAG_KEY];
     odd_data_packet_key = config_address[ODD_DATA_PACKET_KEY];
+    using_8_bytes_fr_protocol = config_address[USING_8_BYTE_PROTOCOL];
+
+    if(using_8_bytes_fr_protocol){
+        log_info("Will be using the 8 byte protocol\n");
+    }
+    else{
+        log_info("Will be using the 4 byte protocol\n");
+    }
 
     my_msg.tag = config_address[TAG_ID];	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet
@@ -257,8 +334,18 @@ void c_main() {
         rt_error(RTE_SWERR);
     }
 
-    spin1_callback_on(FRPL_PACKET_RECEIVED, receive_data_payload, FR_PACKET);
-    spin1_callback_on(FR_PACKET_RECEIVED, receive_data_no_payload, FR_PACKET);
+    if (!using_8_bytes_fr_protocol){
+        spin1_callback_on(
+        FRPL_PACKET_RECEIVED, four_bytes_receive_data, FR_PACKET);
+    }
+    else{
+        spin1_callback_on(
+            FRPL_PACKET_RECEIVED, eight_bytes_receive_data_payload,
+            FR_PACKET);
+        spin1_callback_on(
+            FR_PACKET_RECEIVED, eight_bytes_receive_data_no_payload,
+            FR_PACKET);
+    }
 
     // start execution
     log_info("Starting\n");

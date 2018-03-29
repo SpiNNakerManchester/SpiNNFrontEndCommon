@@ -30,7 +30,9 @@ class ExtraMonitorSupportMachineVertex(
         # if we reinject nearest neighbour packets
         "_reinject_nearest_neighbour",
         # if we reinject fixed route packets
-        "_reinject_fixed_route"
+        "_reinject_fixed_route",
+        # if we're using the 8 byte fr protocol or the 4 byte fr protocl
+        "_using_eight_byte_protocol"
     )
 
     _EXTRA_MONITOR_DSG_REGIONS = Enum(
@@ -39,7 +41,7 @@ class ExtraMonitorSupportMachineVertex(
                ('DATA_SPEED_CONFIG', 1)])
 
     _CONFIG_REGION_REINEJCTOR_SIZE_IN_BYTES = 4 * 4
-    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 5 * 4
+    _CONFIG_DATA_SPEED_UP_SIZE_IN_BYTES = 6 * 4
     _CONFIG_MAX_EXTRA_SEQ_NUM_SIZE_IN_BYTES = 460 * 1024
 
     _EXTRA_MONITOR_COMMANDS = Enum(
@@ -52,12 +54,14 @@ class ExtraMonitorSupportMachineVertex(
                ("EXIT", 5)])
 
     def __init__(
-            self, constraints, reinject_multicast=None,
-            reinject_point_to_point=False, reinject_nearest_neighbour=False,
-            reinject_fixed_route=False):
+            self, constraints, using_eight_byte_protocol,
+            reinject_multicast=None, reinject_point_to_point=False,
+            reinject_nearest_neighbour=False, reinject_fixed_route=False):
         """ constructor
 
         :param constraints: constraints on this vertex
+        :param using_eight_byte_protocol: boolean flagging which protocol to\
+         use
         :param reinject_multicast: if we reinject mc packets
         :param reinject_point_to_point: if we reinject point to point packets
         :param reinject_nearest_neighbour: if we reinject nearest neighbour\
@@ -77,6 +81,8 @@ class ExtraMonitorSupportMachineVertex(
         self._reinject_point_to_point = reinject_point_to_point
         self._reinject_nearest_neighbour = reinject_nearest_neighbour
         self._reinject_fixed_route = reinject_fixed_route
+
+        self._using_eight_byte_protocol = using_eight_byte_protocol
 
     @property
     def reinject_multicast(self):
@@ -161,6 +167,9 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(
                 base_key +
                 DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY_OFFSET)
+            spec.write_value(
+                base_key +
+                DataSpeedUpPacketGatherMachineVertex.ODD_DATA_PACKET_KEY)
         else:
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.BASE_KEY)
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.NEW_SEQ_KEY)
@@ -169,6 +178,11 @@ class ExtraMonitorSupportMachineVertex(
             spec.write_value(DataSpeedUpPacketGatherMachineVertex.END_FLAG_KEY)
             spec.write_value(
                 DataSpeedUpPacketGatherMachineVertex.ODD_DATA_PACKET_KEY)
+
+        if self._using_eight_byte_protocol:
+            spec.write_value(1)
+        else:
+            spec.write_value(0)
 
     def _generate_reinjection_functionality_data_specification(self, spec):
         spec.reserve_memory_region(

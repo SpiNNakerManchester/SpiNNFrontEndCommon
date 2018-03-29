@@ -9,16 +9,21 @@ from spinn_utilities.overrides import overrides
 class ExtraMonitorSupport(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
-    __slots__ = []
+    __slots__ = [
+        "_using_eight_byte_protocol"
+    ]
 
-    def __init__(self, constraints):
+    def __init__(self, constraints, using_eight_byte_protocol):
         super(ExtraMonitorSupport, self).__init__(
             label="ExtraMonitorSupport", constraints=constraints)
+        self._using_eight_byte_protocol = using_eight_byte_protocol
 
     @overrides(ApplicationVertex.create_machine_vertex)
     def create_machine_vertex(self, vertex_slice, resources_required,
                               label=None, constraints=None):
-        return ExtraMonitorSupportMachineVertex(constraints=constraints)
+        return ExtraMonitorSupportMachineVertex(
+            constraints=constraints,
+            using_eight_byte_protocol=self._using_eight_byte_protocol)
 
     @property
     @overrides(ApplicationVertex.n_atoms)

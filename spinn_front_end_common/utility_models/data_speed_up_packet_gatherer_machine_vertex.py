@@ -64,7 +64,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_write_data_speed_up_report",
         "_view",
         "_tag",
-        "_data_extractor_use_c_code"
+        "_data_extractor_use_c_code",
+        "_using_eight_byte_protocol"
         ]
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
@@ -74,7 +75,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     REPORT_NAME = "routers_used_in_speed_up_process.txt"
 
     # size of config region in bytes
-    CONFIG_SIZE = 20
+    CONFIG_SIZE = 24
 
     # items of data a SDP packet can hold when SCP header removed
     DATA_PER_FULL_PACKET = 68  # 272 bytes as removed SCP header
@@ -135,7 +136,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def __init__(
             self, x, y, ip_address, data_extractor_use_c_code,
             report_default_directory, write_data_speed_up_report,
-            constraints=None):
+            using_eight_byte_protocol, constraints=None):
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
             constraints=constraints)
@@ -147,6 +148,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._max_seq_num = None
         self._output = None
         self._data_extractor_use_c_code = data_extractor_use_c_code
+        self._using_eight_byte_protocol = using_eight_byte_protocol
 
         # Create a connection to be used
         self._connection = SCAMPConnection(
@@ -241,6 +243,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._tag = iptag.tag
         iptag.port = self._connection.local_port
         spec.write_value(iptag.tag)
+
+        if self._using_eight_byte_protocol:
+            spec.write_value(1)
+        else:
+            spec.write_value(0)
 
         # End-of-Spec:
         spec.end_specification()

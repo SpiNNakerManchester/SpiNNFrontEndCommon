@@ -256,7 +256,8 @@ typedef enum data_spec_regions{
 
 //! human readable definitions of each element in the transmission region
 typedef enum data_speed_config_data_elements {
-    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY, MB
+    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, ODD_DATA_PACKET_KEY,
+    USING_EIGHT_BYTE_PROTOCOL
 } data_speed_config_data_elements;
 
 //! values for the priority for each callback
@@ -298,6 +299,9 @@ volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 // ------------------------------------------------------------------------
 // global variables for data speed up functionality
 // ------------------------------------------------------------------------
+
+//! flag for which protocol to use
+static bool using_eight_byte_protocol = false;
 
 //! transmission stuff
 static uint32_t *data_to_transmit[N_DMA_BUFFERS];
@@ -706,12 +710,13 @@ static inline void send_fixed_route_packet_no_payload(uint32_t key){
 }
 
 
-//! \brief takes a DMA'ed block and transmits its contents as mc packets.
+//! \brief takes a DMA'ed block and transmits its contents as mc packets. Uses
+//! the 8 bytes protocol. instead of the 4 byte protocol
 //! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
 //! \param[in] number_of_elements_to_send: the number of mc packets to send
 //! \param[in] first_packet_key: the first key to transmit with, afterward,
 //! defaults to the default key.
-void send_data_block(
+void eight_bytes_send_data_block(
         uint32_t current_dma_pointer, uint32_t number_of_elements_to_send) {
     //log_info("first data is %d", data_to_transmit[current_dma_pointer][0]);
 
@@ -737,11 +742,37 @@ void send_data_block(
     //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
 }
 
-//! \brief sets off a DMA reading a block of SDRAM
+//! \brief takes a DMA'ed block and transmits its contents as mc packets. Uses
+//! the 4 byte protocol. 
+//! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
+//! \param[in] number_of_elements_to_send: the number of mc packets to send
+//! \param[in] first_packet_key: the first key to transmit with, afterward,
+//! defaults to the default key.
+void four_bytes_send_data_block(
+        uint32_t current_dma_pointer, uint32_t number_of_elements_to_send,
+        uint32_t first_packet_key) {
+    //log_info("first data is %d", data_to_transmit[current_dma_pointer][0]);
+
+    // send data
+    for (uint data_position = 0; data_position < number_of_elements_to_send;
+            data_position++) {
+        uint32_t current_data =
+        	data_to_transmit[current_dma_pointer][data_position];
+
+        send_fixed_route_packet_payload(first_packet_key, current_data);
+
+        // update key to transmit with
+        first_packet_key = basic_data_key;
+    }
+    //log_info("last data is %d",
+    //         data_to_transmit[current_dma_pointer][number_of_elements_to_send - 1]);
+}
+
+//! \brief sets off a DMA reading a block of SDRAM for 8 byte protocol
 //! \param[in] items_to_read the number of word items to read
 //! \param[in] dma_tag the DMA tag associated with this read.
 //!            transmission or retransmission
-void read(uint32_t dma_tag, uint32_t items_to_read) {
+void eight_bytes_read(uint32_t dma_tag, uint32_t items_to_read) {
     // set off DMA
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
@@ -760,16 +791,48 @@ void read(uint32_t dma_tag, uint32_t items_to_read) {
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][0]);
     dma[DMA_DESC] = desc;
-
 }
 
-//! \brief sends a end flag via fixed route
-void data_speed_up_send_end_flag() {
+//! \brief sets off a DMA reading a block of SDRAM uses the 4 byte protocol
+//! \param[in] items_to_read the number of word items to read
+//! \param[in] dma_tag the DMA tag associated with this read.
+//!            transmission or retransmission
+//! \param[in] offset where in the data array to start writing to
+void four_bytes_read(
+        uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+    // set off DMA
+    transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
+
+    address_t data_sdram_position = (address_t)
+	    &store_address[position_in_store];
+
+    // update positions as needed
+    position_in_store += items_to_read;
+    num_items_read = items_to_read;
+
+    // set off DMA
+    uint desc = DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
+	    (items_to_read * WORD_TO_BYTE_MULTIPLIER);
+
+    dma_port_last_used = dma_tag;
+    dma[DMA_ADRS] = (uint) data_sdram_position;
+    dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
+    dma[DMA_DESC] = desc;
+}
+
+//! \brief sends a end flag via fixed route, uses the 8 byte protocol
+void eight_bytes_data_speed_up_send_end_flag() {
     send_fixed_route_packet_no_payload(end_flag_key);
 }
 
-//! \brief DMA complete callback for reading for original transmission
-void dma_complete_reading_for_original_transmission(){
+//! \brief sends a end flag via multicast, uses the 4 byte protocol
+void four_bytes_data_speed_up_send_end_flag() {
+    send_fixed_route_packet_payload(end_flag_key, END_FLAG);
+}
+
+//! \brief DMA complete callback for reading for original transmission, uses
+//! the eight byte protocol
+void eight_bytes_dma_complete_reading_for_original_transmission(){
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t items_read_this_time = num_items_read;
@@ -806,18 +869,18 @@ void dma_complete_reading_for_original_transmission(){
         }
 
         // set off another read and transmit DMA'ed one
-        read(DMA_TAG_READ_FOR_TRANSMISSION, num_items_to_read);
+        eight_bytes_read(DMA_TAG_READ_FOR_TRANSMISSION, num_items_to_read);
 
         //log_info("sending data");
-        send_data_block(current_dma_pointer, items_read_this_time);
+        eight_bytes_send_data_block(current_dma_pointer, items_read_this_time);
         //log_info("finished sending data");
     } else {
         //io_printf(IO_BUF, "sending last data \n");
-        send_data_block(current_dma_pointer, items_read_this_time);
+        eight_bytes_send_data_block(current_dma_pointer, items_read_this_time);
         //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
-        data_speed_up_send_end_flag();
+        eight_bytes_data_speed_up_send_end_flag();
 
         //io_printf(IO_BUF, "finished sending original data with end flag\n");
         has_finished = true;
@@ -828,6 +891,74 @@ void dma_complete_reading_for_original_transmission(){
         sark_delay_us(TDMA_WAIT_PERIOD);
     }
 }
+
+//! \brief DMA complete callback for reading for original transmission, uses
+//! the four byte protocol
+void four_bytes_dma_complete_reading_for_original_transmission(){
+    // set up state
+    uint32_t current_dma_pointer = transmit_dma_pointer;
+    uint32_t key_to_transmit = basic_data_key;
+    uint32_t items_read_this_time = num_items_read;
+
+    // put size in bytes if first send
+    //log_info("in original read complete callback");
+    if (first_transmission) {
+        //io_printf(IO_BUF, "in first\n");
+        data_to_transmit[current_dma_pointer][0] = max_seq_num;
+        key_to_transmit = first_data_key;
+        first_transmission = false;
+        items_read_this_time += 1;
+    }
+
+    // stopping procedure
+    // if a full packet, read another and try again
+    //io_printf(IO_BUF, "next position %d, elements %d\n", position_in_store,
+    //          number_of_elements_to_read_from_sdram);
+    if (position_in_store < number_of_elements_to_read_from_sdram - 1) {
+        //io_printf(IO_BUF, "setting off another DMA\n");
+        //log_info("setting off another DMA");
+        uint32_t num_items_to_read =
+        	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+
+        uint32_t next_position_in_store = position_in_store +
+        	(ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+
+        // if less data needed request less data
+        if (next_position_in_store >= number_of_elements_to_read_from_sdram) {
+            num_items_to_read = number_of_elements_to_read_from_sdram -
+        	    position_in_store;
+            //log_info("reading %d items", num_items_to_read);
+            //log_info("position in store = %d, new position in store = %d",
+            //         position_in_store, next_position_in_store);
+        }
+
+        // set off another read and transmit DMA'ed one
+        four_bytes_read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
+
+        //log_info("sending data");
+        four_bytes_send_data_block(
+        	current_dma_pointer, items_read_this_time, key_to_transmit);
+        //log_info("finished sending data");
+    } else {
+        //io_printf(IO_BUF, "sending last data \n");
+        four_bytes_send_data_block(
+        	current_dma_pointer, items_read_this_time, key_to_transmit);
+        //io_printf(IO_BUF, "sending end flag\n");
+
+        // send end flag.
+        four_bytes_data_speed_up_send_end_flag();
+
+        //log_info("finished sending original data with end flag");
+        has_finished = true;
+        number_of_missing_seq_sdp_packets = 0;
+    }
+
+    if (TDMA_WAIT_PERIOD != 0) {
+        sark_delay_us(TDMA_WAIT_PERIOD);
+    }
+}
+
+
 
 //! \brief write SDP sequence numbers to sdram that need retransmitting
 //! \param[in] data: data to write into sdram
@@ -917,8 +1048,9 @@ void retransmission_dma_read() {
 }
 
 //! \brief reads in missing sequence numbers and sets off the reading of
-//! sdram for the equivalent data
-void the_dma_complete_read_missing_seqeuence_nums() {
+//! sdram for the equivalent data. Supprots both protocols via the global
+//! parameter
+void common_the_dma_complete_read_missing_seqeuence_nums() {
     //! check if at end of read missing sequence numbers
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
@@ -948,16 +1080,35 @@ void the_dma_complete_read_missing_seqeuence_nums() {
 
             if (left_over_portion <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-                retransmitted_seq_num_items_read = left_over_portion;
-                read(DMA_TAG_RETRANSMISSION_READING, left_over_portion);
+                if (using_eight_byte_protocol){
+                    retransmitted_seq_num_items_read = left_over_portion;
+                    eight_bytes_read(
+                        DMA_TAG_RETRANSMISSION_READING, left_over_portion);
+                }else{
+                    retransmitted_seq_num_items_read = left_over_portion + 1;
+                    four_bytes_read(
+                        DMA_TAG_RETRANSMISSION_READING, 1, left_over_portion);
+                }
             } else {
-                retransmitted_seq_num_items_read =
-                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
-                read(DMA_TAG_RETRANSMISSION_READING,
-                	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                if (using_eight_byte_protocol){
+                    retransmitted_seq_num_items_read =
+                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+                    eight_bytes_read(DMA_TAG_RETRANSMISSION_READING,
+                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                } else {
+                    retransmitted_seq_num_items_read =
+                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+                    four_bytes_read(
+                        DMA_TAG_RETRANSMISSION_READING, 1,
+                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                }
             }
         } else {        // finished data send, tell host its done
-            data_speed_up_send_end_flag();
+            if (using_eight_byte_protocol){
+                eight_bytes_data_speed_up_send_end_flag();
+            } else {
+                four_bytes_data_speed_up_send_end_flag();
+            }
             in_re_transmission_mode = false;
             //io_printf(IO_BUF, "Finished retransmission\n");
             missing_sdp_seq_num_sdram_address = NULL;
@@ -969,8 +1120,9 @@ void the_dma_complete_read_missing_seqeuence_nums() {
     }
 }
 
-//! \brief DMA complete callback for have read missing sequence number data
-void dma_complete_reading_retransmission_data() {
+//! \brief DMA complete callback for have read missing sequence number data.
+//! Uses the 8 byte protocol
+void eight_bytes_dma_complete_reading_retransmission_data() {
     //log_info("just read data for a given missing sequence number");
 
     // set sequence number as first element
@@ -985,21 +1137,49 @@ void dma_complete_reading_retransmission_data() {
 
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
-    send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read);
+    eight_bytes_send_data_block(
+        transmit_dma_pointer, retransmitted_seq_num_items_read);
 
     position_in_read_data += 1;
-    the_dma_complete_read_missing_seqeuence_nums();
+    common_the_dma_complete_read_missing_seqeuence_nums();
 }
 
+//! \brief DMA complete callback for have read missing sequence number data.
+//! Uses the 4 byte protocol
+void four_bytes_dma_complete_reading_retransmission_data() {
+    //log_info("just read data for a given missing sequence number");
+
+    // set sequence number as first element
+    data_to_transmit[transmit_dma_pointer][0] =
+        missing_seq_num_being_processed;
+
+    if (missing_seq_num_being_processed > max_seq_num) {
+	io_printf(
+		IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
+	        max_seq_num, missing_seq_num_being_processed);
+    }
+
+    // send new data back to host
+    //log_info("doing retransmission !!!!!!");
+    four_bytes_send_data_block(
+        transmit_dma_pointer, retransmitted_seq_num_items_read,
+                    new_sequence_key);
+
+    position_in_read_data += 1;
+    common_the_dma_complete_read_missing_seqeuence_nums();
+}
+
+
+
 //! \brief DMA complete callback for have read missing sequence number data
-void dma_complete_writing_missing_seq_to_sdram() {
+void common_dma_complete_writing_missing_seq_to_sdram() {
     io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
 //! \brief the handler for all messages coming in for data speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_speed_up(sdp_msg_pure_data *msg) {
+void common_handle_data_speed_up(sdp_msg_pure_data *msg) {
     if (!has_finished){
         sark_msg_free((sdp_msg_t *) msg);
         //io_printf(IO_BUF, "ignoring packet, as still transmitting\n");
@@ -1036,11 +1216,25 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 
             if (number_of_elements_to_read_from_sdram <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-                read(DMA_TAG_READ_FOR_TRANSMISSION,
-                    number_of_elements_to_read_from_sdram);
+                if(using_eight_byte_protocol){
+                    eight_bytes_read(
+                        DMA_TAG_READ_FOR_TRANSMISSION,
+                        number_of_elements_to_read_from_sdram);
+                } else {
+                    four_bytes_read(
+                        DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                        number_of_elements_to_read_from_sdram);
+                }
             } else {
-                read(DMA_TAG_READ_FOR_TRANSMISSION,
-                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                if(using_eight_byte_protocol){
+                    eight_bytes_read(
+                        DMA_TAG_READ_FOR_TRANSMISSION,
+                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                } else {
+                    four_bytes_read(
+                        DMA_TAG_READ_FOR_TRANSMISSION, 1,
+                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                }
             }
         }
         // start or continue to gather missing packet list
@@ -1131,17 +1325,25 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 }
 
 //! \brief the handler for all DMA'S complete!
-INT_HANDLER speed_up_handle_dma(){
+INT_HANDLER common_speed_up_handle_dma(){
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (dma_port_last_used == DMA_TAG_READ_FOR_TRANSMISSION) {
-        dma_complete_reading_for_original_transmission();
+        if (using_eight_byte_protocol){
+            eight_bytes_dma_complete_reading_for_original_transmission();
+        } else {
+            four_bytes_dma_complete_reading_for_original_transmission();
+        }
     } else if (dma_port_last_used == DMA_TAG_READ_FOR_RETRANSMISSION) {
-        the_dma_complete_read_missing_seqeuence_nums();
+        common_the_dma_complete_read_missing_seqeuence_nums();
     } else if (dma_port_last_used == DMA_TAG_RETRANSMISSION_READING) {
-        dma_complete_reading_retransmission_data();
+        if (using_eight_byte_protocol){
+            eight_bytes_dma_complete_reading_retransmission_data();
+        } else {
+            four_bytes_dma_complete_reading_retransmission_data();
+        }
     } else if (dma_port_last_used == DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS) {
-        dma_complete_writing_missing_seq_to_sdram();
+        common_dma_complete_writing_missing_seq_to_sdram();
     } else {
         io_printf(IO_BUF, "NOT VALID DMA CALLBACK PORT!!!!\n");
     }
@@ -1184,7 +1386,7 @@ void __wrap_sark_int(void *pc) {
                 break;
             case DATA_SPEED_UP_FUNCTIONALITY:
                 //io_printf(IO_BUF, "Speed up SDP\n");
-                handle_data_speed_up((sdp_msg_pure_data *) msg);
+                common_handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
                 //io_printf(IO_BUF, "not happy port %d\n",
@@ -1248,6 +1450,14 @@ void data_speed_up_initialise() {
     first_data_key = address[FIRST_DATA_KEY];
     end_flag_key = address[END_FLAG_KEY];
     odd_data_packet_key = address[ODD_DATA_PACKET_KEY];
+    using_eight_byte_protocol = address[USING_EIGHT_BYTE_PROTOCOL];
+
+    if(using_eight_byte_protocol){
+        io_printf(IO_BUF, "Will be using the 8 byte protocol\n");
+    }
+    else{
+        io_printf(IO_BUF, "Will be using the 4 byte protocol\n");
+    }
 
     io_printf(
         IO_BUF,
@@ -1259,7 +1469,7 @@ void data_speed_up_initialise() {
         first_data_key, end_flag_key, odd_data_packet_key);
 
 
-    vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
+    vic_vectors[DMA_SLOT]  = common_speed_up_handle_dma;
     vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
 
     for (uint32_t i = 0; i < 2; i++) {

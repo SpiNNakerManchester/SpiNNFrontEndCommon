@@ -15,13 +15,14 @@ class DataSpeedUpPacketGather(
     def __init__(
             self, x, y, ip_address, data_extractor_use_c_code,
             report_default_directory, write_data_speed_up_report,
-            constraints=None):
+            using_eight_byte_protocol, constraints=None):
         super(DataSpeedUpPacketGather, self).__init__(
             "multicast speed up application vertex for {}, {}".format(
                 x, y), constraints, 1)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
             x, y, ip_address, data_extractor_use_c_code,
-            report_default_directory, write_data_speed_up_report, constraints)
+            report_default_directory, write_data_speed_up_report, constraints,
+            using_eight_byte_protocol)
 
     @property
     def machine_vertex(self):

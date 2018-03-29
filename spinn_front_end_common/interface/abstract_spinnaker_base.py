@@ -1606,6 +1606,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("FixedRouteRouter")
             inputs['FixedRouteDestinationClass'] = \
                 DataSpeedUpPacketGatherMachineVertex
+            inputs['DataExtractionUse8BytesProtocol'] = \
+                self._config.getboolean(
+                    "Machine", "data_extraction_utilise_8_byte_protocol")
 
         # handle extra mapping algorithms if required
         if self._extra_mapping_algorithms is not None:

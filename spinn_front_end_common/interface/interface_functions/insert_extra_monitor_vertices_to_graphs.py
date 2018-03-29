@@ -16,7 +16,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
     def __call__(
             self, machine, machine_graph, default_report_directory,
             write_data_speed_up_report, data_extractor_use_c_code,
-            n_cores_to_allocate=1, graph_mapper=None, application_graph=None):
+            using_eight_byte_protocol, n_cores_to_allocate=1,
+            graph_mapper=None, application_graph=None):
         """ inserts vertices to correspond to the extra monitor cores
 
         :param machine: spinnMachine instance
@@ -26,6 +27,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param write_data_speed_up_report:\
             determine whether to write the report for data speed up
         :param graph_mapper: graph mapper
+        :param using_eight_byte_protocol: bool that flags if the data \
+        extraction should use 8 byte protocol or 4 byte protocol.
         :param application_graph: app graph.
         :return: vertex to Ethernet connection map
         """
@@ -43,19 +46,19 @@ class InsertExtraMonitorVerticesToGraphs(object):
             progress, machine, application_graph, machine_graph, graph_mapper,
             vertex_to_ethernet_connected_chip_mapping,
             default_report_directory, write_data_speed_up_report,
-            data_extractor_use_c_code)
+            data_extractor_use_c_code, using_eight_byte_protocol)
 
         # handle re injector and chip based data extractor functionality.
         extra_monitor_vertices = self._handle_second_monitor_functionality(
             progress, machine, application_graph, machine_graph, graph_mapper,
-            vertex_to_chip_map)
+            vertex_to_chip_map, using_eight_byte_protocol)
 
         return (vertex_to_ethernet_connected_chip_mapping,
                 extra_monitor_vertices, vertex_to_chip_map)
 
     def _handle_second_monitor_functionality(
             self, progress, machine, application_graph, machine_graph,
-            graph_mapper, vertex_to_chip_map):
+            graph_mapper, vertex_to_chip_map, using_eight_byte_protocol):
         """ handles placing the second monitor vertex with extra functionality\
             into the graph
         :param progress: progress bar
@@ -64,6 +67,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
         :param vertex_to_chip_map: map between vertex and chip
+        :param using_eight_byte_protocol: bool flagging which protocol to use
         :rtype: list
         :return: list of extra monitor cores
         """
@@ -78,7 +82,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     ExtraMonitorSupportMachineVertex)
                 if machine_vertex is None:
                     # add to machine graph
-                    machine_vertex = self.__new_mach_monitor(chip)
+                    machine_vertex = self.__new_mach_monitor(
+                        chip, using_eight_byte_protocol)
                     machine_graph.add_vertex(machine_vertex)
 
                 vertex_to_chip_map[chip.x, chip.y] = machine_vertex
@@ -89,7 +94,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     equiv_vertex = self._exists_equiv_vertex(
                         chip.x, chip.y, application_graph, ExtraMonitorSupport)
                     if equiv_vertex is None:
-                        app_vertex = self.__new_app_monitor(chip)
+                        app_vertex = self.__new_app_monitor(
+                            chip, using_eight_byte_protocol)
                         application_graph.add_vertex(app_vertex)
                         graph_mapper.add_vertex_mapping(
                             machine_vertex, Slice(0, 0), app_vertex)
@@ -109,7 +115,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
             self, progress, machine, application_graph, machine_graph,
             graph_mapper, vertex_to_ethernet_connected_chip_mapping,
             default_report_directory, write_data_speed_up_report,
-            data_extractor_use_c_code):
+            data_extractor_use_c_code, using_eight_byte_protocol):
         """ places vertices for receiving data extraction packets.
 
         :param progress: progress bar
@@ -140,7 +146,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 if equiv_vertex is None:
                     app_vertex = self.__new_app_gatherer(
                         ethernet_chip, data_extractor_use_c_code,
-                        default_report_directory, write_data_speed_up_report)
+                        default_report_directory, write_data_speed_up_report,
+                        using_eight_byte_protocol)
                     machine_vertex = app_vertex.machine_vertex
                     machine_graph.add_vertex(machine_vertex)
                     application_graph.add_vertex(app_vertex)
@@ -155,7 +162,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 if machine_vertex is None:
                     machine_vertex = self.__new_mach_gatherer(
                         ethernet_chip, data_extractor_use_c_code,
-                        default_report_directory, write_data_speed_up_report)
+                        default_report_directory, write_data_speed_up_report,
+                        using_eight_byte_protocol)
                     machine_graph.add_vertex(machine_vertex)
 
             # update mapping for edge builder
@@ -164,19 +172,21 @@ class InsertExtraMonitorVerticesToGraphs(object):
                  ethernet_chip.y)] = machine_vertex
 
     @staticmethod
-    def __new_app_monitor(chip):
-        return ExtraMonitorSupport(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+    def __new_app_monitor(chip, using_eight_byte_protocol):
+        return ExtraMonitorSupport(
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
+            using_eight_byte_protocol=using_eight_byte_protocol)
 
     @staticmethod
-    def __new_mach_monitor(chip):
-        return ExtraMonitorSupportMachineVertex(constraints=[
-            ChipAndCoreConstraint(x=chip.x, y=chip.y)])
+    def __new_mach_monitor(chip, using_eight_byte_protocol):
+        return ExtraMonitorSupportMachineVertex(
+            constraints=[ChipAndCoreConstraint(x=chip.x, y=chip.y)],
+            using_eight_byte_protocol=using_eight_byte_protocol)
 
     @staticmethod
     def __new_app_gatherer(
             ethernet_chip, data_extractor_use_c_code, default_report_directory,
-            write_data_speed_up_report):
+            write_data_speed_up_report, using_eight_byte_protocol):
         return DataSpeedUpPacketGather(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
@@ -184,12 +194,13 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             report_default_directory=default_report_directory,
             write_data_speed_up_report=write_data_speed_up_report,
-            data_extractor_use_c_code=data_extractor_use_c_code)
+            data_extractor_use_c_code=data_extractor_use_c_code,
+            using_eight_byte_protocol=using_eight_byte_protocol)
 
     @staticmethod
     def __new_mach_gatherer(
             ethernet_chip, data_extractor_use_c_code, default_report_directory,
-            write_data_speed_up_report):
+            write_data_speed_up_report, using_eight_byte_protocol):
         return DataSpeedUpPacketGatherMachineVertex(
             x=ethernet_chip.x, y=ethernet_chip.y,
             ip_address=ethernet_chip.ip_address,
@@ -197,4 +208,5 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             report_default_directory=default_report_directory,
             write_data_speed_up_report=write_data_speed_up_report,
-            data_extractor_use_c_code=data_extractor_use_c_code)
+            data_extractor_use_c_code=data_extractor_use_c_code,
+            using_eight_byte_protocol=using_eight_byte_protocol)
