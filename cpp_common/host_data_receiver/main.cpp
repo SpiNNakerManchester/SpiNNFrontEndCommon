@@ -24,7 +24,8 @@ static inline void parse_arg(Arguments &args, int index, int &variable)
 	std::string s(args[index]);
 	variable = std::stoi(s);
     } catch (std::invalid_argument &e) {
-	cout << e.what() << endl;
+	cout << "couldn't parse integer argument " << index << " '" <<
+		args[index] << "'" << endl;
 	exit(1);
     }
 }
@@ -53,6 +54,14 @@ int main(int argc, char *argv[])
         IPTAG = 12
     };
 
+    // placement x, placement y, placement p, port, host, data loc
+    if (args.length() != N_ARGS) {
+        cout << "usage: " << args[0] << " <hostname> <port> <placement.x> "
+        	"<placement.y> <placement.p> <read.file> <miss.file> "
+        	"<length> <address> <chip.x> <chip.y> <iptag>" << endl;
+        return 1;
+    }
+
     // variables
     int placement_x = 0;
     int placement_y = 0;
@@ -63,14 +72,6 @@ int main(int argc, char *argv[])
     int chip_x = 0;
     int chip_y = 0;
     int iptag = 0;
-
-    // placement x, placement y, placement p, port, host, data loc
-    if (args.length() != N_ARGS) {
-        cout << "usage: " << args[0] << " <hostname> <port> <placement.x> "
-        	"<placement.y> <placement.p> <read.file> <miss.file> "
-        	"<length> <address> <chip.x> <chip.y> <iptag>" << endl;
-        return 1;
-    }
 
     // get arguments
     parse_arg(args, PLACEMENT_X_POSITION, placement_x);
