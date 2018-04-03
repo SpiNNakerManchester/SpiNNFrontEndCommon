@@ -1,13 +1,13 @@
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
-import java.net.InetAddress
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.SocketException;
 
 public class UDPConnection implements AutoCloseable {
     private DatagramSocket sock;
-    private boolean can_send;
     private InetSocketAddress remote_ip_address;
 
     // Simple passthrough constructors that allow sensible defaults
@@ -35,7 +35,6 @@ public class UDPConnection implements AutoCloseable {
             String local_host,
             int remote_port,
             String remote_host) throws SocketException {
-        this.can_send = false;
         this.remote_ip_address = new InetSocketAddress(remote_host, remote_port);
         if (local_host == null || local_host.isEmpty()) {
         	this.sock = new DatagramSocket();
@@ -71,7 +70,7 @@ public class UDPConnection implements AutoCloseable {
         }
     }
 
-    @Overrides
+    @Override
     public void close() {
         sock.close();
     }
@@ -80,7 +79,7 @@ public class UDPConnection implements AutoCloseable {
         return this.sock.getLocalPort();
     }
 
-    public InetAddress get_local_ip() {
-    	return this.sock.getLocalSocketAddress();
+    public InetSocketAddress get_local_ip() {
+    	return (InetSocketAddress) this.sock.getLocalSocketAddress();
     }
 }
