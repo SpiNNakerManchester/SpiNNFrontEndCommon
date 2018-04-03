@@ -46,7 +46,7 @@ public class ProcessorThread extends Thread{
             try {
                 DatagramPacket p = this.messqueue.pop();
                 
-                this.parent.process_data(
+                this.finished = this.parent.process_data(
                         this.connection, this.finished, 
                         this.received_seq_nums, p);
             } catch (NoSuchElementException e) {
@@ -68,14 +68,13 @@ public class ProcessorThread extends Thread{
                         Logger.getLogger(ProcessorThread.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 Logger.getLogger(ProcessorThread.class.getName()).log(Level.SEVERE, null, ex);
             }
-
+        }
+        
         // close socket and inform the reader that transmission is completed
         this.connection.close();
         this.finished = true;
-        }
     }
 }
