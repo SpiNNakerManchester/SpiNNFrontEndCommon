@@ -11,6 +11,8 @@
 using namespace std;
 using namespace std::literals::chrono_literals; // BLACK MAGIC!
 
+static const auto TIMEOUT_PER_RECEIVE = 1000ms;
+
 // Extra magic for Windows.
 static void initSocketLibrary(void) {
     static bool initialised = false;
@@ -92,8 +94,7 @@ UDPConnection::UDPConnection(
 	local->sin_port = htons(local_port);
     }
 
-    // TODO: What is the correct timeout for a receiver socket?
-    setSocketTimeout(sock, 500ms);
+    setSocketTimeout(sock, TIMEOUT_PER_RECEIVE);
     bind(sock, (struct sockaddr *) &local_address, sizeof(local_address));
 
     can_send = false;
