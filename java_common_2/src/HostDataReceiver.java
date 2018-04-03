@@ -137,9 +137,8 @@ public class HostDataReceiver extends Thread {
     
         private byte[] build_scp_req(
             int cmd,
-            int port,
             int strip_sdp,
-            InetSocketAddress ip_address){
+            InetSocketAddress sock_address){
         int seq = 0;
         int arg = 0;
 
@@ -151,8 +150,8 @@ public class HostDataReceiver extends Thread {
         arg = arg | (strip_sdp << 28) | (1 << 16) | this.iptag;
 
         byteBuffer.putInt(arg);
-        byteBuffer.putInt(port);
-        byteBuffer.put(ip_address.getAddress().getAddress());
+        byteBuffer.putInt(sock_address.getPort());
+        byteBuffer.put(sock_address.getAddress().getAddress());
 
         return byteBuffer.array();
     }
@@ -198,9 +197,8 @@ public class HostDataReceiver extends Thread {
         length_via_format2 = miss_dim - (DATA_PER_FULL_PACKET - 2);
 
         if (length_via_format2 > 0){
-            n_packets += new Double(Math.ceil(
-                    (float) (length_via_format2)
-                            / (float) (DATA_PER_FULL_PACKET - 1))).intValue();
+            n_packets += (int) Math.ceil(
+            		length_via_format2 / (float) (DATA_PER_FULL_PACKET - 1));
         }
 
         // Transmit missing sequences as a new SDP Packet
@@ -214,9 +212,9 @@ public class HostDataReceiver extends Thread {
             // If first, add n packets to list; otherwise just add data
             if (first) {
                 // Get left over space / data size
-                size_of_data_left_to_transmit = new Double(Math.min(
+                size_of_data_left_to_transmit = (int) Math.min(
                         length_left_in_packet - 2,
-                        (int) (miss_dim) - seq_num_offset)).intValue();
+                        miss_dim - seq_num_offset);
 
                 // Pack flag and n packets
                 data.putInt(SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
@@ -227,9 +225,9 @@ public class HostDataReceiver extends Thread {
                 first = false;
             } else {
                 // Get left over space / data size
-                size_of_data_left_to_transmit = new Double(Math.min(
+                size_of_data_left_to_transmit = (int) Math.min(
                         DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
-                        (int) miss_dim - seq_num_offset)).intValue();
+                        miss_dim - seq_num_offset);
 
                 // Pack flag
                 data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
@@ -248,7 +246,7 @@ public class HostDataReceiver extends Thread {
                     SDPMessage.REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0,
                     data.array());
 
-            sender.send_data(message.convert_to_byte_array(),
+            sender.sendData(message.convert_to_byte_array(),
                     message.length_in_bytes());
 
             Thread.sleep(TIMEOUT_PER_SENDING_IN_MICROSECONDS);
@@ -257,15 +255,12 @@ public class HostDataReceiver extends Thread {
         return false;
     }
     
-    public void process_data(
+    public boolean process_data(
             UDPConnection sender,
-            Boolean finished,
+            boolean finished,
             BitSet received_seq_nums,
             DatagramPacket packet) 
             throws Exception{
-        
-        int i;
-        int j;
         int first_packet_element;
         int offset;
         int true_data_length;
@@ -296,7 +291,6 @@ public class HostDataReceiver extends Thread {
         if (is_end_of_stream && packet.getLength() == END_FLAG_SIZE_IN_BYTES) {
             // empty
         } else {
-            
             System.arraycopy(packet.getData(), SEQUENCE_NUMBER_SIZE, 
                              this.buffer, offset, (true_data_length - offset));
         }
@@ -305,18 +299,19 @@ public class HostDataReceiver extends Thread {
 
         if (is_end_of_stream) {
             if (!this.check(received_seq_nums, this.max_seq_num)) {
-                this.finished = retransmit_missing_sequences(
+                finished |= retransmit_missing_sequences(
                     sender, received_seq_nums);
             } else {
-                this.finished = true;
+                finished = true;
             }
         }
+        return finished;
     }
 
     private void send_initial_command(UDPConnection sender, UDPConnection receiver){
         //Build an SCP request to set up the IP Tag associated to this socket
         byte[] scp_req = this.build_scp_req(
-            26, receiver.get_local_port(), 1, receiver.get_local_ip());
+        		26, 1, receiver.getLocalSocketAddress());
 
         
         SDPMessage ip_tag_message = new SDPMessage(
@@ -324,12 +319,12 @@ public class HostDataReceiver extends Thread {
                 SDPMessage.REPLY_EXPECTED, 255, 255, 255, 0, 0, scp_req);
 
         //Send SCP request
-        sender.send_data(ip_tag_message.convert_to_byte_array(),
-                         ip_tag_message.length_in_bytes());
+        sender.sendData(ip_tag_message.convert_to_byte_array(),
+        		ip_tag_message.length_in_bytes());
 
         
         byte[] buf = new byte[300];
-        sender.receive_data(buf, 300);
+        sender.receiveData(buf, 300);
 
         // Create Data request SDP packet
         ByteBuffer byteBuffer = ByteBuffer.allocate(3 * 4);
@@ -345,31 +340,22 @@ public class HostDataReceiver extends Thread {
                 byteBuffer.array());
 
         //send message
-        sender.send_data(message.convert_to_byte_array(),
-                         message.length_in_bytes());
+        sender.sendData(message.convert_to_byte_array(),
+        		message.length_in_bytes());
     }
 
     private int calculate_max_seq_num(int length){
-        int n_sequence_number = 0;
-        float extra_n_sequences;
-
-        extra_n_sequences = (float) length
-                / (float) (DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM
-                * WORD_TO_BYTE_CONVERTER);
-
-        n_sequence_number += 
-                new Double(Math.ceil(extra_n_sequences)).intValue();
-
-        return n_sequence_number;
+        return (int) Math.ceil(length / (float) (
+        		DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER));
     }
 
     private boolean check(BitSet received_seq_nums, int max_needed) 
             throws Exception{
         int recvsize = received_seq_nums.length();
 
-        if (recvsize > (max_needed + 1)) {
+        if (recvsize > max_needed + 1) {
             throw new Exception("ERROR: Received more data than expected");
         }
-        return recvsize == (max_needed + 1);
+        return recvsize == max_needed + 1;
     }
 }

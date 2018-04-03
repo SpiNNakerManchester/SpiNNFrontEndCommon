@@ -30,12 +30,12 @@ public class ReaderThread extends Thread{
 
         // While socket is open add messages to the queue
         do {
-            DatagramPacket recvd = this.connection.receive_data(data, 400);
+            DatagramPacket recvd = this.connection.receiveData(data, 400);
 
             if (recvd != null){
                 this.messqueue.push(recvd);
             }
 
-        } while (!this.connection.is_closed());
+        } while (!this.connection.isClosed());
     }
 }

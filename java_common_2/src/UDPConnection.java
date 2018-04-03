@@ -1,14 +1,12 @@
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
-import java.net.InetAddress
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 
 public class UDPConnection implements AutoCloseable {
     private DatagramSocket sock;
-    private boolean can_send;
-    private InetSocketAddress remote_ip_address;
+    private InetSocketAddress remote_address;
 
     // Simple passthrough constructors that allow sensible defaults
     public UDPConnection(
@@ -35,8 +33,7 @@ public class UDPConnection implements AutoCloseable {
             String local_host,
             int remote_port,
             String remote_host) throws SocketException {
-        this.can_send = false;
-        this.remote_ip_address = new InetSocketAddress(remote_host, remote_port);
+        this.remote_address = new InetSocketAddress(remote_host, remote_port);
         if (local_host == null || local_host.isEmpty()) {
         	this.sock = new DatagramSocket();
         } else {
@@ -46,11 +43,11 @@ public class UDPConnection implements AutoCloseable {
         this.sock.setSoTimeout(500);
     }
     
-    public boolean is_closed() {
+    public boolean isClosed() {
         return this.sock.isClosed();
     }
 
-    public DatagramPacket receive_data(byte[] data, int length) {
+    public DatagramPacket receiveData(byte[] data, int length) {
         DatagramPacket packet = new DatagramPacket(data, length);
         try {
             sock.receive(packet);
@@ -61,9 +58,9 @@ public class UDPConnection implements AutoCloseable {
         }      
     }
 
-    public void send_data(byte[] data, int length) {
+    public void sendData(byte[] data, int length) {
         DatagramPacket packet = new DatagramPacket(
-                data, length, this.remote_ip_address);
+                data, length, this.remote_address);
         try {
             sock.send(packet);
         } catch(IOException e) {
@@ -71,16 +68,12 @@ public class UDPConnection implements AutoCloseable {
         }
     }
 
-    @Overrides
+    @Override
     public void close() {
         sock.close();
     }
 
-    public int get_local_port() {
-        return this.sock.getLocalPort();
-    }
-
-    public InetAddress get_local_ip() {
-    	return this.sock.getLocalSocketAddress();
+    public InetSocketAddress getLocalSocketAddress() {
+    	return (InetSocketAddress) this.sock.getLocalSocketAddress();
     }
 }
