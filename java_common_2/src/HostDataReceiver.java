@@ -94,7 +94,7 @@ public class HostDataReceiver extends Thread {
         // create connection
         UDPConnection sender = null;
         try {
-            sender = new UDPConnection(0, "", this.port_connection, this.hostname);
+            sender = new UDPConnection(this.port_connection, this.hostname);
         } catch (SocketException ex) {
             Logger.getLogger(HostDataReceiver.class.getName()).log(Level.SEVERE, null, ex);
         }
