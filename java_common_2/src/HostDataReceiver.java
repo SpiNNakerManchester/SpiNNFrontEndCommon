@@ -24,7 +24,7 @@ public class HostDataReceiver extends Thread {
 
     // time out constants
     private final int TIMEOUT_PER_RECEIVE_IN_SECONDS = 1;
-    private final int TIMEOUT_PER_SENDING_IN_MICROSECONDS = 10000;
+    private final int TIMEOUT_PER_SENDING_IN_MICROSECONDS = 10;
 
     // consts for data and converting between words and bytes
     private final int DATA_PER_FULL_PACKET = 68;
@@ -135,15 +135,37 @@ public class HostDataReceiver extends Thread {
         fp2.close();
     }
     
+        private byte[] build_scp_req(
+            int cmd,
+            int port,
+            int strip_sdp,
+            InetSocketAddress ip_address){
+        int seq = 0;
+        int arg = 0;
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(4 * 4);
+
+        byteBuffer.putShort((short)cmd);
+        byteBuffer.putShort((short)seq);
+
+        arg = arg | (strip_sdp << 28) | (1 << 16) | this.iptag;
+
+        byteBuffer.putInt(arg);
+        byteBuffer.putInt(port);
+        byteBuffer.put(ip_address.getAddress().getAddress());
+
+        return byteBuffer.array();
+    }
+    
     public boolean retransmit_missing_sequences(
             UDPConnection sender, BitSet received_seq_nums) 
             throws InterruptedException{
+        
         int length_via_format2;
         int seq_num_offset;
         int length_left_in_packet;
         int size_of_data_left_to_transmit;
         boolean first;
-        ByteBuffer data = ByteBuffer.allocate(DATA_PER_FULL_PACKET * 4);
         int n_packets;
         int i;
 
@@ -162,6 +184,7 @@ public class HostDataReceiver extends Thread {
                 this.miss_cnt++;
             }
         }
+        missing_seq.rewind();
 
         //Set correct number of lost sequences
         miss_dim = j;
@@ -185,6 +208,7 @@ public class HostDataReceiver extends Thread {
         seq_num_offset = 0;
 
         for (i = 0; i < n_packets ; i++) {
+            ByteBuffer data = ByteBuffer.allocate(DATA_PER_FULL_PACKET * 4);
             length_left_in_packet = DATA_PER_FULL_PACKET;
 
             // If first, add n packets to list; otherwise just add data
@@ -217,7 +241,7 @@ public class HostDataReceiver extends Thread {
             }
 
             seq_num_offset += length_left_in_packet;
-
+            
             SDPMessage message = new SDPMessage(
                     this.placement_x, this.placement_y,
                     this.placement_p, this.port_connection,
@@ -287,28 +311,6 @@ public class HostDataReceiver extends Thread {
                 this.finished = true;
             }
         }
-    }
-
-    private byte[] build_scp_req(
-            int cmd,
-            int port,
-            int strip_sdp,
-            InetSocketAddress ip_address){
-        int seq = 0;
-        int arg = 0;
-
-        ByteBuffer byteBuffer = ByteBuffer.allocate(4 * 4);
-
-        byteBuffer.putShort((short)cmd);
-        byteBuffer.putShort((short)seq);
-
-        arg = arg | (strip_sdp << 28) | (1 << 16) | this.iptag;
-
-        byteBuffer.putInt(arg);
-        byteBuffer.putInt(port);
-        byteBuffer.put(ip_address.getAddress().getAddress());
-
-        return byteBuffer.array();
     }
 
     private void send_initial_command(UDPConnection sender, UDPConnection receiver){

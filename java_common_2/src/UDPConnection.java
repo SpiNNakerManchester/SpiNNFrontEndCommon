@@ -23,7 +23,9 @@ public class UDPConnection{
 
         if (!local_host.equals("")) {
             this.local_ip_address = new InetSocketAddress(local_host, local_port);
+            System.out.println("A");
             this.sock.bind(this.local_ip_address);
+            System.out.println("A");
         }
     }
     
