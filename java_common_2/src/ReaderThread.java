@@ -21,6 +21,7 @@ public class ReaderThread extends Thread{
                         ConcurrentLinkedDeque<DatagramPacket> messqueue){
         this.connection = connection;
         this.messqueue = messqueue;
+        this.setName("ReadThread");
     }
     
     @Override

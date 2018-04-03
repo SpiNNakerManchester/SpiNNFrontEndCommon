@@ -19,6 +19,7 @@ public class UDPConnection{
         this.can_send = false;
         this.remote_ip_address = new InetSocketAddress(remote_host, remote_port);
         this.sock = new DatagramSocket();
+        this.sock.setSoTimeout(500);
 
         if (!local_host.equals("")) {
             this.local_ip_address = new InetSocketAddress(local_host, local_port);

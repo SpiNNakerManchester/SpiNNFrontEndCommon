@@ -33,6 +33,7 @@ public class ProcessorThread extends Thread{
         this.parent = parent;
         this.finished = finished; 
         this.received_seq_nums = received_seq_nums;
+        this.setName("ProcessorThread");
     }
             
             
