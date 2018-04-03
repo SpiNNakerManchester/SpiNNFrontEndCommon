@@ -37,6 +37,7 @@ public class UDPConnection implements AutoCloseable {
         if (local_host == null || local_host.isEmpty()) {
         	this.sock = new DatagramSocket();
         } else {
+            System.out.println("A");
         	this.sock = new DatagramSocket(
         			new InetSocketAddress(local_host, local_port));
         }
