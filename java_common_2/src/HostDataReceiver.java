@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.BitSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class HostDataReceiver extends Thread {
@@ -87,37 +89,37 @@ public class HostDataReceiver extends Thread {
         this.miss_cnt = 0;
     }
 
-    public byte[] get_data(){
+    public byte[] get_data() throws InterruptedException{
+        // create connection
+        UDPConnection sender = null;
         try {
-            // create connection
-            UDPConnection sender = new UDPConnection(0, "", 17893, this.hostname);
-
-            // send the initial command to start data transmission
-            this.send_initial_command(sender, sender);
-
-            ReaderThread reader = new ReaderThread(sender, this.messqueue);
-            
-            ProcessorThread processor = new ProcessorThread(
-                sender, this.messqueue, this, this.finished, 
-                this.received_seq_nums);
-            
-            reader.start();
-            processor.start();
-
-            reader.join();
-            processor.join();
-
-        } catch (SocketException | InterruptedException e) {
-            System.out.println(e);
-            return null;
+            sender = new UDPConnection(0, "", this.port_connection, this.hostname);
+        } catch (SocketException ex) {
+            Logger.getLogger(HostDataReceiver.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        // send the initial command to start data transmission
+        this.send_initial_command(sender, sender);
+
+        ReaderThread reader = new ReaderThread(sender, this.messqueue);
+
+        ProcessorThread processor = new ProcessorThread(
+            sender, this.messqueue, this, this.finished, 
+            this.received_seq_nums);
+
+        reader.start();
+        processor.start();
+
+        reader.join();
+        processor.join();
+
 
         return this.buffer;
     }
 
     public void get_data_threadable(
             String filepath_read, String filepath_missing) 
-            throws FileNotFoundException, IOException{
+            throws FileNotFoundException, IOException, InterruptedException{
         FileOutputStream fp1 = new FileOutputStream(new File(filepath_read));
         PrintWriter fp2 = new PrintWriter(new File(filepath_missing));
         
@@ -139,7 +141,6 @@ public class HostDataReceiver extends Thread {
         int length_via_format2;
         int seq_num_offset;
         int length_left_in_packet;
-        int offset;
         int size_of_data_left_to_transmit;
         boolean first;
         ByteBuffer data = ByteBuffer.allocate(DATA_PER_FULL_PACKET * 4);
@@ -185,7 +186,6 @@ public class HostDataReceiver extends Thread {
 
         for (i = 0; i < n_packets ; i++) {
             length_left_in_packet = DATA_PER_FULL_PACKET;
-            offset = 0;
 
             // If first, add n packets to list; otherwise just add data
             if (first) {
@@ -199,7 +199,6 @@ public class HostDataReceiver extends Thread {
                 data.putInt(n_packets);
 
                 // Update state
-                offset += 2;
                 length_left_in_packet -= 2;
                 first = false;
             } else {
@@ -210,15 +209,12 @@ public class HostDataReceiver extends Thread {
 
                 // Pack flag
                 data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
-
-                offset += 1;
                 length_left_in_packet -= 1;
             }
-            
-            byte [] data_raw = data.array();
-            missing_seq.get(
-                    data_raw, seq_num_offset * 4, 
-                    (seq_num_offset * 4) + (size_of_data_left_to_transmit * 4));
+            System.out.println("a");
+            for(int element = 0; element < size_of_data_left_to_transmit* 4; element++){
+                data.put(missing_seq.get());
+            }
 
             seq_num_offset += length_left_in_packet;
 
@@ -226,7 +222,7 @@ public class HostDataReceiver extends Thread {
                     this.placement_x, this.placement_y,
                     this.placement_p, this.port_connection,
                     SDPMessage.REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0,
-                    data_raw);
+                    data.array());
 
             sender.send_data(message.convert_to_byte_array(),
                     message.length_in_bytes());

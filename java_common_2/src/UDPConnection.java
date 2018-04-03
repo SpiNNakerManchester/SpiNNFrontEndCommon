@@ -8,7 +8,7 @@ public class UDPConnection{
 
     private DatagramSocket sock;
     private boolean can_send;
-    private InetSocketAddress local_ip_address;
+    private InetSocketAddress local_ip_address = null;
     private InetSocketAddress remote_ip_address;
 
     public UDPConnection(
@@ -19,8 +19,8 @@ public class UDPConnection{
         this.can_send = false;
         this.remote_ip_address = new InetSocketAddress(remote_host, remote_port);
         this.sock = new DatagramSocket();
-       
-        if (local_host != null) {
+
+        if (!local_host.equals("")) {
             this.local_ip_address = new InetSocketAddress(local_host, local_port);
             this.sock.bind(this.local_ip_address);
         }
@@ -42,7 +42,8 @@ public class UDPConnection{
     }
 
     void send_data(byte[] data, int length){
-        DatagramPacket packet = new DatagramPacket(data, length, this.remote_ip_address);
+        DatagramPacket packet = new DatagramPacket(
+                data, length, this.remote_ip_address);
         try{
             sock.send(packet);
         } catch(IOException e){
@@ -59,6 +60,9 @@ public class UDPConnection{
     }
 
     InetSocketAddress get_local_ip(){
+        if (this.local_ip_address == null){
+            return (InetSocketAddress) this.sock.getLocalSocketAddress();
+        }
         return this.local_ip_address;
     }
 }
