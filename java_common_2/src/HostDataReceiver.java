@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.SocketException;
+import java.nio.ByteOrder;
 import java.util.BitSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -144,6 +145,7 @@ public class HostDataReceiver extends Thread {
         int arg = 0;
 
         ByteBuffer byteBuffer = ByteBuffer.allocate(4 * 4);
+        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 
         byteBuffer.putShort((short)cmd);
         byteBuffer.putShort((short)seq);
@@ -174,6 +176,7 @@ public class HostDataReceiver extends Thread {
         int miss_dim = this.max_seq_num - received_seq_nums.cardinality();
 
         ByteBuffer missing_seq = ByteBuffer.allocate(miss_dim * 4);
+        missing_seq.order(ByteOrder.LITTLE_ENDIAN);
         int j = 0;
 
         // Calculate missing sequence numbers and add them to "missing"
@@ -208,6 +211,7 @@ public class HostDataReceiver extends Thread {
 
         for (i = 0; i < n_packets ; i++) {
             ByteBuffer data = ByteBuffer.allocate(DATA_PER_FULL_PACKET * 4);
+            data.order(ByteOrder.LITTLE_ENDIAN);
             length_left_in_packet = DATA_PER_FULL_PACKET;
 
             // If first, add n packets to list; otherwise just add data
@@ -269,6 +273,8 @@ public class HostDataReceiver extends Thread {
         boolean is_end_of_stream;
 
         ByteBuffer data = ByteBuffer.wrap(packet.getData());
+        data.order(ByteOrder.LITTLE_ENDIAN);
+        data.rewind();
         first_packet_element = data.getInt();
 
         seq_num = first_packet_element & 0x7FFFFFFF;
@@ -329,6 +335,7 @@ public class HostDataReceiver extends Thread {
 
         // Create Data request SDP packet
         ByteBuffer byteBuffer = ByteBuffer.allocate(3 * 4);
+        byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
         byteBuffer.putInt(this.SDP_PACKET_START_SENDING_COMMAND_ID);
         byteBuffer.putInt(this.memory_address);
         byteBuffer.putInt(this.length_in_bytes);
