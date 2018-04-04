@@ -19,14 +19,13 @@ static const auto DELAY_PER_SENDING = 10000us;
 
 // consts for data and converting between words and bytes
 //static const int SDRAM_READING_SIZE_IN_BYTES_CONVERTER = 1024 * 1024;
-static const int DATA_PER_FULL_PACKET = 68;
-static const int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = DATA_PER_FULL_PACKET
-        - 1;
-static const int WORD_TO_BYTE_CONVERTER = 4;
-static const int LENGTH_OF_DATA_SIZE = 4;
-static const int END_FLAG_SIZE = 4;
-static const int END_FLAG_SIZE_IN_BYTES = 4;
-static const int SEQUENCE_NUMBER_SIZE = 4;
+static const uint32_t WORDS_PER_PACKET = 68;
+static const uint32_t WORDS_PER_PACKET_WITH_SEQUENCE_NUM = WORDS_PER_PACKET - 1;
+static const uint32_t WORD_TO_BYTE_CONVERTER = 4;
+static const uint32_t LENGTH_OF_DATA_SIZE = 4;
+static const uint32_t END_FLAG_SIZE = 4;
+static const uint32_t END_FLAG_SIZE_IN_BYTES = 4;
+static const uint32_t SEQUENCE_NUMBER_SIZE = 4;
 static const uint32_t END_FLAG = 0xFFFFFFFF;
 static const uint32_t LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
 static const uint32_t SEQ_NUM_MASK = ~LAST_MESSAGE_FLAG_BIT_MASK;
@@ -41,6 +40,22 @@ static inline uint32_t get_word_from_buffer(
     uint32_t byte2 = buffer[offset + 2];
     uint32_t byte3 = buffer[offset + 3];
     return byte0 | (byte1 << 8) | (byte2 << 16) | (byte3 << 24);
+}
+
+static inline uint32_t make_word_for_buffer(uint32_t word)
+{
+    // Explicit endianness
+    union {
+	struct {
+	    uint8_t byte0, byte1, byte2, byte3;
+	};
+	uint32_t word;
+    } converter;
+    converter.byte0 = (word >> 0) & 0xFF;
+    converter.byte1 = (word >> 8) & 0xFF;
+    converter.byte2 = (word >> 16) & 0xFF;
+    converter.byte3 = (word >> 24) & 0xFF;
+    return converter.word;
 }
 
 void host_data_receiver::receive_message(
@@ -115,24 +130,24 @@ bool host_data_receiver::retransmit_missing_sequences(
         UDPConnection &sender,
         set<uint32_t> &received_seq_nums)
 {
-    uint32_t data[DATA_PER_FULL_PACKET];
+    uint32_t data[WORDS_PER_PACKET];
     uint32_t i;
 
     //Calculate number of missing sequences based on difference between
     //expected and received
-    uint32_t miss_dim = max_seq_num - received_seq_nums.size();
-    vector<uint32_t> missing_seq(miss_dim);
-    uint32_t j = 0;
+    vector<uint32_t> missing_seq(0);
+    // We know how many elements we expect to be missing
+    missing_seq.reserve(max_seq_num - received_seq_nums.size());
 
     // Calculate missing sequence numbers and add them to "missing"
     for (i = 0; i < max_seq_num ; i++) {
         if (received_seq_nums.find(i) == received_seq_nums.end()) {
-            missing_seq[j++] = i;
+            missing_seq.push_back(make_word_for_buffer(i));
         }
     }
 
     //Set correct number of lost sequences
-    miss_dim = j;
+    uint32_t miss_dim = missing_seq.size();
 
     //No missing sequences
     if (miss_dim == 0) {
@@ -141,55 +156,50 @@ bool host_data_receiver::retransmit_missing_sequences(
     miss_cnt += miss_dim;
 
     uint32_t n_packets = 1;
-    int length_via_format2 = miss_dim - (DATA_PER_FULL_PACKET - 2);
-
-    if (length_via_format2 > 0) {
-        n_packets += ceildiv(length_via_format2, DATA_PER_FULL_PACKET - 1);
+    if (miss_dim > WORDS_PER_PACKET - 2) {
+	n_packets += ceildiv(miss_dim - (WORDS_PER_PACKET - 2),
+		WORDS_PER_PACKET_WITH_SEQUENCE_NUM);
     }
 
     // Transmit missing sequences as a new SDP Packet
-    bool first = true;
     int seq_num_offset = 0;
 
     for (i = 0; i < n_packets ; i++) {
 	uint32_t datasize;
-        int length_left_in_packet = DATA_PER_FULL_PACKET;
+        int length_left_in_packet = WORDS_PER_PACKET;
         int offset = 0;
-        int size_of_data_left_to_transmit;
+        int miss_seq_words_to_transmit;
 
         // If first, add n packets to list; otherwise just add data
-        if (first) {
+        if (i == 0) {
             // Get left over space / data size
-            size_of_data_left_to_transmit = min(length_left_in_packet - 2,
-                    (int) miss_dim - seq_num_offset);
-
-            datasize = size_of_data_left_to_transmit + 2;
+            miss_seq_words_to_transmit = min(WORDS_PER_PACKET - 2,
+                    miss_dim - seq_num_offset);
+            datasize = miss_seq_words_to_transmit + 2;
 
             // Pack flag and n packets
-            data[0] = SDP_PACKET_START_MISSING_SEQ_COMMAND_ID;
-            data[1] = n_packets;
+            data[0] = make_word_for_buffer(SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
+            data[1] = make_word_for_buffer(n_packets);
 
             // Update state
             offset += 2;
             length_left_in_packet -= 2;
-            first = false;
         } else {
             // Get left over space / data size
-            size_of_data_left_to_transmit = min(
-                    DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
-                    (int) miss_dim - seq_num_offset);
-
-            datasize = size_of_data_left_to_transmit + 1;
+            miss_seq_words_to_transmit = min(
+                    WORDS_PER_PACKET_WITH_SEQUENCE_NUM,
+		    miss_dim - seq_num_offset);
+            datasize = miss_seq_words_to_transmit + 1;
 
             // Pack flag
-            data[offset] = SDP_PACKET_MISSING_SEQ_COMMAND_ID;
+            data[0] = make_word_for_buffer(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
 
             offset++;
             length_left_in_packet--;
         }
 
         memcpy(&data[offset], missing_seq.data() + seq_num_offset,
-                size_of_data_left_to_transmit * sizeof(uint32_t));
+                miss_seq_words_to_transmit * sizeof(uint32_t));
 
         seq_num_offset += length_left_in_packet;
 
@@ -209,7 +219,7 @@ bool host_data_receiver::retransmit_missing_sequences(
 uint32_t host_data_receiver::calculate_max_seq_num()
 {
     return ceildiv(length_in_bytes,
-            DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER);
+            WORDS_PER_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER);
 }
 
 //Function for checking that all packets have been received
@@ -226,6 +236,12 @@ bool host_data_receiver::check(
     return recvsize == max_needed + 1;
 }
 
+uint32_t host_data_receiver::calculate_offset(uint32_t seq_num)
+{
+    return seq_num * WORDS_PER_PACKET_WITH_SEQUENCE_NUM
+	    * WORD_TO_BYTE_CONVERTER;
+}
+
 // Function for processing each received packet and checking end of transmission
 void host_data_receiver::process_data(
         UDPConnection &sender,
@@ -233,10 +249,9 @@ void host_data_receiver::process_data(
         set<uint32_t> &received_seq_nums,
         vector<uint8_t> &recvdata)
 {
-    //Data size of the packet
-    int length_of_data = recvdata.size();
-
     uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
+    uint32_t content_length = recvdata.size() - SEQUENCE_NUMBER_SIZE;
+    const uint8_t *content_bytes = recvdata.data() + SEQUENCE_NUMBER_SIZE;
 
     // Unpack the first word
     uint32_t seq_num = first_packet_element & SEQ_NUM_MASK;
@@ -247,22 +262,20 @@ void host_data_receiver::process_data(
         throw "Got insane sequence number";
     }
 
-    uint32_t offset = seq_num * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM
-            * WORD_TO_BYTE_CONVERTER;
-    uint32_t true_data_length = offset + length_of_data - SEQUENCE_NUMBER_SIZE;
+    uint32_t offset = calculate_offset(seq_num);
 
-    if (true_data_length > length_in_bytes) {
+    if (offset + content_length > length_in_bytes) {
         throw "Receiving more data than expected";
     }
 
-    if (is_end_of_stream && (length_of_data == END_FLAG_SIZE_IN_BYTES)) {
-        // empty
-    } else {
-        memcpy(buffer.data() + offset, recvdata.data() + SEQUENCE_NUMBER_SIZE,
-                true_data_length - offset);
+    if (content_length != 0) {
+	memcpy(buffer.data() + offset, content_bytes, content_length);
     }
 
-    received_seq_nums.insert(seq_num);
+    if (!received_seq_nums.insert(seq_num).second) {
+	// already received this packet!
+	cerr << "WARNING: received " << seq_num << " at least twice" << endl;
+    }
 
     if (is_end_of_stream) {
         if (!check(received_seq_nums, max_seq_num)) {

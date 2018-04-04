@@ -68,6 +68,7 @@ private:
     bool retransmit_missing_sequences(
             UDPConnection &sender, set<uint32_t> &received_seq_nums);
     uint32_t calculate_max_seq_num();
+    uint32_t calculate_offset(uint32_t seq_num);
     bool check(set<uint32_t> &received_seq_nums, uint32_t max_needed);
     void process_data(
             UDPConnection &sender, bool &finished,
