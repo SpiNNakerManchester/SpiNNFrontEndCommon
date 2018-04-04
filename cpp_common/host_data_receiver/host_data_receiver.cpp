@@ -6,6 +6,8 @@
 using namespace std;
 using namespace std::literals::chrono_literals; // BLACK MAGIC!
 
+static const int SDP_PORT = 17893;
+
 //Constants
 static const uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
 static const uint32_t SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000;
@@ -167,7 +169,7 @@ bool host_data_receiver::retransmit_missing_sequences(
     for (i = 0; i < n_packets ; i++) {
 	uint32_t datasize;
         int length_left_in_packet = WORDS_PER_PACKET;
-        int offset = 0;
+        int offset;
         int miss_seq_words_to_transmit;
 
         // If first, add n packets to list; otherwise just add data
@@ -182,7 +184,7 @@ bool host_data_receiver::retransmit_missing_sequences(
             data[1] = make_word_for_buffer(n_packets);
 
             // Update state
-            offset += 2;
+            offset = 2;
             length_left_in_packet -= 2;
         } else {
             // Get left over space / data size
@@ -194,7 +196,7 @@ bool host_data_receiver::retransmit_missing_sequences(
             // Pack flag
             data[0] = make_word_for_buffer(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
 
-            offset++;
+            offset = 1;
             length_left_in_packet--;
         }
 
@@ -352,7 +354,7 @@ const uint8_t *host_data_receiver::get_data()
     try {
 	if (!started) {
 	    // create connection
-	    UDPConnection connection(17893, hostname);
+	    UDPConnection connection(SDP_PORT, hostname);
 	    started = true;
 
 	    // send the initial command to start data transmission
