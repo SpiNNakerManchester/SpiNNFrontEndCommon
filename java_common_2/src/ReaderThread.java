@@ -18,24 +18,22 @@ public class ReaderThread extends Thread{
     private final ConcurrentLinkedDeque<DatagramPacket> messqueue;
 
     public ReaderThread(UDPConnection connection, 
-                        ConcurrentLinkedDeque<DatagramPacket> messqueue){
+                        ConcurrentLinkedDeque<DatagramPacket> messqueue) {
+    	super("ReadThread");
         this.connection = connection;
         this.messqueue = messqueue;
-        this.setName("ReadThread");
     }
     
     @Override
-    public void run(){
-        byte [] data = new byte[400];
-
+    public void run() {
         // While socket is open add messages to the queue
         do {
-            DatagramPacket recvd = this.connection.receiveData(data, 400);
+            DatagramPacket recvd = connection.receiveData(400);
 
-            if (recvd != null){
-                this.messqueue.push(recvd);
+            if (recvd != null) {
+                messqueue.push(recvd);
             }
 
-        } while (!this.connection.isClosed());
+        } while (!connection.isClosed());
     }
 }
