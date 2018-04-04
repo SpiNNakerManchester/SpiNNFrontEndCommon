@@ -10,24 +10,25 @@ public class UDPConnection implements AutoCloseable {
 
     // Simple passthrough constructors that allow sensible defaults
     public UDPConnection(
-            int remote_port, String remote_host) throws SocketException {
-    	this(0, null, remote_port, remote_host);
+            int remote_port, String remote_host, int time_out) 
+            throws SocketException {
+    	this(0, null, remote_port, remote_host, time_out);
     }
     public UDPConnection(
-            String local_host, int remote_port, String remote_host) 
-            throws SocketException {
-    	this(0, local_host, remote_port, remote_host);
+            String local_host, int remote_port, String remote_host, 
+            int time_out) throws SocketException {
+    	this(0, local_host, remote_port, remote_host, time_out);
     }
     public UDPConnection(
-            int local_port, int remote_port, String remote_host) 
+            int local_port, int remote_port, String remote_host, int time_out) 
             throws SocketException {
-    	this(local_port, null, remote_port, remote_host);
+    	this(local_port, null, remote_port, remote_host, time_out);
     }
 
     // The real constructor
     public UDPConnection(
             int local_port, String local_host, int remote_port, 
-            String remote_host) throws SocketException {
+            String remote_host, int time_out) throws SocketException {
         this.remote_address = new InetSocketAddress(remote_host, remote_port);
         if (local_host == null || local_host.isEmpty()) {
             this.sock = new DatagramSocket();
@@ -36,7 +37,7 @@ public class UDPConnection implements AutoCloseable {
             this.sock = new DatagramSocket(
         	new InetSocketAddress(local_host, local_port));
         }
-        this.sock.setSoTimeout(500);
+        this.sock.setSoTimeout(time_out);
     }
     
     public boolean isClosed() {

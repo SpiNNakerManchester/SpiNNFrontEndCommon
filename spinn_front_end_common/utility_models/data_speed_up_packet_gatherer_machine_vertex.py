@@ -106,9 +106,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
 
-    # number of items used up by the re transmit code for its header
-    SDP_RETRANSMISSION_HEADER_SIZE = 2
-
     # base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
     NEW_SEQ_KEY = 0xFFFFFFF8
@@ -127,9 +124,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # the amount of bytes the n bytes takes up
     N_PACKETS_SIZE = 4
-
-    # the amount of bytes the data length will take up
-    LENGTH_OF_DATA_SIZE = 4
 
     THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES = 40000
 

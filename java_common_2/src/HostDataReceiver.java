@@ -20,8 +20,6 @@ public class HostDataReceiver extends Thread {
     private final int SDP_PACKET_START_SENDING_COMMAND_ID = 100;
     private final int SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000;
     private final int SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001;
-    private final int SDP_RETRANSMISSION_HEADER_SIZE = 10;
-    private final int SDP_PACKET_START_SENDING_COMMAND_MESSAGE_SIZE = 3;
 
     // time out constants
     private final int TIMEOUT_PER_RECEIVE_IN_SECONDS = 1;
@@ -32,11 +30,8 @@ public class HostDataReceiver extends Thread {
     private final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = 
         DATA_PER_FULL_PACKET - 1;
     private final int WORD_TO_BYTE_CONVERTER = 4;
-    private final int LENGTH_OF_DATA_SIZE = 4;
-    private final int END_FLAG_SIZE = 4;
     private final int END_FLAG_SIZE_IN_BYTES = 4;
     private final int SEQUENCE_NUMBER_SIZE = 4;
-    private final int END_FLAG = 0xFFFFFFFF;
     private final int LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
     public final int TIMEOUT_RETRY_LIMIT = 20;
     
@@ -95,7 +90,8 @@ public class HostDataReceiver extends Thread {
         // create connection
         UDPConnection sender = null;
         try {
-            sender = new UDPConnection(17893, this.hostname);
+            sender = new UDPConnection(
+                17893, this.hostname, this.TIMEOUT_PER_RECEIVE_IN_SECONDS);
         } catch (SocketException ex) {
             Logger.getLogger(HostDataReceiver.class.getName()).log(
                 Level.SEVERE, null, ex);
@@ -199,11 +195,11 @@ public class HostDataReceiver extends Thread {
         }
 
         n_packets = 1;
-        length_via_format2 = miss_dim - (DATA_PER_FULL_PACKET - 2);
+        length_via_format2 = miss_dim - (this.DATA_PER_FULL_PACKET - 2);
 
         if (length_via_format2 > 0){
             n_packets += (int) Math.ceil(
-                length_via_format2 / (float) (DATA_PER_FULL_PACKET - 1));
+                length_via_format2 / (float) (this.DATA_PER_FULL_PACKET - 1));
         }
 
         // Transmit missing sequences as a new SDP Packet
@@ -211,9 +207,10 @@ public class HostDataReceiver extends Thread {
         seq_num_offset = 0;
 
         for (i = 0; i < n_packets ; i++) {
-            ByteBuffer data = ByteBuffer.allocate(DATA_PER_FULL_PACKET * 4);
+            ByteBuffer data = ByteBuffer.allocate(
+                this.DATA_PER_FULL_PACKET * 4);
             data.order(ByteOrder.LITTLE_ENDIAN);
-            length_left_in_packet = DATA_PER_FULL_PACKET;
+            length_left_in_packet = this.DATA_PER_FULL_PACKET;
 
             // If first, add n packets to list; otherwise just add data
             if (first) {
@@ -223,7 +220,7 @@ public class HostDataReceiver extends Thread {
                         miss_dim - seq_num_offset);
 
                 // Pack flag and n packets
-                data.putInt(SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
+                data.putInt(this.SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
                 data.putInt(n_packets);
 
                 // Update state
@@ -232,11 +229,11 @@ public class HostDataReceiver extends Thread {
             } else {
                 // Get left over space / data size
                 size_of_data_left_to_transmit = (int) Math.min(
-                        DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
+                        this.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
                         miss_dim - seq_num_offset);
 
                 // Pack flag
-                data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
+                data.putInt(this.SDP_PACKET_MISSING_SEQ_COMMAND_ID);
                 length_left_in_packet -= 1;
             }
             
@@ -257,7 +254,7 @@ public class HostDataReceiver extends Thread {
             sender.sendData(message.convert_to_byte_array(),
                     message.length_in_bytes());
 
-            Thread.sleep(TIMEOUT_PER_SENDING_IN_MICROSECONDS);
+            Thread.sleep(this.TIMEOUT_PER_SENDING_IN_MICROSECONDS);
         }
 
         return false;
@@ -283,25 +280,27 @@ public class HostDataReceiver extends Thread {
         seq_num = first_packet_element & 0x7FFFFFFF;
 
         is_end_of_stream =
-                ((first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0);
+                ((first_packet_element & this.LAST_MESSAGE_FLAG_BIT_MASK) != 0);
 
         if (seq_num > this.max_seq_num) {
             throw new Exception("ERROR: Got insane sequence number");
         }
 
-        offset = seq_num * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM
-                * WORD_TO_BYTE_CONVERTER;
+        offset = seq_num * this.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM
+                * this.WORD_TO_BYTE_CONVERTER;
 
-        true_data_length = (offset + packet.getLength() - SEQUENCE_NUMBER_SIZE);
+        true_data_length = 
+            (offset + packet.getLength() - this.SEQUENCE_NUMBER_SIZE);
 
         if (true_data_length > this.length_in_bytes) {
             throw new Exception("ERROR: Receiving more data than expected");
         }
 
-        if (is_end_of_stream && packet.getLength() == END_FLAG_SIZE_IN_BYTES) {
+        if (is_end_of_stream && packet.getLength() == 
+                this.END_FLAG_SIZE_IN_BYTES) {
             // empty
         } else {
-            System.arraycopy(packet.getData(), SEQUENCE_NUMBER_SIZE, 
+            System.arraycopy(packet.getData(), this.SEQUENCE_NUMBER_SIZE, 
                              this.buffer, offset, (true_data_length - offset));
         }
 
@@ -359,7 +358,8 @@ public class HostDataReceiver extends Thread {
 
     private int calculate_max_seq_num(int length){
         return (int) Math.ceil(length / (float) (
-            DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER));
+            this.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * 
+            this.WORD_TO_BYTE_CONVERTER));
     }
 
     private boolean check(BitSet received_seq_nums, int max_needed) 
