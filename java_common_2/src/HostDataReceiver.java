@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteOrder;
 import java.util.BitSet;
@@ -30,7 +29,8 @@ public class HostDataReceiver extends Thread {
 
     // consts for data and converting between words and bytes
     private final int DATA_PER_FULL_PACKET = 68;
-    private final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = DATA_PER_FULL_PACKET - 1;
+    private final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = 
+        DATA_PER_FULL_PACKET - 1;
     private final int WORD_TO_BYTE_CONVERTER = 4;
     private final int LENGTH_OF_DATA_SIZE = 4;
     private final int END_FLAG_SIZE = 4;
@@ -97,7 +97,8 @@ public class HostDataReceiver extends Thread {
         try {
             sender = new UDPConnection(17893, this.hostname);
         } catch (SocketException ex) {
-            Logger.getLogger(HostDataReceiver.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(HostDataReceiver.class.getName()).log(
+                Level.SEVERE, null, ex);
         }
 
         // send the initial command to start data transmission
@@ -202,7 +203,7 @@ public class HostDataReceiver extends Thread {
 
         if (length_via_format2 > 0){
             n_packets += (int) Math.ceil(
-            		length_via_format2 / (float) (DATA_PER_FULL_PACKET - 1));
+                length_via_format2 / (float) (DATA_PER_FULL_PACKET - 1));
         }
 
         // Transmit missing sequences as a new SDP Packet
@@ -238,8 +239,10 @@ public class HostDataReceiver extends Thread {
                 data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
                 length_left_in_packet -= 1;
             }
+            
             System.out.println("a");
-            for(int element = 0; element < size_of_data_left_to_transmit* 4; element++){
+            for(int element = 0; element < size_of_data_left_to_transmit* 4; 
+                    element++){
                 data.put(missing_seq.get());
             }
 
@@ -315,7 +318,9 @@ public class HostDataReceiver extends Thread {
         return finished;
     }
 
-    private void send_initial_command(UDPConnection sender, UDPConnection receiver){
+    private void send_initial_command(
+            UDPConnection sender, UDPConnection receiver){
+        
         //Build an SCP request to set up the IP Tag associated to this socket
         byte[] scp_req = this.build_scp_req(
         		26, 1, receiver.getLocalSocketAddress());
@@ -354,7 +359,7 @@ public class HostDataReceiver extends Thread {
 
     private int calculate_max_seq_num(int length){
         return (int) Math.ceil(length / (float) (
-        		DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER));
+            DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER));
     }
 
     private boolean check(BitSet received_seq_nums, int max_needed) 

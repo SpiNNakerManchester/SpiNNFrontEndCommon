@@ -6,16 +6,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- *
- * @author alan
- */
 public class ProcessorThread extends Thread{
     
     private final UDPConnection connection;
@@ -52,7 +42,8 @@ public class ProcessorThread extends Thread{
             } catch (NoSuchElementException e) {
                 if (timeoutcount > this.parent.TIMEOUT_RETRY_LIMIT) {
                     System.out.println(
-                        "ERROR: Failed to hear from the machine. Please try removing firewalls");
+                        "ERROR: Failed to hear from the machine. "
+                        + "Please try removing firewalls");
                     this.connection.close();
                     return;
                 }
@@ -62,14 +53,17 @@ public class ProcessorThread extends Thread{
                 if (!this.finished) {
                     try {
                         // retransmit missing packets
-                        this.finished = this.parent.retransmit_missing_sequences(
+                        this.finished = 
+                            this.parent.retransmit_missing_sequences(
                                 this.connection, this.received_seq_nums);
                     } catch (InterruptedException ex) {
-                        Logger.getLogger(ProcessorThread.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(ProcessorThread.class.getName()).log(
+                            Level.SEVERE, null, ex);
                     }
                 }
             } catch (Exception ex) {
-                Logger.getLogger(ProcessorThread.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ProcessorThread.class.getName()).log(
+                    Level.SEVERE, null, ex);
             }
         }
         

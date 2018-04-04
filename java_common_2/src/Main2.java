@@ -1,5 +1,3 @@
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +22,7 @@ public class Main2 {
         CHIP_Y(10),
         IPTAG(11);
                 
-        private int value;
+        private final int value;
         private ArgPlacements(int value){
             this.value = value;}
         
@@ -36,21 +34,19 @@ public class Main2 {
     public static void main(String[] args) {
         // variables
         
-        int placement_x = 0;
-        int placement_y = 0;
-        int placement_p = 0;
-        int port_connection = 0;
-        int length_in_bytes = 0;
-        int memory_address = 0;
-        String hostname = "";
-        String file_pathr = "";
-        String file_pathm = "";
+        int placement_x;
+        int placement_y;
+        int placement_p;
+        int port_connection;
+        int length_in_bytes;
+        int memory_address;
+        String hostname;
+        String file_pathr;
+        String file_pathm;
         //FILE * stored_data;
-        String output = "";
-        String buffer;
-        int chip_x = 0;
-        int chip_y = 0;
-        int iptag = 0;
+        int chip_x;
+        int chip_y;
+        int iptag;
         
         if (args.length != 12){
             System.out.println("not the correct number of parameters");
@@ -59,12 +55,18 @@ public class Main2 {
         else{
             // get arguments
             hostname = args[ArgPlacements.HOSTNAME_POSITION.value()];
-            placement_x = Integer.parseInt(args[ArgPlacements.PLACEMENT_X_POSITION.value()]);
-            placement_y = Integer.parseInt(args[ArgPlacements.PLACEMENT_Y_POSITION.value()]);
-            placement_p = Integer.parseInt(args[ArgPlacements.PLACEMENT_P_POSITION.value()]);
-            port_connection = Integer.parseInt(args[ArgPlacements.PORT_NUMBER_POSITION.value()]);
-            length_in_bytes = Integer.parseInt(args[ArgPlacements.LENGTH_IN_BYTES.value()]);
-            memory_address = Integer.parseInt(args[ArgPlacements.MEMORY_ADDRESS.value()]);
+            placement_x = Integer.parseInt(
+                args[ArgPlacements.PLACEMENT_X_POSITION.value()]);
+            placement_y = Integer.parseInt(
+                args[ArgPlacements.PLACEMENT_Y_POSITION.value()]);
+            placement_p = Integer.parseInt(
+                args[ArgPlacements.PLACEMENT_P_POSITION.value()]);
+            port_connection = Integer.parseInt(
+                args[ArgPlacements.PORT_NUMBER_POSITION.value()]);
+            length_in_bytes = Integer.parseInt(
+                args[ArgPlacements.LENGTH_IN_BYTES.value()]);
+            memory_address = Integer.parseInt(
+                args[ArgPlacements.MEMORY_ADDRESS.value()]);
             file_pathr = args[ArgPlacements.FILE_PATH_READ_POSITION.value()];
             file_pathm = args[ArgPlacements.FILE_PATH_MISS_POSITION.value()];
             chip_x = Integer.parseInt(args[ArgPlacements.CHIP_X.value()]);
@@ -78,7 +80,8 @@ public class Main2 {
             try {
                 collector.get_data_threadable(file_pathr, file_pathm);
             } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(Main2.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Main2.class.getName()).log(
+                    Level.SEVERE, null, ex);
             }
 
         }

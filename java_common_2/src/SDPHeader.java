@@ -1,14 +1,14 @@
 public class SDPHeader{
-    private int destination_chip_x;
-    private int destination_chip_y;
-    private int destination_chip_p;
-    private int destination_port;
-    private int flags;
-    private int tag;
-    private int source_port;
-    private int source_cpu;
-    private int source_chip_x;
-    private int source_chip_y;
+    private final int destination_chip_x;
+    private final int destination_chip_y;
+    private final int destination_chip_p;
+    private final int destination_port;
+    private final int flags;
+    private final int tag;
+    private final int source_port;
+    private final int source_cpu;
+    private final int source_chip_x;
+    private final int source_chip_y;
     private int length = 10;
 
     public SDPHeader(
@@ -36,7 +36,6 @@ public class SDPHeader{
     byte[] convert_byte_array(){
         int tmp;
         byte[] message_data = new byte[this.length];
-        tmp = 0;
         message_data[0] = 0;
         message_data[1] = 0;
         message_data[2] = (byte) this.flags;

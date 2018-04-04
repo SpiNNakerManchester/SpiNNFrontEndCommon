@@ -27,9 +27,14 @@ public class SDPMessage{
     }
 
     byte [] convert_to_byte_array(){
-        byte [] message_data = new byte[this.header.length_in_bytes() + this.data.length];
-        System.arraycopy(this.header.convert_byte_array(), 0, message_data, 0, this.header.length_in_bytes());
-        System.arraycopy(this.data, 0, message_data, this.header.length_in_bytes(), this.data.length);
+        byte [] message_data = new byte[
+            this.header.length_in_bytes() + this.data.length];
+        System.arraycopy(
+            this.header.convert_byte_array(), 0, message_data, 0, 
+            this.header.length_in_bytes());
+        System.arraycopy(
+            this.data, 0, message_data, this.header.length_in_bytes(), 
+            this.data.length);
         return message_data;
     }
 

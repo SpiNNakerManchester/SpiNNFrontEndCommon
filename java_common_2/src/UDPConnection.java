@@ -14,17 +14,20 @@ public class UDPConnection implements AutoCloseable {
     	this(0, null, remote_port, remote_host);
     }
     public UDPConnection(
-        String local_host, int remote_port, String remote_host) throws SocketException {
+            String local_host, int remote_port, String remote_host) 
+            throws SocketException {
     	this(0, local_host, remote_port, remote_host);
     }
     public UDPConnection(
-        int local_port, int remote_port, String remote_host) throws SocketException {
+            int local_port, int remote_port, String remote_host) 
+            throws SocketException {
     	this(local_port, null, remote_port, remote_host);
     }
 
     // The real constructor
     public UDPConnection(
-            int local_port, String local_host, int remote_port, String remote_host) throws SocketException {
+            int local_port, String local_host, int remote_port, 
+            String remote_host) throws SocketException {
         this.remote_address = new InetSocketAddress(remote_host, remote_port);
         if (local_host == null || local_host.isEmpty()) {
             this.sock = new DatagramSocket();
@@ -57,7 +60,8 @@ public class UDPConnection implements AutoCloseable {
         try {
             sock.send(packet);
         } catch(IOException e) {
-            System.out.printf("failed to send packet due to %s\n", e.toString());
+            System.out.printf(
+                "failed to send packet due to %s\n", e.toString());
         }
     }
 
