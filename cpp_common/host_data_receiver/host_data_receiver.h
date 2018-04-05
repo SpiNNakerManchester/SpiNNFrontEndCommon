@@ -37,7 +37,21 @@ public:
             int memory_address,
             int chip_x,
             int chip_y,
-            int iptag);
+            int iptag)
+    : port_connection(port_connection),
+      placement_x(placement_x), placement_y(placement_y),
+      placement_p(placement_p),
+      hostname(hostname != nullptr ? hostname : ""),
+      length_in_bytes((uint32_t) length_in_bytes),
+      memory_address((uint32_t) memory_address),
+      chip_x(chip_x), chip_y(chip_y), iptag(iptag),
+      buffer(length_in_bytes), started(false), finished(false),
+      miss_cnt(0)
+    {
+	rdr.thrown = false;
+	pcr.thrown = false;
+	max_seq_num = calculate_max_seq_num();
+    }
     const uint8_t *get_data();
     void get_data_threadable(
 	    const char *filepath_read, const char *filepath_missing);
@@ -53,7 +67,7 @@ private:
     void receive_message(UDPConnection &receiver, vector<uint8_t> &buffer);
     bool retransmit_missing_sequences(
             UDPConnection &sender, set<uint32_t> &received_seq_nums);
-    uint32_t calculate_max_seq_num(uint32_t length);
+    uint32_t calculate_max_seq_num();
     bool check(set<uint32_t> &received_seq_nums, uint32_t max_needed);
     void process_data(
             UDPConnection &sender, bool &finished,
@@ -81,7 +95,8 @@ private:
     vector<uint8_t> buffer;
     uint32_t max_seq_num;
     thexc rdr, pcr;
-    bool finished;
+    bool started, finished;
+    int miss_cnt;
 };
 
 #endif

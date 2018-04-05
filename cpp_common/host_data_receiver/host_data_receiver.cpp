@@ -1,8 +1,10 @@
 #include "host_data_receiver.h"
 #include <vector>
 #include <cassert>
+#include <chrono>
 
 using namespace std;
+using namespace std::literals::chrono_literals; // BLACK MAGIC!
 
 //Constants
 static const uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
@@ -13,8 +15,7 @@ static const uint32_t SDP_RETRANSMISSION_HEADER_SIZE = 10;
 static const uint32_t SDP_PACKET_START_SENDING_COMMAND_MESSAGE_SIZE = 3;
 
 // time out constants
-static const int TIMEOUT_PER_RECEIVE_IN_SECONDS = 1;
-static const int TIMEOUT_PER_SENDING_IN_MICROSECONDS = 10000;
+static const auto DELAY_PER_SENDING = 10000us;
 
 // consts for data and converting between words and bytes
 //static const int SDRAM_READING_SIZE_IN_BYTES_CONVERTER = 1024 * 1024;
@@ -26,38 +27,20 @@ static const int LENGTH_OF_DATA_SIZE = 4;
 static const int END_FLAG_SIZE = 4;
 static const int END_FLAG_SIZE_IN_BYTES = 4;
 static const int SEQUENCE_NUMBER_SIZE = 4;
-static const int END_FLAG = 0xFFFFFFFF;
-static const int LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
+static const uint32_t END_FLAG = 0xFFFFFFFF;
+static const uint32_t LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
+static const uint32_t SEQ_NUM_MASK = ~LAST_MESSAGE_FLAG_BIT_MASK;
 static const int TIMEOUT_RETRY_LIMIT = 20;
 
-int miss_cnt;
-
-// Constructor
-host_data_receiver::host_data_receiver(
-        int port_connection,
-        int placement_x,
-        int placement_y,
-        int placement_p,
-        const char *hostname,
-        int length_in_bytes,
-        int memory_address,
-        int chip_x,
-        int chip_y,
-        int iptag)
-    : port_connection(port_connection),
-      placement_x(placement_x), placement_y(placement_y),
-      placement_p(placement_p),
-      hostname(hostname != nullptr ? hostname : ""),
-      length_in_bytes((uint32_t) length_in_bytes),
-      memory_address((uint32_t) memory_address),
-      chip_x(chip_x), chip_y(chip_y), iptag(iptag),
-      buffer(length_in_bytes)
+static inline uint32_t get_word_from_buffer(
+	vector<uint8_t> &buffer, uint32_t offset)
 {
-    max_seq_num = calculate_max_seq_num(length_in_bytes);
-    rdr.thrown = false;
-    pcr.thrown = false;
-    finished = false;
-    miss_cnt = 0;
+    // Explicit endianness
+    uint32_t byte0 = buffer[offset + 0];
+    uint32_t byte1 = buffer[offset + 1];
+    uint32_t byte2 = buffer[offset + 2];
+    uint32_t byte3 = buffer[offset + 3];
+    return byte0 | (byte1 << 8) | (byte2 << 16) | (byte3 << 24);
 }
 
 void host_data_receiver::receive_message(
@@ -138,7 +121,7 @@ bool host_data_receiver::retransmit_missing_sequences(
     //Calculate number of missing sequences based on difference between
     //expected and received
     uint32_t miss_dim = max_seq_num - received_seq_nums.size();
-    uint32_t *missing_seq = new uint32_t[miss_dim];
+    vector<uint32_t> missing_seq(miss_dim);
     uint32_t j = 0;
 
     // Calculate missing sequence numbers and add them to "missing"
@@ -155,6 +138,7 @@ bool host_data_receiver::retransmit_missing_sequences(
     if (miss_dim == 0) {
         return true;
     }
+    miss_cnt += miss_dim;
 
     uint32_t n_packets = 1;
     int length_via_format2 = miss_dim - (DATA_PER_FULL_PACKET - 2);
@@ -200,11 +184,11 @@ bool host_data_receiver::retransmit_missing_sequences(
             // Pack flag
             data[offset] = SDP_PACKET_MISSING_SEQ_COMMAND_ID;
 
-            offset += 1;
-            length_left_in_packet -= 1;
+            offset++;
+            length_left_in_packet--;
         }
 
-        memcpy(&data[offset], missing_seq + seq_num_offset,
+        memcpy(&data[offset], missing_seq.data() + seq_num_offset,
                 size_of_data_left_to_transmit * sizeof(uint32_t));
 
         seq_num_offset += length_left_in_packet;
@@ -215,17 +199,16 @@ bool host_data_receiver::retransmit_missing_sequences(
                 (char *) data, datasize * sizeof(uint32_t));
         sender.send_message(message);
 
-        usleep(TIMEOUT_PER_SENDING_IN_MICROSECONDS);
+        this_thread::sleep_for(DELAY_PER_SENDING);
     }
 
-    delete [] missing_seq;
     return false;
 }
 
 //Function for computing expected maximum number of packets
-uint32_t host_data_receiver::calculate_max_seq_num(uint32_t length)
+uint32_t host_data_receiver::calculate_max_seq_num()
 {
-    return ceildiv(length,
+    return ceildiv(length_in_bytes,
             DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER);
 }
 
@@ -237,7 +220,7 @@ bool host_data_receiver::check(
     uint32_t recvsize = received_seq_nums.size();
 
     if (recvsize > max_needed + 1) {
-        throw "ERROR: Received more data than expected";
+        throw "Received more data than expected";
     }
 
     return recvsize == max_needed + 1;
@@ -253,25 +236,23 @@ void host_data_receiver::process_data(
     //Data size of the packet
     int length_of_data = recvdata.size();
 
-    uint32_t first_packet_element;
-    memcpy(&first_packet_element, recvdata.data(), sizeof(uint32_t));
+    uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
 
     // Unpack the first word
-    uint32_t seq_num = first_packet_element & 0x7FFFFFFF;
+    uint32_t seq_num = first_packet_element & SEQ_NUM_MASK;
     bool is_end_of_stream =
             (first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0;
 
     if (seq_num > max_seq_num) {
-        throw "ERROR: Got insane sequence number";
+        throw "Got insane sequence number";
     }
 
     uint32_t offset = seq_num * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM
             * WORD_TO_BYTE_CONVERTER;
-
     uint32_t true_data_length = offset + length_of_data - SEQUENCE_NUMBER_SIZE;
 
     if (true_data_length > length_in_bytes) {
-        throw "ERROR: Receiving more data than expected";
+        throw "Receiving more data than expected";
     }
 
     if (is_end_of_stream && (length_of_data == END_FLAG_SIZE_IN_BYTES)) {
@@ -328,9 +309,9 @@ void host_data_receiver::processor_thread(UDPConnection *sender)
         try {
 	    std::vector<uint8_t> p = messqueue.pop();
             process_data(*sender, finished, received_seq_nums, p);
-        } catch (TimeoutQueueException e) {
+        } catch (TimeoutQueueException &e) {
             if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
-                pcr.val = "ERROR: Failed to hear from the machine. "
+                pcr.val = "Failed to hear from the machine. "
                         "Please try removing firewalls";
                 pcr.thrown = true;
                 return;
@@ -356,9 +337,10 @@ void host_data_receiver::processor_thread(UDPConnection *sender)
 const uint8_t *host_data_receiver::get_data()
 {
     try {
-	{
+	if (!started) {
 	    // create connection
 	    UDPConnection connection(17893, hostname);
+	    started = true;
 
 	    // send the initial command to start data transmission
 	    send_initial_command(connection, connection);
@@ -374,10 +356,10 @@ const uint8_t *host_data_receiver::get_data()
 	}
 
         if (pcr.thrown) {
-            cerr << pcr.val << endl;
+            cerr << "ERROR: " << pcr.val << endl;
             return nullptr;
         } else if (rdr.thrown && !finished) {
-            cerr << rdr.val << endl;
+            cerr << "ERROR: " << rdr.val << endl;
             return nullptr;
         }
 	return buffer.data();
@@ -393,19 +375,19 @@ void host_data_receiver::get_data_threadable(
         const char *filepath_read,
         const char *filepath_missing)
 {
-    FILE *fp1, *fp2;
+    FILE *fp1, *fp2 = nullptr;
 
     auto data_buffer = get_data();
 
     fp1 = fopen(filepath_read, "wb");
-    fp2 = fopen(filepath_missing, "w");
-
     fwrite(data_buffer, sizeof(uint8_t), length_in_bytes, fp1);
-
-    fprintf(fp2, "%d\n", miss_cnt);
-
     fclose(fp1);
-    fclose(fp2);
+
+    if (filepath_missing) {
+	fp2 = fopen(filepath_missing, "w");
+	fprintf(fp2, "%d\n", miss_cnt);
+	fclose(fp2);
+    }
 }
 
 #if 0
