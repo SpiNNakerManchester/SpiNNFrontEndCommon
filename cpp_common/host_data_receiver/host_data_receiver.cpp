@@ -95,7 +95,7 @@ private:
 
 class FirstMissingSeqsMessage: public OneWayMessage {
 public:
-    static const uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
+    static constexpr uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
     FirstMissingSeqsMessage(
 	    int x,
 	    int y,
@@ -118,7 +118,7 @@ private:
 
 class MoreMissingSeqsMessage: public OneWayMessage {
 public:
-    static const uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
+    static constexpr uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
     MoreMissingSeqsMessage(
 	    int x,
 	    int y,
@@ -135,9 +135,6 @@ public:
 private:
     uint32_t buffer[WORDS_PER_PACKET];
 };
-
-const uint32_t FirstMissingSeqsMessage::PAYLOAD_SIZE;
-const uint32_t MoreMissingSeqsMessage::PAYLOAD_SIZE;
 
 void host_data_receiver::receive_message(
 	UDPConnection &receiver, vector<uint8_t> &working_buffer)
