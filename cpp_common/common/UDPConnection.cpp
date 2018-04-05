@@ -136,7 +136,6 @@ int UDPConnection::receive_data(char *data, int length)
 
 bool UDPConnection::receive_data(vector<uint8_t> &data)
 {
-    int initsize = data.size();
     int received_length = recv(sock, (char *) data.data(), data.size(), 0);
 
     if (received_length < 0) {
@@ -145,11 +144,6 @@ bool UDPConnection::receive_data(vector<uint8_t> &data)
 	} else {
 	    throw strerror(errno);
 	}
-    }
-    if (received_length > 0 && received_length != initsize) {
-	std::cout << "WARNING: read " << received_length
-		<< " off the network into a buffer of " << initsize
-		<< "; is this a terminal packet?" << std::endl;
     }
     data.resize(received_length);
     return received_length > 0;

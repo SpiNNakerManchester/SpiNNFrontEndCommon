@@ -7,6 +7,7 @@ using namespace std;
 using namespace std::literals::chrono_literals; // BLACK MAGIC!
 
 static const int SDP_PORT = 17893;
+static const int MAX_SDP_PACKET_LENGTH = 280;
 
 //Constants
 static const uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
@@ -141,7 +142,7 @@ const uint32_t MoreMissingSeqsMessage::PAYLOAD_SIZE;
 void host_data_receiver::receive_message(
 	UDPConnection &receiver, vector<uint8_t> &working_buffer)
 {
-    working_buffer.resize(300);
+    working_buffer.resize(MAX_SDP_PACKET_LENGTH);
     receiver.receive_data(working_buffer);
 }
 
@@ -289,7 +290,7 @@ bool host_data_receiver::process_data(
     if (!is_end_of_stream
 	    && content_length / WORD_TO_BYTE_CONVERTER
 		    < WORDS_PER_PACKET_WITH_SEQUENCE_NUM) {
-	cerr << "WARNING: non-terminal packet had "
+	cerr << "WARNING: non-terminal packet " << seq_num << " had "
 		<< (content_length / WORD_TO_BYTE_CONVERTER)
 		<< " words instead of " << WORDS_PER_PACKET_WITH_SEQUENCE_NUM
 		<< endl;
