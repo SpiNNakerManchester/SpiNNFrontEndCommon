@@ -315,6 +315,8 @@ bool host_data_receiver::process_data(
     return false;
 }
 
+static const int RECEIVE_BUFFER_LENGTH = WORDS_PER_PACKET * WORD_TO_BYTE_CONVERTER;
+
 void host_data_receiver::reader_thread(UDPConnection *receiver)
 {
     // While socket is open add messages to the queue
@@ -322,7 +324,7 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 	std::vector<uint8_t> packet;
 
 	do {
-	    packet.resize(400);
+	    packet.resize(RECEIVE_BUFFER_LENGTH);
 	    if (receiver->receive_data(packet)) {
 		messqueue.push(packet);
 	    }
