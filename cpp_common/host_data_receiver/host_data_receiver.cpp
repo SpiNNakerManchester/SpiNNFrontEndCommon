@@ -12,9 +12,6 @@ static const int SDP_PORT = 17893;
 static const uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
 static const uint32_t SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000;
 static const uint32_t SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001;
-//static const int SDP_PACKET_PORT = 2;
-static const uint32_t SDP_RETRANSMISSION_HEADER_SIZE = 10;
-static const uint32_t SDP_PACKET_START_SENDING_COMMAND_MESSAGE_SIZE = 3;
 
 // time out constants
 static const auto DELAY_PER_SENDING = 10000us;
@@ -24,41 +21,7 @@ static const auto DELAY_PER_SENDING = 10000us;
 static const uint32_t WORDS_PER_PACKET = 68;
 static const uint32_t WORDS_PER_PACKET_WITH_SEQUENCE_NUM = WORDS_PER_PACKET - 1;
 static const uint32_t WORD_TO_BYTE_CONVERTER = 4;
-static const uint32_t LENGTH_OF_DATA_SIZE = 4;
-static const uint32_t END_FLAG_SIZE = 4;
-static const uint32_t END_FLAG_SIZE_IN_BYTES = 4;
-static const uint32_t SEQUENCE_NUMBER_SIZE = 4;
-static const uint32_t END_FLAG = 0xFFFFFFFF;
-static const uint32_t LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
-static const uint32_t SEQ_NUM_MASK = ~LAST_MESSAGE_FLAG_BIT_MASK;
 static const int TIMEOUT_RETRY_LIMIT = 20;
-
-static inline uint32_t get_word_from_buffer(
-	vector<uint8_t> &buffer, uint32_t offset)
-{
-    // Explicit endianness
-    uint32_t byte0 = buffer[offset + 0];
-    uint32_t byte1 = buffer[offset + 1];
-    uint32_t byte2 = buffer[offset + 2];
-    uint32_t byte3 = buffer[offset + 3];
-    return byte0 | (byte1 << 8) | (byte2 << 16) | (byte3 << 24);
-}
-
-static inline uint32_t make_word_for_buffer(uint32_t word)
-{
-    // Explicit endianness
-    union {
-	struct {
-	    uint8_t byte0, byte1, byte2, byte3;
-	};
-	uint32_t word;
-    } converter;
-    converter.byte0 = (word >> 0) & 0xFF;
-    converter.byte1 = (word >> 8) & 0xFF;
-    converter.byte2 = (word >> 16) & 0xFF;
-    converter.byte3 = (word >> 24) & 0xFF;
-    return converter.word;
-}
 
 class OneWayMessage: public SDPMessage {
 public:

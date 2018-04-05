@@ -23,7 +23,37 @@
 #include "../common/UDPConnection.h"
 #include "PQueue.h"
 
+static inline uint32_t get_word_from_buffer(
+	vector<uint8_t> &buffer, uint32_t offset)
+{
+    // Explicit endianness
+    uint32_t byte0 = buffer[offset + 0];
+    uint32_t byte1 = buffer[offset + 1];
+    uint32_t byte2 = buffer[offset + 2];
+    uint32_t byte3 = buffer[offset + 3];
+    return byte0 | (byte1 << 8) | (byte2 << 16) | (byte3 << 24);
+}
+
+static inline uint32_t make_word_for_buffer(uint32_t word)
+{
+    // Explicit endianness
+    union {
+	struct {
+	    uint8_t byte0, byte1, byte2, byte3;
+	};
+	uint32_t word;
+    } converter;
+    converter.byte0 = (word >> 0) & 0xFF;
+    converter.byte1 = (word >> 8) & 0xFF;
+    converter.byte2 = (word >> 16) & 0xFF;
+    converter.byte3 = (word >> 24) & 0xFF;
+    return converter.word;
+}
+
 class host_data_receiver {
+    static const uint32_t SEQUENCE_NUMBER_SIZE = 4;
+    static const uint32_t LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
+    static const uint32_t SEQ_NUM_MASK = ~LAST_MESSAGE_FLAG_BIT_MASK;
 public:
     static const int SET_IP_TAG = 26;
 
