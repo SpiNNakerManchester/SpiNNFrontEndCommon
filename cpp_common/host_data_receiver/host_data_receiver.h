@@ -72,7 +72,25 @@ private:
     bool check(set<uint32_t> &received_seq_nums, uint32_t max_needed);
     void process_data(
             UDPConnection &sender, bool &finished,
-            set<uint32_t> &received_seq_nums, vector<uint8_t> &recvdata);
+            set<uint32_t> &received_seq_nums, vector<uint8_t> &recvdata) {
+	uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
+	uint32_t content_length = recvdata.size() - SEQUENCE_NUMBER_SIZE;
+	const uint8_t *content_bytes = recvdata.data() + SEQUENCE_NUMBER_SIZE;
+
+	// Unpack the first word
+	uint32_t seq_num = first_packet_element & SEQ_NUM_MASK;
+	bool is_end_of_stream =
+		(first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0;
+	finished |= process_data(sender, received_seq_nums, is_end_of_stream,
+		seq_num, content_length, content_bytes);
+    }
+    bool process_data(
+	    UDPConnection &sender,
+	    set<uint32_t> &received_seq_nums,
+	    bool is_end_of_stream,
+	    uint32_t seq_num,
+	    uint32_t content_length,
+	    const uint8_t *content_bytes);
     void reader_thread(UDPConnection *receiver);
     void processor_thread(UDPConnection *sender);
 

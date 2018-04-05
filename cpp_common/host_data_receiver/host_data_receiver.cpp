@@ -60,6 +60,121 @@ static inline uint32_t make_word_for_buffer(uint32_t word)
     return converter.word;
 }
 
+class OneWayMessage: public SDPMessage {
+public:
+    OneWayMessage(int x, int y, int p, int port, char *data, int length) :
+	    SDPMessage(x, y, p, port, SDPMessage::REPLY_NOT_EXPECTED, 255,
+		    255, 255, 0, 0, data, length)
+    {
+    }
+};
+
+class TwoWayMessage: public SDPMessage {
+public:
+    TwoWayMessage(int x, int y, int p, int port, char *data, int length) :
+	    SDPMessage(x, y, p, port, SDPMessage::REPLY_EXPECTED, 255,
+		    255, 255, 0, 0, data, length)
+    {
+    }
+};
+
+class SetIPTagMessage: public TwoWayMessage {
+public:
+    SetIPTagMessage(
+	    int chip_x,
+	    int chip_y,
+	    int iptag,
+	    uint32_t target_ip,
+	    uint32_t target_port) :
+	    TwoWayMessage(chip_x, chip_y, 0, 0, (char *) &payload,
+		    sizeof(payload))
+    {
+	payload.cmd = host_data_receiver::SET_IP_TAG;
+	payload.seq = 0;
+	int strip_sdp = 1;
+	payload.packed = (strip_sdp << 28) | (1 << 16) | iptag;
+	payload.port = target_port;
+	payload.ip = target_ip;
+    }
+private:
+    struct Payload {
+	uint16_t cmd;
+	uint16_t seq;
+	uint32_t packed;
+	uint32_t port;
+	uint32_t ip;
+    } payload;
+};
+
+class StartSendingMessage: public OneWayMessage {
+public:
+    StartSendingMessage(
+	    int x,
+	    int y,
+	    int p,
+	    int port,
+	    uint32_t address,
+	    uint32_t length) :
+	    OneWayMessage(x, y, p, port, (char *) &payload, sizeof(payload))
+    {
+	payload.cmd = make_word_for_buffer(SDP_PACKET_START_SENDING_COMMAND_ID);
+	payload.address = make_word_for_buffer(address);
+	payload.length = make_word_for_buffer(length);
+    }
+private:
+    struct Payload {
+	uint32_t cmd;
+	uint32_t address;
+	uint32_t length;
+    } payload;
+};
+
+class FirstMissingSeqsMessage: public OneWayMessage {
+public:
+    static const uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
+    FirstMissingSeqsMessage(
+	    int x,
+	    int y,
+	    int p,
+	    int port,
+	    uint32_t *data,
+	    uint32_t length,
+	    uint32_t num_packets) :
+	    OneWayMessage(x, y, p, port, (char *) buffer,
+		    (length + 2) * sizeof(uint32_t))
+    {
+	buffer[0] = make_word_for_buffer(
+		SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
+	buffer[1] = make_word_for_buffer(num_packets);
+	memcpy(&buffer[2], data, length * sizeof(uint32_t));
+    }
+private:
+    uint32_t buffer[WORDS_PER_PACKET];
+};
+
+class MoreMissingSeqsMessage: public OneWayMessage {
+public:
+    static const uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
+    MoreMissingSeqsMessage(
+	    int x,
+	    int y,
+	    int p,
+	    int port,
+	    uint32_t *data,
+	    uint32_t length) :
+	    OneWayMessage(x, y, p, port, (char *) buffer,
+		    (length + 1) * sizeof(uint32_t))
+    {
+	buffer[0] = make_word_for_buffer(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
+	memcpy(&buffer[1], data, length * sizeof(uint32_t));
+    }
+private:
+    uint32_t buffer[WORDS_PER_PACKET];
+};
+
+const uint32_t FirstMissingSeqsMessage::PAYLOAD_SIZE;
+const uint32_t MoreMissingSeqsMessage::PAYLOAD_SIZE;
+
 void host_data_receiver::receive_message(
 	UDPConnection &receiver, vector<uint8_t> &working_buffer)
 {
@@ -73,51 +188,18 @@ void host_data_receiver::send_initial_command(
         UDPConnection &receiver)
 {
     //Build an SCP request to set up the IP Tag associated to this socket
-    int strip_sdp = 1;
-    struct SetIPTagMessage {
-	uint16_t cmd;
-	uint16_t seq;
-	uint32_t packed;
-	uint32_t port;
-	uint32_t ip;
-    };
-    assert(sizeof(SetIPTagMessage) == 16);
-    SetIPTagMessage scp_req;
-    scp_req.cmd = SET_IP_TAG;
-    scp_req.seq = 0;
-    scp_req.packed = (strip_sdp << 28) | (1 << 16) | iptag;
-    scp_req.port = receiver.get_local_port();
-    scp_req.ip = receiver.get_local_ip();
+    SetIPTagMessage set_iptag_req(chip_x, chip_y, iptag,
+	    receiver.get_local_ip(), receiver.get_local_port());
 
-    //fprintf(stderr, "port%d\n", receiver->get_local_port());
-
-    SDPMessage ip_tag_message(chip_x, chip_y, 0, 0,
-            SDPMessage::REPLY_EXPECTED, 255, 255, 255, 0, 0,
-	    (char *) &scp_req, sizeof(scp_req));
     //Send SCP request and receive (and ignore) response
-    sender.send_message(ip_tag_message);
+    sender.send_message(set_iptag_req);
 
     std::vector<uint8_t> working_buffer;
     receive_message(sender, working_buffer);
 
     // Create Data request SDP packet
-    struct DataRequestMessage {
-	uint32_t cmd;
-	uint32_t address;
-	uint32_t length;
-    };
-    DataRequestMessage start_message_data;
-
-    // add data
-    start_message_data.cmd = SDP_PACKET_START_SENDING_COMMAND_ID;
-    start_message_data.address = memory_address;
-    start_message_data.length = length_in_bytes;
-
-    // build SDP message
-    SDPMessage message(placement_x, placement_y,
-            placement_p, port_connection,
-            SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0,
-            (char *) &start_message_data, sizeof(start_message_data));
+    StartSendingMessage message(placement_x, placement_y, placement_p,
+	    port_connection, memory_address, length_in_bytes);
     //send message
     sender.send_message(message);
 }
@@ -132,9 +214,6 @@ bool host_data_receiver::retransmit_missing_sequences(
         UDPConnection &sender,
         set<uint32_t> &received_seq_nums)
 {
-    uint32_t data[WORDS_PER_PACKET];
-    uint32_t i;
-
     //Calculate number of missing sequences based on difference between
     //expected and received
     vector<uint32_t> missing_seq(0);
@@ -142,7 +221,7 @@ bool host_data_receiver::retransmit_missing_sequences(
     missing_seq.reserve(max_seq_num - received_seq_nums.size());
 
     // Calculate missing sequence numbers and add them to "missing"
-    for (i = 0; i < max_seq_num ; i++) {
+    for (uint32_t i = 0; i < max_seq_num ; i++) {
         if (received_seq_nums.find(i) == received_seq_nums.end()) {
             missing_seq.push_back(make_word_for_buffer(i));
         }
@@ -164,54 +243,36 @@ bool host_data_receiver::retransmit_missing_sequences(
     }
 
     // Transmit missing sequences as a new SDP Packet
-    int seq_num_offset = 0;
+    uint32_t seq_num_offset = 0;
 
-    for (i = 0; i < n_packets ; i++) {
-	uint32_t datasize;
-        int length_left_in_packet = WORDS_PER_PACKET;
-        int offset;
-        int miss_seq_words_to_transmit;
+    for (uint32_t i = 0; i < n_packets ; i++) {
+	int words_in_this_packet;
 
-        // If first, add n packets to list; otherwise just add data
-        if (i == 0) {
-            // Get left over space / data size
-            miss_seq_words_to_transmit = min(WORDS_PER_PACKET - 2,
-                    miss_dim - seq_num_offset);
-            datasize = miss_seq_words_to_transmit + 2;
-
-            // Pack flag and n packets
-            data[0] = make_word_for_buffer(SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
-            data[1] = make_word_for_buffer(n_packets);
-
-            // Update state
-            offset = 2;
-            length_left_in_packet -= 2;
-        } else {
-            // Get left over space / data size
-            miss_seq_words_to_transmit = min(
-                    WORDS_PER_PACKET_WITH_SEQUENCE_NUM,
+	// If first, add n packets to list; otherwise just add data
+	if (i == 0) {
+	    // Get left over space / data size
+	    words_in_this_packet = min(FirstMissingSeqsMessage::PAYLOAD_SIZE,
 		    miss_dim - seq_num_offset);
-            datasize = miss_seq_words_to_transmit + 1;
+	    // Make and send message
+	    FirstMissingSeqsMessage message(placement_x, placement_y,
+		    placement_p, port_connection,
+		    missing_seq.data() + seq_num_offset, words_in_this_packet,
+		    n_packets);
+	    sender.send_message(message);
+	} else {
+	    // Get left over space / data size
+	    words_in_this_packet = min(MoreMissingSeqsMessage::PAYLOAD_SIZE,
+		    miss_dim - seq_num_offset);
+	    // Make and send message
+	    MoreMissingSeqsMessage message(placement_x, placement_y,
+		    placement_p, port_connection,
+		    missing_seq.data() + seq_num_offset,
+		    words_in_this_packet);
+	    sender.send_message(message);
+	}
 
-            // Pack flag
-            data[0] = make_word_for_buffer(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
-
-            offset = 1;
-            length_left_in_packet--;
-        }
-
-        memcpy(&data[offset], missing_seq.data() + seq_num_offset,
-                miss_seq_words_to_transmit * sizeof(uint32_t));
-
-        seq_num_offset += length_left_in_packet;
-
-        SDPMessage message(placement_x, placement_y,
-                placement_p, port_connection,
-                SDPMessage::REPLY_NOT_EXPECTED, 255, 255, 255, 0, 0,
-                (char *) data, datasize * sizeof(uint32_t));
-        sender.send_message(message);
-
-        this_thread::sleep_for(DELAY_PER_SENDING);
+	seq_num_offset += words_in_this_packet;
+	this_thread::sleep_for(DELAY_PER_SENDING);
     }
 
     return false;
@@ -245,48 +306,50 @@ uint32_t host_data_receiver::calculate_offset(uint32_t seq_num)
 }
 
 // Function for processing each received packet and checking end of transmission
-void host_data_receiver::process_data(
-        UDPConnection &sender,
-        bool &finished,
-        set<uint32_t> &received_seq_nums,
-        vector<uint8_t> &recvdata)
+bool host_data_receiver::process_data(
+	UDPConnection &sender,
+	set<uint32_t> &received_seq_nums,
+	bool is_end_of_stream,
+	uint32_t seq_num,
+	uint32_t content_length,
+	const uint8_t *content_bytes)
 {
-    uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
-    uint32_t content_length = recvdata.size() - SEQUENCE_NUMBER_SIZE;
-    const uint8_t *content_bytes = recvdata.data() + SEQUENCE_NUMBER_SIZE;
+    uint32_t offset = calculate_offset(seq_num);
 
-    // Unpack the first word
-    uint32_t seq_num = first_packet_element & SEQ_NUM_MASK;
-    bool is_end_of_stream =
-            (first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0;
-
+    // Sanity checks
     if (seq_num > max_seq_num) {
         throw "Got insane sequence number";
     }
-
-    uint32_t offset = calculate_offset(seq_num);
-
     if (offset + content_length > length_in_bytes) {
         throw "Receiving more data than expected";
     }
+    if (!is_end_of_stream
+	    && content_length / WORD_TO_BYTE_CONVERTER
+		    < WORDS_PER_PACKET_WITH_SEQUENCE_NUM) {
+	cerr << "WARNING: non-terminal packet had "
+		<< (content_length / WORD_TO_BYTE_CONVERTER)
+		<< " words instead of " << WORDS_PER_PACKET_WITH_SEQUENCE_NUM
+		<< endl;
+    }
 
+    // Store the data and the fact that we've processed this packet
     if (content_length != 0) {
 	memcpy(buffer.data() + offset, content_bytes, content_length);
     }
-
     if (!received_seq_nums.insert(seq_num).second) {
 	// already received this packet!
 	cerr << "WARNING: received " << seq_num << " at least twice" << endl;
     }
 
+    // Determine if we're actually finished.
     if (is_end_of_stream) {
-        if (!check(received_seq_nums, max_seq_num)) {
-            finished = retransmit_missing_sequences(
-        	    sender, received_seq_nums);
-        } else {
-            finished = true;
-        }
+	if (check(received_seq_nums, max_seq_num)) {
+	    return true;
+	}
+	// Finished but not complete; "Please sir, I want some more!"
+	return retransmit_missing_sequences(sender, received_seq_nums);
     }
+    return false;
 }
 
 void host_data_receiver::reader_thread(UDPConnection *receiver)
