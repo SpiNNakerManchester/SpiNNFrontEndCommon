@@ -743,7 +743,7 @@ void eight_bytes_send_data_block(
 }
 
 //! \brief takes a DMA'ed block and transmits its contents as mc packets. Uses
-//! the 4 byte protocol. 
+//! the 4 byte protocol.
 //! \param[in] current_dma_pointer: the DMA pointer for the 2 buffers
 //! \param[in] number_of_elements_to_send: the number of mc packets to send
 //! \param[in] first_packet_key: the first key to transmit with, afterward,
@@ -958,8 +958,6 @@ void four_bytes_dma_complete_reading_for_original_transmission(){
     }
 }
 
-
-
 //! \brief write SDP sequence numbers to sdram that need retransmitting
 //! \param[in] data: data to write into sdram
 //! \param[in] length: length of data
@@ -1096,8 +1094,7 @@ void common_the_dma_complete_read_missing_seqeuence_nums() {
                     eight_bytes_read(DMA_TAG_RETRANSMISSION_READING,
                         ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
                 } else {
-                    retransmitted_seq_num_items_read =
-                        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+                    retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
                     four_bytes_read(
                         DMA_TAG_RETRANSMISSION_READING, 1,
                         ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
@@ -1168,8 +1165,6 @@ void four_bytes_dma_complete_reading_retransmission_data() {
     position_in_read_data += 1;
     common_the_dma_complete_read_missing_seqeuence_nums();
 }
-
-
 
 //! \brief DMA complete callback for have read missing sequence number data
 void common_dma_complete_writing_missing_seq_to_sdram() {

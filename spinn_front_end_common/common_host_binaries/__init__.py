@@ -44,12 +44,11 @@ def run_host_data_receiver(
 
     path_list = os.path.realpath(__file__).split("/")
 
-    x = "java -jar " + "/".join(path_list[0:len(path_list) - 1]) + "/" +"java_common_2.jar"
     subprocess.call([
-        "java",
-        "-jar",
-        "/".join(path_list[0:len(path_list) - 1]) + "/" +"java_common_2.jar",
-        #"/" + "/".join(path_list[0:len(path_list) - 1]) + DATA_OUT_BINARY_NAME,
+        #"java",
+        #"-jar",
+        #"/".join(path_list[0:len(path_list) - 1]) + "/" +"java_common_2.jar",
+        "/" + "/".join(path_list[0:len(path_list) - 1]) + DATA_OUT_BINARY_NAME,
         str(remote_ip_address),
         str(port_value),
         str(placement_x),
