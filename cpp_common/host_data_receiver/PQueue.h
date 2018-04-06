@@ -15,15 +15,17 @@ struct TimeoutQueueException: public std::exception {
 
 template<typename T>
 class PQueue {
+    static constexpr auto const& TIMEOUT = 10 * 100ms;
 
 public:
-    T pop() {
-        std::unique_lock<std::mutex> mlock(mutex_);
+    T pop()
+    {
+	std::unique_lock<std::mutex> mlock(mutex_);
 
-        while (queue_.empty()) {
-            if (cond_.wait_for(mlock, 10 * 100ms) == cv_status::timeout) {
-                throw TimeoutQueueException();
-            }
+	while (queue_.empty()) {
+	    if (cond_.wait_for(mlock, TIMEOUT) == std::cv_status::timeout) {
+		throw TimeoutQueueException();
+	    }
         }
 
         auto val = queue_.front();

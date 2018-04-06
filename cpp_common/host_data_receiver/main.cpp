@@ -6,14 +6,19 @@ private:
     int argc;
     char **argv;
 public:
-    Arguments(int argc, char **argv) : argc(argc), argv(argv) {}
-    const char *operator[](int index) {
+    Arguments(int argc, char **argv) :
+	    argc(argc), argv(argv)
+    {
+    }
+    const char *operator[](int index)
+    {
 	if (index < 0 || index >= argc) {
 	    throw std::invalid_argument("no such argument");
 	}
 	return argv[index];
     }
-    int length() {
+    int length()
+    {
 	return argc;
     }
 };
@@ -24,8 +29,8 @@ static inline void parse_arg(Arguments &args, int index, int &variable)
 	std::string s(args[index]);
 	variable = std::stoi(s);
     } catch (std::invalid_argument &e) {
-	cout << "couldn't parse integer argument " << index << " '" <<
-		args[index] << "'" << endl;
+	std::cout << "couldn't parse integer argument " << index << " '"
+		<< args[index] << "'" << std::endl;
 	exit(1);
     }
 }
@@ -36,30 +41,32 @@ int main(int argc, char *argv[])
     Arguments args(argc, argv);
 
     // constants for arguments
-    static const int N_ARGS = 13;
+    static constexpr int N_ARGS = 13;
 
     // enum for arg positions
     enum arg_placements {
-        HOSTNAME_POSITION = 1,
-        PORT_NUMBER_POSITION = 2,
-        PLACEMENT_X_POSITION = 3,
-        PLACEMENT_Y_POSITION = 4,
-        PLACEMENT_P_POSITION = 5,
-        FILE_PATH_READ_POSITION = 6,
-        FILE_PATH_MISS_POSITION = 7,
-        LENGTH_IN_BYTES = 8,
-        MEMORY_ADDRESS = 9,
-        CHIP_X = 10,
-        CHIP_Y = 11,
-        IPTAG = 12
+	HOSTNAME_POSITION = 1,
+	PORT_NUMBER_POSITION = 2,
+	PLACEMENT_X_POSITION = 3,
+	PLACEMENT_Y_POSITION = 4,
+	PLACEMENT_P_POSITION = 5,
+	FILE_PATH_READ_POSITION = 6,
+	FILE_PATH_MISS_POSITION = 7,
+	LENGTH_IN_BYTES = 8,
+	MEMORY_ADDRESS = 9,
+	CHIP_X = 10,
+	CHIP_Y = 11,
+	IPTAG = 12
     };
 
     // placement x, placement y, placement p, port, host, data loc
     if (args.length() != N_ARGS) {
-        cout << "usage: " << args[0] << " <hostname> <port> <placement.x> "
-        	"<placement.y> <placement.p> <read.file> <miss.file> "
-        	"<length> <address> <chip.x> <chip.y> <iptag>" << endl;
-        return 1;
+	std::cout << "usage: " << args[0]
+		<< " <hostname> <port> <placement.x> "
+			"<placement.y> <placement.p> <read.file> <miss.file> "
+			"<length> <address> <chip.x> <chip.y> <iptag>"
+		<< std::endl;
+	return 1;
     }
 
     // variables
@@ -88,8 +95,8 @@ int main(int argc, char *argv[])
     parse_arg(args, IPTAG, iptag);
 
     host_data_receiver collector(port_connection, placement_x, placement_y,
-            placement_p, hostname, length_in_bytes, memory_address, chip_x,
-            chip_y, iptag);
+	    placement_p, hostname, length_in_bytes, memory_address, chip_x,
+	    chip_y, iptag);
 
     collector.get_data_threadable(file_pathr, file_pathm);
 
