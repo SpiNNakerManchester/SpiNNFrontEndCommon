@@ -292,11 +292,7 @@ bool host_data_receiver::process_data(
     if (is_end_of_stream || content_length == NORMAL_PAYLOAD_LENGTH) {
 	// Store the data and the fact that we've processed this packet
 	memcpy(buffer.data() + offset, content_bytes, content_length);
-	if (!received_seq_nums.insert(seq_num).second) {
-	    // already received this packet!
-	    cerr << "WARNING: received " << seq_num << " at least twice"
-		    << endl;
-	}
+	received_seq_nums.insert(seq_num);
     }
 
     // Determine if we're actually finished.
@@ -322,7 +318,6 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 	    memset(packet.data(), 0xFF, packet.size());
 	    receive_length = receiver->receive_data(packet.data(), packet.size());
 	    if (receive_length > 0) {
-		cout << "packet length: " << receive_length << endl;
 		packet.resize(receive_length);
 		messqueue.push(packet);
 	    }
