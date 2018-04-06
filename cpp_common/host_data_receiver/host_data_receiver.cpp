@@ -1,7 +1,10 @@
+#include <cstdint>
 #include "host_data_receiver.h"
 #include <vector>
 #include <cassert>
 #include <chrono>
+#include <fstream>
+#include "math.h"
 
 using namespace std;
 using namespace std::literals::chrono_literals; // BLACK MAGIC!
@@ -10,23 +13,24 @@ static const int SDP_PORT = 17893;
 static const int MAX_SDP_PACKET_LENGTH = 280;
 
 //Constants
-static const uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
-static const uint32_t SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000;
-static const uint32_t SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001;
+static constexpr uint32_t SDP_PACKET_START_SENDING_COMMAND_ID = 100;
+static constexpr uint32_t SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000;
+static constexpr uint32_t SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001;
 
 // time out constants
-static const auto DELAY_PER_SENDING = 10000us;
+static constexpr auto DELAY_PER_SENDING = 10000us;
 
 // consts for data and converting between words and bytes
 //static const int SDRAM_READING_SIZE_IN_BYTES_CONVERTER = 1024 * 1024;
-static const uint32_t WORDS_PER_PACKET = 68;
-static const uint32_t WORDS_PER_PACKET_WITH_SEQUENCE_NUM = WORDS_PER_PACKET - 1;
-static const uint32_t WORD_TO_BYTE_CONVERTER = 4;
-static const int TIMEOUT_RETRY_LIMIT = 20;
+static constexpr uint32_t WORDS_PER_PACKET = 68;
+static constexpr uint32_t WORDS_PER_PACKET_WITH_SEQUENCE_NUM = WORDS_PER_PACKET - 1;
+static constexpr uint32_t WORD_TO_BYTE_CONVERTER = 4;
+static constexpr int RECEIVE_BUFFER_LENGTH = WORDS_PER_PACKET * WORD_TO_BYTE_CONVERTER;
+static constexpr int TIMEOUT_RETRY_LIMIT = 20;
 
 class OneWayMessage: public SDPMessage {
 public:
-    OneWayMessage(int x, int y, int p, int port, char *data, int length) :
+    OneWayMessage(int x, int y, int p, int port, void *data, int length) :
 	    SDPMessage(x, y, p, port, SDPMessage::REPLY_NOT_EXPECTED, 255,
 		    255, 255, 0, 0, data, length)
     {
@@ -35,7 +39,7 @@ public:
 
 class TwoWayMessage: public SDPMessage {
 public:
-    TwoWayMessage(int x, int y, int p, int port, char *data, int length) :
+    TwoWayMessage(int x, int y, int p, int port, void *data, int length) :
 	    SDPMessage(x, y, p, port, SDPMessage::REPLY_EXPECTED, 255,
 		    255, 255, 0, 0, data, length)
     {
@@ -50,8 +54,7 @@ public:
 	    int iptag,
 	    uint32_t target_ip,
 	    uint32_t target_port) :
-	    TwoWayMessage(chip_x, chip_y, 0, 0, (char *) &payload,
-		    sizeof(payload))
+	    TwoWayMessage(chip_x, chip_y, 0, 0, &payload, sizeof(payload))
     {
 	payload.cmd = host_data_receiver::SET_IP_TAG;
 	payload.seq = 0;
@@ -61,7 +64,7 @@ public:
 	payload.ip = target_ip;
     }
 private:
-    struct Payload {
+    struct SCP_SetIPTag_Payload {
 	uint16_t cmd;
 	uint16_t seq;
 	uint32_t packed;
@@ -95,16 +98,16 @@ private:
 
 class FirstMissingSeqsMessage: public OneWayMessage {
 public:
-    static constexpr uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
+    static constexpr uint32_t const& PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
     FirstMissingSeqsMessage(
 	    int x,
 	    int y,
 	    int p,
 	    int port,
-	    uint32_t *data,
+	    const uint32_t *data,
 	    uint32_t length,
 	    uint32_t num_packets) :
-	    OneWayMessage(x, y, p, port, (char *) buffer,
+	    OneWayMessage(x, y, p, port, buffer,
 		    (length + 2) * sizeof(uint32_t))
     {
 	buffer[0] = make_word_for_buffer(
@@ -118,15 +121,15 @@ private:
 
 class MoreMissingSeqsMessage: public OneWayMessage {
 public:
-    static constexpr uint32_t PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
+    static constexpr uint32_t const& PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
     MoreMissingSeqsMessage(
 	    int x,
 	    int y,
 	    int p,
 	    int port,
-	    uint32_t *data,
+	    const uint32_t *data,
 	    uint32_t length) :
-	    OneWayMessage(x, y, p, port, (char *) buffer,
+	    OneWayMessage(x, y, p, port, buffer,
 		    (length + 1) * sizeof(uint32_t))
     {
 	buffer[0] = make_word_for_buffer(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
@@ -239,11 +242,13 @@ bool host_data_receiver::retransmit_missing_sequences(
     return false;
 }
 
+static constexpr uint32_t NORMAL_PAYLOAD_LENGTH =
+	WORDS_PER_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER;
+
 //Function for computing expected maximum number of packets
 uint32_t host_data_receiver::calculate_max_seq_num()
 {
-    return ceildiv(length_in_bytes,
-            WORDS_PER_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER);
+    return ceildiv(length_in_bytes, NORMAL_PAYLOAD_LENGTH);
 }
 
 //Function for checking that all packets have been received
@@ -262,8 +267,7 @@ bool host_data_receiver::check(
 
 uint32_t host_data_receiver::calculate_offset(uint32_t seq_num)
 {
-    return seq_num * WORDS_PER_PACKET_WITH_SEQUENCE_NUM
-	    * WORD_TO_BYTE_CONVERTER;
+    return seq_num * NORMAL_PAYLOAD_LENGTH;
 }
 
 // Function for processing each received packet and checking end of transmission
@@ -284,36 +288,27 @@ bool host_data_receiver::process_data(
     if (offset + content_length > length_in_bytes) {
         throw "Receiving more data than expected";
     }
-    if (!is_end_of_stream
-	    && content_length / WORD_TO_BYTE_CONVERTER
-		    < WORDS_PER_PACKET_WITH_SEQUENCE_NUM) {
-	cerr << "WARNING: non-terminal packet " << seq_num << " had "
-		<< (content_length / WORD_TO_BYTE_CONVERTER)
-		<< " words instead of " << WORDS_PER_PACKET_WITH_SEQUENCE_NUM
-		<< endl;
-    }
-
-    // Store the data and the fact that we've processed this packet
-    if (content_length != 0) {
+    if (is_end_of_stream || content_length == NORMAL_PAYLOAD_LENGTH) {
+	// Store the data and the fact that we've processed this packet
 	memcpy(buffer.data() + offset, content_bytes, content_length);
-    }
-    if (!received_seq_nums.insert(seq_num).second) {
-	// already received this packet!
-	cerr << "WARNING: received " << seq_num << " at least twice" << endl;
+	if (!received_seq_nums.insert(seq_num).second) {
+	    // already received this packet!
+	    cerr << "WARNING: received " << seq_num << " at least twice"
+		    << endl;
+	}
     }
 
     // Determine if we're actually finished.
-    if (is_end_of_stream) {
-	if (check(received_seq_nums, max_seq_num)) {
-	    return true;
-	}
-	// Finished but not complete; "Please sir, I want some more!"
-	return retransmit_missing_sequences(sender, received_seq_nums);
+    if (!is_end_of_stream) {
+	// Definitely not the end!
+	return false;
     }
-    return false;
+    if (check(received_seq_nums, max_seq_num)) {
+	return true;
+    }
+    // Finished but not complete; "Please sir, I want some more!"
+    return retransmit_missing_sequences(sender, received_seq_nums);
 }
-
-static const int RECEIVE_BUFFER_LENGTH = WORDS_PER_PACKET * WORD_TO_BYTE_CONVERTER;
 
 void host_data_receiver::reader_thread(UDPConnection *receiver)
 {
@@ -349,7 +344,8 @@ void host_data_receiver::processor_thread(UDPConnection *sender)
     while (!finished && !rdr.thrown) {
         try {
 	    std::vector<uint8_t> p = messqueue.pop();
-            process_data(*sender, finished, received_seq_nums, p);
+	    if (!p.empty())
+		process_data(*sender, finished, received_seq_nums, p);
         } catch (TimeoutQueueException &e) {
             if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
                 pcr.val = "Failed to hear from the machine. "
@@ -416,18 +412,16 @@ void host_data_receiver::get_data_threadable(
         const char *filepath_read,
         const char *filepath_missing)
 {
-    FILE *fp1, *fp2 = nullptr;
 
     auto data_buffer = get_data();
 
-    fp1 = fopen(filepath_read, "wb");
-    fwrite(data_buffer, sizeof(uint8_t), length_in_bytes, fp1);
-    fclose(fp1);
-
+    if (filepath_read) {
+	std::fstream output(filepath_read, ios::out | ios::binary);
+	output.write((char *) data_buffer, length_in_bytes);
+    }
     if (filepath_missing) {
-	fp2 = fopen(filepath_missing, "w");
-	fprintf(fp2, "%d\n", miss_cnt);
-	fclose(fp2);
+	std::fstream missing(filepath_missing, ios::out);
+	missing << miss_cnt << endl;
     }
 }
 

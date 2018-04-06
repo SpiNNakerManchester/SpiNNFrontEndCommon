@@ -1,11 +1,8 @@
 #ifndef _HOST_DATA_RECEIVER_
 #define _HOST_DATA_RECEIVER_
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 #include <unistd.h>
-#include <math.h>
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -15,7 +12,7 @@
 #include <thread>
 
 #if 0
-//#include <pybind11/pybind11.h>
+#include <pybind11/pybind11.h>
 #endif
 
 #include "../common/SDPHeader.h"
@@ -24,7 +21,7 @@
 #include "PQueue.h"
 
 static inline uint32_t get_word_from_buffer(
-	vector<uint8_t> &buffer, uint32_t offset)
+	std::vector<uint8_t> &buffer, uint32_t offset)
 {
     // Explicit endianness
     uint32_t byte0 = buffer[offset + 0];
@@ -51,11 +48,11 @@ static inline uint32_t make_word_for_buffer(uint32_t word)
 }
 
 class host_data_receiver {
-    static const uint32_t SEQUENCE_NUMBER_SIZE = 4;
-    static const uint32_t LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
-    static const uint32_t SEQ_NUM_MASK = ~LAST_MESSAGE_FLAG_BIT_MASK;
+    static constexpr uint32_t SEQUENCE_NUMBER_SIZE = 4;
+    static constexpr uint32_t LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000;
+    static constexpr uint32_t SEQ_NUM_MASK = ~LAST_MESSAGE_FLAG_BIT_MASK;
 public:
-    static const int SET_IP_TAG = 26;
+    static constexpr int SET_IP_TAG = 26;
 
     host_data_receiver(
             int port_connection,
@@ -94,15 +91,15 @@ public:
 
 private:
     void send_initial_command(UDPConnection &sender, UDPConnection &receiver);
-    void receive_message(UDPConnection &receiver, vector<uint8_t> &buffer);
+    void receive_message(UDPConnection &receiver, std::vector<uint8_t> &buffer);
     bool retransmit_missing_sequences(
-            UDPConnection &sender, set<uint32_t> &received_seq_nums);
+            UDPConnection &sender, std::set<uint32_t> &received_seq_nums);
     uint32_t calculate_max_seq_num();
     uint32_t calculate_offset(uint32_t seq_num);
-    bool check(set<uint32_t> &received_seq_nums, uint32_t max_needed);
+    bool check(std::set<uint32_t> &received_seq_nums, uint32_t max_needed);
     void process_data(
             UDPConnection &sender, bool &finished,
-            set<uint32_t> &received_seq_nums, vector<uint8_t> &recvdata) {
+	    std::set<uint32_t> &received_seq_nums, std::vector<uint8_t> &recvdata) {
 	uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
 	uint32_t content_length = recvdata.size() - SEQUENCE_NUMBER_SIZE;
 	const uint8_t *content_bytes = recvdata.data() + SEQUENCE_NUMBER_SIZE;
@@ -116,7 +113,7 @@ private:
     }
     bool process_data(
 	    UDPConnection &sender,
-	    set<uint32_t> &received_seq_nums,
+	    std::set<uint32_t> &received_seq_nums,
 	    bool is_end_of_stream,
 	    uint32_t seq_num,
 	    uint32_t content_length,
@@ -134,14 +131,14 @@ private:
     int placement_x;
     int placement_y;
     int placement_p;
-    string hostname;
+    std::string hostname;
     uint32_t length_in_bytes;
     uint32_t memory_address;
     int chip_x;
     int chip_y;
     int iptag;
-    PQueue<vector<uint8_t>> messqueue;
-    vector<uint8_t> buffer;
+    PQueue<std::vector<uint8_t>> messqueue;
+    std::vector<uint8_t> buffer;
     uint32_t max_seq_num;
     thexc rdr, pcr;
     bool started, finished;

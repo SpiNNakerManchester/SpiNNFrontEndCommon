@@ -17,15 +17,10 @@ typedef unsigned int uint;
 typedef unsigned short ushort;
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#include <iostream>
 #include <cstdint>
 #include <vector>
 #include <string>
 #include "SDPMessage.h"
-
-using namespace std;
 
 class UDPConnection {
 public:
@@ -36,26 +31,31 @@ public:
             const char *remote_host = nullptr);
     UDPConnection(
 	    int remote_port,
-            string &remote_host)
+            std::string &remote_host)
 	: UDPConnection(0, nullptr, remote_port, remote_host.c_str()) {}
-
     ~UDPConnection();
-    int receive_data(char *data, int length);
-    bool receive_data(vector<uint8_t> &data);
-    int receive_data_with_address(
-            char *data,
-            int length,
-            struct sockaddr *address);
+
+    // Modern C++ style API
+    bool receive_data(std::vector<uint8_t> &data);
     bool receive_data_with_address(
-	    vector<uint8_t> &data,
+	    std::vector<uint8_t> &data,
             struct sockaddr &address);
-    void send_data(const char *data, int length);
-    void send_data(const vector<uint8_t> &data);
     void send_message(SDPMessage &message);
+    void send_data(const std::vector<uint8_t> &data);
     void send_data_to(
-	    const char *data, int length, const struct sockaddr* address);
+	    const std::vector<uint8_t> &data, const sockaddr &address);
+
+    // Old style API
+    uint32_t receive_data(void *data, int length);
+    uint32_t receive_data_with_address(
+            void *data,
+            int length,
+            sockaddr *address);
+    void send_data(const void *data, int length);
     void send_data_to(
-	    const vector<uint8_t> &data, const struct sockaddr &address);
+	    const void *data, int length, const sockaddr* address);
+
+    // Simple accessors
     uint32_t get_local_port();
     uint32_t get_local_ip();
 
@@ -68,7 +68,7 @@ private:
     unsigned int remote_ip_address;
 };
 
-struct TimeoutException: public exception {
+struct TimeoutException: public std::exception {
 };
 
 #endif // _UDP_CONNECTION_H_
