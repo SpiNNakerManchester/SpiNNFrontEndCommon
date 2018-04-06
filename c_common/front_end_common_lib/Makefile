@@ -27,18 +27,27 @@ MAKEFILES = Makefile.SpiNNFrontEndCommon FrontEndCommon.mk
 INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 
 # Libraries
-LIBS = libspinn_frontend_common.a
+APP = libspinn_frontend_common
+LIBS = $(APP).a
+LIBS += $(APP).dict
 INSTALL_LIBS = $(LIBS:%.a=$(SPINN_LIB_DIR)/%.a)
 
 # Ensure $(INSTALL) is defined, even on MinGW
 INSTALL ?= install
 
 # Build rules (default)
-$(SPINN_COMMON_BUILD)/libspinn_frontend_common.a: $(BUILD_OBJS) 
+$(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
-$(SPINN_COMMON_BUILD)/%.o: src/%.c $(SPINN_COMMON_BUILD)
+# Variables needed for file convertor
+RAW_DIR = src
+MODIFIED_DIR = modified_src
+APP_OUTPUT_DIR = $(SPINN_COMMON_BUILD)/
+RANGE_START = 1000
+include convert.mk
+
+$(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(APP_OUTPUT_DIR)$(APP).dict
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(SPINN_COMMON_BUILD):
@@ -60,9 +69,12 @@ $(SPINN_MAKE_LIB_DIR)/%: %
 	$(INSTALL) -c -m644 $< $(SPINN_MAKE_LIB_DIR)
 
 clean:
-	$(RM) $(SPINN_COMMON_BUILD)/libspinn_frontend_common.a $(BUILD_OBJS)
+	$(RM) $(SPINN_COMMON_BUILD)/$(APP).a $(BUILD_OBJS) $(OLD_CONVERT_FILES)
 
 install-clean:
 	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(INSTALL_MAKEFILES)
 
 .PHONY: clean install install-libraries install-headers install-makefiles install-clean
+
+test:
+	#$(_DICT_FILES)
