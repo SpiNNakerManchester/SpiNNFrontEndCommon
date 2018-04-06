@@ -184,12 +184,19 @@ bool host_data_receiver::retransmit_missing_sequences(
     vector<uint32_t> missing_seq(0);
     // We know how many elements we expect to be missing
     missing_seq.reserve(max_seq_num - received_seq_nums.size());
+    if (missing_seq.capacity()) {
+	cerr << "missing sequence numbers: {";
+    }
 
     // Calculate missing sequence numbers and add them to "missing"
     for (uint32_t i = 0; i < max_seq_num ; i++) {
         if (received_seq_nums.find(i) == received_seq_nums.end()) {
+            cerr << i << ", ";
             missing_seq.push_back(make_word_for_buffer(i));
         }
+    }
+    if (missing_seq.capacity()) {
+	cerr << "}" << endl;
     }
 
     //Set correct number of lost sequences
