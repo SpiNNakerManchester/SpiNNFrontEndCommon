@@ -320,6 +320,7 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 	    packet.resize(RECEIVE_BUFFER_LENGTH);
 	    memset(packet.data(), 0xFF, packet.size());
 	    if (receiver->receive_data(packet)) {
+		cout << "packet length: " << packet.size() << endl;
 		messqueue.push(packet);
 	    }
 
