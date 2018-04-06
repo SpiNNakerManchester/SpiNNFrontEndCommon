@@ -48,9 +48,9 @@ static void initSocketLibrary(void) {
     initialised = true;
 }
 
-template<class SockType, class TimeRep, class TimePeriod>
+template<class TimeRep, class TimePeriod>
 static void setSocketTimeout(
-	SockType sock, chrono::duration<TimeRep, TimePeriod> d)
+	int sock, chrono::duration<TimeRep, TimePeriod> d)
 {
 #ifdef WIN32
     auto ms = chrono::duration_cast<chrono::milliseconds>(d);
@@ -62,9 +62,8 @@ static void setSocketTimeout(
     timeout.tv_usec = chrono::duration_cast<chrono::microseconds>(
 	    d - sec).count();
 #endif
-    const void *timeout_ptr = &timeout;
     if (error(
-	    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, timeout_ptr,
+	    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout,
 		    sizeof(timeout)))) {
 	throw "Socket timeout could not be set";
     }
@@ -99,6 +98,12 @@ UDPConnection::UDPConnection(
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (error(sock)) {
         throw "Socket could not be created";
+    }
+    const int buffer_size = 1024 * 1024;
+    if (error(
+	    setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &buffer_size,
+		    sizeof(buffer_size)))) {
+        throw "Socket buffer size could not be set";
     }
 
     sockaddr local_address;
