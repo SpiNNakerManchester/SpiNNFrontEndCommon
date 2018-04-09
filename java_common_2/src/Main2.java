@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Arrays;
 
 public class Main2 {
 
@@ -53,6 +54,7 @@ public class Main2 {
             System.out.printf(" got %d args instead", args.length);
         }
         else{
+            //System.out.printf(" got args %s", Arrays.asList(args));
             // get arguments
             hostname = args[ArgPlacements.HOSTNAME_POSITION.value()];
             placement_x = Integer.parseInt(

@@ -323,9 +323,10 @@ public class HostDataReceiver extends Thread {
 		byteBuffer.putInt(length_in_bytes);
 
 		// build and send SDP message
-		sender.sendData(new SDPMessage(placement_x, placement_y, placement_p,
-				port_connection, SDPMessage.REPLY_NOT_EXPECTED, 255, 255, 255,
-				0, 0, byteBuffer.array()));
+		sender.sendData(new SDPMessage(
+                    placement_x, placement_y, placement_p,
+		    port_connection, SDPMessage.REPLY_NOT_EXPECTED, 255, 255, 255,
+		    0, 0, byteBuffer.array()));
 	}
 
 	private static int calculateMaxSeqNum(int length) {
