@@ -39,9 +39,8 @@ static void initSocketLibrary(void) {
 #ifdef WIN32
     WSADATA wsaData; // if this doesn't work
     //WSAData wsaData; // then try this instead
-#include <UDPConnection.h>
     if (WSAStartup(MAKEWORD(1, 1), &wsaData) != 0) {
-        fprintf(stderr, "WSAStartup failed.\n");
+	cerr << "WSAStartup failed." << endl;
         exit(1);
     }
 #endif // WIN32

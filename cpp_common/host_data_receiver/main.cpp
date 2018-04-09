@@ -35,38 +35,35 @@ static inline void parse_arg(Arguments &args, int index, int &variable)
     }
 }
 
-int main(int argc, char *argv[])
+// constants for arguments
+static constexpr int N_ARGS = 13;
+
+// enum for arg positions
+enum arg_placements {
+    HOSTNAME_POSITION = 1,
+    PORT_NUMBER_POSITION = 2,
+    PLACEMENT_X_POSITION = 3,
+    PLACEMENT_Y_POSITION = 4,
+    PLACEMENT_P_POSITION = 5,
+    FILE_PATH_READ_POSITION = 6,
+    FILE_PATH_MISS_POSITION = 7,
+    LENGTH_IN_BYTES = 8,
+    MEMORY_ADDRESS = 9,
+    CHIP_X = 10,
+    CHIP_Y = 11,
+    IPTAG = 12
+};
+
+static void main(Arguments &args)
 {
-    // Wrap argv with a safe accessor
-    Arguments args(argc, argv);
-
-    // constants for arguments
-    static constexpr int N_ARGS = 13;
-
-    // enum for arg positions
-    enum arg_placements {
-	HOSTNAME_POSITION = 1,
-	PORT_NUMBER_POSITION = 2,
-	PLACEMENT_X_POSITION = 3,
-	PLACEMENT_Y_POSITION = 4,
-	PLACEMENT_P_POSITION = 5,
-	FILE_PATH_READ_POSITION = 6,
-	FILE_PATH_MISS_POSITION = 7,
-	LENGTH_IN_BYTES = 8,
-	MEMORY_ADDRESS = 9,
-	CHIP_X = 10,
-	CHIP_Y = 11,
-	IPTAG = 12
-    };
-
     // placement x, placement y, placement p, port, host, data loc
     if (args.length() != N_ARGS) {
-	std::cout << "usage: " << args[0]
-		<< " <hostname> <port> <placement.x> "
-			"<placement.y> <placement.p> <read.file> <miss.file> "
+	std::cerr << "usage: " << args[0]
+		<< " <hostname> <port> <placement.x> <placement.y> "
+			"<placement.p> <data.file> <miss.file> "
 			"<length> <address> <chip.x> <chip.y> <iptag>"
 		<< std::endl;
-	return 1;
+	exit(1);
     }
 
     // variables
@@ -99,6 +96,18 @@ int main(int argc, char *argv[])
 	    chip_y, iptag);
 
     collector.get_data_threadable(file_pathr, file_pathm);
+}
 
-    return 0;
+int main(int argc, char *argv[])
+{
+    // Wrap argv with a safe accessor
+    Arguments args(argc, argv);
+    try {
+	main(args);
+	return 0;
+    } catch (...) {
+	// Any exception hits here, blow up
+	std::cerr << "unexpected exception" << std::endl;
+	return 1;
+    }
 }

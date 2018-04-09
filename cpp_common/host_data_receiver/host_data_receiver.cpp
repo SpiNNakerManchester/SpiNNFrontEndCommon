@@ -184,18 +184,20 @@ bool host_data_receiver::retransmit_missing_sequences(
     vector<uint32_t> missing_seq(0);
     // We know how many elements we expect to be missing
     missing_seq.reserve(max_seq_num - received_seq_nums.size());
-    if (missing_seq.capacity()) {
+    if (print_debug_messages && missing_seq.capacity()) {
 	cerr << "missing sequence numbers: {";
     }
 
     // Calculate missing sequence numbers and add them to "missing"
     for (uint32_t i = 0; i < max_seq_num ; i++) {
         if (received_seq_nums.find(i) == received_seq_nums.end()) {
-            cerr << i << ", ";
+            if (print_debug_messages) {
+        	cerr << i << ", ";
+            }
             missing_seq.push_back(make_word_for_buffer(i));
         }
     }
-    if (missing_seq.capacity()) {
+    if (print_debug_messages && missing_seq.capacity()) {
 	cerr << "}" << endl;
     }
 
@@ -419,12 +421,11 @@ void host_data_receiver::get_data_threadable(
         const char *filepath_read,
         const char *filepath_missing)
 {
-
     auto data_buffer = get_data();
 
-    if (filepath_read) {
+    if (data_buffer && filepath_read) {
 	std::fstream output(filepath_read, ios::out | ios::binary);
-	output.write((char *) data_buffer, length_in_bytes);
+	output.write(reinterpret_cast<const char *>(data_buffer), length_in_bytes);
     }
     if (filepath_missing) {
 	std::fstream missing(filepath_missing, ios::out);
@@ -433,26 +434,23 @@ void host_data_receiver::get_data_threadable(
 }
 
 #if 0
-namespace py = pybind11;
-
 // Same behaviour of get_data() function, but returns a valid type for python
 // code
-py::bytes host_data_receiver::get_data_for_python(
+pybind11::bytes host_data_receiver::get_data_for_python(
 	char *hostname, int port_connection, int placement_x, int placement_y,
 	int placement_p, int length_in_bytes, int memory_address, int chip_x,
 	int chip_y, int iptag) {
     auto data_buffer = get_data();
 
-    std::string *str = new string(
-	    (const char *) data_buffer, length_in_bytes);
-
-    return py::bytes(*str);
+    std::string str(
+	    reinterpret_cast<const char *>(data_buffer), length_in_bytes);
+    return pybind11::bytes(str);
 }
 
 //Python Binding
 PYBIND11_MODULE(host_data_receiver, m) {
     m.doc() = "C++ data speed up packet gatherer machine vertex";
-    py::class_<host_data_receiver>(m, "host_data_receiver")
+    pybind11::class_<host_data_receiver>(m, "host_data_receiver")
 	 .def(py::init<>())
 	 .def("get_data_threadable", &host_data_receiver::get_data_threadable)
 	 .def("get_data", &host_data_receiver::get_data)

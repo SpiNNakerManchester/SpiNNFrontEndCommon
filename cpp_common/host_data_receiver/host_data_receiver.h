@@ -10,6 +10,7 @@
 #include <ctime>
 #include <cstdint>
 #include <thread>
+#include <cstdlib>
 
 #if 0
 #include <pybind11/pybind11.h>
@@ -78,6 +79,7 @@ public:
 	rdr.thrown = false;
 	pcr.thrown = false;
 	max_seq_num = calculate_max_seq_num();
+	print_debug_messages = (std::getenv("DEBUG_RETRANSMIT") != nullptr);
     }
     const uint8_t *get_data();
     void get_data_threadable(
@@ -143,6 +145,7 @@ private:
     thexc rdr, pcr;
     bool started, finished;
     int miss_cnt;
+    bool print_debug_messages;
 };
 
 #endif
