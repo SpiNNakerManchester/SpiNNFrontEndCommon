@@ -54,7 +54,7 @@ enum arg_placements {
     IPTAG = 12
 };
 
-static void main(Arguments &args)
+static void main_body(Arguments &args)
 {
     // placement x, placement y, placement p, port, host, data loc
     if (args.length() != N_ARGS) {
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     // Wrap argv with a safe accessor
     Arguments args(argc, argv);
     try {
-	main(args);
+	main_body(args);
 	return 0;
     } catch (...) {
 	// Any exception hits here, blow up
