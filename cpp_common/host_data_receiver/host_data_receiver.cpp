@@ -160,6 +160,7 @@ void host_data_receiver::send_initial_command(
 
     std::vector<uint8_t> working_buffer;
     receive_message(sender, working_buffer);
+    this_thread::sleep_for(20 * DELAY_PER_SENDING);
 
     // Create Data request SDP packet
     StartSendingMessage message(placement_x, placement_y, placement_p,
@@ -183,12 +184,19 @@ bool host_data_receiver::retransmit_missing_sequences(
     vector<uint32_t> missing_seq(0);
     // We know how many elements we expect to be missing
     missing_seq.reserve(max_seq_num - received_seq_nums.size());
+    if (missing_seq.capacity()) {
+	cerr << "missing sequence numbers: {";
+    }
 
     // Calculate missing sequence numbers and add them to "missing"
     for (uint32_t i = 0; i < max_seq_num ; i++) {
         if (received_seq_nums.find(i) == received_seq_nums.end()) {
+            cerr << i << ", ";
             missing_seq.push_back(make_word_for_buffer(i));
         }
+    }
+    if (missing_seq.capacity()) {
+	cerr << "}" << endl;
     }
 
     //Set correct number of lost sequences
@@ -291,11 +299,7 @@ bool host_data_receiver::process_data(
     if (is_end_of_stream || content_length == NORMAL_PAYLOAD_LENGTH) {
 	// Store the data and the fact that we've processed this packet
 	memcpy(buffer.data() + offset, content_bytes, content_length);
-	if (!received_seq_nums.insert(seq_num).second) {
-	    // already received this packet!
-	    cerr << "WARNING: received " << seq_num << " at least twice"
-		    << endl;
-	}
+	received_seq_nums.insert(seq_num);
     }
 
     // Determine if we're actually finished.
@@ -314,13 +318,14 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 {
     // While socket is open add messages to the queue
     try {
-	std::vector<uint8_t> packet;
-
+	uint32_t receive_length;
 	do {
-	    packet.resize(RECEIVE_BUFFER_LENGTH);
+	    std::vector<uint8_t> packet(RECEIVE_BUFFER_LENGTH);
+
 	    memset(packet.data(), 0xFF, packet.size());
-	    if (receiver->receive_data(packet)) {
-		cout << "packet length: " << packet.size() << endl;
+	    receive_length = receiver->receive_data(packet.data(), packet.size());
+	    if (receive_length > 0) {
+		packet.resize(receive_length);
 		messqueue.push(packet);
 	    }
 
@@ -330,7 +335,7 @@ void host_data_receiver::reader_thread(UDPConnection *receiver)
 	    if (pcr.thrown) {
 		return;
 	    }
-	} while (!packet.empty() && !finished);
+	} while (receive_length > 0 && !finished);
     } catch (char const *e) {
 	rdr.val = e;
 	rdr.thrown = true;
