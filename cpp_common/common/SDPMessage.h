@@ -55,12 +55,12 @@ public:
     {
     }
 
-    int length_in_bytes()
+    int length_in_bytes() const
     {
 	return data_length + header.length_bytes();
     }
 
-    void convert_to_byte_vector(std::vector<uint8_t> &data);
+    void convert_to_byte_vector(std::vector<uint8_t> &data) const;
 };
 
 #endif

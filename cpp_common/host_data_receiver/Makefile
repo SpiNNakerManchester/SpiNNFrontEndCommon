@@ -3,7 +3,7 @@ COMMON=../common
 
 SRCS=host_data_receiver.cpp main.cpp
 HEADERS=$(COMMON)/SDPHeader.h $(COMMON)/SDPMessage.h\
-        $(COMMON)/UDPConnection.h PQueue.h host_data_receiver.h
+        $(COMMON)/UDPConnection.h PQueue.h Messages.h host_data_receiver.h
 TARGET=host_data_receiver
 LIBS=-lpthread -L$(COMMON) -lcommon
 INSTALL ?= install
@@ -12,7 +12,7 @@ all: install
 
 build: $(TARGET)
 $(TARGET): $(SRCS) $(HEADERS) $(COMMON)/libcommon.a
-	$(CXX) $(CXXFLAGS) -o $@ $(SRCS) -std=c++14 $(LIBS)
+	$(CXX) $(CXXFLAGS) -I$(COMMON) -o $@ $(SRCS) -std=c++14 $(LIBS)
 
 install: $(TARGET)
 	$(INSTALL) -c $(TARGET) $(INSTALL_LOCATION)

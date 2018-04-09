@@ -31,33 +31,33 @@ public:
             const char *remote_host = nullptr);
     UDPConnection(
 	    int remote_port,
-            std::string &remote_host)
+            const std::string &remote_host)
 	: UDPConnection(0, nullptr, remote_port, remote_host.c_str()) {}
     ~UDPConnection();
 
     // Modern C++ style API
-    bool receive_data(std::vector<uint8_t> &data);
+    bool receive_data(std::vector<uint8_t> &data) const;
     bool receive_data_with_address(
 	    std::vector<uint8_t> &data,
-            struct sockaddr &address);
-    void send_message(SDPMessage &message);
-    void send_data(const std::vector<uint8_t> &data);
+            struct sockaddr &address) const;
+    void send_message(const SDPMessage &message) const;
+    void send_data(const std::vector<uint8_t> &data) const;
     void send_data_to(
-	    const std::vector<uint8_t> &data, const sockaddr &address);
+	    const std::vector<uint8_t> &data, const sockaddr &address) const;
 
     // Old style API
-    uint32_t receive_data(void *data, int length);
+    uint32_t receive_data(void *data, uint32_t length) const;
     uint32_t receive_data_with_address(
             void *data,
-            int length,
-            sockaddr *address);
-    void send_data(const void *data, int length);
+	    uint32_t length,
+            sockaddr *address) const;
+    void send_data(const void *data, uint32_t length) const;
     void send_data_to(
-	    const void *data, int length, const sockaddr* address);
+	    const void *data, uint32_t length, const sockaddr* address) const;
 
     // Simple accessors
-    uint32_t get_local_port();
-    uint32_t get_local_ip();
+    uint32_t get_local_port() const;
+    uint32_t get_local_ip() const;
 
 private:
     int sock;

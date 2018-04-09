@@ -15,9 +15,9 @@ struct TimeoutQueueException: public std::exception {
 
 template<typename T>
 class PQueue {
+public:
     static constexpr auto const& TIMEOUT = 10 * 100ms;
 
-public:
     T pop()
     {
 	std::unique_lock<std::mutex> mlock(mutex_);
@@ -28,7 +28,7 @@ public:
 	    }
         }
 
-        auto val = queue_.front();
+        auto val = std::move(queue_.front());
         queue_.pop();
 
         return val;

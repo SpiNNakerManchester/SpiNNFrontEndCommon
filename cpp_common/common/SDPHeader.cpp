@@ -11,7 +11,7 @@ static inline uint8_t pack(uint8_t port, uint8_t processor)
 }
 
 // ASSUME WE HAVE ENOUGH SPACE!
-void SDPHeader::write_header(std::vector<uint8_t> &data)
+void SDPHeader::write_header(std::vector<uint8_t> &data) const
 {
     //Build SDP Header
     //Flags - Tags - Dest_port+cpu - Source_port+cpu - Dest_chip_y -

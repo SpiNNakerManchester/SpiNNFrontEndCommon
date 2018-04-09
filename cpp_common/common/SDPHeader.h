@@ -47,11 +47,12 @@ public:
     {
     }
 
-    int length_bytes() {
-        return length * sizeof(uint8_t);
+    int length_bytes() const
+    {
+	return length * sizeof(uint8_t);
     }
 
-    void write_header(std::vector<uint8_t> &data);
+    void write_header(std::vector<uint8_t> &data) const;
 };
 
 #endif
