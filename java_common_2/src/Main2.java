@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Arrays;
+import static java.lang.Integer.parseInt;
 
 public class Main2 {
 
@@ -9,32 +9,53 @@ public class Main2 {
     public final int IP_ADDRESS_SIZE = 24;
     public final int FILE_PATH_SIZE = 1024;
 
-    public enum ArgPlacements {
-        PLACEMENT_X_POSITION(2),
-        PLACEMENT_Y_POSITION(3),
-        PLACEMENT_P_POSITION(4),
-        PORT_NUMBER_POSITION(1),
-        HOSTNAME_POSITION(0),
-        FILE_PATH_READ_POSITION(5),
-        FILE_PATH_MISS_POSITION(6),
+    public enum Arg {
+        /** The hostname */
+        HOSTNAME(0),
+        /** The port number */
+        PORT_NUMBER(1),
+        /** The X coord of the CPU to read from */
+        PLACEMENT_X(2),
+        /** The Y coord of the CPU to read from */
+        PLACEMENT_Y(3),
+        /** The P coord of the CPU to read from */
+        PLACEMENT_P(4),
+        /** Where to write data to */
+        DATA_FILE(5),
+        /** Where to report missing sequence numbers */
+        MISSING_SEQS_FILE(6),
+        /** How many bytes to read */
         LENGTH_IN_BYTES(7),
+        /** Where to read from */
         MEMORY_ADDRESS(8),
+        /** X coord for IPtag setting */
         CHIP_X(9),
+        /** Y coord for IPtag setting */
         CHIP_Y(10),
+        /** The ID of the IPtag */
         IPTAG(11);
-                
+
         private final int value;
-        private ArgPlacements(int value){
-            this.value = value;}
-        
-        public int value(){
+
+        private Arg(int value) {
+            this.value = value;
+        }
+
+        public int value() {
             return this.value;
         }
     };
 
+    private static Logger log = Logger.getLogger(Main2.class.getName());
+
     public static void main(String[] args) {
+        if (args.length != 12) {
+            System.err.println("not the correct number of parameters");
+            System.err.printf(" got %d args instead", args.length);
+            System.exit(1);
+        }
+
         // variables
-        
         int placement_x;
         int placement_y;
         int placement_p;
@@ -44,48 +65,33 @@ public class Main2 {
         String hostname;
         String file_pathr;
         String file_pathm;
-        //FILE * stored_data;
         int chip_x;
         int chip_y;
         int iptag;
-        
-        if (args.length != 12){
-            System.out.println("not the correct number of parameters");
-            System.out.printf(" got %d args instead", args.length);
-        }
-        else{
-            //System.out.printf(" got args %s", Arrays.asList(args));
-            // get arguments
-            hostname = args[ArgPlacements.HOSTNAME_POSITION.value()];
-            placement_x = Integer.parseInt(
-                args[ArgPlacements.PLACEMENT_X_POSITION.value()]);
-            placement_y = Integer.parseInt(
-                args[ArgPlacements.PLACEMENT_Y_POSITION.value()]);
-            placement_p = Integer.parseInt(
-                args[ArgPlacements.PLACEMENT_P_POSITION.value()]);
-            port_connection = Integer.parseInt(
-                args[ArgPlacements.PORT_NUMBER_POSITION.value()]);
-            length_in_bytes = Integer.parseInt(
-                args[ArgPlacements.LENGTH_IN_BYTES.value()]);
-            memory_address = Integer.parseInt(
-                args[ArgPlacements.MEMORY_ADDRESS.value()]);
-            file_pathr = args[ArgPlacements.FILE_PATH_READ_POSITION.value()];
-            file_pathm = args[ArgPlacements.FILE_PATH_MISS_POSITION.value()];
-            chip_x = Integer.parseInt(args[ArgPlacements.CHIP_X.value()]);
-            chip_y = Integer.parseInt(args[ArgPlacements.CHIP_Y.value()]);
-            iptag = Integer.parseInt(args[ArgPlacements.IPTAG.value()]);
 
-            HostDataReceiver collector = new HostDataReceiver(
-                    port_connection, placement_x, placement_y,
-                    placement_p, hostname, length_in_bytes, memory_address,
-                    chip_x, chip_y, iptag);
-            try {
-                collector.get_data_threadable(file_pathr, file_pathm);
-            } catch (IOException | InterruptedException ex) {
-                Logger.getLogger(Main2.class.getName()).log(
-                    Level.SEVERE, null, ex);
-            }
+        // log.info("got args " + java.util.Arrays.asList(args));
 
+        // get arguments
+        hostname = args[Arg.HOSTNAME.value()];
+        placement_x = parseInt(args[Arg.PLACEMENT_X.value()]);
+        placement_y = parseInt(args[Arg.PLACEMENT_Y.value()]);
+        placement_p = parseInt(args[Arg.PLACEMENT_P.value()]);
+        port_connection = parseInt(args[Arg.PORT_NUMBER.value()]);
+        length_in_bytes = parseInt(args[Arg.LENGTH_IN_BYTES.value()]);
+        memory_address = parseInt(args[Arg.MEMORY_ADDRESS.value()]);
+        file_pathr = args[Arg.DATA_FILE.value()];
+        file_pathm = args[Arg.MISSING_SEQS_FILE.value()];
+        chip_x = parseInt(args[Arg.CHIP_X.value()]);
+        chip_y = parseInt(args[Arg.CHIP_Y.value()]);
+        iptag = parseInt(args[Arg.IPTAG.value()]);
+
+        HostDataReceiver collector = new HostDataReceiver(port_connection,
+                placement_x, placement_y, placement_p, hostname,
+                length_in_bytes, memory_address, chip_x, chip_y, iptag);
+        try {
+            collector.get_data_threadable(file_pathr, file_pathm);
+        } catch (IOException | InterruptedException ex) {
+            log.log(Level.SEVERE, "failure retrieving data", ex);
         }
     }
 }
