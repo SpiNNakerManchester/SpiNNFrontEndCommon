@@ -12,27 +12,28 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HostDataReceiver extends Thread {
     public enum SCPCommands {
-            SET_IPTAG(26);
-            private short value;
+        SET_IPTAG(26);
+        private short value;
 
-            SCPCommands(int value) {
-                    this.value = (short) value;
-            }
+        SCPCommands(int value) {
+            this.value = (short) value;
+        }
 
-            public short getValue() {
-                    return value;
-            }
+        public short getValue() {
+            return value;
+        }
     }
 
     // consts for data and converting between words and bytes
     private static final int DATA_PER_FULL_PACKET = 68;
-    private static final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = 
-        DATA_PER_FULL_PACKET - 1;
+    private static final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = DATA_PER_FULL_PACKET
+            - 1;
     private static final int BYTES_PER_WORD = 4;
     private static final int END_FLAG_SIZE_IN_BYTES = 4;
     private static final int SEQUENCE_NUMBER_SIZE = 4;
@@ -64,10 +65,12 @@ public class HostDataReceiver extends Thread {
     private int miss_cnt;
     private BitSet received_seq_nums;
 
-    public HostDataReceiver(
-            int port_connection, int placement_x, int placement_y, 
-            int placement_p, String hostname, int length_in_bytes, 
-            int memory_address, int chip_x, int chip_y, int iptag) {
+    Logger log = Logger.getLogger(ProcessorThread.class.getName());
+
+    public HostDataReceiver(int port_connection, int placement_x,
+            int placement_y, int placement_p, String hostname,
+            int length_in_bytes, int memory_address, int chip_x, int chip_y,
+            int iptag) {
         this.port_connection = port_connection;
         this.placement_x = placement_x;
         this.placement_y = placement_y;
@@ -102,19 +105,18 @@ public class HostDataReceiver extends Thread {
         // create connection
         UDPConnection sender = null;
         try {
-                sender = new UDPConnection(17893, hostname,
-                                TIMEOUT_PER_RECEIVE_IN_MILLISECONDS);
+            sender = new UDPConnection(17893, hostname,
+                    TIMEOUT_PER_RECEIVE_IN_MILLISECONDS);
         } catch (SocketException ex) {
-                Logger.getLogger(HostDataReceiver.class.getName()).log(
-                    Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, "failed to create UDP connection", ex);
+            return null;
         }
 
         // send the initial command to start data transmission
         sendInitialCommand(sender, sender);
 
-        ReaderThread reader = new ReaderThread(sender, messqueue);
-        ProcessorThread processor = new ProcessorThread(sender, messqueue, this,
-                        finished, received_seq_nums);
+        ReaderThread reader = new ReaderThread(sender);
+        ProcessorThread processor = new ProcessorThread(sender);
 
         reader.start();
         processor.start();
@@ -122,24 +124,23 @@ public class HostDataReceiver extends Thread {
         reader.join();
         processor.join();
 
-        //System.out.println("done!!!");
+        log.fine("done!!!");
         return buffer;
     }
 
-    public void get_data_threadable(
-            String filepath_read, String filepath_missing)
+    public void get_data_threadable(String filepath_read,
+            String filepath_missing)
             throws FileNotFoundException, IOException, InterruptedException {
         try (FileOutputStream fp1 = new FileOutputStream(filepath_read);
-            PrintWriter fp2 = new PrintWriter(filepath_missing)) {
-            this.get_data();
+                PrintWriter fp2 = new PrintWriter(filepath_missing)) {
+            get_data();
 
             fp1.write(buffer);
             fp2.println(miss_cnt);
         }
     }
 
-    private byte[] build_scp_req(
-            SCPCommands cmd, boolean strip_sdp,
+    private byte[] build_set_iptag_req(boolean strip_sdp,
             InetSocketAddress sock_address) {
         int seq = 0;
         int arg = 0;
@@ -147,7 +148,7 @@ public class HostDataReceiver extends Thread {
         ByteBuffer byteBuffer = ByteBuffer.allocate(4 * 4);
         byteBuffer.order(LITTLE_ENDIAN);
 
-        byteBuffer.putShort(cmd.getValue());
+        byteBuffer.putShort(SCPCommands.SET_IPTAG.getValue());
         byteBuffer.putShort((short) seq);
 
         arg = arg | (strip_sdp ? 1 << 28 : 0) | (1 << 16) | iptag;
@@ -159,9 +160,8 @@ public class HostDataReceiver extends Thread {
         return byteBuffer.array();
     }
 
-    public boolean retransmit_missing_sequences(
-            UDPConnection sender, BitSet received_seq_nums) 
-            throws InterruptedException {
+    public boolean retransmit_missing_sequences(UDPConnection sender,
+            BitSet received_seq_nums) throws InterruptedException {
 
         int length_via_format2;
         int seq_num_offset;
@@ -180,20 +180,22 @@ public class HostDataReceiver extends Thread {
         int j = 0;
 
         // Calculate missing sequence numbers and add them to "missing"
-        //System.out.printf("max seq num of %d\n", max_seq_num);
+        log.fine("max seq num of " + max_seq_num);
         for (i = 0; i < max_seq_num; i++) {
             if (!received_seq_nums.get(i)) {
                 missing_seq.putInt(i);
                 j++;
-                this.miss_cnt++;
+                miss_cnt++;
             }
         }
         missing_seq.rewind();
 
-        //for (i = 0; i < miss_dim; i ++){
-        //    System.out.printf("missing seq %d\n", missing_seq.getInt());
-        //}
-        missing_seq.rewind();
+        if (log.isLoggable(Level.FINE)) {
+            for (i = 0; i < miss_dim; i++) {
+                log.fine("missing seq " + missing_seq.getInt());
+            }
+            missing_seq.rewind();
+        }
 
         // Set correct number of lost sequences
         miss_dim = j;
@@ -215,16 +217,16 @@ public class HostDataReceiver extends Thread {
         seq_num_offset = 0;
 
         for (i = 0; i < n_packets; i++) {
-            ByteBuffer data = null; 
+            ByteBuffer data = null;
             length_left_in_packet = DATA_PER_FULL_PACKET;
 
             // If first, add n packets to list; otherwise just add data
             if (first) {
                 // Get left over space / data size
-                size_of_data_left_to_transmit = min(
-                    length_left_in_packet - 2, miss_dim - seq_num_offset);
+                size_of_data_left_to_transmit = min(length_left_in_packet - 2,
+                        miss_dim - seq_num_offset);
                 data = ByteBuffer.allocate(
-                    size_of_data_left_to_transmit * BYTES_PER_WORD);
+                        size_of_data_left_to_transmit * BYTES_PER_WORD);
                 data.order(LITTLE_ENDIAN);
 
                 // Pack flag and n packets
@@ -237,29 +239,27 @@ public class HostDataReceiver extends Thread {
             } else {
                 // Get left over space / data size
                 size_of_data_left_to_transmit = min(
-                    DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
-                    miss_dim - seq_num_offset);
+                        DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
+                        miss_dim - seq_num_offset);
                 data = ByteBuffer.allocate(
-                    size_of_data_left_to_transmit * BYTES_PER_WORD);
+                        size_of_data_left_to_transmit * BYTES_PER_WORD);
                 data.order(LITTLE_ENDIAN);
 
                 // Pack flag
                 data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
                 length_left_in_packet -= 1;
             }
-            
+
             // System.out.println("a");
-            for (int element = 0; element < size_of_data_left_to_transmit;
-                    element++) {
+            for (int element = 0; element < size_of_data_left_to_transmit; element++) {
                 data.putInt(missing_seq.getInt());
             }
 
             seq_num_offset += length_left_in_packet;
 
-            sender.sendData(new SDPMessage(
-                placement_x, placement_y, placement_p, 
-                port_connection, SDPMessage.REPLY_NOT_EXPECTED,
-                255, 255, 255, 0, 0, data.array()));
+            sender.sendData(new SDPMessage(placement_x, placement_y,
+                    placement_p, port_connection, SDPMessage.REPLY_NOT_EXPECTED,
+                    255, 255, 255, 0, 0, data.array()));
 
             Thread.sleep(TIMEOUT_PER_SENDING_IN_MILLISECONDS);
         }
@@ -267,9 +267,8 @@ public class HostDataReceiver extends Thread {
         return false;
     }
 
-    public boolean process_data(
-            UDPConnection sender, boolean finished, BitSet received_seq_nums,
-            DatagramPacket packet) throws Exception {
+    public void process_data(UDPConnection sender, DatagramPacket packet)
+            throws Exception {
         int first_packet_element;
         int offset;
         int true_data_length;
@@ -277,65 +276,62 @@ public class HostDataReceiver extends Thread {
         boolean is_end_of_stream;
 
         ByteBuffer data = ByteBuffer.wrap(packet.getData(), 0,
-                        packet.getLength());
+                packet.getLength());
         data.order(LITTLE_ENDIAN);
         data.rewind();
         first_packet_element = data.getInt();
 
-        seq_num = first_packet_element & 0x7FFFFFFF;
+        seq_num = first_packet_element & ~LAST_MESSAGE_FLAG_BIT_MASK;
+        is_end_of_stream = ((first_packet_element
+                & LAST_MESSAGE_FLAG_BIT_MASK) != 0);
 
-        is_end_of_stream = (
-            (first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0);
-
-        if (seq_num > max_seq_num) {
-            throw new Exception("ERROR: Got insane sequence number");
+        if (seq_num > max_seq_num || seq_num < 0) {
+            throw new IllegalStateException("Got insane sequence number");
         }
 
         offset = seq_num * DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM
-                 * BYTES_PER_WORD;
+                * BYTES_PER_WORD;
 
         true_data_length = (offset + packet.getLength() - SEQUENCE_NUMBER_SIZE);
 
         if (true_data_length > length_in_bytes) {
-            throw new Exception("ERROR: Receiving more data than expected");
+            throw new IllegalStateException(
+                    "Receiving more data than expected");
         }
 
         if (is_end_of_stream && packet.getLength() == END_FLAG_SIZE_IN_BYTES) {
-                // empty
+            // empty
         } else {
-            System.arraycopy(
-                packet.getData(), SEQUENCE_NUMBER_SIZE, buffer,
-                offset, true_data_length - offset);
+            System.arraycopy(packet.getData(), SEQUENCE_NUMBER_SIZE, buffer,
+                    offset, true_data_length - offset);
         }
 
-        try{
+        try {
             received_seq_nums.set(seq_num);
-        }
-        catch(IndexOutOfBoundsException e){
-            System.out.println("boom!");
+        } catch (IndexOutOfBoundsException e) {
+            // Should be unreachable
+            throw new IllegalStateException(e);
         }
 
         if (is_end_of_stream) {
             if (!check(received_seq_nums, max_seq_num)) {
-                finished |= retransmit_missing_sequences(
-                    sender, received_seq_nums);
+                finished |= retransmit_missing_sequences(sender,
+                        received_seq_nums);
             } else {
                 finished = true;
             }
         }
-        return finished;
     }
 
-    private void sendInitialCommand(
-            UDPConnection sender, UDPConnection receiver) {
+    private void sendInitialCommand(UDPConnection sender,
+            UDPConnection receiver) {
         // Build an SCP request to set up the IP Tag associated to this socket
-        byte[] scp_req = build_scp_req(SCPCommands.SET_IPTAG, true,
-                        receiver.getLocalSocketAddress());
+        byte[] scp_req = build_set_iptag_req(true,
+                receiver.getLocalSocketAddress());
 
         // Send SCP request and get the reply back
-        sender.sendData(new SDPMessage(
-            chip_x, chip_y, 0, 0, SDPMessage.REPLY_EXPECTED, 255, 255, 255, 0, 
-            0, scp_req));
+        sender.sendData(new SDPMessage(chip_x, chip_y, 0, 0,
+                SDPMessage.REPLY_EXPECTED, 255, 255, 255, 0, 0, scp_req));
         sender.receiveData(300); // TODO: Validate this reply
 
         // Create Data request SDP packet
@@ -346,15 +342,14 @@ public class HostDataReceiver extends Thread {
         byteBuffer.putInt(length_in_bytes);
 
         // build and send SDP message
-        sender.sendData(new SDPMessage(
-            placement_x, placement_y, placement_p,
-            port_connection, SDPMessage.REPLY_NOT_EXPECTED, 255, 255, 255,
-            0, 0, byteBuffer.array()));
+        sender.sendData(new SDPMessage(placement_x, placement_y, placement_p,
+                port_connection, SDPMessage.REPLY_NOT_EXPECTED, 255, 255, 255,
+                0, 0, byteBuffer.array()));
     }
 
     private static int calculateMaxSeqNum(int length) {
-        return ceildiv(
-            length, DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD);
+        return ceildiv(length,
+                DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD);
     }
 
     private static boolean check(BitSet received_seq_nums, int max_needed)
@@ -365,5 +360,80 @@ public class HostDataReceiver extends Thread {
             throw new Exception("ERROR: Received more data than expected");
         }
         return recvsize == max_needed + 1;
+    }
+
+    public static final String TIMEOUT_MESSAGE = "Failed to hear from the "
+            + "machine. Please try removing firewalls.";
+
+    private class ProcessorThread extends Thread {
+        private final UDPConnection connection;
+        private int timeoutcount = 0;
+
+        public ProcessorThread(UDPConnection connection) {
+            super("ProcessorThread");
+            this.connection = connection;
+        }
+
+        private void processOnePacket() throws Exception {
+            DatagramPacket p = messqueue.poll(1, TimeUnit.SECONDS);
+            if (p != null) {
+                process_data(connection, p);
+            } else {
+                timeoutcount++;
+                if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
+                    log.severe(TIMEOUT_MESSAGE);
+                    return;
+                }
+                if (!finished) {
+                    // retransmit missing packets
+                    log.fine("doing reinjection");
+                    finished = retransmit_missing_sequences(connection,
+                            received_seq_nums);
+                }
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                while (!finished) {
+                    try {
+                        processOnePacket();
+                    } catch (InterruptedException e) {
+                        // Do nothing
+                    }
+                }
+            } catch (Exception ex) {
+                log.log(Level.SEVERE, "problem in packet processing thread",
+                        ex);
+            } finally {
+                // close socket and inform the reader that transmission is
+                // completed
+                connection.close();
+            }
+            finished = true;
+        }
+    }
+
+    private class ReaderThread extends Thread {
+        private final UDPConnection connection;
+
+        public ReaderThread(UDPConnection connection) {
+            super("ReadThread");
+            this.connection = connection;
+        }
+
+        @Override
+        public void run() {
+            // While socket is open add messages to the queue
+            do {
+                DatagramPacket recvd = connection.receiveData(400);
+
+                if (recvd != null) {
+                    messqueue.push(recvd);
+                    log.fine("pushed");
+                }
+            } while (!connection.isClosed());
+        }
     }
 }
