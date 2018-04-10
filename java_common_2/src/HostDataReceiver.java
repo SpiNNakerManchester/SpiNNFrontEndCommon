@@ -224,7 +224,7 @@ public class HostDataReceiver extends Thread {
                 size_of_data_left_to_transmit = min(
                     length_left_in_packet - 2, miss_dim - seq_num_offset);
                 data = ByteBuffer.allocate(
-                    size_of_data_left_to_transmit * this.BYTES_PER_WORD);
+                    size_of_data_left_to_transmit * BYTES_PER_WORD);
                 data.order(LITTLE_ENDIAN);
 
                 // Pack flag and n packets
@@ -240,7 +240,7 @@ public class HostDataReceiver extends Thread {
                     DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
                     miss_dim - seq_num_offset);
                 data = ByteBuffer.allocate(
-                    size_of_data_left_to_transmit * this.BYTES_PER_WORD);
+                    size_of_data_left_to_transmit * BYTES_PER_WORD);
                 data.order(LITTLE_ENDIAN);
 
                 // Pack flag
