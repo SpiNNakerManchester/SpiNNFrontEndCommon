@@ -105,8 +105,8 @@ public class HostDataReceiver extends Thread {
         // create connection
         UDPConnection sender = null;
         try {
-            sender = new UDPConnection(17893, hostname,
-                    TIMEOUT_PER_RECEIVE_IN_MILLISECONDS);
+            sender = new UDPConnection(
+                17893, hostname, TIMEOUT_PER_RECEIVE_IN_MILLISECONDS);
         } catch (SocketException ex) {
             log.log(Level.SEVERE, "failed to create UDP connection", ex);
             return null;
@@ -266,7 +266,7 @@ public class HostDataReceiver extends Thread {
 
             Thread.sleep(TIMEOUT_PER_SENDING_IN_MILLISECONDS);
         }
-
+        
         return false;
     }
 
@@ -316,7 +316,6 @@ public class HostDataReceiver extends Thread {
             if (!check()) {
                 finished |= retransmit_missing_sequences(
                     sender, received_seq_nums);
-                is_end_of_stream = false;
             } else {
                 finished = true;
             }
@@ -388,8 +387,9 @@ public class HostDataReceiver extends Thread {
                 if (!finished) {
                     // retransmit missing packets
                     log.fine("doing reinjection");
-                    finished = retransmit_missing_sequences(connection,
-                            received_seq_nums);
+                    finished = retransmit_missing_sequences(
+                        connection, received_seq_nums);
+                    
                 }
             }
         }
