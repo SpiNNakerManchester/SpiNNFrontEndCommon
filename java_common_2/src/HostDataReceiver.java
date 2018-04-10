@@ -379,18 +379,11 @@ public class HostDataReceiver extends Thread {
         private void processOnePacket(boolean reiceved) throws Exception {
             try{
                 DatagramPacket p = messqueue.removeLast();
-            
-                log.fine("sizer of queuue" + messqueue.size());
                 process_data(connection, p);
                 reiceved = true;
             } 
             catch(Exception e ){
-                timeoutcount++;
-                if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
-                    log.severe(TIMEOUT_MESSAGE);
-                    Thread.sleep(1000);
-                    return;
-                }
+                Thread.sleep(100);
                 if (!finished && reiceved) {
                     // retransmit missing packets
                     log.fine("doing reinjection");
