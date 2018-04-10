@@ -297,16 +297,16 @@ const uint8_t *host_data_receiver::get_data()
 // Function externally callable for data gathering. It can be called by
 // multiple threads simultaneously
 void host_data_receiver::get_data_threadable(
-        const char *filepath_read,
-        const char *filepath_missing)
+	std::string &filepath_read,
+	std::string &filepath_missing)
 {
     auto data_buffer = get_data();
 
-    if (data_buffer && filepath_read) {
+    if (data_buffer && !filepath_read.empty()) {
 	std::fstream output(filepath_read, ios::out | ios::binary);
 	output.write(reinterpret_cast<const char *>(data_buffer), length_in_bytes);
     }
-    if (filepath_missing) {
+    if (!filepath_missing.empty()) {
 	std::fstream missing(filepath_missing, ios::out);
 	missing << miss_cnt << endl;
     }
