@@ -3,6 +3,7 @@ import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -40,6 +41,7 @@ public class UDPConnection implements AutoCloseable {
         }
         sock.connect(new InetSocketAddress(remote_host, remote_port));
         sock.setSoTimeout(time_out);
+        sock.setReceiveBufferSize(1024 * 1024);
     }
 
     public boolean isClosed() {
@@ -66,11 +68,13 @@ public class UDPConnection implements AutoCloseable {
         DatagramPacket packet = new DatagramPacket(data, length);
         try {
             sock.receive(packet);
-            return packet;
+        } catch (SocketTimeoutException e) {
+            packet.setLength(0);
         } catch (IOException e) {
             //System.out.println("failed to recieve packet");
             return null;
         }
+        return packet;
     }
 
     public void sendData(SDPMessage message) {
