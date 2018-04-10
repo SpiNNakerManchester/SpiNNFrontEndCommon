@@ -371,9 +371,6 @@ public class HostDataReceiver extends Thread {
         }
 
         private void processOnePacket(boolean reiceved) throws Exception {
-            try{
-                DatagramPacket p = messqueue.removeLast();
-        private void processOnePacket() throws Exception {
             DatagramPacket p = messqueue.poll(1, TimeUnit.SECONDS);
             if (p != null && p.getLength() > 0) {
                 process_data(connection, p);
