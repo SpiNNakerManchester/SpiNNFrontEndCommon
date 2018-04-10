@@ -108,7 +108,7 @@ void send_data(){
             max_seq_num, seq_num);
     }
 
-    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
+    while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 0)) {
 	// Empty body
     }
 

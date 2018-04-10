@@ -976,7 +976,7 @@ void write_missing_sdp_seq_nums_into_sdram(
             //log_info("data writing into sdram is %d", data[offset]);
         }
     }
-    number_of_missing_seq_nums_in_sdram += length - start_offset;
+    number_of_missing_seq_nums_in_sdram += (length - start_offset) - 1;
 }
 
 //! \brief entrance method for storing SDP sequence numbers into SDRAM
@@ -1285,7 +1285,6 @@ void common_handle_data_speed_up(sdp_msg_pure_data *msg) {
                         msg->data[COMMAND_ID_POSITION] ==
                             SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
 
-                    //log_info("free message");
                     //io_printf(IO_BUF, "freeing SDP packet\n");
                     sark_msg_free((sdp_msg_t *) msg);
 
@@ -1297,7 +1296,8 @@ void common_handle_data_speed_up(sdp_msg_pure_data *msg) {
 
                         //io_printf(IO_BUF, "starting resend process\n");
                         missing_sdp_seq_num_sdram_address[
-                            number_of_missing_seq_nums_in_sdram] = END_FLAG;
+                            number_of_missing_seq_nums_in_sdram + 1] =
+                                END_FLAG;
                         number_of_missing_seq_nums_in_sdram += 1;
                         position_in_read_data = 0;
                         position_for_retransmission = 0;
