@@ -40,6 +40,7 @@ public class UDPConnection implements AutoCloseable {
         }
         sock.connect(new InetSocketAddress(remote_host, remote_port));
         sock.setSoTimeout(time_out);
+        sock.setReceiveBufferSize(1024 * 1024);
     }
 
     public boolean isClosed() {
