@@ -11,7 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,7 +57,7 @@ public class HostDataReceiver extends Thread {
 	private final int chip_x;
 	private final int chip_y;
 	private final int iptag;
-	private final ConcurrentLinkedDeque<DatagramPacket> messqueue;
+	private final LinkedBlockingDeque<DatagramPacket> messqueue;
 	private final byte[] buffer;
 	private final int max_seq_num;
 	private boolean finished;
@@ -80,12 +80,12 @@ public class HostDataReceiver extends Thread {
 		this.iptag = iptag;
 
 		// allocate queue for messages
-		messqueue = new ConcurrentLinkedDeque<>();
+		messqueue = new LinkedBlockingDeque<>();
 
 		buffer = new byte[length_in_bytes];
 
 		max_seq_num = calculateMaxSeqNum(length_in_bytes);
-		received_seq_nums = new BitSet(max_seq_num - 1);
+		received_seq_nums = new BitSet(max_seq_num);
 
 		finished = false;
 		miss_cnt = 0;
@@ -121,7 +121,8 @@ public class HostDataReceiver extends Thread {
 
 		reader.join();
 		processor.join();
-
+                
+                //System.out.println("done!!!");
 		return buffer;
 	}
 
@@ -177,14 +178,20 @@ public class HostDataReceiver extends Thread {
 		int j = 0;
 
 		// Calculate missing sequence numbers and add them to "missing"
+                //System.out.printf("max seq num of %d\n", max_seq_num);
 		for (i = 0; i < max_seq_num; i++) {
 			if (!received_seq_nums.get(i)) {
-				missing_seq.putInt(i + 1);
+				missing_seq.putInt(i);
 				j++;
-				miss_cnt++;
+				this.miss_cnt++;
 			}
 		}
 		missing_seq.rewind();
+                
+                //for (i = 0; i < miss_dim; i ++){
+                //    System.out.printf("missing seq %d\n", missing_seq.getInt());
+                //}
+                missing_seq.rewind();
 
 		// Set correct number of lost sequences
 		miss_dim = j;
@@ -206,47 +213,48 @@ public class HostDataReceiver extends Thread {
 		seq_num_offset = 0;
 
 		for (i = 0; i < n_packets; i++) {
-			ByteBuffer data = ByteBuffer
-					.allocate(DATA_PER_FULL_PACKET * BYTES_PER_WORD);
-			data.order(LITTLE_ENDIAN);
-			length_left_in_packet = DATA_PER_FULL_PACKET;
+                    ByteBuffer data = ByteBuffer.allocate(
+                        DATA_PER_FULL_PACKET * BYTES_PER_WORD);
+                    data.order(LITTLE_ENDIAN);
+                    length_left_in_packet = DATA_PER_FULL_PACKET;
 
-			// If first, add n packets to list; otherwise just add data
-			if (first) {
-				// Get left over space / data size
-				size_of_data_left_to_transmit = min(length_left_in_packet - 2,
-						miss_dim - seq_num_offset);
+                    // If first, add n packets to list; otherwise just add data
+                    if (first) {
+                        // Get left over space / data size
+                        size_of_data_left_to_transmit = min(
+                            length_left_in_packet - 2, miss_dim - seq_num_offset);
 
-				// Pack flag and n packets
-				data.putInt(SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
-				data.putInt(n_packets);
+                        // Pack flag and n packets
+                        data.putInt(SDP_PACKET_START_MISSING_SEQ_COMMAND_ID);
+                        data.putInt(n_packets);
 
-				// Update state
-				length_left_in_packet -= 2;
-				first = false;
-			} else {
-				// Get left over space / data size
-				size_of_data_left_to_transmit = min(
-						DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
-						miss_dim - seq_num_offset);
+                        // Update state
+                        length_left_in_packet -= 2;
+                        first = false;
+                    } else {
+                            // Get left over space / data size
+                            size_of_data_left_to_transmit = min(
+                                            DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
+                                            miss_dim - seq_num_offset);
 
-				// Pack flag
-				data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
-				length_left_in_packet -= 1;
-			}
-			// System.out.println("a");
-			for (int element = 0; element < size_of_data_left_to_transmit
-					* 4; element++) {
-				data.put(missing_seq.get());
-			}
+                            // Pack flag
+                            data.putInt(SDP_PACKET_MISSING_SEQ_COMMAND_ID);
+                            length_left_in_packet -= 1;
+                    }
+                    // System.out.println("a");
+                    for (int element = 0; element < size_of_data_left_to_transmit; element++) {
+                            data.putInt(missing_seq.getInt());
+                    }
 
-			seq_num_offset += length_left_in_packet;
+                    seq_num_offset += length_left_in_packet;
 
-			sender.sendData(new SDPMessage(placement_x, placement_y,
-					placement_p, port_connection, SDPMessage.REPLY_NOT_EXPECTED,
-					255, 255, 255, 0, 0, data.array()));
+                    sender.sendData(
+                        new SDPMessage(
+                            placement_x, placement_y, placement_p, 
+                            port_connection, SDPMessage.REPLY_NOT_EXPECTED,
+                            255, 255, 255, 0, 0, data.array()));
 
-			Thread.sleep(TIMEOUT_PER_SENDING_IN_MILLISECONDS);
+                    Thread.sleep(TIMEOUT_PER_SENDING_IN_MILLISECONDS);
 		}
 
 		return false;
@@ -287,18 +295,24 @@ public class HostDataReceiver extends Thread {
 		if (is_end_of_stream && packet.getLength() == END_FLAG_SIZE_IN_BYTES) {
 			// empty
 		} else {
-			System.arraycopy(packet.getData(), SEQUENCE_NUMBER_SIZE, buffer,
-					offset, true_data_length - offset);
+                    System.arraycopy(
+                        packet.getData(), SEQUENCE_NUMBER_SIZE, buffer,
+			offset, true_data_length - offset);
 		}
-
-		received_seq_nums.set(seq_num - 1);
+                
+                try{
+		received_seq_nums.set(seq_num);
+                }
+                catch(IndexOutOfBoundsException e){
+                    System.out.println("boom!");
+                }
 
 		if (is_end_of_stream) {
 			if (!check(received_seq_nums, max_seq_num)) {
-				finished |= retransmit_missing_sequences(sender,
-						received_seq_nums);
+                            finished |= retransmit_missing_sequences(
+                                sender, received_seq_nums);
 			} else {
-				finished = true;
+                            finished = true;
 			}
 		}
 		return finished;

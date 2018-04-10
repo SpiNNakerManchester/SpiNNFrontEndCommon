@@ -1,6 +1,8 @@
 
 import java.net.DatagramPacket;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -15,10 +17,10 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 public class ReaderThread extends Thread{
     
     private final UDPConnection connection;
-    private final ConcurrentLinkedDeque<DatagramPacket> messqueue;
+    private final LinkedBlockingDeque<DatagramPacket> messqueue;
 
     public ReaderThread(UDPConnection connection, 
-                        ConcurrentLinkedDeque<DatagramPacket> messqueue) {
+                        LinkedBlockingDeque<DatagramPacket> messqueue) {
     	super("ReadThread");
         this.connection = connection;
         this.messqueue = messqueue;
@@ -29,9 +31,10 @@ public class ReaderThread extends Thread{
         // While socket is open add messages to the queue
         do {
             DatagramPacket recvd = connection.receiveData(400);
-
+            
             if (recvd != null) {
                 messqueue.push(recvd);
+                //System.out.println("pushed");
             }
 
         } while (!connection.isClosed());

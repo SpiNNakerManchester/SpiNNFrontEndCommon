@@ -64,7 +64,7 @@ public class UDPConnection implements AutoCloseable {
 			sock.receive(packet);
 			return packet;
 		} catch (IOException e) {
-			System.out.println("failed to recieve packet");
+			//System.out.println("failed to recieve packet");
 			return null;
 		}
 	}
