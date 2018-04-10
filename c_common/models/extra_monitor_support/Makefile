@@ -1,5 +1,4 @@
 APP = extra_monitor_support
-BUILD_DIR = build/
 SOURCES = extra_monitor_support.c
 
 CFLAGS += -Ofast
