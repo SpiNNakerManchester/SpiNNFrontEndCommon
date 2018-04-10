@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 
+/// The header for an SDP message
 class SDPHeader {
 private:
     const uint8_t destination_chip_x;
@@ -47,11 +48,14 @@ public:
     {
     }
 
-    int length_bytes() {
-        return length * sizeof(uint8_t);
+    /// Get the length of the header
+    int length_bytes() const
+    {
+	return length * sizeof(uint8_t);
     }
 
-    void write_header(std::vector<uint8_t> &data);
+    /// Write the header into a buffer (for sending)
+    void write_header(std::vector<uint8_t> &data) const;
 };
 
 #endif
