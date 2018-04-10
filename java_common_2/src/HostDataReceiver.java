@@ -46,7 +46,7 @@ public class HostDataReceiver extends Thread {
     // time out constants
     public static final int TIMEOUT_RETRY_LIMIT = 20;
     private static final int TIMEOUT_PER_SENDING_IN_MILLISECONDS = 10;
-    private static final int TIMEOUT_PER_RECEIVE_IN_MILLISECONDS = 100;
+    private static final int TIMEOUT_PER_RECEIVE_IN_MILLISECONDS = 10;
 
     private final int port_connection;
     private final int placement_x;
@@ -191,7 +191,8 @@ public class HostDataReceiver extends Thread {
         }
         missing_seq.rewind();
 
-        if (log.isLoggable(Level.FINE)) {
+        if (log.isLoggable(Level.INFO)) {
+            log.fine("missing" + miss_dim);
             for (i = 0; i < miss_dim; i++) {
                 log.fine("missing seq " + missing_seq.getInt());
             }
@@ -285,6 +286,7 @@ public class HostDataReceiver extends Thread {
         first_packet_element = data.getInt();
 
         seq_num = first_packet_element & ~LAST_MESSAGE_FLAG_BIT_MASK;
+        
         is_end_of_stream = (
             (first_packet_element & LAST_MESSAGE_FLAG_BIT_MASK) != 0);
 
@@ -374,17 +376,22 @@ public class HostDataReceiver extends Thread {
             this.connection = connection;
         }
 
-        private void processOnePacket() throws Exception {
-            DatagramPacket p = messqueue.poll(1, TimeUnit.SECONDS);
-            if (p != null) {
+        private void processOnePacket(boolean reiceved) throws Exception {
+            try{
+                DatagramPacket p = messqueue.removeLast();
+            
+                log.fine("sizer of queuue" + messqueue.size());
                 process_data(connection, p);
-            } else {
+                reiceved = true;
+            } 
+            catch(Exception e ){
                 timeoutcount++;
                 if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
                     log.severe(TIMEOUT_MESSAGE);
+                    Thread.sleep(1000);
                     return;
                 }
-                if (!finished) {
+                if (!finished && reiceved) {
                     // retransmit missing packets
                     log.fine("doing reinjection");
                     finished = retransmit_missing_sequences(
@@ -397,9 +404,10 @@ public class HostDataReceiver extends Thread {
         @Override
         public void run() {
             try {
+                boolean reiceved = false;
                 while (!finished) {
                     try {
-                        processOnePacket();
+                        processOnePacket(reiceved);
                     } catch (InterruptedException e) {
                         // Do nothing
                     }
