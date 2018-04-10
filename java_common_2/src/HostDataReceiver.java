@@ -46,7 +46,7 @@ public class HostDataReceiver extends Thread {
     // time out constants
     public static final int TIMEOUT_RETRY_LIMIT = 20;
     private static final int TIMEOUT_PER_SENDING_IN_MILLISECONDS = 10;
-    private static final int TIMEOUT_PER_RECEIVE_IN_MILLISECONDS = 100;
+    private static final int TIMEOUT_PER_RECEIVE_IN_MILLISECONDS = 250;
 
     private final int port_connection;
     private final int placement_x;
@@ -176,26 +176,22 @@ public class HostDataReceiver extends Thread {
         // expected and received
         int miss_dim = max_seq_num - received_seq_nums.cardinality();
 
-        ByteBuffer missing_seq = ByteBuffer.allocate(miss_dim * 4);
-        missing_seq.order(LITTLE_ENDIAN);
+        int[] missing_seq = new int[miss_dim];
         int j = 0;
 
         // Calculate missing sequence numbers and add them to "missing"
         log.fine("max seq num of " + max_seq_num);
         for (i = 0; i < max_seq_num; i++) {
             if (!received_seq_nums.get(i)) {
-                missing_seq.putInt(i);
-                j++;
+                missing_seq[j++] = i;
                 miss_cnt++;
             }
         }
-        missing_seq.rewind();
 
         if (log.isLoggable(Level.FINE)) {
             for (i = 0; i < miss_dim; i++) {
-                log.fine("missing seq " + missing_seq.getInt());
+                log.fine("missing seq " + missing_seq[i]);
             }
-            missing_seq.rewind();
         }
 
         // Set correct number of lost sequences
@@ -216,6 +212,7 @@ public class HostDataReceiver extends Thread {
         // Transmit missing sequences as a new SDP Packet
         first = true;
         seq_num_offset = 0;
+        j = 0;
 
         for (i = 0; i < n_packets; i++) {
             ByteBuffer data = null;
@@ -254,7 +251,7 @@ public class HostDataReceiver extends Thread {
             // System.out.println("a");
             for (int element = 0; element < size_of_data_left_to_transmit;
                     element++) {
-                data.putInt(missing_seq.getInt());
+                data.putInt(missing_seq[j++]);
             }
 
             seq_num_offset += length_left_in_packet;
@@ -430,7 +427,7 @@ public class HostDataReceiver extends Thread {
             do {
                 DatagramPacket recvd = connection.receiveData(400);
 
-                if (recvd != null) {
+                if (recvd != null && recvd.getLength() > 0) {
                     messqueue.push(recvd);
                     log.fine("pushed");
                 }
