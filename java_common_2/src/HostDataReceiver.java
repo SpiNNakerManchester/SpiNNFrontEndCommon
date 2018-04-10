@@ -314,7 +314,7 @@ public class HostDataReceiver extends Thread {
         }
 
         if (is_end_of_stream) {
-            if (!check(received_seq_nums, max_seq_num)) {
+            if (!check()) {
                 finished |= retransmit_missing_sequences(sender,
                         received_seq_nums);
             } else {
@@ -352,14 +352,13 @@ public class HostDataReceiver extends Thread {
                 DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * BYTES_PER_WORD);
     }
 
-    private static boolean check(BitSet received_seq_nums, int max_needed)
-            throws Exception {
+    private boolean check() throws Exception {
         int recvsize = received_seq_nums.length();
 
-        if (recvsize > max_needed + 1) {
-            throw new Exception("ERROR: Received more data than expected");
+        if (recvsize > max_seq_num + 1) {
+            throw new Exception("Received more data than expected");
         }
-        return recvsize == max_needed + 1;
+        return recvsize == max_seq_num + 1;
     }
 
     public static final String TIMEOUT_MESSAGE = "Failed to hear from the "
