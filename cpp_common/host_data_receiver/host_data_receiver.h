@@ -83,12 +83,11 @@ public:
     ///
     /// Note that the arguments are NOT checked for correctness, and enough
     /// memory must be available for the data being retrieved.
-    host_data_receiver(
-	    int port_connection,   ///< [in] What UDP port on SpiNNaker to talk to
+    host_data_receiver(int port_connection, ///< [in] What UDP port on SpiNNaker to talk to
 	    int placement_x,       ///< [in] The chip to read from (X coord)
 	    int placement_y,       ///< [in] The chip to read from (Y coord)
 	    int placement_p,       ///< [in] The chip to read from (P coord)
-	    const char *hostname,  ///< [in] The hostname of the SpiNNaker board
+	    std::string hostname, ///< [in] The hostname of the SpiNNaker board
 	    int length_in_bytes,   ///< [in] How many bytes to read
 	    int memory_address,    ///< [in] Where in memory to read from
 	    int chip_x,            ///< [in] X coord for IPTag
@@ -97,8 +96,7 @@ public:
     :
 	    port_connection(port_connection), placement_x(placement_x), placement_y(
 		    placement_y), placement_p(placement_p), hostname(
-		    hostname != nullptr ? hostname : ""), length_in_bytes(
-		    (uint32_t) length_in_bytes), memory_address(
+		    hostname), length_in_bytes((uint32_t) length_in_bytes), memory_address(
 		    (uint32_t) memory_address), chip_x(chip_x), chip_y(
 		    chip_y), iptag(iptag), buffer(length_in_bytes), started(
 		    false), finished(false), miss_cnt(0)
@@ -120,12 +118,11 @@ public:
     /// Get the data from the machine and write it to the given file.
     ///
     /// Also writes a summary of any reinjection activity to the other file.
-    /// If the report file name is NULL, the report is not written.
     /// \param filepath_read [in] Name of file to write data to
     /// \param filepath_missing [in] Name of file to write report to; nullable
     void get_data_threadable(
-	    const char *filepath_read,
-	    const char *filepath_missing);
+	    std::string &filepath_read,
+	    std::string &filepath_missing);
 
 #ifdef PYBIND11_MODULE
     /// Special version of get_data that includes Python datatype adapters.

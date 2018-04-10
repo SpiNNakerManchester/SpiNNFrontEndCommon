@@ -81,9 +81,9 @@ static void main_body(Arguments &args)
     int port_connection = parse_arg(args, PORT_NUMBER_POSITION);
     int length_in_bytes = parse_arg(args, LENGTH_IN_BYTES);
     int memory_address = parse_arg(args, MEMORY_ADDRESS);
-    const char *hostname = args[HOSTNAME_POSITION];
-    const char *file_pathr = args[FILE_PATH_READ_POSITION];
-    const char *file_pathm = args[FILE_PATH_MISS_POSITION];
+    std::string hostname = args[HOSTNAME_POSITION];
+    std::string file_pathr = args[FILE_PATH_READ_POSITION];
+    std::string file_pathm = args[FILE_PATH_MISS_POSITION];
     int chip_x = parse_arg(args, CHIP_X);
     int chip_y = parse_arg(args, CHIP_Y);
     int iptag = parse_arg(args, IPTAG);
