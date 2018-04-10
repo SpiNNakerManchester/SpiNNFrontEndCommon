@@ -10,34 +10,39 @@
 
 using namespace std::literals::chrono_literals;
 
+/// Exception throw when the queue times out
 struct TimeoutQueueException: public std::exception {
 };
 
+/// A simple thread-aware queue that supports one writer and one reader
 template<typename T>
 class PQueue {
-public:
+    /// How long to wait for the queue to have an element in it
     static constexpr auto const& TIMEOUT = 10 * 100ms;
 
+public:
+    /// Retrieve a value from the queue, or timeout with an exception
     T pop()
     {
-	std::unique_lock<std::mutex> mlock(mutex_);
+	std::unique_lock<std::mutex> mlock(mutex);
 
-	while (queue_.empty()) {
-	    if (cond_.wait_for(mlock, TIMEOUT) == std::cv_status::timeout) {
+	while (queue.empty()) {
+	    if (cond.wait_for(mlock, TIMEOUT) == std::cv_status::timeout) {
 		throw TimeoutQueueException();
 	    }
         }
 
-        auto val = std::move(queue_.front());
-        queue_.pop();
+        auto val = std::move(queue.front());
+        queue.pop();
 
         return val;
     }
 
+    /// Add an item to the queue
     void push(const T& item) {
-        std::unique_lock<std::mutex> mlock(mutex_);
-        queue_.push(item);
-        cond_.notify_one();
+        std::unique_lock<std::mutex> mlock(mutex);
+        queue.push(item);
+        cond.notify_one();
     }
 
     PQueue() = default;
@@ -45,10 +50,12 @@ public:
     PQueue& operator=(const PQueue&) = delete; // disable assignment
 
 private:
-
-    std::queue<T> queue_;
-    std::mutex mutex_;
-    std::condition_variable cond_;
+    /// The implemetation of the queue
+    std::queue<T> queue;
+    /// The lock on the queue
+    std::mutex mutex;
+    /// The condition variable used to signal that an item was added
+    std::condition_variable cond;
 };
 
 #endif

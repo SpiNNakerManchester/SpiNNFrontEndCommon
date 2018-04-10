@@ -10,32 +10,30 @@
 using namespace std;
 using namespace std::literals::chrono_literals; // BLACK MAGIC!
 
+/// The usual port for SDP
 static constexpr int SDP_PORT = 17893;
-static constexpr int MAX_SDP_PACKET_LENGTH = 280;
 
 // time out constants
+/// How long between reinjection request packets?
 static constexpr auto DELAY_PER_SENDING = 10000us;
+/// How many timeouts will we tolerate?
 static constexpr uint32_t TIMEOUT_RETRY_LIMIT = 20;
 
 // consts for data and converting between words and bytes
-//static const int SDRAM_READING_SIZE_IN_BYTES_CONVERTER = 1024 * 1024;
+/// Number of words to put in a packet apart from the sequence number
 static constexpr uint32_t WORDS_PER_PACKET_WITH_SEQUENCE_NUM = WORDS_PER_PACKET - 1;
+/// Number of bytes per SpiNNaker word
 static constexpr uint32_t WORD_TO_BYTE_CONVERTER = 4;
+/// Number of bytes of payload in a normal data packet
 static constexpr uint32_t NORMAL_PAYLOAD_LENGTH =
 	WORDS_PER_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER;
+/// Required size of receiver buffer to handle all SpiNNaker messages
 static constexpr uint32_t RECEIVE_BUFFER_LENGTH = WORDS_PER_PACKET * WORD_TO_BYTE_CONVERTER;
 
+/// Division that rounds up
 static inline uint32_t ceildiv(uint32_t numerator, uint32_t denominator)
 {
     return (uint32_t) ceil(numerator / (float) denominator);
-}
-
-void host_data_receiver::receive_message(
-	const UDPConnection &receiver,
-	vector<uint8_t> &working_buffer) const
-{
-    working_buffer.resize(MAX_SDP_PACKET_LENGTH);
-    receiver.receive_data(working_buffer);
 }
 
 //Function for asking data to the SpiNNaker system
