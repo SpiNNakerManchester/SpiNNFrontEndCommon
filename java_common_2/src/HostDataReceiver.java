@@ -45,7 +45,7 @@ public class HostDataReceiver extends Thread {
     // time out constants
     public static final int TIMEOUT_RETRY_LIMIT = 20;
     private static final int TIMEOUT_PER_SENDING_IN_MILLISECONDS = 10;
-    private static final int TIMEOUT_PER_RECEIVE_IN_MILLISECONDS = 1000;
+    private static final int TIMEOUT_PER_RECEIVE_IN_MILLISECONDS = 100;
 
     private final int port_connection;
     private final int placement_x;
@@ -224,7 +224,7 @@ public class HostDataReceiver extends Thread {
                 size_of_data_left_to_transmit = min(
                     length_left_in_packet - 2, miss_dim - seq_num_offset);
                 data = ByteBuffer.allocate(
-                    size_of_data_left_to_transmit * this.BYTES_PER_WORD);
+                    (size_of_data_left_to_transmit + 2) * this.BYTES_PER_WORD);
                 data.order(LITTLE_ENDIAN);
 
                 // Pack flag and n packets
@@ -240,7 +240,7 @@ public class HostDataReceiver extends Thread {
                     DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM,
                     miss_dim - seq_num_offset);
                 data = ByteBuffer.allocate(
-                    size_of_data_left_to_transmit * this.BYTES_PER_WORD);
+                    (size_of_data_left_to_transmit + 1) * this.BYTES_PER_WORD);
                 data.order(LITTLE_ENDIAN);
 
                 // Pack flag
@@ -263,7 +263,7 @@ public class HostDataReceiver extends Thread {
 
             Thread.sleep(TIMEOUT_PER_SENDING_IN_MILLISECONDS);
         }
-
+        
         return false;
     }
 
@@ -319,6 +319,7 @@ public class HostDataReceiver extends Thread {
             if (!check(received_seq_nums, max_seq_num)) {
                 finished |= retransmit_missing_sequences(
                     sender, received_seq_nums);
+                is_end_of_stream = false;
             } else {
                 finished = true;
             }
