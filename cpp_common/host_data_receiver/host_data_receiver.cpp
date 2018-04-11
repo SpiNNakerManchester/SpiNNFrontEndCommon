@@ -61,21 +61,20 @@ void host_data_receiver::send_initial_command(
 
 // Function for asking for retransmission of missing sequences
 bool host_data_receiver::retransmit_missing_sequences(
-	const UDPConnection &sender,
-        const set<uint32_t> &received_seq_nums)
+	const UDPConnection &sender)
 {
     //Calculate number of missing sequences based on difference between
     //expected and received
     vector<uint32_t> missing_seq(0);
     // We know how many elements we expect to be missing
-    missing_seq.reserve(max_seq_num - received_seq_nums.size());
+    missing_seq.reserve(max_seq_num - received_count);
     if (print_debug_messages && missing_seq.capacity()) {
 	cerr << "missing sequence numbers: {";
     }
 
     // Calculate missing sequence numbers and add them to "missing"
     for (uint32_t i = 0; i < max_seq_num ; i++) {
-        if (received_seq_nums.find(i) == received_seq_nums.end()) {
+	if (!received_seq_nums[i]) {
             if (print_debug_messages) {
         	cerr << i << ", ";
             }
@@ -144,17 +143,13 @@ uint32_t host_data_receiver::calculate_max_seq_num() const
 }
 
 //Function for checking that all packets have been received
-bool host_data_receiver::check(
-        const set<uint32_t> &received_seq_nums,
-        uint32_t max_needed) const
+bool host_data_receiver::check() const
 {
-    uint32_t recvsize = received_seq_nums.size();
-
-    if (recvsize > max_needed + 1) {
+    if (received_count > max_seq_num + 1) {
         throw "Received more data than expected";
     }
 
-    return recvsize == max_needed + 1;
+    return received_count == max_seq_num + 1;
 }
 
 uint32_t host_data_receiver::calculate_offset(uint32_t seq_num) const
@@ -165,7 +160,6 @@ uint32_t host_data_receiver::calculate_offset(uint32_t seq_num) const
 // Function for processing each received packet and checking end of transmission
 bool host_data_receiver::process_data(
 	const UDPConnection &sender,
-	set<uint32_t> &received_seq_nums,
 	bool is_end_of_stream,
 	uint32_t seq_num,
 	uint32_t content_length,
@@ -182,8 +176,11 @@ bool host_data_receiver::process_data(
     }
     if (is_end_of_stream || content_length == NORMAL_PAYLOAD_LENGTH) {
 	// Store the data and the fact that we've processed this packet
-	memcpy(buffer.data() + offset, content_bytes, content_length);
-	received_seq_nums.insert(seq_num);
+	if (!received_seq_nums[seq_num]) {
+	    memcpy(buffer.data() + offset, content_bytes, content_length);
+	    received_count++;
+	    received_seq_nums[seq_num] = true;
+	}
     }
 
     // Determine if we're actually finished.
@@ -191,11 +188,11 @@ bool host_data_receiver::process_data(
 	// Definitely not the end!
 	return false;
     }
-    if (check(received_seq_nums, max_seq_num)) {
+    if (check()) {
 	return true;
     }
     // Finished but not complete; "Please sir, I want some more!"
-    return retransmit_missing_sequences(sender, received_seq_nums);
+    return retransmit_missing_sequences(sender);
 }
 
 void host_data_receiver::reader_thread(const UDPConnection &receiver)
@@ -227,13 +224,12 @@ void host_data_receiver::processor_thread(const UDPConnection &sender)
 {
     uint32_t timeoutcount = 0;
     bool finished = false;
-    set<uint32_t> received_seq_nums;
 
     while (!finished && !rdr.thrown) {
         try {
 	    std::vector<uint8_t> p = messqueue.pop();
 	    if (!p.empty())
-		process_data(sender, finished, received_seq_nums, p);
+		process_data(sender, finished, p);
         } catch (TimeoutQueueException &e) {
             if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
                 pcr.val = "Failed to hear from the machine. "
@@ -246,8 +242,7 @@ void host_data_receiver::processor_thread(const UDPConnection &sender)
 
             if (!finished) {
                 // retransmit missing packets
-                finished = retransmit_missing_sequences(sender,
-                        received_seq_nums);
+                finished = retransmit_missing_sequences(sender);
             }
         } catch (const char *e) {
             pcr.val = e;

@@ -41,7 +41,7 @@ public:
     /// Add an item to the queue
     void push(const T& item) {
         std::unique_lock<std::mutex> mlock(mutex);
-        queue.push(item);
+        queue.push(std::move(item));
         cond.notify_one();
     }
 

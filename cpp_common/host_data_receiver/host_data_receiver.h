@@ -98,12 +98,13 @@ public:
 		    placement_y), placement_p(placement_p), hostname(
 		    hostname), length_in_bytes((uint32_t) length_in_bytes), memory_address(
 		    (uint32_t) memory_address), chip_x(chip_x), chip_y(
-		    chip_y), iptag(iptag), buffer(length_in_bytes), started(
-		    false), finished(false), miss_cnt(0)
+		    chip_y), iptag(iptag), buffer(length_in_bytes), received_count(0),
+		    started(false), finished(false), miss_cnt(0)
     {
 	rdr.thrown = false;
 	pcr.thrown = false;
 	max_seq_num = calculate_max_seq_num();
+	received_seq_nums = std::vector<bool>(max_seq_num);
 	print_debug_messages = (std::getenv("DEBUG_RETRANSMIT") != nullptr);
     }
 
@@ -156,10 +157,9 @@ private:
 
     /// Send those messages.
     /// \param sender [in] Where to send to.
-    /// \param received_seq_nums [in] What sequence numbers have been received.
+    /// \param received_seq_nums [in] Which sequence numbers have been received.
     bool retransmit_missing_sequences(
-	    const UDPConnection &sender,
-	    const std::set<uint32_t> &received_seq_nums);
+	    const UDPConnection &sender);
 
     /// Get the maximum sequence number for this transfer.
     uint32_t calculate_max_seq_num() const;
@@ -169,21 +169,16 @@ private:
     uint32_t calculate_offset(uint32_t seq_num) const;
 
     /// Has all the data been transferred?
-    /// \param received_seq_nums [in] The set of received sequence numbers.
-    /// \param max_needed [in] How many sequence numbers are required.
-    bool check(
-	    const std::set<uint32_t> &received_seq_nums,
-	    uint32_t max_needed) const;
+    bool check() const;
 
     /// Process a received message.
     /// \param sender [in] Where to send reinjection messages if needed.
     /// \param finished [in,out] Whether the data processing is done.
-    /// \param received_seq_nums [in,out] The successfully receive sequence numbers.
+    /// \param received_seq_nums [in,out] Which sequence numbers have been received.
     /// \param recvdata [in] The content of the received message
     void process_data(
 	    const UDPConnection &sender,
 	    bool &finished,
-	    std::set<uint32_t> &received_seq_nums,
 	    const std::vector<uint8_t> &recvdata)
     {
 	uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
@@ -194,20 +189,19 @@ private:
 	uint32_t seq_num = first_packet_element & SEQ_NUM_MASK;
 	bool is_end_of_stream = (first_packet_element
 		& LAST_MESSAGE_FLAG_BIT_MASK) != 0;
-	finished |= process_data(sender, received_seq_nums, is_end_of_stream,
-		seq_num, content_length, content_bytes);
+	finished |= process_data(sender, is_end_of_stream, seq_num,
+		content_length, content_bytes);
     }
 
     /// Process a received message.
     /// \param sender [in] Where to send reinjection messages if needed.
-    /// \param received_seq_nums [in,out] The successfully receive sequence numbers.
+    /// \param received_seq_nums [in,out] Which sequence numbers have been received.
     /// \param is_end_of_stream [in] Whether this is the last message in a stream.
     /// \param seq_num [in] The sequence number of the message.
     /// \param content_length [in] The number of bytes in the content.
     /// \param content_bytes [in] The bytes of content of the message.
     bool process_data(
 	    const UDPConnection &sender,
-	    std::set<uint32_t> &received_seq_nums,
 	    bool is_end_of_stream,
 	    uint32_t seq_num,
 	    uint32_t content_length,
@@ -251,8 +245,12 @@ private:
     PQueue<std::vector<uint8_t>> messqueue;
     /// Where data is accumulated after being read
     std::vector<uint8_t> buffer;
+    /// Collection of bits saying whether a sequence number has arrived
+    std::vector<bool> received_seq_nums;
     /// The maximum expected sequence number
     uint32_t max_seq_num;
+    /// How many unique sequence numbers have been received
+    uint32_t received_count;
     /// Exception reporting for reader thread
     thexc rdr;
     /// Exception reporting for processor thread
