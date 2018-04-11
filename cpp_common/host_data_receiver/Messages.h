@@ -9,6 +9,15 @@
 #include <SDPMessage.h>
 #include "host_data_receiver.h"
 
+// NASTY HACK for bug in older GCC
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 5
+#define CONSTREF
+#define CONSTDEF(type, name)  constexpr type name
+#else
+#define CONSTREF              const&
+#define CONSTDEF(type, name)
+#endif
+
 //Constants
 static constexpr uint32_t WORDS_PER_PACKET = 68;
 
@@ -96,7 +105,7 @@ class FirstMissingSeqsMessage: public OneWayMessage {
     static constexpr uint32_t SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000;
 public:
     /// How many words of payload can this message contain?
-    static constexpr uint32_t const& PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
+    static constexpr uint32_t CONSTREF PAYLOAD_SIZE = WORDS_PER_PACKET - 2;
     FirstMissingSeqsMessage(
 	    int x, ///< [in] Where to send the message to (X coord)
 	    int y, ///< [in] Where to send the message to (Y coord)
@@ -125,7 +134,7 @@ class MoreMissingSeqsMessage: public OneWayMessage {
     static constexpr uint32_t SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001;
 public:
     /// How many words of payload can this message contain?
-    static constexpr uint32_t const& PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
+    static constexpr uint32_t CONSTREF PAYLOAD_SIZE = WORDS_PER_PACKET - 1;
 
     MoreMissingSeqsMessage(
 	    int x, ///< [in] Where to send the message to (X coord)
@@ -144,5 +153,8 @@ private:
     /// Space for assembling the message payload
     uint32_t buffer[WORDS_PER_PACKET];
 };
+
+CONSTDEF(uint32_t, FirstMissingSeqsMessage::PAYLOAD_SIZE);
+CONSTDEF(uint32_t, MoreMissingSeqsMessage::PAYLOAD_SIZE);
 
 #endif // HDR_MESSAGES_H
