@@ -253,7 +253,8 @@ public class HostDataReceiver extends Thread {
             }
 
             // System.out.println("a");
-            for (int element = 0; element < size_of_data_left_to_transmit; element++) {
+            for (int element = 0; element < size_of_data_left_to_transmit; 
+                    element++) {
                 data.putInt(missing_seq[j++]);
             }
 
