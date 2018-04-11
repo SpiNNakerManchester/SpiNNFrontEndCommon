@@ -5,7 +5,7 @@
 #include <cassert>
 #include <chrono>
 #include <fstream>
-#include "math.h"
+#include <cstdlib>
 
 using namespace std;
 using namespace std::literals::chrono_literals; // BLACK MAGIC!
@@ -33,7 +33,8 @@ static constexpr uint32_t RECEIVE_BUFFER_LENGTH = WORDS_PER_PACKET * WORD_TO_BYT
 /// Division that rounds up
 static inline uint32_t ceildiv(uint32_t numerator, uint32_t denominator)
 {
-    return (uint32_t) ceil(numerator / (float) denominator);
+    auto result = std::div(static_cast<int32_t>(numerator), denominator);
+    return result.quot + (result.rem > 0);
 }
 
 //Function for asking data to the SpiNNaker system
