@@ -15,7 +15,7 @@ static constexpr int SDP_PORT = 17893;
 
 // time out constants
 /// How long between reinjection request packets?
-static constexpr auto DELAY_PER_SENDING = 10000us;
+static constexpr auto DELAY_PER_SENDING = 10ms;
 /// How many timeouts will we tolerate?
 static constexpr uint32_t TIMEOUT_RETRY_LIMIT = 20;
 
@@ -50,7 +50,6 @@ void host_data_receiver::send_initial_command(
 
     std::vector<uint8_t> working_buffer;
     receive_message(control, working_buffer);
-    this_thread::sleep_for(20 * DELAY_PER_SENDING);
 
     // Create Data request SDP packet
     const StartSendingMessage message(placement_x, placement_y, placement_p,
