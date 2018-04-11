@@ -1,6 +1,6 @@
 all: libcommon.a
 
-CXXFLAGS += -std=c++14
+CXXFLAGS += -std=c++14 -O3
 
 OBJS = SDPHeader.o SDPMessage.o UDPConnection.o
 

@@ -7,12 +7,13 @@ HEADERS=$(COMMON)/SDPHeader.h $(COMMON)/SDPMessage.h\
 TARGET=host_data_receiver
 LIBS=-lpthread -L$(COMMON) -lcommon
 INSTALL ?= install
+OPT=-O3
 
 all: install
 
 build: $(TARGET)
 $(TARGET): $(SRCS) $(HEADERS) $(COMMON)/libcommon.a
-	$(CXX) $(CXXFLAGS) -I$(COMMON) -o $@ $(SRCS) -std=c++14 $(LIBS)
+	$(CXX) $(CXXFLAGS) $(OPT) -I$(COMMON) -o $@ $(SRCS) -std=c++14 $(LIBS)
 
 install: $(TARGET)
 	$(INSTALL) -c $(TARGET) $(INSTALL_LOCATION)
