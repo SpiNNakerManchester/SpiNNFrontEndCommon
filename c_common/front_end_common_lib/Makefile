@@ -25,28 +25,30 @@ INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 # Libraries
 APP = libspinn_frontend_common
 LIBS = $(APP).a
-LIBS += $(APP).dict
 INSTALL_LIBS = $(LIBS:%=$(SPINN_LIB_DIR)/%)
+
+# Log Dictionary file
+LOG_DICT_FILE = $(SPINN_LIB_DIR)/$(APP).dict
 
 # Ensure $(INSTALL) is defined, even on MinGW
 INSTALL ?= install
+
+# Variables needed for file convertor
+SRC_DIR = src/
+MODIFIED_DIR = modified_src/
 
 # Build rules (default)
 $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	$(RM) $@
 	$(AR) $@ $(BUILD_OBJS)
 
-# Variables needed for file convertor
-RAW_DIR = src/
-MODIFIED_DIR = modified_src/
-APP_OUTPUT_DIR = $(SPINN_COMMON_BUILD)/
+$(MODIFIED_DIR)%.c: $(RAW_DIR)
+	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE) $(APP)
 
-# spinn_common is 1000 range
-RANGE_START = 2000
+$(LOG_DICT_FILE): $(RAW_DIR)
+	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE) $(APP)
 
-include $(SPINN_DIRS)/make/convert.mk
-
-$(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(APP_OUTPUT_DIR)$(APP).dict
+$(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(LOG_DICT_FILE)
 	$(CC) $(CFLAGS) -o $@ $<
 
 $(SPINN_COMMON_BUILD):
@@ -71,6 +73,7 @@ $(SPINN_MAKE_LIB_DIR)/%: %
 
 clean:
 	$(RM) $(SPINN_COMMON_BUILD)/$(APP).a $(BUILD_OBJS) $(OLD_CONVERT_FILES)
+	rm -rf $(MODIFIED_DIR)
 
 install-clean:
 	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS)
