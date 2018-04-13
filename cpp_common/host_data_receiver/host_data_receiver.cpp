@@ -39,8 +39,8 @@ static inline uint32_t ceildiv(uint32_t numerator, uint32_t denominator)
 
 //Function for asking data to the SpiNNaker system
 void host_data_receiver::send_initial_command(
-	const UDPConnection &control,
-	const UDPConnection &data_flow) const
+	const UDPConnection<BlockAlloc> &control,
+	const UDPConnection<BlockAlloc> &data_flow) const
 {
     //Build an SCP request to set up the IP Tag associated to this socket
     const SetIPTagMessage set_iptag_req(chip_x, chip_y, iptag,
@@ -49,7 +49,7 @@ void host_data_receiver::send_initial_command(
     //Send SCP request and receive (and ignore) response
     control.send_message(set_iptag_req);
 
-    std::vector<uint8_t> working_buffer;
+    buffer_t working_buffer;
     receive_message(control, working_buffer);
 
     // Create Data request SDP packet
@@ -61,7 +61,7 @@ void host_data_receiver::send_initial_command(
 
 // Function for asking for retransmission of missing sequences
 bool host_data_receiver::retransmit_missing_sequences(
-	const UDPConnection &sender)
+	const UDPConnection<BlockAlloc> &sender)
 {
     //Calculate number of missing sequences based on difference between
     //expected and received
@@ -159,7 +159,7 @@ uint32_t host_data_receiver::calculate_offset(uint32_t seq_num) const
 
 // Function for processing each received packet and checking end of transmission
 bool host_data_receiver::process_data(
-	const UDPConnection &sender,
+	const UDPConnection<BlockAlloc> &sender,
 	bool is_end_of_stream,
 	uint32_t seq_num,
 	uint32_t content_length,
@@ -195,13 +195,13 @@ bool host_data_receiver::process_data(
     return retransmit_missing_sequences(sender);
 }
 
-void host_data_receiver::reader_thread(const UDPConnection &receiver)
+void host_data_receiver::reader_thread(const UDPConnection<BlockAlloc> &receiver)
 {
     // While socket is open add messages to the queue
     try {
 	bool received;
 	do {
-	    std::vector<uint8_t> packet(RECEIVE_BUFFER_LENGTH);
+	    buffer_t packet(RECEIVE_BUFFER_LENGTH);
 
 	    if ((received = receiver.receive_data(packet))) {
 		messqueue.push(packet);
@@ -220,14 +220,14 @@ void host_data_receiver::reader_thread(const UDPConnection &receiver)
     }
 }
 
-void host_data_receiver::processor_thread(const UDPConnection &sender)
+void host_data_receiver::processor_thread(const UDPConnection<BlockAlloc> &sender)
 {
     uint32_t timeoutcount = 0;
     bool finished = false;
 
     while (!finished && !rdr.thrown) {
         try {
-	    std::vector<uint8_t> p = messqueue.pop();
+            buffer_t p = messqueue.pop();
 	    if (!p.empty())
 		process_data(sender, finished, p);
         } catch (TimeoutQueueException &e) {
@@ -259,7 +259,7 @@ const uint8_t *host_data_receiver::get_data()
     try {
 	if (!started) {
 	    // create connection
-	    UDPConnection connection(SDP_PORT, hostname);
+	    UDPConnection<BlockAlloc> connection(SDP_PORT, hostname);
 	    started = true;
 
 	    // send the initial command to start data transmission
@@ -306,6 +306,18 @@ void host_data_receiver::get_data_threadable(
 	missing << miss_cnt << endl;
     }
 }
+
+uint8_t *BlockAlloc::allocate_chunk(std::size_t n) {
+    static int counter;
+    return this->blocks[counter++];
+}
+
+void BlockAlloc::deallocate(uint8_t *p, std::size_t n) {
+    // FIXME
+}
+
+uint8_t BlockAlloc::blocks[1024 * 1024][300];
+
 
 #ifdef PYBIND11_MODULE
 namespace py = pybind11;

@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <thread>
 #include <cstdlib>
+#include <memory>
 
 #if 0
 #include <pybind11/pybind11.h>
@@ -19,9 +20,10 @@
 #include <UDPConnection.h>
 #include "PQueue.h"
 
+template<class AnyAllocator>
 /// Convert a word read from SpiNNaker and convert to host endianness.
 static inline uint32_t get_word_from_buffer(
-	const std::vector<uint8_t> &buffer, ///< [in] buffer to read from
+	const std::vector<uint8_t, AnyAllocator> &buffer, ///< [in] buffer to read from
 	uint32_t offset) ///< [in] index into the buffer to start at
 {
     // Explicit endianness
@@ -52,6 +54,17 @@ static inline uint32_t make_word_for_buffer(uint32_t word)
     return converter.word;
 }
 
+class BlockAlloc : public std::allocator<uint8_t> {
+    uint8_t *allocate_chunk(std::size_t n);
+public:
+    uint8_t* allocate(std::size_t n, std::allocator<void>::const_pointer hint = 0) {
+	return allocate_chunk(n);
+    }
+    void deallocate(uint8_t* p, std::size_t n);
+private:
+    static uint8_t blocks[1024 * 1024][300];
+};
+
 /// The class that moves data from SpiNNaker to the host.
 ///
 /// This works by redirecting the given IPTag to point to a UDP port under
@@ -74,8 +87,10 @@ class host_data_receiver {
     ///
     /// Constraint due to SC&MP.
     static constexpr int MAX_SDP_PACKET_LENGTH = 280;
-
 public:
+    /// The special type of our special working buffers
+    typedef std::vector<uint8_t, BlockAlloc> buffer_t;
+
     /// The code for the "Set IPTag" command.
     static constexpr int SET_IP_TAG = 26;
 
@@ -141,15 +156,15 @@ private:
     /// \param control [in] Where to talk to.
     /// \param data_flow [in] Where to direct data traffic to.
     void send_initial_command(
-	    const UDPConnection &control,
-	    const UDPConnection &data_flow) const;
+	    const UDPConnection<BlockAlloc> &control,
+	    const UDPConnection<BlockAlloc> &data_flow) const;
 
     /// Receive a SpiNNaker message over UDP.
     /// \param receiver [in] Where to get a message from.
     /// \param working_buffer [out] Where to store the message.
     void receive_message(
-	    const UDPConnection &receiver,
-	    std::vector<uint8_t> &working_buffer) const
+	    const UDPConnection<BlockAlloc> &receiver,
+	    buffer_t &working_buffer) const
     {
 	working_buffer.resize(MAX_SDP_PACKET_LENGTH);
 	receiver.receive_data(working_buffer);
@@ -159,7 +174,7 @@ private:
     /// \param sender [in] Where to send to.
     /// \param received_seq_nums [in] Which sequence numbers have been received.
     bool retransmit_missing_sequences(
-	    const UDPConnection &sender);
+	    const UDPConnection<BlockAlloc> &sender);
 
     /// Get the maximum sequence number for this transfer.
     uint32_t calculate_max_seq_num() const;
@@ -177,9 +192,9 @@ private:
     /// \param received_seq_nums [in,out] Which sequence numbers have been received.
     /// \param recvdata [in] The content of the received message
     void process_data(
-	    const UDPConnection &sender,
+	    const UDPConnection<BlockAlloc> &sender,
 	    bool &finished,
-	    const std::vector<uint8_t> &recvdata)
+	    const buffer_t &recvdata)
     {
 	uint32_t first_packet_element = get_word_from_buffer(recvdata, 0);
 	uint32_t content_length = recvdata.size() - SEQUENCE_NUMBER_SIZE;
@@ -201,7 +216,7 @@ private:
     /// \param content_length [in] The number of bytes in the content.
     /// \param content_bytes [in] The bytes of content of the message.
     bool process_data(
-	    const UDPConnection &sender,
+	    const UDPConnection<BlockAlloc> &sender,
 	    bool is_end_of_stream,
 	    uint32_t seq_num,
 	    uint32_t content_length,
@@ -209,11 +224,11 @@ private:
 
     /// The implementation of the thread that receives messages from SpiNNaker.
     /// \param receiver [in] Where to receive data from.
-    void reader_thread(const UDPConnection &receiver);
+    void reader_thread(const UDPConnection<BlockAlloc> &receiver);
 
     /// The implementation of the thread that receives messages from SpiNNaker.
     /// \param sender [in] Where to send reinjection requests to.
-    void processor_thread(const UDPConnection &sender);
+    void processor_thread(const UDPConnection<BlockAlloc> &sender);
 
     /// Used to verify if one of the thread threw any exception
     struct thexc {
@@ -242,7 +257,7 @@ private:
     /// ID of the IPTag to set/update
     const int iptag;
     /// Transfers messages from reader thread to processor thread
-    PQueue<std::vector<uint8_t>> messqueue;
+    PQueue<buffer_t> messqueue;
     /// Where data is accumulated after being read
     std::vector<uint8_t> buffer;
     /// Collection of bits saying whether a sequence number has arrived
