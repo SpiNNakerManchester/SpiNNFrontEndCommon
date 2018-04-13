@@ -1,3 +1,5 @@
+package common_classes;
+
 public class SDPHeader {
     private final byte destination_chip_x;
     private final byte destination_chip_y;

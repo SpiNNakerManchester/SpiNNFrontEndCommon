@@ -2,8 +2,9 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.lang.Integer.parseInt;
+import static java.lang.Integer.parseInt;
 
-public class Main2 {
+public class DataOutMainEntrance {
 
     public final static int N_ARGS = 12;
     public final int IP_ADDRESS_SIZE = 24;
@@ -46,7 +47,8 @@ public class Main2 {
         }
     };
 
-    private static Logger log = Logger.getLogger(Main2.class.getName());
+    private static Logger log = Logger.getLogger(
+        DataOutMainEntrance.class.getName());
 
     public static void main(String[] args) {
 

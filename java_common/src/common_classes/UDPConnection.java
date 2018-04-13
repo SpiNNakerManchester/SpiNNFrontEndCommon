@@ -1,3 +1,5 @@
+package common_classes;
+
 import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;

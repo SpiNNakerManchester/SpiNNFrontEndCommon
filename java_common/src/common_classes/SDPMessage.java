@@ -1,3 +1,5 @@
+package common_classes;
+
 import static java.lang.System.arraycopy;
 
 public class SDPMessage {

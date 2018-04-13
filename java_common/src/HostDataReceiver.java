@@ -1,3 +1,5 @@
+import common_classes.SDPMessage;
+import common_classes.UDPConnection;
 import static java.lang.Math.ceil;
 import static java.lang.Math.min;
 import static java.nio.ByteOrder.LITTLE_ENDIAN;
