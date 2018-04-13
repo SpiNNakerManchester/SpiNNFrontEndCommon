@@ -21,8 +21,8 @@ class DataSpeedUpPacketGather(
                 x, y), constraints, 1)
         self._machine_vertex = DataSpeedUpPacketGatherMachineVertex(
             x, y, ip_address, data_extractor_use_c_code,
-            report_default_directory, write_data_speed_up_report, constraints,
-            using_eight_byte_protocol)
+            report_default_directory, write_data_speed_up_report,
+            using_eight_byte_protocol, constraints)
 
     @property
     def machine_vertex(self):

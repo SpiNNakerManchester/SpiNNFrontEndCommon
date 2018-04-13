@@ -136,6 +136,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, x, y, ip_address, data_extractor_use_c_code,
             report_default_directory, write_data_speed_up_report,
             using_eight_byte_protocol, constraints=None):
+
         super(DataSpeedUpPacketGatherMachineVertex, self).__init__(
             label="mc_data_speed_up_packet_gatherer_on_{}_{}".format(x, y),
             constraints=constraints)

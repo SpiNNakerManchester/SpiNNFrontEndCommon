@@ -16,3 +16,5 @@ lastfailed
 *.a
 /java_common_2/nbproject/private/
 /java_common_2/dist/
+/java_common/nbproject/private/
+/java_common/dist/
