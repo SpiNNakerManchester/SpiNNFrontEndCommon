@@ -36,8 +36,8 @@ public class HostDataReceiver extends Thread {
 
     // consts for data and converting between words and bytes
     private static final int DATA_PER_FULL_PACKET = 68;
-    private static final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = DATA_PER_FULL_PACKET
-            - 1;
+    private static final int DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM = 
+        DATA_PER_FULL_PACKET - 1;
     private static final int BYTES_PER_WORD = 4;
     private static final int END_FLAG_SIZE_IN_BYTES = 4;
     private static final int SEQUENCE_NUMBER_SIZE = 4;

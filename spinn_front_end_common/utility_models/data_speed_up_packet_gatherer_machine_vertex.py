@@ -65,7 +65,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_view",
         "_tag",
         "_data_extractor_use_c_code",
-        "_using_eight_byte_protocol"
+        "_using_eight_byte_protocol",
+        "_proveannce_report_path",
+        "_placement"
         ]
 
     # TRAFFIC_TYPE = EdgeTrafficType.MULTICAST
@@ -73,6 +75,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # report name for tracking used routers
     REPORT_NAME = "routers_used_in_speed_up_process.txt"
+    PROVENANCE_REPORT_NAME = "data_out_provenance_failed_SDP_sends.txt"
 
     # size of config region in bytes
     CONFIG_SIZE = 24
@@ -105,6 +108,8 @@ class DataSpeedUpPacketGatherMachineVertex(
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
+    SDP_PACKET_PROVENANCE_DATA_COMMAND_ID = 3000
+    SDP_PACKET_PROVENANCE_DATA_COMMAND_RESPONSE = 3001
 
     # base key (really nasty hack to tie in fixed route keys)
     BASE_KEY = 0xFFFFFFF9
@@ -144,6 +149,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._data_extractor_use_c_code = data_extractor_use_c_code
         self._using_eight_byte_protocol = using_eight_byte_protocol
 
+        self._placement = None
+
         # Create a connection to be used
         self._connection = SCAMPConnection(
             chip_x=x, chip_y=y, remote_host=ip_address)
@@ -156,6 +163,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         # create report if it doesn't already exist
         self._report_path = \
             os.path.join(report_default_directory, self.REPORT_NAME)
+        self._proveannce_report_path = os.path.join(
+            report_default_directory, self.PROVENANCE_REPORT_NAME)
         self._write_data_speed_up_report = write_data_speed_up_report
 
     @property
@@ -198,6 +207,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             machine_graph, routing_info, tags,
             machine_time_step, time_scale_factor):
         # pylint: disable=too-many-arguments, arguments-differ
+
+        self._placement = placement
 
         # Setup words + 1 for flags + 1 for recording size
         setup_size = SYSTEM_BYTES_REQUIREMENT
@@ -425,7 +436,37 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._write_routers_used_into_report(
                 self._report_path, routers_been_in_use, placement)
 
+        self._get_provenance_data(placement, length_in_bytes)
+
         return self._output
+
+    def _get_provenance_data(self, placement, memory_size):
+
+        data = _ONE_WORD.pack(self.SDP_PACKET_PROVENANCE_DATA_COMMAND_ID)
+        self._connection.send_sdp_message(SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=self._placement.x,
+                destination_chip_y=self._placement.y,
+                destination_cpu=self._placement.p,
+                destination_port=(
+                    SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value),
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=data))
+        data = self._connection.receive(
+            timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
+        first_packet_element = _ONE_WORD.unpack_from(data, 0)[0]
+        if first_packet_element == \
+                self.SDP_PACKET_PROVENANCE_DATA_COMMAND_RESPONSE:
+            failed_sdp_attempts = _ONE_WORD.unpack_from(data, 4)[0]
+            writer_behaviour = "w"
+            if os.path.isfile(self._proveannce_report_path):
+                writer_behaviour = "a"
+
+            with open(self._proveannce_report_path,
+                      writer_behaviour) as writer:
+                writer.write("[{}:{}:{}:{}] = {}\n".format(
+                    placement.x, placement.y, placement.p,
+                    memory_size, failed_sdp_attempts))
 
     def _receive_data(self, transceiver, placement):
         seq_nums = set()

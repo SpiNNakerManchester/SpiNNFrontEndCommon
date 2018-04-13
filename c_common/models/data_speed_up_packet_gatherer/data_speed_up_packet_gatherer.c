@@ -17,6 +17,12 @@
 //! convert between words to bytes
 #define WORD_TO_BYTE_MULTIPLIER 4
 
+//! provenance data command code
+#define PROVENANCE_DATA_COMMAND_ID 3000
+
+//! response code for provenance data
+#define PROVENANCE_DATA_RESPONSE_COMMAND_ID 3001
+
 //! struct for a SDP message with pure data, no scp header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     struct sdp_msg *next;	// Next in free list
@@ -41,6 +47,7 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
 static uint32_t simulation_ticks = 0;
 static uint32_t infinite_run = 0;
 static uint32_t time = 0;
+static uint32_t sdp_transmission_fails = 0;
 
 //! int as a bool to represent if this simulation should run forever
 static uint32_t infinite_run;
@@ -67,6 +74,11 @@ sdp_msg_pure_data my_msg;
 typedef enum state_machine_flags {
     EMPTY = 0, NEXT_SEQ_NUM_COMING = 1, FIRST_DATA = 2, ODD_DATA_ITEM = 3
 } state_machine_flags;
+
+//! human readable definitions of the flags for a sdp message
+typedef enum sdp_message_bits {
+    COMMAND_ID_POSITION = 0
+} sdp_message_bits;
 
 //! variable for determining next action from a no payload command
 static uint32_t next_no_payload_command = EMPTY;
@@ -109,7 +121,7 @@ void send_data(){
     }
 
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 0)) {
-	// Empty body
+	    sdp_transmission_fails += 1;
     }
 
     //log_info("done");
@@ -165,6 +177,8 @@ void four_bytes_receive_data(uint key, uint payload){
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
+            log_info("failed to transmit sdp messages %d times\n",
+                     sdp_transmission_fails);
         } else if (position_in_store == ITEMS_PER_DATA_PACKET) {
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
@@ -266,6 +280,34 @@ void eight_bytes_receive_data_payload(uint key, uint payload) {
     }
 }
 
+//! \brief processes sdp messages
+//! \param[in] mailbox: the sdp message
+//! \param[in] port: the port assocated with this sdp message
+void receive_sdp_data(uint mailbox, uint port) {
+    // use as not important
+    use(port);
+
+    //log_info("received packet at port %d", port);
+
+    // convert mailbox into correct sdp format
+    sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
+
+    log_info("command code is %d", msg->data[COMMAND_ID_POSITION]);
+
+    // check for seperate commands
+    if (msg->data[COMMAND_ID_POSITION] == PROVENANCE_DATA_COMMAND_ID){
+        log_info("in failed sdp. tracker says %d", sdp_transmission_fails);
+        sark_msg_free((sdp_msg_t *) msg);
+        my_msg.data[0] = PROVENANCE_DATA_RESPONSE_COMMAND_ID;
+        my_msg.data[1] = sdp_transmission_fails;
+        my_msg.length = LENGTH_OF_SDP_HEADER + (2 * WORD_TO_BYTE_MULTIPLIER);
+        while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
+
+        }
+        sdp_transmission_fails = 0;
+    }
+}
+
 static bool initialize(uint32_t *timer_period) {
     log_info("Initialise: started\n");
 
@@ -346,6 +388,9 @@ void c_main() {
             FR_PACKET_RECEIVED, eight_bytes_receive_data_no_payload,
             FR_PACKET);
     }
+
+    spin1_callback_on(SDP_PACKET_RX, receive_sdp_data, SDP);
+
 
     // start execution
     log_info("Starting\n");

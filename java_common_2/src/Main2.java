@@ -49,6 +49,8 @@ public class Main2 {
     private static Logger log = Logger.getLogger(Main2.class.getName());
 
     public static void main(String[] args) {
+
+        long startTime = System.nanoTime();
         if (args.length != 12) {
             System.err.println("not the correct number of parameters");
             System.err.printf(" got %d args instead", args.length);
@@ -93,5 +95,11 @@ public class Main2 {
         } catch (IOException | InterruptedException ex) {
             log.log(Level.SEVERE, "failure retrieving data", ex);
         }
+
+        long estimatedTime = System.nanoTime() - startTime;
+        double seconds = (double)estimatedTime / 1000000000.0;
+        System.out.println(
+            "time taken to extract 20 MB just java is" + seconds + "MBS of " 
+            + (((length_in_bytes) /1024 / 1024) * 8) / seconds);
     }
 }
