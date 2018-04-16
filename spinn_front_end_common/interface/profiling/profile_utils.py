@@ -67,9 +67,8 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
         placement=placement, region=profile_region, transceiver=txrx)
 
     # Read the profiling data size
-    words_written_data = txrx.read_memory(
-        placement.x, placement.y, profiling_region_base_address, 4)
-    words_written = _ONE_WORD.unpack_from(buffer(words_written_data))[0]
+    words_written, = _ONE_WORD.unpack_from(txrx.read_memory(
+        placement.x, placement.y, profiling_region_base_address, 4))
 
     # Read the profiling data
     if words_written != 0:

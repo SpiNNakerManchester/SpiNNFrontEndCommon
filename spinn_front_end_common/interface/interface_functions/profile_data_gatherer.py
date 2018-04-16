@@ -24,7 +24,7 @@ class ProfileDataGatherer(object):
         :param machine_time_step: machine time step in ms
         """
         # pylint: disable=too-many-arguments
-        machine_time_step_ms = machine_time_step / 1000
+        machine_time_step_ms = machine_time_step // 1000
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
