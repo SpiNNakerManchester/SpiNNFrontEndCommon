@@ -37,7 +37,7 @@ class TestIOBufClearProcess(unittest.TestCase):
         self.assertEqual(sdp_header.destination_chip_x, 0)
         self.assertEqual(sdp_header.destination_chip_y, 0)
         self.assertEqual(sdp_header.destination_cpu, 1)
-        command = struct.unpack_from("<H", data, 10)[0]
+        command, = struct.unpack_from("<H", data, 10)
         self.assertEqual(
             command,
             SDP_RUNNING_MESSAGE_CODES.SDP_CLEAR_IOBUF_CODE.value)

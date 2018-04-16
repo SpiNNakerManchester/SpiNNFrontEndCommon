@@ -99,8 +99,8 @@ class DatabaseWriter(object):
             c.execute(sql, args)
             return c.lastrowid
         except Exception:
-            logger.error("problem with insertion; argument types are {}",
-                         str(map(type, args)), exc_info=True)
+            logger.exception("problem with insertion; argument types are {}",
+                             str(map(type, args)))
             raise
 
     def create_schema(self):
@@ -311,7 +311,7 @@ class DatabaseWriter(object):
                     self.__insert_app_vertex(
                         vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
-                    self.__insert_app_vertex(vertex, sys.maxint, 0)
+                    self.__insert_app_vertex(vertex, sys.maxsize, 0)
 
             # add edges
             for vertex in application_graph.vertices:

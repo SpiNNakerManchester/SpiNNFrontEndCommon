@@ -9,6 +9,7 @@ from spinn_machine import VirtualMachine
 from spinnman.messages.eieio import EIEIOType
 
 import unittest
+from six import itervalues
 
 
 class TestInsertLPGs(unittest.TestCase):
@@ -56,7 +57,7 @@ class TestInsertLPGs(unittest.TestCase):
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder].itervalues():
+        for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -110,7 +111,7 @@ class TestInsertLPGs(unittest.TestCase):
         locs.append((0, 0))
         locs.append((4, 8))
         locs.append((8, 4))
-        for vertex in lpg_verts_mapping[default_params_holder].itervalues():
+        for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
             x = list(vertex.constraints)[0].x
             y = list(vertex.constraints)[0].y
             key = (x, y)
@@ -123,7 +124,7 @@ class TestInsertLPGs(unittest.TestCase):
             self.assertIn(vertex, verts)
 
         app_verts = set()
-        for vertex in lpg_verts_mapping[default_params_holder].itervalues():
+        for vertex in itervalues(lpg_verts_mapping[default_params_holder]):
             app_vertex = app_graph_mapper.get_application_vertex(vertex)
             self.assertNotEqual(app_vertex, None)
             self.assertIsInstance(app_vertex, ApplicationVertex)

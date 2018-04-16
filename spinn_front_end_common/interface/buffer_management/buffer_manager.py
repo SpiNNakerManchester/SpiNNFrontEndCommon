@@ -32,6 +32,7 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
 import threading
 from multiprocessing.pool import ThreadPool
 import logging
+from six.moves import xrange
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -195,12 +196,12 @@ class BufferManager(object):
             try:
                 self.__request_buffers(packet)
             except Exception:
-                logger.error("problem when sending messages", exc_info=True)
+                logger.exception("problem when sending messages")
         elif isinstance(packet, SpinnakerRequestReadData):
             try:
                 self.__request_read_data(packet)
             except Exception:
-                logger.error("problem when handling data", exc_info=True)
+                logger.exception("problem when handling data")
         elif isinstance(packet, EIEIOCommandMessage):
             logger.error(
                 "The command packet is invalid for buffer management: "
@@ -463,7 +464,7 @@ class BufferManager(object):
         # If there is any space left, add padding
         if bytes_to_go > 0:
             padding_packet = PaddingRequest()
-            n_packets = bytes_to_go / padding_packet.get_min_packet_length()
+            n_packets = bytes_to_go // padding_packet.get_min_packet_length()
             data = padding_packet.bytestring
             data *= n_packets
             all_data += data
