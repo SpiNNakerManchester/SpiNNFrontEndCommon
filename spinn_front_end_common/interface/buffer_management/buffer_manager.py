@@ -348,10 +348,10 @@ class BufferManager(object):
             self, placement, state_region_base_address):
 
         # retrieve channel state memory area
-        channel_state_data = str(self._request_data(
+        channel_state_data = self._request_data(
             transceiver=self._transceiver, placement_x=placement.x,
             address=state_region_base_address, placement_y=placement.y,
-            length=ChannelBufferState.size_of_channel_state()))
+            length=ChannelBufferState.size_of_channel_state())
         return ChannelBufferState.create_from_bytearray(channel_state_data)
 
     def _create_message_to_send(self, size, vertex, region):
