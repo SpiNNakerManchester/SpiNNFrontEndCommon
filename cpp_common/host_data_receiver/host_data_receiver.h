@@ -54,15 +54,22 @@ static inline uint32_t make_word_for_buffer(uint32_t word)
     return converter.word;
 }
 
-class BlockAlloc : public std::allocator<uint8_t> {
-    uint8_t *allocate_chunk(std::size_t n);
-public:
-    uint8_t* allocate(std::size_t n, std::allocator<void>::const_pointer hint = 0) {
+struct BlockAlloc : public std::allocator<uint8_t> {
+    typedef std::allocator<uint8_t> Alloc;
+    template<class U> void destroy(U* p) {}
+    template<class U, class... Args> void construct(U* p, Args&&... args) {}
+    template<typename U> struct rebind {typedef BlockAlloc other;};
+
+    uint8_t *allocate(std::size_t n, std::allocator<void>::const_pointer hint = 0) {
 	return allocate_chunk(n);
     }
     void deallocate(uint8_t* p, std::size_t n);
+protected:
+    uint8_t *allocate_chunk(std::size_t n);
 private:
-    static uint8_t blocks[1024 * 1024][300];
+    static constexpr uint32_t NUM_BLOCKS = 1024 * 1024;
+    static uint8_t blocks[NUM_BLOCKS][300];
+    static uint32_t first, last;
 };
 
 /// The class that moves data from SpiNNaker to the host.

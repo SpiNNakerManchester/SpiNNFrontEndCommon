@@ -308,14 +308,16 @@ void host_data_receiver::get_data_threadable(
 }
 
 uint8_t *BlockAlloc::allocate_chunk(std::size_t n) {
-    static int counter;
-    return this->blocks[counter++];
+    uint32_t counter = (first++) % NUM_BLOCKS;
+    return blocks[counter];
 }
 
 void BlockAlloc::deallocate(uint8_t *p, std::size_t n) {
-    // FIXME
+    uint32_t counter = (last++) % NUM_BLOCKS;
 }
 
+uint32_t BlockAlloc::first;
+uint32_t BlockAlloc::last;
 uint8_t BlockAlloc::blocks[1024 * 1024][300];
 
 
