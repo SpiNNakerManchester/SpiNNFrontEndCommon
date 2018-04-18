@@ -70,7 +70,7 @@ private:
 /// UDP socket that talks to a single remote UDP socket.
 template<class Allocator=std::allocator<uint8_t>>
 class UDPConnection : public UDPConnectionBase {
-    typedef std::vector<typename Allocator::value_type,Allocator> buffer_t;
+    typedef std::vector<typename Allocator::value_type, Allocator> buffer_t;
 public:
     /// Create a connection specifying just the remote socket and allocating
     /// a local one automatically

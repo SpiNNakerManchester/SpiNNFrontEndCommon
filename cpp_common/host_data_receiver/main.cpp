@@ -106,7 +106,7 @@ static void main_body(Arguments &args)
 
     std::cout << "time taken to extract " << (length_in_bytes / 1024. / 1024.)
 	    << " MB with just C++ is " << duration << " (MB/s of "
-	    << ((length_in_bytes / 1024 / 1024) / duration) << ")"
+	    << ((length_in_bytes / 1024. / 1024.) / duration) << ")"
 	    << std::endl;
 }
 
