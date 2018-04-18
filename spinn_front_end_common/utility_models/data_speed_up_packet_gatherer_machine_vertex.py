@@ -28,6 +28,7 @@ import time
 import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
+from six.moves import xrange
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
@@ -108,8 +109,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     FIRST_DATA_KEY_OFFSET = 2
     END_FLAG_KEY_OFFSET = 3
 
-    # the size in bytes of the end flag
+    # the end flag is set when the high bit of the sequence number word is set
     LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
+    # corresponding mask for the actual sequence numbers
+    SEQUENCE_NUMBER_MASK = 0x7fffffff
 
     # the amount of bytes the n bytes takes up
     N_PACKETS_SIZE = 4
@@ -223,7 +226,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _reserve_memory_regions(spec, system_size):
-        """ Writes the DSG regions memory sizes. Static so that it can be used
+        """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
         :param spec: spec file
@@ -412,7 +415,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def _determine_which_routers_were_used(placement, fixed_routes, machine):
         """ traverses the fixed route paths from a given location to its\
-         destination. used for determining which routers were used
+            destination. used for determining which routers were used
 
         :param placement: the source to start from
         :param fixed_routes: the fixed routes for each router
@@ -439,6 +442,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _write_routers_used_into_report(
             report_path, routers_been_in_use, placement):
         """ writes the used routers into a report
+
         :param report_path: the path to the report file
         :param routers_been_in_use: the routers been in use
         :param placement: the first placement used
@@ -579,10 +583,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=too-many-arguments
         # self._print_out_packet_data(data)
         length_of_data = len(data)
-        first_packet_element = _ONE_WORD.unpack_from(data, 0)[0]
+        first_packet_element, = _ONE_WORD.unpack_from(data, 0)
 
         # get flags
-        seq_num = first_packet_element & 0x7FFFFFFF
+        seq_num = first_packet_element & self.SEQUENCE_NUMBER_MASK
         is_end_of_stream = (
             first_packet_element & self.LAST_MESSAGE_FLAG_BIT_MASK) != 0
 
@@ -692,7 +696,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
-            str(data))
+            data)
         log.info("converted data back into readable form is {}", reread_data)
 
     @staticmethod

@@ -13,6 +13,7 @@ from .database_reader import DatabaseReader
 
 # general imports
 from threading import Thread
+from six import raise_from
 import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -88,7 +89,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise SpinnmanIOException(str(e))
+            raise_from(SpinnmanIOException(str(e)), e)
         finally:
             self._running = False
 
@@ -146,8 +147,6 @@ class DatabaseConnection(UDPConnection):
             return self.receive_with_address(timeout=3)
         except SpinnmanTimeoutException:
             return None, None
-        except SpinnmanIOException:
-            raise
 
     def close(self):
         self._running = False
