@@ -57,7 +57,7 @@ static inline uint32_t make_word_for_buffer(uint32_t word)
 struct BlockAlloc : public std::allocator<uint8_t> {
     typedef std::allocator<uint8_t> Alloc;
     template<class U> void destroy(U* p) {}
-    template<class U, class... Args> void construct(U* p, Args&&... args) {}
+    template<class U, class ... Args> void construct(U* p, Args&&... args) {}
     template<typename U> struct rebind {typedef BlockAlloc other;};
 
     uint8_t *allocate(std::size_t n, std::allocator<void>::const_pointer hint = 0) {

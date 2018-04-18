@@ -228,8 +228,9 @@ void host_data_receiver::processor_thread(const UDPConnection<BlockAlloc> &sende
     while (!finished && !rdr.thrown) {
         try {
             buffer_t p = messqueue.pop();
-	    if (!p.empty())
+	    if (!p.empty()) {
 		process_data(sender, finished, p);
+	    }
         } catch (TimeoutQueueException &e) {
             if (timeoutcount > TIMEOUT_RETRY_LIMIT) {
                 pcr.val = "Failed to hear from the machine. "

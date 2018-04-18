@@ -2,8 +2,9 @@ INSTALL_LOCATION=../../spinn_front_end_common/common_host_binaries
 COMMON=../common
 
 SRCS=host_data_receiver.cpp main.cpp
-HEADERS=$(COMMON)/SDPHeader.h $(COMMON)/SDPMessage.h\
-        $(COMMON)/UDPConnection.h PQueue.h Messages.h host_data_receiver.h
+COMMON_H=SDPHeader.h SDPMessage.h UDPConnection.h
+HEADERS=$(COMMON_H:%.h=$(COMMON)/%.h) \
+	PQueue.h Messages.h host_data_receiver.h timing.h
 TARGET=host_data_receiver
 LIBS=-lpthread -L$(COMMON) -lcommon
 INSTALL ?= install
