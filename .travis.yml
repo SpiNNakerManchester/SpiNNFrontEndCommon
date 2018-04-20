@@ -6,6 +6,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - openjdk-r
     packages:
       - libc6:i386
       - vera++
@@ -13,6 +14,8 @@ addons:
       - gcc-arm-none-eabi
       - libnewlib-arm-none-eabi
       - g++-5
+      - openjdk-8-jdk
+      - ant
 
 cache: pip
 
@@ -60,6 +63,9 @@ script:
   - make -C cpp_common CXX="g++-5"
   - support/run-vera.sh c_common
   - support/run-vera.sh cpp_common
+  # Java
+  - (cd java_common && ant clean jar)
+  ### TODO: Switch to maven to get style check (and other tooling) support
   # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json
