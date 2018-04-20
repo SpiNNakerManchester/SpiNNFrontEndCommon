@@ -6,7 +6,6 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-      - openjdk-r
     packages:
       - libc6:i386
       - vera++
@@ -14,8 +13,6 @@ addons:
       - gcc-arm-none-eabi
       - libnewlib-arm-none-eabi
       - g++-5
-      - openjdk-8-jdk
-      - ant
 
 cache: pip
 
