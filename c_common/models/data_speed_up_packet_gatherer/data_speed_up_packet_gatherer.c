@@ -335,7 +335,7 @@ static bool initialize(uint32_t *timer_period) {
     odd_data_packet_key = config_address[ODD_DATA_PACKET_KEY];
     using_8_bytes_fr_protocol = config_address[USING_8_BYTE_PROTOCOL];
 
-    if(using_8_bytes_fr_protocol){
+    if (using_8_bytes_fr_protocol){
         log_info("Will be using the 8 byte protocol\n");
     }
     else{

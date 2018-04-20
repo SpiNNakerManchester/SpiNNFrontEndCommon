@@ -1211,7 +1211,7 @@ void common_handle_data_speed_up(sdp_msg_pure_data *msg) {
 
             if (number_of_elements_to_read_from_sdram <
                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
-                if(using_eight_byte_protocol){
+                if (using_eight_byte_protocol){
                     eight_bytes_read(
                         DMA_TAG_READ_FOR_TRANSMISSION,
                         number_of_elements_to_read_from_sdram);
@@ -1221,7 +1221,7 @@ void common_handle_data_speed_up(sdp_msg_pure_data *msg) {
                         number_of_elements_to_read_from_sdram);
                 }
             } else {
-                if(using_eight_byte_protocol){
+                if (using_eight_byte_protocol){
                     eight_bytes_read(
                         DMA_TAG_READ_FOR_TRANSMISSION,
                         ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
@@ -1447,7 +1447,7 @@ void data_speed_up_initialise() {
     odd_data_packet_key = address[ODD_DATA_PACKET_KEY];
     using_eight_byte_protocol = address[USING_EIGHT_BYTE_PROTOCOL];
 
-    if(using_eight_byte_protocol){
+    if (using_eight_byte_protocol){
         io_printf(IO_BUF, "Will be using the 8 byte protocol\n");
     }
     else{
