@@ -47,8 +47,9 @@ def run_host_data_receiver(
     subprocess.call([
         "java",
         "-jar",
-        "/".join(path_list[0:len(path_list) - 1]) + "/" +"java_common_2.jar",
-        #"/" + "/".join(path_list[0:len(path_list) - 1]) + DATA_OUT_BINARY_NAME,
+        "/".join(path_list[0:len(path_list) - 1]) + "/" + "java_common_2.jar",
+        # "/" + "/".join(path_list[0:len(path_list) - 1]) +
+        #  DATA_OUT_BINARY_NAME,
         str(remote_ip_address),
         str(port_value),
         str(placement_x),
