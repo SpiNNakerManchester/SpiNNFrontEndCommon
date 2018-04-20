@@ -42,6 +42,7 @@ from enum import Enum
 import math
 import sys
 import struct
+from six.moves import xrange
 
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
@@ -654,7 +655,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If not recording, not an issue
         if self._record_buffer_size == 0:
-            return sys.maxint
+            return sys.maxsize
 
         # If recording and using pre-defined keys, use the maximum
         if self._send_buffer is not None:

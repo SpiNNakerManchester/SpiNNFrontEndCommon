@@ -14,7 +14,6 @@ import logging
 import struct
 import datetime
 import shutil
-from ConfigParser import RawConfigParser
 
 from spinnman.model.enums import CPUState
 from spinn_utilities.log import FormatAdapter
@@ -47,8 +46,7 @@ def read_data(x, y, address, length, data_format, transceiver):
     """
     # pylint: disable=too-many-arguments
 
-    # turn byte array into str for unpack to work
-    data = buffer(transceiver.read_memory(x, y, address, length))
+    data = transceiver.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
 
@@ -62,8 +60,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param address: Value to write (32-bit integer)
     """
     user_0_address = txrx.get_user_0_register_address_from_core(p)
-    start_address_encoded = buffer(_ONE_WORD.pack(address))
-    txrx.write_memory(x, y, user_0_address, start_address_encoded)
+    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -80,11 +77,12 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset_in_pointer_table = \
-        utility_calls.get_region_base_address_offset(
-            regions_base_address, region)
-    region_address = buffer(transceiver.read_memory(
-        placement.x, placement.y, region_offset_in_pointer_table, 4))
+    region_offset = utility_calls.get_region_base_address_offset(
+        regions_base_address, region)
+
+    # Get the actual address of the region
+    region_address = transceiver.read_memory(
+        placement.x, placement.y, region_offset, 4)
     return _ONE_WORD.unpack_from(region_address)[0]
 
 
@@ -219,7 +217,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
 
         # sort files into time frame
         files_in_report_folder.sort(
-            cmp, key=lambda temp_file:
+            key=lambda temp_file:
             os.path.getmtime(os.path.join(starting_directory, temp_file)))
 
         # remove only the number of files required, and only if they have
@@ -239,7 +237,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
                 files_not_closed += 1
             if files_removed + files_not_closed >= num_files_to_remove:
                 break
-        if files_not_closed > max_to_keep / 4:
+        if files_not_closed > max_to_keep // 4:
             logger.warning("{} has {} old reports that have not been closed",
                            starting_directory, files_not_closed)
 
@@ -383,6 +381,11 @@ def read_config_int(config, section, item):
     return int(value)
 
 
+_BOOLEAN_STATES = {
+    'true': True, '1': True, 'on': True, 'yes': True,
+    'false': False, '0': False, 'off': False, 'no': False}
+
+
 def read_config_boolean(config, section, item):
     """ Get the boolean value of a config item, returning None if the value\
         is "None"
@@ -390,9 +393,8 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
-    # pylint: disable=protected-access
-    if value.lower() in RawConfigParser._boolean_states:
-        return RawConfigParser._boolean_states[value.lower()]
+    if value.lower() in _BOOLEAN_STATES:
+        return _BOOLEAN_STATES[value.lower()]
     raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
         value, section, item))
 

@@ -60,7 +60,7 @@ class _MockTransceiver(object):
         data_to_fill = numpy.array([repeat_value], dtype="uint{}".format(
             data_type.value * 8)).view("uint8")
         data_to_write = numpy.tile(
-            data_to_fill, bytes_to_fill / data_type.value)
+            data_to_fill, bytes_to_fill // data_type.value)
         memory[address:address + bytes_to_fill] = data_to_write
 
     def get_heap(self, x, y, heap):
@@ -118,7 +118,7 @@ class MyVertex(MachineVertex, AbstractUsesMemoryIO):
         memory.write(struct.pack("<I", tag))
         memory.seek(0)
         self._tag = tag
-        self._test_tag = struct.unpack("<I", memory.read(4))[0]
+        self._test_tag, = struct.unpack("<I", memory.read(4))
 
 
 def test_memory_io():
@@ -129,7 +129,7 @@ def test_memory_io():
     placements.add_placement(Placement(vertex, 0, 0, 1))
     transceiver = _MockTransceiver()
     temp = tempfile.mkdtemp()
-    print "ApplicationDataFolder =", temp
+    print("ApplicationDataFolder = {}".format(temp))
     inputs = {
         "MemoryTransceiver": transceiver,
         "MemoryMachineGraph": graph,

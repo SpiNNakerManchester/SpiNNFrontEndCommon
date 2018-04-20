@@ -47,7 +47,7 @@ class ProvenanceXMLWriter(object):
                 element.text = str(item.value)
 
             # write xml form into file provided
-            with open(self._get_file(provenance_data_path, name), "w") as f:
+            with open(self._get_file(provenance_data_path, name), "wb") as f:
                 f.write(etree.tostring(root, pretty_print=True))
 
     @staticmethod
