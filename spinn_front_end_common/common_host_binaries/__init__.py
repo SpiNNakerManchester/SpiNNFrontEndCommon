@@ -66,5 +66,6 @@ def run_host_data_receiver(
     # read in all data
     with open(DATA_OUT_OUT_FILE, "r") as fp:
         buf = fp.read()
+    os.remove(DATA_OUT_OUT_FILE)
 
     return buf
