@@ -289,7 +289,7 @@ def get_n_timesteps_in_buffer_space(buffer_space, buffered_sdram_per_timestep):
     """
     total_per_timestep = sum(buffered_sdram_per_timestep)
     if total_per_timestep == 0:
-        return sys.maxint
+        return sys.maxsize
     return int(math.floor(buffer_space / total_per_timestep))
 
 
