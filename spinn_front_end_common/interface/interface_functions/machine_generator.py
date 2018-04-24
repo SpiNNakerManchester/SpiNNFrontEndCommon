@@ -112,8 +112,8 @@ class MachineGenerator(object):
         # If the string is a range of boards, get the range
         range_match = re.match("(\d+)-(\d+)", bmp_boards)
         if range_match is not None:
-            return range(int(range_match.group(1)),
-                         int(range_match.group(2)) + 1)
+            return list(range(int(range_match.group(1)),
+                              int(range_match.group(2)) + 1))
 
         # Otherwise, assume a list of boards
         return [int(board) for board in bmp_boards.split(",")]

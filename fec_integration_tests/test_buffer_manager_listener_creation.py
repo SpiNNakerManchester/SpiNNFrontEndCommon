@@ -68,7 +68,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
             # same listener for the buffer manager
             if not i[1] is None:
                 number_of_listeners += 1
-            print i
+            print(i)
         self.assertEqual(number_of_listeners, 1)
 
 

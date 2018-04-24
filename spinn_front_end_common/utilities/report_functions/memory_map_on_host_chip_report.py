@@ -39,8 +39,8 @@ class MemoryMapOnHostChipReport(object):
                 with open(file_name, "w") as f:
                     self._describe_mem_map(f, transceiver, x, y, p)
             except IOError:
-                logger.error("Generate_placement_reports: Can't open file"
-                             " {} for writing.", file_name)
+                logger.exception("Generate_placement_reports: Can't open file"
+                                 " {} for writing.", file_name)
 
     def _describe_mem_map(self, f, txrx, x, y, p):
         # pylint: disable=too-many-arguments
@@ -48,17 +48,16 @@ class MemoryMapOnHostChipReport(object):
         user_0_addr = txrx.get_user_0_register_address_from_core(p)
         pointer_table_addr = self._get_app_pointer_table(
             txrx, x, y, user_0_addr)
-        memmap_data = buffer(txrx.read_memory(
-            x, y, pointer_table_addr, 4 * MAX_MEM_REGIONS))
+        memmap_data = txrx.read_memory(
+            x, y, pointer_table_addr, 4 * MAX_MEM_REGIONS)
 
         # Convert the map to a human-readable description
         f.write("On chip data specification executor\n\n")
-        for i in xrange(MAX_MEM_REGIONS):
-            region_address = int(_ONE_WORD.unpack_from(
-                memmap_data, i * 4)[0])
-            f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n"
-                    .format(i, region_address))
+        for i in range(MAX_MEM_REGIONS):
+            region_address, = _ONE_WORD.unpack_from(memmap_data, i * 4)
+            f.write("Region {0:d}:\n\t start address: 0x{1:x}\n\n".format(
+                i, region_address))
 
     def _get_app_pointer_table(self, txrx, x, y, table_pointer):
-        encoded_address = buffer(txrx.read_memory(x, y, table_pointer, 4))
-        return int(_ONE_WORD.unpack_from(encoded_address)[0]) + 8
+        encoded_address = txrx.read_memory(x, y, table_pointer, 4)
+        return _ONE_WORD.unpack_from(encoded_address)[0] + 8
