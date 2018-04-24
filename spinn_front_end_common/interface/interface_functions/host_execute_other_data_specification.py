@@ -49,13 +49,6 @@ class HostExecuteOtherDataSpecification(object):
             receiver.set_cores_for_data_streaming(
                 transceiver, extra_monitor_cores, placements)
 
-            # determine board level datas
-            board_level_calls = self._calcualte_board_level_calls(
-                dsg_targets, machine, placements)
-
-            # execute board level functions
-
-
             # reset router tables
             receiver.set_application_routing_tables(
                 transceiver, extra_monitor_cores, placements)
