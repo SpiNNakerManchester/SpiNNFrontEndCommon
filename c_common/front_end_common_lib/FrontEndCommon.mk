@@ -43,7 +43,8 @@ PROFILER := PROFILER_DISABLED
 SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | (md5sum 2>/dev/null || md5) | cut -c 1-8)
 
-CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(OTIME) -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
+FEC_OPT = $(OTIME)
+CFLAGS += -Wall -Wextra -D$(FEC_DEBUG) -D$(PROFILER) $(FEC_OPT) -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
 include $(SPINN_DIRS)/make/Makefile.common
 

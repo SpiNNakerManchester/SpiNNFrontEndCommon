@@ -36,7 +36,7 @@ class ReverseIpTagMultiCastSource(
 
     def __init__(
             self, n_keys, label=None, constraints=None,
-            max_atoms_per_core=sys.maxint,
+            max_atoms_per_core=sys.maxsize,
 
             # General parameters
             board_address=None,

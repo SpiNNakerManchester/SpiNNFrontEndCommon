@@ -49,7 +49,7 @@ class BufferedSendingRegion(object):
     #  an additional header)
     _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
                            (HostSendSequencedData.get_min_packet_length() +
-                            _HEADER_SIZE)) / _N_BYTES_PER_KEY
+                            _HEADER_SIZE)) // _N_BYTES_PER_KEY
 
     def __init__(self, max_buffer_size):
         self._max_size_of_buffer = max_buffer_size
