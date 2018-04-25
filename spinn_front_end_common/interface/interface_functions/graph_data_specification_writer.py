@@ -1,6 +1,8 @@
 from collections import defaultdict
 
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.abstract_models \
+    import AbstractRewritesDataSpecification
 
 from data_specification.utility_calls \
     import get_data_spec_and_file_writer_filename
@@ -31,7 +33,8 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder, machine, graph_mapper=None):
+            app_data_runtime_folder, machine, graph_mapper=None,
+            placement_order=None):
         """
 
         :param placements: placements of machine graph to cores
@@ -44,6 +47,8 @@ class GraphDataSpecificationWriter(object):
         :param machine: the python representation of the spinnaker machine
         :param graph_mapper:\
             the mapping between application and machine graph
+        :param placement:\
+            the optional order in which placements should be examined
 
         :return: dsg targets (map of placement tuple and filename)
         """
@@ -53,24 +58,39 @@ class GraphDataSpecificationWriter(object):
         # vertex
         dsg_targets = dict()
 
+        if placement_order is None:
+            placement_order = placements.placements
+
         progress = ProgressBar(
             placements.n_placements, "Generating data specifications")
-        for placement in progress.over(placements.placements):
+        vertices_to_reset = list()
+        for placement in progress.over(placement_order):
             # Try to generate the data spec for the placement
             generated = self._generate_data_spec_for_vertices(
                 placement, placement.vertex, dsg_targets, hostname,
                 report_default_directory, write_text_specs,
                 app_data_runtime_folder, machine)
 
+            if generated and isinstance(
+                    placement.vertex, AbstractRewritesDataSpecification):
+                vertices_to_reset.append(placement.vertex)
+
             # If the spec wasn't generated directly, and there is an
             # application vertex, try with that
             if not generated and graph_mapper is not None:
                 associated_vertex = graph_mapper.get_application_vertex(
                     placement.vertex)
-                self._generate_data_spec_for_vertices(
+                generated = self._generate_data_spec_for_vertices(
                     placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
                     app_data_runtime_folder, machine)
+                if generated and isinstance(
+                        associated_vertex, AbstractRewritesDataSpecification):
+                    vertices_to_reset.append(associated_vertex)
+
+        # Ensure that the vertices know their regions have been reloaded
+        for vertex in vertices_to_reset:
+            vertex.mark_regions_reloaded()
 
         return dsg_targets
 
