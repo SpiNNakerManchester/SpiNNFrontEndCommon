@@ -208,9 +208,9 @@ typedef struct {
 
 //! basic data for a router entry
 typedef struct {
-    uint key;
-    uint mask;
-    uint route;
+    uint32_t key;
+    uint32_t mask;
+    uint32_t route;
 } basic_router_entry_t;
 
 //! packet queue type
@@ -751,7 +751,7 @@ void reinjection_configure_router() {
 
 void _clear_router(){
     // clear the currently loaded routing table entries
-    for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id++){
+    for (uint entry_id = 1; entry_id <= N_ROUTER_ENTRIES; entry_id++){
         //io_printf(IO_BUF, "clearing entry %d \n", entry_id);
 	    uint success = rtr_mc_get(entry_id, router_entry);
         if (success == 0){
@@ -878,9 +878,10 @@ void data_in_read_and_load_router_entries(address_t address, uint n_entries){
 
 //! \brief reads in routers entries and places in application sdram location
 void data_in_read_router(){
+	io_printf(IO_BUF, "reading in router\n");
 	uint position = 0;
 
-	for (uint entry_id = 1; entry_id < N_ROUTER_ENTRIES; entry_id ++){
+	for (uint entry_id = 1; entry_id <= N_ROUTER_ENTRIES; entry_id ++){
 	    uint success = rtr_mc_get(entry_id, router_entry);
 	    if (success != 1){
 	        io_printf(IO_BUF, "failed to read application routing entry %d\n",
@@ -896,7 +897,16 @@ void data_in_read_router(){
         // update sdram tracker
         position += 1;
     }
-    //io_printf(IO_BUF, "finished read of app table\n");
+    io_printf(IO_BUF, "finished read of app table\n");
+
+    for (uint position = 0; position <= N_ROUTER_ENTRIES; position ++){
+        io_printf(
+            IO_BUF, "entry %d, %d, %d\n",
+            application_router_entries[position].key,
+            application_router_entries[position].mask,
+            application_router_entries[position].route
+        );
+    }
 }
 
 
@@ -905,8 +915,8 @@ void data_in_read_router(){
 void data_in_speed_up_load_in_system_tables() {
     // read in router table into app store in sdram (in case its changed
     // since last time)
-    //io_printf(IO_BUF, "read router\n");
-    //data_in_read_router();
+    io_printf(IO_BUF, "read router\n");
+    data_in_read_router();
 
     // clear the currently loaded routing table entries to avoid conflicts
     //io_printf(IO_BUF, "clear router\n");
