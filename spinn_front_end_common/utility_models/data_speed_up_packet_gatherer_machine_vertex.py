@@ -40,6 +40,12 @@ log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
 
 
+def ceildiv(dividend, divisor):
+    """ How to divide two possibly-integer numbers and round up.
+    """
+    return int(math.ceil(float(dividend) / float(divisor)))
+
+
 class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
@@ -201,9 +207,9 @@ class DataSpeedUpPacketGatherMachineVertex(
                                 WORD_TO_BYTE_CONVERTER)
 
     # SDRAM requirement for storing missing SDP packets seq nums
-    SDRAM_FOR_MISSING_SDP_SEQ_NUMS = int(math.ceil(
-        (120 * 1024 * 1024) //
-        (DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)))
+    SDRAM_FOR_MISSING_SDP_SEQ_NUMS = ceildiv(
+        120.0 * 1024 * 1024,
+        DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)
 
     # size of data in key space
     # x, y, key (all ints) for possible 48 chips,
@@ -508,7 +514,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     "------------------------------------------------"
                     "-------------------------------------------------\n")
 
-        mega_bits = float((data_size * 8.0) / (1024.0 * 1024.0))
+        mega_bits = (data_size * 8.0) / (1024.0 * 1024.0)
         mbs = mega_bits / time_took
 
         with open(report_path, writer_behaviour) as writer:
@@ -641,12 +647,12 @@ class DataSpeedUpPacketGatherMachineVertex(
         position_in_data = 0
 
         # how many packets after first one we need to send
-        number_of_packets = int(math.ceil(
-            ((len(data_to_write) - (
+        number_of_packets = ceildiv(
+            len(data_to_write) - (
                 self.DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
-                self.WORD_TO_BYTE_CONVERTER)) /
-             (self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
-              self.WORD_TO_BYTE_CONVERTER)))) + 1
+                self.WORD_TO_BYTE_CONVERTER),
+            self.DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM *
+            self.WORD_TO_BYTE_CONVERTER) + 1
 
         # determine board chip ids, as the LPG does not know machine scope ids
         board_destination_chip_x, board_destination_chip_y = \
@@ -743,7 +749,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         # find how many elements are in this packet
-        n_elements = (len(data) - position) / self.LENGTH_OF_DATA_SIZE
+        n_elements = (len(data) - position) // self.LENGTH_OF_DATA_SIZE
 
         # store missing
         self._missing_seq_nums_data_in[-1].extend(struct.unpack_from(
@@ -1211,9 +1217,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         length_via_format2 = \
             len(missing_seq_nums) - (self.DATA_PER_FULL_PACKET - 2)
         if length_via_format2 > 0:
-            n_packets += int(math.ceil(
-                float(length_via_format2) /
-                float(self.DATA_PER_FULL_PACKET - 1)))
+            n_packets += ceildiv(
+                length_via_format2,
+                self.DATA_PER_FULL_PACKET - 1)
 
         # transmit missing sequence as a new SDP packet
         first = True
@@ -1399,11 +1405,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: int of the biggest sequence num expected
         """
 
-        n_sequence_nums = float(len(self._output)) / float(
+        return ceildiv(len(self._output),
             self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
             self.WORD_TO_BYTE_CONVERTER)
-        n_sequence_nums = math.ceil(n_sequence_nums)
-        return int(n_sequence_nums)
 
     @staticmethod
     def _print_missing(seq_nums):
@@ -1422,7 +1426,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         :rtype: None
         """
         reread_data = struct.unpack("<{}I".format(
-            int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
+            ceildiv(len(data), self.WORD_TO_BYTE_CONVERTER)),
             data)
         log.info("converted data back into readable form is {}", reread_data)
 
