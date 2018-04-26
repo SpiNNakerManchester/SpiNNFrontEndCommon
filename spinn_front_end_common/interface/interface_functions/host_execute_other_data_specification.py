@@ -42,45 +42,43 @@ class HostExecuteOtherDataSpecification(object):
             processor_to_app_data_base_address = dict()
 
         # if using extra monitors, set up routing timeouts
+        receiver = None
         if uses_advanced_monitors:
-            # set timeouts for data streaming
             receiver = next(
                 itervalues(extra_monitor_cores_to_ethernet_connection_map))
             receiver.set_cores_for_data_streaming(
                 transceiver, extra_monitor_cores, placements)
 
+        # create a progress bar for end users
+        progress = ProgressBar(
+            executable_targets.total_processors + 1 -
+            executable_targets.get_n_cores_for_executable_type(
+                ExecutableType.SYSTEM),
+            "Executing data specifications and loading data for "
+            "application vertices")
+
+        # only load executables not of system type.
+        executable_types = executable_targets.executable_types_in_binary_set()
+        for executable_type in executable_types:
+            if executable_type != ExecutableType.SYSTEM:
+                for binary in \
+                        executable_targets.get_binaries_of_executable_type(
+                            executable_type):
+                    self._execute_dse_for_binary(
+                        binary, executable_targets, transceiver, machine,
+                        app_id, progress, processor_to_app_data_base_address,
+                        dsg_targets, uses_advanced_monitors,
+                        extra_monitor_cores_to_ethernet_connection_map)
+        progress.end()
+
+        # reset router timeouts
+        if uses_advanced_monitors:
             # reset router tables
             receiver.set_application_routing_tables(
                 transceiver, extra_monitor_cores, placements)
             # reset router timeouts
             receiver.unset_cores_for_data_streaming(
                 transceiver, extra_monitor_cores, placements)
-
-        else:
-
-            # create a progress bar for end users
-            progress = ProgressBar(
-                executable_targets.total_processors + 1 -
-                executable_targets.get_n_cores_for_executable_type(
-                    ExecutableType.SYSTEM),
-                "Executing data specifications and loading data for "
-                "application vertices")
-
-            # only load executables not of system type.
-            executable_types = \
-                executable_targets.executable_types_in_binary_set()
-            for executable_type in executable_types:
-                if executable_type != ExecutableType.SYSTEM:
-                    for binary in \
-                            executable_targets.get_binaries_of_executable_type(
-                                executable_type):
-                        self._execute_dse_for_binary(
-                            binary, executable_targets, transceiver, machine,
-                            app_id, progress,
-                            processor_to_app_data_base_address,
-                            dsg_targets, uses_advanced_monitors,
-                            extra_monitor_cores_to_ethernet_connection_map)
-            progress.end()
 
         return processor_to_app_data_base_address
 
