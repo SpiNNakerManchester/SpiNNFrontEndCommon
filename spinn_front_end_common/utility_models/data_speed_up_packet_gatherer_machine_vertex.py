@@ -1405,7 +1405,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         :return: int of the biggest sequence num expected
         """
 
-        return ceildiv(len(self._output),
+        return ceildiv(
+            len(self._output),
             self.DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM *
             self.WORD_TO_BYTE_CONVERTER)
 
