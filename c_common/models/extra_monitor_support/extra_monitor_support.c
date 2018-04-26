@@ -901,7 +901,7 @@ void data_in_read_router(){
 
     for (uint position = 0; position <= N_ROUTER_ENTRIES; position ++){
         io_printf(
-            IO_BUF, "entry %d, %d, %d\n",
+            IO_BUF, "entry %u, %u, %u\n",
             application_router_entries[position].key,
             application_router_entries[position].mask,
             application_router_entries[position].route
