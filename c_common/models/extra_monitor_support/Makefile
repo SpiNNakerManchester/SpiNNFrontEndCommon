@@ -5,4 +5,4 @@ LFLAGS += -Wl,--wrap=sark_int
 
 SPINN_LIBS := $(SPINN_DIRS)/lib/libsark.a
 
-include ../common.mk
+include ../fec_models.mk
