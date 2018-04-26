@@ -17,7 +17,6 @@ import struct
 import datetime
 import shutil
 import numpy
-from ConfigParser import RawConfigParser
 
 from spinn_storage_handlers import FileDataReader
 from spinnman.model.enums import CPUState
