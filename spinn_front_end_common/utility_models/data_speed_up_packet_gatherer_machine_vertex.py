@@ -192,17 +192,17 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     # size fo data to store when first packet with command and address
     DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM = \
-        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES /
+        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_ADDRESS_IN_BYTES //
                                 WORD_TO_BYTE_CONVERTER)
 
     # size for data in to store when not first packet
     DATA_IN_FULL_PACKET_WITH_NO_ADDRESS_NUM = \
-        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES /
+        DATA_PER_FULL_PACKET - (OFFSET_AFTER_COMMAND_AND_SEQUENCE_IN_BYTES //
                                 WORD_TO_BYTE_CONVERTER)
 
     # SDRAM requirement for storing missing SDP packets seq nums
     SDRAM_FOR_MISSING_SDP_SEQ_NUMS = int(math.ceil(
-        (120 * 1024 * 1024) /
+        (120 * 1024 * 1024) //
         (DATA_PER_FULL_PACKET_WITH_SEQUENCE_NUM * WORD_TO_BYTE_CONVERTER)))
 
     # size of data in key space
