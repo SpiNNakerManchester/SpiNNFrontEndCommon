@@ -19,12 +19,12 @@ OBJS = data_specification.o simulation.o recording.o profiler.o
 BUILD_OBJS = $(OBJS:%.o=$(SPINN_COMMON_BUILD)/%.o)
 
 # Headers
-HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h
+HEADERS = common-typedefs.h data_specification.h simulation.h recording.h profiler.h buffered_eieio_defs.h log.h debug.h
 INSTALL_HEADERS = $(HEADERS:%.h=$(SPINN_INC_DIR)/%.h)
 
 # Makefile
-OLD_MAKEFILES = Makefile.SpiNNFrontEndCommon FrontEndCommon.mk
-INSTALL_OLD_MAKEFILES = $(OLD_MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
+MAKEFILES = local.mk Makefile.SpiNNFrontEndCommon FrontEndCommon.mk
+INSTALL_MAKEFILES = $(MAKEFILES:%=$(SPINN_MAKE_LIB_DIR)/%)
 
 # Libraries
 APP = libspinn_frontend_common
@@ -59,10 +59,10 @@ $(SPINN_COMMON_BUILD):
 	$(MKDIR) $@
 
 # Installing rules
-install: install-libraries install-headers install-old-makefiles
+install: install-libraries install-headers install-makefiles
 install-libraries: $(INSTALL_LIBS)
 install-headers: $(INSTALL_HEADERS)
-install-old-makefiles: $(INSTALL_OLD_MAKEFILES)
+install-makefiles: $(INSTALL_MAKEFILES)
 
 $(SPINN_LIB_DIR)/%.a: $(SPINN_COMMON_BUILD)/%.a
 	$(INSTALL) -c -m644 $< $(SPINN_LIB_DIR)
@@ -81,11 +81,11 @@ clean:
 	rm -rf $(MODIFIED_DIR)
 
 install-clean:
-	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS)
+	$(RM) $(INSTALL_LIBS) $(INSTALL_HEADERS) $(SPINN_LIB_DIR)/*.dict $(SPINN_LIB_DIR)/*.ranges
 
 .PRECIOUS: $(MODIFIED_DIR)%.c $(LOG_DICT_FILE) $(BUILD_DIR)%.nm $(BUILD_DIR)%.elf $(BUILD_DIR)%.bin
 
-.PHONY: clean install install-libraries install-headers install-old-makefiles install-clean
+.PHONY: clean install install-libraries install-headers install-makefiles install-clean
 
 test:
 	#$(APP_OUTPUT_DIR)$(APP).dict
