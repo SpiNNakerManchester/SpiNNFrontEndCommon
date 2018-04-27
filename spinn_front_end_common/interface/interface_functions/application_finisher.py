@@ -2,6 +2,7 @@ import struct
 
 from spinn_front_end_common.utilities import constants, exceptions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_machine import CoreSubsets
 
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
@@ -47,10 +48,11 @@ class ApplicationFinisher(object):
                         processors_rte + processors_watchdogged,
                         total_processors))
 
-            successful_cores_finished = sum(
-                txrx.get_cores_in_state(app_id, state)
-                for state in
-                ExecutableType.USES_SIMULATION_INTERFACE.end_state)
+            successful_cores_finished = CoreSubsets()
+            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state:
+                subsets = txrx.get_cores_in_state(all_core_subsets, state)
+                for subset in subsets.core_subsets:
+                    successful_cores_finished.add_core_subset(subset)
 
             for core_subset in all_core_subsets:
                 for processor in core_subset.processor_ids:

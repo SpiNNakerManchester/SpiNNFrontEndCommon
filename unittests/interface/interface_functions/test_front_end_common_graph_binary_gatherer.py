@@ -67,7 +67,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph, placements)
-        self.assertEqual(start_type.keys()[0], ExecutableType.RUNNING)
+        self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
         test_cores = targets.get_cores_for_binary("test.aplx")
