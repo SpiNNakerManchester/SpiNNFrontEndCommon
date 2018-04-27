@@ -154,8 +154,8 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedVirtualMachine</param_type>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -186,8 +186,8 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedVirtualMachine</param_type>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -282,8 +282,8 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedVirtualMachine</param_type>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
