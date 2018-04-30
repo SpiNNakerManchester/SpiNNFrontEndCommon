@@ -672,6 +672,7 @@
             <param_name>dsg_targets</param_name>
             <param_name>transceiver</param_name>
             <param_name>app_id</param_name>
+            <token part="SystemBinariesLoaded">BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
             <param_name>uses_advanced_monitors</param_name>
