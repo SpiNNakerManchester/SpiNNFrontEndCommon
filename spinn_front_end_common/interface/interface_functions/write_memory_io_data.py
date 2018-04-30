@@ -175,8 +175,8 @@ class WriteMemoryIOData(object):
                     placement.x, placement.y, size, app_id, tag)
                 end_address = start_address + size
                 with MemoryIO(transceiver, placement.x, placement.y,
-                              write_memory_function, start_address,
-                              end_address) as io:
+                              start_address, end_address,
+                              write_memory_function) as io:
                     vertex.write_data_to_memory_io(io, tag)
             else:
                 tag = self.__local_get_next_tag(placement)

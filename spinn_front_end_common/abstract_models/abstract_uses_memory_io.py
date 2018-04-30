@@ -4,7 +4,8 @@ from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 @add_metaclass(AbstractBase)
 class AbstractUsesMemoryIO(object):
-    """ Indicates that the class will write data using the MemoryIO interface
+    """ Indicates that the class will write data using the \
+        :py:class:`~spinnman.utilities.io.MemoryIO` interface
     """
 
     @abstractmethod
