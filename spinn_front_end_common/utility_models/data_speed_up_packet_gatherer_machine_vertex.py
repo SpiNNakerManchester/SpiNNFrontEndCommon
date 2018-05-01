@@ -52,7 +52,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
         "_connection",
-        "_last_reinjection_status",
+        "_last_status",
         "_max_seq_num",
         "_output",
         "_provenance_data_items",
@@ -151,7 +151,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._write_data_speed_up_report = write_data_speed_up_report
 
         # Stored reinjection status for resetting timeouts
-        self._last_reinjection_status = None
+        self._last_status = None
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -301,9 +301,19 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Store the last reinjection status for resetting
         # NOTE: This assumes the status is the same on all cores
-        self._last_reinjection_status = \
+        self._last_status = \
             extra_monitor_cores_for_router_timeout[0].get_reinjection_status(
                 placements, transceiver)
+
+        # Set to not inject dropped packets
+        extra_monitor_cores_for_router_timeout[0].set_reinjection_packets(
+            placements, extra_monitor_cores_for_router_timeout, transceiver,
+            point_to_point=False, multicast=False, nearest_neighbour=False,
+            fixed_route=False)
+
+        # Clear any outstanding packets from reinjection
+        extra_monitor_cores_for_router_timeout[0].clear_reinjection_queue(
+            transceiver, placements, extra_monitor_cores_for_router_timeout)
 
         # set time out
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
@@ -317,22 +327,29 @@ class DataSpeedUpPacketGatherMachineVertex(
     def unset_cores_for_data_extraction(
             self, transceiver, extra_monitor_cores_for_router_timeout,
             placements):
-        if self._last_reinjection_status is None:
+        if self._last_status is None:
             log.warning(
                 "Cores have not been set for data extraction, so can't be"
                 " unset")
         try:
-            mantissa, exponent = \
-                self._last_reinjection_status.router_timeout_parameters
+            mantissa, exponent = self._last_status.router_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
                 mantissa, exponent, transceiver, placements,
                 extra_monitor_cores_for_router_timeout)
-            mantissa, exponent = self._last_reinjection_status\
-                .router_emergency_timeout_parameters
+            mantissa, exponent = \
+                self._last_status.router_emergency_timeout_parameters
             extra_monitor_cores_for_router_timeout[0].\
                 set_reinjection_router_emergency_timeout(
                     mantissa, exponent, transceiver, placements,
                     extra_monitor_cores_for_router_timeout)
+            extra_monitor_cores_for_router_timeout[0].set_reinjection_packets(
+                placements, extra_monitor_cores_for_router_timeout,
+                transceiver,
+                point_to_point=self._last_status.is_reinjecting_point_to_point,
+                multicast=self._last_status.is_reinjecting_multicast,
+                nearest_neighbour=(
+                    self._last_status.is_reinjecting_nearest_neighbour),
+                fixed_route=self._last_status.is_reinjecting_fixed_route)
         except Exception:
             log.error("Error resetting timeouts", exc_info=True)
             log.error("Checking if the cores are OK...")
