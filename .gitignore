@@ -11,3 +11,5 @@ Debug
 lastfailed
 /.cache
 .coverage
+*.o
+*.class

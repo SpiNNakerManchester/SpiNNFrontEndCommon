@@ -62,7 +62,7 @@ class TDMAAgendaBuilder(object):
             position = time_offset[vertex]
             offset = cpu_cycles_needed_per_window * position
             time_between_packets = \
-                cpu_cycles_needed_per_window / n_packets_per_time_window
+                cpu_cycles_needed_per_window // n_packets_per_time_window
             agenda[vertex] = dict()
             agenda[vertex]['time_offset'] = offset
             agenda[vertex]['time_between_packets'] = time_between_packets

@@ -67,8 +67,10 @@ import logging
 import math
 import os
 import signal
+from six import iteritems, iterkeys, reraise
 import sys
 
+# Version number imports
 from numpy import __version__ as numpy_version
 try:
     from scipy import __version__ as scipy_version
@@ -144,6 +146,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # the holder for the keys used by the machine vertices for
         # communication
         "_routing_infos",
+
+        # the holder for the fixed routes generated, if there are any
+        "_fixed_routes",
 
         # The holder for the ip and reverse iptags used by the simulation
         "_tags",
@@ -409,6 +414,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._placements = None
         self._router_tables = None
         self._routing_infos = None
+        self._fixed_routes = None
         self._application_graph = None
         self._machine_graph = None
         self._tags = None
@@ -1196,7 +1202,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            ex_type, ex_value, ex_traceback = sys.exc_info()
+            exc_info = sys.exc_info()
             try:
                 self._shutdown()
                 helpful_functions.write_finished_file(
@@ -1204,7 +1210,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._report_simulation_top_directory)
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
-            raise ex_type, ex_value, ex_traceback
+            reraise(*exc_info)
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if self._machine is not None:
@@ -1585,9 +1591,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
-        if (self._config.getboolean(
-                "Machine", "enable_advanced_monitor_support") or
-                self._config.getboolean("Machine", "enable_reinjection")):
+        add_data_speed_up = (self._config.getboolean(
+            "Machine", "enable_advanced_monitor_support") or
+            self._config.getboolean("Machine", "enable_reinjection"))
+        if add_data_speed_up:
             algorithms.append("InsertExtraMonitorVerticesToGraphs")
             algorithms.append("InsertEdgesToExtraMonitorFunctionality")
             algorithms.append("FixedRouteRouter")
@@ -1673,6 +1680,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
             "MemoryMachineGraph", "ExecutableTypes"
         ]
 
+        if add_data_speed_up:
+            outputs.append("MemoryFixedRoutes")
+
         if self._application_graph.n_vertices > 0:
             outputs.append("MemoryGraphMapper")
 
@@ -1703,6 +1713,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._graph_mapper = executor.get_item("MemoryGraphMapper")
         self._machine_graph = executor.get_item("MemoryMachineGraph")
         self._executable_types = executor.get_item("ExecutableTypes")
+
+        if add_data_speed_up:
+            self._fixed_routes = executor.get_item("MemoryFixedRoutes")
 
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
@@ -1915,8 +1928,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                  exc_info=True)
 
             # reraise exception
-            ex_type, ex_value, ex_traceback = e_inf
-            raise ex_type, ex_value, ex_traceback
+            reraise(*e_inf)
 
     def _create_execute_workflow(
             self, n_machine_time_steps, loading_done, run_until_complete):
@@ -2081,7 +2093,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 extra_monitor_vertices=extra_monitor_vertices,
                 placements=self._placements)
         except Exception:
-            logger.error("Error reading router provenance", exc_info=True)
+            logger.exception("Error reading router provenance")
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2096,11 +2108,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 unsuccessful_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for (x, y, p), _ in unsuccessful_cores.iteritems():
+                for x, y, p in iterkeys(unsuccessful_cores):
                     unsuccessful_core_subset.add_processor(x, y, p)
 
         # Print the details of error cores
-        for (x, y, p), core_info in unsuccessful_cores.iteritems():
+        for (x, y, p), core_info in iteritems(unsuccessful_cores):
             state = core_info.state
             rte_state = ""
             if state == CPUState.RUN_TIME_EXCEPTION:
@@ -2123,7 +2135,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
             (x, y, p)
-            for (x, y, p), core_info in unsuccessful_cores.iteritems()
+            for (x, y, p), core_info in iteritems(unsuccessful_cores)
             if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
                 core_info.state != CPUState.WATCHDOG)]
 
@@ -2144,16 +2156,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 updater = ChipProvenanceUpdater()
                 updater(self._txrx, self._app_id, non_rte_core_subsets)
             except Exception:
-                logger.error(
-                    "Could not update provenance on chip", exc_info=True)
+                logger.exception("Could not update provenance on chip")
 
             # Extract any written provenance data
             try:
                 extracter = PlacementsProvenanceGatherer()
                 extracter(self._txrx, placements, prov_items)
             except Exception:
-                logger.error(
-                    "Could not read provenance", exc_info=True)
+                logger.exception("Could not read provenance")
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
@@ -2169,10 +2179,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores,
-                self._provenance_file_path)
+                self._txrx, iobuf_cores, self._provenance_file_path)
         except Exception:
-            logger.error("Could not get iobuf", exc_info=True)
+            logger.exception("Could not get iobuf")
             errors, warnings = [], []
 
         # Print the IOBUFs
@@ -2311,6 +2320,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
     @property
     def routing_infos(self):
         return self._routing_infos
+
+    @property
+    def fixed_routes(self):
+        return self._fixed_routes
 
     @property
     def placements(self):
@@ -2581,8 +2594,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             e, exc_info[2], executor.get_item(
                                 "ExecutableTargets"))
                 except Exception:
-                    logger.error("Error when attempting to recover from error",
-                                 exc_info=True)
+                    logger.exception(
+                        "Error when attempting to recover from error")
 
         if self._config.getboolean("Reports", "write_energy_report"):
             self._do_energy_report()
@@ -2606,8 +2619,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._report_simulation_top_directory)
 
         if exc_info is not None:
-            ex_type, ex_value, ex_traceback = exc_info
-            raise ex_type, ex_value, ex_traceback
+            reraise(*exc_info)
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
@@ -2702,7 +2714,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         for item in items:
             if item.report:
                 if not initial_message_printed and initial_message is not None:
-                    print initial_message
+                    print(initial_message)
                     initial_message_printed = True
                 logger.warning(item.message)
 

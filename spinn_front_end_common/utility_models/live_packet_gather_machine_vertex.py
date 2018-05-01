@@ -254,7 +254,7 @@ class LivePacketGatherMachineVertex(
         spec.write_value(data=self._payload_right_shift)
 
         # SDP tag
-        iptag = iter(iptags).next()
+        iptag = next(iter(iptags))
         spec.write_value(data=iptag.tag)
         spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
             iptag.destination_y, iptag.destination_x))[0])

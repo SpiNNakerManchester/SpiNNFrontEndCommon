@@ -317,7 +317,6 @@ static uint32_t max_seq_num = 0;
 
 //! retransmission DMA stuff
 static uint32_t retransmit_seq_nums[ITEMS_PER_DATA_PACKET];
-static uint32_t current_dma_pointer = 0;
 static uint32_t position_for_retransmission = 0;
 static uint32_t missing_seq_num_being_processed = 0;
 static uint32_t position_in_read_data = 0;

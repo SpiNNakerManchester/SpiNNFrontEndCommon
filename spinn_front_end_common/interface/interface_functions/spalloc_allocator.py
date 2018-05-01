@@ -57,7 +57,9 @@ class _SpallocJobController(MachineAllocationController):
 
     @overrides(MachineAllocationController._teardown)
     def _teardown(self):
-        self._job.close()
+        if not self._exited:
+            self._job.close()
+        super(_SpallocJobController, self)._teardown()
 
 
 class SpallocAllocator(object):
