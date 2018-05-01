@@ -8,7 +8,6 @@ from spinn_utilities import __version__ as spinn_utils_version
 # pacman imports
 from pacman.executor.injection_decorator import provide_injectables, \
     clear_injectables
-from pacman.model.graphs import AbstractVirtualVertex
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
