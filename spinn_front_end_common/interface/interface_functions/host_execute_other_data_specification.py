@@ -3,9 +3,8 @@ import struct
 from six import itervalues
 from spinn_front_end_common.utilities import helpful_functions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 

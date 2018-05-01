@@ -1,8 +1,8 @@
 import logging
-from spinn_front_end_common.utilities.helpful_functions \
-    import flood_fill_binary_to_spinnaker
-from spinn_front_end_common.utilities.utility_objs.ExecutableType \
-    import SYSTEM
+from spinn_front_end_common.utilities.helpful_functions import (
+    flood_fill_binary_to_spinnaker)
+from spinn_front_end_common.utilities.utility_objs.ExecutableType import (
+    SYSTEM)
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.scp.enums.Signal import START
 from spinnman.model.enums.CPUState import READY

@@ -1,22 +1,16 @@
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
-from data_specification.data_spec_sender import data_specification_executor
-
-from spinn_utilities.progress_bar import ProgressBar
-from spinn_machine import CoreSubsets
-
-# spinnman imports
-from spinnman.model.enums import CPUState
-
-# front end common imports
-from spinn_front_end_common.utilities.constants import DSE_DATA_STRUCT_SIZE
-from spinn_front_end_common.utilities.helpful_functions \
-    import write_address_to_user0
-
 import os
 import logging
 import struct
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
+from data_specification.data_spec_sender import data_specification_executor
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets
+from spinnman.model.enums import CPUState
+from spinn_front_end_common.utilities.constants import DSE_DATA_STRUCT_SIZE
+from spinn_front_end_common.utilities.helpful_functions import (
+    write_address_to_user0)
+
 
 logger = logging.getLogger(__name__)
 _FOUR_WORDS = struct.Struct("<4I")

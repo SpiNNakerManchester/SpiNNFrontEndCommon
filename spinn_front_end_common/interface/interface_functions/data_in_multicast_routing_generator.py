@@ -1,11 +1,11 @@
 from pacman.model.graphs.machine import MachineGraph, MachineEdge
 from pacman.model.placements import Placements, Placement
-from pacman.model.routing_tables import MulticastRoutingTables, \
-    MulticastRoutingTable
-from pacman.operations.fixed_route_router.fixed_route_router import \
-    RoutingMachineVertex
+from pacman.model.routing_tables import (
+    MulticastRoutingTables, MulticastRoutingTable)
+from pacman.operations.fixed_route_router.fixed_route_router import (
+    RoutingMachineVertex)
 from pacman.operations.router_algorithms import BasicDijkstraRouting
-from spinn_machine import Router, VirtualMachine, MulticastRoutingEntry
+from spinn_machine import (Router, VirtualMachine, MulticastRoutingEntry)
 from spinn_utilities.progress_bar import ProgressBar
 
 

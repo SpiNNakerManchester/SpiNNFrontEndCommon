@@ -1,10 +1,10 @@
-from spinn_front_end_common.interface.interface_functions \
-    import LoadOtherExecutableImages
+import unittest
+from collections import defaultdict
+from spinn_front_end_common.interface.interface_functions import (
+    LoadOtherExecutableImages)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinnman.transceiver import Transceiver
 from spinnman.model import ExecutableTargets
-from collections import defaultdict
-import unittest
 
 
 class _MockTransceiver(Transceiver):

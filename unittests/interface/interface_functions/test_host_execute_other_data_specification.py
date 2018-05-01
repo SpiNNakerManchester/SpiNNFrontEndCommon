@@ -1,18 +1,14 @@
 import unittest
 from tempfile import mktemp
-
-from spinn_front_end_common.utilities.utility_objs.executable_type import \
-    ExecutableType
+from spinn_front_end_common.utilities.utility_objs.executable_type import (
+    ExecutableType)
 from spinn_machine.virtual_machine import VirtualMachine
-
 from spinn_storage_handlers.file_data_writer import FileDataWriter
 from data_specification import constants
-
-from spinn_front_end_common.interface.interface_functions \
-    import HostExecuteOtherDataSpecification
-
-from data_specification.data_specification_generator \
-    import DataSpecificationGenerator
+from spinn_front_end_common.interface.interface_functions import (
+    HostExecuteOtherDataSpecification)
+from data_specification.data_specification_generator import (
+    DataSpecificationGenerator)
 from spinnman.model import ExecutableTargets
 
 

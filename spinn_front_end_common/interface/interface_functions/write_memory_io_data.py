@@ -6,9 +6,8 @@ from spinnman.utilities.io import MemoryIO, FileIO
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition as Sv
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
 from spinn_front_end_common.utilities.utility_objs import DataWritten
-from spinn_front_end_common.utility_models.\
-    data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 
 
 class WriteMemoryIOData(object):
