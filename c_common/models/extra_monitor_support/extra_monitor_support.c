@@ -907,7 +907,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
         if (number_of_missing_seq_nums_in_sdram >
-        position_for_retransmission) {
+                position_for_retransmission) {
             position_in_read_data = 0;
             retransmission_dma_read();
         }
@@ -937,7 +937,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             } else {
                 retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
                 read(DMA_TAG_RETRANSMISSION_READING, 1,
-                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             }
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
@@ -959,9 +959,9 @@ void dma_complete_reading_retransmission_data() {
         missing_seq_num_being_processed;
 
     if (missing_seq_num_being_processed > max_seq_num) {
-    io_printf(
-        IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
-            max_seq_num, missing_seq_num_being_processed);
+        io_printf(
+            IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
+                max_seq_num, missing_seq_num_being_processed);
     }
 
     // send new data back to host
@@ -1112,7 +1112,9 @@ void __wrap_sark_int(void *pc) {
             sark_msg_cpy(msg, shm_msg);
             sark_shmsg_free(shm_msg);
 
-            io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+            io_printf(
+                IO_BUF,
+                "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
 
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
