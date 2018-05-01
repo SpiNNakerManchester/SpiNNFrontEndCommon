@@ -6,8 +6,10 @@ from .set_router_emergency_timeout_process \
     import SetRouterEmergencyTimeoutProcess
 from .set_router_timeout_process import SetRouterTimeoutProcess
 from .set_system_mc_routes_process import SetSystemMCRoutesProcess
+from .clear_queue_process import ClearQueueProcess
 
 __all__ = [
     "ReadStatusProcess", "ResetCountersProcess", "SetPacketTypesProcess",
     "SetRouterEmergencyTimeoutProcess", "SetRouterTimeoutProcess",
-    "SetSystemMCRoutesProcess", "SetApplicationMCRoutesProcess"]
+    "SetSystemMCRoutesProcess", "SetApplicationMCRoutesProcess",
+    "ClearQueueProcess"]

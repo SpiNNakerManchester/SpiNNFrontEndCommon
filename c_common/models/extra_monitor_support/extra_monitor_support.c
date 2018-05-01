@@ -264,7 +264,8 @@ typedef enum reinjector_command_codes {
     CMD_DPRI_SET_PACKET_TYPES = 2,
     CMD_DPRI_GET_STATUS = 3,
     CMD_DPRI_RESET_COUNTERS = 4,
-    CMD_DPRI_EXIT = 5
+    CMD_DPRI_EXIT = 5,
+    CMD_DPRI_CLEAR = 6
 } reinjector_command_codes;
 
 //! flag positions for packet types being reinjected
@@ -537,6 +538,9 @@ INT_HANDLER reinjection_dropped_packet_callback() {
         // Only update this counter if this is a packet to reinject
         n_dropped_packets += 1;
 
+        // Disable FIQ for queue access
+        uint cpsr = cpu_fiq_disable();
+
         // try to insert dumped packet in the queue,
         uint new_tail = (pkt_queue.tail + 1) % PKT_QUEUE_SIZE;
 
@@ -553,6 +557,9 @@ INT_HANDLER reinjection_dropped_packet_callback() {
             // The queue of packets has overflowed
             n_dropped_packet_overflows += 1;
         }
+
+        // restore FIQ after queue access,
+        cpu_int_restore(cpsr);
     }
 }
 
@@ -620,7 +627,10 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
 
     } else if (msg->cmd_rc == CMD_DPRI_SET_PACKET_TYPES) {
         // Set the re-injection options
-        reinjection_read_packet_types((address_t) msg->arg1);
+        reinject_mc = msg->arg1;
+        reinject_pp = msg->arg2;
+        reinject_fr = msg->arg3;
+        reinject_nn = msg->data[0];
 
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
@@ -666,7 +676,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // Return the number of bytes in the packet
         return LENGTH_OF_DATA_FOR_STATUS_RESPONSE * 4;
 
-    } else if (msg->arg1 == CMD_DPRI_RESET_COUNTERS) {
+    } else if (msg->cmd_rc == CMD_DPRI_RESET_COUNTERS) {
         // Reset the counters
         n_dropped_packets = 0;
         n_missed_dropped_packets = 0;
@@ -678,13 +688,26 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
-    } else if (msg->arg1 == CMD_DPRI_EXIT) {
+    } else if (msg->cmd_rc == CMD_DPRI_EXIT) {
         uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
         vic[VIC_DISABLE] = int_select;
         vic[VIC_DISABLE] = (1 << CC_TNF_INT);
         vic[VIC_SELECT] = 0;
         run = false;
 
+        // set SCP command to OK , as successfully completed
+        msg->cmd_rc = RC_OK;
+        return 0;
+    } else if (msg->cmd_rc == CMD_DPRI_CLEAR) {
+        // Disable FIQ for queue access
+        uint cpsr = cpu_fiq_disable();
+        // Clear any stored dropped packets
+        pkt_queue.head = 0;
+        pkt_queue.tail = 0;
+        // restore FIQ after queue access,
+        cpu_int_restore(cpsr);
+        // and disable communications controller interrupts
+        vic[VIC_DISABLE] = 1 << CC_TNF_INT;
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
@@ -717,7 +740,7 @@ void reinjection_configure_comms_controller() {
 void reinjection_configure_router() {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) |
-	    ROUTER_INITIAL_TIMEOUT;
+        ROUTER_INITIAL_TIMEOUT;
 
     // clear router interrupts,
     (void) rtr[RTR_STATUS];
@@ -967,7 +990,7 @@ uint handle_data_in_speed_up(sdp_msg_t *msg) {
 static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
-	// Empty body; CC array is volatile
+    // Empty body; CC array is volatile
     }
     cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = data;
@@ -988,7 +1011,7 @@ void send_data_block(
     for (uint data_position = 0; data_position < number_of_elements_to_send;
             data_position++) {
         uint32_t current_data =
-        	data_to_transmit[current_dma_pointer][data_position];
+            data_to_transmit[current_dma_pointer][data_position];
 
         send_fixed_route_packet(first_packet_key, current_data);
 
@@ -1009,7 +1032,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
     address_t data_sdram_position = (address_t)
-	    &store_address[position_in_store];
+        &store_address[position_in_store];
 
     // update positions as needed
     position_in_store += items_to_read;
@@ -1017,7 +1040,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 
     // set off DMA
     uint desc = DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-	    (items_to_read * WORD_TO_BYTE_MULTIPLIER);
+        (items_to_read * WORD_TO_BYTE_MULTIPLIER);
 
     dma_port_last_used = dma_tag;
     dma[DMA_ADRS] = (uint) data_sdram_position;
@@ -1056,15 +1079,15 @@ void dma_complete_reading_for_original_transmission(){
         //io_printf(IO_BUF, "setting off another DMA\n");
         //log_info("setting off another DMA");
         uint32_t num_items_to_read =
-        	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+            ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
 
         uint32_t next_position_in_store = position_in_store +
-        	(ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+            (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
 
         // if less data needed request less data
         if (next_position_in_store >= number_of_elements_to_read_from_sdram) {
             num_items_to_read = number_of_elements_to_read_from_sdram -
-        	    position_in_store;
+                position_in_store;
             //log_info("reading %d items", num_items_to_read);
             //log_info("position in store = %d, new position in store = %d",
             //         position_in_store, next_position_in_store);
@@ -1075,12 +1098,12 @@ void dma_complete_reading_for_original_transmission(){
 
         //log_info("sending data");
         send_data_block(
-        	current_dma_pointer, items_read_this_time, key_to_transmit);
+            current_dma_pointer, items_read_this_time, key_to_transmit);
         //log_info("finished sending data");
     } else {
         //io_printf(IO_BUF, "sending last data \n");
         send_data_block(
-        	current_dma_pointer, items_read_this_time, key_to_transmit);
+            current_dma_pointer, items_read_this_time, key_to_transmit);
         //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
@@ -1104,8 +1127,8 @@ void write_missing_sdp_seq_nums_into_sdram(
         uint32_t data[], ushort length, uint32_t start_offset) {
     for (ushort offset=start_offset; offset < length; offset ++) {
         missing_sdp_seq_num_sdram_address[
-		number_of_missing_seq_nums_in_sdram +
-		(offset - start_offset)] = data[offset];
+        number_of_missing_seq_nums_in_sdram +
+        (offset - start_offset)] = data[offset];
         if (data[offset] > max_seq_num){
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
             data[offset], max_seq_num);
@@ -1126,7 +1149,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     uint32_t start_reading_offset = 1;
     if (first){
         number_of_missing_seq_sdp_packets =
-        	data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
+            data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
 
         //uint32_t total_missing_seq_nums = (
         //    (ITEMS_PER_DATA_PACKET - 2) +
@@ -1135,8 +1158,8 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         //log_info("final sequence number count is %d", total_missing_seq_nums);
 
         uint32_t size_of_data =
-        	(number_of_missing_seq_sdp_packets * ITEMS_PER_DATA_PACKET *
-        		WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE;
+            (number_of_missing_seq_sdp_packets * ITEMS_PER_DATA_PACKET *
+                WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE;
 
         //log_info("doing first with allocation of %d bytes", size_of_data);
         if (missing_sdp_seq_num_sdram_address != NULL) {
@@ -1145,8 +1168,8 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
             missing_sdp_seq_num_sdram_address = NULL;
         }
         missing_sdp_seq_num_sdram_address = sark_xalloc(
-        	sv->sdram_heap, size_of_data, 0,
-		ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+            sv->sdram_heap, size_of_data, 0,
+        ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
@@ -1161,7 +1184,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
 void retransmission_dma_read() {
     // locate where we are in sdram
     address_t data_sdram_position =
-	    &missing_sdp_seq_num_sdram_address[position_for_retransmission];
+        &missing_sdp_seq_num_sdram_address[position_for_retransmission];
     //log_info(" address to DMA from is %d", data_sdram_position);
     //log_info(" DMA pointer = %d", dma_pointer);
     //log_info("size to read is %d",
@@ -1170,8 +1193,8 @@ void retransmission_dma_read() {
     // set off DMA via SARK commands
     //log_info("setting off DMA");
     uint desc =
-	    DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-	    (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER);
+        DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
+        (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER);
     dma_port_last_used = DMA_TAG_READ_FOR_RETRANSMISSION;
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) retransmit_seq_nums;
@@ -1185,24 +1208,24 @@ void the_dma_complete_read_missing_seqeuence_nums() {
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
         if (number_of_missing_seq_nums_in_sdram >
-		position_for_retransmission) {
+                position_for_retransmission) {
             position_in_read_data = 0;
             retransmission_dma_read();
         }
     } else {
         // get next sequence number to regenerate
         missing_seq_num_being_processed = (uint32_t)
-        	retransmit_seq_nums[position_in_read_data];
+            retransmit_seq_nums[position_in_read_data];
         //io_printf(IO_BUF, "dealing with seq num %d \n",
         //         missing_seq_num_being_processed);
         if (missing_seq_num_being_processed != END_FLAG) {
 
             // regenerate data
             position_in_store = missing_seq_num_being_processed *
-        	    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             uint32_t left_over_portion =
-        	    bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER -
-		    position_in_store;
+                bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER -
+            position_in_store;
 
             //io_printf(IO_BUF, "for seq %d, pos = %d, left %d\n",
             //missing_seq_num_being_processed, position_in_store,
@@ -1215,7 +1238,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
             } else {
                 retransmitted_seq_num_items_read = ITEMS_PER_DATA_PACKET;
                 read(DMA_TAG_RETRANSMISSION_READING, 1,
-                	ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                     ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             }
         } else {        // finished data send, tell host its done
             data_speed_up_send_end_flag();
@@ -1237,9 +1260,9 @@ void dma_complete_reading_retransmission_data() {
         missing_seq_num_being_processed;
 
     if (missing_seq_num_being_processed > max_seq_num) {
-	io_printf(
-		IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
-	        max_seq_num, missing_seq_num_being_processed);
+        io_printf(
+            IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
+                max_seq_num, missing_seq_num_being_processed);
     }
 
     // send new data back to host
@@ -1431,7 +1454,7 @@ void __wrap_sark_int(void *pc) {
             default:
                 io_printf(IO_BUF, "port %d\n",
                           (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
-        	// Do nothing
+            // Do nothing
             }
             sark_msg_free(msg);
         } else {
