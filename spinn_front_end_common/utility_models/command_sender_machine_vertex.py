@@ -165,7 +165,10 @@ class CommandSenderMachineVertex(
     @staticmethod
     def _write_command(command, spec):
         spec.write_value(command.key)
-        spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        if command.is_payload:
+            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        else:
+            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
         spec.write_value(command.payload if command.is_payload else 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
