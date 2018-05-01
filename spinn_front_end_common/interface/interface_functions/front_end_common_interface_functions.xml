@@ -1152,6 +1152,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>router_tables</param_name>

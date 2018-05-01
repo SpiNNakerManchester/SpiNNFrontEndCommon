@@ -1303,14 +1303,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "core_limit")
 
             algorithms.append("MachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
 
-            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryMachine")
             outputs.append("MemoryTransceiver")
 
             executor = self._run_algorithms(
                 inputs, algorithms, outputs, [], [], "machine_generation")
-            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._machine = executor.get_item("MemoryMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_outputs = executor.get_items()
             self._machine_tokens = executor.get_completed_tokens()
@@ -1332,15 +1331,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["CPUsPerVirtualChip"] = 16
 
             algorithms.append("VirtualMachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
 
-            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryMachine")
 
             executor = self._run_algorithms(
                 inputs, algorithms, outputs, [], [], "machine_generation")
             self._machine_outputs = executor.get_items()
             self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._machine = executor.get_item("MemoryMachine")
 
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
@@ -1425,9 +1423,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("HBPAllocator")
 
             algorithms.append("MachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
 
-            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryMachine")
             outputs.append("IPAddress")
             outputs.append("MemoryTransceiver")
             outputs.append("MachineAllocationController")
@@ -1437,7 +1434,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             self._machine_outputs = executor.get_items()
             self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._machine = executor.get_item("MemoryMachine")
             self._ip_address = executor.get_item("IPAddress")
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
@@ -1479,7 +1476,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def generate_file_machine(self):
         inputs = {
-            "MemoryExtendedMachine": self.machine,
+            "MemoryMachine": self.machine,
             "FileMachineFilePath": os.path.join(
                 self._json_folder, "machine.json")
         }
@@ -1653,6 +1650,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("NetworkSpecificationReport")
 
         # only add the partitioner if there isn't already a machine graph
+        algorithms.append("MallocBasedChipIDAllocator")
         if (self._application_graph.n_vertices and
                 not self._machine_graph.n_vertices):
             full = self._config.get(
@@ -2419,11 +2417,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
-                self._machine is not None):
-            raise ConfigurationException(
-                "A Virtual Vertex cannot be added after the machine has been"
-                " created")
         self._original_application_graph.add_vertex(vertex_to_add)
 
     def add_machine_vertex(self, vertex):
@@ -2438,11 +2431,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex, AbstractVirtualVertex) and
-                self._machine is not None):
-            raise ConfigurationException(
-                "A Virtual Vertex cannot be added after the machine has been"
-                " created")
         self._original_machine_graph.add_vertex(vertex)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
