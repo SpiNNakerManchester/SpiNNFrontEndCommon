@@ -1,17 +1,14 @@
+import os
+from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.machine import MachineGraph
-
+from spinnman.utilities.io import MemoryIO, FileIO
+from spinnman.messages.spinnaker_boot import SystemVariableDefinition as Sv
 from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
+from spinn_front_end_common.utilities.utility_objs import DataWritten
 from spinn_front_end_common.utility_models.\
     data_speed_up_packet_gatherer_machine_vertex import \
     DataSpeedUpPacketGatherMachineVertex
-
-from spinn_utilities.progress_bar import ProgressBar
-
-from spinnman.utilities.io import MemoryIO, FileIO
-from spinnman.messages.spinnaker_boot import SystemVariableDefinition as Sv
-
-import os
 
 
 class WriteMemoryIOData(object):
@@ -46,6 +43,7 @@ class WriteMemoryIOData(object):
         :param processor_to_app_data_base_address:\
             Optional existing dictionary of processor to base address
         :return: The mapping between processor and addresses allocated
+        :rtype: dict(tuple(int,int,int),DataWritten)
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:
@@ -59,7 +57,7 @@ class WriteMemoryIOData(object):
                     placement.vertex)
 
                 # select the mode of writing and therefore buffer size
-                write_memory_function, buffer_size = \
+                write_memory_function, _buffer_size = \
                     self._get_write_function_and_buffer_size(
                         uses_advanced_monitors, placement.x, placement.y,
                         transceiver, machine,
@@ -73,7 +71,7 @@ class WriteMemoryIOData(object):
             for placement in progress.over(placements.placements):
 
                 # select the mode of writing and therefore buffer size
-                write_memory_function, buffer_size = \
+                write_memory_function, _buffer_size = \
                     self._get_write_function_and_buffer_size(
                         uses_advanced_monitors, placement.x, placement.y,
                         transceiver, machine,
@@ -163,8 +161,8 @@ class WriteMemoryIOData(object):
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address
-        :param write_memory_function: the function used to write data to\
-         spinnaker
+        :param write_memory_function: \
+            the function used to write data to spinnaker
         """
         # pylint: disable=too-many-arguments
         if isinstance(vertex, AbstractUsesMemoryIO):
@@ -187,7 +185,6 @@ class WriteMemoryIOData(object):
                         hostname, placement.x, placement.y, placement.p, tag))
                 with FileIO(filename, 0, size) as io:
                     vertex.write_data_to_memory_io(io, tag)
-            base_address_map[placement.x, placement.y, placement.p] = {
-                'start_address': start_address,
-                'memory_used': size,
-                'memory_written': size}
+            base_address_map[
+                    placement.x, placement.y, placement.p] = DataWritten(
+                        start_address, size, size)

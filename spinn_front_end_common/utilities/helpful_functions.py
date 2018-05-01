@@ -1,26 +1,19 @@
-# dsg imports
-from data_specification import utility_calls, DataSpecificationExecutor
-
-# front end common imports
-from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.exceptions import DataSpecificationException
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
-# SpiNMachine imports
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_machine import CoreSubsets
-
-# general imports
 import os
 import logging
 import struct
 import datetime
 import shutil
 import numpy
-
+from data_specification import utility_calls, DataSpecificationExecutor
+from spinn_machine import CoreSubsets
 from spinn_storage_handlers import FileDataReader
 from spinnman.model.enums import CPUState
 from spinn_utilities.log import FormatAdapter
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.exceptions import DataSpecificationException
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, DataWritten)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 APP_DIRNAME = 'application_generated_data_files'
@@ -102,7 +95,6 @@ def set_up_output_application_data_specifics(
         max_application_binaries_kept, n_calls_to_run,
         this_run_time_string):
     """
-
     :param where_to_write_application_data_files:\
         the location where all app data is by default written to, or DEFAULT
     :type where_to_write_application_data_files: str
@@ -305,7 +297,6 @@ def translate_iobuf_extraction_elements(
         hard_coded_cores, hard_coded_model_binary, executable_targets,
         executable_finder):
     """
-
     :param hard_coded_cores: list of cores to read iobuf from
     :param hard_coded_model_binary: list of binary names to read iobuf from
     :param executable_targets: the targets of cores and executable binaries
@@ -372,6 +363,7 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
     :param executable_targets: the executable targets object
     :param binary: the binary to flood fill
     :param txrx: spinnman instance
+    :type txrx: :py:class:`~spinnman.Tranceiver`
     :param app_id: the app id to load it on
     :return: the number of cores it was loaded onto
     """
@@ -384,19 +376,29 @@ def flood_fill_binary_to_spinnaker(executable_targets, binary, txrx, app_id):
 def execute_dse_allocate_sdram_and_write_to_spinnaker(
         txrx, machine, app_id, x, y, p, data_spec_path,
         memory_write_function):
-    """ uncompress the DSE file, allocates sdram from the Machine, and\
-     writes data to SpiNNaker.
+    """ Uncompress the DSE file, allocate SDRAM from the Machine, and\
+        write data to SpiNNaker.
 
     :param txrx: SPiNNMan instance
+    :type txrx: :py:class:`~spinnman.Tranceiver`
     :param machine: SPINNMachine instance
-    :param app_id: the app id to alocate sdram on
+    :type machine: :py:class:`~spinn_machine.Machine`
+    :param app_id: the app id to allocate SDRAM on
+    :type app_id: int
     :param x: chip x
+    :type x: int
     :param y: chip y
+    :type y: int
     :param p: processor id
-    :param data_spec_path: file path to the dse script.
-    :param memory_write_function: which function to call to write memory on\
-     spinnaker
-    :return: dict of 'start_address', 'memory_used', 'memory_written'
+    :type p: int
+    :param data_spec_path: file path to the DSE script.
+    :type data_spec_path: str
+    :param memory_write_function: \
+        how to write memory on SpiNNaker
+    :type memory_write_function: callable((int,int,int,bytes),NoneType)
+    :return: description of what was written
+    :rtype: \
+        :py:class:`~spinn_front_end_common.utilities.utility_objs.DataWritten`
     """
 
     # build specification reader
@@ -416,8 +418,8 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
     try:
         executor.execute()
     except DataSpecificationException:
-        logger.error("Error executing data specification for {}, {}, {}"
-                     .format(x, y, p))
+        logger.error("Error executing data specification for {},{},{}",
+                     x, y, p)
         raise
 
     bytes_used_by_spec = executor.get_constructed_data_size()
@@ -449,12 +451,8 @@ def execute_dse_allocate_sdram_and_write_to_spinnaker(
 
     # set user 0 register appropriately to the application data
     write_address_to_user0(address=start_address, x=x, y=y, p=p, txrx=txrx)
-
-    return {
-        'start_address': start_address,
-        'memory_used': bytes_used_by_spec,
-        'memory_written': bytes_written_by_spec
-    }
+    return DataWritten(
+        start_address, bytes_used_by_spec, bytes_written_by_spec)
 
 
 def read_config(config, section, item):
@@ -544,7 +542,7 @@ def determine_flow_states(executable_types, no_sync_changes):
     :param executable_types: \
         the execute types to locate start and end states from
     :type executable_types: dict(\
-        :py:class:`spinn_front_end_common.utilities.utility_objs.executable_type.ExecutableType`\
+        :py:class:`~spinn_front_end_common.utilities.utility_objs.ExecutableType`\
         -> any)
     :param no_sync_changes: the number of times sync signals been sent
     :type no_sync_changes: int
