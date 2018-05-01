@@ -6,10 +6,6 @@ from spinnman.processes.abstract_multi_connection_process \
 
 
 class SetApplicationMCRoutesProcess(AbstractMultiConnectionProcess):
-
-    def __init__(self, connection_selector):
-        AbstractMultiConnectionProcess.__init__(self, connection_selector)
-
     def set_application_mc_routes(self, core_subsets, command_code):
         """
         :param core_subsets: sets of cores to send command to

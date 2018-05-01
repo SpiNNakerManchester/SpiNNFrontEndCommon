@@ -28,8 +28,7 @@ class SetApplicationMCRoutesMessage(AbstractSCPRequest):
         """
 
         self._command_code = command_code
-        AbstractSCPRequest.__init__(
-            self,
+        super(SetApplicationMCRoutesMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
