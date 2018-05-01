@@ -8,9 +8,11 @@ class TestImportAllModule(unittest.TestCase):
 
     def test_import_all(self):
         if os.environ.get('CONTINUOUS_INTEGRATION', 'false').lower() == 'true':
-            package_loader.load_module("spinn_front_end_common", remove_pyc_files=False)
+            package_loader.load_module(
+                "spinn_front_end_common", remove_pyc_files=False)
         else:
-            package_loader.load_module("spinn_front_end_common", remove_pyc_files=True)
+            package_loader.load_module(
+                "spinn_front_end_common", remove_pyc_files=True)
 
 
 if __name__ == "__main__":
