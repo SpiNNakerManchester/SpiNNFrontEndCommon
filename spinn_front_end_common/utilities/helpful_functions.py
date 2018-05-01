@@ -484,3 +484,18 @@ def determine_flow_states(executable_types, no_sync_changes):
         raise ConfigurationException(
             "Unknown executable start types {}".format(executable_types))
     return expected_start_states, expected_end_states
+
+
+def convert_vertices_to_core_subset(vertices, placements):
+    """ Converts vertices into core subsets.
+
+    :param extra_monitor_cores_to_set:\
+        the vertices to convert to core subsets
+    :param placements: the placements object
+    :return: the CoreSubSets of the vertices
+    """
+    core_subsets = CoreSubsets()
+    for vertex in vertices:
+        placement = placements.get_placement_of_vertex(vertex)
+        core_subsets.add_processor(placement.x, placement.y, placement.p)
+    return core_subsets
