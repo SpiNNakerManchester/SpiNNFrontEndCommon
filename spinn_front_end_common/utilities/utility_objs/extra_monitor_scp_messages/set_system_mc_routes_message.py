@@ -6,7 +6,7 @@ from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
 
 
 class SetSystemMCRoutesMessage(AbstractSCPRequest):
-    """ An SCP Request to write the system mc routes into the router
+    """ An SCP Request to write the system multicast routes into the router
     """
 
     __slots__ = (
@@ -21,10 +21,10 @@ class SetSystemMCRoutesMessage(AbstractSCPRequest):
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
         :param p: The processor running the extra monitor vertex, between\
-                0 and 17
+            0 and 17
         :type p: int
         :param command_code: the command code used by the extra monitor \
-        vertex for setting system mc routes.
+            vertex for setting system multicast routes.
         """
 
         self._command_code = command_code
@@ -41,4 +41,4 @@ class SetSystemMCRoutesMessage(AbstractSCPRequest):
 
     def get_scp_response(self):
         return CheckOKResponse(
-            "loaded system mc routes", self._command_code)
+            "load system multicast routes", self._command_code)
