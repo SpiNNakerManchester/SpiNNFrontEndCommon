@@ -1,10 +1,11 @@
+import os
+import sys
+import tempfile
 import unittest
 from spinn_front_end_common.interface.interface_functions \
     import ChipIOBufExtractor
 from spinn_machine import CoreSubsets, CoreSubset
-from spinnman.model import IOBuffer
-import os
-import tempfile
+from spinnman.model import ExecutableTargets, IOBuffer
 
 
 class _PretendTransceiver(object):
@@ -34,10 +35,15 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         text = "Test\n" + warning_text + error_text
         extractor = ChipIOBufExtractor()
         core_subsets = CoreSubsets([CoreSubset(x, y, [p])])
+        executable_targets = ExecutableTargets()
+        class_file = sys.modules[self.__module__].__file__
+        path = os.path.dirname(os.path.abspath(class_file))
+        aplx = os.path.join(path, "mock.aplx")
+        executable_targets.add_subsets(aplx, core_subsets)
         transceiver = _PretendTransceiver([IOBuffer(x, y, p, text)])
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
-            transceiver, core_subsets=core_subsets,
+            transceiver, executable_targets=executable_targets,
             provenance_file_path=folder)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
