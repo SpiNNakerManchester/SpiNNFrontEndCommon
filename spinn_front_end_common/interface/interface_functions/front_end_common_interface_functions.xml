@@ -1132,10 +1132,8 @@
             <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>application_graph</param_name>
-                <param_name>provenance_data_objects</param_name>
-            </all_of>
+            <param_name>application_graph</param_name>
+            <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProvenanceItems</param_type>
