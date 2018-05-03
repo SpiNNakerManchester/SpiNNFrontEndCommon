@@ -499,3 +499,8 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def verify_if_incoming_constraints_covers_key_space(
+        machine_graph, vertex, virtual_key, mask):
+    space =

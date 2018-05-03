@@ -613,9 +613,9 @@ class ReverseIPTagMulticastSourceMachineVertex(
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)
     def get_outgoing_partition_constraints(self, partition):  # @UnusedVariable
-        if self._virtual_key is not None:
-            return list([FixedKeyAndMaskConstraint(
-                [BaseKeyAndMask(self._virtual_key, self._mask)])])
+        #if self._virtual_key is not None:
+        #    return list([FixedKeyAndMaskConstraint(
+        #        [BaseKeyAndMask(self._virtual_key, self._mask)])])
         return list()
 
     @property
