@@ -420,7 +420,7 @@ class BufferManager(object):
             raise exceptions.SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
-        all_data = ""
+        all_data = b""
         if vertex.is_empty(region):
             sent_message = True
         else:
