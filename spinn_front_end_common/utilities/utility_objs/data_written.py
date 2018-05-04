@@ -1,5 +1,5 @@
 class DataWritten(object):
-    """ Describes data written to SpiNNaker. 
+    """ Describes data written to SpiNNaker.
     """
 
     __slots__ = [

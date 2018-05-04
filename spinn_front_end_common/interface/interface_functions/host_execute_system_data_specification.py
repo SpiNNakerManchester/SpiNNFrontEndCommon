@@ -43,7 +43,7 @@ class HostExecuteSystemDataSpecification(object):
         # create a progress bar for end users
         progress = ProgressBar(
             executable_targets.get_n_cores_for_executable_type(
-                SYSTEM),
+                ExecutableType.SYSTEM),
             "Executing data specifications and loading data for system "
             "vertices")
         self._execute_system_specs(
@@ -56,7 +56,8 @@ class HostExecuteSystemDataSpecification(object):
     def _execute_system_specs(
             txrx, machine, app_id, targets, dsg_targets, base_addresses,
             progress):
-        for binary in targets.get_binaries_of_executable_type(ExecutableType.SYSTEM):
+        for binary in targets.get_binaries_of_executable_type(
+                ExecutableType.SYSTEM):
             core_subsets = targets.get_cores_for_binary(binary)
             for core_subset in core_subsets:
                 x = core_subset.x
