@@ -453,8 +453,7 @@ class ExtraMonitorSupportMachineVertex(
         process.set_packet_types(
             core_subsets, self._reinject_point_to_point,
             self._reinject_multicast, self._reinject_nearest_neighbour,
-            self._reinject_fixed_route,
-            self._EXTRA_MONITOR_COMMANDS.GET_STATUS)
+            self._reinject_fixed_route)
 
     def set_up_system_mc_routes(
             self, placements, extra_monitor_cores_for_data, transceiver):
