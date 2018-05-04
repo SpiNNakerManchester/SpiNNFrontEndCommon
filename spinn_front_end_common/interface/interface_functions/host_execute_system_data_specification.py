@@ -2,8 +2,8 @@ import logging
 import struct
 from spinn_front_end_common.utilities.helpful_functions import (
     execute_dse_allocate_sdram_and_write_to_spinnaker)
-from spinn_front_end_common.utilities.utility_objs.ExecutableType import (
-    SYSTEM)
+from spinn_front_end_common.utilities.utility_objs.executable_type import (
+    ExecutableType)
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_utilities.log import FormatAdapter
 
@@ -56,7 +56,7 @@ class HostExecuteSystemDataSpecification(object):
     def _execute_system_specs(
             txrx, machine, app_id, targets, dsg_targets, base_addresses,
             progress):
-        for binary in targets.get_binaries_of_executable_type(SYSTEM):
+        for binary in targets.get_binaries_of_executable_type(ExecutableType.SYSTEM):
             core_subsets = targets.get_cores_for_binary(binary)
             for core_subset in core_subsets:
                 x = core_subset.x

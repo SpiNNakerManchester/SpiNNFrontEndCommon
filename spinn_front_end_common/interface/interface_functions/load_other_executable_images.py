@@ -1,10 +1,9 @@
 import logging
-from spinn_front_end_common.utilities.utility_objs.ExecutableType import (
-    SYSTEM)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_machine import CoreSubsets
 from spinn_utilities.progress_bar import ProgressBar
-from spinnman.messages.scp.enums.Signal import START
-from spinnman.model.enums.CPUState import READY
+from spinnman.messages.scp.enums import Signal
+from spinnman.model.enums import CPUState
 from spinn_front_end_common.utilities.helpful_functions import (
     flood_fill_binary_to_spinnaker)
 
@@ -22,7 +21,8 @@ class LoadOtherExecutableImages(object):
 
         progress = ProgressBar(
             executable_targets.total_processors + 1 -
-            executable_targets.get_n_cores_for_executable_type(SYSTEM),
+            executable_targets.get_n_cores_for_executable_type(
+                ExecutableType.SYSTEM),
             "Loading application executables onto the machine")
 
         user_core_subsets = self._load_user_executables(
@@ -36,7 +36,7 @@ class LoadOtherExecutableImages(object):
         user_core_subsets = CoreSubsets()
         for exe_type in targets.executable_types_in_binary_set():
             # only load executables not of system type
-            if exe_type == SYSTEM:
+            if exe_type == ExecutableType.SYSTEM:
                 continue
             for binary in targets.get_binaries_of_executable_type(exe_type):
                 n_loaded = flood_fill_binary_to_spinnaker(
@@ -49,5 +49,6 @@ class LoadOtherExecutableImages(object):
 
     @staticmethod
     def _start_simulation(txrx, app_id, user_core_subsets):
-        txrx.wait_for_cores_to_be_in_state(user_core_subsets, app_id, [READY])
-        txrx.send_signal(app_id, START)
+        txrx.wait_for_cores_to_be_in_state(
+            user_core_subsets, app_id, [CPUState.READY])
+        txrx.send_signal(app_id, Signal.START)
