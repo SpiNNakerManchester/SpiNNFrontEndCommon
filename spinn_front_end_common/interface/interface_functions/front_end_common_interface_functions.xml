@@ -196,8 +196,8 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedVirtualMachine</param_type>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -228,8 +228,8 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedVirtualMachine</param_type>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -324,8 +324,8 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedVirtualMachine</param_type>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -1289,10 +1289,8 @@
             <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>application_graph</param_name>
-                <param_name>provenance_data_objects</param_name>
-            </all_of>
+            <param_name>application_graph</param_name>
+            <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProvenanceItems</param_type>
@@ -1309,6 +1307,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>router_tables</param_name>
@@ -1687,10 +1686,8 @@
             <param_name>n_chips</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>spalloc_port</param_name>
-                <param_name>spalloc_machine</param_name>
-            </all_of>
+            <param_name>spalloc_port</param_name>
+            <param_name>spalloc_machine</param_name>
         </optional_inputs>
         <outputs>
             <param_type>IPAddress</param_type>
