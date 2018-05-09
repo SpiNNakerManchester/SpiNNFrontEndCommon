@@ -1451,7 +1451,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             else:
                 self._app_id = self._txrx.app_id_tracker.get_new_id()
 
-
         self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
 
         return self._machine
