@@ -14,12 +14,15 @@ import logging
 import struct
 import datetime
 import shutil
-from ConfigParser import RawConfigParser
 
 from spinnman.model.enums import CPUState
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
+APP_DIRNAME = 'application_generated_data_files'
 FINISHED_FILENAME = "finished"
+REPORTS_DIRNAME = "reports"
+TIMESTAMP_FILENAME = "time_stamp"
 _ONE_WORD = struct.Struct("<I")
 
 
@@ -41,11 +44,23 @@ def read_data(x, y, address, length, data_format, transceiver):
     :param data_format: the format to read memory
     :param transceiver: the SpinnMan interface
     """
+    # pylint: disable=too-many-arguments
 
-    # turn byte array into str for unpack to work
-    data = buffer(transceiver.read_memory(x, y, address, length))
-    result = struct.unpack_from(data_format, data)[0]
-    return result
+    data = transceiver.read_memory(x, y, address, length)
+    return struct.unpack_from(data_format, data)[0]
+
+
+def write_address_to_user0(txrx, x, y, p, address):
+    """ Writes the given address into the user_0 register of the given core.
+
+    :param txrx: The transceiver.
+    :param x: Chip coordinate.
+    :param y: Chip coordinate.
+    :param p: Core ID on chip.
+    :param address: Value to write (32-bit integer)
+    """
+    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
+    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -62,13 +77,20 @@ def locate_memory_region_for_placement(placement, region, transceiver):
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset_in_pointer_table = \
-        utility_calls.get_region_base_address_offset(
-            regions_base_address, region)
-    region_address = buffer(transceiver.read_memory(
-        placement.x, placement.y, region_offset_in_pointer_table, 4))
-    region_address_decoded = _ONE_WORD.unpack_from(region_address)[0]
-    return region_address_decoded
+    region_offset = utility_calls.get_region_base_address_offset(
+        regions_base_address, region)
+
+    # Get the actual address of the region
+    region_address = transceiver.read_memory(
+        placement.x, placement.y, region_offset, 4)
+    return _ONE_WORD.unpack_from(region_address)[0]
+
+
+def child_folder(parent, child_name):
+    child = os.path.join(parent, child_name)
+    if not os.path.exists(child):
+        os.makedirs(child)
+    return child
 
 
 def set_up_output_application_data_specifics(
@@ -78,74 +100,40 @@ def set_up_output_application_data_specifics(
     """
 
     :param where_to_write_application_data_files:\
-        the location where all app data is by default written to
+        the location where all app data is by default written to, or DEFAULT
+    :type where_to_write_application_data_files: str
     :param max_application_binaries_kept:\
         The max number of report folders to keep active at any one time
+    :type max_application_binaries_kept: int
     :param n_calls_to_run: the counter of how many times run has been called.
+    :type n_calls_to_run: int
     :param this_run_time_string: the time stamp string for this run
+    :type this_run_time_string: str
     :return: the run folder for this simulation to hold app data
     """
-    this_run_time_folder = None
     if where_to_write_application_data_files == "DEFAULT":
-        directory = os.getcwd()
-        application_generated_data_file_folder = \
-            os.path.join(directory, 'application_generated_data_files')
-        if not os.path.exists(application_generated_data_file_folder):
-            os.makedirs(application_generated_data_file_folder)
+        where_to_write_application_data_files = os.getcwd()
+    application_generated_data_file_folder = child_folder(
+        where_to_write_application_data_files, APP_DIRNAME)
+    # add time stamped folder for this run
+    this_run_time_folder = child_folder(
+        application_generated_data_file_folder, this_run_time_string)
 
-        _remove_excess_folders(
-            max_application_binaries_kept,
-            application_generated_data_file_folder)
+    # remove folders that are old and above the limit
+    _remove_excess_folders(
+        max_application_binaries_kept,
+        application_generated_data_file_folder)
 
-        # add time stamped folder for this run
-        this_run_time_folder = \
-            os.path.join(
-                application_generated_data_file_folder, this_run_time_string)
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
-
-        # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(this_run_time_folder,
-                                             "time_stamp")
-        writer = open(time_of_run_file_name, "w")
-        writer.writelines("{}".format(this_run_time_string))
-        writer.flush()
-        writer.close()
-
-    else:
-        # add time stamped folder for this run
-        application_generated_data_file_folder = \
-            os.path.join(where_to_write_application_data_files,
-                         'application_generated_data_files')
-        if not os.path.exists(application_generated_data_file_folder):
-            os.makedirs(application_generated_data_file_folder)
-        this_run_time_folder = \
-            os.path.join(application_generated_data_file_folder,
-                         this_run_time_string)
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
-
-        # remove folders that are old and above the limit
-        _remove_excess_folders(
-            max_application_binaries_kept,
-            where_to_write_application_data_files)
-
-        # store timestamp in latest/time_stamp
-        time_of_run_file_name = os.path.join(this_run_time_folder,
-                                             "time_stamp")
-        writer = open(time_of_run_file_name, "w")
-        writer.writelines("{}".format(this_run_time_string))
-
-        if not os.path.exists(this_run_time_folder):
-            os.makedirs(this_run_time_folder)
+    # store timestamp in latest/time_stamp
+    time_of_run_file_name = os.path.join(
+        this_run_time_folder, TIMESTAMP_FILENAME)
+    with open(time_of_run_file_name, "w") as f:
+        f.writelines(str(this_run_time_string))
 
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
-    this_run_time_sub_folder = os.path.join(
+    this_run_time_sub_folder = child_folder(
         this_run_time_folder, "run_{}".format(n_calls_to_run))
-
-    if not os.path.exists(this_run_time_sub_folder):
-        os.makedirs(this_run_time_sub_folder)
 
     return this_run_time_sub_folder, this_run_time_folder
 
@@ -156,68 +144,56 @@ def set_up_report_specifics(
     """
 
     :param default_report_file_path: The location where all reports reside
+    :type default_report_file_path: str
     :param max_reports_kept:\
         The max number of report folders to keep active at any one time
+    :type max_reports_kept: int
     :param n_calls_to_run: the counter of how many times run has been called.
+    :type n_calls_to_run: int
     :param this_run_time_string: holder for the timestamp for future runs
+    :type this_run_time_string: str
     :return: The folder for this run, the time_stamp
     """
 
     # determine common report folder
     config_param = default_report_file_path
-    created_folder = False
     if config_param == "DEFAULT":
         directory = os.getcwd()
 
         # global reports folder
-        report_default_directory = os.path.join(directory, 'reports')
-        if not os.path.exists(report_default_directory):
-            os.makedirs(report_default_directory)
-            created_folder = True
+        report_default_directory = child_folder(directory, REPORTS_DIRNAME)
     elif config_param == "REPORTS":
-        report_default_directory = 'reports'
+        report_default_directory = REPORTS_DIRNAME
         if not os.path.exists(report_default_directory):
             os.makedirs(report_default_directory)
     else:
-        report_default_directory = \
-            os.path.join(config_param, 'reports')
-        if not os.path.exists(report_default_directory):
-            os.makedirs(report_default_directory)
+        report_default_directory = child_folder(config_param, REPORTS_DIRNAME)
 
     # clear and clean out folders considered not useful anymore
-    if not created_folder and len(os.listdir(report_default_directory)) > 0:
+    if os.listdir(report_default_directory):
         _remove_excess_folders(max_reports_kept, report_default_directory)
 
     # determine the time slot for later
     if this_run_time_string is None:
-        this_run_time = datetime.datetime.now()
+        now = datetime.datetime.now()
         this_run_time_string = (
             "{:04}-{:02}-{:02}-{:02}-{:02}-{:02}-{:02}".format(
-                this_run_time.year, this_run_time.month, this_run_time.day,
-                this_run_time.hour, this_run_time.minute,
-                this_run_time.second, this_run_time.microsecond))
+                now.year, now.month, now.day,
+                now.hour, now.minute, now.second, now.microsecond))
 
     # handle timing app folder and cleaning of report folder from last run
-    app_folder_name = os.path.join(
+    app_folder_name = child_folder(
         report_default_directory, this_run_time_string)
-
-    if not os.path.exists(app_folder_name):
-            os.makedirs(app_folder_name)
 
     # create sub folder within reports for sub runs (where changes need to be
     # recorded)
-    app_sub_folder_name = os.path.join(
+    app_sub_folder_name = child_folder(
         app_folder_name, "run_{}".format(n_calls_to_run))
 
-    if not os.path.exists(app_sub_folder_name):
-        os.makedirs(app_sub_folder_name)
-
     # store timestamp in latest/time_stamp for provenance reasons
-    time_of_run_file_name = os.path.join(app_folder_name, "time_stamp")
-    writer = open(time_of_run_file_name, "w")
-    writer.writelines("{}".format(this_run_time_string))
-    writer.flush()
-    writer.close()
+    time_of_run_file_name = os.path.join(app_folder_name, TIMESTAMP_FILENAME)
+    with open(time_of_run_file_name, "w") as f:
+        f.writelines(this_run_time_string)
     return app_sub_folder_name, app_folder_name, this_run_time_string
 
 
@@ -225,16 +201,12 @@ def write_finished_file(app_data_runtime_folder, report_default_directory):
     # write a finished file that allows file removal to only remove folders
     # that are finished
     app_file_name = os.path.join(app_data_runtime_folder, FINISHED_FILENAME)
-    writer = open(app_file_name, "w")
-    writer.writelines("finished")
-    writer.flush()
-    writer.close()
+    with open(app_file_name, "w") as f:
+        f.writelines("finished")
 
     app_file_name = os.path.join(report_default_directory, FINISHED_FILENAME)
-    writer = open(app_file_name, "w")
-    writer.writelines("finished")
-    writer.flush()
-    writer.close()
+    with open(app_file_name, "w") as f:
+        f.writelines("finished")
 
 
 def _remove_excess_folders(max_to_keep, starting_directory):
@@ -245,9 +217,8 @@ def _remove_excess_folders(max_to_keep, starting_directory):
 
         # sort files into time frame
         files_in_report_folder.sort(
-            cmp, key=lambda temp_file:
-            os.path.getmtime(os.path.join(starting_directory,
-                                          temp_file)))
+            key=lambda temp_file:
+            os.path.getmtime(os.path.join(starting_directory, temp_file)))
 
         # remove only the number of files required, and only if they have
         # the finished flag file created
@@ -258,17 +229,17 @@ def _remove_excess_folders(max_to_keep, starting_directory):
             finished_flag = os.path.join(os.path.join(
                 starting_directory, current_oldest_file), FINISHED_FILENAME)
             if os.path.exists(finished_flag):
-                shutil.rmtree(os.path.join(starting_directory,
-                                           current_oldest_file),
-                              ignore_errors=True)
+                shutil.rmtree(
+                    os.path.join(starting_directory, current_oldest_file),
+                    ignore_errors=True)
                 files_removed += 1
             else:
                 files_not_closed += 1
-            if (files_removed + files_not_closed) >= num_files_to_remove:
+            if files_removed + files_not_closed >= num_files_to_remove:
                 break
-        if files_not_closed > max_to_keep / 4:
-            logger.warning("{} has {} old reports that have not been closed".
-                           format(starting_directory, files_not_closed))
+        if files_not_closed > max_to_keep // 4:
+            logger.warning("{} has {} old reports that have not been closed",
+                           starting_directory, files_not_closed)
 
 
 def convert_string_into_chip_and_core_subset(cores):
@@ -304,7 +275,7 @@ def sort_out_downed_chips_cores_links(
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
             set of ((x, y), link id) of down links)
-    :rtype: ({(int, int,), }, {(int, int, int), }, {((int, int), int), })
+    :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
     """
     ignored_chips = set()
     if downed_chips is not None and downed_chips != "None":
@@ -410,6 +381,11 @@ def read_config_int(config, section, item):
     return int(value)
 
 
+_BOOLEAN_STATES = {
+    'true': True, '1': True, 'on': True, 'yes': True,
+    'false': False, '0': False, 'off': False, 'no': False}
+
+
 def read_config_boolean(config, section, item):
     """ Get the boolean value of a config item, returning None if the value\
         is "None"
@@ -417,8 +393,8 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
-    if value.lower() in RawConfigParser._boolean_states:
-        return RawConfigParser._boolean_states[value.lower()]
+    if value.lower() in _BOOLEAN_STATES:
+        return _BOOLEAN_STATES[value.lower()]
     raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
         value, section, item))
 
@@ -461,6 +437,7 @@ def convert_time_diff_to_total_milliseconds(sample):
     """ converts between a time diff and total milliseconds
 
     :return: total milliseconds
+    :rtype: float
     """
     return (sample.total_seconds() * 1000.0) + (sample.microseconds / 1000.0)
 
@@ -468,38 +445,57 @@ def convert_time_diff_to_total_milliseconds(sample):
 def determine_flow_states(executable_types, no_sync_changes):
     """ returns the start and end states for these executable types
 
-    :param executable_types: the execute types to locate start and end states\
-     from
+    :param executable_types: \
+        the execute types to locate start and end states from
+    :type executable_types: dict(\
+        :py:class:`spinn_front_end_common.utilities.utility_objs.executable_type.ExecutableType`\
+        -> any)
     :param no_sync_changes: the number of times sync signals been sent
+    :type no_sync_changes: int
     :return: dict of executable type to states.
+    :rtype: 2-tuple
     """
     expected_start_states = dict()
     expected_end_states = dict()
-    for executable_start_type in executable_types.keys():
+    for start_type in executable_types.keys():
 
         # cores that ignore all control and are just running
-        if executable_start_type == ExecutableType.RUNNING:
+        if start_type == ExecutableType.RUNNING:
             expected_start_states[ExecutableType.RUNNING] = [
                 CPUState.RUNNING, CPUState.FINISHED]
             expected_end_states[ExecutableType.RUNNING] = [
                 CPUState.RUNNING, CPUState.FINISHED]
 
         # cores that require a sync barrier
-        elif executable_start_type == ExecutableType.SYNC:
+        elif start_type == ExecutableType.SYNC:
             expected_start_states[ExecutableType.SYNC] = [CPUState.SYNC0]
             expected_end_states[ExecutableType.SYNC] = [CPUState.FINISHED]
 
         # cores that use our sim interface
-        elif (executable_start_type ==
-                ExecutableType.USES_SIMULATION_INTERFACE):
+        elif start_type == ExecutableType.USES_SIMULATION_INTERFACE:
             if no_sync_changes % 2 == 0:
-                expected_start_states[executable_start_type] = [CPUState.SYNC0]
+                expected_start_states[start_type] = [CPUState.SYNC0]
             else:
-                expected_start_states[executable_start_type] = [CPUState.SYNC1]
-            expected_end_states[executable_start_type] = [CPUState.PAUSED]
+                expected_start_states[start_type] = [CPUState.SYNC1]
+            expected_end_states[start_type] = [CPUState.PAUSED]
 
     # if no states, go boom.
-    if len(expected_start_states) == 0:
+    if not expected_start_states:
         raise ConfigurationException(
             "Unknown executable start types {}".format(executable_types))
     return expected_start_states, expected_end_states
+
+
+def convert_vertices_to_core_subset(vertices, placements):
+    """ Converts vertices into core subsets.
+
+    :param extra_monitor_cores_to_set:\
+        the vertices to convert to core subsets
+    :param placements: the placements object
+    :return: the CoreSubSets of the vertices
+    """
+    core_subsets = CoreSubsets()
+    for vertex in vertices:
+        placement = placements.get_placement_of_vertex(vertex)
+        core_subsets.add_processor(placement.x, placement.y, placement.p)
+    return core_subsets

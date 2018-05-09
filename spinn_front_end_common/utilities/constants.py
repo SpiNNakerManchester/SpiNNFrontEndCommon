@@ -87,5 +87,9 @@ BUFFERING_OPERATIONS = Enum(
         ("BUFFER_WRITE", 1)]
 )
 
-# partition ids pre allocated to functionality
+# partition ids preallocated to functionality
 PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP = "DATA_SPEED_UP_ROAD"
+
+# The default local port that the toolchain listens on for the notification
+# protocol.
+NOTIFY_PORT = 19999

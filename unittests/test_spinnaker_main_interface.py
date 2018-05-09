@@ -12,8 +12,7 @@ from spinn_front_end_common.utilities import FailedState
 
 
 class Close_Once(object):
-
-    __slots__ = ("closed")
+    __slots__ = ["closed"]
 
     def __init__(self):
         self.closed = False
@@ -21,15 +20,14 @@ class Close_Once(object):
     def close(self):
         if self.closed:
             raise Exception("Close called twice")
-        else:
-            self.closed = True
+        self.closed = True
 
 
 class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
     def __init__(self, machine_time_step=None, time_scale_factor=None):
-        AbstractSpinnakerBase.__init__(
-            self, base.CONFIG_FILE, ExecutableFinder())
+        super(MainInterfaceTimingImpl, self).__init__(
+            base.CONFIG_FILE, ExecutableFinder())
         self.set_up_timings(machine_time_step, time_scale_factor)
 
 

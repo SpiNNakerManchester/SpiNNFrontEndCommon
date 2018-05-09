@@ -1,7 +1,9 @@
 import logging
 import os
+from six import iteritems
+from spinn_utilities.log import FormatAdapter
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
@@ -25,14 +27,14 @@ class MemoryMapOnHostReport(object):
             with open(file_name, "w") as f:
                 self._describe_mem_map(f, processor_to_app_data_base_address)
         except IOError:
-            logger.error("Generate_placement_reports: Can't open file"
-                         " {} for writing.".format(file_name))
+            logger.exception("Generate_placement_reports: Can't open file"
+                             " {} for writing.", file_name)
 
     @staticmethod
     def _describe_mem_map(f, memory_map):
         f.write("On host data specification executor\n")
 
-        for key, data in memory_map.iteritems():
+        for key, data in iteritems(memory_map):
             f.write(
                 "{}: ('start_address': {}, hex:{}), "
                 "'memory_used': {}, 'memory_written': {} \n".format(

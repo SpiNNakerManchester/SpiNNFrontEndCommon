@@ -1,6 +1,7 @@
 # spinn front end common
 from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
 from pacman.model.graphs.common import EdgeTrafficType
+from spinn_utilities.log import FormatAdapter
 from spinn_front_end_common.abstract_models \
     import AbstractProvidesKeyToAtomMapping, AbstractRecordable, \
     AbstractSupportsDatabaseInjection
@@ -11,7 +12,7 @@ import os
 import sqlite3
 import sys
 
-logger = logging.getLogger(__name__)
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 def _extract_int(x):
@@ -98,8 +99,8 @@ class DatabaseWriter(object):
             c.execute(sql, args)
             return c.lastrowid
         except Exception:
-            logger.error("problem with insertion; argument types are %s",
-                         str(map((lambda x: type(x)), args)), exc_info=True)
+            logger.exception("problem with insertion; argument types are {}",
+                             str(map(type, args)))
             raise
 
     def create_schema(self):
@@ -123,6 +124,7 @@ class DatabaseWriter(object):
 
     def __insert_processor(self, chip, machine_id, available_DTCM,
                            available_CPU, physical_id):
+        # pylint: disable=too-many-arguments
         return self.__insert(
             "INSERT INTO Processor("
             "  chip_x, chip_y, machine_id, available_DTCM, "
@@ -241,6 +243,9 @@ class DatabaseWriter(object):
             int(entry.routing_entry_key), int(entry.mask), int(route))
 
     def __insert_ip_tag(self, vertex, ip_tag):
+        port = ip_tag.port
+        if port is None:
+            port = 0
         return self.__insert(
             "INSERT INTO IP_tags("
             "  vertex_id, tag, board_address, ip_address,"
@@ -248,16 +253,19 @@ class DatabaseWriter(object):
             "VALUES (?, ?, ?, ?, ?, ?)",
             int(self._vertex_to_id[vertex]),
             int(ip_tag.tag), str(ip_tag.board_address),
-            str(ip_tag.ip_address), int(ip_tag.port),
+            str(ip_tag.ip_address), int(port),
             1 if ip_tag.strip_sdp else 0)
 
     def __insert_reverse_ip_tag(self, vertex, reverse_ip_tag):
+        port = reverse_ip_tag.port
+        if port is None:
+            port = 0
         return self.__insert(
             "INSERT INTO Reverse_IP_tags("
             "  vertex_id, tag, board_address, port) "
             "VALUES (?, ?, ?, ?)",
             int(self._vertex_to_id[vertex]), int(reverse_ip_tag.tag),
-            str(reverse_ip_tag.board_address), int(reverse_ip_tag.port))
+            str(reverse_ip_tag.board_address), int(port))
 
     def __insert_event_atom_mapping(self, vertex, event_id, atom_id):
         return self.__insert(
@@ -303,7 +311,7 @@ class DatabaseWriter(object):
                     self.__insert_app_vertex(
                         vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
-                    self.__insert_app_vertex(vertex, sys.maxint, 0)
+                    self.__insert_app_vertex(vertex, sys.maxsize, 0)
 
             # add edges
             for vertex in application_graph.vertices:

@@ -39,7 +39,6 @@ class MundyOnChipRouterCompression(object):
             provenance_file_path, compress_only_when_needed=True,
             compress_as_much_as_possible=False):
         """
-
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface
         :param machine: the spinnaker machine representation
@@ -47,6 +46,7 @@ class MundyOnChipRouterCompression(object):
         :param provenance_file_path: the path to where to write the data
         :return: flag stating routing compression and loading has been done
         """
+        # pylint: disable=too-many-arguments
 
         # build progress bar
         progress = ProgressBar(
@@ -97,12 +97,10 @@ class MundyOnChipRouterCompression(object):
         # update the progress bar
         progress.end()
 
-        # return loaded routing tables flag
-        return True
-
     def _load_routing_table(
             self, table, txrx, app_id, compressor_app_id,
             compress_only_when_needed, compress_as_much_as_possible):
+        # pylint: disable=too-many-arguments
         data = self._build_data(
             table, app_id, compress_only_when_needed,
             compress_as_much_as_possible)
@@ -117,7 +115,7 @@ class MundyOnChipRouterCompression(object):
     @staticmethod
     def __read_user_0(txrx, x, y, p):
         addr = txrx.get_user_0_register_address_from_core(x, y, p)
-        return struct.unpack("<I", str(txrx.read_memory(x, y, addr, 4)))[0]
+        return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
 
     def _check_for_success(
             self, executable_targets, txrx, provenance_file_path,
@@ -156,18 +154,17 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
-            txrx, True, executable_targets.all_core_subsets,
+            txrx, executable_targets.all_core_subsets,
             provenance_file_path)
         for warning in io_warnings:
-            logger.warn(warning)
+            logger.warning(warning)
         for error in io_errors:
             logger.error(error)
         txrx.stop_application(compressor_app_id)
         txrx.app_id_tracker.free_id(compressor_app_id)
 
     @staticmethod
-    def _load_executables(
-            routing_tables, compressor_app_id, txrx, machine):
+    def _load_executables(routing_tables, compressor_app_id, txrx, machine):
         """ loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
@@ -210,10 +207,12 @@ class MundyOnChipRouterCompression(object):
             If True, the compressor will only compress if the table doesn't\
             fit in the current router space, otherwise it will just load\
             the table
+        :type compress_only_when_needed: bool
         :param compress_as_much_as_possible:\
             If False, the compressor will only reduce the table until it fits\
             in the router space, otherwise it will try to reduce until it\
             until it can't reduce it any more
+        :type compress_as_much_as_possible: bool
         :return: The byte array of data
         """
 
@@ -243,8 +242,7 @@ class MundyOnChipRouterCompression(object):
         :return: return the source value
         """
         if entry.defaultable:
-            return list(entry.link_ids)[0] + 3 % 6
-        elif len(entry.link_ids) > 0:
+            return (list(entry.link_ids)[0] + 3) % 6
+        elif entry.link_ids:
             return list(entry.link_ids)[0]
-        else:
-            return 0
+        return 0

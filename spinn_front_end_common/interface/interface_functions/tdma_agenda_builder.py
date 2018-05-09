@@ -17,7 +17,7 @@ class TDMAAgendaBuilder(object):
             other_cpu_demands_in_cpu_cycles,
             n_packets_per_time_window, machine_time_step, time_scale_factor,
             safety_factor=1):
-
+        # pylint: disable=too-many-arguments
         time_offset = dict()
 
         # figure out max in edges (as this becomes the colour scheme
@@ -55,14 +55,14 @@ class TDMAAgendaBuilder(object):
             the agenda for each vertex on its time window and its offset\
             between spike transmissions
         """
-
+        # pylint: disable=too-many-arguments
         agenda = dict()
 
         for vertex in machine_graph.vertices:
             position = time_offset[vertex]
             offset = cpu_cycles_needed_per_window * position
             time_between_packets = \
-                cpu_cycles_needed_per_window / n_packets_per_time_window
+                cpu_cycles_needed_per_window // n_packets_per_time_window
             agenda[vertex] = dict()
             agenda[vertex]['time_offset'] = offset
             agenda[vertex]['time_between_packets'] = time_between_packets
@@ -159,10 +159,12 @@ class TDMAAgendaBuilder(object):
         :param other_cpu_demands_in_cpu_cycles:\
             extra costs (e.g. timer tick callback etc.)
         :return: cpu cycles available per window.
+        :rtype: float
         :raises ConfigurationException:\
             if the overall time is below what is possible to receive packets\
             with
         """
+        # pylint: disable=too-many-arguments
 
         # figure out if its feasible for window to work
         total_cycles_available = \

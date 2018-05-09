@@ -1,6 +1,5 @@
 from data_specification.constants import MAX_MEM_REGIONS
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 import logging
 import os
@@ -17,21 +16,14 @@ class MemoryMapOnChipReport(object):
     """ Report on memory usage
     """
 
-    def __call__(
-            self, report_default_directory, dsg_targets, transceiver,
-            loaded_app_data_token):
+    def __call__(self, report_default_directory, dsg_targets, transceiver):
         """ creates a report that states where in sdram each region is
 
         :param report_default_directory: the folder where reports are written
         :param dsg_targets: the map between placement and file writer
         :param transceiver: the spinnMan instance
-        :param loaded_app_data_token: flag that app data has been loaded
         :rtype: None
         """
-
-        if not loaded_app_data_token:
-            raise ConfigurationException(
-                "Needs to have loaded app data for this to work.")
 
         directory_name = os.path.join(
             report_default_directory, MEM_MAP_SUBDIR_NAME)
@@ -46,15 +38,15 @@ class MemoryMapOnChipReport(object):
                 self._write_processor_memory_map(f, transceiver, x, y, p)
 
     def _write_processor_memory_map(self, f, txrx, x, y, p):
+        # pylint: disable=too-many-arguments
         f.write("On chip data specification executor\n\n")
 
         report_data_address = self._get_report_data_address(txrx, x, y, p)
         report_bytes = _MemoryChannelState.STRUCT_SIZE * MAX_MEM_REGIONS
 
-        report_data = buffer(txrx.read_memory(
-            x, y, report_data_address, report_bytes))
+        report_data = txrx.read_memory(x, y, report_data_address, report_bytes)
 
-        for i in xrange(MAX_MEM_REGIONS):
+        for i in range(MAX_MEM_REGIONS):
             region = _MemoryChannelState.from_bytestring(
                 report_data, i * _MemoryChannelState.STRUCT_SIZE)
             self._describe_region(f, region, i)
@@ -83,7 +75,7 @@ class MemoryMapOnChipReport(object):
             x, y, p)
         data_address_encoded = txrx.read_memory(
             x, y, data_address_pointer, 4)
-        return _ONE_WORD.unpack_from(buffer(data_address_encoded))[0]
+        return _ONE_WORD.unpack_from(data_address_encoded)[0]
 
 
 class _MemoryChannelState(object):

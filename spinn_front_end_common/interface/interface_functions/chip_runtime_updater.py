@@ -1,4 +1,3 @@
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 from spinnman.model.enums import CPUState
@@ -12,13 +11,7 @@ class ChipRuntimeUpdater(object):
     __slots__ = []
 
     def __call__(
-            self, txrx, app_id, executable_types, no_machine_timesteps,
-            loaded_binaries_token):
-
-        if not loaded_binaries_token:
-            raise ConfigurationException(
-                "The binaries must be loaded before the run time updater is"
-                " called")
+            self, txrx, app_id, executable_types, no_machine_timesteps):
 
         core_subsets = \
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
@@ -36,5 +29,3 @@ class ChipRuntimeUpdater(object):
         process.update_runtime(
             no_machine_timesteps, infinite_run, core_subsets,
             len(core_subsets))
-
-        return True

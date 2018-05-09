@@ -9,7 +9,7 @@ from spinn_front_end_common.interface.interface_functions \
 class _MockSpallocServer(Thread):
 
     def __init__(self, name, width, height, dead_boards, dead_links, tags):
-        Thread.__init__(self)
+        super(_MockSpallocServer, self).__init__()
         self._name = name
         self._width = width
         self._height = height
@@ -45,30 +45,27 @@ class TestFrontEndCommonSpallocMaxMachineGenerator(unittest.TestCase):
             "test", 1, 1, [(0, 0, 1), (0, 0, 2)], [], ["default"])
         server.start()
         generator = SpallocMaxMachineGenerator()
-        max_width, max_height, _, _ = generator.__call__(
-            "localhost", server.port)
-        self.assertEqual(max_width, 8)
-        self.assertEqual(max_height, 8)
+        machine = generator("localhost", server.port)
+        self.assertEqual(machine.max_chip_x, 7)
+        self.assertEqual(machine.max_chip_y, 7)
 
     def test_multiboard(self):
         server = _MockSpallocServer(
             "test", 1, 1, [], [], ["default"])
         server.start()
         generator = SpallocMaxMachineGenerator()
-        max_width, max_height, _, _ = generator.__call__(
-            "localhost", server.port)
-        self.assertEqual(max_width, 12)
-        self.assertEqual(max_height, 12)
+        machine = generator("localhost", server.port)
+        self.assertEqual(machine.max_chip_x, 11)
+        self.assertEqual(machine.max_chip_y, 11)
 
     def test_specific_board(self):
         server = _MockSpallocServer(
             "test", 3, 2, [], [], ["test"])
         server.start()
         generator = SpallocMaxMachineGenerator()
-        max_width, max_height, _, _ = generator.__call__(
-            "localhost", server.port, "test")
-        self.assertEqual(max_width, 12 * 3)
-        self.assertEqual(max_height, 12 * 2)
+        machine = generator("localhost", server.port, "test")
+        self.assertEqual(machine.max_chip_x, (12 * 3) - 1)
+        self.assertEqual(machine.max_chip_y, (12 * 2) - 1)
 
 
 if __name__ == "__main__":

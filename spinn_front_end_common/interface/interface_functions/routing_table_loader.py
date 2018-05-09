@@ -16,13 +16,12 @@ class RoutingTableLoader(object):
 
         # load each router table that is needed for the application to run into
         # the chips SDRAM
-        for router_table in progress.over(router_tables.routing_tables):
-            if not machine.get_chip_at(router_table.x, router_table.y).virtual:
-                if len(router_table.multicast_routing_entries):
-                    transceiver.load_multicast_routes(
-                        router_table.x, router_table.y,
-                        router_table.multicast_routing_entries, app_id=app_id)
-        return True
+        for table in progress.over(router_tables.routing_tables):
+            if (not machine.get_chip_at(table.x, table.y).virtual
+                    and table.multicast_routing_entries):
+                transceiver.load_multicast_routes(
+                    table.x, table.y, table.multicast_routing_entries,
+                    app_id=app_id)
 
     @staticmethod
     def _set_router_diagnostic_filters(x, y, transceiver):

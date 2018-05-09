@@ -2,6 +2,7 @@ import struct
 
 from spinn_front_end_common.utilities import constants, exceptions
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_machine import CoreSubsets
 
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
@@ -13,10 +14,7 @@ _ONE_WORD = struct.Struct("<I")
 class ApplicationFinisher(object):
     __slots__ = []
 
-    def __call__(self, app_id, txrx, executable_types, has_ran):
-        if not has_ran:
-            raise exceptions.ConfigurationException(
-                "The ran token is not set correctly, please fix and try again")
+    def __call__(self, app_id, txrx, executable_types):
 
         total_processors = \
             len(executable_types[ExecutableType.USES_SIMULATION_INTERFACE])
@@ -28,8 +26,9 @@ class ApplicationFinisher(object):
             "Turning off all the cores within the simulation")
 
         # check that the right number of processors are finished
-        processors_finished = txrx.get_core_state_count(
-            app_id, CPUState.FINISHED)
+        processors_finished = sum(
+            txrx.get_core_state_count(app_id, state)
+            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state)
         finished_cores = processors_finished
 
         while processors_finished != total_processors:
@@ -49,8 +48,11 @@ class ApplicationFinisher(object):
                         processors_rte + processors_watchdogged,
                         total_processors))
 
-            successful_cores_finished = txrx.get_cores_in_state(
-                all_core_subsets, CPUState.FINISHED)
+            successful_cores_finished = CoreSubsets()
+            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state:
+                subsets = txrx.get_cores_in_state(all_core_subsets, state)
+                for subset in subsets.core_subsets:
+                    successful_cores_finished.add_core_subset(subset)
 
             for core_subset in all_core_subsets:
                 for processor in core_subset.processor_ids:
@@ -59,8 +61,10 @@ class ApplicationFinisher(object):
                         self._update_provenance_and_exit(
                             txrx, processor, core_subset)
 
-            processors_finished = txrx.get_core_state_count(
-                app_id, CPUState.FINISHED)
+            processors_finished = sum(
+                txrx.get_core_state_count(app_id, state)
+                for state in
+                ExecutableType.USES_SIMULATION_INTERFACE.end_state)
 
         progress.end()
 

@@ -17,9 +17,6 @@
 //! convert between words to bytes
 #define WORD_TO_BYTE_MULTIPLIER 4
 
-//! flag for saying stuff has ended
-#define END_FLAG 0xFFFFFFFF
-
 //! struct for a SDP message with pure data, no scp header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     struct sdp_msg *next;	// Next in free list
@@ -51,9 +48,11 @@ static uint32_t infinite_run;
 //! the key that causes sequence number to be processed
 static uint32_t new_sequence_key = 0;
 static uint32_t first_data_key = 0;
+static uint32_t end_flag_key = 0;
 
 //! default seq num
 static uint32_t seq_num = FIRST_SEQ_NUM;
+static uint32_t max_seq_num = 0;
 
 //! data holders for the sdp packet
 static uint32_t data[ITEMS_PER_DATA_PACKET];
@@ -70,7 +69,7 @@ typedef enum regions_e {
 
 //! human readable definitions of the data in each region
 typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY, TAG_ID
+    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, TAG_ID
 } config_elements;
 
 //! values for the priority for each callback
@@ -94,9 +93,16 @@ void send_data()
     LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
     //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
+    if (seq_num > max_seq_num){
+        log_error(
+            "got a funky seq num in sending. max is %d, received %d",
+            max_seq_num, seq_num);
+    }
+
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
         // Empty body
     }
+
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
@@ -108,26 +114,42 @@ void receive_data(
 {
     //log_info("packet!");
     if (key == new_sequence_key) {
+        if (position_in_store != 1) {
+            send_data();
+        }
         //log_info("finding new seq num %d", payload);
         //log_info("position in store is %d", position_in_store);
         data[0] = payload;
-    } else {
-        if (key == first_data_key) {
-            //log_info("resetting seq and position");
-            seq_num = FIRST_SEQ_NUM;
-            position_in_store = 0;
+        seq_num = payload;
+        position_in_store = 1;
+
+        if (payload > max_seq_num){
+            log_error(
+                "got a funky seq num. max is %d, received %d",
+                max_seq_num, payload);
         }
+    } else {
 
         //log_info(" payload = %d posiiton = %d", payload, position_in_store);
         data[position_in_store] = payload;
         position_in_store += 1;
         //log_info("payload is %d", payload);
 
-        if (payload == 0xFFFFFFFF) {
-            if (position_in_store == 2) {
-                data[0] = 0xFFFFFFFF;
-                position_in_store = 1;
-            }
+        if (key == first_data_key) {
+            //log_info("resetting seq and position");
+            seq_num = FIRST_SEQ_NUM;
+            data[0] = seq_num;
+            position_in_store = 1;
+            max_seq_num = payload;
+        }
+
+        if (key == end_flag_key){
+            // set end flag bit in seq num
+            data[0] = data[0] + (1 << 31);
+
+            // adjust size as last payload not counted
+            position_in_store = position_in_store - 1;
+
             //log_info("position = %d with seq num %d", position_in_store, seq_num);
             //log_info("last payload was %d", payload);
             send_data();
@@ -164,6 +186,7 @@ static bool initialize(
     address_t config_address = data_specification_get_region(CONFIG, address);
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
+    end_flag_key = config_address[END_FLAG_KEY];
 
     my_msg.tag = config_address[TAG_ID];	// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet

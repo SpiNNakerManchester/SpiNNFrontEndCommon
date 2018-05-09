@@ -1,9 +1,9 @@
 import unittest
+from spinn_utilities.overrides import overrides
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.decorators import overrides
 from spinnman.transceiver import Transceiver
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.connections.udp_packet_connections import EIEIOConnection
@@ -68,7 +68,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
             # same listener for the buffer manager
             if not i[1] is None:
                 number_of_listeners += 1
-            print i
+            print(i)
         self.assertEqual(number_of_listeners, 1)
 
 
@@ -79,8 +79,8 @@ class _TestVertex(ApplicationVertex):
     _model_based_max_atoms_per_core = None
 
     def __init__(self, n_atoms, label=None, max_atoms_per_core=256):
-        ApplicationVertex.__init__(self, label=label,
-                                   max_atoms_per_core=max_atoms_per_core)
+        super(_TestVertex, self).__init__(
+            label=label, max_atoms_per_core=max_atoms_per_core)
         self._model_based_max_atoms_per_core = max_atoms_per_core
         self._n_atoms = n_atoms
 

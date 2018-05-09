@@ -55,7 +55,7 @@
             <param_name>app_id</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedFixedRoutesToken</param_type>
+            <token part="FixedRoutesLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertEdgesToExtraMonitorFunctionality">
@@ -119,8 +119,12 @@
                 <param_type>MemoryGraphMapper</param_type>
             </parameter>
             <parameter>
-                <param_name>connection_mapping</param_name>
-                <param_type>MCGathererConnectionMapping</param_type>
+                <param_name>default_report_directory</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>write_data_speed_up_report</param_name>
+                <param_type>WriteDataSpeedUpReportFlag</param_type>
             </parameter>
             <parameter>
                 <param_name>n_cores_to_allocate</param_name>
@@ -129,8 +133,9 @@
         </input_definitions>
         <required_inputs>
             <param_name>machine</param_name>
-            <param_name>connection_mapping</param_name>
             <param_name>machine_graph</param_name>
+            <param_name>default_report_directory</param_name>
+            <param_name>write_data_speed_up_report</param_name>
         </required_inputs>
         <optional_inputs>
             <param_name>graph_mapper</param_name>
@@ -149,7 +154,8 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -169,7 +175,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
-            <param_type>MCGathererConnectionMapping</param_type>
+            <token part="ExtraMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="PreAllocateResourcesForChipPowerMonitor">
@@ -180,7 +186,8 @@
         <input_definitions>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -220,6 +227,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="EnergyMonitor">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertChipPowerMonitorsToGraphs">
@@ -274,7 +282,8 @@
             </parameter>
             <parameter>
                 <param_name>machine</param_name>
-                <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryVirtualMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>pre_allocated_resources</param_name>
@@ -290,6 +299,7 @@
         </optional_inputs>
         <outputs>
             <param_type>MemoryPreAllocatedResources</param_type>
+            <token part="LivePacketGatherer">GeneratedPreAllocatedResources</token>
         </outputs>
     </algorithm>
     <algorithm name="InsertEdgesToLivePacketGatherers">
@@ -336,8 +346,6 @@
             <param_name>application_graph</param_name>
             <param_name>graph_mapper</param_name>
         </optional_inputs>
-        <outputs>
-        </outputs>
     </algorithm>
     <algorithm name="InsertLivePacketGatherersToGraphs">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -468,8 +476,13 @@
             <param_name>application_data_file_path</param_name>
         </required_inputs>
         <optional_inputs>
+            <token part="DSGDataLoaded">DataLoaded</token>
             <param_name>graph_mapper</param_name>
+            <token>ClearedIOBuf</token>
         </optional_inputs>
+        <outputs>
+            <token part="DSGDataReLoaded">DataLoaded</token>
+        </outputs>
     </algorithm>
     <algorithm name="HostExecuteDataSpecification">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
@@ -491,6 +504,10 @@
                 <param_name>dsg_targets</param_name>
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
@@ -498,9 +515,12 @@
             <param_name>app_id</param_name>
             <param_name>dsg_targets</param_name>
         </required_inputs>
+        <optional_inputs>
+            <param_name>processor_to_app_data_base_address</param_name>
+        </optional_inputs>
         <outputs>
             <param_type>ProcessorToAppDataBaseAddress</param_type>
-            <param_type>LoadedApplicationDataToken</param_type>
+            <token part="DSGDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="MachineExecuteDataSpecification">
@@ -531,7 +551,7 @@
             <param_name>app_id</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedApplicationDataToken</param_type>
+            <token part="DSGDataLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="LoadExecutableImages">
@@ -550,19 +570,15 @@
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_application_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>executable_targets</param_name>
             <param_name>app_id</param_name>
             <param_name>transceiver</param_name>
-            <param_name>loaded_application_data_token</param_name>
+            <token>DataLoaded</token>
         </required_inputs>
         <outputs>
-            <param_type>LoadBinariesToken</param_type>
+            <token part="ApplicationBinariesLoaded">BinariesLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="MachineGenerator">
@@ -668,7 +684,7 @@
             <param_name>machine</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedRoutingTablesToken</param_type>
+            <token part="MulticastRoutesLoaded">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="RoutingSetup">
@@ -718,8 +734,8 @@
             <param_name>transceiver</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedIPTagsToken</param_type>
-            <param_type>LoadedReverseIPTagsToken</param_type>
+            <token part="LoadedIPTags">DataLoaded</token>
+            <token part="LoadedReverseIPTags">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="TagsLoaderSeparateLists">
@@ -745,8 +761,8 @@
             <param_name>transceiver</param_name>
         </required_inputs>
         <outputs>
-            <param_type>LoadedIPTagsToken</param_type>
-            <param_type>LoadedReverseIPTagsToken</param_type>
+            <token part="LoadedIPTags">DataLoaded</token>
+            <token part="LoadedReverseIPTags">DataLoaded</token>
         </outputs>
     </algorithm>
     <algorithm name="VirtualMachineGenerator">
@@ -956,6 +972,10 @@
                 <param_name>uses_advanced_monitors</param_name>
                 <param_type>UsingAdvancedMonitorSupport</param_type>
             </parameter>
+            <parameter>
+                <param_name>fixed_routes</param_name>
+                <param_type>MemoryFixedRoutes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>placements</param_name>
@@ -968,6 +988,7 @@
             <param_name>extra_monitor_cores</param_name>
             <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
             <param_name>extra_monitor_to_chip_mapping</param_name>
+            <param_name>fixed_routes</param_name>
             <param_name>machine</param_name>
         </optional_inputs>
         <outputs>
@@ -1023,26 +1044,6 @@
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
             <parameter>
-                <param_name>loaded_reverse_iptags_token</param_name>
-                <param_type>LoadedReverseIPTagsToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>loaded_iptags_token</param_name>
-                <param_type>LoadedIPTagsToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>loaded_routing_tables_token</param_name>
-                <param_type>LoadedRoutingTablesToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>loaded_binaries_token</param_name>
-                <param_type>LoadBinariesToken</param_type>
-            </parameter>
-            <parameter>
-                <param_name>loaded_application_data_token</param_name>
-                <param_type>LoadedApplicationDataToken</param_type>
-            </parameter>
-            <parameter>
                 <param_name>no_sync_changes</param_name>
                 <param_type>NoSyncChanges</param_type>
             </parameter>
@@ -1067,20 +1068,18 @@
             <param_name>txrx</param_name>
             <param_name>runtime</param_name>
             <param_name>time_scale_factor</param_name>
-            <param_name>loaded_reverse_iptags_token</param_name>
-            <param_name>loaded_iptags_token</param_name>
-            <param_name>loaded_routing_tables_token</param_name>
-            <param_name>loaded_binaries_token</param_name>
-            <param_name>loaded_application_data_token</param_name>
             <param_name>no_sync_changes</param_name>
             <param_name>time_threshold</param_name>
+            <token>DataLoaded</token>
+            <token>BinariesLoaded</token>
         </required_inputs>
         <optional_inputs>
             <param_name>run_until_complete</param_name>
+            <token>ClearedIOBuf</token>
         </optional_inputs>
         <outputs>
-            <param_type>RanToken</param_type>
             <param_type>NoSyncChanges</param_type>
+            <token>ApplicationRun</token>
         </outputs>
     </algorithm>
     <algorithm name="PlacementsProvenanceGatherer">
@@ -1096,10 +1095,6 @@
                 <param_type>MemoryPlacements</param_type>
             </parameter>
             <parameter>
-                <param_name>has_ran</param_name>
-                <param_type>RanToken</param_type>
-            </parameter>
-            <parameter>
                 <param_name>provenance_data_objects</param_name>
                 <param_type>ProvenanceItems</param_type>
             </parameter>
@@ -1107,7 +1102,7 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
-            <param_name>has_ran</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
             <param_name>provenance_data_objects</param_name>
@@ -1137,10 +1132,8 @@
             <param_name>machine_graph</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>application_graph</param_name>
-                <param_name>provenance_data_objects</param_name>
-            </all_of>
+            <param_name>application_graph</param_name>
+            <param_name>provenance_data_objects</param_name>
         </optional_inputs>
         <outputs>
             <param_type>ProvenanceItems</param_type>
@@ -1157,14 +1150,11 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryMachine</param_type>
             </parameter>
             <parameter>
                 <param_name>router_tables</param_name>
                 <param_type>MemoryRoutingTables</param_type>
-            </parameter>
-            <parameter>
-                <param_name>has_ran</param_name>
-                <param_type>RanToken</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_data_objects</param_name>
@@ -1183,7 +1173,7 @@
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
             <param_name>router_tables</param_name>
-            <param_name>has_ran</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
         <optional_inputs>
             <param_name>provenance_data_objects</param_name>
@@ -1359,16 +1349,12 @@
                 <param_name>executable_types</param_name>
                 <param_type>ExecutableTypes</param_type>
             </parameter>
-            <parameter>
-                <param_name>has_ran</param_name>
-                <param_type>RanToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>app_id</param_name>
             <param_name>txrx</param_name>
             <param_name>executable_types</param_name>
-            <param_name>has_ran</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>
     <algorithm name="ChipRuntimeUpdater">
@@ -1391,20 +1377,19 @@
                 <param_name>no_machine_timesteps</param_name>
                 <param_type>TotalMachineTimeSteps</param_type>
             </parameter>
-            <parameter>
-                <param_name>loaded_binaries_token</param_name>
-                <param_type>LoadBinariesToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>txrx</param_name>
             <param_name>app_id</param_name>
             <param_name>executable_types</param_name>
             <param_name>no_machine_timesteps</param_name>
-            <param_name>loaded_binaries_token</param_name>
+            <token>BinariesLoaded</token>
         </required_inputs>
+        <optional_inputs>
+            <token>ClearedIOBuf</token>
+        </optional_inputs>
         <outputs>
-            <param_type>HasLoadedRuntimeToChips</param_type>
+            <token part="SimulationBinaries">ChipRuntimeUpdated</token>
         </outputs>
     </algorithm>
     <algorithm name="ChipProvenanceUpdater">
@@ -1439,10 +1424,6 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>ran_token</param_name>
-                <param_type>RanToken</param_type>
-            </parameter>
-            <parameter>
                 <param_name>executable_types</param_name>
                 <param_type>ExecutableTypes</param_type>
             </parameter>
@@ -1450,10 +1431,9 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>executable_types</param_name>
-            <param_name>ran_token</param_name>
         </required_inputs>
         <outputs>
-            <param_type>ClearedIOBufToken</param_type>
+            <token>ClearedIOBuf</token>
         </outputs>
     </algorithm>
     <algorithm name="ChipIOBufExtractor">
@@ -1463,10 +1443,6 @@
             <parameter>
                 <param_name>transceiver</param_name>
                 <param_type>MemoryTransceiver</param_type>
-            </parameter>
-            <parameter>
-                <param_name>has_ran</param_name>
-                <param_type>RanToken</param_type>
             </parameter>
             <parameter>
                 <param_name>core_subsets</param_name>
@@ -1479,13 +1455,14 @@
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
-            <param_name>has_ran</param_name>
             <param_name>core_subsets</param_name>
             <param_name>provenance_file_path</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
         <outputs>
             <param_type>ErrorMessages</param_type>
             <param_type>WarnMessages</param_type>
+            <token>ReadIOBuf</token>
         </outputs>
     </algorithm>
     <algorithm name="EdgeToNKeysMapper">
@@ -1552,10 +1529,8 @@
             <param_name>n_chips</param_name>
         </required_inputs>
         <optional_inputs>
-            <all_of>
-                <param_name>spalloc_port</param_name>
-                <param_name>spalloc_machine</param_name>
-            </all_of>
+            <param_name>spalloc_port</param_name>
+            <param_name>spalloc_machine</param_name>
         </optional_inputs>
         <outputs>
             <param_type>IPAddress</param_type>
@@ -1634,10 +1609,7 @@
             <param_name>spalloc_machine</param_name>
         </optional_inputs>
         <outputs>
-            <param_type>MachineWidth</param_type>
-            <param_type>MachineHeight</param_type>
-            <param_type>MachineHasWrapAroundsFlag</param_type>
-            <param_type>BoardVersion</param_type>
+            <param_type>MemoryVirtualMachine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="HBPMaxMachineGenerator">
@@ -1658,9 +1630,7 @@
             <param_name>total_run_time</param_name>
         </required_inputs>
         <outputs>
-            <param_type>MachineWidth</param_type>
-            <param_type>MachineHeight</param_type>
-            <param_type>MachineHasWrapAroundsFlag</param_type>
+            <param_type>MemoryVirtualMachine</param_type>
         </outputs>
     </algorithm>
     <algorithm name="GraphMeasurer">
@@ -1700,16 +1670,12 @@
                 <param_name>buffer_manager</param_name>
                 <param_type>BufferManager</param_type>
             </parameter>
-            <parameter>
-                <param_name>ran_token</param_name>
-                <param_type>RanToken</param_type>
-            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>machine_graph</param_name>
             <param_name>placements</param_name>
             <param_name>buffer_manager</param_name>
-            <param_name>ran_token</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>
     <algorithm name="ProfileDataGatherer">
@@ -1723,10 +1689,6 @@
             <parameter>
                 <param_name>placements</param_name>
                 <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>has_ran</param_name>
-                <param_type>RanToken</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
@@ -1744,10 +1706,65 @@
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>placements</param_name>
-            <param_name>has_ran</param_name>
             <param_name>provenance_file_path</param_name>
             <param_name>run_time_ms</param_name>
             <param_name>machine_time_step</param_name>
+            <token>ApplicationRun</token>
         </required_inputs>
+    </algorithm>
+    <algorithm name="WriteMemoryIOData">
+        <python_module>spinn_front_end_common.interface.interface_functions.write_memory_io_data</python_module>
+        <python_class>WriteMemoryIOData</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>graph</param_name>
+                <param_type>MemoryApplicationGraph</param_type>
+                <param_type>MemoryMachineGraph</param_type>
+            </parameter>
+            <parameter>
+                <param_name>placements</param_name>
+                <param_type>MemoryPlacements</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_id</param_name>
+                <param_type>APPID</param_type>
+            </parameter>
+            <parameter>
+                <param_name>app_data_runtime_folder</param_name>
+                <param_type>ApplicationDataFolder</param_type>
+            </parameter>
+            <parameter>
+                <param_name>hostname</param_name>
+                <param_type>IPAddress</param_type>
+            </parameter>
+            <parameter>
+                <param_name>transceiver</param_name>
+                <param_type>MemoryTransceiver</param_type>
+            </parameter>
+            <parameter>
+                <param_name>graph_mapper</param_name>
+                <param_type>MemoryGraphMapper</param_type>
+            </parameter>
+            <parameter>
+                <param_name>processor_to_app_data_base_address</param_name>
+                <param_type>ProcessorToAppDataBaseAddress</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>graph</param_name>
+            <param_name>placements</param_name>
+            <param_name>app_id</param_name>
+            <param_name>app_data_runtime_folder</param_name>
+            <param_name>hostname</param_name>
+        </required_inputs>
+        <optional_inputs>
+            <param_name>transceiver</param_name>
+            <param_name>graph_mapper</param_name>
+            <param_name>processor_to_app_data_base_address</param_name>
+        </optional_inputs>
+        <outputs>
+            <param_type>ProcessorToAppDataBaseAddress</param_type>
+            <token part="MemoryIODataLoaded">DataLoaded</token>
+        </outputs>
     </algorithm>
 </algorithms>

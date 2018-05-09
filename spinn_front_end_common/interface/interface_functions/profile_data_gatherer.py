@@ -13,7 +13,7 @@ class ProfileDataGatherer(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, placements, has_ran, provenance_file_path,
+            self, transceiver, placements, provenance_file_path,
             run_time_ms, machine_time_step):
         """
         :param transceiver: the SpiNNMan interface object
@@ -23,13 +23,8 @@ class ProfileDataGatherer(object):
         :param run_time_ms: runtime in ms
         :param machine_time_step: machine time step in ms
         """
-
-        machine_time_step_ms = machine_time_step / 1000
-
-        if not has_ran:
-            logger.warning("{} skipped as nothing has run "
-                           "".format(self.__class__.__name__))
-            return
+        # pylint: disable=too-many-arguments
+        machine_time_step_ms = machine_time_step // 1000
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")
@@ -37,17 +32,16 @@ class ProfileDataGatherer(object):
         # retrieve provenance data from any cores that provide data
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractHasProfileData):
-
                 # get data
                 profile_data = placement.vertex.get_profile_data(
                     transceiver, placement)
-
-                if len(profile_data.tags) > 0:
+                if profile_data.tags:
                     self._write(placement, profile_data, run_time_ms,
                                 machine_time_step_ms, provenance_file_path)
 
     def _write(self, p, profile_data, run_time_ms,
                machine_time_step_ms, directory):
+        # pylint: disable=too-many-arguments
         max_tag_len = max([len(tag) for tag in profile_data.tags])
 
         # write data

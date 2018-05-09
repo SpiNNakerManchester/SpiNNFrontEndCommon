@@ -1,5 +1,4 @@
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import re
 import os
 
@@ -18,19 +17,14 @@ class ChipIOBufExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, has_ran, core_subsets, provenance_file_path):
-        if not has_ran:
-            raise ConfigurationException(
-                "The simulation needs to have tried to run before asking for"
-                "iobuf. Please fix and try again")
-
-        return self._run_for_core_subsets(
-            core_subsets, transceiver, provenance_file_path)
-
-    def _run_for_core_subsets(
-            self, core_subsets, transceiver, provenance_file_path):
+            self, transceiver, core_subsets, provenance_file_path):
         progress = ProgressBar(
             len(core_subsets), "Extracting IOBUF from the machine")
+        return self._run_for_core_subsets(
+            core_subsets, transceiver, provenance_file_path, progress)
+
+    def _run_for_core_subsets(
+            self, core_subsets, transceiver, provenance_file_path, progress):
         error_entries = list()
         warn_entries = list()
 
@@ -50,8 +44,8 @@ class ChipIOBufExtractor(object):
                 mode = "a"
 
             # write iobuf to file.
-            with open(file_name, mode) as writer:
-                writer.write(iobuf.iobuf)
+            with open(file_name, mode) as f:
+                f.write(iobuf.iobuf)
 
         # check iobuf for errors
         for io_buffer in progress.over(io_buffers):
@@ -69,7 +63,8 @@ class ChipIOBufExtractor(object):
 
     @staticmethod
     def _add_value_if_match(regex, line, entries, x, y, p):
-        match = regex.match(line)
+        # pylint: disable=too-many-arguments
+        match = regex.match(line.decode('ascii'))
         if match:
             entries.append("{}, {}, {}: {} ({})".format(
                 x, y, p, match.group(ENTRY_TEXT), match.group(ENTRY_FILE)))

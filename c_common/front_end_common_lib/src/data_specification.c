@@ -36,7 +36,7 @@ address_t data_specification_get_data_address(void)
     address_t address =
             (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
 
-    log_info("SDRAM data begins at address: %08x", address);
+    log_debug("SDRAM data begins at address: %08x", address);
 
     return address;
 }
