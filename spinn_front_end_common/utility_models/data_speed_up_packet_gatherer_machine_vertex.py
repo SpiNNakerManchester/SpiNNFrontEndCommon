@@ -18,6 +18,7 @@ from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
+from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset)
 from spinn_front_end_common.abstract_models import (
@@ -67,9 +68,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # provenance holder
         "_provenance_data_items",
-
-        # spinnMan instance
-        "_transceiver",
 
         # my placement for future lookup
         "_placement",
@@ -225,7 +223,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         "<{}B".format(DATA_IN_FULL_PACKET_WITH_ADDRESS_NUM *
                       WORD_TO_BYTE_CONVERTER))
 
-    def __init__(self, x, y, ip_address, extra_monitors_by_chip, transceiver,
+    def __init__(self, x, y, ip_address, extra_monitors_by_chip,
                  report_default_directory, write_data_speed_up_report,
                  write_data_in_report, constraints=None):
         MachineVertex.__init__(
@@ -253,7 +251,6 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
-        self._transceiver = transceiver
         self._placement = None
 
         # create report if it doesn't already exist
@@ -542,8 +539,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         # start time recording
         start = float(time.time())
 
+        transceiver = globals_variables.get_simulator().transceiver
+
         # write the data
-        self._transceiver.write_memory(
+        transceiver.write_memory(
             x=x, y=y, base_address=base_address, n_bytes=n_bytes,
             data=data, offset=offset, is_filename=False)
 
@@ -597,6 +596,8 @@ class DataSpeedUpPacketGatherMachineVertex(
             # start time recording
             start = float(time.time())
 
+            transceiver = globals_variables.get_simulator().transceiver
+
             # send data
             self._send_data_via_extra_monitors(
                 x, y, base_address, data[offset:n_bytes + offset])
@@ -633,10 +634,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         return fake_x, fake_y
 
     def _send_data_via_extra_monitors(
-            self, destination_chip_x, destination_chip_y, start_address,
-            data_to_write):
+            self, transceiver, destination_chip_x, destination_chip_y,
+            start_address, data_to_write):
         """ sends data using the extra monitor cores
 
+        :param transceiver: the SpiNNMan instance
         :param destination_chip_x: chip x
         :param destination_chip_y: chip y
         :param start_address: start address in sdram to write data to
@@ -660,7 +662,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self._calculate_fake_chip_id(
                 destination_chip_x, destination_chip_y,
                 self._placement.x, self._placement.y,
-                self._transceiver.get_machine_details())
+                transceiver.get_machine_details())
 
         # compressed destination chip data
         chip_data = (
@@ -1071,9 +1073,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_in_bytes].append((end - start, [0]))
             return data
 
+        transceiver = globals_variables.get_simulator().transceiver
+
         if (length_in_bytes <
                 self.THRESHOLD_WHERE_SDP_BETTER_THAN_DATA_EXTRACTOR_IN_BYTES):
-            data = self._transceiver.read_memory(
+            data = transceiver.read_memory(
                 placement.x, placement.y, memory_address, length_in_bytes)
             end = float(time.time())
             self._provenance_data_items[
@@ -1103,7 +1107,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._output = bytearray(length_in_bytes)
         self._view = memoryview(self._output)
         self._max_seq_num = self._incoming_calculate_max_seq_num()
-        lost_seq_nums = self._receive_data(placement)
+        lost_seq_nums = self._receive_data(transceiver, placement)
 
         end = float(time.time())
         self._provenance_data_items[
@@ -1114,13 +1118,13 @@ class DataSpeedUpPacketGatherMachineVertex(
         if self._write_data_speed_up_report:
             routers_been_in_use = self._determine_which_routers_were_used(
                 placement, fixed_routes,
-                self._transceiver.get_machine_details())
+                transceiver.get_machine_details())
             self._write_routers_used_into_report(
                 self._data_out_report_path, routers_been_in_use, placement)
 
         return self._output
 
-    def _receive_data(self, placement):
+    def _receive_data(self, transceiver, placement):
         seq_nums = set()
         lost_seq_nums = list()
         time_out_count = 0
@@ -1131,7 +1135,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
                 time_out_count = 0
                 seq_nums, finished = self._incoming_process_data(
-                    data, seq_nums, finished, placement,
+                    transceiver, data, seq_nums, finished, placement,
                     lost_seq_nums)
             except SpinnmanTimeoutException:
                 if time_out_count > TIMEOUT_RETRY_LIMIT:
@@ -1209,7 +1213,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 if sn not in seq_nums]
 
     def _incoming_retransmit_missing_seq_nums(
-            self, seq_nums, placement, lost_seq_nums):
+            self, transceiver, seq_nums, placement, lost_seq_nums):
         """ Determines if there are any missing sequence numbers, and if so \
             retransmits the missing sequence numbers back to the core for \
             retransmission.
@@ -1294,7 +1298,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             seq_num_offset += length_left_in_packet
 
             # build SDP message and send it to the core
-            self._transceiver.send_sdp_message(message=SDPMessage(
+            transceiver.send_sdp_message(message=SDPMessage(
                 sdp_header=SDPHeader(
                     destination_chip_x=placement.x,
                     destination_chip_y=placement.y,
@@ -1310,7 +1314,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return False
 
     def _incoming_process_data(
-            self, data, seq_nums, finished, placement,
+            self, transceiver, data, seq_nums, finished, placement,
             lost_seq_nums):
         """ Takes a packet and processes it see if we're finished yet
 
@@ -1360,7 +1364,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 finished = True
             else:
                 finished = self._incoming_retransmit_missing_seq_nums(
-                    placement=placement, seq_nums=seq_nums,
+                    transceiver=transceiver, placement=placement,
+                    seq_nums=seq_nums,
                     lost_seq_nums=lost_seq_nums)
         return seq_nums, finished
 

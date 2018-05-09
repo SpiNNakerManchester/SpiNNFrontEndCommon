@@ -14,7 +14,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
     """
 
     def __call__(
-            self, machine, machine_graph, transceiver,
+            self, machine, machine_graph,
             default_report_directory, write_data_speed_up_report,
             write_data_in_speed_up_report, n_cores_to_allocate=1,
             graph_mapper=None, application_graph=None):
@@ -30,7 +30,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
             determine whether to write the report for data in speed up
         :param graph_mapper: graph mapper
         :param application_graph: app graph.
-        :param transceiver: SpinnMan instance
         :return: vertex to Ethernet connection map
         """
         # pylint: disable=too-many-arguments
@@ -51,7 +50,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
         self._handle_data_extraction_vertices(
             progress, machine, application_graph, machine_graph, graph_mapper,
             vertex_to_ethernet_connected_chip_mapping, vertex_to_chip_map,
-            transceiver, default_report_directory, write_data_speed_up_report,
+            default_report_directory, write_data_speed_up_report,
             write_data_in_speed_up_report)
 
         return (vertex_to_ethernet_connected_chip_mapping,
@@ -112,7 +111,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
     def _handle_data_extraction_vertices(
             self, progress, machine, application_graph, machine_graph,
             graph_mapper, vertex_to_ethernet_connected_chip_mapping,
-            vertex_to_chip_map, transceiver, default_report_directory,
+            vertex_to_chip_map, default_report_directory,
             write_data_speed_up_report, write_data_in_speed_up_report):
         """ places vertices for receiving data extraction packets.
 
@@ -143,7 +142,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     DataSpeedUpPacketGather)
                 if equiv_vertex is None:
                     app_vertex = self.__new_app_gatherer(
-                        ethernet_chip, vertex_to_chip_map, transceiver,
+                        ethernet_chip, vertex_to_chip_map,
                         default_report_directory, write_data_speed_up_report,
                         write_data_in_speed_up_report)
                     machine_vertex = app_vertex.machine_vertex
@@ -159,7 +158,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     DataSpeedUpPacketGather)
                 if machine_vertex is None:
                     machine_vertex = self.__new_mach_gatherer(
-                        ethernet_chip, vertex_to_chip_map, transceiver,
+                        ethernet_chip, vertex_to_chip_map,
                         default_report_directory, write_data_speed_up_report,
                         write_data_in_speed_up_report)
                     machine_graph.add_vertex(machine_vertex)
@@ -181,7 +180,7 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     @staticmethod
     def __new_app_gatherer(
-            ethernet_chip, vertex_to_chip_map, transceiver,
+            ethernet_chip, vertex_to_chip_map,
             default_report_directory, write_data_speed_up_report,
             write_data_in_speed_up_report):
         return DataSpeedUpPacketGather(
@@ -190,14 +189,13 @@ class InsertExtraMonitorVerticesToGraphs(object):
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
-            transceiver=transceiver,
             report_default_directory=default_report_directory,
             write_data_speed_up_report=write_data_speed_up_report,
             write_data_in_report=write_data_in_speed_up_report)
 
     @staticmethod
     def __new_mach_gatherer(
-            ethernet_chip, vertex_to_chip_map, transceiver,
+            ethernet_chip, vertex_to_chip_map,
             default_report_directory, write_data_speed_up_report,
             write_data_in_speed_up_report):
         return DataSpeedUpPacketGatherMachineVertex(
@@ -206,7 +204,6 @@ class InsertExtraMonitorVerticesToGraphs(object):
             constraints=[ChipAndCoreConstraint(
                 x=ethernet_chip.x, y=ethernet_chip.y)],
             extra_monitors_by_chip=vertex_to_chip_map,
-            transceiver=transceiver,
             report_default_directory=default_report_directory,
             write_data_speed_up_report=write_data_speed_up_report,
             write_data_in_report=write_data_in_speed_up_report)
