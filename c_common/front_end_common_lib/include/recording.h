@@ -12,7 +12,7 @@
 #include <spin1_api.h>
 #include <buffered_eieio_defs.h>
 
-#define RECORDING_DMA_COMPLETE_TAG_ID	15
+#define RECORDING_DMA_COMPLETE_TAG_ID   15
 
 //! \brief Callback for recording completion.
 typedef void (*recording_complete_callback_t) (void);
@@ -54,7 +54,8 @@ typedef struct {
 //! \param[in] channel The channel to check
 //! \return True if the channel is enabled, false otherwise
 inline bool recording_is_channel_enabled(
-        uint32_t recording_flags, uint8_t channel)
+        uint32_t recording_flags,
+        uint8_t channel)
 {
     return (recording_flags & (1 << channel)) != 0;
 }
@@ -66,7 +67,9 @@ inline bool recording_is_channel_enabled(
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_record(
-    uint8_t channel, void *data, uint32_t size_bytes);
+        uint8_t channel,
+        void *data,
+        uint32_t size_bytes);
 
 //! \brief records some data into a specific recording channel, calling a
 //!        callback function once complete
@@ -77,8 +80,10 @@ bool recording_record(
 //! \return boolean which is True if the data has been stored in the channel,
 //!         False otherwise.
 bool recording_record_and_notify(
-    uint8_t channel, void *data, uint32_t size_bytes,
-    recording_complete_callback_t callback);
+        uint8_t channel,
+        void *data,
+        uint32_t size_bytes,
+        recording_complete_callback_t callback);
 
 //! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0
@@ -115,13 +120,15 @@ void recording_finalise();
 //!            a channel is enabled for recording
 //! \return True if the initialisation was successful, false otherwise
 bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags);
+        address_t recording_data_address,
+        uint32_t *recording_flags);
 
 //! \brief resets recording to the state just after initialisation
 void recording_reset();
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0
-void recording_do_timestep_update(uint32_t time);
+void recording_do_timestep_update(
+        uint32_t time);
 
 #endif // _RECORDING_H_

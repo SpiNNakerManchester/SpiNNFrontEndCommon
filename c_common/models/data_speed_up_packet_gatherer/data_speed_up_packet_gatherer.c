@@ -78,30 +78,34 @@ typedef enum callback_priorities{
     MC_PACKET = -1, SDP = 0, DMA = 0
 } callback_priorities;
 
-
-void resume_callback() {
+void resume_callback()
+{
     time = UINT32_MAX;
 }
 
-void send_data(){
+void send_data()
+{
     //log_info("last element is %d", data[position_in_store - 1]);
     //log_info("first element is %d", data[0]);
 
     spin1_memcpy(&my_msg.data, data,
-	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
+            position_in_store * WORD_TO_BYTE_MULTIPLIER);
     my_msg.length =
-	    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
+    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
     //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
-	// Empty body
+        // Empty body
     }
     position_in_store = 1;
     seq_num += 1;
     data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload) {
+void receive_data(
+        uint key,
+        uint payload)
+{
     //log_info("packet!");
     if (key == new_sequence_key) {
         //log_info("finding new seq num %d", payload);
@@ -135,7 +139,9 @@ void receive_data(uint key, uint payload) {
     }
 }
 
-static bool initialize(uint32_t *timer_period) {
+static bool initialize(
+        uint32_t *timer_period)
+{
     log_info("Initialise: started\n");
 
     // Get the address this core's DTCM data starts at from SRAM
@@ -182,7 +188,8 @@ static bool initialize(uint32_t *timer_period) {
  *
  * SOURCE
  */
-void c_main() {
+void c_main()
+{
     log_info("starting packet gatherer\n");
 
     // Load DTCM data

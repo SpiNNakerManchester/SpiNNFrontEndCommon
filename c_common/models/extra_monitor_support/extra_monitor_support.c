@@ -290,7 +290,7 @@ static bool run = true;
 
 // VIC
 typedef void (*isr_t) ();
-volatile isr_t* const vic_vectors  = (isr_t *) (VIC_BASE + 0x100);
+volatile isr_t* const vic_vectors = (isr_t *) (VIC_BASE + 0x100);
 volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 
 // ------------------------------------------------------------------------
@@ -333,7 +333,8 @@ static uint32_t key_to_transmit_with;
 // ------------------------------------------------------------------------
 
 //! \brief the plugin callback for the timer
-INT_HANDLER reinjection_timer_callback() {
+INT_HANDLER reinjection_timer_callback()
+{
     // clear interrupt in timer,
     tc[T1_INT_CLR] = 1;
 
@@ -360,7 +361,8 @@ INT_HANDLER reinjection_timer_callback() {
 }
 
 //! \brief the plugin callback for sending packets????
-INT_HANDLER reinjection_ready_to_send_callback() {
+INT_HANDLER reinjection_ready_to_send_callback()
+{
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
@@ -412,7 +414,8 @@ INT_HANDLER reinjection_ready_to_send_callback() {
 }
 
 //! \brief the callback plugin for handling dropped packets
-INT_HANDLER reinjection_dropped_packet_callback() {
+INT_HANDLER reinjection_dropped_packet_callback()
+{
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
     uint pld = rtr[RTR_DDAT];
@@ -426,10 +429,10 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
     // only reinject if configured
     uint packet_type = (hdr & PKT_TYPE_MASK);
-    if (((packet_type == PKT_TYPE_MC) && reinject_mc) ||
-            ((packet_type == PKT_TYPE_PP) && reinject_pp) ||
-            ((packet_type == PKT_TYPE_NN) && reinject_nn) ||
-            ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
+    if (((packet_type == PKT_TYPE_MC) && reinject_mc)
+            || ((packet_type == PKT_TYPE_PP) && reinject_pp)
+            || ((packet_type == PKT_TYPE_NN) && reinject_nn)
+            || ((packet_type == PKT_TYPE_FR) && reinject_fr)) {
 
         // check for overflow from router
         if (rtr_dstat & RTR_DOVRFLW_MASK) {
@@ -443,16 +446,15 @@ INT_HANDLER reinjection_dropped_packet_callback() {
                 // add to the count the number of active bits from this dumped
                 // packet, as this indicates how many processors this packet
                 // was meant to go to.
-                n_processor_dumped_packets +=
-                	__builtin_popcount(is_processor_dump);
+                n_processor_dumped_packets += __builtin_popcount(
+                        is_processor_dump);
             }
 
             if (is_link_dump > 0) {
                 // add to the count the number of active bits from this dumped
                 // packet, as this indicates how many links this packet was
                 // meant to go to.
-                n_link_dumped_packets +=
-                	__builtin_popcount(is_link_dump);
+                n_link_dumped_packets += __builtin_popcount(is_link_dump);
             }
         }
 
@@ -480,7 +482,9 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-void reinjection_read_packet_types(address_t address){
+void reinjection_read_packet_types(
+        address_t address)
+{
     // process mc reinject flag
     if (address[REINJECT_MULTICAST] == 1) {
         reinject_mc = false;
@@ -513,7 +517,9 @@ void reinjection_read_packet_types(address_t address){
 //! \brief handles the commands for the reinjector code.
 //! \param[in] msg: the message with the commands
 //! \return the length of extra data put into the message for return
-static uint handle_reinjection_command(sdp_msg_t *msg) {
+static uint handle_reinjection_command(
+        sdp_msg_t *msg)
+{
     if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_TIMEOUT) {
         // Set the router wait1 timeout
         if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
@@ -521,7 +527,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
             return 0;
         }
         rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
-        	    | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
+                | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
 
         // set scp command to ok , as successfully completed
         msg->cmd_rc = RC_OK;
@@ -534,7 +540,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
             return 0;
         }
         rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
-        	    | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
+                | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
 
         // set scp command to ok , as successfully completed
         msg->cmd_rc = RC_OK;
@@ -555,28 +561,27 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // Put the router timeouts in the packet
         uint control = (uint) (rtr[RTR_CONTROL] & 0xFFFF0000);
         data[ROUTER_TIME_OUT_POSITION] = (control >> 16) & ROUTER_TIMEOUT_MASK;
-        data[ROUTER_EMERGENCY_TIMEOUT_POSITION] =
-            (control >> 24) & ROUTER_TIMEOUT_MASK;
+        data[ROUTER_EMERGENCY_TIMEOUT_POSITION] = (control >> 24)
+                & ROUTER_TIMEOUT_MASK;
 
         // Put the statistics in the packet
         data[NUMBER_DROPPED_PACKETS_POSITION] = n_dropped_packets;
-        data[NUMBER_MISSED_DROPPED_PACKETS_POSITION] =
-            n_missed_dropped_packets;
+        data[NUMBER_MISSED_DROPPED_PACKETS_POSITION] = n_missed_dropped_packets;
         data[NUMBER_DROPPED_PACKETS_OVERFLOWS_POSITION] =
-            n_dropped_packet_overflows;
+                n_dropped_packet_overflows;
         data[NUMBER_REINJECTED_PACKETS_POSITION] = n_reinjected_packets;
         data[NUMBER_LINK_DUMPED_PACKETS_POSITION] = n_link_dumped_packets;
         data[NUMBER_PROCESSOR_DUMPED_PACKETS_POSITION] =
-            n_processor_dumped_packets;
+                n_processor_dumped_packets;
 
         io_printf(IO_BUF, "dropped packets %d\n", n_dropped_packets);
 
         // Put the current services enabled in the packet
         data[PACKET_TYPES_REINJECTED_POSITION] = 0;
-        bool values_to_check[] = {reinject_mc, reinject_pp,
-                                  reinject_nn, reinject_fr};
-        int flags[] = {DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
-                       DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR};
+        bool values_to_check[] = { reinject_mc, reinject_pp, reinject_nn,
+                reinject_fr };
+        int flags[] = { DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
+                DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR };
         for (int i = 0; i < 4; i++) {
             if (values_to_check[i]) {
                 data[PACKET_TYPES_REINJECTED_POSITION] |= flags[i];
@@ -596,7 +601,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         n_reinjected_packets = 0;
         n_link_dumped_packets = 0;
         n_processor_dumped_packets = 0;
-        
+
         // set scp command to ok , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
@@ -606,7 +611,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         vic[VIC_DISABLE] = (1 << CC_TNF_INT);
         vic[VIC_SELECT] = 0;
         run = false;
-        
+
         // set scp command to ok , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
@@ -619,7 +624,8 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
 }
 
 // \brief sark level timer interrupt setup
-void reinjection_configure_timer() {
+void reinjection_configure_timer()
+{
     // Clear the interrupt
     tc[T1_CONTROL] = 0;
     tc[T1_INT_CLR] = 1;
@@ -630,16 +636,17 @@ void reinjection_configure_timer() {
 }
 
 // \brief pass, not a clue.
-void reinjection_configure_comms_controller() {
+void reinjection_configure_comms_controller()
+{
     // remember SAR register contents (p2p source ID)
     cc_sar = cc[CC_SAR] & 0x0000ffff;
 }
 
 // \brief sets up sark and router to have a interrupt when a packet is dropped
-void reinjection_configure_router() {
+void reinjection_configure_router()
+{
     // re-configure wait values in router
-    rtr[RTR_CONTROL] = (
-        rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
+    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) | ROUTER_INITIAL_TIMEOUT;
 
     // clear router interrupts,
     (void) rtr[RTR_STATUS];
@@ -651,15 +658,17 @@ void reinjection_configure_router() {
     rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
 }
 
-
 //-----------------------------------------------------------------------------
 // data speed up main functions
 //-----------------------------------------------------------------------------
 
-static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
+static inline void send_fixed_route_packet(
+        uint32_t key,
+        uint32_t data)
+{
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
-	// Empty body; cc array is volatile
+        // Empty body; cc array is volatile
     }
     cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = data;
@@ -672,15 +681,17 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 //! \param[in] first_packet_key: the first key to transmit with, afterward,
 //! defaults to the defacto key.
 void send_data_block(
-        uint32_t current_dma_pointer, uint32_t number_of_elements_to_send,
-        uint32_t first_packet_key) {
+        uint32_t current_dma_pointer,
+        uint32_t number_of_elements_to_send,
+        uint32_t first_packet_key)
+{
     //log_info("first data is %d", data_to_transmit[current_dma_pointer][0]);
 
     // send data
     for (uint data_position = 0; data_position < number_of_elements_to_send;
             data_position++) {
         uint32_t current_data =
-        	data_to_transmit[current_dma_pointer][data_position];
+                data_to_transmit[current_dma_pointer][data_position];
 
         send_fixed_route_packet(first_packet_key, current_data);
 
@@ -696,12 +707,16 @@ void send_data_block(
 //! \param[in] dma_tag the dma tag assocated with this read.
 //!            transmission or retransmission
 //! \param[in] offset where in the data array to start writing to
-void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+void read(
+        uint32_t dma_tag,
+        uint32_t offset,
+        uint32_t items_to_read)
+{
     // set off dma
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
     address_t data_sdram_position =
-        (address_t) &store_address[position_in_store];
+            (address_t) &store_address[position_in_store];
 
     // update positions as needed
     position_in_store += items_to_read;
@@ -709,8 +724,8 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 
     // set off dma
     uint desc =
-        DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-        (items_to_read * WORD_TO_BYTE_MULTIPLIER);
+    DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19
+            | (items_to_read * WORD_TO_BYTE_MULTIPLIER);
 
     dma_port_last_used = dma_tag;
     dma[DMA_ADRS] = (uint) data_sdram_position;
@@ -720,12 +735,14 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 }
 
 //! \brief sends a end flag via multicast
-void data_speed_up_send_end_flag() {
+void data_speed_up_send_end_flag()
+{
     send_fixed_route_packet(key_to_transmit_with, END_FLAG);
 }
 
 //! \brief dma complete callback for reading for original transmission
-void dma_complete_reading_for_original_transmission(){
+void dma_complete_reading_for_original_transmission()
+{
     //do dma
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = key_to_transmit_with;
@@ -749,15 +766,15 @@ void dma_complete_reading_for_original_transmission(){
         //io_printf(IO_BUF, "setting off another dma\n");
         //log_info("setting off another dma");
         uint32_t num_items_to_read =
-            ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
+        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE;
 
-        uint32_t next_position_in_store =
-            position_in_store + (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+        uint32_t next_position_in_store = position_in_store
+                + (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
 
         // if less data needed request less data
         if (next_position_in_store >= number_of_elements_to_read_from_sdram) {
-            num_items_to_read =
-                number_of_elements_to_read_from_sdram - position_in_store;
+            num_items_to_read = number_of_elements_to_read_from_sdram
+                    - position_in_store;
             //log_info("reading %d items", num_items_to_read);
             //log_info("position in store = %d, new position in store = %d",
             //         position_in_store, next_position_in_store);
@@ -767,13 +784,13 @@ void dma_complete_reading_for_original_transmission(){
         read(DMA_TAG_READ_FOR_TRANSMISSION, 0, num_items_to_read);
 
         //log_info("sending data");
-        send_data_block(
-            current_dma_pointer, items_read_this_time, key_to_transmit);
+        send_data_block(current_dma_pointer, items_read_this_time,
+                key_to_transmit);
         //log_info("finished sending data");
     } else {
         //io_printf(IO_BUF, "sending last data \n");
-        send_data_block(
-            current_dma_pointer, items_read_this_time, key_to_transmit);
+        send_data_block(current_dma_pointer, items_read_this_time,
+                key_to_transmit);
         //io_printf(IO_BUF, "sending end flag\n");
 
         // send end flag.
@@ -793,11 +810,13 @@ void dma_complete_reading_for_original_transmission(){
 //! \param[in] length: length of data
 //! \param[in] start_offset: where in the data to start writing in from.
 void write_missing_sdp_seq_nums_into_sdram(
-        uint32_t data[], ushort length, uint32_t start_offset) {
-    for (ushort offset=start_offset; offset < length; offset ++) {
-        missing_sdp_seq_num_sdram_address[
-            number_of_missing_seq_nums_in_sdram +
-            (offset - start_offset)] = data[offset];
+        uint32_t data[],
+        ushort length,
+        uint32_t start_offset)
+{
+    for (ushort offset = start_offset; offset < length; offset++) {
+        missing_sdp_seq_num_sdram_address[number_of_missing_seq_nums_in_sdram
+                + (offset - start_offset)] = data[offset];
         //log_info("data writing into sdram is %d", data[offset]);
     }
     number_of_missing_seq_nums_in_sdram += length - start_offset;
@@ -808,11 +827,15 @@ void write_missing_sdp_seq_nums_into_sdram(
 //! \param[in] length: how much data to read
 //! \param[in] first: if first packet about missing seq nums. If so there's
 //! different behaviour
-void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
+void store_missing_seq_nums(
+        uint32_t data[],
+        ushort length,
+        bool first)
+{
     uint32_t start_reading_offset = 1;
-    if (first){
+    if (first) {
         number_of_missing_seq_sdp_packets =
-            data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
+                data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
 
         //uint32_t total_missing_seq_nums = (
         //    (ITEMS_PER_DATA_PACKET - 2) +
@@ -820,19 +843,19 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         //    (ITEMS_PER_DATA_PACKET - 1)));
         //log_info("final seq num count is %d", total_missing_seq_nums);
 
-        uint32_t size_of_data =
-            ((number_of_missing_seq_sdp_packets * ITEMS_PER_DATA_PACKET) *
-             WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE;
+        uint32_t size_of_data = (number_of_missing_seq_sdp_packets
+                * ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER)
+                + END_FLAG_SIZE;
 
         //log_info("doing first with xalloc of %d bytes", size_of_data);
         if (missing_sdp_seq_num_sdram_address != NULL) {
             sark_xfree(sv->sdram_heap, missing_sdp_seq_num_sdram_address,
-                       ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                    ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
             missing_sdp_seq_num_sdram_address = NULL;
         }
-        missing_sdp_seq_num_sdram_address = sark_xalloc(
-            sv->sdram_heap, size_of_data, 0,
-            ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+        missing_sdp_seq_num_sdram_address = sark_xalloc(sv->sdram_heap,
+                size_of_data, 0,
+                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
@@ -844,13 +867,14 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
 }
 
 //! \brief sets off a DMA for retransmission stuff
-void retransmission_dma_read() {
+void retransmission_dma_read()
+{
     // update dma pointer for oscillation
     current_dma_pointer = (current_dma_pointer + 1) % N_DMA_BUFFERS;
 
     // locate where we are in sdram
     address_t data_sdram_position =
-        &missing_sdp_seq_num_sdram_address[position_for_retransmission];
+            &missing_sdp_seq_num_sdram_address[position_for_retransmission];
     //log_info(" address to dma from is %d", data_sdram_position);
     //log_info(" dma pointer = %d", dma_pointer);
     //log_info("size to read is %d",
@@ -859,8 +883,8 @@ void retransmission_dma_read() {
     // set off dma via sark commands
     //log_info("setting off dma");
     uint desc =
-        DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19 |
-        (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER);
+    DMA_WIDTH << 24 | DMA_BURST_SIZE << 21 | DMA_READ << 19
+            | (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER);
     dma_port_last_used = DMA_TAG_READ_FOR_RETRANSMISSION;
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) retransmit_seq_nums;
@@ -869,57 +893,61 @@ void retransmission_dma_read() {
 
 //! \brief reads in missing seq nums and sets off the reading of
 //! sdram for the equiv data
-void the_dma_complete_read_missing_seqeuence_nums() {
+void the_dma_complete_read_missing_seqeuence_nums()
+{
     //! check if at end of read missing seq nums
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
-        if (number_of_missing_seq_nums_in_sdram >
-                position_for_retransmission) {
+        if (number_of_missing_seq_nums_in_sdram > position_for_retransmission) {
             position_in_read_data = 0;
             retransmission_dma_read();
         }
     } else {
         // get next seq num to regenerate
-        missing_seq_num_being_processed = (uint32_t)
-            retransmit_seq_nums[position_in_read_data];
+        missing_seq_num_being_processed =
+                retransmit_seq_nums[position_in_read_data];
         if (missing_seq_num_being_processed != END_FLAG) {
             // regenerate data
             position_in_store = missing_seq_num_being_processed * (
-        	    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             read(DMA_TAG_RETRANSMISSION_READING, 1,
-        	    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
-        } else {        // finished data send, tell host its done
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE));
+        } else {
+            // finished data send, tell host its done
             data_speed_up_send_end_flag();
         }
     }
 }
 
 //! \brief dma complete callback for have read missing seq num data
-void dma_complete_reading_retransmission_data() {
+void dma_complete_reading_retransmission_data()
+{
     //log_info("just read data for a given missing sequence number");
 
     // set seq number as first element
-    data_to_transmit[transmit_dma_pointer][0] =
-	    missing_seq_num_being_processed;
+    data_to_transmit[transmit_dma_pointer][0] = missing_seq_num_being_processed;
 
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
     send_data_block(transmit_dma_pointer, ITEMS_PER_DATA_PACKET,
-	    key_to_transmit_with + 1);
+            key_to_transmit_with + 1);
 
     position_in_read_data += 1;
     the_dma_complete_read_missing_seqeuence_nums();
 }
 
 //! \brief dma complete callback for have read missing seq num data
-void dma_complete_writing_missing_seq_to_sdram() {
+void dma_complete_writing_missing_seq_to_sdram()
+{
     io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
 //! \brief the handler for all messages coming in for data speed up
 //! functionality.
 //! \param[in] msg: the sdp message (without scp header)
-void handle_data_speed_up(sdp_msg_pure_data *msg) {
+void handle_data_speed_up(
+        sdp_msg_pure_data *msg)
+{
     if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
         //io_printf(IO_BUF, "starting the send of original data\n");
         // set sdram position and length
@@ -933,25 +961,24 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         first_transmission = true;
         transmit_dma_pointer = 0;
         position_in_store = 0;
-        number_of_elements_to_read_from_sdram =
-        	(uint)(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
+        number_of_elements_to_read_from_sdram = (uint) (bytes_to_read_write
+                / WORD_TO_BYTE_MULTIPLIER);
         //io_printf(IO_BUF, "elements to read %d \n",
         //          number_of_elements_to_read_from_sdram);
 
         if (number_of_elements_to_read_from_sdram <
-                ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
+        ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) {
             read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
-        	    number_of_elements_to_read_from_sdram);
+                    number_of_elements_to_read_from_sdram);
         } else {
             read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
-        	    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
+            ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
         }
-    }
-    // start or continue to gather missing packet list
-    else if (msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS ||
-            msg->data[COMMAND_ID_POSITION] ==
+    } else if (msg->data[COMMAND_ID_POSITION] ==
+            SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS
+            || msg->data[COMMAND_ID_POSITION] ==
             SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS) {
+        // start or continue to gather missing packet list
         //log_info("starting resend mode");
 
         // reset state, as could be here from multiple attempts
@@ -964,11 +991,10 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         }
 
         // put missing seq nums into sdram
-        store_missing_seq_nums(
-        	msg->data,
-		(msg->length - LENGTH_OF_SDP_HEADER) / WORD_TO_BYTE_MULTIPLIER,
-		msg->data[COMMAND_ID_POSITION] ==
-			SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
+        store_missing_seq_nums(msg->data,
+                (msg->length - LENGTH_OF_SDP_HEADER) / WORD_TO_BYTE_MULTIPLIER,
+                msg->data[COMMAND_ID_POSITION] ==
+                SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
 
         //log_info("free message");
         sark_msg_free((sdp_msg_t *) msg);
@@ -976,8 +1002,8 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         // if got all missing packets, start retransmitting them to host
         if (number_of_missing_seq_sdp_packets == 0) {
             // packets all received, add finish flag for dma stoppage
-            missing_sdp_seq_num_sdram_address[
-		    number_of_missing_seq_nums_in_sdram] = END_FLAG;
+            missing_sdp_seq_num_sdram_address[number_of_missing_seq_nums_in_sdram] =
+                    END_FLAG;
             number_of_missing_seq_nums_in_sdram += 1;
 
             //log_info("start retransmission");
@@ -990,7 +1016,8 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 }
 
 //! \brief the handler for all DMA'S complete!
-INT_HANDLER speed_up_handle_dma(){
+INT_HANDLER speed_up_handle_dma()
+{
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (dma_port_last_used == DMA_TAG_READ_FOR_TRANSMISSION) {
@@ -1011,8 +1038,11 @@ INT_HANDLER speed_up_handle_dma(){
 //-----------------------------------------------------------------------------
 // common code
 //-----------------------------------------------------------------------------
-void __real_sark_int(void *pc);
-void __wrap_sark_int(void *pc) {
+void __real_sark_int(
+        void *pc);
+void __wrap_sark_int(
+        void *pc)
+{
     // Check for extra messages added by this core
     uint cmd = sark.vcpu->mbox_ap_cmd;
     if (cmd == SHM_MSG) {
@@ -1026,7 +1056,8 @@ void __wrap_sark_int(void *pc) {
             sark_msg_cpy(msg, shm_msg);
             sark_shmsg_free(shm_msg);
 
-            io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+            io_printf(IO_BUF, "port %d\n",
+                    (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
 
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
@@ -1046,8 +1077,9 @@ void __wrap_sark_int(void *pc) {
                 handle_data_speed_up((sdp_msg_pure_data *) msg);
                 break;
             default:
-                io_printf(IO_BUF, "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
-        	// Do nothing
+                io_printf(IO_BUF, "port %d\n",
+                        (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                // Do nothing
             }
             sark_msg_free(msg);
         } else {
@@ -1065,28 +1097,29 @@ void __wrap_sark_int(void *pc) {
 
 
 //! \brief sets up data required by the reinjection functionality
-void reinjection_initialise() {
+void reinjection_initialise()
+{
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     address_t address =
-	    (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+            (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_REINJECTION]);
-    
+
     // process data
     reinjection_read_packet_types(address);
 
     // Setup the CPU interrupt for watchdog
     vic_controls[sark_vec->sark_slot] = 0;
-    vic_vectors[CPU_SLOT]  = sark_int_han;
+    vic_vectors[CPU_SLOT] = sark_int_han;
     vic_controls[CPU_SLOT] = 0x20 | CPU_INT;
 
     // Setup the comms controller interrupt
-    vic_vectors[CC_SLOT]  = reinjection_ready_to_send_callback;
+    vic_vectors[CC_SLOT] = reinjection_ready_to_send_callback;
     vic_controls[CC_SLOT] = 0x20 | CC_TNF_INT;
 
     // Setup the timer interrupt
-    vic_vectors[TIMER_SLOT]  = reinjection_timer_callback;
+    vic_vectors[TIMER_SLOT] = reinjection_timer_callback;
     vic_controls[TIMER_SLOT] = 0x20 | TIMER1_INT;
 
     // Setup the router interrupt as a fast interrupt
@@ -1095,21 +1128,21 @@ void reinjection_initialise() {
 }
 
 //! \brief sets up data required by the data speed up functionality
-void data_speed_up_initialise() {
+void data_speed_up_initialise()
+{
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
+            (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
     address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
     key_to_transmit_with = address[MY_KEY];
 
-    vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
+    vic_vectors[DMA_SLOT] = speed_up_handle_dma;
     vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
-        data_to_transmit[i] = (uint32_t*) sark_xalloc(
-        	sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
-		ALLOC_LOCK);
-        if (data_to_transmit[i] == NULL){
+        data_to_transmit[i] = sark_xalloc(sark.heap,
+                ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0, ALLOC_LOCK);
+        if (data_to_transmit[i] == NULL) {
             io_printf(IO_BUF, "failed to xalloc dtcm for dma buffers\n");
             rt_error(RTE_SWERR);
         }
@@ -1124,7 +1157,8 @@ void data_speed_up_initialise() {
 //-----------------------------------------------------------------------------
 // main method
 //-----------------------------------------------------------------------------
-void c_main() {
+void c_main()
+{
     sark_cpu_state(CPU_STATE_RUN);
 
     // Configure
@@ -1140,8 +1174,8 @@ void c_main() {
 
     // set up vict callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for watchdog)
-    uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT) |
-	    (1 << DMA_DONE_INT);
+    uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT)
+            | (1 << DMA_DONE_INT);
     vic[VIC_DISABLE] = int_select;
     vic[VIC_DISABLE] = (1 << CC_TNF_INT);
 

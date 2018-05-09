@@ -48,15 +48,14 @@ static uint32_t get_random_busy(void)
 
 static void record_aggregate_sample(void)
 {
-    recording_record(
-        RECORDING_REGION_ID, core_counters, sizeof(core_counters));
+    recording_record(RECORDING_REGION_ID, core_counters, sizeof(core_counters));
 }
 
 static void reset_core_counters(void)
 {
     int i;
-    for (i=0 ; i<NUM_CORES ; i++) {
-	    core_counters[i] = 0;
+    for (i = 0; i < NUM_CORES; i++) {
+        core_counters[i] = 0;
     }
     sample_count = 0;
 }
@@ -71,7 +70,9 @@ void resume_callback() {
     log_info("resume_callback");
 }
 
-static void sample_in_slot(uint unused0, uint unused1)
+static void sample_in_slot(
+        uint unused0,
+        uint unused1)
 {
     use(unused0);
     use(unused1);
@@ -84,7 +85,6 @@ static void sample_in_slot(uint unused0, uint unused1)
     }
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
-
         recording_finalise();
         simulation_handle_pause_resume(resume_callback);
 
@@ -95,14 +95,14 @@ static void sample_in_slot(uint unused0, uint unused1)
 
     uint32_t sc = ++sample_count;
     uint32_t offset = get_random_busy();
-    while (offset --> 0) {
-	    // Do nothing
+    while (offset-- > 0) {
+        // Do nothing
     }
 
     uint32_t sample = get_sample();
 
     int i, j;
-    for (i=0, j=1 ; i<NUM_CORES ; i++, j<<=1) {
+    for (i = 0, j = 1; i < NUM_CORES; i++, j <<= 1) {
         if (!(sample & j)) {
             core_counters[i]++;
         }
@@ -114,10 +114,10 @@ static void sample_in_slot(uint unused0, uint unused1)
     }
 
     recording_do_timestep_update(time);
-
 }
 
-bool read_parameters(address_t address)
+bool read_parameters(
+        address_t address)
 {
     sample_count_limit = address[SAMPLE_COUNT_LIMIT];
     sample_frequency = address[SAMPLE_FREQUENCY];
@@ -127,17 +127,16 @@ bool read_parameters(address_t address)
     return true;
 }
 
-static bool initialize(uint32_t *timer)
+static bool initialize(
+        uint32_t *timer)
 {
     address_t address = data_specification_get_data_address();
-    if (!simulation_initialise(
-            data_specification_get_region(SYSTEM, address),
-            APPLICATION_NAME_HASH, timer, &simulation_ticks,
-            &infinite_run, SDP, DMA)) {
+    if (!simulation_initialise(data_specification_get_region(SYSTEM, address),
+            APPLICATION_NAME_HASH, timer, &simulation_ticks, &infinite_run,
+            SDP, DMA)) {
         return false;
     }
-    if (!read_parameters(
-            data_specification_get_region(CONFIG, address))) {
+    if (!read_parameters(data_specification_get_region(CONFIG, address))) {
         return false;
     }
 
@@ -145,10 +144,9 @@ static bool initialize(uint32_t *timer)
     simulation_ticks = (simulation_ticks * *timer) / sample_frequency;
     log_info("total_sim_ticks = %d", simulation_ticks);
 
-    address_t recording_region =
-	    data_specification_get_region(RECORDING, address);
-    bool success = recording_initialize(recording_region, &recording_flags);
-    return success;
+    address_t recording_region = data_specification_get_region(RECORDING,
+            address);
+    return recording_initialize(recording_region, &recording_flags);
 }
 
 void c_main(void)

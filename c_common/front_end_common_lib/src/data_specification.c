@@ -33,8 +33,8 @@ address_t data_specification_get_data_address(void)
 
     // Get the address this core's DTCM data starts at from the user data member
     // of the structure associated with this virtual processor
-    address_t address = (address_t)
-	    sark_virtual_processor_info[spin1_get_core_id()].user0;
+    address_t address =
+            (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
 
     log_info("SDRAM data begins at address: %08x", address);
 
@@ -50,7 +50,7 @@ address_t data_specification_get_data_address(void)
 //! \return boolean where True is when the header is correct and False if there
 //!         is a conflict with the DSE magic number
 bool data_specification_read_header(
-	uint32_t* address)
+        uint32_t* address)
 {
     // Check for the magic number and spec version
     if (address[dse_magic_number] != DATA_SPECIFICATION_MAGIC_NUMBER) {
@@ -64,8 +64,8 @@ bool data_specification_read_header(
 
     // Log what we have found
     log_info("magic = %08x, version = %d.%d", address[dse_magic_number],
-	    address[dse_version] >> VERSION_SHIFT,
-	    address[dse_version] & VERSION_MASK);
+            address[dse_version] >> VERSION_SHIFT,
+            address[dse_version] & VERSION_MASK);
     return true;
 }
 
@@ -78,7 +78,8 @@ bool data_specification_read_header(
 //! \return a address_t which represents the absolute SDRAM address for the
 //!         start of the requested region.
 address_t data_specification_get_region(
-        uint32_t region, address_t data_address)
+        uint32_t region,
+        address_t data_address)
 {
     return (address_t) data_address[REGION_START_INDEX + region];
 }

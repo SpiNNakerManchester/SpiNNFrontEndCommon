@@ -53,7 +53,7 @@
 // means that the accessor functions return a constant
 
 #ifndef use
-#define use(x) do {} while ((x)!=(x))
+#define use(x)  do {} while ((x)!=(x))
 #endif
 
 
@@ -63,10 +63,10 @@
 // This requires an extra level of macro call to "stringify"
 // the result.
 
-#define __int_helper(b) int ## b ## _t
-#define __uint_helper(b) uint ## b ## _t
-#define __int_t(b) __int_helper(b)
-#define __uint_t(b) __uint_helper(b)
+#define __int_helper(b)         int ## b ## _t
+#define __uint_helper(b)        uint ## b ## _t
+#define __int_t(b)      __int_helper(b)
+#define __uint_t(b)     __uint_helper(b)
 
 // Give meaningful names to the common types.
 // (checking that they haven't already been declared.)

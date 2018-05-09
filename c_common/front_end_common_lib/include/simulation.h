@@ -15,7 +15,7 @@
 #include <spin1_api.h>
 
 // How many DMA IDs can be used (caps the values of the tags as well)
-#define MAX_DMA_CALLBACK_TAG	16
+#define MAX_DMA_CALLBACK_TAG    16
 
 // the position and human readable terms for each element from the region
 // containing the timing details.
@@ -77,9 +77,12 @@ typedef void (*exit_callback_t)(void);
 //!            DMA transfer complete callbacks
 //! \return True if the data was found, false otherwise
 bool simulation_initialise(
-        address_t address, uint32_t expected_application_magic_number,
-        uint32_t* timer_period, uint32_t *simulation_ticks_pointer,
-        uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
+        address_t address,
+        uint32_t expected_application_magic_number,
+        uint32_t* timer_period,
+        uint32_t *simulation_ticks_pointer,
+        uint32_t *infinite_run_pointer,
+        int sdp_packet_callback_priority,
         int dma_transfer_complete_priority);
 
 //! \brief Set the address of the data region where provenance data is to be
@@ -87,7 +90,7 @@ bool simulation_initialise(
 //! \param[in] provenance_data_address: the address where provenance data should
 //!            be stored
 void simulation_set_provenance_data_address(
-	address_t provenance_data_address);
+        address_t provenance_data_address);
 
 //! \brief Set an additional callback function to store extra provenance data
 //! \param[in] provenance_function: function to call for extra provenance data
@@ -95,21 +98,21 @@ void simulation_set_provenance_data_address(
 //!            be stored
 void simulation_set_provenance_function(
         prov_callback_t provenance_function,
-	address_t provenance_data_address);
+        address_t provenance_data_address);
 
 //! \brief Set an additional function to call before exiting the binary when
 //!        running without a fixed duration of execution
 //! \param[in] exit_function: function to call when the host tells the
 //!            simulation to exit. Executed before API exit.
 void simulation_set_exit_function(
-	exit_callback_t exit_function);
+        exit_callback_t exit_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
 //!        the resetting up of states as required to resume.
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(
-	resume_callback_t resume_function);
+        resume_callback_t resume_function);
 
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
@@ -125,23 +128,25 @@ void simulation_run(void);
 //! \param[in] sdp_callback The callback to call when a packet is received
 //! \return true if successful, false otherwise
 bool simulation_sdp_callback_on(
-    uint sdp_port, callback_t sdp_callback);
+        uint sdp_port,
+        callback_t sdp_callback);
 
 //! \brief disables SDP callbacks on the given port
 //| \param[in] sdp_port The SDP port to disable callbacks for
 void simulation_sdp_callback_off(
-	uint sdp_port);
+        uint sdp_port);
 
 //! \brief registers a DMA transfer callback to the simulation system
 //! \param[in] tag: the DMA transfer tag to register against
 //! \param[in] callback: the callback to register for the given tag
 //! \return true if successful, false otherwise
 bool simulation_dma_transfer_done_callback_on(
-	uint tag, callback_t callback);
+        uint tag,
+        callback_t callback);
 
 //! \brief turns off a registered callback for a given DMA transfer done tag
 //! \param[in] tag: the DMA transfer tag to de-register
 void simulation_dma_transfer_done_callback_off(
-	uint tag);
+        uint tag);
 
 #endif // _SIMULATION_H_
