@@ -600,7 +600,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
             # send data
             self._send_data_via_extra_monitors(
-                x, y, base_address, data[offset:n_bytes + offset])
+                transceiver, x, y, base_address, data[offset:n_bytes + offset])
 
             # end time recording
             end = float(time.time())
