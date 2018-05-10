@@ -1,12 +1,10 @@
-# The size of the header of a message
-from spinnman.messages.eieio.command_messages \
-    import EventStopRequest, HostSendSequencedData
+import bisect
+import math
+from spinnman.messages.eieio.command_messages import (
+    EventStopRequest, HostSendSequencedData)
 from spinnman.messages.eieio.data_messages import EIEIODataHeader
 from spinnman.messages.eieio import EIEIOType
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
-
-import bisect
-import math
 
 
 class BufferedSendingRegion(object):

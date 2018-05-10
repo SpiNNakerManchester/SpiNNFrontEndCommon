@@ -1,6 +1,5 @@
-from spinn_front_end_common.utilities.constants import BUFFERING_OPERATIONS
-
 import struct
+from spinn_front_end_common.utilities.constants import BUFFERING_OPERATIONS
 
 _CHANNEL_BUFFER_PATTERN = struct.Struct("<IIIIIBBBx")
 

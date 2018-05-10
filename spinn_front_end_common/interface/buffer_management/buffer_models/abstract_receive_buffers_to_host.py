@@ -1,5 +1,4 @@
 from six import add_metaclass
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -28,10 +27,10 @@ class AbstractReceiveBuffersToHost(object):
 
     @abstractmethod
     def get_recorded_region_ids(self):
-        """ Get the recording region ids that have been recorded using buffering
+        """ Get the recording region IDs that have been recorded using buffering
 
         :return: The region numbers that have active recording
-        :rtype: iterable of int
+        :rtype: iterable(int)
         """
 
     @abstractmethod

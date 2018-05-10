@@ -1,4 +1,3 @@
-# spinn_machine imports
 from spinn_machine import VirtualMachine
 
 
@@ -13,8 +12,8 @@ class VirtualMachineGenerator(object):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
-        :param virtual_has_wrap_arounds: True if the machine\
-                should be created with wrap_arounds
+        :param virtual_has_wrap_arounds: \
+            True if the machine should be created with wrap_arounds
         :param version: The version of board to create
         :param n_cpus_per_chip: The number of cores to put on each chip
         :param with_monitors: If true, CPU 0 will be marked as a monitor

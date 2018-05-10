@@ -1,87 +1,62 @@
 """
 main interface for the spinnaker tools
 """
-import spinn_utilities.conf_loader as conf_loader
-from spinn_utilities.timer import Timer
-from spinn_utilities import __version__ as spinn_utils_version
-
-# pacman imports
-from pacman.executor.injection_decorator import provide_injectables, \
-    clear_injectables
-from pacman.model.graphs.common import GraphMapper
-from pacman.model.placements import Placements
-from pacman.executor import PACMANAlgorithmExecutor
-from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
-from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import PreAllocatedResourceContainer
-from pacman import __version__ as pacman_version
-
-# common front end imports
-from spinn_front_end_common.abstract_models import \
-    AbstractSendMeMulticastCommandsVertex, AbstractRecordable, \
-    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities \
-    import helpful_functions, globals_variables, SimulatorInterface
-from spinn_front_end_common.utilities import function_list
-from spinn_front_end_common.utilities.utility_objs \
-    import ExecutableType, ProvenanceDataItem
-from spinn_front_end_common.utilities.report_functions import EnergyReport
-from spinn_front_end_common.utility_models import \
-    CommandSender, DataSpeedUpPacketGatherMachineVertex
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.provenance \
-    import PacmanProvenanceExtractor
-from spinn_front_end_common.interface.simulator_state import Simulator_State
-from spinn_front_end_common.interface.interface_functions \
-    import ProvenanceXMLWriter
-from spinn_front_end_common.interface.interface_functions \
-    import ProvenanceJSONWriter
-from spinn_front_end_common.interface.interface_functions \
-    import ChipProvenanceUpdater
-from spinn_front_end_common.interface.interface_functions \
-    import PlacementsProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import RouterProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-from spinn_front_end_common import __version__ as fec_version
-
-# spinnman imports
-from spinnman.model.enums.cpu_state import CPUState
-from spinnman import __version__ as spinnman_version
-
-# spinnmachine imports
-from spinn_machine import CoreSubsets
-from spinn_machine import __version__ as spinn_machine_version
-
-# general imports
 from collections import defaultdict
 import logging
 import math
 import os
 import signal
-from six import iteritems, iterkeys, reraise
 import sys
-
-# Version number imports
+from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
+import spinn_utilities.conf_loader as conf_loader
+from spinn_utilities.timer import Timer
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities import __version__ as spinn_utils_version
+from spinn_machine import CoreSubsets
+from spinn_machine import __version__ as spinn_machine_version
+from spinnman.model.enums.cpu_state import CPUState
+from spinnman import __version__ as spinnman_version
+from spinn_storage_handlers import __version__ as spinn_storage_version
+from data_specification import __version__ as data_spec_version
+from spalloc import __version__ as spalloc_version
+from pacman.executor.injection_decorator import (
+    provide_injectables, clear_injectables)
+from pacman.model.graphs.common import GraphMapper
+from pacman.model.placements import Placements
+from pacman.executor import PACMANAlgorithmExecutor
+from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
+from pacman.model.graphs.application import (
+    ApplicationGraph, ApplicationEdge, ApplicationVertex)
+from pacman.model.graphs.machine import MachineGraph, MachineVertex
+from pacman.model.resources import PreAllocatedResourceContainer
+from pacman import __version__ as pacman_version
+from spinn_front_end_common.abstract_models import (
+    AbstractSendMeMulticastCommandsVertex, AbstractRecordable,
+    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities import (
+    helpful_functions, globals_variables, SimulatorInterface, function_list)
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ProvenanceDataItem)
+from spinn_front_end_common.utilities.report_functions import EnergyReport
+from spinn_front_end_common.utility_models import (
+    CommandSender, DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.provenance import (
+    PacmanProvenanceExtractor)
+from spinn_front_end_common.interface.simulator_state import Simulator_State
+from spinn_front_end_common.interface.interface_functions import (
+    ProvenanceXMLWriter, ProvenanceJSONWriter, ChipProvenanceUpdater,
+    PlacementsProvenanceGatherer, RouterProvenanceGatherer, ChipIOBufExtractor)
+from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
 except ImportError:
     scipy_version = "scipy not installed"
-from data_specification import __version__ as data_spec_version
-from spinn_storage_handlers import __version__ as spinn_storage_version
-from spalloc import __version__ as spalloc_version
-
 
 logger = FormatAdapter(logging.getLogger(__name__))
-
 CONFIG_FILE = "spinnaker.cfg"
 
 

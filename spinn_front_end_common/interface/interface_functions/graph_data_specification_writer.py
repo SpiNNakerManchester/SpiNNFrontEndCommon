@@ -1,14 +1,9 @@
 from collections import defaultdict
-
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.abstract_models \
-    import AbstractRewritesDataSpecification
-
-from data_specification.utility_calls \
-    import get_data_spec_and_file_writer_filename
-
-from spinn_front_end_common.abstract_models import \
-    AbstractGeneratesDataSpecification
+from data_specification.utility_calls import (
+    get_data_spec_and_file_writer_filename)
+from spinn_front_end_common.abstract_models import (
+    AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 

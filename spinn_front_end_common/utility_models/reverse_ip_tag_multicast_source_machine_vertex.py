@@ -1,48 +1,44 @@
-from spinn_utilities.overrides import overrides
-
-from pacman.executor.injection_decorator \
-    import inject_items, supports_injection, inject
-from pacman.model.constraints.key_allocator_constraints \
-    import FixedKeyAndMaskConstraint
-from pacman.model.constraints.placer_constraints import BoardConstraint
-from pacman.model.resources import IPtagResource, ReverseIPtagResource
-from pacman.model.resources import ResourceContainer, DTCMResource
-from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
-from pacman.model.routing_info import BaseKeyAndMask
-from pacman.model.graphs.machine import MachineVertex
-
-from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement
-from spinn_front_end_common.interface.buffer_management.recording_utilities \
-    import TRAFFIC_IDENTIFIER
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferedSendingRegion
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.abstract_models \
-    import AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models \
-    import AbstractSupportsDatabaseInjection
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-from spinn_front_end_common.interface.provenance \
-    import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.buffer_management\
-    import recording_utilities
-from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableType
-
-from spinnman.messages.eieio import EIEIOPrefix
-
-from enum import Enum
 import math
 import sys
 import struct
+from enum import Enum
 from six.moves import xrange
+from spinn_utilities.overrides import overrides
+from spinnman.messages.eieio import EIEIOPrefix
+from pacman.executor.injection_decorator import (
+    inject_items, supports_injection, inject)
+from pacman.model.constraints.key_allocator_constraints import (
+    FixedKeyAndMaskConstraint)
+from pacman.model.constraints.placer_constraints import BoardConstraint
+from pacman.model.resources import (
+    IPtagResource, ReverseIPtagResource, ResourceContainer, DTCMResource,
+    SDRAMResource, CPUCyclesPerTickResource)
+from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement)
+from spinn_front_end_common.interface.buffer_management.recording_utilities \
+    import (
+        TRAFFIC_IDENTIFIER)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import (
+        BufferedSendingRegion)
+from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
+from spinn_front_end_common.interface.provenance import (
+    ProvidesProvenanceDataFromMachineImpl)
+from spinn_front_end_common.interface.buffer_management import (
+    recording_utilities)
+from spinn_front_end_common.utilities.utility_objs import (
+    ProvenanceDataItem, ExecutableType)
 
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")

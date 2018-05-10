@@ -1,12 +1,10 @@
 import struct
-
-from spinn_front_end_common.utilities import constants, exceptions
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import CoreSubsets
-
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
-from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities import constants, exceptions
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 _ONE_WORD = struct.Struct("<I")
 

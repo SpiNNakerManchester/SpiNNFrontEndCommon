@@ -1,15 +1,11 @@
-from six import add_metaclass
-
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
-
-from .abstract_provides_provenance_data_from_machine \
-    import AbstractProvidesProvenanceDataFromMachine
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-
-from data_specification.utility_calls import get_region_base_address_offset
-
 import struct
 from enum import Enum
+from six import add_metaclass
+from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from data_specification.utility_calls import get_region_base_address_offset
+from .abstract_provides_provenance_data_from_machine import (
+    AbstractProvidesProvenanceDataFromMachine)
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 _ONE_WORD = struct.Struct("<I")
 

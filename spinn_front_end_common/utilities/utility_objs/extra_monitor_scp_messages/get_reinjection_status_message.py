@@ -1,11 +1,10 @@
 from spinnman.messages.scp import SCPRequestHeader
-from spinnman.messages.scp.abstract_messages \
-    import AbstractSCPRequest, AbstractSCPResponse
+from spinnman.messages.scp.abstract_messages import (
+    AbstractSCPRequest, AbstractSCPResponse)
 from spinnman.messages.scp.enums import SCPResult
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
-from spinn_front_end_common.utilities.utility_objs.reinjection_status \
-    import ReInjectionStatus
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from spinn_front_end_common.utilities import constants
 from .reinjector_scp_commands import ReinjectorSCPCommands
 

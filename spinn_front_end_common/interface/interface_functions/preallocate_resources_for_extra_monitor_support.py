@@ -1,14 +1,13 @@
-from pacman.model.resources import SpecificChipSDRAMResource, CoreResource, \
-    PreAllocatedResourceContainer
-from pacman.model.resources.specific_board_iptag_resource import \
-    SpecificBoardTagResource
-from spinn_front_end_common.utility_models import \
-    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.resources import (
+    SpecificChipSDRAMResource, CoreResource, PreAllocatedResourceContainer)
+from pacman.model.resources.specific_board_iptag_resource import (
+    SpecificBoardTagResource)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
-
     def __call__(
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
@@ -65,7 +64,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
     def _handle_packet_gathering_support(
             sdrams, cores, tags, machine, progress, n_cores_to_allocate):
         """ adds the packet gathering functionality tied into the data\
-         extractor within each chip
+            extractor within each chip
 
         :param sdrams: the pre-allocated sdram requirement for these vertices
         :param cores: the pre-allocated cores requirement for these vertices
@@ -79,7 +78,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # pylint: disable=too-many-arguments
 
         # get resources from packet gatherer
-        resources = DataSpeedUp.static_resources_required()
+        resources = DataSpeedUpPacketGatherMachineVertex\
+            .static_resources_required()
 
         # locate Ethernet connected chips that the vertices reside on
         for ethernet_connected_chip in \

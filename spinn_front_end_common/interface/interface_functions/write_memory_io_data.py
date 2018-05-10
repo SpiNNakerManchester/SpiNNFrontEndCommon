@@ -1,14 +1,10 @@
+import os
+from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.machine import MachineGraph
-
-from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
-
-from spinn_utilities.progress_bar import ProgressBar
-
 from spinnman.utilities.io import MemoryIO, FileIO
 from spinnman.messages.spinnaker_boot import SystemVariableDefinition as SV
-
-import os
+from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
 
 
 class WriteMemoryIOData(object):

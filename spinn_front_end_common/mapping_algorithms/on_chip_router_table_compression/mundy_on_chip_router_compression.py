@@ -1,19 +1,15 @@
-from spinn_utilities.progress_bar import ProgressBar
-
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.mapping_algorithms \
-    import on_chip_router_table_compression
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-
-from spinnman.model.enums import CPUState
-from spinnman.model import ExecutableTargets
-
-from spinn_machine import CoreSubsets, Router
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import CPUState
+from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.mapping_algorithms import (
+    on_chip_router_table_compression)
+from spinn_front_end_common.interface.interface_functions import (
+    ChipIOBufExtractor)
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")

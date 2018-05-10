@@ -1,9 +1,9 @@
-from spinn_front_end_common.utilities import constants
+import struct
 from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
-import struct
+from spinn_front_end_common.utilities import constants
 from .reinjector_scp_commands import ReinjectorSCPCommands
 
 

@@ -1,11 +1,8 @@
-from spinn_front_end_common.interface.profiling.profile_data \
-    import ProfileData
-
 import logging
 import struct
-
-from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement
+from .profile_data import ProfileData
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement)
 
 logger = logging.getLogger(__name__)
 

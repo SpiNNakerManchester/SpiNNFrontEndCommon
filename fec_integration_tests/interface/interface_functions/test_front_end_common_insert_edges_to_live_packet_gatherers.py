@@ -1,21 +1,21 @@
+import unittest
+from collections import defaultdict
+from spinn_machine import VirtualMachine
+from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.common import GraphMapper, Slice
 from pacman.model.graphs.machine import MachineGraph, SimpleMachineVertex
 from pacman.model.placements import Placements, Placement
 from pacman.model.resources import ResourceContainer
-from spinn_front_end_common.interface.interface_functions import \
-    InsertEdgesToLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs import \
-    LivePacketGatherParameters
-from spinn_front_end_common.utility_models \
-    import LivePacketGather, LivePacketGatherMachineVertex
-from spinn_machine import VirtualMachine
-from spinnman.messages.eieio import EIEIOType
+from spinn_front_end_common.interface.interface_functions import (
+    InsertEdgesToLivePacketGatherers)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import (
+    LivePacketGather, LivePacketGatherMachineVertex)
 from fec_integration_tests.interface.interface_functions.simple_test_vertex \
-    import SimpleTestVertex
-
-import unittest
-from collections import defaultdict
+    import (
+        SimpleTestVertex)
 
 
 class TestInsertLPGEdges(unittest.TestCase):

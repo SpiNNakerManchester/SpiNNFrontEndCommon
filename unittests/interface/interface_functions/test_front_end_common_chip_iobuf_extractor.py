@@ -1,14 +1,13 @@
-import unittest
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-from spinn_machine import CoreSubsets, CoreSubset
-from spinnman.model import IOBuffer
 import os
 import tempfile
+import unittest
+from spinn_machine import CoreSubsets, CoreSubset
+from spinnman.model import IOBuffer
+from spinn_front_end_common.interface.interface_functions import (
+    ChipIOBufExtractor)
 
 
 class _PretendTransceiver(object):
-
     def __init__(self, iobuffers):
         self._iobuffers = iobuffers
 

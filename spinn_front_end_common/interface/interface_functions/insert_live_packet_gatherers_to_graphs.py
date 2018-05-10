@@ -1,15 +1,9 @@
-# spinn front end common imports
-from spinn_front_end_common.utility_models \
-    import LivePacketGather, LivePacketGatherMachineVertex
-
-# pacman imports
-from pacman.model.graphs.common import Slice
-from pacman.model.constraints.placer_constraints\
-    import ChipAndCoreConstraint
-
-from spinn_utilities.progress_bar import ProgressBar
-
 from collections import defaultdict
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.graphs.common import Slice
+from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+from spinn_front_end_common.utility_models import (
+    LivePacketGather, LivePacketGatherMachineVertex)
 
 
 class InsertLivePacketGatherersToGraphs(object):

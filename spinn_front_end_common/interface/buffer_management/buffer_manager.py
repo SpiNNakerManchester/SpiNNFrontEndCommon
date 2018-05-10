@@ -1,38 +1,29 @@
-# spinn_utilites imports
+import logging
+import threading
+from multiprocessing.pool import ThreadPool
+from six.moves import xrange
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
-
-# spinnman imports
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages \
-    import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData, \
-    HostDataReadAck
-from spinnman.messages.eieio.command_messages \
-    import HostDataRead, SpinnakerRequestBuffers, PaddingRequest
-from spinnman.messages.eieio.command_messages \
-    import HostSendSequencedData, EventStopRequest
+from spinnman.messages.eieio.command_messages import (
+    EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData,
+    HostDataReadAck, HostDataRead, SpinnakerRequestBuffers, PaddingRequest,
+    HostSendSequencedData, EventStopRequest)
 from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
-
-# front end common imports
-from spinn_front_end_common.utilities import helpful_functions as funs
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities import (
+    helpful_functions as funs, exceptions)
+from spinn_front_end_common.utilities.constants import (
+    SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BuffersSentDeque, BufferedReceivingData, ChannelBufferState
-from spinn_front_end_common.utilities.constants \
-    import SDP_PORTS, BUFFERING_OPERATIONS
-from .recording_utilities import TRAFFIC_IDENTIFIER, \
-    get_last_sequence_number, get_region_pointer
-
-# general imports
-import threading
-from multiprocessing.pool import ThreadPool
-import logging
-from six.moves import xrange
+    import (
+        BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
+from .recording_utilities import (
+    TRAFFIC_IDENTIFIER, get_last_sequence_number, get_region_pointer)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

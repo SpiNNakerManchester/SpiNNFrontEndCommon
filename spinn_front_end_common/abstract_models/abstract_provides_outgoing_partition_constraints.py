@@ -1,5 +1,4 @@
 from six import add_metaclass
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -18,6 +17,6 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
         :param partition: An edge that comes out of this vertex
         :return: A list of constraints
         :rtype: list of\
-                    :py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`
+            :py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`
         """
         pass

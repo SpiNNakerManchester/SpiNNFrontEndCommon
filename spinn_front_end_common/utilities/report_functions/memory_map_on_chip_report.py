@@ -1,9 +1,8 @@
-from data_specification.constants import MAX_MEM_REGIONS
-from spinn_utilities.progress_bar import ProgressBar
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from data_specification.constants import MAX_MEM_REGIONS
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")

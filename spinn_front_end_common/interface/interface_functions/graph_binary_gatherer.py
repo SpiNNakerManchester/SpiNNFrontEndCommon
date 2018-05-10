@@ -1,8 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
-
+from spinnman.model import ExecutableTargets
 from spinn_front_end_common.utilities import exceptions
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from spinnman.model import ExecutableTargets
 
 
 class GraphBinaryGatherer(object):

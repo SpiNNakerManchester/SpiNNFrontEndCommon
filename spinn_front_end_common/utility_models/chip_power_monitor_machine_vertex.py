@@ -1,31 +1,28 @@
-import numpy
-from enum import Enum
 import math
 import logging
-
-from data_specification.enums import DataType
-from pacman.executor.injection_decorator import inject_items, \
-    supports_injection
-from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, SDRAMResource, \
-    CPUCyclesPerTickResource, DTCMResource
-
-from spinn_front_end_common.abstract_models import \
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.interface.buffer_management import \
-    recording_utilities
-from spinn_front_end_common.interface.buffer_management.buffer_models import \
-    AbstractReceiveBuffersToHost
-from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from enum import Enum
+import numpy
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement, read_config_int
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-
 from spinn_utilities.overrides import overrides
+from data_specification.enums import DataType
+from pacman.executor.injection_decorator import (
+    inject_items, supports_injection)
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.resources import (
+    ResourceContainer, SDRAMResource, CPUCyclesPerTickResource, DTCMResource)
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.interface.buffer_management import (
+    recording_utilities)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
+from spinn_front_end_common.utilities import (
+    globals_variables, constants)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement, read_config_int)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"

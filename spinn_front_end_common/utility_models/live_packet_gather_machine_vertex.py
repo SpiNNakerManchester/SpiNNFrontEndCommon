@@ -1,27 +1,23 @@
+import struct
+from enum import Enum
 from spinn_utilities.overrides import overrides
-
+from spinnman.messages.eieio import EIEIOType
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import IPtagResource, ResourceContainer
-from pacman.model.resources import SDRAMResource
-
-from spinn_front_end_common.interface.provenance \
-    import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
-    AbstractSupportsDatabaseInjection
-from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableType
-from spinn_front_end_common.utilities.constants \
-    import SYSTEM_BYTES_REQUIREMENT
-
-from spinnman.messages.eieio import EIEIOType
-
-from enum import Enum
-import struct
+from pacman.model.resources import (
+    CPUCyclesPerTickResource, DTCMResource, IPtagResource, ResourceContainer,
+    SDRAMResource)
+from spinn_front_end_common.interface.provenance import (
+    ProvidesProvenanceDataFromMachineImpl)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.utilities.utility_objs import (
+    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.constants import (
+    SYSTEM_BYTES_REQUIREMENT)
 
 _ONE_SHORT = struct.Struct("<H")
 _TWO_BYTES = struct.Struct("<BB")

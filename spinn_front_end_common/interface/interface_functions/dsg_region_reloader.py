@@ -1,18 +1,14 @@
+import os
+import struct
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
-
+from spinn_storage_handlers import FileDataReader
 from data_specification import DataSpecificationExecutor
 from data_specification import utility_calls
 from data_specification.constants import MAX_MEM_REGIONS
-
-from spinn_front_end_common.abstract_models \
-    import AbstractRewritesDataSpecification
+from spinn_front_end_common.abstract_models import (
+    AbstractRewritesDataSpecification)
 from spinn_front_end_common.utilities import helpful_functions
-
-from spinn_storage_handlers import FileDataReader
-
-import os
-import struct
 
 
 class DSGRegionReloader(object):

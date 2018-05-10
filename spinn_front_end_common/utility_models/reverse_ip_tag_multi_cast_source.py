@@ -1,28 +1,22 @@
-from spinn_utilities.overrides import overrides
-
-# pacman imports
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import ResourceContainer, SDRAMResource
-from pacman.model.resources import ReverseIPtagResource, IPtagResource
-from pacman.model.constraints.placer_constraints import BoardConstraint
-
-# front end common imports
-from spinn_front_end_common.abstract_models \
-    import AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.abstract_models.impl\
-    import ProvidesKeyToAtomMappingImpl
-from spinn_front_end_common.utilities import constants
-from .reverse_ip_tag_multicast_source_machine_vertex \
-    import ReverseIPTagMulticastSourceMachineVertex
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.interface.buffer_management \
-    import recording_utilities
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
-# general imports
 import sys
+from spinn_utilities.overrides import overrides
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import (
+    CPUCyclesPerTickResource, DTCMResource, ResourceContainer, SDRAMResource,
+    ReverseIPtagResource, IPtagResource)
+from pacman.model.constraints.placer_constraints import BoardConstraint
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesOutgoingPartitionConstraints)
+from spinn_front_end_common.abstract_models.impl import (
+    ProvidesKeyToAtomMappingImpl)
+from spinn_front_end_common.utilities import constants
+from .reverse_ip_tag_multicast_source_machine_vertex import (
+    ReverseIPTagMulticastSourceMachineVertex)
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.interface.buffer_management import (
+    recording_utilities)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class ReverseIpTagMultiCastSource(

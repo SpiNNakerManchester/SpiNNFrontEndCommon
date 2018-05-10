@@ -2,8 +2,8 @@ import unittest
 import socket
 from threading import Thread
 import json
-from spinn_front_end_common.interface.interface_functions \
-    import SpallocMaxMachineGenerator
+from spinn_front_end_common.interface.interface_functions import (
+    SpallocMaxMachineGenerator)
 
 
 class _MockSpallocServer(Thread):

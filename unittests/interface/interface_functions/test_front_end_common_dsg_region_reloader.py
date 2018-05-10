@@ -1,21 +1,18 @@
 import unittest
 import struct
-import numpy
 import shutil
-
-from data_specification import constants
-from data_specification import utility_calls
-
+import numpy
 from pacman.model.resources import ResourceContainer
 from pacman.model.graphs.common import Slice, GraphMapper
 from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
-
-from spinn_front_end_common.abstract_models \
-    import AbstractRewritesDataSpecification
-from spinn_front_end_common.interface.interface_functions \
-    import DSGRegionReloader
+from data_specification import constants
+from data_specification import utility_calls
+from spinn_front_end_common.abstract_models import (
+    AbstractRewritesDataSpecification)
+from spinn_front_end_common.interface.interface_functions import (
+    DSGRegionReloader)
 
 
 class _TestMachineVertex(MachineVertex):

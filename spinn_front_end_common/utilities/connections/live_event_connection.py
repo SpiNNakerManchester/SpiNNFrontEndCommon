@@ -1,22 +1,18 @@
+import logging
 from threading import Thread
 from collections import OrderedDict
 from six import iterkeys, iteritems
-import logging
-
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinn_front_end_common.utilities.database import DatabaseConnection
-
+from spinn_utilities.log import FormatAdapter
 from spinnman.utilities.utility_functions import send_port_trigger_message
-from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from spinnman.messages.eieio.data_messages import (
+    EIEIODataMessage, KeyPayloadDataElement)
 from spinnman.messages.eieio import EIEIOType
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
-
-from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
+from spinn_front_end_common.utilities.database import DatabaseConnection
 
 logger = FormatAdapter(logging.getLogger(__name__))
-
 
 # The maximum number of 32-bit keys that will fit in a packet
 _MAX_FULL_KEYS_PER_PACKET = 63

@@ -1,7 +1,6 @@
-from spinn_utilities.progress_bar import ProgressBar
 import re
 import os
-
+from spinn_utilities.progress_bar import ProgressBar
 
 ERROR_ENTRY = re.compile("\[ERROR\]\s+\((.*)\):\s+(.*)")
 WARNING_ENTRY = re.compile("\[WARNING\]\s+\((.*)\):\s+(.*)")

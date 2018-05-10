@@ -1,8 +1,8 @@
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets
+from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from pacman.model.graphs.machine import MachineVertex
-from spinn_machine import CoreSubsets
-from spinn_utilities.progress_bar import ProgressBar
 
 
 class LocateExecutableStartType(object):
