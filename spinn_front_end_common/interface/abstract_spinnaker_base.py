@@ -2168,14 +2168,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf_cores = CoreSubsets()
-        for placement in self._placements:
-            iobuf_cores.add_processor(placement.x, placement.y, placement.p)
-
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores, self._provenance_file_path)
+                self._txrx, executable_targets, self._provenance_file_path)
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2682,7 +2678,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         extractor = ChipIOBufExtractor()
         extractor(
             transceiver=self._txrx,
-            core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
+            core_subsets=self._last_run_outputs["ExecutableTargets"],
             provenance_file_path=self._provenance_file_path)
 
     def add_socket_address(self, socket_address):
