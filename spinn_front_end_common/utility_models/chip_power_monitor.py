@@ -6,7 +6,6 @@ from spinn_front_end_common.abstract_models import (
 from .chip_power_monitor_machine_vertex import ChipPowerMonitorMachineVertex
 
 
-
 class ChipPowerMonitor(
         ApplicationVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification):
