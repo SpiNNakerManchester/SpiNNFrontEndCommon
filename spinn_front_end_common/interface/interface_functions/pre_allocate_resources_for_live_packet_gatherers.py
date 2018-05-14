@@ -3,9 +3,9 @@ from pacman.model.resources import (
     CoreResource, PreAllocatedResourceContainer, SpecificChipSDRAMResource)
 from pacman.model.resources.specific_board_iptag_resource import (
     SpecificBoardTagResource)
-from spinn_front_end_common.utility_models.LivePacketGatherMachineVertex \
-    import (
-        get_sdram_usage, TRAFFIC_IDENTIFIER)
+from spinn_front_end_common.utility_models import (
+    LivePacketGatherMachineVertex as
+    LPG)
 
 
 class PreAllocateResourcesForLivePacketGatherers(object):
@@ -28,7 +28,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
             "Preallocating resources for Live Recording")
 
         # store how much SDRAM the LPG uses per core
-        sdram_requirement = get_sdram_usage()
+        sdram_requirement = LPG.get_sdram_usage()
 
         # for every Ethernet connected chip, get the resources needed by the
         # live packet gatherers
@@ -68,7 +68,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     board=chip.ip_address,
                     ip_address=lpg_params.hostname, port=lpg_params.port,
                     strip_sdp=lpg_params.strip_sdp, tag=lpg_params.tag,
-                    traffic_identifier=TRAFFIC_IDENTIFIER))
+                    traffic_identifier=LPG.TRAFFIC_IDENTIFIER))
 
         if sdram_reqs:
             sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))
