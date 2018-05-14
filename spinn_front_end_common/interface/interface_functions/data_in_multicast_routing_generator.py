@@ -204,7 +204,7 @@ class DataInMulticastRoutingGenerator(object):
 
         free_processor = 0
         while ((free_processor < machine.MAX_CORES_PER_CHIP) and
-            fake_placements.is_processor_occupied(
+                fake_placements.is_processor_occupied(
                 self.FAKE_ETHERNET_CHIP_X, y=self.FAKE_ETHERNET_CHIP_Y,
                 p=free_processor)):
             free_processor += 1
