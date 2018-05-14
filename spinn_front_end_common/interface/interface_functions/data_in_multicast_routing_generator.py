@@ -14,7 +14,6 @@ class DataInMulticastRoutingGenerator(object):
     extra monitor cores.
     """
 
-    RANDOM_PROCESSOR = 4
     N_KEYS_PER_PARTITION_ID = 4
     KEY_START_VALUE = 4
     FAKE_ETHERNET_CHIP_X = 0
@@ -203,9 +202,16 @@ class DataInMulticastRoutingGenerator(object):
         vertex_source = RoutingMachineVertex()
         fake_graph.add_vertex(vertex_source)
 
+        free_processor = 0
+        while ((free_processor < machine.MAX_CORES_PER_CHIP) and
+            fake_placements.is_processor_occupied(
+                self.FAKE_ETHERNET_CHIP_X, y=self.FAKE_ETHERNET_CHIP_Y,
+                p=free_processor)):
+            free_processor += 1
+
         fake_placements.add_placement(Placement(
             x=self.FAKE_ETHERNET_CHIP_X, y=self.FAKE_ETHERNET_CHIP_Y,
-            p=self.RANDOM_PROCESSOR, vertex=vertex_source))
+            p=free_processor, vertex=vertex_source))
 
         # deal with edges, each one being in a unique partition id, to
         # allow unique routing to each chip.
