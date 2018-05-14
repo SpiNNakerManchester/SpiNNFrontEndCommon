@@ -2678,7 +2678,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         extractor = ChipIOBufExtractor()
         extractor(
             transceiver=self._txrx,
-            core_subsets=self._last_run_outputs["ExecutableTargets"],
+            executable_targets=self._last_run_outputs["ExecutableTargets"],
             provenance_file_path=self._provenance_file_path)
 
     def add_socket_address(self, socket_address):
