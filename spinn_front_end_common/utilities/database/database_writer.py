@@ -176,7 +176,7 @@ class DatabaseWriter(object):
             "  label, cpu_used, sdram_used, dtcm_used) "
             "VALUES(?, ?, ?, ?)",
             str(vertex.label), _extract_int(cpu_used.get_value()),
-            _extract_int(sdram_used.get_value()),
+            _extract_int(sdram_used.get_total_sdram()),
             _extract_int(dtcm_used.get_value()))
         self._vertex_to_id[vertex] = v_id
         return v_id

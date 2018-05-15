@@ -147,7 +147,7 @@ class GraphDataSpecificationWriter(object):
             "    {}: {} (total={}, estimated={})".format(
                 vert, self._region_sizes[vert],
                 sum(self._region_sizes[vert]),
-                vert.resources_required.sdram.get_value())
+                vert.resources_required.sdram.get_total_sdram())
             for vert in self._vertices_by_chip[placement.x, placement.y]))
 
         raise ConfigurationException(

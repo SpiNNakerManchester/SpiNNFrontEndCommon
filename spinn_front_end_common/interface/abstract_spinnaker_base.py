@@ -1103,7 +1103,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         self._machine.get_chip_at(
                             placement.x, placement.y).sdram.size
                 sdram = (
-                    resources.sdram.get_value() -
+                    resources.sdram.get_total_sdram() -
                     vertex.get_minimum_buffer_sdram_usage())
                 sdram_tracker[placement.x, placement.y] -= sdram
                 vertex_by_chip[placement.x, placement.y].append(vertex)
