@@ -3,7 +3,7 @@ from spinn_utilities.log import FormatAdapter
 
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, SDRAMResource, \
+from pacman.model.resources import ResourceContainer, ConstantSDRAM, \
     IPtagResource
 from spinn_front_end_common.utilities.helpful_functions \
     import convert_vertices_to_core_subset
@@ -164,7 +164,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def static_resources_required():
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 SYSTEM_BYTES_REQUIREMENT +
                 DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
             iptags=[IPtagResource(

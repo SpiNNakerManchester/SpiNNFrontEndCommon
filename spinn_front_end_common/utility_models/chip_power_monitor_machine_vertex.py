@@ -7,7 +7,7 @@ from data_specification.enums import DataType
 from pacman.executor.injection_decorator import inject_items, \
     supports_injection
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, SDRAMResource, \
+from pacman.model.resources import ResourceContainer, ConstantSDRAM, \
     CPUCyclesPerTickResource, DTCMResource
 
 from spinn_front_end_common.abstract_models import \
@@ -140,7 +140,7 @@ class ChipPowerMonitorMachineVertex(
             n_recording_entries)
 
         container = ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 ChipPowerMonitorMachineVertex.sdram_calculation()),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))

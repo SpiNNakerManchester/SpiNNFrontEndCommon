@@ -4,7 +4,7 @@ from spinn_front_end_common.utilities.constants \
     import SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS
 
 from pacman.model.resources \
-    import ResourceContainer, IPtagResource, SDRAMResource
+    import ResourceContainer, IPtagResource, ConstantSDRAM
 
 import struct
 import sys
@@ -147,7 +147,7 @@ def get_recording_resources(
     # return the resources including the SDRAM requirements
     return ResourceContainer(
         iptags=ip_tags,
-        sdram=SDRAMResource(
+        sdram=ConstantSDRAM(
             get_recording_header_size(len(region_sizes)) +
             get_recording_data_size(region_sizes)))
 

@@ -5,7 +5,7 @@ from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.constraints.key_allocator_constraints \
     import FixedKeyAndMaskConstraint
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import ResourceContainer, ConstantSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.executor.injection_decorator import inject_items
 
@@ -130,7 +130,7 @@ class CommandSender(
              constants.SARK_PER_MALLOC_SDRAM_USAGE))
 
         # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=SDRAMResource(sdram))
+        return ResourceContainer(sdram=ConstantSDRAM(sdram))
 
     @property
     @overrides(ApplicationVertex.n_atoms)

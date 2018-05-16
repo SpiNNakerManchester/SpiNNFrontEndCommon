@@ -4,8 +4,8 @@ from pacman.model.constraints.placer_constraints\
     import RadialPlacementFromChipConstraint
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import IPtagResource, ResourceContainer
-from pacman.model.resources import SDRAMResource
+from pacman.model.resources import \
+    (ConstantSDRAM, IPtagResource, ResourceContainer)
 
 # spinn front end imports
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
@@ -118,7 +118,7 @@ class LivePacketGather(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         return ResourceContainer(
-            sdram=SDRAMResource(
+            sdram=ConstantSDRAM(
                 LivePacketGatherMachineVertex.get_sdram_usage()),
             dtcm=DTCMResource(LivePacketGatherMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
