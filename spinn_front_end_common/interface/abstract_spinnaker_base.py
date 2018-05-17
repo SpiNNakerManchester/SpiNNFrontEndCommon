@@ -8,7 +8,6 @@ from spinn_utilities import __version__ as spinn_utils_version
 # pacman imports
 from pacman.executor.injection_decorator import provide_injectables, \
     clear_injectables
-from pacman.model.graphs import AbstractVirtualVertex
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
@@ -67,8 +66,10 @@ import logging
 import math
 import os
 import signal
+from six import iteritems, iterkeys, reraise
 import sys
 
+# Version number imports
 from numpy import __version__ as numpy_version
 try:
     from scipy import __version__ as scipy_version
@@ -1200,7 +1201,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
                 "MachineAllocationController")
-            ex_type, ex_value, ex_traceback = sys.exc_info()
+            exc_info = sys.exc_info()
             try:
                 self._shutdown()
                 helpful_functions.write_finished_file(
@@ -1208,7 +1209,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     self._report_simulation_top_directory)
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
-            raise ex_type, ex_value, ex_traceback
+            reraise(*exc_info)
 
     def _get_machine(self, total_run_time=0.0, n_machine_time_steps=None):
         if self._machine is not None:
@@ -1303,14 +1304,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "core_limit")
 
             algorithms.append("MachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
 
-            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryMachine")
             outputs.append("MemoryTransceiver")
 
             executor = self._run_algorithms(
                 inputs, algorithms, outputs, [], [], "machine_generation")
-            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._machine = executor.get_item("MemoryMachine")
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_outputs = executor.get_items()
             self._machine_tokens = executor.get_completed_tokens()
@@ -1331,15 +1331,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["CPUsPerVirtualChip"] = 16
 
             algorithms.append("VirtualMachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
 
-            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryMachine")
 
             executor = self._run_algorithms(
                 inputs, algorithms, outputs, [], [], "machine_generation")
             self._machine_outputs = executor.get_items()
             self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._machine = executor.get_item("MemoryMachine")
 
         if (self._spalloc_server is not None or
                 self._remote_spinnaker_url is not None):
@@ -1386,7 +1385,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             do_partitioning = False
             if need_virtual_board:
-                algorithms.append("VirtualMallocBasedChipIDAllocator")
 
                 # If we are using an allocation server, and we need a virtual
                 # board, we need to use the virtual board to get the number of
@@ -1425,9 +1423,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("HBPAllocator")
 
             algorithms.append("MachineGenerator")
-            algorithms.append("MallocBasedChipIDAllocator")
 
-            outputs.append("MemoryExtendedMachine")
+            outputs.append("MemoryMachine")
             outputs.append("IPAddress")
             outputs.append("MemoryTransceiver")
             outputs.append("MachineAllocationController")
@@ -1437,7 +1434,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
             self._machine_outputs = executor.get_items()
             self._machine_tokens = executor.get_completed_tokens()
-            self._machine = executor.get_item("MemoryExtendedMachine")
+            self._machine = executor.get_item("MemoryMachine")
             self._ip_address = executor.get_item("IPAddress")
             self._txrx = executor.get_item("MemoryTransceiver")
             self._machine_allocation_controller = executor.get_item(
@@ -1479,7 +1476,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def generate_file_machine(self):
         inputs = {
-            "MemoryExtendedMachine": self.machine,
+            "MemoryMachine": self.machine,
             "FileMachineFilePath": os.path.join(
                 self._json_folder, "machine.json")
         }
@@ -1653,6 +1650,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 algorithms.append("NetworkSpecificationReport")
 
         # only add the partitioner if there isn't already a machine graph
+        algorithms.append("MallocBasedChipIDAllocator")
         if (self._application_graph.n_vertices and
                 not self._machine_graph.n_vertices):
             full = self._config.get(
@@ -1927,8 +1925,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                                  exc_info=True)
 
             # reraise exception
-            ex_type, ex_value, ex_traceback = e_inf
-            raise ex_type, ex_value, ex_traceback
+            reraise(*e_inf)
 
     def _create_execute_workflow(
             self, n_machine_time_steps, loading_done, run_until_complete):
@@ -2093,7 +2090,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 extra_monitor_vertices=extra_monitor_vertices,
                 placements=self._placements)
         except Exception:
-            logger.error("Error reading router provenance", exc_info=True)
+            logger.exception("Error reading router provenance")
 
         # Find the cores that are not in an expected state
         unsuccessful_cores = self._txrx.get_cores_not_in_state(
@@ -2108,11 +2105,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 unsuccessful_cores = self._txrx.get_cores_not_in_state(
                     self._executable_types[executable_type],
                     executable_type.end_state)
-                for (x, y, p), _ in unsuccessful_cores.iteritems():
+                for x, y, p in iterkeys(unsuccessful_cores):
                     unsuccessful_core_subset.add_processor(x, y, p)
 
         # Print the details of error cores
-        for (x, y, p), core_info in unsuccessful_cores.iteritems():
+        for (x, y, p), core_info in iteritems(unsuccessful_cores):
             state = core_info.state
             rte_state = ""
             if state == CPUState.RUN_TIME_EXCEPTION:
@@ -2135,7 +2132,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Find the cores that are not in RTE i.e. that can still be read
         non_rte_cores = [
             (x, y, p)
-            for (x, y, p), core_info in unsuccessful_cores.iteritems()
+            for (x, y, p), core_info in iteritems(unsuccessful_cores)
             if (core_info.state != CPUState.RUN_TIME_EXCEPTION and
                 core_info.state != CPUState.WATCHDOG)]
 
@@ -2156,16 +2153,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 updater = ChipProvenanceUpdater()
                 updater(self._txrx, self._app_id, non_rte_core_subsets)
             except Exception:
-                logger.error(
-                    "Could not update provenance on chip", exc_info=True)
+                logger.exception("Could not update provenance on chip")
 
             # Extract any written provenance data
             try:
                 extracter = PlacementsProvenanceGatherer()
                 extracter(self._txrx, placements, prov_items)
             except Exception:
-                logger.error(
-                    "Could not read provenance", exc_info=True)
+                logger.exception("Could not read provenance")
 
         # Finish getting the provenance
         prov_items.extend(self._pacman_provenance.data_items)
@@ -2181,10 +2176,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores,
-                self._provenance_file_path)
+                self._txrx, iobuf_cores, self._provenance_file_path)
         except Exception:
-            logger.error("Could not get iobuf", exc_info=True)
+            logger.exception("Could not get iobuf")
             errors, warnings = [], []
 
         # Print the IOBUFs
@@ -2423,11 +2417,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex_to_add, AbstractVirtualVertex) and
-                self._machine is not None):
-            raise ConfigurationException(
-                "A Virtual Vertex cannot be added after the machine has been"
-                " created")
         self._original_application_graph.add_vertex(vertex_to_add)
 
     def add_machine_vertex(self, vertex):
@@ -2442,11 +2431,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             raise ConfigurationException(
                 "Cannot add vertices to both the machine and application"
                 " graphs")
-        if (isinstance(vertex, AbstractVirtualVertex) and
-                self._machine is not None):
-            raise ConfigurationException(
-                "A Virtual Vertex cannot be added after the machine has been"
-                " created")
         self._original_machine_graph.add_vertex(vertex)
 
     def add_application_edge(self, edge_to_add, partition_identifier):
@@ -2597,8 +2581,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             e, exc_info[2], executor.get_item(
                                 "ExecutableTargets"))
                 except Exception:
-                    logger.error("Error when attempting to recover from error",
-                                 exc_info=True)
+                    logger.exception(
+                        "Error when attempting to recover from error")
 
         if self._config.getboolean("Reports", "write_energy_report"):
             self._do_energy_report()
@@ -2622,8 +2606,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._report_simulation_top_directory)
 
         if exc_info is not None:
-            ex_type, ex_value, ex_traceback = exc_info
-            raise ex_type, ex_value, ex_traceback
+            reraise(*exc_info)
 
     def _create_stop_workflow(self):
         inputs = self._last_run_outputs
@@ -2718,7 +2701,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         for item in items:
             if item.report:
                 if not initial_message_printed and initial_message is not None:
-                    print initial_message
+                    print(initial_message)
                     initial_message_printed = True
                 logger.warning(item.message)
 

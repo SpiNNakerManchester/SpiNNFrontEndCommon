@@ -1,10 +1,12 @@
 from spinn_utilities.overrides import overrides
+from spinn_utilities.log import FormatAdapter
 
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource, \
     IPtagResource
-from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.helpful_functions \
+    import convert_vertices_to_core_subset
 from spinn_front_end_common.abstract_models \
     import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
 from spinn_front_end_common.interface.provenance import \
@@ -19,6 +21,7 @@ from spinn_front_end_common.interface.simulation import simulation_utilities
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.model.enums.cpu_state import CPUState
 
 from collections import defaultdict
 import os
@@ -28,6 +31,7 @@ import time
 import struct
 from enum import Enum
 from pacman.executor.injection_decorator import inject_items
+from six.moves import xrange
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
@@ -48,6 +52,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
         "_connection",
+        "_last_status",
         "_max_seq_num",
         "_output",
         "_provenance_data_items",
@@ -108,8 +113,10 @@ class DataSpeedUpPacketGatherMachineVertex(
     FIRST_DATA_KEY_OFFSET = 2
     END_FLAG_KEY_OFFSET = 3
 
-    # the size in bytes of the end flag
+    # the end flag is set when the high bit of the sequence number word is set
     LAST_MESSAGE_FLAG_BIT_MASK = 0x80000000
+    # corresponding mask for the actual sequence numbers
+    SEQUENCE_NUMBER_MASK = 0x7fffffff
 
     # the amount of bytes the n bytes takes up
     N_PACKETS_SIZE = 4
@@ -142,6 +149,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._report_path = \
             os.path.join(report_default_directory, self.REPORT_NAME)
         self._write_data_speed_up_report = write_data_speed_up_report
+
+        # Stored reinjection status for resetting timeouts
+        self._last_status = None
 
     @property
     @overrides(MachineVertex.resources_required)
@@ -223,7 +233,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _reserve_memory_regions(spec, system_size):
-        """ Writes the DSG regions memory sizes. Static so that it can be used
+        """ Writes the DSG regions memory sizes. Static so that it can be used\
             by the application vertex.
 
         :param spec: spec file
@@ -285,22 +295,74 @@ class DataSpeedUpPacketGatherMachineVertex(
                                     n_lost_seq_nums))))
         return prov_items
 
-    @staticmethod
     def set_cores_for_data_extraction(
-            transceiver, extra_monitor_cores_for_router_timeout,
+            self, transceiver, extra_monitor_cores_for_router_timeout,
             placements):
+
+        # Store the last reinjection status for resetting
+        # NOTE: This assumes the status is the same on all cores
+        self._last_status = \
+            extra_monitor_cores_for_router_timeout[0].get_reinjection_status(
+                placements, transceiver)
+
+        # Set to not inject dropped packets
+        extra_monitor_cores_for_router_timeout[0].set_reinjection_packets(
+            placements, extra_monitor_cores_for_router_timeout, transceiver,
+            point_to_point=False, multicast=False, nearest_neighbour=False,
+            fixed_route=False)
+
+        # Clear any outstanding packets from reinjection
+        extra_monitor_cores_for_router_timeout[0].clear_reinjection_queue(
+            transceiver, placements, extra_monitor_cores_for_router_timeout)
+
         # set time out
         extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
             15, 15, transceiver, placements,
             extra_monitor_cores_for_router_timeout)
+        extra_monitor_cores_for_router_timeout[0].\
+            set_reinjection_router_emergency_timeout(
+                1, 1, transceiver, placements,
+                extra_monitor_cores_for_router_timeout)
 
-    @staticmethod
     def unset_cores_for_data_extraction(
-            transceiver, extra_monitor_cores_for_router_timeout,
+            self, transceiver, extra_monitor_cores_for_router_timeout,
             placements):
-        extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
-            15, 4, transceiver, placements,
-            extra_monitor_cores_for_router_timeout)
+        if self._last_status is None:
+            log.warning(
+                "Cores have not been set for data extraction, so can't be"
+                " unset")
+        try:
+            mantissa, exponent = self._last_status.router_timeout_parameters
+            extra_monitor_cores_for_router_timeout[0].set_router_time_outs(
+                mantissa, exponent, transceiver, placements,
+                extra_monitor_cores_for_router_timeout)
+            mantissa, exponent = \
+                self._last_status.router_emergency_timeout_parameters
+            extra_monitor_cores_for_router_timeout[0].\
+                set_reinjection_router_emergency_timeout(
+                    mantissa, exponent, transceiver, placements,
+                    extra_monitor_cores_for_router_timeout)
+            extra_monitor_cores_for_router_timeout[0].set_reinjection_packets(
+                placements, extra_monitor_cores_for_router_timeout,
+                transceiver,
+                point_to_point=self._last_status.is_reinjecting_point_to_point,
+                multicast=self._last_status.is_reinjecting_multicast,
+                nearest_neighbour=(
+                    self._last_status.is_reinjecting_nearest_neighbour),
+                fixed_route=self._last_status.is_reinjecting_fixed_route)
+        except Exception:
+            log.error("Error resetting timeouts", exc_info=True)
+            log.error("Checking if the cores are OK...")
+            core_subsets = convert_vertices_to_core_subset(
+                extra_monitor_cores_for_router_timeout, placements)
+            try:
+                error_cores = transceiver.get_cores_not_in_state(
+                    core_subsets, {CPUState.RUNNING})
+                if error_cores:
+                    log.error("Cores in an unexpected state: {}".format(
+                        error_cores))
+            except Exception:
+                log.error("Couldn't get core state", exc_info=True)
 
     def get_data(
             self, transceiver, placement, memory_address, length_in_bytes,
@@ -412,7 +474,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def _determine_which_routers_were_used(placement, fixed_routes, machine):
         """ traverses the fixed route paths from a given location to its\
-         destination. used for determining which routers were used
+            destination. used for determining which routers were used
 
         :param placement: the source to start from
         :param fixed_routes: the fixed routes for each router
@@ -439,6 +501,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _write_routers_used_into_report(
             report_path, routers_been_in_use, placement):
         """ writes the used routers into a report
+
         :param report_path: the path to the report file
         :param routers_been_in_use: the routers been in use
         :param placement: the first placement used
@@ -579,10 +642,10 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=too-many-arguments
         # self._print_out_packet_data(data)
         length_of_data = len(data)
-        first_packet_element = _ONE_WORD.unpack_from(data, 0)[0]
+        first_packet_element, = _ONE_WORD.unpack_from(data, 0)
 
         # get flags
-        seq_num = first_packet_element & 0x7FFFFFFF
+        seq_num = first_packet_element & self.SEQUENCE_NUMBER_MASK
         is_end_of_stream = (
             first_packet_element & self.LAST_MESSAGE_FLAG_BIT_MASK) != 0
 
@@ -692,7 +755,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         """
         reread_data = struct.unpack("<{}I".format(
             int(math.ceil(len(data) / self.WORD_TO_BYTE_CONVERTER))),
-            str(data))
+            data)
         log.info("converted data back into readable form is {}", reread_data)
 
     @staticmethod

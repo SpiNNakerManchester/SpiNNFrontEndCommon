@@ -114,7 +114,7 @@ class CommandSenderMachineVertex(
         time_between_commands = 0
         if max_n_commands > 0:
             time_between_commands = (
-                (machine_time_step * time_scale_factor / 2) / max_n_commands)
+                (machine_time_step * time_scale_factor // 2) // max_n_commands)
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SETUP.value)
         spec.write_value(time_between_commands)
@@ -165,7 +165,10 @@ class CommandSenderMachineVertex(
     @staticmethod
     def _write_command(command, spec):
         spec.write_value(command.key)
-        spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        if command.is_payload:
+            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        else:
+            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
         spec.write_value(command.payload if command.is_payload else 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
