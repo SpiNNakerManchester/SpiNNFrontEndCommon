@@ -3,7 +3,6 @@
 #include <debug.h>
 #include <simulation.h>
 #include <sark.h>
-#include <string.h>
 #include <buffered_eieio_defs.h>
 #include "recording.h"
 
