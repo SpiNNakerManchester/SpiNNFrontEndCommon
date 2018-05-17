@@ -3,6 +3,7 @@ from testfixtures import LogCapture
 import json
 import logging
 import httpretty
+import time
 from spinn_front_end_common.interface.interface_functions.hbp_allocator \
     import _HBPJobController
 
@@ -28,16 +29,19 @@ class TestHBPAllocator(unittest.TestCase):
 
         with LogCapture() as lc:
             controller = _HBPJobController("http://localhost", "test_machine")
-            controller.extend_allocation(1)
-            result = controller._check_lease(0)
-            assert result["allocated"] is True
-            controller.set_power(False)
-            assert not controller.power
-            controller.set_power(True)
-            assert controller.power
-            (cabinet, frame, board) = controller.where_is_machine(0, 0)
-            assert (cabinet, frame, board) == (0, 1, 2)
-            controller.close()
+            try:
+                controller.extend_allocation(1)
+                result = controller._check_lease(0)
+                assert result["allocated"] is True
+                controller.set_power(False)
+                assert not controller.power
+                controller.set_power(True)
+                assert controller.power
+                (cabinet, frame, board) = controller.where_is_machine(0, 0)
+                assert (cabinet, frame, board) == (0, 1, 2)
+            finally:
+                controller.close()
+                time.sleep(2)
             for record in lc.records:
                 if record.levelname == "INFO":
                     assert "Starting new HTTP connection" not in record.msg
