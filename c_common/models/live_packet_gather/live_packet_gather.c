@@ -155,8 +155,7 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(address_t provenance_region_address)
-{
+void record_provenance_data(address_t provenance_region_address) {
     // Copy provenance data into SDRAM region
     spin1_memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
