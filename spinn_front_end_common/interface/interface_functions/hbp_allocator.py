@@ -36,25 +36,32 @@ class _HBPJobController(MachineAllocationController):
 
     @overrides(AbstractMachineAllocationController.extend_allocation)
     def extend_allocation(self, new_total_run_time):
-        requests.get(self._extend_lease_url, params={
+        r = requests.get(self._extend_lease_url, params={
             "runTime": new_total_run_time})
+        r.raise_for_status()
 
     def _check_lease(self, wait_time):
-        return requests.get(self._check_lease_url, params={
-            "waitTime": wait_time}).json()
+        r = requests.get(self._check_lease_url, params={
+            "waitTime": wait_time})
+        r.raise_for_status()
+        return r.json()
 
     def _release(self, machine_name):
-        requests.delete(self._release_machine_url, params={
+        r = requests.delete(self._release_machine_url, params={
             "machineName": machine_name})
+        r.raise_for_status()
 
     def _set_power(self, machine_name, power_on):
-        requests.put(self._set_power_url, params={
+        r = requests.put(self._set_power_url, params={
             "machineName": machine_name, "on": bool(power_on)})
+        r.raise_for_status()
 
     def _where_is(self, machine_name, chip_x, chip_y):
-        return requests.get(self._where_is_url, params={
+        r = requests.get(self._where_is_url, params={
             "machineName": machine_name, "chipX": chip_x,
-            "chipY": chip_y}).json()
+            "chipY": chip_y})
+        r.raise_for_status()
+        return r.json()
 
     @overrides(AbstractMachineAllocationController.close)
     def close(self):
@@ -90,8 +97,8 @@ class HBPAllocator(object):
             self, hbp_server_url, total_run_time, n_chips):
         """
 
-        :param hbp_server_url: The URL of the HBP server from which to get\
-                    the machine
+        :param hbp_server_url: \
+            The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request
         :param n_chips: The number of chips required
         """
@@ -115,4 +122,5 @@ class HBPAllocator(object):
     def _get_machine(self, url, n_chips, total_run_time):
         get_machine_request = requests.get(
             url, params={"nChips": n_chips, "runTime": total_run_time})
+        get_machine_request.raise_for_status()
         return get_machine_request.json()
