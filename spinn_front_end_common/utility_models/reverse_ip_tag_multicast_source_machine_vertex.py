@@ -651,8 +651,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_minimum_buffer_sdram_usage(self):
         return self._record_buffer_size
 
-    @overrides(AbstractReceiveBuffersToHost.get_n_timesteps_in_buffer_space)
-    def get_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
+    # TODO use this in get_resources
+    def xet_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
 
         # If not recording, not an issue
         if self._record_buffer_size == 0:
@@ -660,7 +660,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If recording and using pre-defined keys, use the maximum
         if self._send_buffer is not None:
-            return recording_utilities.get_n_timesteps_in_buffer_space(
+            # BROKEN
+            return recording_utilities.xet_n_timesteps_in_buffer_space(
                 buffer_space, [self._send_buffer.max_packets_in_timestamp])
 
         # If recording and not using pre-defined keys, use the specified
@@ -671,7 +672,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # 4 bytes per key + 2 byte header + 4 byte timestamp
         bytes_per_timestep = (keys_per_timestep * 4) + 6
-        return recording_utilities.get_n_timesteps_in_buffer_space(
+        return recording_utilities.xet_n_timesteps_in_buffer_space(
             buffer_space, [bytes_per_timestep])
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)

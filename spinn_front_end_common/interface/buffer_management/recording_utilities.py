@@ -276,23 +276,6 @@ def get_region_pointer(placement, transceiver, recording_data_address, region):
     return _ONE_WORD.unpack_from(data)[0]
 
 
-def get_n_timesteps_in_buffer_space(buffer_space, buffered_sdram_per_timestep):
-    """ Get the number of time steps of data that can be stored in a given\
-        buffers space
-
-    :param buffer_space: The space that will hold the data
-    :type buffer_space: int
-    :param buffered_sdram_per_timestep:\
-        The maximum SDRAM used by each region per timestep
-    :type buffered_sdram_per_timestep: list of int
-    :rtype: int
-    """
-    total_per_timestep = sum(buffered_sdram_per_timestep)
-    if total_per_timestep == 0:
-        return sys.maxsize
-    return int(math.floor(buffer_space / total_per_timestep))
-
-
 def get_recorded_region_ids(buffered_sdram_per_timestep):
     """ Get the ids of regions where recording is enabled
 

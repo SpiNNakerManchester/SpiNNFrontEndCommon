@@ -7,7 +7,7 @@ from data_specification.enums import DataType
 from pacman.executor.injection_decorator import inject_items, \
     supports_injection
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, ConstantSDRAM, \
+from pacman.model.resources import ResourceContainer, VariableSDRAM, \
     CPUCyclesPerTickResource, DTCMResource
 
 from spinn_front_end_common.abstract_models import \
@@ -139,9 +139,12 @@ class ChipPowerMonitorMachineVertex(
             ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY *
             n_recording_entries)
 
+
+        # TODO use _deduce_sdram_requirements_per_timer_tick(
+        #             self, machine_time_step, time_scale_factor):
         container = ResourceContainer(
-            sdram=ConstantSDRAM(
-                ChipPowerMonitorMachineVertex.sdram_calculation()),
+            sdram=VariableSDRAM(
+                ChipPowerMonitorMachineVertex.sdram_calculation(), 0, 1),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         recording_sizes = recording_utilities.get_recording_region_sizes(
@@ -297,17 +300,6 @@ class ChipPowerMonitorMachineVertex(
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
         return [0]
-
-    @inject_items({"time_scale_factor": "TimeScaleFactor"})
-    @overrides(AbstractReceiveBuffersToHost.get_n_timesteps_in_buffer_space,
-               additional_arguments={"time_scale_factor"})
-    def get_n_timesteps_in_buffer_space(
-            self, buffer_space, machine_time_step, time_scale_factor):
-        # pylint: disable=arguments-differ
-        return recording_utilities.get_n_timesteps_in_buffer_space(
-            buffer_space,
-            [self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor)])
 
     @inject_items({"machine_time_step": "MachineTimeStep",
                    "n_machine_time_steps": "TotalMachineTimeSteps",
