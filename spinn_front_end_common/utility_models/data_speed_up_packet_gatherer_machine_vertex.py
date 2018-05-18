@@ -618,7 +618,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     destination_cpu=placement.p,
                     destination_port=self.SDP_PORT,
                     flags=SDPFlag.REPLY_NOT_EXPECTED),
-                data=str(data)))
+                data=data))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self.TIME_OUT_FOR_SENDING_IN_SECONDS)
