@@ -647,10 +647,6 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._fill_send_buffer(
             machine_time_step, first_machine_time_step, n_machine_time_steps)
 
-    @overrides(AbstractReceiveBuffersToHost.get_minimum_buffer_sdram_usage)
-    def get_minimum_buffer_sdram_usage(self):
-        return self._record_buffer_size
-
     # TODO use this in get_resources
     def xet_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
 

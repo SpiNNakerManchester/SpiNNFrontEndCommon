@@ -301,22 +301,6 @@ class ChipPowerMonitorMachineVertex(
     def get_recorded_region_ids(self):
         return [0]
 
-    @inject_items({"machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "TotalMachineTimeSteps",
-                   "time_scale_factor": "TimeScaleFactor"})
-    @overrides(AbstractReceiveBuffersToHost.get_minimum_buffer_sdram_usage,
-               additional_arguments={
-                   'machine_time_step', 'n_machine_time_steps',
-                   'time_scale_factor'})
-    def get_minimum_buffer_sdram_usage(
-            self, n_machine_time_steps, machine_time_step, time_scale_factor):
-        # pylint: disable=arguments-differ
-        return recording_utilities.get_minimum_buffer_sdram(
-            [self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor) * n_machine_time_steps],
-            globals_variables.get_simulator().config.getint(
-                "Buffers", "minimum_buffer_sdram"))[0]
-
     def _deduce_sdram_requirements_per_timer_tick(
             self, machine_time_step, time_scale_factor):
         """ deduce sdram usage per timer tick
