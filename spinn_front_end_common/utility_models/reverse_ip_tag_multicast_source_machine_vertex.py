@@ -7,7 +7,7 @@ from pacman.model.constraints.key_allocator_constraints \
 from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import IPtagResource, ReverseIPtagResource
 from pacman.model.resources import ResourceContainer, DTCMResource
-from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
+from pacman.model.resources import CPUCyclesPerTickResource, VariableSDRAM
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 
@@ -290,9 +290,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def resources_required(self):
         resources = ResourceContainer(
             dtcm=DTCMResource(self.get_dtcm_usage()),
-            sdram=SDRAMResource(self.get_sdram_usage(
+            # TODO work out cost per timestep and ideally even soft
+            sdram=VariableSDRAM(self.get_sdram_usage(
                 self._send_buffer_times, self._send_buffer_max_space,
-                self._record_buffer_size > 0)),
+                self._record_buffer_size > 0), 0, 1),
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             iptags=self._iptags,
             reverse_iptags=self._reverse_iptags)

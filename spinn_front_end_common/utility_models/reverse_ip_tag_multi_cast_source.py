@@ -3,7 +3,7 @@ from spinn_utilities.overrides import overrides
 # pacman imports
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.resources import VariableSDRAM, ResourceContainer
 from pacman.model.resources import ReverseIPtagResource, IPtagResource
 from pacman.model.constraints.placer_constraints import BoardConstraint
 
@@ -170,10 +170,11 @@ class ReverseIpTagMultiCastSource(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         container = ResourceContainer(
-            sdram=SDRAMResource(
+            # TODO work out cost per timestep and ideally even soft
+            sdram=VariableSDRAM(
                 ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
                     self._send_buffer_times, self._send_buffer_max_space,
-                    self._record_buffer_size > 0)),
+                    self._record_buffer_size > 0), 0, 1),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
