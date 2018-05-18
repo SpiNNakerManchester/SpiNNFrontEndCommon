@@ -1503,6 +1503,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["RunTime"] = run_time
         inputs["TotalRunTime"] = total_run_time
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
+
+        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
+            # TODO FIX hardcode
+            inputs["MinimumAutoTimeSteps"] = 40000
+        else:
+            #TODO min of this and above
+            inputs["MinimumAutoTimeSteps"] = n_machine_time_steps
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
