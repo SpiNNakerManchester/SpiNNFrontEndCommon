@@ -16,7 +16,8 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import PreAllocatedResourceContainer
+from pacman.model.resources import (
+    ConstantSDRAM, PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 
 # common front end imports
@@ -1082,47 +1083,28 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :type n_machine_time_steps: int
         :return: list of timer steps.
         """
-        # Go through the placements and find how much SDRAM is available
+        # Go through the placements and find how much SDRAM is used
         # on each chip
-        sdram_tracker = dict()
-        vertex_by_chip = defaultdict(list)
-
-        # horrible hack. This needs to be fixed somehow
-        provide_injectables({
-            "MachineTimeStep": self._machine_time_step,
-            "TotalMachineTimeSteps": n_machine_time_steps,
-            "TimeScaleFactor": self._time_scale_factor})
+        usage_by_chip = dict()
 
         for placement in self._placements.placements:
-            vertex = placement.vertex
-            if isinstance(vertex, AbstractReceiveBuffersToHost):
-
-                resources = vertex.resources_required
-                if (placement.x, placement.y) not in sdram_tracker:
-                    sdram_tracker[placement.x, placement.y] = \
-                        self._machine.get_chip_at(
-                            placement.x, placement.y).sdram.size
-                sdram = (
-                    resources.sdram.get_total_sdram() -
-                    vertex.get_minimum_buffer_sdram_usage())
-                sdram_tracker[placement.x, placement.y] -= sdram
-                vertex_by_chip[placement.x, placement.y].append(vertex)
+            sdram_required = placement.vertex.resources_required.sdram
+            if (placement.x, placement.y) in usage_by_chip:
+                usage_by_chip[placement.x, placement.y] += sdram_required
+            else:
+                usage_by_chip[placement.x, placement.y] = sdram_required
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        min_time_steps = None
-        for x, y in vertex_by_chip:
-            vertices_on_chip = vertex_by_chip[x, y]
-            sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
-            min_time_steps = min(
-                int(vertex.get_n_timesteps_in_buffer_space(
-                    sdram_per_vertex, self._machine_time_step))
-                for vertex in vertices_on_chip)
+        min_time_steps = n_machine_time_steps
+        for (x, y), sdram in usage_by_chip.items():
+            size = self._machine.get_chip_at(x, y).sdram.size
+            per_timestep = sdram.per_timestep
+            if per_timestep:
+                max = (size - sdram.fixed) / sdram.per_timestep
+                min_time_steps = min(min_time_steps, max)
 
-        # clear injectable
-        clear_injectables()
-
-        if min_time_steps is None:
+        if min_time_steps == n_machine_time_steps:
             return [n_machine_time_steps]
         return self._generate_steps(n_machine_time_steps, min_time_steps)
 
