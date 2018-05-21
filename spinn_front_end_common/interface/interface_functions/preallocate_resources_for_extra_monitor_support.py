@@ -4,6 +4,8 @@ from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
 from spinn_front_end_common.utility_models import \
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp
+from spinn_front_end_common.utility_models import (
+    ExtraMonitorSupportMachineVertex)
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -20,7 +22,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """
 
         progress = ProgressBar(
-            len(list(machine.ethernet_connected_chips)) + machine.n_chips,
+            machine.n_chips * 2,
             "Pre allocating resources for Extra Monitor support vertices")
 
         sdrams = list()
@@ -78,23 +80,31 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """
         # pylint: disable=too-many-arguments
 
+        ethernet_connected_chips = list(machine.ethernet_connected_chips)
         # get resources from packet gatherer
-        resources = DataSpeedUp.static_resources_required()
+        none_ethernet = \
+            ExtraMonitorSupportMachineVertex.static_resources_required()
+        ethernet = DataSpeedUp.static_resources_required()
+        ethernet.extend(none_ethernet)
 
         # locate Ethernet connected chips that the vertices reside on
-        for ethernet_connected_chip in \
-                progress.over(machine.ethernet_connected_chips,
-                              finish_at_end=False):
-            # do resources. sdram, cores, tags
-            sdrams.append(SpecificChipSDRAMResource(
-                chip=ethernet_connected_chip,
-                sdram_usage=resources.sdram.get_total_sdram()))
-            cores.append(CoreResource(
-                chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
-            tags.append(SpecificBoardTagResource(
-                board=ethernet_connected_chip.ip_address,
-                ip_address=resources.iptags[0].ip_address,
-                port=resources.iptags[0].port,
-                strip_sdp=resources.iptags[0].strip_sdp,
-                tag=resources.iptags[0].tag,
-                traffic_identifier=resources.iptags[0].traffic_identifier))
+        for chip in \
+                progress.over(machine.chips, finish_at_end=False):
+            if chip in ethernet_connected_chips:
+                # do resources. sdram, cores, tags
+                sdrams.append(SpecificChipSDRAMResource(
+                    chip=chip,
+                    sdram_usage=ethernet.sdram.get_value()))
+                cores.append(CoreResource(
+                    chip=chip, n_cores=n_cores_to_allocate))
+                tags.append(SpecificBoardTagResource(
+                    board=chip.ip_address,
+                    ip_address=ethernet.iptags[0].ip_address,
+                    port=ethernet.iptags[0].port,
+                    strip_sdp=ethernet.iptags[0].strip_sdp,
+                    tag=ethernet.iptags[0].tag,
+                    traffic_identifier=ethernet.iptags[0].traffic_identifier))
+            else:
+                sdrams.append(SpecificChipSDRAMResource(
+                    chip=chip,
+                    sdram_usage=none_ethernet.sdram.get_value()))
