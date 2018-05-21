@@ -19,7 +19,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
     import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedSendingRegion
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities import constants, helpful_functions
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models \
     import AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable
@@ -610,12 +610,22 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
-    @overrides(AbstractProvidesOutgoingPartitionConstraints.
-               get_outgoing_partition_constraints)
-    def get_outgoing_partition_constraints(self, partition):  # @UnusedVariable
-        #if self._virtual_key is not None:
-        #    return list([FixedKeyAndMaskConstraint(
-        #        [BaseKeyAndMask(self._virtual_key, self._mask)])])
+    @overrides(
+        AbstractProvidesOutgoingPartitionConstraints.
+        get_outgoing_partition_constraints,
+        additional_arguments={"machine_graph": "MemoryMachineGraph"})
+    def get_outgoing_partition_constraints(self, partition, machine_graph):
+        if self._virtual_key is not None:
+            if len(partition.constraints) == 0:
+                keys_covered, has_tried_to_cover = helpful_functions.\
+                    verify_if_incoming_constraints_covers_key_space(
+                        machine_graph=machine_graph, vertex=self,
+                        mask=self._mask, virtual_key=self._virtual_key)
+                if not keys_covered and not has_tried_to_cover:
+                    return list([FixedKeyAndMaskConstraint(
+                        [BaseKeyAndMask(self._virtual_key, self._mask)])])
+                else:
+
         return list()
 
     @property

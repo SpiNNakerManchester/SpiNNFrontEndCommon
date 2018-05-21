@@ -2,6 +2,16 @@
 from data_specification import utility_calls
 
 # front end common imports
+from pacman.model.constraints.key_allocator_constraints import \
+    AbstractKeyAllocatorConstraint, FixedKeyAndMaskConstraint
+from pacman.model.graphs.common import EdgeTrafficType
+from pacman.utilities.algorithm_utilities import ElementAllocatorAlgorithm
+from pacman.utilities.algorithm_utilities.\
+    routing_info_allocator_utilities import \
+    generate_key_ranges_from_mask
+from pacman.utilities.utility_calls import locate_constraints_of_type
+from spinn_front_end_common.abstract_models import \
+    AbstractProvidesIncomingPartitionConstraints
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 # SpiNMachine imports
@@ -503,4 +513,35 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 def verify_if_incoming_constraints_covers_key_space(
         machine_graph, vertex, virtual_key, mask):
-    space =
+    key_space = ElementAllocatorAlgorithm(
+        list(generate_key_ranges_from_mask(virtual_key, mask)))
+    outgoing_partitions = \
+        machine_graph.get_outgoing_edge_partitions_starting_at_vertex(vertex)
+    for outgoing_partition in outgoing_partitions:
+        if outgoing_partition.traffic_type == EdgeTrafficType.MULTICAST:
+            _process_multicast_partition(outgoing_partition, key_space)
+    if key_space.space_remaining() != 0:
+        return False
+    return True
+
+
+def _process_multicast_partition(outgoing_partition, key_space):
+    for edge in outgoing_partition.edges:
+        if isinstance(
+                edge.post_vertex,
+                AbstractProvidesIncomingPartitionConstraints):
+            constraints = edge.post_vertex.\
+                get_incoming_partition_constraints(outgoing_partition)
+            key_constraints = locate_constraints_of_type(
+                constraints, AbstractKeyAllocatorConstraint)
+            if len(key_constraints) > 1:
+                raise ConfigurationException(
+                    "There are too many key constraints. Please rectify "
+                    "and try again")
+            key_constraint = key_constraints[0]
+            if isinstance(key_constraint, FixedKeyAndMaskConstraint):
+                keys_and_masks = key_constraint.keys_and_masks
+                for key_and_mask in keys_and_masks:
+                    base_key, n_keys = generate_key_ranges_from_mask(
+                        key_and_mask.key, key_and_mask.mask)
+                    key_space.allocate_elements(base_key, n_keys)
