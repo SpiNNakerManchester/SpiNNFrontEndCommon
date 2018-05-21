@@ -84,8 +84,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # get resources from packet gatherer
         none_ethernet = \
             ExtraMonitorSupportMachineVertex.static_resources_required()
-        ethernet = DataSpeedUp.static_resources_required().extend(
-            ExtraMonitorSupportMachineVertex.static_resources_required())
+        ethernet = DataSpeedUp.static_resources_required()
+        ethernet.extend(none_ethernet)
 
         # locate Ethernet connected chips that the vertices reside on
         for chip in \
