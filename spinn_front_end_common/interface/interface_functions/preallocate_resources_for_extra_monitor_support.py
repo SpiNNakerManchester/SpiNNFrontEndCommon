@@ -94,7 +94,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
                 # do resources. sdram, cores, tags
                 sdrams.append(SpecificChipSDRAMResource(
                     chip=chip,
-                    sdram_usage=ethernet.sdram.get_value()))
+                    sdram_usage=ethernet.sdram.get_total_sdram()))
                 cores.append(CoreResource(
                     chip=chip, n_cores=n_cores_to_allocate))
                 tags.append(SpecificBoardTagResource(
@@ -107,4 +107,4 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             else:
                 sdrams.append(SpecificChipSDRAMResource(
                     chip=chip,
-                    sdram_usage=none_ethernet.sdram.get_value()))
+                    sdram_usage=none_ethernet.sdram.get_total_sdram()))
