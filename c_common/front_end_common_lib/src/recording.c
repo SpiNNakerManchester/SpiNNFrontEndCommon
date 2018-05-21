@@ -16,7 +16,6 @@
 extern void spin1_wfi();
 
 // Standard includes
-#include <string.h>
 #include <debug.h>
 
 enum recording_data_e {
