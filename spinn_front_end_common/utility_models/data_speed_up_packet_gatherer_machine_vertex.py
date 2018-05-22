@@ -1306,7 +1306,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     destination_port=SDP_PORTS.
                     EXTRA_MONITOR_CORE_DATA_SPEED_UP.value,
                     flags=SDPFlag.REPLY_NOT_EXPECTED),
-                data=str(data)))
+                data=data))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self.TIME_OUT_FOR_SENDING_IN_SECONDS)

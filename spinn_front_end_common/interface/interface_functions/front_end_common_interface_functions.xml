@@ -957,6 +957,10 @@
                 <param_name>down_links</param_name>
                 <param_type>DownedLinksDetails</param_type>
             </parameter>
+            <parameter>
+                <param_name>max_sdram_size</param_name>
+                <param_type>MaxSDRAMSize</param_type>
+            </parameter>
         </input_definitions>
         <optional_inputs>
             <param_name>width</param_name>
@@ -968,6 +972,7 @@
             <param_name>down_chips</param_name>
             <param_name>down_cores</param_name>
             <param_name>down_links</param_name>
+            <param_name>max_sdram_size</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1687,15 +1692,11 @@
         <outputs>
             <param_type>IPAddress</param_type>
             <param_type>BoardVersion</param_type>
-            <param_type>DownedChipsDetails</param_type>
-            <param_type>DownedCoresDetails</param_type>
-            <param_type>DownedLinksDetails</param_type>
             <param_type>BMPDetails</param_type>
             <param_type>ResetMachineOnStartupFlag</param_type>
             <param_type>AutoDetectBMPFlag</param_type>
             <param_type>ScampConnectionData</param_type>
             <param_type>BootPortNum</param_type>
-            <param_type>MaxSDRAMSize</param_type>
             <param_type>MachineAllocationController</param_type>
         </outputs>
     </algorithm>
@@ -1724,16 +1725,12 @@
         <outputs>
             <param_type>IPAddress</param_type>
             <param_type>BoardVersion</param_type>
-            <param_type>DownedChipsDetails</param_type>
-            <param_type>DownedCoresDetails</param_type>
             <param_type>BMPDetails</param_type>
             <param_type>ResetMachineOnStartupFlag</param_type>
             <param_type>AutoDetectBMPFlag</param_type>
             <param_type>ScampConnectionData</param_type>
             <param_type>BootPortNum</param_type>
-            <param_type>MaxSDRAMSize</param_type>
             <param_type>MachineAllocationController</param_type>
-            <param_type>DownedLinksDetails</param_type>
         </outputs>
     </algorithm>
     <algorithm name="SpallocMaxMachineGenerator">
