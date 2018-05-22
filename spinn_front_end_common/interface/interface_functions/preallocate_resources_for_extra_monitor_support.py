@@ -22,7 +22,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """
 
         progress = ProgressBar(
-            machine.n_chips * 2,
+            len(machine.ethernet_connected_chips) + machine.n_chips,
             "Pre allocating resources for Extra Monitor support vertices")
 
         sdrams = list()
@@ -36,7 +36,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
         # add resource requirements for re-injector and reader for data
         # extractor
-        self._handle_second_monitor_support(cores, machine, progress)
+        self._handle_second_monitor_support(cores, sdrams, machine, progress)
 
         # create pre allocated resource container
         extra_monitor_pre_allocations = PreAllocatedResourceContainer(
@@ -51,7 +51,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         return extra_monitor_pre_allocations
 
     @staticmethod
-    def _handle_second_monitor_support(cores, machine, progress):
+    def _handle_second_monitor_support(cores, sdrams, machine, progress):
         """ adds the second monitor pre allocations, which reflect the\
          re-injector and data extractor support
 
@@ -60,8 +60,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param progress: the progress bar to operate one
         :rtype: None
         """
+        sdram_usage = \
+            ExtraMonitorSupportMachineVertex.static_resources_required()
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
+            sdrams.append(SpecificChipSDRAMResource(
+                chip=chip, sdram_usage=sdram_usage.sdram.get_value()))
 
     @staticmethod
     def _handle_packet_gathering_support(
@@ -80,31 +84,23 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         """
         # pylint: disable=too-many-arguments
 
-        ethernet_connected_chips = list(machine.ethernet_connected_chips)
         # get resources from packet gatherer
-        none_ethernet = \
-            ExtraMonitorSupportMachineVertex.static_resources_required()
-        ethernet = DataSpeedUp.static_resources_required()
-        ethernet.extend(none_ethernet)
+        resources = DataSpeedUp.static_resources_required()
 
         # locate Ethernet connected chips that the vertices reside on
-        for chip in \
-                progress.over(machine.chips, finish_at_end=False):
-            if chip in ethernet_connected_chips:
-                # do resources. sdram, cores, tags
-                sdrams.append(SpecificChipSDRAMResource(
-                    chip=chip,
-                    sdram_usage=ethernet.sdram.get_value()))
-                cores.append(CoreResource(
-                    chip=chip, n_cores=n_cores_to_allocate))
-                tags.append(SpecificBoardTagResource(
-                    board=chip.ip_address,
-                    ip_address=ethernet.iptags[0].ip_address,
-                    port=ethernet.iptags[0].port,
-                    strip_sdp=ethernet.iptags[0].strip_sdp,
-                    tag=ethernet.iptags[0].tag,
-                    traffic_identifier=ethernet.iptags[0].traffic_identifier))
-            else:
-                sdrams.append(SpecificChipSDRAMResource(
-                    chip=chip,
-                    sdram_usage=none_ethernet.sdram.get_value()))
+        for ethernet_connected_chip in \
+                progress.over(machine.ethernet_connected_chips,
+                              finish_at_end=False):
+            # do resources. sdram, cores, tags
+            sdrams.append(SpecificChipSDRAMResource(
+                chip=ethernet_connected_chip,
+                sdram_usage=resources.sdram.get_value()))
+            cores.append(CoreResource(
+                chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
+            tags.append(SpecificBoardTagResource(
+                board=ethernet_connected_chip.ip_address,
+                ip_address=resources.iptags[0].ip_address,
+                port=resources.iptags[0].port,
+                strip_sdp=resources.iptags[0].strip_sdp,
+                tag=resources.iptags[0].tag,
+                traffic_identifier=resources.iptags[0].traffic_identifier))
