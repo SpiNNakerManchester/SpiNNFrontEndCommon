@@ -3,6 +3,7 @@ import os
 import logging
 import math
 import time
+import datetime
 import struct
 from enum import Enum
 from six.moves import xrange
@@ -503,19 +504,23 @@ class DataSpeedUpPacketGatherMachineVertex(
         if not os.path.isfile(report_path):
             with open(report_path, "w") as writer:
                 writer.write(
-                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t"
-                    " time took \t\t Mb/s \t\t missing sequence numbers\n")
+                    "x\t\t y\t\t SDRAM address\t\t size in bytes\t\t\t"
+                    " time took \t\t\t Mb/s \t\t\t missing sequence numbers\n")
                 writer.write(
                     "------------------------------------------------"
                     "------------------------------------------------"
                     "-------------------------------------------------\n")
 
         mega_bits = (data_size * 8.0) / (1024.0 * 1024.0)
-        mbs = mega_bits / time_took
+        time_took_in_micro_seconds = float(time_took)
+        if time_took_in_micro_seconds == 0:
+            mbs = "unknown, below threshold"
+        else:
+            mbs = mega_bits / (float(time_took) / 100000.0)
 
         with open(report_path, writer_behaviour) as writer:
             writer.write(
-                "{}\t\t {}\t\t {}\t\t {}\t\t {}\t\t {}\t\t {}\n".format(
+                "{}\t\t {}\t\t {}\t\t {}\t\t\t\t {}\t\t\t {}\t\t {}\n".format(
                     x, y, address_written_to, data_size, time_took,
                     mbs, missing_seq_nums))
 
@@ -537,7 +542,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             return False
 
         # start time recording
-        start = float(time.time())
+        start = datetime.datetime.now()
 
         transceiver = globals_variables.get_simulator().transceiver
 
@@ -547,14 +552,17 @@ class DataSpeedUpPacketGatherMachineVertex(
             data=data, offset=offset, is_filename=False)
 
         # record when finished
-        end = float(time.time())
+        end = datetime.datetime.now()
+        diff = end - start
+        time_took = diff.microseconds + (diff.total_seconds() * 1000000)
 
         # write report
         if self._write_data_in_report:
             self._generate_data_in_report(
                 x=x, y=y, report_path=self._data_in_report_path,
                 data_size=n_bytes, address_written_to=base_address,
-                missing_seq_nums=[[]], time_took=float(end - start))
+                missing_seq_nums=[[]],
+                time_took=time_took)
         return True
 
     def send_data_into_spinnaker(
@@ -594,7 +602,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 data=data, n_bytes=n_bytes):
 
             # start time recording
-            start = float(time.time())
+            start = datetime.datetime.now()
 
             transceiver = globals_variables.get_simulator().transceiver
 
@@ -603,7 +611,10 @@ class DataSpeedUpPacketGatherMachineVertex(
                 transceiver, x, y, base_address, data[offset:n_bytes + offset])
 
             # end time recording
-            end = float(time.time())
+            end = datetime.datetime.now()
+            diff = end - start
+
+            time_took = diff.microseconds + (diff.total_seconds() * 1000000)
 
             # write report
             if self._write_data_in_report:
@@ -611,7 +622,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                     x=x, y=y, report_path=self._data_in_report_path,
                     data_size=n_bytes, address_written_to=base_address,
                     missing_seq_nums=self._missing_seq_nums_data_in,
-                    time_took=float(end - start))
+                    time_took=time_took)
 
     @staticmethod
     def _calculate_fake_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
