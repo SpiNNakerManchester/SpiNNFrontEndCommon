@@ -593,3 +593,43 @@ def convert_vertices_to_core_subset(vertices, placements):
         placement = placements.get_placement_of_vertex(vertex)
         core_subsets.add_processor(placement.x, placement.y, placement.p)
     return core_subsets
+
+
+def calculate_board_level_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
+    """ converts between real and board based fake chip ids
+
+    :param chip_x: the real chip x in the real machine
+    :param chip_y: the chip chip y in the real machine
+    :param eth_x: the ethernet x to make board based
+    :param eth_y: the ethernet y to make board based
+    :param machine: the real machine
+    :return: chip x and y for the real chip as if it was 1 board machine
+    :rtype: int and int
+    """
+    fake_x = chip_x - eth_x
+    if fake_x < 0:
+        fake_x += machine.max_chip_x + 1
+    fake_y = chip_y - eth_y
+    if fake_y < 0:
+        fake_y += machine.max_chip_y + 1
+    return fake_x, fake_y
+
+
+def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
+    """ converts between real and board based fake chip ids
+
+    :param fake_x: the fake chip x in the board based machine
+    :param fake_y: the fake chip y in the board based machine
+    :param eth_x: the ethernet x to locate real machine space
+    :param eth_y: the ethernet y to locate real machine space
+    :param machine: the real machine
+    :return: chip x and y for the real chip
+    :rtype: int and int
+    """
+    real_x = fake_x + eth_x
+    if real_x >= machine.max_chip_x + 1:
+        real_x -= machine.max_chip_x
+    real_y = fake_y + eth_y
+    if real_y >= machine.max_chip_y + 1:
+        real_y -= machine.max_chip_y
+    return real_x, real_y

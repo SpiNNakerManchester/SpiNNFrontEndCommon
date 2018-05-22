@@ -20,7 +20,7 @@ from spinn_machine import CoreSubsets, Router
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.utilities.helpful_functions import (
-    convert_vertices_to_core_subset)
+    convert_vertices_to_core_subset, calculate_board_level_chip_id)
 
 log = FormatAdapter(logging.getLogger(__name__))
 
@@ -168,14 +168,15 @@ class ExtraMonitorSupportMachineVertex(
                    "machine_graph": "MemoryMachineGraph",
                    "data_in_routing_tables": "DataInMulticastRoutingTables",
                    "mc_data_chips_to_keys": "DataInMulticastKeyToChipMap",
-                   "app_id": "APPID"})
+                   "app_id": "APPID",
+                   "machine": "MemoryExtendedMachine"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "routing_info", "machine_graph", "data_in_routing_tables",
-                   "mc_data_chips_to_keys", "app_id"})
+                   "mc_data_chips_to_keys", "app_id", "machine"})
     def generate_data_specification(
             self, spec, placement, routing_info, machine_graph,
-            data_in_routing_tables, mc_data_chips_to_keys, app_id):
+            data_in_routing_tables, mc_data_chips_to_keys, app_id, machine):
         # pylint: disable=arguments-differ
         # storing for future usage
         self._placement = placement
@@ -190,13 +191,13 @@ class ExtraMonitorSupportMachineVertex(
         # write data in functionality
         self._generate_data_in_speed_up_functionality_data_specification(
             spec, data_in_routing_tables, placement, mc_data_chips_to_keys,
-            app_id)
+            app_id, machine)
 
         spec.end_specification()
 
     def _generate_data_in_speed_up_functionality_data_specification(
             self, spec, data_in_routing_tables, placement,
-            mc_data_chips_to_keys, app_id):
+            mc_data_chips_to_keys, app_id, machine):
         """ data in spec
 
         :param spec: spec file
@@ -211,6 +212,9 @@ class ExtraMonitorSupportMachineVertex(
         :type mc_data_chips_to_keys: dict(tuple(int,int),int)
         :param app_id: The app id expected to write entries with
         :type app_id: int
+        :param machine: the spinnMachine instance
+        :type machine:\
+            :py:class:`spinnmachine.machine.Machine`
         :rtype: None
         """
         spec.reserve_memory_region(
@@ -221,13 +225,24 @@ class ExtraMonitorSupportMachineVertex(
         spec.switch_write_focus(
             self._EXTRA_MONITOR_DSG_REGIONS.DATA_IN_SPEED_CONFIG.value)
 
+        global_chip = machine.get_chip_at(placement.x, placement.y)
+
+        board_level_chip_x, board_level_chip_y = \
+            calculate_board_level_chip_id(
+                chip_x=placement.x, chip_y=placement.y,
+                machine=machine, eth_x=global_chip.nearest_ethernet_x,
+                eth_y=global_chip.nearest_ethernet_y)
+
         # write address key and data key
-        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
-                         self._KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
-        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
-                         self._KEY_OFFSETS.DATA_KEY_OFFSET.value)
-        spec.write_value(mc_data_chips_to_keys[placement.x, placement.y] +
-                         self._KEY_OFFSETS.RESTART_KEY_OFFSET.value)
+        spec.write_value(
+            mc_data_chips_to_keys[board_level_chip_x, board_level_chip_y] +
+            self._KEY_OFFSETS.ADDRESS_KEY_OFFSET.value)
+        spec.write_value(
+            mc_data_chips_to_keys[board_level_chip_x, board_level_chip_y] +
+            self._KEY_OFFSETS.DATA_KEY_OFFSET.value)
+        spec.write_value(
+            mc_data_chips_to_keys[board_level_chip_x, board_level_chip_y] +
+            self._KEY_OFFSETS.RESTART_KEY_OFFSET.value)
 
         # write table entries
         table = data_in_routing_tables.get_routing_table_for_chip(

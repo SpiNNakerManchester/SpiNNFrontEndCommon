@@ -7,6 +7,7 @@ from pacman.operations.fixed_route_router.fixed_route_router import (
 from pacman.operations.router_algorithms import BasicDijkstraRouting
 from spinn_machine import (Router, VirtualMachine, MulticastRoutingEntry)
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities import helpful_functions
 
 
 class DataInMulticastRoutingGenerator(object):
@@ -68,9 +69,10 @@ class DataInMulticastRoutingGenerator(object):
             partitions_in_table = routing_tables_by_partition.\
                 get_entries_for_router(fake_chip_x, fake_chip_y)
 
-            real_chip_x, real_chip_y = self._calculate_real_chip_id(
-                fake_chip_x, fake_chip_y, ethernet_chip.x, ethernet_chip.y,
-                machine)
+            real_chip_x, real_chip_y = \
+                helpful_functions.calculate_machine_level_chip_id(
+                    fake_chip_x, fake_chip_y, ethernet_chip.x, ethernet_chip.y,
+                    machine)
 
             multicast_routing_table = MulticastRoutingTable(
                 real_chip_x, real_chip_y)
@@ -90,45 +92,7 @@ class DataInMulticastRoutingGenerator(object):
             # add routing table to pile
             routing_tables.add_routing_table(multicast_routing_table)
 
-    @staticmethod
-    def _calculate_fake_chip_id(chip_x, chip_y, eth_x, eth_y, machine):
-        """ converts between real and board based fake chip ids
 
-        :param chip_x: the real chip x in the real machine
-        :param chip_y: the chip chip y in the real machine
-        :param eth_x: the ethernet x to make board based
-        :param eth_y: the ethernet y to make board based
-        :param machine: the real machine
-        :return: chip x and y for the real chip as if it was 1 board machine
-        :rtype: int and int
-        """
-        fake_x = chip_x - eth_x
-        if fake_x < 0:
-            fake_x += machine.max_chip_x + 1
-        fake_y = chip_y - eth_y
-        if fake_y < 0:
-            fake_y += machine.max_chip_y + 1
-        return fake_x, fake_y
-
-    @staticmethod
-    def _calculate_real_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
-        """ converts between real and board based fake chip ids
-
-        :param fake_x: the fake chip x in the board based machine
-        :param fake_y: the fake chip y in the board based machine
-        :param eth_x: the ethernet x to locate real machine space
-        :param eth_y: the ethernet y to locate real machine space
-        :param machine: the real machine
-        :return: chip x and y for the real chip
-        :rtype: int and int
-        """
-        real_x = fake_x + eth_x
-        if real_x >= machine.max_chip_x + 1:
-            real_x -= machine.max_chip_x
-        real_y = fake_y + eth_y
-        if real_y >= machine.max_chip_y + 1:
-            real_y -= machine.max_chip_y
-        return real_x, real_y
 
     def _create_fake_network(
             self, ethernet_connected_chip, machine, extra_monitor_cores,
@@ -161,7 +125,7 @@ class DataInMulticastRoutingGenerator(object):
             fake_graph.add_vertex(vertex)
 
             # adjust for wrap around's
-            fake_x, fake_y = self._calculate_fake_chip_id(
+            fake_x, fake_y = helpful_functions.calculate_board_level_chip_id(
                 chip_x, chip_y, eth_x, eth_y, machine)
 
             # locate correct chips extra monitor placement
@@ -229,10 +193,11 @@ class DataInMulticastRoutingGenerator(object):
                     vertex)
 
                 # adjust to real chip ids
-                real_x, real_y = self._calculate_real_chip_id(
-                    fake_placement.x, fake_placement.y,
-                    ethernet_connected_chip.x, ethernet_connected_chip.y,
-                    machine)
+                real_x, real_y = \
+                    helpful_functions.calculate_machine_level_chip_id(
+                        fake_placement.x, fake_placement.y,
+                        ethernet_connected_chip.x, ethernet_connected_chip.y,
+                        machine)
                 destination_to_partition_identifier_map[real_x, real_y] = \
                     counter
                 counter += self.N_KEYS_PER_PARTITION_ID
