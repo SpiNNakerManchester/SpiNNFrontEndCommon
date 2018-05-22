@@ -22,7 +22,6 @@ class DataInMulticastRoutingGenerator(object):
 
     def __call__(self, machine, extra_monitor_cores, placements,
                  board_version):
-
         # create progress bar
         progress = ProgressBar(
             machine.ethernet_connected_chips,
@@ -32,11 +31,12 @@ class DataInMulticastRoutingGenerator(object):
         routing_tables = MulticastRoutingTables()
         key_to_destination_map = dict()
 
-        for ethernet_chip in progress.over(machine.ethernet_connected_chips):
+        for ethernet_chip in progress.over(
+                machine.ethernet_connected_chips):
             fake_graph, fake_placements, fake_machine, \
                 key_to_destination_map_new = self._create_fake_network(
-                    ethernet_chip, machine, extra_monitor_cores, placements,
-                    board_version)
+                    ethernet_chip, machine, extra_monitor_cores,
+                    placements, board_version)
 
             # update dict for key mapping
             key_to_destination_map.update(key_to_destination_map_new)
@@ -180,7 +180,11 @@ class DataInMulticastRoutingGenerator(object):
 
             # Create a fake machine consisting of only the one board that
             # the routes should go over
-            if (board_version in machine.BOARD_VERSION_FOR_48_CHIPS and
+            valid_48_boards = list()
+            valid_48_boards.extend(machine.BOARD_VERSION_FOR_48_CHIPS)
+            valid_48_boards.append(None)
+
+            if (board_version in valid_48_boards and
                     (machine.max_chip_x > machine.MAX_CHIP_X_ID_ON_ONE_BOARD or
                      machine.max_chip_y > machine.MAX_CHIP_Y_ID_ON_ONE_BOARD)):
                 down_chips = {
