@@ -92,8 +92,6 @@ class DataInMulticastRoutingGenerator(object):
             # add routing table to pile
             routing_tables.add_routing_table(multicast_routing_table)
 
-
-
     def _create_fake_network(
             self, ethernet_connected_chip, machine, extra_monitor_cores,
             placements, board_version):

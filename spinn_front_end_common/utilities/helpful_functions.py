@@ -628,8 +628,8 @@ def calculate_machine_level_chip_id(fake_x, fake_y, eth_x, eth_y, machine):
     """
     real_x = fake_x + eth_x
     if real_x >= machine.max_chip_x + 1:
-        real_x -= machine.max_chip_x
+        real_x -= machine.max_chip_x + 1
     real_y = fake_y + eth_y
     if real_y >= machine.max_chip_y + 1:
-        real_y -= machine.max_chip_y
+        real_y -= machine.max_chip_y + 1
     return real_x, real_y
