@@ -1156,8 +1156,8 @@ class DataSpeedUpPacketGatherMachineVertex(
                 time_out_count += 1
                 self.__reset_connection()
                 if not finished:
-                    finished = self._determine_and_retransmit_missing_seq_nums(
-                        seq_nums, placement, lost_seq_nums)
+                    finished = self._incoming_retransmit_missing_seq_nums(
+                        seq_nums, transceiver, placement, lost_seq_nums)
         return lost_seq_nums
 
     def __reset_connection(self):
