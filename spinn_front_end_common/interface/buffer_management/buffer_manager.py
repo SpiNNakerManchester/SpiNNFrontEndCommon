@@ -151,8 +151,8 @@ class BufferManager(object):
         self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
-        self._thread_lock_buffer_out = threading.Lock()
-        self._thread_lock_buffer_in = threading.Lock()
+        self._thread_lock_buffer_out = threading.RLock()
+        self._thread_lock_buffer_in = threading.RLock()
         self._buffering_out_thread_pool = ThreadPool(processes=1)
 
         self._finished = False
@@ -420,7 +420,7 @@ class BufferManager(object):
             raise exceptions.SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
-        all_data = ""
+        all_data = b""
         if vertex.is_empty(region):
             sent_message = True
         else:
@@ -556,6 +556,10 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_vertices(self, vertices, progress=None):
+        with self._thread_lock_buffer_out:
+            self._get_data_for_vertices_locked(vertices, progress)
+
+    def _get_data_for_vertices_locked(self, vertices, progress=None):
         receivers = OrderedSet()
         if self._uses_advanced_monitors:
 
@@ -660,12 +664,14 @@ class BufferManager(object):
                 self._received_data.last_sequence_no_for_core(
                     placement.x, placement.y, placement.p)
 
-            # get the last sequence number
-            last_sequence_number = \
+            # get the sequence number the core was expecting to see next
+            core_next_sequence_number = \
                 self._received_data.get_end_buffering_sequence_number(
                     placement.x, placement.y, placement.p)
 
-            if last_sequence_number == seq_no_last_ack_packet:
+            # if the core was expecting to see our last sent sequence,
+            # it must not have received it
+            if core_next_sequence_number == seq_no_last_ack_packet:
                 self._process_last_ack(placement, recording_region_id,
                                        end_state)
 

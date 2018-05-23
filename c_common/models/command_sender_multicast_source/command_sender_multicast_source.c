@@ -2,7 +2,6 @@
 #include <data_specification.h>
 #include <debug.h>
 #include <simulation.h>
-#include <string.h>
 #include <stdbool.h>
 
 // Command structure
@@ -145,7 +144,7 @@ bool read_scheduled_parameters(address_t address) {
         return false;
     }
 
-    memcpy(
+    spin1_memcpy(
         timed_commands, &address[START_OF_SCHEDULE],
         n_timed_commands * sizeof(timed_command));
 
@@ -171,7 +170,7 @@ bool read_start_resume_commands(address_t address) {
         log_error("Could not allocate the start/resume commands");
         return false;
     }
-    memcpy(
+    spin1_memcpy(
         start_resume_commands, &address[START_OF_SCHEDULE],
         n_start_resume_commands * sizeof(command));
 
@@ -194,7 +193,7 @@ bool read_pause_stop_commands(address_t address) {
         log_error("Could not allocate the pause/stop commands");
         return false;
     }
-    memcpy(
+    spin1_memcpy(
         pause_stop_commands, &address[START_OF_SCHEDULE],
         n_pause_stop_commands * sizeof(command));
 
