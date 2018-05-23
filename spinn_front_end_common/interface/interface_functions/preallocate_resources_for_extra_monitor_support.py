@@ -65,7 +65,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
             sdrams.append(SpecificChipSDRAMResource(
-                chip=chip, sdram_usage=sdram_usage.sdram.get_value()))
+                chip=chip, sdram_usage=sdram_usage.sdram.get_total_sdram(()))
 
     @staticmethod
     def _handle_packet_gathering_support(
@@ -94,7 +94,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             # do resources. sdram, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
-                sdram_usage=resources.sdram.get_value()))
+                sdram_usage=resources.sdram.get_total_sdram()))
             cores.append(CoreResource(
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
             tags.append(SpecificBoardTagResource(
