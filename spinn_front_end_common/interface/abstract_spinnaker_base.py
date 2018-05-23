@@ -1258,10 +1258,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append("PreAllocateResourcesForChipPowerMonitor")
-            inputs['MemorySamplingFrequency'] = self._config.getfloat(
+            inputs['MemorySamplingFrequency'] = self._config.getint(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                self._config.getfloat(
+                self._config.getint(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # add algorithms for handling extra monitor code
