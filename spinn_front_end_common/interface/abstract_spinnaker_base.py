@@ -1451,6 +1451,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         self._turn_off_on_board_to_save_power("turn_off_board_after_discovery")
 
+        if self._n_chips_required:
+            if self._machine.n_chips < self._n_chips_required:
+                raise ConfigurationException(
+                    "Failure to detect machine of with {} chips as requested. "
+                    "Only found {}".format(self._n_chips_required,
+                                           self._machine))
+
         return self._machine
 
     def _handle_machine_common_config(self, inputs):
