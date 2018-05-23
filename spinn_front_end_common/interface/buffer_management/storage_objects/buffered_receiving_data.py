@@ -335,6 +335,7 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+        self._end_buffering_sequence_no = dict()
 
     def clear(self, x, y, p, region_id):
         """ Clears the data from a given data region (only clears things\

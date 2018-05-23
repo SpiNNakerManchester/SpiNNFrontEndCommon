@@ -1,6 +1,6 @@
 import os
-import hashlib
 from spinn_front_end_common.utilities.constants import SDP_PORTS
+from pacman.utilities.utility_calls import md5
 
 
 def get_simulation_header_array(
@@ -12,12 +12,8 @@ def get_simulation_header_array(
     :param time_scale_factor: The time scaling of the simulation
     :return: An array of values to be written as the simulation header
     """
-
-    # Hash application title
-    application_name = os.path.splitext(binary_file_name)[0]
-
     # Get first 32-bits of the md5 hash of the application name
-    application_name_hash = hashlib.md5(application_name).hexdigest()[:8]
+    application_name_hash = md5(os.path.splitext(binary_file_name)[0])[:8]
 
     # Write this to the system region (to be picked up by the simulation):
     data = list()
