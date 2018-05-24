@@ -24,6 +24,7 @@ import logging
 import struct
 import datetime
 import shutil
+import math
 
 from spinnman.model.enums import CPUState
 from spinn_utilities.log import FormatAdapter
@@ -512,7 +513,7 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 
 def produce_key_constraint_based_off_outgoing_partitions(
-        machine_graph, vertex, mask, virtual_key):
+        machine_graph, vertex, mask, virtual_key, partition):
     """ supports vertices which can support their destinations enforcing 
     their key space.
     
@@ -520,11 +521,12 @@ def produce_key_constraint_based_off_outgoing_partitions(
     :param vertex: the source vertex (usually a retina or RIPMCS)
     :param mask: the mask the source expects to transmit with
     :param virtual_key: the key the source expects to transmit with
+    :param partition: the edge partition to process
     :return: the constraints the source vertex should use.
     """
     if virtual_key is not None:
         if len(partition.constraints) == 0:
-            keys_covered, has_tried_to_cover =  \
+            keys_covered, has_tried_to_cover, key_space =  \
                 _verify_if_incoming_constraints_covers_key_space(
                     machine_graph=machine_graph, vertex=vertex,
                     mask=mask, virtual_key=virtual_key)
@@ -532,10 +534,16 @@ def produce_key_constraint_based_off_outgoing_partitions(
                 return list([FixedKeyAndMaskConstraint(
                     [BaseKeyAndMask(virtual_key, mask)])])
             elif not keys_covered and has_tried_to_cover:
+                key_message = ""
+                for element_space in key_space:
+                    mask, _ = calculate_mask(element_space.size)
+                    key_message += "[start key:{} and mask {}] ".format(
+                        element_space.start_address, mask)
                 raise ConfigurationException(
                     "the retina key space has not been covered correctly. "
-                    "and so packets will fly uncontrolled. please fix and "
-                    "try again")
+                    "and so packets will fly uncontrolled. please insert a "
+                    "vertex that covers the following key spaces: {}".format(
+                        key_message))
     return list()
 
 
@@ -561,8 +569,17 @@ def _verify_if_incoming_constraints_covers_key_space(
             tried_to_cover = _process_multicast_partition(
                 outgoing_partition, key_space, tried_to_cover)
     if key_space.space_remaining() != 0:
-        return False, tried_to_cover
-    return True, tried_to_cover
+        return False, tried_to_cover, key_space.spaces_left()
+    return True, tried_to_cover, key_space.spaces_left()
+
+
+def calculate_mask(n_keys):
+    if n_keys == 1:
+        return 0xFFFFFFFF, 1
+    temp_value = int(math.ceil(math.log(n_keys, 2)))
+    max_key = (int(math.pow(2, temp_value)) - 1)
+    mask = 0xFFFFFFFF - max_key
+    return mask, max_key
 
 
 def _process_multicast_partition(outgoing_partition, key_space, tried_to_cover):
