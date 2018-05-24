@@ -30,6 +30,10 @@ from spinn_utilities.overrides import overrides
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
 
+RECORDING_SIZE_PER_ENTRY = 18 * 4
+DEFAULT_MALLOCS_USED = 3
+CONFIG_SIZE_IN_BYTES = 8
+
 
 @supports_injection
 class ChipPowerMonitorMachineVertex(
@@ -48,9 +52,6 @@ class ChipPowerMonitorMachineVertex(
                ('RECORDING', 2)])
 
     # default magic numbers
-    DEFAULT_MALLOCS_USED = 3
-    CONFIG_SIZE_IN_BYTES = 8
-    RECORDING_SIZE_PER_ENTRY = 18 * 4
     SAMPLE_RECORDING_REGION = 0
     MAX_CORES_PER_CHIP = 18
     MAX_BUFFER_SIZE = 1048576
@@ -81,22 +82,18 @@ class ChipPowerMonitorMachineVertex(
         return self._n_samples_per_recording
 
     @property
-    @inject_items({"machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "TotalMachineTimeSteps",
-                   "time_scale_factor": "TimeScaleFactor"})
-    @overrides(MachineVertex.resources_required,
-               additional_arguments={
-                   'machine_time_step', 'n_machine_time_steps',
-                   'time_scale_factor'})
-    def resources_required(
-            self, n_machine_time_steps, machine_time_step, time_scale_factor):
+    @overrides(MachineVertex.resources_required)
+    def resources_required(self):
         # pylint: disable=arguments-differ
+        sim = globals_variables.get_simulator()
+        # Does not actually matter as user will put in the correct timesteps
+        n_machine_time_steps = 1
         return self.get_resources(
-            n_machine_time_steps, machine_time_step, time_scale_factor,
+            n_machine_time_steps, sim.machine_time_step, sim.time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
 
     @staticmethod
-    def get_resources(
+    def get_resources_old(
             n_machine_time_steps, time_step, time_scale_factor,
             n_samples_per_recording, sampling_frequency):
         """ get resources used by this vertex
@@ -139,7 +136,6 @@ class ChipPowerMonitorMachineVertex(
             ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY *
             n_recording_entries)
 
-
         # TODO use _deduce_sdram_requirements_per_timer_tick(
         #             self, machine_time_step, time_scale_factor):
         container = ResourceContainer(
@@ -153,6 +149,36 @@ class ChipPowerMonitorMachineVertex(
         container.extend(recording_utilities.get_recording_resources(
             recording_sizes, receive_buffer_host, receive_buffer_port))
         return container
+
+    @staticmethod
+    def get_resources(
+            n_machine_time_steps, time_step, time_scale_factor,
+            n_samples_per_recording, sampling_frequency):
+        """ get resources used by this vertex
+
+        :return:Resource container
+        """
+        # pylint: disable=too-many-locals
+        step_in_microseconds = (time_step * time_scale_factor)
+        # The number of sample per step CB believes does not have to be an int
+        samples_per_step = (step_in_microseconds / sampling_frequency)
+        recording_per_step = (samples_per_step / n_samples_per_recording)
+        max_recording_per_step = math.ceil(recording_per_step)
+        overflow_recordings = max_recording_per_step - recording_per_step
+        fixed_sdram = constants.SYSTEM_BYTES_REQUIREMENT + \
+            CONFIG_SIZE_IN_BYTES + DEFAULT_MALLOCS_USED * \
+            constants.SARK_PER_MALLOC_SDRAM_USAGE
+        with_overflow = (fixed_sdram +
+            overflow_recordings * RECORDING_SIZE_PER_ENTRY)
+        per_temestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
+
+        container = ResourceContainer(
+            sdram=VariableSDRAM(
+                with_overflow, per_temestep, n_machine_time_steps),
+            cpu_cycles=CPUCyclesPerTickResource(100),
+            dtcm=DTCMResource(100))
+        return container
+
 
     @staticmethod
     def sdram_calculation():
@@ -274,7 +300,7 @@ class ChipPowerMonitorMachineVertex(
             label='system')
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,
-            size=self.CONFIG_SIZE_IN_BYTES, label='config')
+            size=CONFIG_SIZE_IN_BYTES, label='config')
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value,
             size=recording_utilities.get_recording_header_size(1),
@@ -313,7 +339,7 @@ class ChipPowerMonitorMachineVertex(
         recording_time = \
             self._sampling_frequency * self._n_samples_per_recording
         n_entries = math.floor(timer_tick_in_micro_seconds / recording_time)
-        return math.ceil(n_entries * self.RECORDING_SIZE_PER_ENTRY)
+        return math.ceil(n_entries * RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):
         """ get data from sdram given placement and buffer manager
