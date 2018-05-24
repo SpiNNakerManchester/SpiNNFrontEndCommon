@@ -513,19 +513,31 @@ def convert_vertices_to_core_subset(vertices, placements):
 
 def verify_if_incoming_constraints_covers_key_space(
         machine_graph, vertex, virtual_key, mask):
+    """ checks the partitions going out of the vertex and sees if there's 
+    constraints that cover of try to cover the key space of the vertex.
+    
+    :param machine_graph: the machine graph
+    :param vertex: the vertex to worry about
+    :param virtual_key: the key that vertex is to transmit with
+    :param mask: the mask of the key that the vertex will transmit with
+    :return: 2 bools, first saying if the key space is covered, the second 
+    saying if the key space was attempted to be covered.
+    """
+    tried_to_cover = False
     key_space = ElementAllocatorAlgorithm(
         list(generate_key_ranges_from_mask(virtual_key, mask)))
     outgoing_partitions = \
         machine_graph.get_outgoing_edge_partitions_starting_at_vertex(vertex)
     for outgoing_partition in outgoing_partitions:
         if outgoing_partition.traffic_type == EdgeTrafficType.MULTICAST:
-            _process_multicast_partition(outgoing_partition, key_space)
+            tried_to_cover = _process_multicast_partition(
+                outgoing_partition, key_space, tried_to_cover)
     if key_space.space_remaining() != 0:
-        return False
-    return True
+        return False, tried_to_cover
+    return True, tried_to_cover
 
 
-def _process_multicast_partition(outgoing_partition, key_space):
+def _process_multicast_partition(outgoing_partition, key_space, tried_to_cover):
     for edge in outgoing_partition.edges:
         if isinstance(
                 edge.post_vertex,
@@ -542,6 +554,8 @@ def _process_multicast_partition(outgoing_partition, key_space):
             if isinstance(key_constraint, FixedKeyAndMaskConstraint):
                 keys_and_masks = key_constraint.keys_and_masks
                 for key_and_mask in keys_and_masks:
-                    base_key, n_keys = generate_key_ranges_from_mask(
-                        key_and_mask.key, key_and_mask.mask)
-                    key_space.allocate_elements(base_key, n_keys)
+                    for base_key, n_keys in generate_key_ranges_from_mask(
+                            key_and_mask.key, key_and_mask.mask):
+                        key_space.allocate_elements(base_key, n_keys)
+                    tried_to_cover = True
+    return tried_to_cover

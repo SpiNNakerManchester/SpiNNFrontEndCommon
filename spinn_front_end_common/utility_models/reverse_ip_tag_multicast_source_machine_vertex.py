@@ -610,6 +610,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     def get_binary_start_type(self):
         return ExecutableType.USES_SIMULATION_INTERFACE
 
+    @inject_items({"machine_graph": "MemoryMachineGraph"})
     @overrides(
         AbstractProvidesOutgoingPartitionConstraints.
         get_outgoing_partition_constraints,
@@ -624,8 +625,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
                 if not keys_covered and not has_tried_to_cover:
                     return list([FixedKeyAndMaskConstraint(
                         [BaseKeyAndMask(self._virtual_key, self._mask)])])
-                else:
-
+                elif not keys_covered and has_tried_to_cover:
+                    raise ConfigurationException(
+                        "the retina key space has not been covered correctly. "
+                        "and so packets will fly uncontrolled. please fix and "
+                        "try again")
         return list()
 
     @property
