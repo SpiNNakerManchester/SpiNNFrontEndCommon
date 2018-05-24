@@ -1088,6 +1088,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         usage_by_chip = dict()
 
         for placement in self._placements.placements:
+            vertex = placement.vertex
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
@@ -2278,6 +2279,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
     @property
     def machine_time_step(self):
         return self._machine_time_step
+
+    @property
+    def time_scale_factor(self):
+        return self._time_scale_factor
 
     @property
     def machine(self):

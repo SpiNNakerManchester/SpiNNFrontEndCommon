@@ -64,6 +64,10 @@ class FailedState(SimulatorInterface):
         raise ConfigurationException(FAILED_STATE_MSG)
 
     @property
+    def time_scale_factor(self):
+        raise ConfigurationException(FAILED_STATE_MSG)
+
+    @property
     def use_virtual_board(self):
         raise ConfigurationException(FAILED_STATE_MSG)
 
