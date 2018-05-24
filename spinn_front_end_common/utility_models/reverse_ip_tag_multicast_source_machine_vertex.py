@@ -616,21 +616,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         get_outgoing_partition_constraints,
         additional_arguments={"machine_graph": "MemoryMachineGraph"})
     def get_outgoing_partition_constraints(self, partition, machine_graph):
-        if self._virtual_key is not None:
-            if len(partition.constraints) == 0:
-                keys_covered, has_tried_to_cover = helpful_functions.\
-                    verify_if_incoming_constraints_covers_key_space(
-                        machine_graph=machine_graph, vertex=self,
-                        mask=self._mask, virtual_key=self._virtual_key)
-                if not keys_covered and not has_tried_to_cover:
-                    return list([FixedKeyAndMaskConstraint(
-                        [BaseKeyAndMask(self._virtual_key, self._mask)])])
-                elif not keys_covered and has_tried_to_cover:
-                    raise ConfigurationException(
-                        "the retina key space has not been covered correctly. "
-                        "and so packets will fly uncontrolled. please fix and "
-                        "try again")
-        return list()
+        return helpful_functions.\
+            produce_key_constraint_based_off_outgoing_partitions(
+                machine_graph=machine_graph, vertex=self,
+                mask=self._mask, virtual_key=self._virtual_key)
 
     @property
     def virtual_key(self):

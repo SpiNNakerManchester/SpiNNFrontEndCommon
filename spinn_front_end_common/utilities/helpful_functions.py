@@ -511,7 +511,35 @@ def convert_vertices_to_core_subset(vertices, placements):
     return core_subsets
 
 
-def verify_if_incoming_constraints_covers_key_space(
+def produce_key_constraint_based_off_outgoing_partitions(
+        machine_graph, vertex, mask, virtual_key):
+    """ supports vertices which can support their destinations enforcing 
+    their key space.
+    
+    :param machine_graph: the machine graph
+    :param vertex: the source vertex (usually a retina or RIPMCS)
+    :param mask: the mask the source expects to transmit with
+    :param virtual_key: the key the source expects to transmit with
+    :return: the constraints the source vertex should use.
+    """
+    if self._virtual_key is not None:
+        if len(partition.constraints) == 0:
+            keys_covered, has_tried_to_cover =  \
+                _verify_if_incoming_constraints_covers_key_space(
+                    machine_graph=machine_graph, vertex=vertex,
+                    mask=mask, virtual_key=virtual_key)
+            if not keys_covered and not has_tried_to_cover:
+                return list([FixedKeyAndMaskConstraint(
+                    [BaseKeyAndMask(virtual_key, mask)])])
+            elif not keys_covered and has_tried_to_cover:
+                raise ConfigurationException(
+                    "the retina key space has not been covered correctly. "
+                    "and so packets will fly uncontrolled. please fix and "
+                    "try again")
+    return list()
+
+
+def _verify_if_incoming_constraints_covers_key_space(
         machine_graph, vertex, virtual_key, mask):
     """ checks the partitions going out of the vertex and sees if there's 
     constraints that cover of try to cover the key space of the vertex.
