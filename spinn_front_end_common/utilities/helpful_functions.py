@@ -522,7 +522,7 @@ def produce_key_constraint_based_off_outgoing_partitions(
     :param virtual_key: the key the source expects to transmit with
     :return: the constraints the source vertex should use.
     """
-    if self._virtual_key is not None:
+    if virtual_key is not None:
         if len(partition.constraints) == 0:
             keys_covered, has_tried_to_cover =  \
                 _verify_if_incoming_constraints_covers_key_space(
