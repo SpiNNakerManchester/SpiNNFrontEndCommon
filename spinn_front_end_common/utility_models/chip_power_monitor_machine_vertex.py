@@ -93,64 +93,6 @@ class ChipPowerMonitorMachineVertex(
             self._n_samples_per_recording, self._sampling_frequency)
 
     @staticmethod
-    def get_resources_old(
-            n_machine_time_steps, time_step, time_scale_factor,
-            n_samples_per_recording, sampling_frequency):
-        """ get resources used by this vertex
-
-        :return:Resource container
-        """
-        # pylint: disable=too-many-locals
-
-        # get config
-        config = globals_variables.get_simulator().config
-
-        # get recording params
-        minimum_buffer_sdram = config.getint(
-            "Buffers", "minimum_buffer_sdram")
-        using_auto_pause_and_resume = config.getboolean(
-            "Buffers", "use_auto_pause_and_resume")
-        receive_buffer_host = config.get("Buffers", "receive_buffer_host")
-        receive_buffer_port = read_config_int(
-            config, "Buffers", "receive_buffer_port")
-
-        # figure recording size for max run
-        if not using_auto_pause_and_resume and n_machine_time_steps is None:
-            raise Exception(
-                "You cannot use the chip power montiors without auto pause "
-                "and resume and not allocating a n_machine_time_steps")
-
-        # figure max buffer size
-        max_buffer_size = 0
-        if config.getboolean("Buffers", "enable_buffered_recording"):
-            max_buffer_size = config.getint(
-                "Buffers", "chip_power_monitor_buffer")
-
-        maximum_sdram_for_buffering = [max_buffer_size]
-
-        n_recording_entries = (math.ceil(
-            (sampling_frequency / (time_step * time_scale_factor))) /
-            n_samples_per_recording)
-
-        recording_size = (
-            ChipPowerMonitorMachineVertex.RECORDING_SIZE_PER_ENTRY *
-            n_recording_entries)
-
-        # TODO use _deduce_sdram_requirements_per_timer_tick(
-        #             self, machine_time_step, time_scale_factor):
-        container = ResourceContainer(
-            sdram=VariableSDRAM(
-                ChipPowerMonitorMachineVertex.sdram_calculation(), 0, 1),
-            cpu_cycles=CPUCyclesPerTickResource(100),
-            dtcm=DTCMResource(100))
-        recording_sizes = recording_utilities.get_recording_region_sizes(
-            [int(recording_size) * n_machine_time_steps], minimum_buffer_sdram,
-            maximum_sdram_for_buffering, using_auto_pause_and_resume)
-        container.extend(recording_utilities.get_recording_resources(
-            recording_sizes, receive_buffer_host, receive_buffer_port))
-        return container
-
-    @staticmethod
     def get_resources(
             n_machine_time_steps, time_step, time_scale_factor,
             n_samples_per_recording, sampling_frequency):
