@@ -260,6 +260,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #
         "_machine_time_step",
 
+        # The lowest values auto pause resume may use as steps
+        "_minimum_auto_time_steps",
+
         #
         "_time_scale_factor",
 
@@ -469,6 +472,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._no_sync_changes = 0
         self._minimum_step_generated = None
         self._no_machine_time_steps = None
+        self._minimum_auto_time_steps = self._config.getint(
+                "Buffers", "minimum_auto_time_steps")
+
         self._machine_time_step = None
         self._time_scale_factor = None
         self._this_run_time_string = None
@@ -1496,12 +1502,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
 
         if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
-            inputs["MinimumAutoTimeSteps"] = self._config.getint(
-                "Buffers", "minimum_auto_time_steps")
+            inputs["MinimumAutoTimeSteps"] = self._minimum_auto_time_steps
         else:
             inputs["MinimumAutoTimeSteps"] = min(
-                n_machine_time_steps, self._config.getint(
-                    "Buffers", "minimum_auto_time_steps"))
+                n_machine_time_steps, self._minimum_auto_time_steps)
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
