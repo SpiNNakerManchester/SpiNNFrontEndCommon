@@ -37,7 +37,7 @@ LOG_DICT_FILE = $(SPINN_LIB_DIR)/$(APP).dict
 # Ensure $(INSTALL) is defined, even on MinGW
 INSTALL ?= install
 
-# Variables needed for file convertor
+# Variables needed for file converter
 SRC_DIR = src/
 MODIFIED_DIR = modified_src/
 
@@ -47,10 +47,10 @@ $(SPINN_COMMON_BUILD)/$(APP).a: $(BUILD_OBJS)
 	$(AR) $@ $(BUILD_OBJS)
 
 $(MODIFIED_DIR)%.c: $(RAW_DIR)
-	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE)
 
 $(LOG_DICT_FILE): $(RAW_DIR)
-	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(LOG_DICT_FILE)
 
 $(SPINN_COMMON_BUILD)/%.o: $(MODIFIED_DIR)/%.c $(SPINN_COMMON_BUILD) $(LOG_DICT_FILE)
 	$(CC) $(CFLAGS) -o $@ $<

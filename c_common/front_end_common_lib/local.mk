@@ -62,13 +62,13 @@ all: $(ALL_TARGETS)
 
 # All the c and h files built at the same time but individual rules needed for make chains
 $(MODIFIED_DIR)%.c: $(SRC_DIR)%.c
-	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(MODIFIED_DICT_FILE)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(MODIFIED_DICT_FILE)
 
 $(MODIFIED_DIR)%.h: $(SRC_DIR)%.h
-	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(MODIFIED_DICT_FILE)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(MODIFIED_DICT_FILE)
 
 $(MODIFIED_DICT_FILE): $(SRC_DIR)
-	python -m spinn_utilities.make_tools.convertor $(SRC_DIR) $(MODIFIED_DIR) $(MODIFIED_DICT_FILE)
+	python -m spinn_utilities.make_tools.converter $(SRC_DIR) $(MODIFIED_DIR) $(MODIFIED_DICT_FILE)
 
 # Build the o files from the modified sources and any copied directories (if applicable)
 $(BUILD_DIR)%.o: $(MODIFIED_DIR)%.c $(COPIED_DIRS)
