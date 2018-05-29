@@ -4,6 +4,8 @@ from pacman.model.resources.specific_board_iptag_resource import \
     SpecificBoardTagResource
 from spinn_front_end_common.utility_models import \
     DataSpeedUpPacketGatherMachineVertex as DataSpeedUp
+from spinn_front_end_common.utility_models import (
+    ExtraMonitorSupportMachineVertex)
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -34,7 +36,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
         # add resource requirements for re-injector and reader for data
         # extractor
-        self._handle_second_monitor_support(cores, machine, progress)
+        self._handle_second_monitor_support(cores, sdrams, machine, progress)
 
         # create pre allocated resource container
         extra_monitor_pre_allocations = PreAllocatedResourceContainer(
@@ -49,7 +51,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         return extra_monitor_pre_allocations
 
     @staticmethod
-    def _handle_second_monitor_support(cores, machine, progress):
+    def _handle_second_monitor_support(cores, sdrams, machine, progress):
         """ adds the second monitor pre allocations, which reflect the\
          re-injector and data extractor support
 
@@ -58,8 +60,12 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param progress: the progress bar to operate one
         :rtype: None
         """
+        sdram_usage = \
+            ExtraMonitorSupportMachineVertex.static_resources_required()
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
+            sdrams.append(SpecificChipSDRAMResource(
+                chip=chip, sdram_usage=sdram_usage.sdram.get_value()))
 
     @staticmethod
     def _handle_packet_gathering_support(
