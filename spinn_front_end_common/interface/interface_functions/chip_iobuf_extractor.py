@@ -1,5 +1,6 @@
 from spinn_utilities.make_tools.replacer import Replacer
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities import helpful_functions
 import re
 import os
 
@@ -18,22 +19,81 @@ class ChipIOBufExtractor(object):
     __slots__ = []
 
     def __call__(
-            self, transceiver, executable_targets, provenance_file_path):
-        progress = ProgressBar(len(executable_targets.binaries),
-                               "Extracting IOBUF from the machine")
+            self, transceiver, executable_targets, executable_finder,
+            provenance_file_path, from_cores="ALL", binary_types=None):
+
         error_entries = list()
         warn_entries = list()
-        for binary in progress.over(executable_targets.binaries):
-            core_subsets = executable_targets.get_cores_for_binary(binary)
-            replacer = Replacer(binary)
-            self._run_for_core_subsets(
-                core_subsets, replacer, transceiver, provenance_file_path,
-                error_entries, warn_entries)
+
+        # all the cores
+        if from_cores == "ALL":
+            progress = ProgressBar(len(executable_targets.binaries),
+                                   "Extracting IOBUF from the machine")
+            for binary in progress.over(executable_targets.binaries):
+                core_subsets = executable_targets.get_cores_for_binary(binary)
+                self._run_for_core_subsets(
+                    core_subsets, binary, transceiver, provenance_file_path,
+                    error_entries, warn_entries)
+
+        elif from_cores:
+            if binary_types:
+                # bit of both
+                progress = ProgressBar(len(executable_targets.binaries),
+                                       "Extracting IOBUF from the machine")
+                binaries = executable_finder.get_executable_paths(binary_types)
+                iocores = (helpful_functions.
+                           convert_string_into_chip_and_core_subset(
+                    from_cores))
+                for binary in progress.over(executable_targets.binaries):
+                    if binary in binaries:
+                        core_subsets = executable_targets.get_cores_for_binary(
+                            binary)
+                    else:
+                        core_subsets = iocores.intersect(
+                            executable_targets.get_cores_for_binary(binary))
+                    if core_subsets:
+                        self._run_for_core_subsets(
+                            core_subsets, binary, transceiver,
+                            provenance_file_path, error_entries,
+                            warn_entries)
+
+            else:
+                # some hard coded cores
+                progress = ProgressBar(len(executable_targets.binaries),
+                                       "Extracting IOBUF from the machine")
+                iocores = (helpful_functions.
+                           convert_string_into_chip_and_core_subset(
+                    from_cores))
+                for binary in progress.over(executable_targets.binaries):
+                    core_subsets = iocores.intersect(
+                        executable_targets.get_cores_for_binary(binary))
+                    if core_subsets:
+                        self._run_for_core_subsets(
+                            core_subsets, binary, transceiver,
+                            provenance_file_path, error_entries, warn_entries)
+        else:
+            if binary_types:
+                # some binaries
+                binaries = executable_finder.get_executable_paths(binary_types)
+                progress = ProgressBar(len(binaries),
+                                       "Extracting IOBUF from the machine")
+                for binary in progress.over(binaries):
+                    core_subsets = executable_targets.get_cores_for_binary(
+                        binary)
+                    self._run_for_core_subsets(
+                        core_subsets, binary, transceiver,
+                        provenance_file_path, error_entries, warn_entries)
+            else:
+                # nothing
+                pass
+
         return error_entries, warn_entries
 
     def _run_for_core_subsets(
-            self, core_subsets, replacer, transceiver, provenance_file_path,
+            self, core_subsets, binary, transceiver, provenance_file_path,
             error_entries, warn_entries):
+
+        replacer = Replacer(binary)
 
         # extract iobuf
         io_buffers = list(transceiver.get_iobuf(core_subsets))
