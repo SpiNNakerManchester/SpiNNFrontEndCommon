@@ -1960,14 +1960,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
-        if not self._use_virtual_board:
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._load_outputs["ExecutableTargets"],
-                    self._executable_finder)
+        inputs["ExtractIobufFromCores"] = self._config.get(
+            "Reports", "extract_iobuf_from_cores")
+        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+            "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -2179,7 +2175,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, executable_targets, self._provenance_file_path)
+                self._txrx, executable_targets, self._executable_finder,
+                self._provenance_file_path,
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_binary_types")
+            )
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
