@@ -43,7 +43,7 @@ class ChipIOBufExtractor(object):
                 binaries = executable_finder.get_executable_paths(binary_types)
                 iocores = (helpful_functions.
                            convert_string_into_chip_and_core_subset(
-                    from_cores))
+                                from_cores))
                 for binary in progress.over(executable_targets.binaries):
                     if binary in binaries:
                         core_subsets = executable_targets.get_cores_for_binary(
@@ -63,7 +63,7 @@ class ChipIOBufExtractor(object):
                                        "Extracting IOBUF from the machine")
                 iocores = (helpful_functions.
                            convert_string_into_chip_and_core_subset(
-                    from_cores))
+                                from_cores))
                 for binary in progress.over(executable_targets.binaries):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))
