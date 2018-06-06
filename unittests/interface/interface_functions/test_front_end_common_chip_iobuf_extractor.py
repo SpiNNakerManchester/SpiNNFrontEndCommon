@@ -1,7 +1,7 @@
 import os
-import sys
 import tempfile
 import unittest
+from spinn_utilities.executable_finder import ExecutableFinder
 from spinn_front_end_common.interface.interface_functions \
     import ChipIOBufExtractor
 from spinn_machine import CoreSubsets, CoreSubset
@@ -31,44 +31,47 @@ def mock_text(x, y, p):
     text = "Test {} {} {}\n".format(x, y, p) + warning_text + error_text
     return text, result_error, result_warning
 
+
+text001, result_error001, result_warning001 = mock_text(0, 0, 1)
+text002, result_error002, result_warning002 = mock_text(0, 0, 2)
+text111, result_error111, result_warning111 = mock_text(1, 1, 1)
+text112, result_error112, result_warning112 = mock_text(1, 1, 2)
+text003, result_error003, result_warning003 = mock_text(0, 0, 3)
+
+
+path = os.path.dirname(os.path.abspath(__file__))
+
+
 def mock_aplx(id):
-    path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(path, "mock{}.aplx".format(id))
 
 
-text1, result_error1, result_warning1 = mock_text(0, 0, 1)
-text2, result_error2, result_warning2 = mock_text(0, 0, 2)
-text3, result_error3, result_warning3 = mock_text(1, 1, 1)
-text4, result_error4, result_warning4 = mock_text(1, 1, 2)
-text5, result_error5, result_warning5 = mock_text(0, 0, 3)
-
 extractor = ChipIOBufExtractor()
+executableFinder = ExecutableFinder([path])
 
 transceiver = _PretendTransceiver(
-    [IOBuffer(0, 0, 1, text1), IOBuffer(0, 0, 2, text2),
-     IOBuffer(1, 1, 1, text3), IOBuffer(1, 1, 2, text4),
-     IOBuffer(0, 0, 3, text5)])
+    [IOBuffer(0, 0, 1, text001), IOBuffer(0, 0, 2, text002),
+     IOBuffer(1, 1, 1, text111), IOBuffer(1, 1, 2, text112),
+     IOBuffer(0, 0, 3, text003)])
 
 executable_targets = ExecutableTargets()
 core_subsets = CoreSubsets([CoreSubset(0, 0, [1, 2])])
-fooaplx = mock_aplx("foo");
+fooaplx = mock_aplx("foo")
 executable_targets.add_subsets(fooaplx, core_subsets)
 core_subsets = CoreSubsets([CoreSubset(1, 1, [1, 2])])
-baraplx = mock_aplx("bar");
+baraplx = mock_aplx("bar")
 executable_targets.add_subsets(baraplx, core_subsets)
 core_subsets = CoreSubsets([CoreSubset(0, 0, [3])])
-alphaaplx = mock_aplx("alpha");
+alphaaplx = mock_aplx("alpha")
 executable_targets.add_subsets(alphaaplx, core_subsets)
 
 
-class _PretendExecutiveFinder(object):
-
-    def get_executable_pathss(self, binary_types):
-        for binary_type in binary_types.split(",")
-
 class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
 
-    def testcallsimple(self):
+    def testExectuableFinder(self):
+        self.assertIn(fooaplx, executableFinder.get_executable_path(fooaplx))
+
+    def testCallSimple(self):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
@@ -93,20 +96,20 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
             folder, "iobuf_for_chip_0_0_processor_id_3.txt")
         self.assertTrue(os.path.exists(testfile))
         os.unlink(testfile)
-        self.assertIn(result_error1, error_entries)
-        self.assertIn(result_error2, error_entries)
-        self.assertIn(result_error3, error_entries)
-        self.assertIn(result_error4, error_entries)
-        self.assertIn(result_error5, error_entries)
-        self.assertIn(result_warning1, warn_entries)
-        self.assertIn(result_warning2, warn_entries)
-        self.assertIn(result_warning3, warn_entries)
-        self.assertIn(result_warning4, warn_entries)
-        self.assertIn(result_warning5, warn_entries)
+        self.assertIn(result_error001, error_entries)
+        self.assertIn(result_error002, error_entries)
+        self.assertIn(result_error111, error_entries)
+        self.assertIn(result_error112, error_entries)
+        self.assertIn(result_error003, error_entries)
+        self.assertIn(result_warning001, warn_entries)
+        self.assertIn(result_warning002, warn_entries)
+        self.assertIn(result_warning111, warn_entries)
+        self.assertIn(result_warning112, warn_entries)
+        self.assertIn(result_warning003, warn_entries)
         self.assertEqual(5, len(warn_entries))
         os.rmdir(folder)
 
-    def testcallchips(self):
+    def testCallChips(self):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
@@ -129,26 +132,58 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
             folder, "iobuf_for_chip_0_0_processor_id_3.txt")
         self.assertTrue(os.path.exists(testfile))
         os.unlink(testfile)
-        self.assertNotIn(result_error1, error_entries)
-        self.assertIn(result_error2, error_entries)
-        self.assertNotIn(result_error3, error_entries)
-        self.assertNotIn(result_error4, error_entries)
-        self.assertIn(result_error5, error_entries)
-        self.assertNotIn(result_warning1, warn_entries)
-        self.assertIn(result_warning2, warn_entries)
-        self.assertNotIn(result_warning3, warn_entries)
-        self.assertNotIn(result_warning4, warn_entries)
-        self.assertIn(result_warning5, warn_entries)
+        self.assertNotIn(result_error001, error_entries)
+        self.assertIn(result_error002, error_entries)
+        self.assertNotIn(result_error111, error_entries)
+        self.assertNotIn(result_error112, error_entries)
+        self.assertIn(result_error003, error_entries)
+        self.assertNotIn(result_warning001, warn_entries)
+        self.assertIn(result_warning002, warn_entries)
+        self.assertNotIn(result_warning111, warn_entries)
+        self.assertNotIn(result_warning112, warn_entries)
+        self.assertIn(result_warning003, warn_entries)
         self.assertEqual(2, len(warn_entries))
         os.rmdir(folder)
 
-
-    def testcallBinary(self):
+    def testCallBinary(self):
         folder = tempfile.mkdtemp()
         error_entries, warn_entries = extractor(
             transceiver, executable_targets=executable_targets,
-            executable_finder=None, provenance_file_path=folder,
-            from_cores=None,binary_types="mockfoo,mockalpha")
+            executable_finder=executableFinder, provenance_file_path=folder,
+            from_cores=None, binary_types=fooaplx + "," + alphaaplx)
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_0_0_processor_id_1.txt")
+        self.assertTrue(os.path.exists(testfile))
+        os.unlink(testfile)
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_0_0_processor_id_2.txt")
+        self.assertTrue(os.path.exists(testfile))
+        os.unlink(testfile)
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_1_1_processor_id_1.txt")
+        self.assertFalse(os.path.exists(testfile))
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_1_1_processor_id_2.txt")
+        self.assertFalse(os.path.exists(testfile))
+        testfile = os.path.join(
+            folder, "iobuf_for_chip_0_0_processor_id_3.txt")
+        self.assertTrue(os.path.exists(testfile))
+        os.unlink(testfile)
+        self.assertIn(result_error001, error_entries)
+        self.assertIn(result_error002, error_entries)
+        self.assertIn(result_error003, error_entries)
+        self.assertIn(result_warning001, warn_entries)
+        self.assertIn(result_warning002, warn_entries)
+        self.assertIn(result_warning003, warn_entries)
+        self.assertEqual(3, len(warn_entries))
+        os.rmdir(folder)
+
+    def testCallBoth(self):
+        folder = tempfile.mkdtemp()
+        error_entries, warn_entries = extractor(
+            transceiver, executable_targets=executable_targets,
+            executable_finder=executableFinder, provenance_file_path=folder,
+            from_cores="0,0,2:1,1,1", binary_types=fooaplx + "," + alphaaplx)
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_1.txt")
         self.assertTrue(os.path.exists(testfile))
@@ -163,23 +198,22 @@ class TestFrontEndCommonChipIOBufExtractor(unittest.TestCase):
         os.unlink(testfile)
         testfile = os.path.join(
             folder, "iobuf_for_chip_1_1_processor_id_2.txt")
-        self.assertTrue(os.path.exists(testfile))
-        os.unlink(testfile)
+        self.assertFalse(os.path.exists(testfile))
         testfile = os.path.join(
             folder, "iobuf_for_chip_0_0_processor_id_3.txt")
         self.assertTrue(os.path.exists(testfile))
         os.unlink(testfile)
-        self.assertIn(result_error1, error_entries)
-        self.assertIn(result_error2, error_entries)
-        self.assertIn(result_error3, error_entries)
-        self.assertIn(result_error4, error_entries)
-        self.assertIn(result_error5, error_entries)
-        self.assertIn(result_warning1, warn_entries)
-        self.assertIn(result_warning2, warn_entries)
-        self.assertIn(result_warning3, warn_entries)
-        self.assertIn(result_warning4, warn_entries)
-        self.assertIn(result_warning5, warn_entries)
-        self.assertEqual(5, len(warn_entries))
+        self.assertIn(result_error001, error_entries)
+        self.assertIn(result_error002, error_entries)
+        self.assertIn(result_error111, error_entries)
+        self.assertNotIn(result_error112, error_entries)
+        self.assertIn(result_error003, error_entries)
+        self.assertIn(result_warning001, warn_entries)
+        self.assertIn(result_warning002, warn_entries)
+        self.assertIn(result_warning111, warn_entries)
+        self.assertNotIn(result_warning112, warn_entries)
+        self.assertIn(result_warning003, warn_entries)
+        self.assertEqual(4, len(warn_entries))
         os.rmdir(folder)
 
 
