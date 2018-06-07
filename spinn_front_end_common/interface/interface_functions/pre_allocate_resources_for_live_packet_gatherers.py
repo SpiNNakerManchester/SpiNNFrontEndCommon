@@ -1,5 +1,5 @@
 # spinn front end common imports
-from pacman.model.resources import CoreResource
+from pacman.model.resources import ConstantSDRAM, CoreResource
 from pacman.model.resources import PreAllocatedResourceContainer
 from pacman.model.resources import SpecificChipSDRAMResource
 from pacman.model.resources.specific_board_iptag_resource import \
@@ -73,6 +73,7 @@ class PreAllocateResourcesForLivePacketGatherers(object):
                     traffic_identifier=LPGVertex.TRAFFIC_IDENTIFIER))
 
         if sdram_reqs:
-            sdrams.append(SpecificChipSDRAMResource(chip, sdram_reqs))
+            sdrams.append(SpecificChipSDRAMResource(
+                chip, ConstantSDRAM(sdram_reqs)))
         if core_reqs:
             cores.append(CoreResource(chip, core_reqs))

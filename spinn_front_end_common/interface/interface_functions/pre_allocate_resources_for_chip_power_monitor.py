@@ -49,7 +49,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
         cores = list()
         for chip in progress_bar.over(machine.chips):
             sdrams.append(
-                SpecificChipSDRAMResource(chip, resources.sdram.get_total_sdram()))
+                SpecificChipSDRAMResource(chip, resources.sdram))
             cores.append(CoreResource(chip, 1))
 
         # create pre allocated resource container
