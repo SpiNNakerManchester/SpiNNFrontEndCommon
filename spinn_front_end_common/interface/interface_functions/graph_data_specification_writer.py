@@ -33,8 +33,8 @@ class GraphDataSpecificationWriter(object):
     def __call__(
             self, placements, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder, machine, graph_mapper=None,
-            placement_order=None):
+            app_data_runtime_folder, machine, data_n_timesteps,
+            graph_mapper=None, placement_order=None):
         """
 
         :param placements: placements of machine graph to cores
@@ -45,6 +45,8 @@ class GraphDataSpecificationWriter(object):
         :param app_data_runtime_folder:\
             Folder where data specifications should be written to
         :param machine: the python representation of the spinnaker machine
+        :param data_n_timesteps: The number of timesteps for which data space\
+            will been reserved
         :param graph_mapper:\
             the mapping between application and machine graph
         :param placement:\
@@ -69,7 +71,7 @@ class GraphDataSpecificationWriter(object):
             generated = self._generate_data_spec_for_vertices(
                 placement, placement.vertex, dsg_targets, hostname,
                 report_default_directory, write_text_specs,
-                app_data_runtime_folder, machine)
+                app_data_runtime_folder, machine, data_n_timesteps)
 
             if generated and isinstance(
                     placement.vertex, AbstractRewritesDataSpecification):
@@ -83,7 +85,7 @@ class GraphDataSpecificationWriter(object):
                 generated = self._generate_data_spec_for_vertices(
                     placement, associated_vertex, dsg_targets, hostname,
                     report_default_directory, write_text_specs,
-                    app_data_runtime_folder, machine)
+                    app_data_runtime_folder, machine, data_n_timesteps)
                 if generated and isinstance(
                         associated_vertex, AbstractRewritesDataSpecification):
                     vertices_to_reset.append(associated_vertex)
@@ -97,7 +99,7 @@ class GraphDataSpecificationWriter(object):
     def _generate_data_spec_for_vertices(
             self, placement, vertex, dsg_targets, hostname,
             report_default_directory, write_text_specs,
-            app_data_runtime_folder, machine):
+            app_data_runtime_folder, machine, data_n_timesteps):
         """
 
         :param placement: placement of machine graph to cores
@@ -147,7 +149,8 @@ class GraphDataSpecificationWriter(object):
             "    {}: {} (total={}, estimated={})".format(
                 vert, self._region_sizes[vert],
                 sum(self._region_sizes[vert]),
-                vert.resources_required.sdram.get_total_sdram())
+                vert.resources_required.sdram.get_total_sdram(
+                    data_n_timesteps))
             for vert in self._vertices_by_chip[placement.x, placement.y]))
 
         raise ConfigurationException(
