@@ -856,7 +856,7 @@
             </parameter>
             <parameter>
                 <param_name>data_n_timesteps</param_name>
-                <param_type>DataNTimesteps</param_type>
+                <param_type>DataNTimeSteps</param_type>
             </parameter>
             <parameter>
                 <param_name>graph_mapper</param_name>
@@ -1260,7 +1260,7 @@
             </parameter>
             <parameter>
                 <param_name>data_n_timesteps</param_name>
-                <param_type>DataNTimesteps</param_type>
+                <param_type>DataNTimeSteps</param_type>
             </parameter>
             <parameter>
                 <param_name>time_scale_factor</param_name>

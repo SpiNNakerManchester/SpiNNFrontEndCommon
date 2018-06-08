@@ -980,7 +980,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     " to the first run time")
 
             steps = [n_machine_time_steps]
-            self._minimum_step_generated = steps[0]
+            self._minimum_step_generated = self._deduce_data_n_timesteps()
         else:
             if run_time is None:
                 self._state = Simulator_State.FINISHED
@@ -991,12 +991,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # With auto pause and resume, any time step is possible but run
             # time more than the first will guarantee that run will be called
             # more than once
-            if self._minimum_step_generated is not None:
-                steps = self._generate_steps(
-                    n_machine_time_steps, self._minimum_step_generated)
-            else:
-                steps = self._deduce_number_of_iterations(n_machine_time_steps)
-                self._minimum_step_generated = steps[0]
+            if self._minimum_step_generated is None:
+                self._minimum_step_generated = self._deduce_data_n_timesteps()
+            steps = self._generate_steps(
+                n_machine_time_steps, self._minimum_step_generated)
 
         # Keep track of if loading was done; if loading is done before run,
         # run doesn't need to rewrite data again
@@ -1080,14 +1078,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         self._application_graph.add_edge(
                             dependant_edge, edge_identifier)
 
-    def _deduce_number_of_iterations(self, n_machine_time_steps):
-        """ operates the auto pause and resume functionality by figuring out\
-            how many timer ticks a simulation can run before sdram runs out,\
-            and breaks simulation into chunks of that long.
+    def _deduce_data_n_timesteps(self):
+        """ figure out how many timer ticks a simulation can run before sdram\
+        runs out to allow saving data for that long.
 
-        :param n_machine_time_steps: the total timer ticks to be ran
-        :type n_machine_time_steps: int
-        :return: list of timer steps.
+        :return: max time a simulation can run.
         """
         # Go through the placements and find how much SDRAM is used
         # on each chip
@@ -1103,17 +1098,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        min_time_steps = n_machine_time_steps
+        max_time_steps = sys.maxsize
         for (x, y), sdram in usage_by_chip.items():
             size = self._machine.get_chip_at(x, y).sdram.size
             per_timestep = sdram.per_timestep
             if per_timestep:
                 max = (size - sdram.fixed) / sdram.per_timestep
-                min_time_steps = min(min_time_steps, max)
+                max_time_steps = min(max_time_steps, max)
 
-        if min_time_steps == n_machine_time_steps:
-            return [n_machine_time_steps]
-        return self._generate_steps(n_machine_time_steps, min_time_steps)
+        return max_time_steps
 
     @staticmethod
     def _generate_steps(n_steps, n_steps_per_segment):
@@ -1502,9 +1495,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
 
         if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
-            inputs["MinimumAutoTimeSteps"] = self._minimum_auto_time_steps
+            inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
         else:
-            inputs["MinimumAutoTimeSteps"] = min(
+            inputs["PlanNTimeSteps"] = min(
                 n_machine_time_steps, self._minimum_auto_time_steps)
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
@@ -1735,6 +1728,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
         inputs["FirstMachineTimeStep"] = self._current_run_timesteps
         inputs["RunTimeMachineTimeSteps"] = n_machine_time_steps
+        inputs["DataNTimeSteps"] = self._minimum_step_generated
 
         # Run the data generation algorithms
         outputs = []
