@@ -7,8 +7,6 @@ from pacman.model.resources \
     import ResourceContainer, IPtagResource, ConstantSDRAM
 
 import struct
-import sys
-import math
 
 # The offset of the last sequence number field in bytes
 _LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6

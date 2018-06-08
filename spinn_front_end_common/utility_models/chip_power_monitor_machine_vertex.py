@@ -20,8 +20,8 @@ from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement, read_config_int
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement)
 from spinn_front_end_common.interface.simulation.simulation_utilities \
     import get_simulation_header_array
 
@@ -110,8 +110,8 @@ class ChipPowerMonitorMachineVertex(
         fixed_sdram = constants.SYSTEM_BYTES_REQUIREMENT + \
             CONFIG_SIZE_IN_BYTES + DEFAULT_MALLOCS_USED * \
             constants.SARK_PER_MALLOC_SDRAM_USAGE
-        with_overflow = (fixed_sdram +
-            overflow_recordings * RECORDING_SIZE_PER_ENTRY)
+        with_overflow = (
+            fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
         per_temestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
         container = ResourceContainer(
@@ -120,7 +120,6 @@ class ChipPowerMonitorMachineVertex(
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         return container
-
 
     @staticmethod
     def sdram_calculation():

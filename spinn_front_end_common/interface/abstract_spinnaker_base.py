@@ -6,8 +6,6 @@ from spinn_utilities.timer import Timer
 from spinn_utilities import __version__ as spinn_utils_version
 
 # pacman imports
-from pacman.executor.injection_decorator import provide_injectables, \
-    clear_injectables
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
@@ -16,8 +14,7 @@ from pacman.model.graphs.application import ApplicationGraph
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import (
-    ConstantSDRAM, PreAllocatedResourceContainer)
+from pacman.model.resources import (PreAllocatedResourceContainer)
 from pacman import __version__ as pacman_version
 
 # common front end imports
@@ -1089,7 +1086,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         usage_by_chip = dict()
 
         for placement in self._placements.placements:
-            vertex = placement.vertex
             sdram_required = placement.vertex.resources_required.sdram
             if (placement.x, placement.y) in usage_by_chip:
                 usage_by_chip[placement.x, placement.y] += sdram_required
