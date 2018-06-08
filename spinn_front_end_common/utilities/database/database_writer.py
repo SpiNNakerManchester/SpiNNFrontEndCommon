@@ -176,8 +176,8 @@ class DatabaseWriter(object):
             "  label, cpu_used, sdram_used, dtcm_used) "
             "VALUES(?, ?, ?, ?)",
             str(vertex.label), _extract_int(cpu_used.get_value()),
-            _extract_int(sdram_used.get_total_sdram()),
-            _extract_int(dtcm_used.get_value()))
+            _extract_int(sdram_used),
+            _extract_int(dtcm_used))
         self._vertex_to_id[vertex] = v_id
         return v_id
 
@@ -342,11 +342,14 @@ class DatabaseWriter(object):
                 self.__insert_cfg("infinite_run", "True")
                 self.__insert_cfg("runtime", -1)
 
-    def add_vertices(self, machine_graph, graph_mapper, application_graph):
+    def add_vertices(self, machine_graph, data_n_timesteps, graph_mapper,
+                     application_graph):
         """ Add the machine graph, graph mapper and application graph \
             into the database.
 
         :param machine_graph: the machine graph object
+        :param data_n_timesteps: The number of timesteps for which data space\
+            will been reserved
         :param graph_mapper: the graph mapper object
         :param application_graph: the application graph object
         :rtype: None
@@ -355,7 +358,9 @@ class DatabaseWriter(object):
             for vertex in machine_graph.vertices:
                 req = vertex.resources_required
                 self.__insert_machine_vertex(
-                    vertex, req.cpu_cycles, req.sdram, req.dtcm)
+                    vertex, req.cpu_cycles,
+                    req.sdram_used.get_total_sdram(data_n_timesteps),
+                    req.dtcm.get_value())
 
             # add machine edges
             for edge in machine_graph.edges:

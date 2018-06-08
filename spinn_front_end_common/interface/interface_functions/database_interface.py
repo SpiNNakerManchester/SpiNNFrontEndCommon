@@ -27,10 +27,10 @@ class DatabaseInterface(object):
 
     def __call__(
             self, machine_graph, user_create_database, tags,
-            runtime, machine, time_scale_factor, machine_time_step,
-            placements, routing_infos, router_tables, database_directory,
-            create_atom_to_event_id_mapping=False, application_graph=None,
-            graph_mapper=None):
+            runtime, machine, data_n_timesteps, time_scale_factor,
+            machine_time_step, placements, routing_infos, router_tables,
+            database_directory, create_atom_to_event_id_mapping=False,
+            application_graph=None, graph_mapper=None):
         # pylint: disable=too-many-arguments
 
         self._writer = DatabaseWriter(database_directory)
@@ -61,9 +61,27 @@ class DatabaseInterface(object):
 
     def _write_to_db(
             self, machine, time_scale_factor, machine_time_step,
-            runtime, application_graph, machine_graph, graph_mapper,
-            placements, routing_infos, router_tables, tags,
+            runtime, application_graph, machine_graph, data_n_timesteps,
+            graph_mapper, placements, routing_infos, router_tables, tags,
             create_atom_to_event_id_mapping):
+        """
+
+        :param machine:
+        :param time_scale_factor:
+        :param machine_time_step:
+        :param runtime:
+        :param application_graph:
+        :param machine_graph:
+        :param data_n_timesteps: The number of timesteps for which data space\
+            will been reserved
+        :param graph_mapper:
+        :param placements:
+        :param routing_infos:
+        :param router_tables:
+        :param tags:
+        :param create_atom_to_event_id_mapping:
+        :return:
+        """
         # pylint: disable=too-many-arguments
         with self._writer as w, ProgressBar(9, "Creating database") as p:
             w.add_system_params(time_scale_factor, machine_time_step, runtime)
@@ -73,7 +91,8 @@ class DatabaseInterface(object):
             if application_graph is not None and application_graph.n_vertices:
                 w.add_application_vertices(application_graph)
             p.update()
-            w.add_vertices(machine_graph, graph_mapper, application_graph)
+            w.add_vertices(machine_graph, data_n_timesteps, graph_mapper,
+                           application_graph)
             p.update()
             w.add_placements(placements)
             p.update()

@@ -1258,6 +1258,10 @@
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
             <parameter>
+                <param_name>data_n_timesteps</param_name>
+                <param_type>DataNTimesteps</param_type>
+            </parameter>
+            <parameter>
                 <param_name>time_scale_factor</param_name>
                 <param_type>TimeScaleFactor</param_type>
             </parameter>
@@ -1298,6 +1302,7 @@
             <param_name>database_directory</param_name>
             <param_name>runtime</param_name>
             <param_name>machine</param_name>
+            <param_name>data_n_timesteps</param_name>
             <param_name>time_scale_factor</param_name>
             <param_name>machine_time_step</param_name>
             <param_name>placements</param_name>
