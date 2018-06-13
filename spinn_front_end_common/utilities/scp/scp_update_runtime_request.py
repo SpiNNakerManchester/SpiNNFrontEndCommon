@@ -11,20 +11,19 @@ class SCPUpdateRuntimeRequest(AbstractSCPRequest):
     def __init__(
             self, x, y, p, run_time, infinite_run, destination_port,
             expect_response=True):
+        # pylint: disable=too-many-arguments
         sdp_flags = SDPFlag.REPLY_NOT_EXPECTED
-        arg3 = 0
         if expect_response:
             sdp_flags = SDPFlag.REPLY_EXPECTED
-            arg3 = 1
 
-        AbstractSCPRequest.__init__(
-            self,
+        super(SCPUpdateRuntimeRequest, self).__init__(
             SDPHeader(
                 flags=sdp_flags, destination_port=destination_port,
                 destination_cpu=p, destination_chip_x=x, destination_chip_y=y),
             SCPRequestHeader(
                 command=SDP_RUNNING_MESSAGE_CODES.SDP_NEW_RUNTIME_ID_CODE),
-            argument_1=run_time, argument_2=infinite_run, argument_3=arg3)
+            argument_1=run_time, argument_2=infinite_run,
+            argument_3=int(bool(expect_response)))
 
     def get_scp_response(self):
         return CheckOKResponse(

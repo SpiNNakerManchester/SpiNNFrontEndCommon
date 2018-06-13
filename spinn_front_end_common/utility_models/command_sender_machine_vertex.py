@@ -1,7 +1,7 @@
 from enum import Enum
 from collections import Counter
 
-from pacman.model.decorators import overrides
+from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinn_front_end_common.interface.provenance \
@@ -54,8 +54,8 @@ class CommandSenderMachineVertex(
     def __init__(
             self, constraints, resources_required, label,
             commands_at_start_resume, commands_at_pause_stop, timed_commands):
-        ProvidesProvenanceDataFromMachineImpl.__init__(self)
-        MachineVertex.__init__(self, label, constraints)
+        # pylint: disable=too-many-arguments
+        super(CommandSenderMachineVertex, self).__init__(label, constraints)
 
         # container of different types of command
         self._timed_commands = timed_commands
@@ -80,8 +80,8 @@ class CommandSenderMachineVertex(
 
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
-            n_machine_time_steps):
-
+            n_machine_time_steps):  # @UnusedVariable
+        # pylint: disable=too-many-arguments
         timed_commands_size = \
             self.get_timed_commands_bytes(self._timed_commands)
         start_resume_commands_size = \
@@ -105,7 +105,7 @@ class CommandSenderMachineVertex(
         # Write setup region
         # Find the maximum number of commands per timestep
         max_n_commands = 0
-        if len(self._timed_commands) > 0:
+        if self._timed_commands:
             counter = Counter(self._timed_commands)
             max_n_commands = counter.most_common(1)[0][1]
         max_n_commands = max([
@@ -114,7 +114,7 @@ class CommandSenderMachineVertex(
         time_between_commands = 0
         if max_n_commands > 0:
             time_between_commands = (
-                (machine_time_step * time_scale_factor / 2) / max_n_commands)
+                (machine_time_step * time_scale_factor // 2) // max_n_commands)
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SETUP.value)
         spec.write_value(time_between_commands)
@@ -165,7 +165,10 @@ class CommandSenderMachineVertex(
     @staticmethod
     def _write_command(command, spec):
         spec.write_value(command.key)
-        spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        if command.is_payload:
+            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        else:
+            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
         spec.write_value(command.payload if command.is_payload else 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)

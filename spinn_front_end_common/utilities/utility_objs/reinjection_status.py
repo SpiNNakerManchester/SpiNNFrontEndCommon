@@ -80,10 +80,26 @@ class ReInjectionStatus(object):
         return _decode_router_timeout_value(self._router_timeout)
 
     @property
+    def router_timeout_parameters(self):
+        """ The WAIT1 timeout value of the router as mantissa and exponent
+        """
+        mantissa = self._router_timeout & 0xF
+        exponent = (self._router_timeout >> 4) & 0xF
+        return mantissa, exponent
+
+    @property
     def router_emergency_timeout(self):
         """ The WAIT2 timeout value of the router in cycles
         """
         return _decode_router_timeout_value(self._router_emergency_timeout)
+
+    @property
+    def router_emergency_timeout_parameters(self):
+        """ The WAIT2 timeout value of the router as mantissa and exponent
+        """
+        mantissa = self._router_emergency_timeout & 0xF
+        exponent = (self._router_emergency_timeout >> 4) & 0xF
+        return mantissa, exponent
 
     @property
     def n_dropped_packets(self):
@@ -109,7 +125,7 @@ class ReInjectionStatus(object):
 
     @property
     def n_processor_dumps(self):
-        """ The number of times that when a dropped packet was caused due to
+        """ The number of times that when a dropped packet was caused due to\
         a processor failing to take the packet.
 
         :return: int
@@ -118,7 +134,7 @@ class ReInjectionStatus(object):
 
     @property
     def n_link_dumps(self):
-        """ The number of times that when a dropped packet was caused due to
+        """ The number of times that when a dropped packet was caused due to\
         a link failing to take the packet.
 
         :return: int
@@ -132,27 +148,29 @@ class ReInjectionStatus(object):
         """
         return self._n_reinjected_packets
 
+    def _flag_set(self, flag):
+        return (self._flags & flag.value) != 0
+
     @property
     def is_reinjecting_multicast(self):
-        """ True if re injection of multicast packets is enabled
+        """ True if re-injection of multicast packets is enabled
         """
-        return self._flags & DPRIFlags.MULTICAST.value != 0
+        return self._flag_set(DPRIFlags.MULTICAST)
 
     @property
     def is_reinjecting_point_to_point(self):
-        """ True if re injection of point-to-point packets is enabled
+        """ True if re-injection of point-to-point packets is enabled
         """
-        return self._flags & DPRIFlags.POINT_TO_POINT.value != 0
+        return self._flag_set(DPRIFlags.POINT_TO_POINT)
 
     @property
     def is_reinjecting_nearest_neighbour(self):
-        """ True if re injection of nearest neighbour packets is enabled
+        """ True if re-injection of nearest neighbour packets is enabled
         """
-        return (self._flags &
-                DPRIFlags.NEAREST_NEIGHBOUR.value != 0)
+        return self._flag_set(DPRIFlags.NEAREST_NEIGHBOUR)
 
     @property
     def is_reinjecting_fixed_route(self):
-        """ True if re injection of fixed-route packets is enabled
+        """ True if re-injection of fixed-route packets is enabled
         """
-        return self._flags & DPRIFlags.FIXED_ROUTE.value != 0
+        return self._flag_set(DPRIFlags.FIXED_ROUTE)

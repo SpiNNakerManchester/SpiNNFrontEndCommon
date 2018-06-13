@@ -156,9 +156,8 @@ void flush_events(void) {
 
 //! \brief function to store provenance data elements into SDRAM
 void record_provenance_data(address_t provenance_region_address) {
-
     // Copy provenance data into SDRAM region
-    memcpy(provenance_region_address, &provenance_data,
+    spin1_memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
 }
 
@@ -466,7 +465,6 @@ bool configure_sdp_msg(void) {
     temp_header |= (packet_type << 10);
 
     header_len = 2;
-    temp_ptr = (void *) sdp_msg_aer_header[1];
 
     // pointers for AER packet header, prefix and data
     if (apply_prefix) {

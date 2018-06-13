@@ -3,6 +3,7 @@ from spinnman.messages.scp import SCPRequestHeader
 from spinnman.messages.scp.abstract_messages import AbstractSCPRequest
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.messages.scp.impl.check_ok_response import CheckOKResponse
+from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
@@ -10,33 +11,26 @@ class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
         reinjection
     """
 
-    __slots__ = (
-        # command code
-        "_command_code"
-    )
+    __slots__ = []
 
-    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent,
-                 command_code):
+    def __init__(self, x, y, p, timeout_mantissa, timeout_exponent):
         """
         :param x: The x-coordinate of a chip, between 0 and 255
         :type x: int
         :param y: The y-coordinate of a chip, between 0 and 255
         :type y: int
-        :param p: The processor running the extra monitor vertex, between\
-                0 and 17
+        :param p: \
+            The processor running the extra monitor vertex, between 0 and 17
         :type p: int
-        :param timeout_mantissa: The mantissa of the timeout value, \
-                between 0 and 15
+        :param timeout_mantissa: \
+            The mantissa of the timeout value, between 0 and 15
         :type timeout_mantissa: int
-        :param timeout_exponent: The exponent of the timeout value, \
-                between 0 and 15
-        :param command_code: the code used by the extra monitor vertex for \
-        setting the emergency timeout value
+        :param timeout_exponent: \
+            The exponent of the timeout value, between 0 and 15
+        :type timeout_exponent: int
         """
-
-        self._command_code = command_code
-        AbstractSCPRequest.__init__(
-            self,
+        # pylint: disable=too-many-arguments
+        super(SetRouterEmergencyTimeoutMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
@@ -44,10 +38,11 @@ class SetRouterEmergencyTimeoutMessage(AbstractSCPRequest):
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(
-                command=self._command_code),
+                command=ReinjectorSCPCommands.SET_ROUTER_EMERGENCY_TIMEOUT),
             argument_1=(timeout_mantissa & 0xF) |
                        ((timeout_exponent & 0xF) << 4))
 
     def get_scp_response(self):
         return CheckOKResponse(
-            "Set router emergency timeout", self._command_code)
+            "Set router emergency timeout",
+            ReinjectorSCPCommands.SET_ROUTER_EMERGENCY_TIMEOUT)

@@ -6,8 +6,8 @@ _CHANNEL_BUFFER_PATTERN = struct.Struct("<IIIIIBBBx")
 
 
 class ChannelBufferState(object):
-    """ Stores information related to a single channel output\
-        buffering state, as it is retrieved at the end of a simulation on the\
+    """ Stores information related to a single channel output buffering\
+        state, as it is retrieved at the end of a simulation on the\
         SpiNNaker system.
     """
 
@@ -50,18 +50,18 @@ class ChannelBufferState(object):
             current_read, end_address, region_id, missing_info,
             last_buffer_operation):
         """
-
         :param start_address: start buffering area memory address (32 bits)
         :param current_write: address where data was last written (32 bits)
         :param current_read: address where data was last read (32 bits)
-        :param end_address: The address of first byte after the buffer\
-                (32 bits)
+        :param end_address: \
+            The address of first byte after the buffer (32 bits)
         :param region_id: The id of the region (8 bits)
         :param missing_info: True if the region overflowed during the\
-                simulation (8 bits)
+            simulation (8 bits)
         :param last_buffer_operation: Last operation performed on the buffer\
-                - read or write (8 bits)
+            - read or write (8 bits)
         """
+        # pylint: disable=too-many-arguments
         self._start_address = start_address
         self._current_write = current_write
         self._current_dma_write = current_dma_write

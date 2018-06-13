@@ -40,7 +40,7 @@ class BufferedReceivingData(object):
         """
 
         :param store_to_file: A boolean to identify if the data will be stored\
-                in memory using a byte array or in a temporary file on the disk
+            in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
         """
 
@@ -71,6 +71,7 @@ class BufferedReceivingData(object):
         :param data: data to be stored
         :type data: bytearray
         """
+        # pylint: disable=too-many-arguments
         self._data[x, y, p, region].write(data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
@@ -104,6 +105,7 @@ class BufferedReceivingData(object):
         :param data: data to be stored
         :type data: bytearray
         """
+        # pylint: disable=too-many-arguments
         self.store_data_in_region_buffer(x, y, p, region, data)
         self._is_flushed[x, y, p, region] = True
 
@@ -119,7 +121,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: SpinnakerRequestReadData packet received
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         """
         self._last_packet_received[x, y, p] = packet
 
@@ -134,7 +136,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: SpinnakerRequestReadData packet received
         :rtype:\
-                :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
         """
         return self._last_packet_received[x, y, p]
 
@@ -149,7 +151,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: last HostDataRead packet sent
         :type packet:\
-                :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
         """
         self._last_packet_sent[x, y, p] = packet
 
@@ -164,7 +166,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: last HostDataRead packet sent
         :rtype:\
-                :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
         """
         return self._last_packet_sent[x, y, p]
 
@@ -208,8 +210,8 @@ class BufferedReceivingData(object):
         :type p: int
         :param region: Region containing the data
         :type region: int
-        :return: an array contained all the data received during the\,
-                simulation, and a flag indicating if any data was missing
+        :return: an array contained all the data received during the\
+            simulation, and a flag indicating if any data was missing
         :rtype: (bytearray, bool)
         """
         missing = None
@@ -229,9 +231,9 @@ class BufferedReceivingData(object):
         :type p: int
         :param region: Region containing the data
         :type region: int
-        :return: all the data received during the simulation,\
-                and a flag indicating if any data was lost
-        :rtype:\
+        :return: all the data received during the simulation, and a flag\
+            indicating if any data was lost
+        :rtype: tuple of \
             (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
              bool)
         """
@@ -254,6 +256,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param state: The end state
         """
+        # pylint: disable=too-many-arguments
         self._end_buffering_state[x, y, p, region] = state
 
     def is_end_buffering_state_recovered(self, x, y, p, region):
@@ -332,9 +335,10 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+        self._end_buffering_sequence_no = dict()
 
     def clear(self, x, y, p, region_id):
-        """ clears the data from a given data region (only clears things\
+        """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
         :param x: placement x coord

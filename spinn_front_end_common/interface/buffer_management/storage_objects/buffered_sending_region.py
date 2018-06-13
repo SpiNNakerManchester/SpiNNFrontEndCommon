@@ -49,7 +49,7 @@ class BufferedSendingRegion(object):
     #  an additional header)
     _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
                            (HostSendSequencedData.get_min_packet_length() +
-                            _HEADER_SIZE)) / _N_BYTES_PER_KEY
+                            _HEADER_SIZE)) // _N_BYTES_PER_KEY
 
     def __init__(self, max_buffer_size):
         self._max_size_of_buffer = max_buffer_size
@@ -165,8 +165,8 @@ class BufferedSendingRegion(object):
     def get_n_keys(self, timestamp):
         """ Get the number of keys for a given timestamp
 
-        :param timestamp: the time stamp to check if there's still keys to\
-                transmit
+        :param timestamp: \
+            the time stamp to check if there's still keys to transmit
         """
         if timestamp in self._buffer:
             return len(self._buffer[timestamp])
@@ -194,12 +194,12 @@ class BufferedSendingRegion(object):
     def is_next_key(self, timestamp):
         """ Determine if there is another key for the given timestamp
 
-        :param timestamp: the time stamp to check if there's still keys to\
-                transmit
+        :param timestamp: \
+            the time stamp to check if there's still keys to transmit
         :rtype: bool
         """
         if timestamp in self._buffer:
-            return len(self._buffer[timestamp]) > 0
+            return bool(self._buffer[timestamp])
         return False
 
     @property
@@ -211,7 +211,7 @@ class BufferedSendingRegion(object):
         next_timestamp = self.next_timestamp
         keys = self._buffer[next_timestamp]
         key = keys.pop()
-        if len(keys) == 0:
+        if not keys:
             del self._buffer[next_timestamp]
             self._current_timestamp_pos += 1
         return key
