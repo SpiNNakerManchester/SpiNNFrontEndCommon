@@ -120,7 +120,7 @@ class MundyOnChipRouterCompression(object):
     def _check_for_success(
             self, executable_targets, txrx, provenance_file_path,
             compressor_app_id):
-        """ goes through the cores checking for cores that have failed to\
+        """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
         """
@@ -165,10 +165,10 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def _load_executables(routing_tables, compressor_app_id, txrx, machine):
-        """ loads the router compressor onto the chips.
+        """ Loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
-        :param compressor_app_id: the app id of the compressor compressor
+        :param compressor_app_id: the app ID of the compressor compressor
         :param txrx: the spinnman interface
         :param machine: the spinnaker machine representation
         :return:\
@@ -198,7 +198,7 @@ class MundyOnChipRouterCompression(object):
     def _build_data(
             self, routing_table, app_id, compress_only_when_needed,
             compress_as_much_as_possible):
-        """ convert the router table into the data needed by the router\
+        """ Convert the router table into the data needed by the router\
             compressor c code.
 
         :param routing_table: the pacman router table instance

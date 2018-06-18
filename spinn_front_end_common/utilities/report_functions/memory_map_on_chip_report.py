@@ -17,7 +17,7 @@ class MemoryMapOnChipReport(object):
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
-        """ creates a report that states where in sdram each region is
+        """ Creates a report that states where in SDRAM each region is
 
         :param report_default_directory: the folder where reports are written
         :param dsg_targets: the map between placement and file writer

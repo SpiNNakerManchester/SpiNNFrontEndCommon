@@ -193,15 +193,15 @@ class LivePacketGatherMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
-        """ writes the configuration region to the spec
+        """ Write the configuration region to the spec
 
-        :param spec: the spec object for the dsg
+        :param spec: the spec object for the DSG
         :type spec: \
-                    :py:class:`spinn_storage_handlers.FileDataWriter`
-        :param iptags: The set of ip tags assigned to the object
-        :type iptags: iterable of :py:class:`spinn_machine.tags.IPTag`
-        :raise DataSpecificationException: when something goes wrong with the\
-                    dsg generation
+            :py:class:`spinn_storage_handlers.FileDataWriter`
+        :param iptags: The set of IP tags assigned to the object
+        :type iptags: iterable(:py:class:`spinn_machine.tags.IPTag`)
+        :raise DataSpecificationException: \
+            when something goes wrong with the DSG generation
         """
         spec.switch_write_focus(
             region=(

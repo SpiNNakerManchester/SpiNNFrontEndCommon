@@ -57,7 +57,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             self, vertex, machine, placements, machine_graph,
             vertex_to_ethernet_connected_chip_mapping, application_graph,
             graph_mapper):
-        """ inserts edges as required for a given vertex
+        """ Inserts edges as required for a given vertex
 
         :param vertex: the extra monitor core
         :param machine: the spinnMachine instance
@@ -108,7 +108,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
     @staticmethod
     def _has_edge_already(source, destination, graph):
-        """ checks if a edge already exists
+        """ Checks if a edge already exists
 
         :param source: the source of the edge
         :param destination: destination of the edge

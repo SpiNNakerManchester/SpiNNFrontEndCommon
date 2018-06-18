@@ -35,8 +35,8 @@ BINARY_FILE_NAME = "chip_power_monitor.aplx"
 class ChipPowerMonitorMachineVertex(
         MachineVertex, AbstractHasAssociatedBinary,
         AbstractGeneratesDataSpecification, AbstractReceiveBuffersToHost):
-    """ machine vertex for c code representing functionality to record\
-        idle times in a machine graph
+    """ Machine vertex for C code representing functionality to record\
+        idle times in a machine graph.
     """
     __slots__ = ["_n_samples_per_recording", "_sampling_frequency"]
 
@@ -58,8 +58,7 @@ class ChipPowerMonitorMachineVertex(
     def __init__(
             self, label, constraints, n_samples_per_recording,
             sampling_frequency):
-        """ constructor for idle power monitor c code for machine graphs
-
+        """
         :param label: vertex label
         :param constraints: constraints on this vertex
         :param n_samples_per_recording: how may samples between recording entry
@@ -99,9 +98,9 @@ class ChipPowerMonitorMachineVertex(
     def get_resources(
             n_machine_time_steps, time_step, time_scale_factor,
             n_samples_per_recording, sampling_frequency):
-        """ get resources used by this vertex
+        """ Get the resources used by this vertex
 
-        :return:Resource container
+        :return: Resource container
         """
         # pylint: disable=too-many-locals
 
@@ -153,7 +152,7 @@ class ChipPowerMonitorMachineVertex(
 
     @staticmethod
     def sdram_calculation():
-        """ calculates the sdram requirements of the vertex
+        """ Calculates the SDRAM requirements of the vertex
 
         :return: int
         """
@@ -168,7 +167,7 @@ class ChipPowerMonitorMachineVertex(
 
     @staticmethod
     def binary_file_name():
-        """ returns the string binary file name
+        """ Return the string binary file name
 
         :return: basestring
         """
@@ -194,7 +193,7 @@ class ChipPowerMonitorMachineVertex(
     def _generate_data_specification(
             self, spec, machine_time_step, time_scale_factor,
             n_machine_time_steps, ip_tags):
-        """ this is used to support application vertex calling this directly
+        """ Supports the application vertex calling this directly
 
         :param spec: data spec
         :param machine_time_step: machine time step
@@ -217,7 +216,7 @@ class ChipPowerMonitorMachineVertex(
         spec.end_specification()
 
     def _write_configuration_region(self, spec):
-        """ writes the data needed by the c code to configure itself
+        """ Write the data needed by the C code to configure itself
 
         :param spec: spec object
         :rtype: None
@@ -231,7 +230,7 @@ class ChipPowerMonitorMachineVertex(
     def _write_setup_info(
             self, spec, machine_time_step, time_scale_factor,
             n_machine_time_steps, ip_tags):
-        """ writes the system data as required
+        """ Writes the system data as required.
 
         :param spec: the dsg spec writer
         :param machine_time_step: the machine time step
@@ -257,9 +256,9 @@ class ChipPowerMonitorMachineVertex(
             None, ip_tags))
 
     def _reserve_memory_regions(self, spec):
-        """ reserve the dsg memory regions as required
+        """ Reserve the DSG memory regions as required
 
-        :param spec: the dsg specification to reserve in
+        :param spec: the DSG specification to reserve in
         :rtype: None
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
@@ -283,7 +282,7 @@ class ChipPowerMonitorMachineVertex(
 
     @staticmethod
     def binary_start_type():
-        """ static method to allow app verts to use this
+        """ The type of binary that implements this vertex
 
         :return: starttype enum
         """
@@ -327,11 +326,11 @@ class ChipPowerMonitorMachineVertex(
 
     def _deduce_sdram_requirements_per_timer_tick(
             self, machine_time_step, time_scale_factor):
-        """ deduce sdram usage per timer tick
+        """ Deduce SDRAM usage per timer tick
 
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
-        :return: the sdram usage
+        :return: the SDRAM usage
         """
         timer_tick_in_micro_seconds = machine_time_step * time_scale_factor
         recording_time = \
@@ -340,7 +339,7 @@ class ChipPowerMonitorMachineVertex(
         return math.ceil(n_entries * self.RECORDING_SIZE_PER_ENTRY)
 
     def get_recorded_data(self, placement, buffer_manager):
-        """ get data from sdram given placement and buffer manager
+        """ Get data from SDRAM given placement and buffer manager
 
         :param placement: the location on machine to get data from
         :param buffer_manager: the buffer manager that might have data

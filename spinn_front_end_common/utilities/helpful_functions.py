@@ -417,7 +417,7 @@ def generate_unique_folder_name(folder, filename, extension):
 
 
 def get_ethernet_chip(machine, board_address):
-    """ locate the chip with the given board IP address
+    """ Locate the chip with the given board IP address
 
     :param machine: the spinnaker machine
     :param board_address: the board address to locate the chip of.
@@ -434,7 +434,7 @@ def get_ethernet_chip(machine, board_address):
 
 
 def convert_time_diff_to_total_milliseconds(sample):
-    """ converts between a time diff and total milliseconds
+    """ Convert between a time diff and total milliseconds.
 
     :return: total milliseconds
     :rtype: float
@@ -443,7 +443,7 @@ def convert_time_diff_to_total_milliseconds(sample):
 
 
 def determine_flow_states(executable_types, no_sync_changes):
-    """ returns the start and end states for these executable types
+    """ Get the start and end states for these executable types.
 
     :param executable_types: \
         the execute types to locate start and end states from

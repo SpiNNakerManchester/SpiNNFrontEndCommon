@@ -577,12 +577,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def add_live_packet_gatherer_parameters(
             self, live_packet_gatherer_params, vertex_to_record_from):
-        """ adds params for a new LPG if needed, or adds to the tracker for\
-         same params.
+        """ Adds params for a new LPG if needed, or adds to the tracker for\
+            same params.
 
         :param live_packet_gatherer_params: params to look for a LPG
-        :param vertex_to_record_from: the vertex that needs to send to a\
-         given LPG
+        :param vertex_to_record_from: \
+            the vertex that needs to send to a given LPG
         :rtype: None
         """
         self._live_packet_recorder_params[live_packet_gatherer_params].append(
@@ -785,7 +785,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "A spalloc_user must be specified with a spalloc_server")
 
     def signal_handler(self, _signal, _frame):
-        """ handles closing down of script via keyboard interrupt
+        """ Handles closing down of script via keyboard interrupt
 
         :param _signal: the signal received (ignored)
         :param _frame: frame executed in (ignored)
@@ -799,7 +799,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._shutdown()
 
     def exception_handler(self, exctype, value, traceback_obj):
-        """ handler of exceptions
+        """ Handler of exceptions
 
         :param exctype:  the type of execution received
         :param value: the value of the exception
@@ -1074,8 +1074,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             dependant_edge, edge_identifier)
 
     def _deduce_number_of_iterations(self, n_machine_time_steps):
-        """ operates the auto pause and resume functionality by figuring out\
-            how many timer ticks a simulation can run before sdram runs out,\
+        """ Operates the auto pause and resume functionality by figuring out\
+            how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.
 
         :param n_machine_time_steps: the total timer ticks to be ran
@@ -1167,7 +1167,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def _run_algorithms(
             self, inputs, algorithms, outputs, tokens, required_tokens,
             provenance_name, optional_algorithms=None):
-        """ runs getting a spinnaker machine logic
+        """ Runs getting a spinnaker machine logic
 
         :param inputs: the inputs
         :param algorithms: algorithms to call
@@ -1461,7 +1461,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return self._machine
 
     def _handle_machine_common_config(self, inputs):
-        """ adds common parts of the machine configuration
+        """ Adds common parts of the machine configuration
 
         :param inputs: the input dict
         :rtype: None
@@ -2723,7 +2723,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._config, section, item)
 
     def _turn_off_on_board_to_save_power(self, config_flag):
-        """ executes the power saving mode of either on or off of the/
+        """ Executes the power saving mode of either on or off of the\
             spinnaker machine.
 
         :param config_flag: Flag read from the configuration file
@@ -2745,7 +2745,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 logger.info("Board turned on based on: {}", config_flag)
 
     def _turn_off_board_to_save_power(self):
-        """ executes the power saving mode of turning off the spinnaker \
+        """ Executes the power saving mode of turning off the spinnaker\
             machine.
 
         :return: bool when successful, flase otherwise
@@ -2788,15 +2788,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     @property
     def config(self):
-        """ helper method for the front end implementations until we remove\
+        """ Helper method for the front end implementations until we remove\
             config
         """
         return self._config
 
     @property
     def get_number_of_available_cores_on_machine(self):
-        """ returns the number of available cores on the machine after taking
-        into account pre allocated resources
+        """ Returns the number of available cores on the machine after taking\
+            into account preallocated resources
 
         :return: number of available cores
         :rtype: int

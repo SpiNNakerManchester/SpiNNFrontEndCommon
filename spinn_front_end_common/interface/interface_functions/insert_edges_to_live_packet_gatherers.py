@@ -76,7 +76,7 @@ class InsertEdgesToLivePacketGatherers(object):
     def _process_m_vertex(
             self, machine_vertex, m_lpgs, machine,
             placements, machine_graph, partition_id):
-        """ locates and places an edge for a machine vertex
+        """ Locates and places an edge for a machine vertex
 
         :param machine_vertex: the machine vertex that needs an edge to a LPG
         :param m_lpgs:\
@@ -105,13 +105,13 @@ class InsertEdgesToLivePacketGatherers(object):
     def _update_app_graph_and_mapper(
             application_graph, graph_mapper, machine_lpg, vertex,
             partition_id, machine_edge, app_graph_edge):
-        """ handles changes to the app graph and graph mapper.
+        """ Handles changes to the application graph and graph mapper.
 
         :param application_graph: the app graph
         :param graph_mapper: the graph mapper
         :param machine_lpg: the machine LPG
         :param vertex: the app vertex to link to
-        :param partition_id: the partition id to put the edge on
+        :param partition_id: the partition ID to put the edge on
         :return the application edge for this vertex and LPG
         :rtype: ApplicationEdge
         """
@@ -134,7 +134,7 @@ class InsertEdgesToLivePacketGatherers(object):
     @staticmethod
     def _find_closest_live_packet_gatherer(
             machine_vertex, machine_lpgs, machine, placements):
-        """ locates the LPG on the nearest Ethernet connected chip to the\
+        """ Locates the LPG on the nearest Ethernet-connected chip to the\
             machine vertex in question, or the LPG on 0, 0 if a closer one\
             can't be found
 

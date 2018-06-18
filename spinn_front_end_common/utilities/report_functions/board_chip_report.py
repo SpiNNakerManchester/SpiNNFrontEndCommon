@@ -9,7 +9,7 @@ class BoardChipReport(object):
     AREA_CODE_REPORT_NAME = "board_chip_report.txt"
 
     def __call__(self, report_default_directory, machine):
-        """ creates a report that states where in sdram each region is
+        """ Creates a report that states where in sdram each region is
 
         :param report_default_directory: the folder where reports are written
         :param machine: python representation of the machine

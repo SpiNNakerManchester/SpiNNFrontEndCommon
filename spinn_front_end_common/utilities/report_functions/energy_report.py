@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class EnergyReport(object):
+    """ A report that describes the energy usage during a SpiNNaker job.
+    """
 
     # given from indar measurements
     MILLIWATTS_PER_FPGA = 0.000584635
@@ -57,8 +59,7 @@ class EnergyReport(object):
             machine_graph, runtime, buffer_manager, mapping_time, load_time,
             execute_time, dsg_time, extraction_time,
             machine_allocation_controller=None):
-        """ main call
-
+        """
         :param placements: the placements
         :param machine: the machine
         :param report_default_directory: location for reports
@@ -76,8 +77,8 @@ class EnergyReport(object):
         :param execute_time: the time taken by the execute time process
         :param dsg_time: the time taken by the DSG time
         :param extraction_time: the time taken by data extraction time
-        :param machine_allocation_controller: the machine controller for\
-            spalloc
+        :param machine_allocation_controller: \
+            the machine controller for spalloc
         :rtype: None
         """
         # pylint: disable=too-many-arguments, too-many-locals
@@ -133,7 +134,7 @@ class EnergyReport(object):
             runtime_total_ms, f, mapping_time, load_time,
             dsg_time, dsg_cost, extraction_time, total_time,
             total_booted_time, router_cooling_runtime_cost):
-        """ write summary file
+        """ Write summary file
 
         :param active_chip_cost: active chip cost
         :param fpga_cost_total: FPGA cost over all booted time
@@ -202,7 +203,7 @@ class EnergyReport(object):
             buffer_manager, f, load_time, mapping_time,
             total_booted_time, machine_allocation_controller,
             runtime_total_ms):
-        """ write detailed report and calculate costs
+        """ Write detailed report and calculate costs
 
         :param placements: placements
         :param machine: machine rep
@@ -278,7 +279,7 @@ class EnergyReport(object):
             dsg_cost, router_cooling_runtime_cost
 
     def _write_warning(self, f):
-        """ writes the warning about this being only an estimate
+        """ Writes the warning about this being only an estimate
 
         :param f: the writer
         :rtype: None
@@ -308,16 +309,16 @@ class EnergyReport(object):
     def _calculate_fpga_cost(
             self, machine, version, spalloc_server, remote_spinnaker_url,
             total_runtime, f, runtime_total_ms):
-        """ fpga cost calculation
+        """ FPGA cost calculation
 
         :param machine: machine rep
         :param version: machine version
-        :param spalloc_server: spalloc server ip
+        :param spalloc_server: spalloc server IP
         :param remote_spinnaker_url: remote spinnaker
         :param total_runtime: runtime:
         :param f: the file writer:
         :param runtime_total_ms:
-        :return: power usage of fpgas
+        :return: power usage of FPGAs
         """
         # pylint: disable=too-many-arguments
 
@@ -366,10 +367,10 @@ class EnergyReport(object):
     def _print_out_fpga_cost(
             self, total_runtime, n_operational_fpgas, f, version,
             runtime_total_ms):
-        """ prints out to file and returns cost
+        """ Prints out to file and returns cost
 
         :param total_runtime: all runtime
-        :param n_operational_fpgas: n operational fpgas
+        :param n_operational_fpgas: number of operational FPGAs
         :param f: file writer
         :param version: machine version
         :param runtime_total_ms: runtime in milliseconds
@@ -401,11 +402,11 @@ class EnergyReport(object):
         return power_usage_total, power_usage_runtime
 
     def _board_n_operational_fpgas(self, machine, ethernet_connected_chip):
-        """ figures fpgas on
+        """ Figures out which FPGAs were switched on.
 
         :param machine: spinnaker machine
         :param ethernet_connected_chip: the ethernet chip to look from
-        :return: number of fpgas on, on this board
+        :return: number of FPGAs on, on this board
         """
         # pylint: disable=too-many-locals
 
@@ -470,7 +471,7 @@ class EnergyReport(object):
         return 0
 
     def _get_chip_power_monitor(self, chip, placements):
-        """locate chip power monitor
+        """ Locate chip power monitor
 
         :param chip: the chip to consider
         :param placements: placements
@@ -595,7 +596,7 @@ class EnergyReport(object):
     def _calculate_load_time_cost(
             self, pacman_provenance, machine, f, load_time,
             active_chips, n_frames):
-        """ energy usage from the loading phase
+        """ Energy usage from the loading phase
 
         :param pacman_provenance: provenance items from the PACMAN set
         :param machine: machine rep
@@ -651,7 +652,7 @@ class EnergyReport(object):
 
     def _calculate_data_extraction_time_cost(
             self, pacman_provenance, machine, f, active_chips, n_frames):
-        """ data extraction cost
+        """ Data extraction cost
 
         :param pacman_provenance: provenance items from the PACMAN set
         :param machine: machine rep
@@ -699,7 +700,7 @@ class EnergyReport(object):
         return energy_cost
 
     def _calculate_idle_cost(self, time, machine):
-        """ calculate energy used by being idle
+        """ Calculate energy used by being idle
 
         :param machine: machine object
         :param time: time machine was idle
@@ -712,7 +713,7 @@ class EnergyReport(object):
     def _calculate_power_down_cost(
             self, time, machine, machine_allocation_controller, version,
             n_frames):
-        """ calculate power down costs
+        """ Calculate power down costs
 
         :param time: time powered down
         :param n_frames: number of frames used by this machine
@@ -735,8 +736,8 @@ class EnergyReport(object):
 
     @staticmethod
     def _calculate_n_frames(machine, machine_allocation_controller):
-        """ figures out how many frames are being used in this setup
-        key of cabinet,frame will be used to identify unique frame.
+        """ Figures out how many frames are being used in this setup.\
+            A key of cabinet,frame will be used to identify unique frame.
 
         :param machine: the machine object
         :param machine_allocation_controller: the spalloc job object

@@ -473,13 +473,13 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _determine_which_routers_were_used(placement, fixed_routes, machine):
-        """ traverses the fixed route paths from a given location to its\
-            destination. used for determining which routers were used
+        """ Traverse the fixed route paths from a given location to its\
+            destination. Used for determining which routers were used.
 
         :param placement: the source to start from
         :param fixed_routes: the fixed routes for each router
         :param machine: the spinnMachine instance
-        :return: list of chip ids
+        :return: list of chip IDs
         """
         routers = list()
         routers.append((placement.x, placement.y))
@@ -500,7 +500,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     @staticmethod
     def _write_routers_used_into_report(
             report_path, routers_been_in_use, placement):
-        """ writes the used routers into a report
+        """ Write the used routers into a report
 
         :param report_path: the path to the report file
         :param routers_been_in_use: the routers been in use
@@ -516,7 +516,7 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placement.x, placement.y, placement.p, routers_been_in_use))
 
     def _calculate_missing_seq_nums(self, seq_nums):
-        """ determines which sequence numbers we've missed
+        """ Determine which sequence numbers we've missed
 
         :param seq_nums: the set already acquired
         :return: list of missing sequence numbers
@@ -526,7 +526,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     def _determine_and_retransmit_missing_seq_nums(
             self, seq_nums, transceiver, placement, lost_seq_nums):
-        """ Determines if there are any missing sequence numbers, and if so\
+        """ Determine if there are any missing sequence numbers, and if so\
             retransmits the missing sequence numbers back to the core for\
             retransmission.
 
@@ -628,7 +628,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     def _process_data(
             self, data, seq_nums, finished, placement, transceiver,
             lost_seq_nums):
-        """ Takes a packet and processes it see if we're finished yet
+        """ Take a packet and processes it see if we're finished yet
 
         :param data: the packet data
         :param seq_nums: the list of sequence numbers received so far
@@ -689,7 +689,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             self, view_start_position, view_end_position,
             data, data_start_position, data_end_position, seq_num,
             packet_length, is_final):
-        """ puts data into the view
+        """ Puts data into the view
 
         :param view_start_position: where in view to start
         :param view_end_position: where in view to end
@@ -712,11 +712,11 @@ class DataSpeedUpPacketGatherMachineVertex(
             data[data_start_position:data_end_position]
 
     def _check(self, seq_nums):
-        """ verifying if the sequence numbers are correct.
+        """ Verify if the sequence numbers are correct.
 
         :param seq_nums: the received sequence numbers
-        :return: bool of true or false given if all the sequence numbers have\
-            been received
+        :return: Whether all the sequence numbers have been received
+        :rtype: bool
         """
         # hand back
         seq_nums = sorted(seq_nums)
@@ -726,7 +726,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         return len(seq_nums) == max_needed + 1
 
     def calculate_max_seq_num(self):
-        """ deduces the max sequence num expected to be received
+        """ Deduce the max sequence number expected to be received
 
         :return: int of the biggest sequence num expected
         """
@@ -739,7 +739,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_missing(seq_nums):
-        """ debug printer for the missing sequence numbers from the pile
+        """ Debug printer for the missing sequence numbers from the pile
 
         :param seq_nums: the sequence numbers received so far
         :rtype: None
@@ -748,7 +748,7 @@ class DataSpeedUpPacketGatherMachineVertex(
             log.info("from list I'm missing sequence num {}", seq_num)
 
     def _print_out_packet_data(self, data):
-        """ debug prints out the data from the packet
+        """ Debug prints out the data from the packet
 
         :param data: the packet data
         :rtype: None
@@ -760,7 +760,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_length_of_received_seq_nums(seq_nums, max_needed):
-        """ debug helper method for figuring out if everything been received
+        """ Debug helper method for figuring out if everything been received
 
         :param seq_nums: sequence numbers received
         :param max_needed: biggest expected to have
@@ -772,7 +772,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
     @staticmethod
     def _print_packet_num_being_sent(packet_count, n_packets):
-        """ debug helper for printing missing sequence number packet\
+        """ Debug helper for printing missing sequence number packet\
             transmission
 
         :param packet_count: which packet is being fired

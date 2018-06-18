@@ -52,8 +52,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
 
     @staticmethod
     def _handle_second_monitor_support(cores, sdrams, machine, progress):
-        """ adds the second monitor pre allocations, which reflect the\
-         re-injector and data extractor support
+        """ Adds the second monitor preallocations, which reflect the\
+            reinjector and data extractor support
 
         :param cores: the storage of core requirements
         :param machine: the spinnMachine instance
@@ -70,16 +70,16 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
     @staticmethod
     def _handle_packet_gathering_support(
             sdrams, cores, tags, machine, progress, n_cores_to_allocate):
-        """ adds the packet gathering functionality tied into the data\
-         extractor within each chip
+        """ Adds the packet gathering functionality tied into the data\
+            extractor within each chip
 
-        :param sdrams: the pre-allocated sdram requirement for these vertices
-        :param cores: the pre-allocated cores requirement for these vertices
-        :param tags: the pre-allocated tags requirement for these vertices
+        :param sdrams: the preallocated SDRAM requirement for these vertices
+        :param cores: the preallocated cores requirement for these vertices
+        :param tags: the preallocated tags requirement for these vertices
         :param machine: the spinnMachine instance
         :param progress: the progress bar to update as needed
-        :param n_cores_to_allocate: how many packet gathers to allocate per \
-            chip
+        :param n_cores_to_allocate: \
+            how many packet gathers to allocate per chip
         :rtype: None
         """
         # pylint: disable=too-many-arguments

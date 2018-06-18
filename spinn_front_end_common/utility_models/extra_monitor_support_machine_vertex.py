@@ -48,13 +48,12 @@ class ExtraMonitorSupportMachineVertex(
             self, constraints, reinject_multicast=None,
             reinject_point_to_point=False, reinject_nearest_neighbour=False,
             reinject_fixed_route=False):
-        """ constructor
-
+        """
         :param constraints: constraints on this vertex
-        :param reinject_multicast: if we reinject mc packets
-        :param reinject_point_to_point: if we reinject point to point packets
-        :param reinject_nearest_neighbour: if we reinject nearest neighbour\
-            packets
+        :param reinject_multicast: if we reinject multicast packets
+        :param reinject_point_to_point: if we reinject point-to-point packets
+        :param reinject_nearest_neighbour: \
+            if we reinject nearest-neighbour packets
         :param reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
@@ -240,7 +239,7 @@ class ExtraMonitorSupportMachineVertex(
         process.reset_counters(core_subsets)
 
     def get_reinjection_status(self, placements, transceiver):
-        """ gets the reinjection status from this extra monitor vertex
+        """ Get the reinjection status from this extra monitor vertex
 
         :param transceiver: the spinnMan interface
         :param placements: the placements object
@@ -253,7 +252,7 @@ class ExtraMonitorSupportMachineVertex(
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
-        """ gets the reinjection status from a set of extra monitor cores
+        """ Get the reinjection status from a set of extra monitor cores
 
         :param placements: the placements object
         :param extra_monitor_cores_for_data: \

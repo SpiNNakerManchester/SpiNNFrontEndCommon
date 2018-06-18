@@ -4,12 +4,12 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class FixedRouteFromMachineReport(object):
-    """ function for writing the fixed routes from the machine
+    """ Generate a report of the fixed routes from the machine.
     """
 
     def __call__(self, transceiver, machine, report_default_directory,
                  app_id):
-        """ writing the fixed routes from the machine
+        """ Writes the fixed routes from the machine
 
         :param transceiver: spinnMan instance
         :param machine: SpiNNMachine instance

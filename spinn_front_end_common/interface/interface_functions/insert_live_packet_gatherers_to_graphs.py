@@ -13,14 +13,13 @@ from collections import defaultdict
 
 
 class InsertLivePacketGatherersToGraphs(object):
-    """ function to add LPG's as required into a given graph
+    """ Adds LPGs as required into a given graph
     """
 
     def __call__(
             self, live_packet_gatherer_parameters, machine, machine_graph,
             application_graph=None, graph_mapper=None):
-        """ call that adds LPG vertices on Ethernet connected chips as\
-            required.
+        """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:\
             the Live Packet Gatherer parameters requested by the script

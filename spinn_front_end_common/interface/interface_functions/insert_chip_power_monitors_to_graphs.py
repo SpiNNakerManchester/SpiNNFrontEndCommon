@@ -13,14 +13,13 @@ _LABEL = "chip_power_monitor_{}_vertex_for_chip({}:{})"
 
 
 class InsertChipPowerMonitorsToGraphs(object):
-    """ function to add chip power monitors into a given graph
+    """ Adds chip power monitors into a given graph
     """
 
     def __call__(
             self, machine, machine_graph, n_samples_per_recording,
             sampling_frequency, application_graph=None, graph_mapper=None):
-        """ call that adds LPG vertices on Ethernet connected chips as\
-            required.
+        """ Adds LPG vertices on Ethernet connected chips as required.
 
         :param machine: the spinnaker machine as discovered
         :param application_graph: the application graph

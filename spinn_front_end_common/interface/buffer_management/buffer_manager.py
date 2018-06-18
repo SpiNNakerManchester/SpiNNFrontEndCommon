@@ -160,7 +160,7 @@ class BufferManager(object):
 
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
-        """ uses the extra monitor cores for data extraction
+        """ Uses the extra monitor cores for data extraction.
 
         :param transceiver: the spinnman interface
         :param placement_x: \

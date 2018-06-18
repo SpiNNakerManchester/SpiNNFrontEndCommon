@@ -150,8 +150,8 @@ class ApplicationRunner(object):
 
     @staticmethod
     def _determine_simulation_sync_signals(executable_types, no_sync_changes):
-        """ sorts out start states, and creates core subsets of the states for
-        further checks.
+        """ Determines the start states, and creates core subsets of the\
+            states for further checks.
 
         :param no_sync_changes: sync counter
         :param executable_types: the types of executables

@@ -9,7 +9,7 @@ class PacmanProvenanceExtractor(object):
         self._data_items = list()
 
     def extract_provenance(self, executor):
-        """ acquires the timings from pacman algorithms (provenance data)
+        """ Acquires the timings from pacman algorithms (provenance data)
 
         :param executor: the pacman workflow executor
         :rtype: None
@@ -22,7 +22,7 @@ class PacmanProvenanceExtractor(object):
 
     @property
     def data_items(self):
-        """ returns the provenance data items
+        """ Returns the provenance data items
 
         :return: list of provenance data items.
         :rtype: iterable of ProvenanceDataItem
@@ -30,7 +30,7 @@ class PacmanProvenanceExtractor(object):
         return self._data_items
 
     def clear(self):
-        """ clears the provenance data store
+        """ Clears the provenance data store
 
         :rtype: None
         """
