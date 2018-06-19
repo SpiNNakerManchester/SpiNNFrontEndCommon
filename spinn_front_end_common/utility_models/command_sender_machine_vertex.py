@@ -45,7 +45,7 @@ class CommandSenderMachineVertex(
     # Setup data size (one word)
     _SETUP_DATA_SIZE = 4
 
-    # the number of malloc requests used by the dsg
+    # the number of malloc requests used by the DSG
     TOTAL_REQUIRED_MALLOCS = 5
 
     # The name of the binary file

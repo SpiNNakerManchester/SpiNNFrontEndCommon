@@ -32,7 +32,7 @@ class WriteMemoryIOData(object):
 
         :param graph: The graph to process
         :param placements: The placements of vertices of the graph
-        :param app_id: The id of the application
+        :param app_id: The ID of the application
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param transceiver:\
@@ -120,7 +120,7 @@ class WriteMemoryIOData(object):
         :param placement: The placement of the machine vertex
         :param vertex:\
             The vertex to write data for (might be an application vertex)
-        :param app_id: The id of the application
+        :param app_id: The ID of the application
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address

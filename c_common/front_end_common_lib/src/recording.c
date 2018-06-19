@@ -48,7 +48,7 @@ typedef struct recording_channel_t {
 // Globals
 //---------------------------------------
 
-//! circular queue for dma complete addresses
+//! circular queue for DMA complete addresses
 static circular_buffer dma_complete_buffer;
 
 //! array containing all possible channels.
@@ -175,7 +175,7 @@ static inline void _recording_eieio_packet_handler(
             break;
 
         default:
-            log_debug("unhandled command id %d", pkt_command);
+            log_debug("unhandled command ID %d", pkt_command);
             break;
         }
     }
@@ -549,7 +549,7 @@ void recording_finalise() {
     }
 }
 
-//! \brief updates host read point as dma has finished
+//! \brief updates host read point as DMA has finished
 void _recording_dma_finished(uint unused, uint tag) {
 
     // pop region and write pointer from circular queue
@@ -575,7 +575,7 @@ void _recording_dma_finished(uint unused, uint tag) {
 bool recording_initialize(
         address_t recording_data_address, uint32_t *recording_flags) {
 
-    // build dma address circular queue
+    // build DMA address circular queue
     dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 4);
 
     // Read in the parameters
@@ -666,7 +666,7 @@ bool recording_initialize(
     // register the SDP handler
     simulation_sdp_callback_on(sdp_port, _buffering_in_handler);
 
-    // register dma transfer done callback
+    // register DMA transfer done callback
     simulation_dma_transfer_done_callback_on(
         RECORDING_DMA_COMPLETE_TAG_ID, _recording_dma_finished);
 

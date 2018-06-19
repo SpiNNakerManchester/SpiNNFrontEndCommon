@@ -341,10 +341,10 @@ class BufferedReceivingData(object):
         """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
-        :param x: placement x coord
-        :param y: placement y coord
-        :param p: placement p coord
-        :param region_id: the recording region id to clear data from
+        :param x: placement x coordinate
+        :param y: placement y coordinate
+        :param p: placement p coordinate
+        :param region_id: the recording region ID to clear data from
         :rtype: None
         """
         del self._end_buffering_state[x, y, p, region_id]

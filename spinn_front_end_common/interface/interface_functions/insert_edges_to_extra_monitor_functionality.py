@@ -64,7 +64,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
         :param placements: the placements object
         :param machine_graph: machine graph object
         :param vertex_to_ethernet_connected_chip_mapping: \
-            the ethernet to mc gatherer map
+            the ethernet to multicast gatherer map
         :param application_graph: app graph object
         :param graph_mapper: the mapping between app and machine graph
         :rtype: None

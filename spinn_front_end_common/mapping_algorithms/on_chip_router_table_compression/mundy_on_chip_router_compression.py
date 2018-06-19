@@ -42,7 +42,7 @@ class MundyOnChipRouterCompression(object):
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface
         :param machine: the spinnaker machine representation
-        :param app_id: the app-id used by the main application
+        :param app_id: the application ID used by the main application
         :param provenance_file_path: the path to where to write the data
         :return: flag stating routing compression and loading has been done
         """
@@ -54,7 +54,7 @@ class MundyOnChipRouterCompression(object):
             "Running routing table compression on chip")
         compressor_app_id = transceiver.app_id_tracker.get_new_id()
 
-        # figure size of sdram needed for each chip for storing the routing
+        # figure size of SDRAM needed for each chip for storing the routing
         # table
         for routing_table in progress.over(routing_tables, False):
             self._load_routing_table(
@@ -109,7 +109,7 @@ class MundyOnChipRouterCompression(object):
         base_address = txrx.malloc_sdram(
             table.x, table.y, len(data), compressor_app_id, _SDRAM_TAG)
 
-        # write sdram requirements per chip
+        # write SDRAM requirements per chip
         txrx.write_memory(table.x, table.y, base_address, data)
 
     @staticmethod
@@ -202,7 +202,7 @@ class MundyOnChipRouterCompression(object):
             compressor c code.
 
         :param routing_table: the pacman router table instance
-        :param app_id: the app-id to load the entries in by
+        :param app_id: the application ID to load the entries in by
         :param compress_only_when_needed:\
             If True, the compressor will only compress if the table doesn't\
             fit in the current router space, otherwise it will just load\
@@ -216,8 +216,8 @@ class MundyOnChipRouterCompression(object):
         :return: The byte array of data
         """
 
-        # write header data of the app id to load the data, if to store
-        # results in sdram and the router table entries
+        # write header data of the app ID to load the data, if to store
+        # results in SDRAM and the router table entries
 
         data = b''
         data += _FOUR_WORDS.pack(

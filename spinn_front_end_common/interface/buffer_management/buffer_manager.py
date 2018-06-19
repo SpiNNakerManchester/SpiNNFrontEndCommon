@@ -94,7 +94,7 @@ class BufferManager(object):
         # the extra_monitor to Ethernet connection map
         "_extra_monitor_cores_to_ethernet_connection_map",
 
-        # monitor cores via chip id
+        # monitor cores via chip ID
         "_extra_monitor_cores_by_chip",
 
         # fixed routes, used by the speed up functionality for reports
@@ -205,7 +205,7 @@ class BufferManager(object):
         elif isinstance(packet, EIEIOCommandMessage):
             logger.error(
                 "The command packet is invalid for buffer management: "
-                "command id {}", packet.eieio_header.command)
+                "command ID {}", packet.eieio_header.command)
         else:
             logger.error(
                 "The command packet is invalid for buffer management")
@@ -340,7 +340,7 @@ class BufferManager(object):
         :param x: placement x coord
         :param y: placement y coord
         :param p: placement p coord
-        :param recording_region_id: the recording region id
+        :param recording_region_id: the recording region ID
         """
         self._received_data.clear(x, y, p, recording_region_id)
 

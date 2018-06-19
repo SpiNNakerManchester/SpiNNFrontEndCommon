@@ -76,7 +76,7 @@ def get_minimum_buffer_sdram(
     # - If the buffered_sdram_per_timestep for the region is > 0 and
     #   n_machine_time_steps is defined then the minimum of the actual region
     #   size and the minimum_sdram_for_buffering
-    # - If the sdram is 0 then 0
+    # - If the SDRAM is 0 then 0
     # - If n_machine_time_steps is None then minimum_sdram_for_buffering
     return [
         min(sdram, minimum_sdram_for_buffering)
@@ -159,11 +159,11 @@ def get_recorded_region_sizes(
 
     :param buffered_sdram:\
         The maximum SDRAM used in bytes per region
-    :type buffered_sdram_per_timestep: list of int
+    :type buffered_sdram_per_timestep: list(int)
     :param maximum_sdram_for_buffering:\
         The maximum size of each buffer, or None if no maximum
-    :type maximum_sdram_for_buffering: None or list of int
-    :rtype: list of int
+    :type maximum_sdram_for_buffering: None or list(int)
+    :rtype: list(int)
     """
 
     # The size of each buffer is the actual size needed for the number of
@@ -294,7 +294,7 @@ def get_n_timesteps_in_buffer_space(buffer_space, buffered_sdram_per_timestep):
 
 
 def get_recorded_region_ids(buffered_sdram_per_timestep):
-    """ Get the ids of regions where recording is enabled
+    """ Get the IDs of regions where recording is enabled
 
     :param buffered_sdram_per_timestep:\
         The maximum SDRAM used by each region per timestep, where 0 indicates\

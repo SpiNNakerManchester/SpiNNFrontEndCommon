@@ -16,7 +16,7 @@ class FixedRouteFromMachineReport(object):
         :param report_default_directory: folder where reports reside
         :param loaded_fixed_routes_on_machine_token: \
             Token that states fixed routes have been loaded
-        :param app_id: the app id the fixed routes were loaded with
+        :param app_id: the application ID the fixed routes were loaded with
         :rtype: None
         """
 
@@ -32,7 +32,7 @@ class FixedRouteFromMachineReport(object):
         :param f: Where we are writing
         :param txrx: The spinnman transceiver instance
         :param machine: The spinnmanchine instance
-        :param app_id: Which app is running on the machine
+        :param app_id: Which application is running on the machine
         :rtype: None
         """
         progress = ProgressBar(machine.n_chips, "Writing fixed route report")

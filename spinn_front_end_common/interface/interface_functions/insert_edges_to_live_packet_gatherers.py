@@ -85,7 +85,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param machine: the spinnaker machine object
         :param placements: the placements object
         :param machine_graph: the machine graph object
-        :param partition_id: the partition id to add to the edge
+        :param partition_id: the partition ID to add to the edge
         :return: machine edge and the LPG vertex
         """
         # pylint: disable=too-many-arguments

@@ -63,7 +63,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def get_next_timestamp(self, region):
         """ Return the next time stamp available in the buffered region
 
-        :param region: the region id which is being asked
+        :param region: the region ID which is being asked
         :return: the next time stamp
         """
         return self.send_buffers[region].next_timestamp
@@ -72,7 +72,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """ Check if there is more keys to transmit for a given region in a\
             given timestamp
 
-        :param region: the region id to check
+        :param region: the region ID to check
         :param timestamp:  the timestamp to check
         :return: bool
         """
@@ -88,7 +88,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def is_empty(self, region):
         """ Check if a region is empty
 
-        :param region: the region id to check
+        :param region: the region ID to check
         :return: bool
         """
         return len(self.send_buffers[region].timestamps) == 0

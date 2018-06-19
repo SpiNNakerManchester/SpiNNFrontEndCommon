@@ -274,7 +274,7 @@ def sort_out_downed_chips_cores_links(
         a tuple of (\
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
-            set of ((x, y), link id) of down links)
+            set of ((x, y), link ID) of down links)
     :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
     """
     ignored_chips = set()

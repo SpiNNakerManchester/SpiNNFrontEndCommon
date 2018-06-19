@@ -232,7 +232,7 @@ class ChipPowerMonitorMachineVertex(
             n_machine_time_steps, ip_tags):
         """ Writes the system data as required.
 
-        :param spec: the dsg spec writer
+        :param spec: the DSG spec writer
         :param machine_time_step: the machine time step
         :param time_scale_factor: the time scale factor
         :rtype: None

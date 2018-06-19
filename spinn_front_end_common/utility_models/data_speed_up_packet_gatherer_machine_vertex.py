@@ -36,7 +36,7 @@ from six.moves import xrange
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
 
-# dsg data regions
+# DSG data regions
 _DATA_REGIONS = Enum(
     value="DATA_REGIONS",
     names=[('SYSTEM', 0),
@@ -93,7 +93,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     # The SDP port that we use
     SDP_PORT = SDP_PORTS.EXTRA_MONITOR_CORE_DATA_SPEED_UP.value
 
-    # command ids for the SDP packets
+    # command IDs for the SDP packets
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
@@ -107,7 +107,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     FIRST_DATA_KEY = 0xFFFFFFF7
     END_FLAG_KEY = 0xFFFFFFF6
 
-    # to use with mc stuff
+    # to use with multicast stuff
     BASE_MASK = 0xFFFFFFFB
     NEW_SEQ_KEY_OFFSET = 1
     FIRST_DATA_KEY_OFFSET = 2
@@ -222,7 +222,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(first_data_key)
         spec.write_value(end_flag_key)
 
-        # locate the tag id for our data and update with port
+        # locate the tag ID for our data and update with port
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
         iptag.port = self._connection.local_port

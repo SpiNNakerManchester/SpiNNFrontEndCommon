@@ -38,7 +38,7 @@ class HostExecuteDataSpecification(object):
         :param app_id: the application ID of the simulation
         :param dsg_targets: map of placement to file path
 
-        :return: map of placement and dsg data, and loaded data flag.
+        :return: map of placement and DSG data, and loaded data flag.
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:

@@ -254,7 +254,7 @@ class EnergyReport(object):
             mapping_time, machine, machine_allocation_controller, version,
             n_frames)
 
-        # figure the down time idle cost for dsg
+        # figure the down time idle cost for DSG
         dsg_cost = self._calculate_power_down_cost(
             dsg_time, machine, machine_allocation_controller, version,
             n_frames)
@@ -448,9 +448,9 @@ class EnergyReport(object):
         """ Figure out if each FPGA was on or not
 
         :param shifts: shifts from ethernet to find a FPGA edge
-        :type shifts: iterable of iterable of int
-        :param overall_link_ids: which link ids to check
-        :type overall_link_ids: iterable of iterable of int
+        :type shifts: iterable(iterable(int))
+        :param overall_link_ids: which link IDs to check
+        :type overall_link_ids: iterable(iterable(int))
         :param machine_max_x: max machine x
         :param machine_max_y: max machine y
         :param ethernet_chip_x: ethernet chip x

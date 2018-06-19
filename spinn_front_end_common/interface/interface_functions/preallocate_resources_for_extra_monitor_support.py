@@ -91,7 +91,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         for ethernet_connected_chip in \
                 progress.over(machine.ethernet_connected_chips,
                               finish_at_end=False):
-            # do resources. sdram, cores, tags
+            # do resources. SDRAM, cores, tags
             sdrams.append(SpecificChipSDRAMResource(
                 chip=ethernet_connected_chip,
                 sdram_usage=resources.sdram.get_value()))

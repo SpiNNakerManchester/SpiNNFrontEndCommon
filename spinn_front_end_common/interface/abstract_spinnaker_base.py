@@ -1278,7 +1278,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
-        # add max sdram size which we're going to allow (debug purposes)
+        # add max SDRAM size which we're going to allow (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
 
@@ -2354,16 +2354,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     @property
     def dsg_algorithm(self):
-        """ The dsg algorithm used by the tools
+        """ The DSG algorithm used by the tools
 
         """
         return self._dsg_algorithm
 
     @dsg_algorithm.setter
     def dsg_algorithm(self, new_dsg_algorithm):
-        """ Set the dsg algorithm to be used by the tools
+        """ Set the DSG algorithm to be used by the tools
 
-        :param new_dsg_algorithm: the new dsg algorithm name
+        :param new_dsg_algorithm: the new DSG algorithm name
         :rtype: None
         """
         self._dsg_algorithm = new_dsg_algorithm

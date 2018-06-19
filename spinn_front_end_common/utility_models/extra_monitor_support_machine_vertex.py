@@ -25,7 +25,7 @@ class ExtraMonitorSupportMachineVertex(
         AbstractGeneratesDataSpecification):
 
     __slots__ = (
-        # if we reinject mc packets
+        # if we reinject multicast packets
         "_reinject_multicast",
         # if we reinject point to point packets
         "_reinject_point_to_point",

@@ -702,7 +702,7 @@ static inline void eieio_command_parse_sequenced_data(
     eieio_msg_t eieio_content_pkt = &eieio_msg_ptr[2];
 
     if (region_id != BUFFER_REGION) {
-        log_debug("received sequenced eieio packet with invalid region id:"
+        log_debug("received sequenced eieio packet with invalid region ID:"
                   " %d.", region_id);
         signal_software_error(eieio_msg_ptr, length);
         incorrect_packets++;
