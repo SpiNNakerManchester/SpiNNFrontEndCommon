@@ -814,9 +814,9 @@ class BufferManager(object):
 
     def _retrieve_and_store_data(self, packet):
         """ Following a SpinnakerRequestReadData packet, the data stored\
-           during the simulation needs to be read by the host and stored in a\
-           data structure, following the specifications of buffering out\
-           technique
+            during the simulation needs to be read by the host and stored in\
+            a data structure, following the specifications of buffering out\
+            technique.
 
         :param packet: SpinnakerRequestReadData packet received from the\
             SpiNNaker system
