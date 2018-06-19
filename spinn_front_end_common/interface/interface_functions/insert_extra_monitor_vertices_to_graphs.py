@@ -10,20 +10,20 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class InsertExtraMonitorVerticesToGraphs(object):
-    """Inserts the extra monitor vertices into the graph.
+    """ Inserts the extra monitor vertices into the graph that correspond to\
+        the extra monitor cores required.
     """
 
     def __call__(
             self, machine, machine_graph, default_report_directory,
             write_data_speed_up_report, n_cores_to_allocate=1,
             graph_mapper=None, application_graph=None):
-        """ Inserts vertices to correspond to the extra monitor cores
-
+        """
         :param machine: spinnMachine instance
         :param machine_graph: machine graph
         :param n_cores_to_allocate: n cores to allocate for reception
         :param default_report_directory: the directory where reports go
-        :param write_data_speed_up_report:\
+        :param write_data_speed_up_report: \
             determine whether to write the report for data speed up
         :param graph_mapper: graph mapper
         :param application_graph: app graph.
@@ -57,14 +57,15 @@ class InsertExtraMonitorVerticesToGraphs(object):
             graph_mapper, vertex_to_chip_map):
         """ Handles placing the second monitor vertex with extra functionality\
             into the graph
+
         :param progress: progress bar
         :param machine: spinnMachine instance
         :param application_graph: app graph
         :param machine_graph: machine graph
         :param graph_mapper: graph mapper
         :param vertex_to_chip_map: map between vertex and chip
-        :rtype: list
-        :return: list of extra monitor cores
+        :return: list of extra monitor vertices
+        :rtype: list(MachineVertex)
         """
         # pylint: disable=too-many-arguments
 
@@ -114,9 +115,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
         :param machine: machine instance
         :param application_graph: application graph
         :param machine_graph: machine graph
-        :param default_report_directory: the default directory for where\
-            reports are to be written
-        :param write_data_speed_up_report:\
+        :param default_report_directory: \
+            the default directory for where reports are to be written
+        :param write_data_speed_up_report: \
             determine whether to write the report for data speed up
         :param graph_mapper: graph mapper
         :param vertex_to_ethernet_connected_chip_mapping: vertex to chip map

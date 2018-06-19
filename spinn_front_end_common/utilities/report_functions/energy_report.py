@@ -445,7 +445,7 @@ class EnergyReport(object):
     def _deduce_fpga(
             shifts, overall_link_ids, machine_max_x, machine_max_y,
             ethernet_chip_x, ethernet_chip_y, machine):
-        """Figure if each FPGA was on or not
+        """ Figure out if each FPGA was on or not
 
         :param shifts: shifts from ethernet to find a FPGA edge
         :type shifts: iterable of iterable of int
@@ -493,7 +493,7 @@ class EnergyReport(object):
 
     def _calculate_chips_active_cost(
             self, chip, placements, buffer_manager, f, runtime_total_ms):
-        """Figure out the chip active cost during simulation
+        """ Figure out the chip active cost during simulation
 
         :param chip: the chip to consider
         :param placements: placements
@@ -558,7 +558,7 @@ class EnergyReport(object):
         "Local_FR_Packets", "External_FR_Packets"))
 
     def _router_packet_cost(self, router_provenance, f):
-        """Figure out the packet cost; includes MC, P2P, FR, NN packets
+        """ Figure out the packet cost; includes MC, P2P, FR, NN packets
 
         :param router_provenance: the provenance gained from the router
         :param f: file writer
