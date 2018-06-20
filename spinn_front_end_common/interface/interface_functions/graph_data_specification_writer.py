@@ -36,15 +36,14 @@ class GraphDataSpecificationWriter(object):
             app_data_runtime_folder, machine, graph_mapper=None,
             placement_order=None):
         """
-
         :param placements: placements of machine graph to cores
-        :param hostname: spinnaker machine name
+        :param hostname: SpiNNaker machine name
         :param report_default_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
         :param app_data_runtime_folder:\
             Folder where data specifications should be written to
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :param graph_mapper:\
             the mapping between application and machine graph
         :param placement:\
@@ -99,17 +98,17 @@ class GraphDataSpecificationWriter(object):
             report_default_directory, write_text_specs,
             app_data_runtime_folder, machine):
         """
-
         :param placement: placement of machine graph to cores
         :param vertex: the specific vertex to write DSG for.
-        :param hostname: spinnaker machine name
+        :param hostname: SpiNNaker machine name
         :param report_default_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
         :param app_data_runtime_folder: \
             Folder where data specifications should be written to
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :return: True if the vertex was data spec-able, False otherwise
+        :rtype: bool
         """
         # pylint: disable=too-many-arguments
 

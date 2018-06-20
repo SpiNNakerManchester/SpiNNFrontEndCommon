@@ -33,7 +33,7 @@ class VirtualMachineGenerator(object):
             down_cores=down_cores, down_links=down_links,
             sdram_per_chip=max_sdram_size)
 
-        # Work out and add the spinnaker links and FPGA links
+        # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)
         machine.add_fpga_links(version)
 

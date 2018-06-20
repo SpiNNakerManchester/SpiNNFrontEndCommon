@@ -32,8 +32,7 @@ class HostExecuteDataSpecification(object):
             self, transceiver, machine, app_id, dsg_targets,
             processor_to_app_data_base_address=None):
         """
-
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :param transceiver: the spinnman instance
         :param app_id: the application ID of the simulation
         :param dsg_targets: map of placement to file path

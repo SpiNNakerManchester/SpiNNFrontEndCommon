@@ -23,10 +23,10 @@ class InsertLivePacketGatherersToGraphs(object):
 
         :param live_packet_gatherer_parameters:\
             the Live Packet Gatherer parameters requested by the script
-        :param machine: the spinnaker machine as discovered
+        :param machine: the SpiNNaker machine as discovered
         :param application_graph: the application graph
         :param machine_graph: the machine graph
-        :return: mapping between LPG params and LPG vertex
+        :return: mapping between LPG parameters and LPG vertex
         """
         # pylint: disable=too-many-arguments
 
@@ -71,7 +71,7 @@ class InsertLivePacketGatherersToGraphs(object):
         """ Creates a Live Packet Gather Vertex
 
         :param lpg_vertex_class: the type to create for the vertex
-        :param params: the params of the vertex
+        :param params: the parameters of the vertex
         :return the vertex built
         """
         return lpg_vertex_class(

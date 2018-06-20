@@ -82,7 +82,7 @@ class InsertEdgesToLivePacketGatherers(object):
         :param m_lpgs:\
             dict of chip placed on to gatherers that are associated with the\
             parameters
-        :param machine: the spinnaker machine object
+        :param machine: the SpiNNaker machine object
         :param placements: the placements object
         :param machine_graph: the machine graph object
         :param partition_id: the partition ID to add to the edge

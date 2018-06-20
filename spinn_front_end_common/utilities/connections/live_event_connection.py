@@ -242,7 +242,7 @@ class LiveEventConnection(DatabaseConnection):
                 db_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
         if not strip_sdp:
-            raise Exception("Currently, only IPtags which strip the SDP "
+            raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
         return host, port, board_address
 

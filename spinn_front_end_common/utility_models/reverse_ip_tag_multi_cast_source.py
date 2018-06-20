@@ -30,7 +30,7 @@ class ReverseIpTagMultiCastSource(
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints,
         ProvidesKeyToAtomMappingImpl):
-    """ A model which will allow events to be injected into a spinnaker\
+    """ A model which will allow events to be injected into a SpiNNaker\
         machine and converted into multicast packets.
     """
 

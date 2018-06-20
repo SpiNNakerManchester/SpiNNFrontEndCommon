@@ -70,7 +70,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type region: int
     :param placement: the placement object to get the region address of
     :type placement: pacman.model.placements.Placement
-    :param transceiver: the python interface to the spinnaker machine
+    :param transceiver: the python interface to the SpiNNaker machine
     :type transceiver: spiNNMan.transciever.Transciever
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
@@ -419,7 +419,7 @@ def generate_unique_folder_name(folder, filename, extension):
 def get_ethernet_chip(machine, board_address):
     """ Locate the chip with the given board IP address
 
-    :param machine: the spinnaker machine
+    :param machine: the SpiNNaker machine
     :param board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
     :raises ConfigurationException:\

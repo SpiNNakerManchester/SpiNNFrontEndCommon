@@ -23,7 +23,7 @@ class LivePacketGather(
         AbstractHasAssociatedBinary):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
-        a spinnaker machine.
+        a SpiNNaker machine.
     """
 
     def __init__(

@@ -1,5 +1,5 @@
 """
-main interface for the spinnaker tools
+main interface for the SpiNNaker tools
 """
 import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.timer import Timer
@@ -101,7 +101,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # to the spalloc system
         "_n_chips_required",
 
-        # The ip-address of the SpiNNaker machine
+        # The IP-address of the SpiNNaker machine
         "_hostname",
 
         # the ip_address of the spalloc server
@@ -149,7 +149,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # the holder for the fixed routes generated, if there are any
         "_fixed_routes",
 
-        # The holder for the ip and reverse iptags used by the simulation
+        # The holder for the IP tags and reverse IP tags used by the simulation
         "_tags",
 
         # The python representation of the SpiNNaker machine that this
@@ -1167,7 +1167,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
     def _run_algorithms(
             self, inputs, algorithms, outputs, tokens, required_tokens,
             provenance_name, optional_algorithms=None):
-        """ Runs getting a spinnaker machine logic
+        """ Runs getting a SpiNNaker machine logic
 
         :param inputs: the inputs
         :param algorithms: algorithms to call
@@ -2487,7 +2487,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             clear_tags = self._config.getboolean("Machine", "clear_tags")
 
         if self._txrx is not None:
-            # if stopping on machine, clear iptags and routing table
+            # if stopping on machine, clear IP tags and routing table
             self.__clear(clear_tags, clear_routing_tables)
 
         # Fully stop the application
@@ -2499,7 +2499,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._state = Simulator_State.SHUTDOWN
 
     def __clear(self, clear_tags, clear_routing_tables):
-        # if stopping on machine, clear iptags and
+        # if stopping on machine, clear IP tags and
         if clear_tags:
             for ip_tag in self._tags.ip_tags:
                 self._txrx.clear_ip_tag(
@@ -2724,7 +2724,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def _turn_off_on_board_to_save_power(self, config_flag):
         """ Executes the power saving mode of either on or off of the\
-            spinnaker machine.
+            SpiNNaker machine.
 
         :param config_flag: Flag read from the configuration file
         :type config_flag: str
@@ -2745,10 +2745,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 logger.info("Board turned on based on: {}", config_flag)
 
     def _turn_off_board_to_save_power(self):
-        """ Executes the power saving mode of turning off the spinnaker\
+        """ Executes the power saving mode of turning off the SpiNNaker\
             machine.
 
-        :return: bool when successful, flase otherwise
+        :return: bool when successful, false otherwise
         :rtype: bool
         """
         # already off or no machine to turn off

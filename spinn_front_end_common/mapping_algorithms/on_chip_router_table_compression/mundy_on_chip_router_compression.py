@@ -41,7 +41,7 @@ class MundyOnChipRouterCompression(object):
         """
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface
-        :param machine: the spinnaker machine representation
+        :param machine: the SpiNNaker machine representation
         :param app_id: the application ID used by the main application
         :param provenance_file_path: the path to where to write the data
         :return: flag stating routing compression and loading has been done
@@ -170,7 +170,7 @@ class MundyOnChipRouterCompression(object):
         :param routing_tables: the router tables needed to be compressed
         :param compressor_app_id: the app ID of the compressor compressor
         :param txrx: the spinnman interface
-        :param machine: the spinnaker machine representation
+        :param machine: the SpiNNaker machine representation
         :return:\
             the executable targets that represent all cores/chips which have\
             active routing tables

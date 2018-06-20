@@ -75,7 +75,7 @@ SDP_PORTS = Enum(
 )
 
 # output buffering operations
-# a listing of what spinnaker specific EIEIO commands there are.
+# a listing of what SpiNNaker specific EIEIO commands there are.
 BUFFERING_OPERATIONS = Enum(
     value="BUFFERING_OPERATIONS",
     names=[

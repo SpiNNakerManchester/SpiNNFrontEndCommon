@@ -19,7 +19,7 @@ typedef enum eieio_command_messages {
     // Start complaining that there is SDRAM free space for buffers
     START_SENDING_REQUESTS,
 
-    // Spinnaker requesting new buffers for spike source population
+    // SpiNNaker requesting new buffers for spike source population
     SPINNAKER_REQUEST_BUFFERS,
 
     // Buffers being sent from host to SpiNNaker

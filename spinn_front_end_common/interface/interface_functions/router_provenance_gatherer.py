@@ -40,7 +40,7 @@ class RouterProvenanceGatherer(object):
             placements=None):
         """
         :param transceiver: the SpiNNMan interface object
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :param router_tables: the router tables that have been generated
         :param has_ran: token that states that the simulation has ran
         :param provenance_data_objects: other provenance data items

@@ -31,5 +31,5 @@ class BoardChipReport(object):
                     progress_bar.over(machine.ethernet_connected_chips):
                 chips = machine.get_chips_on_board(ethernet_connected_chip)
                 writer.write(
-                    "board with ip address : {} : has chips {}\n".format(
+                    "board with IP address : {} : has chips {}\n".format(
                         ethernet_connected_chip.ip_address, list(chips)))

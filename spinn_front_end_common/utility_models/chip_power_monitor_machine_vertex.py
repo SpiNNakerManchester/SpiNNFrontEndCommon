@@ -199,7 +199,7 @@ class ChipPowerMonitorMachineVertex(
         :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
         :param n_machine_time_steps: n_machine time steps
-        :param ip_tags: iptags
+        :param ip_tags: IP tags
         :rtype: None
         """
         # pylint: disable=too-many-arguments

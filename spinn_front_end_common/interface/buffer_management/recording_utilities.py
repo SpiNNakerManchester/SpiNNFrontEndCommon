@@ -126,7 +126,7 @@ def get_recording_resources(
         indicate an empty region
     :type region_sizes: list of int
     :param buffering_ip_address:\
-        The ip address to receive buffering messages on, or None if buffering\
+        The IP address to receive buffering messages on, or None if buffering\
         is not in use
     :type buffering_ip_address: str
     :param buffering_port:\
@@ -191,7 +191,7 @@ def get_recording_header_array(
         The minimum time between requesting reads of any region
     :param buffer_size_before_request:\
         The amount of buffer to fill before a read request is sent
-    :param ip_tags: A list of ip tags to extract the buffer tag from
+    :param ip_tags: A list of IP tags to extract the buffer tag from
     :param buffering_tag: The tag to use for buffering requests
     :return: An array of values to be written as the header
     :rtype: list of int

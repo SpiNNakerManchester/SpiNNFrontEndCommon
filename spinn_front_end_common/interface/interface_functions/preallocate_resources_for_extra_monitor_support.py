@@ -15,8 +15,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
         """
-
-        :param machine: spinnaker machine object
+        :param machine: SpiNNaker machine object
         :param pre_allocated_resources: resources already pre allocated
         :param n_cores_to_allocate: config params for how many gatherers to use
         """

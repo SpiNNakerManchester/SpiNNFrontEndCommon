@@ -21,7 +21,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
             pre_allocated_resources=None):
         """
         :param pre_allocated_resources: other preallocated resources
-        :param machine: the spinnaker machine as discovered
+        :param machine: the SpiNNaker machine as discovered
         :param n_machine_time_steps: the number of machine\
             time steps used by the simulation during this phase
         :param n_samples_per_recording: how many samples between record entries

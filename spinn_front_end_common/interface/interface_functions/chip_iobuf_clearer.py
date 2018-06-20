@@ -4,7 +4,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class ChipIOBufClearer(object):
-    """ Updates the runtime of an application running on a spinnaker machine
+    """ Clears the logging output buffer of an application running on a\
+        SpiNNaker machine.
     """
 
     __slots__ = []

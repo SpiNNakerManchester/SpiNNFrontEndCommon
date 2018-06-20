@@ -21,10 +21,10 @@ class InsertChipPowerMonitorsToGraphs(object):
             sampling_frequency, application_graph=None, graph_mapper=None):
         """ Adds LPG vertices on Ethernet connected chips as required.
 
-        :param machine: the spinnaker machine as discovered
+        :param machine: the SpiNNaker machine as discovered
         :param application_graph: the application graph
         :param machine_graph: the machine graph
-        :return: mapping between LPG params and LPG vertex
+        :return: mapping between LPG parameters and LPG vertex
         """
         # pylint: disable=too-many-arguments
 
