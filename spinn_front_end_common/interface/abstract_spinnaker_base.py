@@ -2444,8 +2444,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
 
         :param edge_to_add:
-        :param partition_identifier: the partition identifier for the outgoing
-                    edge partition
+        :param partition_identifier: \
+            the partition identifier for the outgoing edge partition
         :rtype: None
         """
 
@@ -2456,8 +2456,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         """
 
         :param edge: the edge to add to the graph
-        :param partition_id: the partition identifier for the outgoing
-                    edge partition
+        :param partition_id: \
+            the partition identifier for the outgoing edge partition
         :rtype: None
         """
         self._original_machine_graph.add_edge(edge, partition_id)

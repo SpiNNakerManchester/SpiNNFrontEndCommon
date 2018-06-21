@@ -21,7 +21,7 @@ class GraphMeasurer(object):
 
         :param machine_graph: The machine_graph to measure
         :type machine_graph:\
-                    :py:class:`pacman.model.graph.machine.MachineGraph`
+            :py:class:`pacman.model.graph.machine.MachineGraph`
         :return: The size of the graph in number of chips
         :rtype: int
         """

@@ -486,7 +486,7 @@ bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
     return true;
 }
 
-//! brief this writes the state data to the regions
+//! \brief this writes the state data to the regions
 void _recording_buffer_state_data_write(){
     for (uint32_t recording_region_id = 0;
              recording_region_id < n_recording_regions;
