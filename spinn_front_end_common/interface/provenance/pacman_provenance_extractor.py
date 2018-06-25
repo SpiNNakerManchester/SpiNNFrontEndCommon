@@ -25,7 +25,7 @@ class PacmanProvenanceExtractor(object):
         """ Returns the provenance data items
 
         :return: list of provenance data items.
-        :rtype: iterable of :py:class:`ProvenanceDataItem`
+        :rtype: iterable(:py:class:`ProvenanceDataItem`)
         """
         return self._data_items
 

@@ -401,8 +401,8 @@ class BufferManager(object):
         :param region: The region to get the keys from
         :type region: int
         :return: A list of messages
-        :rtype: list of\
-            :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
+        :rtype: \
+            list(:py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`)
         """
 
         # Get the vertex load details

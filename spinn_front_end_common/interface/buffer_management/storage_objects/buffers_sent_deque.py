@@ -126,8 +126,8 @@ class BuffersSentDeque(object):
     def messages(self):
         """ The messages that have been added to the set
 
-        :rtype: iterable of\
-            :py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`
+        :rtype: \
+            iterable(:py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`)
         """
         return self._buffers_sent
 

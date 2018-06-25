@@ -231,9 +231,9 @@ class BufferedReceivingData(object):
         :type region: int
         :return: all the data received during the simulation, and a flag\
             indicating if any data was lost
-        :rtype: tuple of \
-            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
-             bool)
+        :rtype: \
+            tuple(:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,\
+            bool)
         """
         missing = False
         if (x, y, p, region) not in self._end_buffering_state:

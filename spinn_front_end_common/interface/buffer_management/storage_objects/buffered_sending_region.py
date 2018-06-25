@@ -140,7 +140,7 @@ class BufferedSendingRegion(object):
         :param timestamp: The time at which the keys are to be sent
         :type timestamp: int
         :param keys: The keys to send
-        :type keys: iterable of int
+        :type keys: iterable(int)
         """
         for key in keys:
             self.add_key(timestamp, key)
@@ -157,7 +157,7 @@ class BufferedSendingRegion(object):
     def timestamps(self):
         """ The timestamps for which there are keys
 
-        :rtype: iterable of int
+        :rtype: iterable(int)
         """
         return self._timestamps
 

@@ -88,7 +88,7 @@ def get_recording_region_sizes(
         buffered_sdram, minimum_sdram_for_buffering=(1024 * 1024),
         maximum_sdram_for_buffering=None, use_auto_pause_and_resume=True):
     """ Get the size of each recording region to be passed in to\
-        :py:fun:`get_recording_resources`, based on the details of the\
+        :py:func:`get_recording_resources`, based on the details of the\
         simulation.
 
     :param buffered_sdram:\
@@ -125,7 +125,7 @@ def get_recording_resources(
     :param region_sizes:\
         A list of the sizes of each region.  A size of 0 is acceptable to\
         indicate an empty region
-    :type region_sizes: list of int
+    :type region_sizes: list(int)
     :param buffering_ip_address:\
         The IP address to receive buffering messages on, or None if buffering\
         is not in use
