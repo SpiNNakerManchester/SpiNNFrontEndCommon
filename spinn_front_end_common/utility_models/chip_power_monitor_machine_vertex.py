@@ -86,15 +86,13 @@ class ChipPowerMonitorMachineVertex(
     def resources_required(self):
         # pylint: disable=arguments-differ
         sim = globals_variables.get_simulator()
-        # Does not actually matter as user will put in the correct timesteps
-        n_machine_time_steps = 1
         return self.get_resources(
-            n_machine_time_steps, sim.machine_time_step, sim.time_scale_factor,
+            sim.machine_time_step, sim.time_scale_factor,
             self._n_samples_per_recording, self._sampling_frequency)
 
     @staticmethod
     def get_resources(
-            n_machine_time_steps, time_step, time_scale_factor,
+            time_step, time_scale_factor,
             n_samples_per_recording, sampling_frequency):
         """ get resources used by this vertex
 
@@ -115,8 +113,7 @@ class ChipPowerMonitorMachineVertex(
         per_temestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
 
         container = ResourceContainer(
-            sdram=VariableSDRAM(
-                with_overflow, per_temestep, n_machine_time_steps),
+            sdram=VariableSDRAM(with_overflow, per_temestep),
             cpu_cycles=CPUCyclesPerTickResource(100),
             dtcm=DTCMResource(100))
         return container

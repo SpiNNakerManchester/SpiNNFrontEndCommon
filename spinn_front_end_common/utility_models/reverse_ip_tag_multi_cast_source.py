@@ -174,7 +174,7 @@ class ReverseIpTagMultiCastSource(
             sdram=VariableSDRAM(
                 ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
                     self._send_buffer_times, self._send_buffer_max_space,
-                    self._record_buffer_size > 0), 0, 1),
+                    self._record_buffer_size > 0), 0),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(

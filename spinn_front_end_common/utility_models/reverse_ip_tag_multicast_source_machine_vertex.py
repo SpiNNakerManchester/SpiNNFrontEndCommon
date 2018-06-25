@@ -293,7 +293,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # TODO work out cost per timestep and ideally even soft
             sdram=VariableSDRAM(self.get_sdram_usage(
                 self._send_buffer_times, self._send_buffer_max_space,
-                self._record_buffer_size > 0), 0, 1),
+                self._record_buffer_size > 0), 0),
             cpu_cycles=CPUCyclesPerTickResource(self.get_cpu_usage()),
             iptags=self._iptags,
             reverse_iptags=self._reverse_iptags)
