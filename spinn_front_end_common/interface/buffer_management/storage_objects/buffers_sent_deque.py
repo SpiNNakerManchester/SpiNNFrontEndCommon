@@ -47,7 +47,6 @@ class BuffersSentDeque(object):
     def __init__(self, region, sent_stop_message=False,
                  n_sequences_per_tranmission=64):
         """
-
         :param region: The region being managed
         :type region: int
         :param sent_stop_message: True if the stop message has been sent

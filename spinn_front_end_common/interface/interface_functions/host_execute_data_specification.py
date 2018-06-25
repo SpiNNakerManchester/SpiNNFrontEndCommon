@@ -23,7 +23,7 @@ _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
 class HostExecuteDataSpecification(object):
-    """ Executes the host based data specification
+    """ Executes the host based data specification.
     """
 
     __slots__ = []

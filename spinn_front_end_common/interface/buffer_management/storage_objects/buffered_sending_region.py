@@ -69,8 +69,7 @@ class BufferedSendingRegion(object):
 
     @property
     def buffer_size(self):
-        """
-        property method for getting the max size of this buffer
+        """ The maximum size of this buffer
         """
         if self._buffer_size is None:
             self._calculate_sizes()
@@ -78,7 +77,7 @@ class BufferedSendingRegion(object):
 
     @property
     def total_region_size(self):
-        """ Get the max size of this region
+        """ The maximum size of this region
         """
         if self._total_region_size is None:
             self._calculate_sizes()
@@ -86,7 +85,7 @@ class BufferedSendingRegion(object):
 
     @property
     def max_buffer_size_possible(self):
-        """ Get the max possible size of a buffer from this region
+        """ The maximum possible size of a buffer from this region
         """
         return self._max_size_of_buffer
 
@@ -218,7 +217,7 @@ class BufferedSendingRegion(object):
 
     @property
     def current_timestamp(self):
-        """ Get the current timestamp in the iterator
+        """ The current timestamp in the iterator
         """
         return self._current_timestamp_pos
 
@@ -246,6 +245,6 @@ class BufferedSendingRegion(object):
 
     @property
     def max_packets_in_timestamp(self):
-        """ The maximum number of packets in any time stamp
+        """ The maximum number of packets in any timestamp
         """
         return self._max_packets_in_timestamp

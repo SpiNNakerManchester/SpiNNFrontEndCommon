@@ -175,7 +175,6 @@ class LivePacketGatherMachineVertex(
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas
         """
-
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
@@ -264,9 +263,7 @@ class LivePacketGatherMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
-
         """
-
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
             region=(LivePacketGatherMachineVertex.
@@ -286,7 +283,6 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_sdram_usage():
         """ Get the SDRAM used by this vertex
-
         """
         return (
             SYSTEM_BYTES_REQUIREMENT +
@@ -297,6 +293,5 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_dtcm_usage():
         """ Get the DTCM used by this vertex
-
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE

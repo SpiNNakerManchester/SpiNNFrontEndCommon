@@ -9,13 +9,14 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
+    """ Inserts edges between vertices who use MC speed up and its local\
+        MC data gatherer.
+    """
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None, graph_mapper=None):
-        """ Inserts edges between vertices who use MC speed up and its local\
-            MC data gatherer
-
+        """
         :param machine_graph: the machine graph instance
         :param placements: the placements
         :param machine: the machine object

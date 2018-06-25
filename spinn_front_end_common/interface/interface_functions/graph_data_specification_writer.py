@@ -13,7 +13,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class GraphDataSpecificationWriter(object):
-    """ Executes data specification generation
+    """ Executes the data specification generation step.
     """
 
     __slots__ = (

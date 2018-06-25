@@ -2,6 +2,8 @@ from spinn_utilities.progress_bar import ProgressBar
 
 
 class LoadFixedRoutes(object):
+    """ Load a set of fixed routes onto a SpiNNaker machine.
+    """
 
     def __call__(self, fixed_routes, transceiver, app_id):
 

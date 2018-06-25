@@ -139,9 +139,6 @@ class CommandSender(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """ Return a string representation of the models binary
-
-        """
         return CommandSenderMachineVertex.BINARY_FILE_NAME
 
     @overrides(AbstractVertexWithEdgeToDependentVertices.dependent_vertices)

@@ -2,7 +2,7 @@ import sqlite3
 
 
 class DatabaseReader(object):
-    """ A reader for the database
+    """ A reader for the database.
     """
 
     __slots__ = [
@@ -15,7 +15,6 @@ class DatabaseReader(object):
 
     def __init__(self, database_path):
         """
-
         :param database_path: The path to the database
         :type database_path: str
         """

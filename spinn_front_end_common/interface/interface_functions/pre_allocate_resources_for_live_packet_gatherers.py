@@ -20,9 +20,9 @@ class PreAllocateResourcesForLivePacketGatherers(object):
 
         :param live_packet_gatherer_parameters:\
             the LPG parameters requested by the script
-        :param previous_allocated_resources: other pre-allocated resources
+        :param previous_allocated_resources: other preallocated resources
         :param machine: the SpiNNaker machine as discovered
-        :return: pre allocated resources
+        :return: preallocated resources
         """
 
         progress = ProgressBar(

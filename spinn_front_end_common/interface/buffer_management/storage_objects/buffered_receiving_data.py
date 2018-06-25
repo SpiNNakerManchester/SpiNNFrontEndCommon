@@ -13,7 +13,6 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-
         # the data to store
         "_data",
 
@@ -38,7 +37,6 @@ class BufferedReceivingData(object):
 
     def __init__(self, store_to_file=False):
         """
-
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool

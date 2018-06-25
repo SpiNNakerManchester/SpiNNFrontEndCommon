@@ -618,8 +618,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
     def _adjust_config(self, runtime):
-        """
-        Adjust and checks config based on runtime and mode
+        """ Adjust and checks config based on runtime and mode
 
         :param runtime:
         :type runtime: int or bool
@@ -1133,7 +1132,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         :param n_steps: the total runtime in machine time steps
         :type n_steps: int
-        :param n_steps_per_segment: the min allowed per chunk
+        :param n_steps_per_segment: the minimum allowed per chunk
         :type n_steps_per_segment: int
         :return: list of time steps
         """
@@ -2414,7 +2413,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def add_application_vertex(self, vertex_to_add):
         """
-
         :param vertex_to_add: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
@@ -2428,7 +2426,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def add_machine_vertex(self, vertex):
         """
-
         :param vertex: the vertex to add to the graph
         :rtype: None
         :raises: ConfigurationException when both graphs contain vertices
@@ -2442,7 +2439,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def add_application_edge(self, edge_to_add, partition_identifier):
         """
-
         :param edge_to_add:
         :param partition_identifier: \
             the partition identifier for the outgoing edge partition
@@ -2454,7 +2450,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     def add_machine_edge(self, edge, partition_id):
         """
-
         :param edge: the edge to add to the graph
         :param partition_id: \
             the partition identifier for the outgoing edge partition

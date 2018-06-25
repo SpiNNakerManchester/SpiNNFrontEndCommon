@@ -75,7 +75,6 @@ class SpallocAllocator(object):
             self, spalloc_server, spalloc_user, n_chips, spalloc_port=None,
             spalloc_machine=None):
         """
-
         :param spalloc_server: \
             The server from which the machine should be requested
         :param spalloc_port: The port of the SPALLOC server

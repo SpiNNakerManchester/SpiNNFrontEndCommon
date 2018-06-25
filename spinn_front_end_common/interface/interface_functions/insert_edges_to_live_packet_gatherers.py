@@ -13,7 +13,6 @@ class InsertEdgesToLivePacketGatherers(object):
             live_packet_gatherers_to_vertex_mapping, machine,
             machine_graph, application_graph=None, graph_mapper=None):
         """
-
         :param live_packet_gatherer_parameters: the set of parameters
         :param placements: the placements object
         :param live_packet_gatherers_to_vertex_mapping:\

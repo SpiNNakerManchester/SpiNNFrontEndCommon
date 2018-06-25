@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 @add_metaclass(AbstractBase)
 class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
-    """ Implementation of the AbstractSendsBuffersFromHost\
+    """ Implementation of :py:class:`AbstractSendsBuffersFromHost`\
         which uses an existing set of buffers for the details
     """
 
@@ -73,7 +73,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
             given timestamp
 
         :param region: the region ID to check
-        :param timestamp:  the timestamp to check
+        :param timestamp: the timestamp to check
         :return: bool
         """
         return self.send_buffers[region].is_next_key(timestamp)

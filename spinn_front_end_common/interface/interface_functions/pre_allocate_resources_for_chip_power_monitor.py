@@ -52,14 +52,14 @@ class PreAllocateResourcesForChipPowerMonitor(object):
                 SpecificChipSDRAMResource(chip, resources.sdram.get_value()))
             cores.append(CoreResource(chip, 1))
 
-        # create pre allocated resource container
+        # create preallocated resource container
         cpm_pre_allocated_resource_container = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores)
 
-        # add other pre allocated resources
+        # add other preallocated resources
         if pre_allocated_resources is not None:
             cpm_pre_allocated_resource_container.extend(
                 pre_allocated_resources)
 
-        # return pre allocated resources
+        # return preallocated resources
         return cpm_pre_allocated_resource_container

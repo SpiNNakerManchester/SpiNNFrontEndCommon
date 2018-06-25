@@ -34,8 +34,6 @@ class LivePacketGather(
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, constraints=None,
             label=None):
-        """
-        """
         # pylint: disable=too-many-arguments, too-many-locals
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and

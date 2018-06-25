@@ -45,7 +45,7 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 
 class BufferManager(object):
-    """ Manager of send buffers
+    """ Manager of send buffers.
     """
 
     __slots__ = [
@@ -112,7 +112,6 @@ class BufferManager(object):
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, store_to_file=False):
         """
-
         :param placements: The placements of the vertices
         :type placements:\
             :py:class:`pacman.model.placements.Placements`

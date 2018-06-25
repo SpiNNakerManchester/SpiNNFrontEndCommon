@@ -13,7 +13,7 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 
 
 class MemoryMapOnChipReport(object):
-    """ Report on memory usage
+    """ Report on memory usage.
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):

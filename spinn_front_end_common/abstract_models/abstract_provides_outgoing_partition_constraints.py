@@ -20,4 +20,3 @@ class AbstractProvidesOutgoingPartitionConstraints(object):
         :rtype: \
             list(:py:class:`pacman.model.constraints.abstract_constraint.AbstractConstraint`)
         """
-        pass

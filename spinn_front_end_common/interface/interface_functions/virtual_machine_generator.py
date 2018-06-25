@@ -3,6 +3,8 @@ from spinn_machine import VirtualMachine
 
 
 class VirtualMachineGenerator(object):
+    """ Generates a virtual machine with given dimensions and configuration.
+    """
 
     __slots__ = []
 

@@ -98,7 +98,6 @@ def set_up_output_application_data_specifics(
         max_application_binaries_kept, n_calls_to_run,
         this_run_time_string):
     """
-
     :param where_to_write_application_data_files:\
         the location where all app data is by default written to, or DEFAULT
     :type where_to_write_application_data_files: str
@@ -142,7 +141,6 @@ def set_up_report_specifics(
         default_report_file_path, max_reports_kept, n_calls_to_run,
         this_run_time_string=None):
     """
-
     :param default_report_file_path: The location where all reports reside
     :type default_report_file_path: str
     :param max_reports_kept:\
@@ -301,7 +299,6 @@ def translate_iobuf_extraction_elements(
         hard_coded_cores, hard_coded_model_binary, executable_targets,
         executable_finder):
     """
-
     :param hard_coded_cores: list of cores to read iobuf from
     :param hard_coded_model_binary: list of binary names to read iobuf from
     :param executable_targets: the targets of cores and executable binaries

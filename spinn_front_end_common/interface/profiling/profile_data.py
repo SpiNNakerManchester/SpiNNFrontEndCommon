@@ -119,7 +119,7 @@ class ProfileData(object):
     def tags(self):
         """ The tags recorded as labels
 
-        :rtype: list of str
+        :rtype: list(str)
         """
         return self._tags.keys()
 

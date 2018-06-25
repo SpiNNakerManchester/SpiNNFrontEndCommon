@@ -36,7 +36,6 @@ class DatabaseConnection(UDPConnection):
                  stop_pause_callback_function=None, local_host=None,
                  local_port=NOTIFY_PORT):
         """
-
         :param start_resume_callback_function: A function to be called when \
             the start message has been received.  This function should not \
             take any parameters or return anything.

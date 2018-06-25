@@ -13,7 +13,7 @@ import os
 
 class WriteMemoryIOData(object):
     """ An algorithm that handles objects implementing the interface\
-        AbstractUsesMemoryIO
+        :py:class:`AbstractUsesMemoryIO`
     """
 
     __slots__ = [
@@ -29,7 +29,6 @@ class WriteMemoryIOData(object):
             transceiver=None, graph_mapper=None,
             processor_to_app_data_base_address=None):
         """
-
         :param graph: The graph to process
         :param placements: The placements of vertices of the graph
         :param app_id: The ID of the application
