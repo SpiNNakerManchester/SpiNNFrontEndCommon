@@ -359,7 +359,7 @@ class DatabaseWriter(object):
                 req = vertex.resources_required
                 self.__insert_machine_vertex(
                     vertex, req.cpu_cycles,
-                    req.sdram_used.get_total_sdram(data_n_timesteps),
+                    req.sdram.get_total_sdram(data_n_timesteps),
                     req.dtcm.get_value())
 
             # add machine edges
