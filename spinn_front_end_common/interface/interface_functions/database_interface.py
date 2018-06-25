@@ -41,8 +41,8 @@ class DatabaseInterface(object):
         if self.needs_database:
             self._write_to_db(machine, time_scale_factor, machine_time_step,
                               runtime, application_graph, machine_graph,
-                              graph_mapper, placements, routing_infos,
-                              router_tables, tags,
+                              data_n_timesteps, graph_mapper, placements,
+                              routing_infos, router_tables, tags,
                               create_atom_to_event_id_mapping)
 
         return self, self.database_file_path
