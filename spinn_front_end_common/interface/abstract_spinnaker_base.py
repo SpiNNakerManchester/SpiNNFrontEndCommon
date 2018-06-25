@@ -353,7 +353,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_machine_is_turned_off",
 
         # Version information from the front end
-        "_front_end_versions"
+        "_front_end_versions",
+
+        "_last_except_hook"
     ]
 
     def __init__(
@@ -526,6 +528,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Front End version information
         self._front_end_versions = front_end_versions
+
+        self._last_except_hook = sys.excepthook
 
     def update_extra_mapping_inputs(self, extra_mapping_inputs):
         if self.has_ran:
@@ -809,8 +813,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param value: the value of the exception
         :param traceback_obj: the trace back stuff
         """
+        logger.error("Shutdown on exception")
         self._shutdown()
-        return sys.__excepthook__(exctype, value, traceback_obj)
+        return self._last_except_hook(exctype, value, traceback_obj)
 
     def verify_not_running(self):
         if self._state in [Simulator_State.IN_RUN,
@@ -881,7 +886,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Install the Control-C handler
         signal.signal(signal.SIGINT, self.signal_handler)
         self._raise_keyboard_interrupt = True
-        sys.excepthook = sys.__excepthook__
+        sys.excepthook = self._last_except_hook
 
         logger.info("Starting execution process")
 
@@ -1020,6 +1025,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Indicate that the signal handler needs to act
         self._raise_keyboard_interrupt = False
+        self._last_except_hook = sys.excepthook
         sys.excepthook = self.exception_handler
 
         # update counter for runs (used by reports and app data)
