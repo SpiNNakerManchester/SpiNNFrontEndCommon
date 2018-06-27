@@ -5,7 +5,7 @@ from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 
 class ChipRuntimeUpdater(object):
-    """ Updates the runtime of an application running on a spinnaker machine
+    """ Updates the runtime of an application running on a SpiNNaker machine.
     """
 
     __slots__ = []
