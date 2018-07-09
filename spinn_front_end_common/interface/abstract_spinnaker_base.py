@@ -1081,9 +1081,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                             dependant_edge, edge_identifier)
 
     def _deduce_data_n_timesteps(self):
-        """ figure out how many timer ticks a simulation can run before sdram\
-        runs out to allow saving data for that long.
-    def _deduce_number_of_iterations(self, n_machine_time_steps):
         """ Operates the auto pause and resume functionality by figuring out\
             how many timer ticks a simulation can run before SDRAM runs out,\
             and breaks simulation into chunks of that long.

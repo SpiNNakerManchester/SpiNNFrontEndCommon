@@ -43,10 +43,9 @@ class GraphDataSpecificationWriter(object):
             True if the textual version of the specification is to be written
         :param app_data_runtime_folder:\
             Folder where data specifications should be written to
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :param data_n_timesteps: The number of timesteps for which data space\
             will been reserved
-        :param machine: the python representation of the SpiNNaker machine
         :param graph_mapper:\
             the mapping between application and machine graph
         :param placement:\
