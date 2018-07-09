@@ -29,8 +29,8 @@ def reserve_profile_region(spec, region, n_samples):
     """ Reserves the profile region for recording the profile data
 
     :param spec: the DSG specification writer
-    :param region: region id for the profile data
-    :param n_samples: n elements being sampled
+    :param region: region ID for the profile data
+    :param n_samples: number of elements being sampled
     :rtype: None
 
     """
@@ -43,8 +43,8 @@ def write_profile_region_data(spec, region, n_samples):
     """ Writes the profile region data
 
     :param spec: the DSG specification writer
-    :param region: region id for the profile data
-    :param n_samples: n elements being sampled
+    :param region: region ID for the profile data
+    :param n_samples: number of elements being sampled
     :rtype: None
     """
     spec.switch_write_focus(region)

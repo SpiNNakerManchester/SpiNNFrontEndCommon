@@ -11,16 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 class GraphMeasurer(object):
-    """ Works out how many chips a machine graph needs
+    """ Works out how many chips a machine graph needs.
     """
 
     __slots__ = []
 
     def __call__(self, machine_graph, machine, plan_n_timesteps):
         """
-
         :param machine_graph: The machine_graph to measure
         :type machine_graph:\
+            :py:class:`pacman.model.graph.machine.MachineGraph`
                     :py:class:`pacman.model.graph.machine.MachineGraph`
         :param machine:\
             The machine with respect to which to partition the application\

@@ -51,15 +51,15 @@ class CommandSender(
 
         :param start_resume_commands: The commands to send when the simulation\
             starts or resumes from pause
-        :type start_resume_commands: iterable of\
-            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :type start_resume_commands: \
+            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
         :param pause_stop_commands: the commands to send when the simulation\
             stops or pauses after running
-        :type pause_stop_commands: iterable of\
-            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :type pause_stop_commands: \
+            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
         :param timed_commands: The commands to send at specific times
-        :type timed_commands: iterable of\
-            :py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`
+        :type timed_commands: \
+            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
         :param vertex_to_send_to: The vertex these commands are to be sent to
         """
 
@@ -139,9 +139,6 @@ class CommandSender(
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
-        """ Return a string representation of the models binary
-
-        """
         return CommandSenderMachineVertex.BINARY_FILE_NAME
 
     @overrides(AbstractVertexWithEdgeToDependentVertices.dependent_vertices)

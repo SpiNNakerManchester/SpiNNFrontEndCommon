@@ -18,7 +18,7 @@ _ONE_WORD = struct.Struct("<I")
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine):
     """ An implementation that gets provenance data from a region of ints on\
-        the machine
+        the machine.
     """
 
     __slots__ = ()
@@ -38,14 +38,12 @@ class ProvidesProvenanceDataFromMachineImpl(
     @abstractproperty
     def _provenance_region_id(self):
         """
-
         :return: provenance_region_id
         """
 
     @abstractproperty
     def _n_additional_data_items(self):
         """
-
         :return: n_additional_data_items
         """
 

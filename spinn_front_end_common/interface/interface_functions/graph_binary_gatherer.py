@@ -6,7 +6,7 @@ from spinnman.model import ExecutableTargets
 
 
 class GraphBinaryGatherer(object):
-    """ Extracts binaries to be executed
+    """ Extracts binaries to be executed.
     """
 
     __slots__ = []
