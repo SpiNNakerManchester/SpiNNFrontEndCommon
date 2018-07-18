@@ -1,5 +1,7 @@
 from threading import Thread
 from collections import OrderedDict
+from six import iterkeys, iteritems
+import logging
 
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
@@ -11,7 +13,6 @@ from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
 
-import logging
 from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -121,7 +122,7 @@ class LiveEventConnection(DatabaseConnection):
         :param live_event_callback: A function to be called when events are\
             received. This should take as parameters the label of the vertex,\
             the simulation timestep when the event occurred, and an\
-            array-like of atom ids.
+            array-like of atom IDs.
         :type live_event_callback: function(str, int, [int]) -> None
         """
         label_id = self._receive_labels.index(label)
@@ -179,7 +180,7 @@ class LiveEventConnection(DatabaseConnection):
         if self._receive_labels is not None:
             self._init_receivers(db_reader, vertex_sizes)
 
-        for label, vertex_size in vertex_sizes.iteritems():
+        for label, vertex_size in iteritems(vertex_sizes):
             for init_callback in self._init_callbacks[label]:
                 init_callback(
                     label, vertex_size, run_time_ms, machine_timestep_ms)
@@ -222,7 +223,7 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = 1
             else:
                 key_to_atom_id = db.get_key_to_atom_id_mapping(label)
-                for (key, atom_id) in key_to_atom_id.iteritems():
+                for key, atom_id in iteritems(key_to_atom_id):
                     self._key_to_atom_id_and_label[key] = (atom_id, label_id)
                 vertex_sizes[label] = len(key_to_atom_id)
 
@@ -241,7 +242,7 @@ class LiveEventConnection(DatabaseConnection):
                 db_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
         if not strip_sdp:
-            raise Exception("Currently, only IPtags which strip the SDP "
+            raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
         return host, port, board_address
 
@@ -266,12 +267,12 @@ class LiveEventConnection(DatabaseConnection):
         thread.start()
 
     def _start_resume_callback(self):
-        for label, callbacks in self._start_resume_callbacks.iteritems():
+        for label, callbacks in iteritems(self._start_resume_callbacks):
             for callback in callbacks:
                 self.__launch_thread("start_resume", label, callback)
 
     def _stop_pause_callback(self):
-        for label, callbacks in self._pause_stop_callbacks.iteritems():
+        for label, callbacks in iteritems(self._pause_stop_callbacks):
             for callback in callbacks:
                 self.__launch_thread("pause_stop", label, callback)
 
@@ -298,8 +299,8 @@ class LiveEventConnection(DatabaseConnection):
                     key_times_labels[time][label_id] = list()
                 key_times_labels[time][label_id].append(atom_id)
 
-        for time in key_times_labels.iterkeys():
-            for label_id in key_times_labels[time].iterkeys():
+        for time in iterkeys(key_times_labels):
+            for label_id in iterkeys(key_times_labels[time]):
                 label = self._receive_labels[label_id]
                 for callback in self._live_event_callbacks[label_id]:
                     callback(label, time, key_times_labels[time][label_id])
@@ -323,11 +324,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: \
             The label of the vertex from which the event will originate
         :type label: str
-        :param atom_id: The id of the atom sending the event
+        :param atom_id: The ID of the atom sending the event
         :type atom_id: int
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
-            send 16-bit atom ids directly
+            send 16-bit atom IDs directly
         :type send_full_keys: bool
         """
         self.send_events(label, [atom_id], send_full_keys)
@@ -338,11 +339,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: \
             The label of the vertex from which the events will originate
         :type label: str
-        :param atom_ids: array-like of atom ids sending events
+        :param atom_ids: array-like of atom IDs sending events
         :type atom_ids: [int]
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
-            send 16-bit atom ids directly
+            send 16-bit atom IDs directly
         :type send_full_keys: bool
         """
         max_keys = _MAX_HALF_KEYS_PER_PACKET

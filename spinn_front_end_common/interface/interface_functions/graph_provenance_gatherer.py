@@ -12,7 +12,6 @@ class GraphProvenanceGatherer(object):
             self, machine_graph, application_graph=None,
             provenance_data_objects=None):
         """
-
         :param machine_graph: The machine graph to inspect
         :param application_graph: The optional application graph
         :param provenance_data_objects: Any existing objects to append to

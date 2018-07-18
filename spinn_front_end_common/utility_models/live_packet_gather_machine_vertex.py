@@ -175,7 +175,6 @@ class LivePacketGatherMachineVertex(
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas
         """
-
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
@@ -193,15 +192,15 @@ class LivePacketGatherMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
-        """ writes the configuration region to the spec
+        """ Write the configuration region to the spec
 
-        :param spec: the spec object for the dsg
+        :param spec: the spec object for the DSG
         :type spec: \
-                    :py:class:`spinn_storage_handlers.FileDataWriter`
-        :param iptags: The set of ip tags assigned to the object
-        :type iptags: iterable of :py:class:`spinn_machine.tags.IPTag`
-        :raise DataSpecificationException: when something goes wrong with the\
-                    dsg generation
+            :py:class:`spinn_storage_handlers.FileDataWriter`
+        :param iptags: The set of IP tags assigned to the object
+        :type iptags: iterable(:py:class:`spinn_machine.tags.IPTag`)
+        :raise DataSpecificationException: \
+            when something goes wrong with the DSG generation
         """
         spec.switch_write_focus(
             region=(
@@ -254,7 +253,7 @@ class LivePacketGatherMachineVertex(
         spec.write_value(data=self._payload_right_shift)
 
         # SDP tag
-        iptag = iter(iptags).next()
+        iptag = next(iter(iptags))
         spec.write_value(data=iptag.tag)
         spec.write_value(_ONE_SHORT.unpack(_TWO_BYTES.pack(
             iptag.destination_y, iptag.destination_x))[0])
@@ -264,9 +263,7 @@ class LivePacketGatherMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
-
         """
-
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
             region=(LivePacketGatherMachineVertex.
@@ -286,7 +283,6 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_sdram_usage():
         """ Get the SDRAM used by this vertex
-
         """
         return (
             SYSTEM_BYTES_REQUIREMENT +
@@ -297,6 +293,5 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_dtcm_usage():
         """ Get the DTCM used by this vertex
-
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE

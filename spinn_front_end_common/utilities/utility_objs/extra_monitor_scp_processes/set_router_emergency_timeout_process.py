@@ -8,11 +8,13 @@ class SetRouterEmergencyTimeoutProcess(AbstractMultiConnectionProcess):
         super(SetRouterEmergencyTimeoutProcess, self).__init__(
             connection_selector)
 
-    def set_timeout(self, mantissa, exponent, core_subsets, command_code):
-        for core_subset in core_subsets.core_subsets:
-            for processor_id in core_subset.processor_ids:
-                self._send_request(SetRouterEmergencyTimeoutMessage(
-                    core_subset.x, core_subset.y, processor_id,
-                    mantissa, exponent, command_code))
+    def set_timeout(self, mantissa, exponent, core_subsets):
+        for core in core_subsets.core_subsets:
+            for processor_id in core.processor_ids:
+                self._set_timeout(core, processor_id, mantissa, exponent)
+
+    def _set_timeout(self, core, processor_id, mantissa, exponent):
+        self._send_request(SetRouterEmergencyTimeoutMessage(
+            core.x, core.y, processor_id, mantissa, exponent))
         self._finish()
         self.check_for_error()

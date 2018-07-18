@@ -29,8 +29,8 @@ def reserve_profile_region(spec, region, n_samples):
     """ Reserves the profile region for recording the profile data
 
     :param spec: the DSG specification writer
-    :param region: region id for the profile data
-    :param n_samples: n elements being sampled
+    :param region: region ID for the profile data
+    :param n_samples: number of elements being sampled
     :rtype: None
 
     """
@@ -43,8 +43,8 @@ def write_profile_region_data(spec, region, n_samples):
     """ Writes the profile region data
 
     :param spec: the DSG specification writer
-    :param region: region id for the profile data
-    :param n_samples: n elements being sampled
+    :param region: region ID for the profile data
+    :param n_samples: number of elements being sampled
     :rtype: None
     """
     spec.switch_write_focus(region)
@@ -67,9 +67,8 @@ def get_profiling_data(profile_region, tag_labels, txrx, placement):
         placement=placement, region=profile_region, transceiver=txrx)
 
     # Read the profiling data size
-    words_written_data = txrx.read_memory(
-        placement.x, placement.y, profiling_region_base_address, 4)
-    words_written = _ONE_WORD.unpack_from(buffer(words_written_data))[0]
+    words_written, = _ONE_WORD.unpack_from(txrx.read_memory(
+        placement.x, placement.y, profiling_region_base_address, 4))
 
     # Read the profiling data
     if words_written != 0:

@@ -4,7 +4,6 @@
 #include <debug.h>
 #include <simulation.h>
 #include <spin1_api.h>
-#include <string.h>
 
 // Globals
 static sdp_msg_t g_event_message;
@@ -157,9 +156,8 @@ void flush_events(void) {
 
 //! \brief function to store provenance data elements into SDRAM
 void record_provenance_data(address_t provenance_region_address) {
-
     // Copy provenance data into SDRAM region
-    memcpy(provenance_region_address, &provenance_data,
+    spin1_memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
 }
 
@@ -199,7 +197,7 @@ void flush_events_if_full(void) {
     }
 }
 
-// process mc packet without payload
+// processes an incoming multicast packet without payload
 void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
@@ -246,7 +244,7 @@ void process_incoming_event(uint key) {
     flush_events_if_full();
 }
 
-// processes mc packet with payload
+// processes an incoming multicast packet with payload
 void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 

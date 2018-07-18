@@ -19,11 +19,11 @@ class ProvenanceXMLWriter(object):
     __slots__ = []
 
     def __call__(self, provenance_data_items, provenance_data_path):
-        """ writes provenance in xml format
+        """ Writes provenance in XML format
 
         :param provenance_data_items: data items for provenance
         :param provenance_data_path: the file path to store provenance in
-        :return:  None
+        :return: None
         """
 
         # Group data by the first name
@@ -47,7 +47,7 @@ class ProvenanceXMLWriter(object):
                 element.text = str(item.value)
 
             # write xml form into file provided
-            with open(self._get_file(provenance_data_path, name), "w") as f:
+            with open(self._get_file(provenance_data_path, name), "wb") as f:
                 f.write(etree.tostring(root, pretty_print=True))
 
     @staticmethod

@@ -1,6 +1,6 @@
 class LivePacketGatherParameters(object):
-    """ parameter holder for LPG's so that they can be instantiated at a\
-     later date.
+    """ Parameter holder for LPGs so that they can be instantiated at a\
+        later date.
     """
 
     __slots__ = [

@@ -35,7 +35,7 @@ address_t data_specification_get_data_address() {
     address_t address =
         (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
 
-    log_info("SDRAM data begins at address: %08x", address);
+    log_debug("SDRAM data begins at address: %08x", address);
 
     return address;
 }
@@ -70,7 +70,7 @@ bool data_specification_read_header(uint32_t* address) {
 
 //! \brief Returns the absolute SDRAM memory address for a given region value.
 //!
-//! \param[in] region The region id (between 0 and 15) to which the absolute
+//! \param[in] region The region ID (between 0 and 15) to which the absolute
 //!            memory address in SDRAM is to be located
 //! \param[in] data_address The absolute SDRAM address for the start of the
 //!            app_pointer table as created by the host DSE.

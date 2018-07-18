@@ -13,6 +13,7 @@ from .database_reader import DatabaseReader
 
 # general imports
 from threading import Thread
+from six import raise_from
 import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
@@ -35,13 +36,12 @@ class DatabaseConnection(UDPConnection):
                  stop_pause_callback_function=None, local_host=None,
                  local_port=NOTIFY_PORT):
         """
-
         :param start_resume_callback_function: A function to be called when \
             the start message has been received.  This function should not \
             take any parameters or return anything.
         :type start_resume_callback_function: function() -> None
         :param local_host: Optional specification of the local hostname or\
-            ip address of the interface to listen on
+            IP address of the interface to listen on
         :type local_host: str
         :param local_port: Optional specification of the local port to listen \
             on.  Must match the port that the toolchain will send the \
@@ -88,7 +88,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise SpinnmanIOException(str(e))
+            raise_from(SpinnmanIOException(str(e)), e)
         finally:
             self._running = False
 
@@ -146,8 +146,6 @@ class DatabaseConnection(UDPConnection):
             return self.receive_with_address(timeout=3)
         except SpinnmanTimeoutException:
             return None, None
-        except SpinnmanIOException:
-            raise
 
     def close(self):
         self._running = False

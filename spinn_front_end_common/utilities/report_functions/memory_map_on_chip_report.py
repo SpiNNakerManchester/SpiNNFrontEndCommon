@@ -13,11 +13,11 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 
 
 class MemoryMapOnChipReport(object):
-    """ Report on memory usage
+    """ Report on memory usage.
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
-        """ creates a report that states where in sdram each region is
+        """ Creates a report that states where in SDRAM each region is
 
         :param report_default_directory: the folder where reports are written
         :param dsg_targets: the map between placement and file writer
@@ -44,10 +44,9 @@ class MemoryMapOnChipReport(object):
         report_data_address = self._get_report_data_address(txrx, x, y, p)
         report_bytes = _MemoryChannelState.STRUCT_SIZE * MAX_MEM_REGIONS
 
-        report_data = buffer(txrx.read_memory(
-            x, y, report_data_address, report_bytes))
+        report_data = txrx.read_memory(x, y, report_data_address, report_bytes)
 
-        for i in xrange(MAX_MEM_REGIONS):
+        for i in range(MAX_MEM_REGIONS):
             region = _MemoryChannelState.from_bytestring(
                 report_data, i * _MemoryChannelState.STRUCT_SIZE)
             self._describe_region(f, region, i)
@@ -76,7 +75,7 @@ class MemoryMapOnChipReport(object):
             x, y, p)
         data_address_encoded = txrx.read_memory(
             x, y, data_address_pointer, 4)
-        return _ONE_WORD.unpack_from(buffer(data_address_encoded))[0]
+        return _ONE_WORD.unpack_from(data_address_encoded)[0]
 
 
 class _MemoryChannelState(object):
