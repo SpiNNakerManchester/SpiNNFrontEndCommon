@@ -13,10 +13,12 @@ from pacman.model.placements import Placements
 from pacman.executor import PACMANAlgorithmExecutor
 from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
 from pacman.model.graphs.application import ApplicationGraph
+from pacman.model.graphs.impl.graph import Graph
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineGraph, MachineVertex
 from pacman.model.resources import PreAllocatedResourceContainer
+from pacman.model.graphs import AbstractOutgoingEdgePartition
 from pacman import __version__ as pacman_version
 
 # common front end imports
@@ -834,9 +836,39 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._run(run_time)
 
     def _build_graphs_for_usege(self):
+        # sort out the merging of graph supported types
+        allowed_edge_types = set()
+        original_edges = self._original_application_graph.allowed_edge_types
+        if isinstance(original_edges, tuple):
+            allowed_edge_types = allowed_edge_types.update(original_edges)
+        else:
+            allowed_edge_types.add(original_edges)
+        allowed_edge_types.add(ApplicationEdge)
+
+        allowed_vertex_types = set()
+        original_verts = self._original_application_graph.allowed_vertex_types
+        if isinstance(original_verts, tuple):
+            allowed_vertex_types = allowed_vertex_types.update(original_verts)
+        else:
+            allowed_vertex_types.add(original_verts)
+        allowed_vertex_types.add(ApplicationVertex)
+
+        allowed_partition_types = set()
+        original_partitions = \
+            self._original_application_graph.allowed_partition_types
+        if isinstance(original_partitions, tuple):
+            allowed_partition_types = allowed_partition_types.update(
+                original_partitions)
+        else:
+            allowed_partition_types.add(original_partitions)
+        allowed_partition_types.add(AbstractOutgoingEdgePartition)
+
         # sort out app graph
-        self._application_graph = ApplicationGraph(
-            label=self._original_application_graph.label)
+        self._application_graph = Graph(
+            label=self._original_application_graph.label,
+            allowed_edge_types=tuple(allowed_edge_types),
+            allowed_vertex_types=tuple(allowed_vertex_types),
+            allowed_partition_types=tuple(allowed_partition_types))
         for vertex in self._original_application_graph.vertices:
             self._application_graph.add_vertex(vertex)
         for outgoing_partition in \
