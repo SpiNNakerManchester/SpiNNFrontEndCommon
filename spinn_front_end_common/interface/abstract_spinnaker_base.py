@@ -1388,18 +1388,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._machine is not None:
             return self._machine
 
+        # get the biggest machine available to the system (might be the real
+        # machine when using virtual or a physical machine)
+        self._get_max_available_machine()
+        if self._machine is not None:
+            return self._machine
+
         inputs = dict(self._max_machine_outputs)
         # set up machine provenance
         inputs["ProvenanceItems"] = self._generate_machine_provenance()
 
         algorithms = list()
         outputs = list()
-
-        # get the biggest machine available to the system (might be the real
-        # machine when using virtual or a physical machine)
-        self._get_max_available_machine()
-        if self._machine is not None:
-            return self._machine
 
         # add system algorithms/inputs as required
         system_inputs, system_algorithms = \
