@@ -19,11 +19,11 @@ class ProvenanceXMLWriter(object):
     __slots__ = []
 
     def __call__(self, provenance_data_items, provenance_data_path):
-        """ writes provenance in xml format
+        """ Writes provenance in XML format
 
         :param provenance_data_items: data items for provenance
         :param provenance_data_path: the file path to store provenance in
-        :return:  None
+        :return: None
         """
 
         # Group data by the first name

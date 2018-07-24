@@ -16,14 +16,13 @@ import struct
 
 
 class DSGRegionReloader(object):
-    """ Regenerates Data Specifications
+    """ Regenerates and reloads the data specifications.
     """
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
             write_text_specs, application_data_file_path, graph_mapper=None):
         """
-
         :param transceiver: SpiNNMan transceiver for communication
         :param placements: the list of placements of the machine graph to cores
         :param hostname: the machine name

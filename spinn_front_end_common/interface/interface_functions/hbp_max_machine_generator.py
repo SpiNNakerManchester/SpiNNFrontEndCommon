@@ -4,7 +4,7 @@ from spinn_machine.virtual_machine import VirtualMachine
 
 class HBPMaxMachineGenerator(object):
     """ Generates the width and height of the maximum machine a given\
-        HBP server can generate
+        HBP server can generate.
     """
 
     __slots__ = []

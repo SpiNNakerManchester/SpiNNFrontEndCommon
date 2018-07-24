@@ -3,6 +3,8 @@ from spinn_machine import VirtualMachine
 
 
 class VirtualMachineGenerator(object):
+    """ Generates a virtual machine with given dimensions and configuration.
+    """
 
     __slots__ = []
 
@@ -14,8 +16,8 @@ class VirtualMachineGenerator(object):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
-        :param virtual_has_wrap_arounds: True if the machine\
-                should be created with wrap_arounds
+        :param virtual_has_wrap_arounds: \
+            True if the machine should be created with wrap_arounds
         :param version: The version of board to create
         :param n_cpus_per_chip: The number of cores to put on each chip
         :param with_monitors: If true, CPU 0 will be marked as a monitor
@@ -33,7 +35,7 @@ class VirtualMachineGenerator(object):
             down_cores=down_cores, down_links=down_links,
             sdram_per_chip=max_sdram_size)
 
-        # Work out and add the spinnaker links and FPGA links
+        # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)
         machine.add_fpga_links(version)
 

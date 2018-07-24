@@ -70,7 +70,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type region: int
     :param placement: the placement object to get the region address of
     :type placement: pacman.model.placements.Placement
-    :param transceiver: the python interface to the spinnaker machine
+    :param transceiver: the python interface to the SpiNNaker machine
     :type transceiver: spiNNMan.transciever.Transciever
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
@@ -98,7 +98,6 @@ def set_up_output_application_data_specifics(
         max_application_binaries_kept, n_calls_to_run,
         this_run_time_string):
     """
-
     :param where_to_write_application_data_files:\
         the location where all app data is by default written to, or DEFAULT
     :type where_to_write_application_data_files: str
@@ -142,7 +141,6 @@ def set_up_report_specifics(
         default_report_file_path, max_reports_kept, n_calls_to_run,
         this_run_time_string=None):
     """
-
     :param default_report_file_path: The location where all reports reside
     :type default_report_file_path: str
     :param max_reports_kept:\
@@ -274,7 +272,7 @@ def sort_out_downed_chips_cores_links(
         a tuple of (\
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
-            set of ((x, y), link id) of down links)
+            set of ((x, y), link ID) of down links)
     :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
     """
     ignored_chips = set()
@@ -301,7 +299,6 @@ def translate_iobuf_extraction_elements(
         hard_coded_cores, hard_coded_model_binary, executable_targets,
         executable_finder):
     """
-
     :param hard_coded_cores: list of cores to read iobuf from
     :param hard_coded_model_binary: list of binary names to read iobuf from
     :param executable_targets: the targets of cores and executable binaries
@@ -417,9 +414,9 @@ def generate_unique_folder_name(folder, filename, extension):
 
 
 def get_ethernet_chip(machine, board_address):
-    """ locate the chip with the given board IP address
+    """ Locate the chip with the given board IP address
 
-    :param machine: the spinnaker machine
+    :param machine: the SpiNNaker machine
     :param board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
     :raises ConfigurationException:\
@@ -434,7 +431,7 @@ def get_ethernet_chip(machine, board_address):
 
 
 def convert_time_diff_to_total_milliseconds(sample):
-    """ converts between a time diff and total milliseconds
+    """ Convert between a time diff and total milliseconds.
 
     :return: total milliseconds
     :rtype: float
@@ -443,7 +440,7 @@ def convert_time_diff_to_total_milliseconds(sample):
 
 
 def determine_flow_states(executable_types, no_sync_changes):
-    """ returns the start and end states for these executable types
+    """ Get the start and end states for these executable types.
 
     :param executable_types: \
         the execute types to locate start and end states from
