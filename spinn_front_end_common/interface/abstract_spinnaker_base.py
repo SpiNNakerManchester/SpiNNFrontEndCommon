@@ -156,7 +156,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # simulation is going to run on
         "_machine",
 
-        # The python represnetation of the largest SpiNNaker machine that this \
+        # The python representation of the largest SpiNNaker machine that this
         # simulation has available to it
         "_max_machine_available",
 
@@ -1295,7 +1295,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._max_machine_available = self._machine
 
         if (self._spalloc_server is not None or
-                    self._remote_spinnaker_url is not None):
+                self._remote_spinnaker_url is not None):
             # if using spalloc system
             if self._spalloc_server is not None:
                 inputs["SpallocServer"] = self._spalloc_server
@@ -1353,9 +1353,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return version_provenance
 
     def _get_system_functionality_algorithms_and_inputs(self):
-        """ determines which algorithms and inputs are needed for the 
+        """ determines which algorithms and inputs are needed for the \
         system functionality
-        
+
         :return: inputs dict and algorithm list.
         """
         inputs = dict()
