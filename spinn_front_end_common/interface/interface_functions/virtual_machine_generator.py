@@ -1,5 +1,5 @@
 # spinn_machine imports
-from spinn_machine import VirtualMachine
+from spinn_machine import VirtualMachine, Machine, Router
 
 
 class VirtualMachineGenerator(object):
@@ -10,9 +10,10 @@ class VirtualMachineGenerator(object):
 
     def __call__(
             self, width=None, height=None, virtual_has_wrap_arounds=None,
-            version=None, n_cpus_per_chip=18, with_monitors=True,
-            down_chips=None, down_cores=None, down_links=None,
-            max_sdram_size=None):
+            version=None, n_cpus_per_chip=Machine.MAX_CORES_PER_CHIP,
+            with_monitors=True, down_chips=None, down_cores=None,
+            down_links=None, max_sdram_size=None,
+            router_entries_per_chip=Router.ROUTER_DEFAULT_AVAILABLE_ENTRIES):
         """
         :param width: The width of the machine in chips
         :param height: The height of the machine in chips
@@ -33,7 +34,8 @@ class VirtualMachineGenerator(object):
             version=version, n_cpus_per_chip=n_cpus_per_chip,
             with_monitors=with_monitors, down_chips=down_chips,
             down_cores=down_cores, down_links=down_links,
-            sdram_per_chip=max_sdram_size)
+            sdram_per_chip=max_sdram_size,
+            router_entries_per_chip=router_entries_per_chip)
 
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)
