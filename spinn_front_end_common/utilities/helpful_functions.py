@@ -14,7 +14,6 @@ import logging
 import struct
 import datetime
 import shutil
-from ConfigParser import RawConfigParser
 
 from spinnman.model.enums import CPUState
 from spinn_utilities.log import FormatAdapter
@@ -47,8 +46,7 @@ def read_data(x, y, address, length, data_format, transceiver):
     """
     # pylint: disable=too-many-arguments
 
-    # turn byte array into str for unpack to work
-    data = buffer(transceiver.read_memory(x, y, address, length))
+    data = transceiver.read_memory(x, y, address, length)
     return struct.unpack_from(data_format, data)[0]
 
 
@@ -62,8 +60,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param address: Value to write (32-bit integer)
     """
     user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
-    start_address_encoded = buffer(_ONE_WORD.pack(address))
-    txrx.write_memory(x, y, user_0_address, start_address_encoded)
+    txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 
 def locate_memory_region_for_placement(placement, region, transceiver):
@@ -73,18 +70,19 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type region: int
     :param placement: the placement object to get the region address of
     :type placement: pacman.model.placements.Placement
-    :param transceiver: the python interface to the spinnaker machine
+    :param transceiver: the python interface to the SpiNNaker machine
     :type transceiver: spiNNMan.transciever.Transciever
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
         placement.x, placement.y, placement.p).user[0]
 
     # Get the position of the region in the pointer table
-    region_offset_in_pointer_table = \
-        utility_calls.get_region_base_address_offset(
-            regions_base_address, region)
-    region_address = buffer(transceiver.read_memory(
-        placement.x, placement.y, region_offset_in_pointer_table, 4))
+    region_offset = utility_calls.get_region_base_address_offset(
+        regions_base_address, region)
+
+    # Get the actual address of the region
+    region_address = transceiver.read_memory(
+        placement.x, placement.y, region_offset, 4)
     return _ONE_WORD.unpack_from(region_address)[0]
 
 
@@ -100,7 +98,6 @@ def set_up_output_application_data_specifics(
         max_application_binaries_kept, n_calls_to_run,
         this_run_time_string):
     """
-
     :param where_to_write_application_data_files:\
         the location where all app data is by default written to, or DEFAULT
     :type where_to_write_application_data_files: str
@@ -144,7 +141,6 @@ def set_up_report_specifics(
         default_report_file_path, max_reports_kept, n_calls_to_run,
         this_run_time_string=None):
     """
-
     :param default_report_file_path: The location where all reports reside
     :type default_report_file_path: str
     :param max_reports_kept:\
@@ -219,7 +215,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
 
         # sort files into time frame
         files_in_report_folder.sort(
-            cmp, key=lambda temp_file:
+            key=lambda temp_file:
             os.path.getmtime(os.path.join(starting_directory, temp_file)))
 
         # remove only the number of files required, and only if they have
@@ -239,7 +235,7 @@ def _remove_excess_folders(max_to_keep, starting_directory):
                 files_not_closed += 1
             if files_removed + files_not_closed >= num_files_to_remove:
                 break
-        if files_not_closed > max_to_keep / 4:
+        if files_not_closed > max_to_keep // 4:
             logger.warning("{} has {} old reports that have not been closed",
                            starting_directory, files_not_closed)
 
@@ -276,7 +272,7 @@ def sort_out_downed_chips_cores_links(
         a tuple of (\
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
-            set of ((x, y), link id) of down links)
+            set of ((x, y), link ID) of down links)
     :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
     """
     ignored_chips = set()
@@ -303,7 +299,6 @@ def translate_iobuf_extraction_elements(
         hard_coded_cores, hard_coded_model_binary, executable_targets,
         executable_finder):
     """
-
     :param hard_coded_cores: list of cores to read iobuf from
     :param hard_coded_model_binary: list of binary names to read iobuf from
     :param executable_targets: the targets of cores and executable binaries
@@ -383,6 +378,11 @@ def read_config_int(config, section, item):
     return int(value)
 
 
+_BOOLEAN_STATES = {
+    'true': True, '1': True, 'on': True, 'yes': True,
+    'false': False, '0': False, 'off': False, 'no': False}
+
+
 def read_config_boolean(config, section, item):
     """ Get the boolean value of a config item, returning None if the value\
         is "None"
@@ -390,9 +390,8 @@ def read_config_boolean(config, section, item):
     value = read_config(config, section, item)
     if value is None:
         return value
-    # pylint: disable=protected-access
-    if value.lower() in RawConfigParser._boolean_states:
-        return RawConfigParser._boolean_states[value.lower()]
+    if value.lower() in _BOOLEAN_STATES:
+        return _BOOLEAN_STATES[value.lower()]
     raise ValueError("Unknown boolean value {} in configuration {}:{}".format(
         value, section, item))
 
@@ -415,9 +414,9 @@ def generate_unique_folder_name(folder, filename, extension):
 
 
 def get_ethernet_chip(machine, board_address):
-    """ locate the chip with the given board IP address
+    """ Locate the chip with the given board IP address
 
-    :param machine: the spinnaker machine
+    :param machine: the SpiNNaker machine
     :param board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
     :raises ConfigurationException:\
@@ -432,7 +431,7 @@ def get_ethernet_chip(machine, board_address):
 
 
 def convert_time_diff_to_total_milliseconds(sample):
-    """ converts between a time diff and total milliseconds
+    """ Convert between a time diff and total milliseconds.
 
     :return: total milliseconds
     :rtype: float
@@ -441,7 +440,7 @@ def convert_time_diff_to_total_milliseconds(sample):
 
 
 def determine_flow_states(executable_types, no_sync_changes):
-    """ returns the start and end states for these executable types
+    """ Get the start and end states for these executable types.
 
     :param executable_types: \
         the execute types to locate start and end states from
@@ -482,3 +481,18 @@ def determine_flow_states(executable_types, no_sync_changes):
         raise ConfigurationException(
             "Unknown executable start types {}".format(executable_types))
     return expected_start_states, expected_end_states
+
+
+def convert_vertices_to_core_subset(vertices, placements):
+    """ Converts vertices into core subsets.
+
+    :param extra_monitor_cores_to_set:\
+        the vertices to convert to core subsets
+    :param placements: the placements object
+    :return: the CoreSubSets of the vertices
+    """
+    core_subsets = CoreSubsets()
+    for vertex in vertices:
+        placement = placements.get_placement_of_vertex(vertex)
+        core_subsets.add_processor(placement.x, placement.y, placement.p)
+    return core_subsets

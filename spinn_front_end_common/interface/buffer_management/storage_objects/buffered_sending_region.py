@@ -49,7 +49,7 @@ class BufferedSendingRegion(object):
     #  an additional header)
     _N_KEYS_PER_MESSAGE = (UDP_MESSAGE_MAX_SIZE -
                            (HostSendSequencedData.get_min_packet_length() +
-                            _HEADER_SIZE)) / _N_BYTES_PER_KEY
+                            _HEADER_SIZE)) // _N_BYTES_PER_KEY
 
     def __init__(self, max_buffer_size):
         self._max_size_of_buffer = max_buffer_size
@@ -69,8 +69,7 @@ class BufferedSendingRegion(object):
 
     @property
     def buffer_size(self):
-        """
-        property method for getting the max size of this buffer
+        """ The maximum size of this buffer
         """
         if self._buffer_size is None:
             self._calculate_sizes()
@@ -78,7 +77,7 @@ class BufferedSendingRegion(object):
 
     @property
     def total_region_size(self):
-        """ Get the max size of this region
+        """ The maximum size of this region
         """
         if self._total_region_size is None:
             self._calculate_sizes()
@@ -86,7 +85,7 @@ class BufferedSendingRegion(object):
 
     @property
     def max_buffer_size_possible(self):
-        """ Get the max possible size of a buffer from this region
+        """ The maximum possible size of a buffer from this region
         """
         return self._max_size_of_buffer
 
@@ -141,7 +140,7 @@ class BufferedSendingRegion(object):
         :param timestamp: The time at which the keys are to be sent
         :type timestamp: int
         :param keys: The keys to send
-        :type keys: iterable of int
+        :type keys: iterable(int)
         """
         for key in keys:
             self.add_key(timestamp, key)
@@ -158,7 +157,7 @@ class BufferedSendingRegion(object):
     def timestamps(self):
         """ The timestamps for which there are keys
 
-        :rtype: iterable of int
+        :rtype: iterable(int)
         """
         return self._timestamps
 
@@ -218,7 +217,7 @@ class BufferedSendingRegion(object):
 
     @property
     def current_timestamp(self):
-        """ Get the current timestamp in the iterator
+        """ The current timestamp in the iterator
         """
         return self._current_timestamp_pos
 
@@ -246,6 +245,6 @@ class BufferedSendingRegion(object):
 
     @property
     def max_packets_in_timestamp(self):
-        """ The maximum number of packets in any time stamp
+        """ The maximum number of packets in any timestamp
         """
         return self._max_packets_in_timestamp

@@ -13,7 +13,6 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-
         # the data to store
         "_data",
 
@@ -38,7 +37,6 @@ class BufferedReceivingData(object):
 
     def __init__(self, store_to_file=False):
         """
-
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
@@ -233,9 +231,9 @@ class BufferedReceivingData(object):
         :type region: int
         :return: all the data received during the simulation, and a flag\
             indicating if any data was lost
-        :rtype: tuple of \
-            (:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,
-             bool)
+        :rtype: \
+            tuple(:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,\
+            bool)
         """
         missing = False
         if (x, y, p, region) not in self._end_buffering_state:
@@ -335,15 +333,16 @@ class BufferedReceivingData(object):
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
+        self._end_buffering_sequence_no = dict()
 
     def clear(self, x, y, p, region_id):
         """ Clears the data from a given data region (only clears things\
             associated with a given data recording region).
 
-        :param x: placement x coord
-        :param y: placement y coord
-        :param p: placement p coord
-        :param region_id: the recording region id to clear data from
+        :param x: placement x coordinate
+        :param y: placement y coordinate
+        :param p: placement p coordinate
+        :param region_id: the recording region ID to clear data from
         :rtype: None
         """
         del self._end_buffering_state[x, y, p, region_id]

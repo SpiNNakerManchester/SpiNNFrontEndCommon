@@ -14,5 +14,5 @@ class AbstractProvidesLocalProvenanceData(object):
     def get_local_provenance_data(self):
         """ Get an iterable of provenance data items
 
-        :return: iterable of ProvenanceDataItem
+        :return: iterable of :py:class:`ProvenanceDataItem`
         """

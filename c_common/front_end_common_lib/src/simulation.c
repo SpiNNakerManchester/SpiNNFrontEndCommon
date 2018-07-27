@@ -25,13 +25,13 @@ static exit_callback_t stored_exit_function = NULL;
 //! the function call to run just before resuming a simulation
 static resume_callback_t stored_resume_function = NULL;
 
-//! the region id for storing provenance data from the chip
+//! the region ID for storing provenance data from the chip
 static address_t stored_provenance_data_address = NULL;
 
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
 
-//! the list of DMA callbacks for dma complete callbacks
+//! the list of DMA callbacks for DMA complete callbacks
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
 //! \brief handles the storing of basic provenance data
@@ -199,7 +199,7 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
     }
 }
 
-//! \brief handles the sdp callbacks interface.
+//! \brief handles the SDP callbacks interface.
 void _simulation_sdp_callback_handler(uint mailbox, uint port) {
 
     if (sdp_callback[port] != NULL) {
@@ -218,7 +218,7 @@ bool simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
     if (sdp_callback[sdp_port] == NULL) {
         sdp_callback[sdp_port] = callback;
     } else {
-        log_error("Cannot allocate sdp callback on port %d as its already "
+        log_error("Cannot allocate SDP callback on port %d as its already "
                   "been allocated.", sdp_port);
         return false;
     }
@@ -228,7 +228,7 @@ void simulation_sdp_callback_off(uint sdp_port) {
     sdp_callback[sdp_port] = NULL;
 }
 
-//! \brief handles the dma transfer done callbacks interface.
+//! \brief handles the DMA transfer done callbacks interface.
 void _simulation_dma_transfer_done_callback(uint unused, uint tag) {
     if (tag < MAX_DMA_CALLBACK_TAG && dma_complete_callbacks[tag] != NULL) {
         dma_complete_callbacks[tag](unused, tag);
@@ -250,7 +250,7 @@ bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback) {
     } else {
 
         // if allocated already, raise error
-        log_error("Cannot allocate dma transfer callback on tag %d as its "
+        log_error("Cannot allocate DMA transfer callback on tag %d as its "
                   "already been allocated.", tag);
         return false;
     }

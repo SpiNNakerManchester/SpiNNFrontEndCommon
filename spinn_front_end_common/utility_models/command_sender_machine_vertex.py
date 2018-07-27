@@ -45,7 +45,7 @@ class CommandSenderMachineVertex(
     # Setup data size (one word)
     _SETUP_DATA_SIZE = 4
 
-    # the number of malloc requests used by the dsg
+    # the number of malloc requests used by the DSG
     TOTAL_REQUIRED_MALLOCS = 5
 
     # The name of the binary file
@@ -114,7 +114,7 @@ class CommandSenderMachineVertex(
         time_between_commands = 0
         if max_n_commands > 0:
             time_between_commands = (
-                (machine_time_step * time_scale_factor / 2) / max_n_commands)
+                (machine_time_step * time_scale_factor // 2) // max_n_commands)
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SETUP.value)
         spec.write_value(time_between_commands)
@@ -165,7 +165,10 @@ class CommandSenderMachineVertex(
     @staticmethod
     def _write_command(command, spec):
         spec.write_value(command.key)
-        spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        if command.is_payload:
+            spec.write_value(CommandSenderMachineVertex._HAS_PAYLOAD)
+        else:
+            spec.write_value(CommandSenderMachineVertex._HAS_NO_PAYLOAD)
         spec.write_value(command.payload if command.is_payload else 0)
         spec.write_value(command.repeat)
         spec.write_value(command.delay_between_repeats)
@@ -174,11 +177,10 @@ class CommandSenderMachineVertex(
     def _reserve_memory_regions(
             spec, time_command_size, start_command_size, end_command_size,
             vertex):
-        """
-        Reserve SDRAM space for memory areas:
-        1) Area for information on what data to record
-        2) area for start commands
-        3) area for end commands
+        """ Reserve SDRAM space for memory areas:
+        1. Area for information on what data to record
+        2. Area for start commands
+        3. Area for end commands
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 

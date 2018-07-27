@@ -30,13 +30,13 @@ class ReverseIpTagMultiCastSource(
         AbstractHasAssociatedBinary,
         AbstractProvidesOutgoingPartitionConstraints,
         ProvidesKeyToAtomMappingImpl):
-    """ A model which will allow events to be injected into a spinnaker\
+    """ A model which will allow events to be injected into a SpiNNaker\
         machine and converted into multicast packets.
     """
 
     def __init__(
             self, n_keys, label=None, constraints=None,
-            max_atoms_per_core=sys.maxint,
+            max_atoms_per_core=sys.maxsize,
 
             # General parameters
             board_address=None,
@@ -92,7 +92,7 @@ class ReverseIpTagMultiCastSource(
             verified before sending (default False)
         :param send_buffer_times: An array of arrays of times at which keys\
             should be sent (one array for each key, default disabled)
-        :param send_buffer_partition_id: The id of the partition containing\
+        :param send_buffer_partition_id: The ID of the partition containing\
             the edges down which the events are to be sent
         :param send_buffer_max_space: The maximum amount of space to use of\
             the SDRAM on the machine (default is 1MB)
