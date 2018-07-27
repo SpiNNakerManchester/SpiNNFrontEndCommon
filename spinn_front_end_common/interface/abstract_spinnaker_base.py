@@ -1337,6 +1337,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._read_config_int("Machine", "NCoresPerChip")
             inputs["RouterTableEntriesPerRouter"] = \
                 self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+            inputs["MaxSDRAMSize"] = self._read_config_int(
+                "Machine", "MaxSDRAMSize")
 
             algorithms.append("VirtualMachineGenerator")
 
