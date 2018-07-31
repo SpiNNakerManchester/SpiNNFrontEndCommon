@@ -9,8 +9,7 @@ class SetPacketTypesProcess(AbstractMultiConnectionProcess):
 
     def set_packet_types(self, core_subsets, point_to_point, multicast,
                          nearest_neighbour, fixed_route):
-        """
-        Set what types of packets should be reinjected.
+        """ Set what types of packets should be reinjected.
 
         :param core_subsets: sets of cores to send command to
         :param point_to_point: If point-to-point should be set

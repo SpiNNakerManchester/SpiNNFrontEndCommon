@@ -20,15 +20,15 @@ class PreAllocateResourcesForChipPowerMonitor(object):
             sampling_frequency, time_scale_factor, machine_time_step,
             pre_allocated_resources=None):
         """
-        :param pre_allocated_resources: other pre-allocated resources
-        :param machine: the spinnaker machine as discovered
+        :param pre_allocated_resources: other preallocated resources
+        :param machine: the SpiNNaker machine as discovered
         :param n_machine_time_steps: the number of machine\
-         time steps used by the simulation during this phase
+            time steps used by the simulation during this phase
         :param n_samples_per_recording: how many samples between record entries
         :param sampling_frequency: the frequency of sampling
         :param time_scale_factor: the time scale factor
         :param machine_time_step: the machine time step
-        :return: pre allocated resources
+        :return: preallocated resources
         """
         # pylint: disable=too-many-arguments
 
@@ -52,14 +52,14 @@ class PreAllocateResourcesForChipPowerMonitor(object):
                 SpecificChipSDRAMResource(chip, resources.sdram.get_value()))
             cores.append(CoreResource(chip, 1))
 
-        # create pre allocated resource container
+        # create preallocated resource container
         cpm_pre_allocated_resource_container = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores)
 
-        # add other pre allocated resources
+        # add other preallocated resources
         if pre_allocated_resources is not None:
             cpm_pre_allocated_resource_container.extend(
                 pre_allocated_resources)
 
-        # return pre allocated resources
+        # return preallocated resources
         return cpm_pre_allocated_resource_container

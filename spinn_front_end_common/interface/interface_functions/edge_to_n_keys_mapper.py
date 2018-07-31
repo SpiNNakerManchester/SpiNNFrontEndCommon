@@ -13,7 +13,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class EdgeToNKeysMapper(object):
-    """ Works out the number of keys needed for each edge
+    """ Works out the number of keys needed for each edge.
     """
 
     __slots__ = []

@@ -45,7 +45,7 @@ class CommandSenderMachineVertex(
     # Setup data size (one word)
     _SETUP_DATA_SIZE = 4
 
-    # the number of malloc requests used by the dsg
+    # the number of malloc requests used by the DSG
     TOTAL_REQUIRED_MALLOCS = 5
 
     # The name of the binary file
@@ -177,11 +177,10 @@ class CommandSenderMachineVertex(
     def _reserve_memory_regions(
             spec, time_command_size, start_command_size, end_command_size,
             vertex):
-        """
-        Reserve SDRAM space for memory areas:
-        1) Area for information on what data to record
-        2) area for start commands
-        3) area for end commands
+        """ Reserve SDRAM space for memory areas:
+        1. Area for information on what data to record
+        2. Area for start commands
+        3. Area for end commands
         """
         spec.comment("\nReserving memory space for data regions:\n\n")
 

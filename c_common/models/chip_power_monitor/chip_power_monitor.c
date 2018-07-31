@@ -62,7 +62,7 @@ static void reset_core_counters(void)
 }
 
 //! \brief the function to call when resuming a simulation
-//! return None
+//! \return None
 void resume_callback() {
     // change simulation ticks to be a number related to sampling frequency
     simulation_ticks = (simulation_ticks * timer) / sample_frequency;

@@ -23,7 +23,7 @@ _MEM_REGIONS = range(MAX_MEM_REGIONS)
 
 
 class HostExecuteDataSpecification(object):
-    """ Executes the host based data specification
+    """ Executes the host based data specification.
     """
 
     __slots__ = []
@@ -32,13 +32,12 @@ class HostExecuteDataSpecification(object):
             self, transceiver, machine, app_id, dsg_targets,
             processor_to_app_data_base_address=None):
         """
-
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :param transceiver: the spinnman instance
         :param app_id: the application ID of the simulation
         :param dsg_targets: map of placement to file path
 
-        :return: map of placement and dsg data, and loaded data flag.
+        :return: map of placement and DSG data, and loaded data flag.
         """
         # pylint: disable=too-many-arguments
         if processor_to_app_data_base_address is None:

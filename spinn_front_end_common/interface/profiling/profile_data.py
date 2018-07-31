@@ -25,7 +25,7 @@ class ProfileData(object):
         # A dictionary of tag label to numpy array of start times and durations
         "_tags",
 
-        # A list of tag labels indexed by the tag id
+        # A list of tag labels indexed by the tag ID
         "_tag_labels",
 
         # The maximum time recorded
@@ -34,7 +34,7 @@ class ProfileData(object):
 
     def __init__(self, tag_labels):
         """
-        :param tag_labels: A list of labels indexed by tag id
+        :param tag_labels: A list of labels indexed by tag ID
         :type tag_labels: list(str)
         """
         self._tag_labels = tag_labels
@@ -119,7 +119,7 @@ class ProfileData(object):
     def tags(self):
         """ The tags recorded as labels
 
-        :rtype: list of str
+        :rtype: list(str)
         """
         return self._tags.keys()
 
