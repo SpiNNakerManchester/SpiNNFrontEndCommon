@@ -59,7 +59,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param p: Core ID on chip.
     :param address: Value to write (32-bit integer)
     """
-    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
+    user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 

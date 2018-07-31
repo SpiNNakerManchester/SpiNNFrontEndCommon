@@ -49,8 +49,8 @@ class _MockTransceiver(object):
         self._next_address += size
         return address
 
-    def get_user_0_register_address_from_core(self, x, y, p):
-        return self._user_0_addresses[(x, y, p)]
+    def get_user_0_register_address_from_core(self, p):
+        return self._user_0_addresses[p]
 
     def get_cpu_information_from_core(self, x, y, p):
         return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
@@ -65,7 +65,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_call(self):
         executor = HostExecuteDataSpecification()
-        transceiver = _MockTransceiver(user_0_addresses={(0, 0, 0): 1000})
+        transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = VirtualMachine(2, 2)
 
         # Write a data spec to execute
