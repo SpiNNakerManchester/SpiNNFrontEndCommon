@@ -13,12 +13,12 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 
 
 class MemoryMapOnHostChipReport(object):
-    """ Report on memory usage
+    """ Report on memory usage.
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
-        """ creates a report that states where in SDRAM each region is \
-        (read from machine)
+        """ Creates a report that states where in SDRAM each region is \
+            (read from machine)
 
         :param report_default_directory: the folder where reports are written
         :param dsg_targets: the map between placement and file writer
@@ -45,7 +45,7 @@ class MemoryMapOnHostChipReport(object):
     def _describe_mem_map(self, f, txrx, x, y, p):
         # pylint: disable=too-many-arguments
         # Read the memory map data from the given core
-        user_0_addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        user_0_addr = txrx.get_user_0_register_address_from_core(p)
         pointer_table_addr = self._get_app_pointer_table(
             txrx, x, y, user_0_addr)
         memmap_data = txrx.read_memory(

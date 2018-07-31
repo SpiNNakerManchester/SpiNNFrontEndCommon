@@ -12,8 +12,8 @@ ENTRY_TEXT = 2
 
 
 class ChipIOBufExtractor(object):
-    """ Extract iobuf buffers from the machine, and separates lines based on\
-        their prefix
+    """ Extract the logging output buffers from the machine, and separates\
+        lines based on their prefix.
     """
 
     __slots__ = []

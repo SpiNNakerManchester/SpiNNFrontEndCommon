@@ -11,10 +11,10 @@ class TagsLoader(object):
     def __call__(
             self, transceiver, tags=None, iptags=None, reverse_iptags=None):
         """
-        :param tags: the tags object which contains ip and reverse ip tags.
-                    could be none if these are being given in separate lists
-        :param iptags: a list of iptags, given when tags is none
-        :param reverse_iptags: a list of reverse iptags when tags is none.
+        :param tags: the tags object which contains IP and reverse IP tags.
+            could be none if these are being given in separate lists
+        :param iptags: a list of IP tags, given when tags is none
+        :param reverse_iptags: a list of reverse IP tags when tags is none.
         :param transceiver: the transceiver object
         """
         # clear all the tags from the Ethernet connection, as nothing should
@@ -29,7 +29,7 @@ class TagsLoader(object):
             iptags = list(tags.ip_tags)
             reverse_iptags = list(tags.reverse_ip_tags)
 
-        # Load the IPtags and the Reverse IPtags
+        # Load the IP tags and the Reverse IP tags
         progress = ProgressBar(
             len(iptags) + len(reverse_iptags), "Loading Tags")
         self.load_iptags(iptags, transceiver, progress)
@@ -38,9 +38,9 @@ class TagsLoader(object):
 
     @staticmethod
     def load_iptags(iptags, transceiver, progress_bar):
-        """ Loads all the iptags individually.
+        """ Loads all the IP tags individually.
 
-        :param iptags: the iptags to be loaded.
+        :param iptags: the IP tags to be loaded.
         :param transceiver: the transceiver object
         :rtype: None
         """
@@ -49,9 +49,9 @@ class TagsLoader(object):
 
     @staticmethod
     def load_reverse_iptags(reverse_ip_tags, transceiver, progress_bar):
-        """ Loads all the reverse iptags individually.
+        """ Loads all the reverse IP tags individually.
 
-        :param reverse_ip_tags: the reverse iptags to be loaded
+        :param reverse_ip_tags: the reverse IP tags to be loaded
         :param transceiver: the transceiver object
         :rtype: None
         """

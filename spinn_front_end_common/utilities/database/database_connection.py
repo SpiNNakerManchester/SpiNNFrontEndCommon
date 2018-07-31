@@ -36,13 +36,12 @@ class DatabaseConnection(UDPConnection):
                  stop_pause_callback_function=None, local_host=None,
                  local_port=NOTIFY_PORT):
         """
-
         :param start_resume_callback_function: A function to be called when \
             the start message has been received.  This function should not \
             take any parameters or return anything.
         :type start_resume_callback_function: function() -> None
         :param local_host: Optional specification of the local hostname or\
-            ip address of the interface to listen on
+            IP address of the interface to listen on
         :type local_host: str
         :param local_port: Optional specification of the local port to listen \
             on.  Must match the port that the toolchain will send the \

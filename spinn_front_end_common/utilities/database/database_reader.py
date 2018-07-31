@@ -2,7 +2,7 @@ import sqlite3
 
 
 class DatabaseReader(object):
-    """ A reader for the database
+    """ A reader for the database.
     """
 
     __slots__ = [
@@ -15,7 +15,6 @@ class DatabaseReader(object):
 
     def __init__(self, database_path):
         """
-
         :param database_path: The path to the database
         :type database_path: str
         """
@@ -32,11 +31,11 @@ class DatabaseReader(object):
         return self._cursor
 
     def get_key_to_atom_id_mapping(self, label):
-        """ Get a mapping of event key to atom id for a given vertex
+        """ Get a mapping of event key to atom ID for a given vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: dictionary of atom ids indexed by event key
+        :return: dictionary of atom IDs indexed by event key
         :rtype: dict
         """
         event_id_to_atom_id_mapping = dict()
@@ -49,11 +48,11 @@ class DatabaseReader(object):
         return event_id_to_atom_id_mapping
 
     def get_atom_id_to_key_mapping(self, label):
-        """ Get a mapping of atom id to event key for a given vertex
+        """ Get a mapping of atom ID to event key for a given vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: dictionary of event keys indexed by atom id
+        :return: dictionary of event keys indexed by atom ID
         """
         atom_to_event_id_mapping = dict()
         for row in self._cursor.execute(
@@ -66,12 +65,12 @@ class DatabaseReader(object):
         return atom_to_event_id_mapping
 
     def get_live_output_details(self, label, receiver_label):
-        """ Get the ip address, port and whether the SDP headers are to be\
+        """ Get the IP address, port and whether the SDP headers are to be\
             stripped from the output from a vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: tuple of (ip address, port, strip SDP)
+        :return: tuple of (IP address, port, strip SDP)
         :rtype: (str, int, bool)
         """
         self._cursor.execute(
@@ -93,12 +92,12 @@ class DatabaseReader(object):
             row["board_address"])
 
     def get_live_input_details(self, label):
-        """ Get the ip address and port where live input should be sent\
+        """ Get the IP address and port where live input should be sent\
             for a given vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: tuple of (ip address, port)
+        :return: tuple of (IP address, port)
         :rtype: (str, int)
         """
         self._cursor.execute(
@@ -114,12 +113,12 @@ class DatabaseReader(object):
         return row["board_address"], row["port"]
 
     def get_machine_live_output_details(self, label, receiver_label):
-        """ Get the ip address, port and whether the SDP headers are to be\
+        """ Get the IP address, port and whether the SDP headers are to be\
             stripped from the output from a machine vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: tuple of (ip address, port, strip SDP)
+        :return: tuple of (IP address, port, strip SDP)
         :rtype: (str, int, bool)
         """
         self._cursor.execute(
@@ -139,12 +138,12 @@ class DatabaseReader(object):
             row["board_address"])
 
     def get_machine_live_input_details(self, label):
-        """ Get the ip address and port where live input should be sent\
+        """ Get the IP address and port where live input should be sent\
             for a given machine vertex
 
         :param label: The label of the vertex
         :type label: str
-        :return: tuple of (ip address, port)
+        :return: tuple of (IP address, port)
         :rtype: (str, int)
         """
         self._cursor.execute(

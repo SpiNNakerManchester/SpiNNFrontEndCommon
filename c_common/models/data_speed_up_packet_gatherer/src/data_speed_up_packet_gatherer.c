@@ -5,19 +5,19 @@
 #include <simulation.h>
 #include <debug.h>
 
-//! How many mc packets are to be received per sdp packet
+//! How many multicast packets are to be received per SDP packet
 #define ITEMS_PER_DATA_PACKET 68
 
 //! first sequence number to use and reset to
 #define FIRST_SEQ_NUM 0
 
-//! extra length adjustment for the sdp header
+//! extra length adjustment for the SDP header
 #define LENGTH_OF_SDP_HEADER 8
 
 //! convert between words to bytes
 #define WORD_TO_BYTE_MULTIPLIER 4
 
-//! struct for a SDP message with pure data, no scp header
+//! struct for a SDP message with pure data, no SCP header
 typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     struct sdp_msg *next;	// Next in free list
     uint16_t length;		// length
@@ -31,7 +31,7 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     uint16_t dest_addr;		// SDP destination address
     uint16_t srce_addr;		// SDP source address
 
-    // User data (272 bytes when no scp header)
+    // User data (272 bytes when no SCP header)
     uint32_t data[ITEMS_PER_DATA_PACKET];
 
     uint32_t _PAD;		// Private padding
@@ -54,11 +54,11 @@ static uint32_t end_flag_key = 0;
 static uint32_t seq_num = FIRST_SEQ_NUM;
 static uint32_t max_seq_num = 0;
 
-//! data holders for the sdp packet
+//! data holders for the SDP packet
 static uint32_t data[ITEMS_PER_DATA_PACKET];
 static uint32_t position_in_store = 0;
 
-//! sdp message holder for transmissions
+//! SDP message holder for transmissions
 sdp_msg_pure_data my_msg;
 
 

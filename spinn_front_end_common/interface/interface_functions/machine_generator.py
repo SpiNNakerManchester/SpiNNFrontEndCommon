@@ -22,7 +22,7 @@ class MachineGenerator(object):
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             max_sdram_size=None, max_core_id=None):
         """
-        :param hostname: the hostname or IP address of the spinnaker machine
+        :param hostname: the hostname or IP address of the SpiNNaker machine
         :param bmp_details: the details of the BMP connections
         :param downed_chips: \
             the chips that are down which SARK thinks are alive

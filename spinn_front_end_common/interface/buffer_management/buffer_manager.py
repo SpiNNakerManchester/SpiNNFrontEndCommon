@@ -45,7 +45,7 @@ _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
 
 class BufferManager(object):
-    """ Manager of send buffers
+    """ Manager of send buffers.
     """
 
     __slots__ = [
@@ -94,7 +94,7 @@ class BufferManager(object):
         # the extra_monitor to Ethernet connection map
         "_extra_monitor_cores_to_ethernet_connection_map",
 
-        # monitor cores via chip id
+        # monitor cores via chip ID
         "_extra_monitor_cores_by_chip",
 
         # fixed routes, used by the speed up functionality for reports
@@ -112,7 +112,6 @@ class BufferManager(object):
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, store_to_file=False):
         """
-
         :param placements: The placements of the vertices
         :type placements:\
             :py:class:`pacman.model.placements.Placements`
@@ -160,7 +159,7 @@ class BufferManager(object):
 
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
-        """ uses the extra monitor cores for data extraction
+        """ Uses the extra monitor cores for data extraction.
 
         :param transceiver: the spinnman interface
         :param placement_x: \
@@ -205,7 +204,7 @@ class BufferManager(object):
         elif isinstance(packet, EIEIOCommandMessage):
             logger.error(
                 "The command packet is invalid for buffer management: "
-                "command id {}", packet.eieio_header.command)
+                "command ID {}", packet.eieio_header.command)
         else:
             logger.error(
                 "The command packet is invalid for buffer management")
@@ -340,7 +339,7 @@ class BufferManager(object):
         :param x: placement x coord
         :param y: placement y coord
         :param p: placement p coord
-        :param recording_region_id: the recording region id
+        :param recording_region_id: the recording region ID
         """
         self._received_data.clear(x, y, p, recording_region_id)
 
@@ -402,8 +401,8 @@ class BufferManager(object):
         :param region: The region to get the keys from
         :type region: int
         :return: A list of messages
-        :rtype: list of\
-            :py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`
+        :rtype: \
+            list(:py:class:`spinnman.messages.eieio.data_messages.EIEIODataMessage`)
         """
 
         # Get the vertex load details
@@ -814,9 +813,9 @@ class BufferManager(object):
 
     def _retrieve_and_store_data(self, packet):
         """ Following a SpinnakerRequestReadData packet, the data stored\
-           during the simulation needs to be read by the host and stored in a\
-           data structure, following the specifications of buffering out\
-           technique
+            during the simulation needs to be read by the host and stored in\
+            a data structure, following the specifications of buffering out\
+            technique.
 
         :param packet: SpinnakerRequestReadData packet received from the\
             SpiNNaker system
