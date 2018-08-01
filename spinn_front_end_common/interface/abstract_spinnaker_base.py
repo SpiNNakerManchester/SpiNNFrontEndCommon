@@ -1281,6 +1281,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["ScampConnectionData"] = None
             inputs["CPUsPerVirtualChip"] = 16
 
+            # add max SDRAM size which we're going to allow (debug purposes)
+            inputs["MaxSDRAMSize"] = self._read_config_int(
+                "Machine", "max_sdram_allowed_per_chip")
+
             algorithms.append("VirtualMachineGenerator")
 
             outputs.append("MemoryMachine")
