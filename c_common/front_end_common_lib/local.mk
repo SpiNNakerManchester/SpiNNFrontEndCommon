@@ -18,12 +18,6 @@ ifndef BUILD_DIR
 endif
 BUILD_DIR := $(abspath $(BUILD_DIR))/
 
-# MODIFIED_DIR local directory to put modified c and h files into
-ifndef MODIFIED_DIR
-    MODIFIED_DIR := modified_src/
-endif
-MODIFIED_DIR := $(abspath $(MODIFIED_DIR))/
-
 # SOURCE_DIRS space-separated list of directories where the raw c and h files
 # are
 ifndef SOURCE_DIRS
@@ -63,6 +57,10 @@ $$(BUILD_DIR)%.o: $(2)%.c
 	$$(CC) $$(CFLAGS) -o $$@ $$<
 endef
 
+define modified_dir#(src_dir)
+    $(dir $(abspath $(1)))modified_src/
+endef
+
 # Add the default libraries and options
 LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
 FEC_DEBUG := PRODUCTION_CODE
@@ -78,13 +76,13 @@ SHELL = bash
 APPLICATION_NAME_HASH = $(shell echo -n "$(APP)" | (md5sum 2>/dev/null || md5) | cut -c 1-8)
 CFLAGS += -DAPPLICATION_NAME_HASH=0x$(APPLICATION_NAME_HASH)
 
-# Add the modified directory to the include path
-CFLAGS += -I $(MODIFIED_DIR)
+# Add the modified directories to the include path
+CFLAGS += $(foreach d, $(sort $(SOURCE_DIRS)), -I $(call modified_dir,$(d)))
 
 # Sort out the set of dictionary files needed
-MODIFIED_DICT_FILE = $(MODIFIED_DIR)log_dict.dict
+MODIFIED_DICT_FILES := $(foreach d, $(sort $(SOURCE_DIRS)), $(call modified_dir, $(d))log_dict.dict)
 LOG_DICT_FILES += $(wildcard $(SPINN_DIRS)/lib/*.dict)
-LOG_DICT_FILES += $(MODIFIED_DICT_FILE)
+LOG_DICT_FILES += $(MODIFIED_DICT_FILES)
 APP_DICT_FILE = $(APP_OUTPUT_DIR)$(APP).dict
 
 # default rule based on list ALL_TARGETS so more main targets can be added later
@@ -99,7 +97,7 @@ all: $(ALL_TARGETS)
 _OBJS := $(SOURCES)
 $(eval _OBJS := $(_OBJS:%.c=$(BUILD_DIR)%.o))
 $(foreach d, $(sort $(SOURCE_DIRS)), \
-    $(eval $(call add_source_dir, $(d), $(MODIFIED_DIR))))
+    $(eval $(call add_source_dir, $(d), $(call modified_dir, $(d)))))
 OBJECTS += $(_OBJS)
 
 include $(SPINN_DIRS)/make/spinnaker_tools.mk
@@ -113,5 +111,5 @@ $(APP_DICT_FILE): $(LOG_DICT_FILES)
 # Tidy and cleaning dependencies
 clean:
 	$(RM) $(TEMP_FILES) $(OBJECTS) $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).txt $(ALL_TARGETS) $(LOG_DICT_FILE) $(BUILD_DIR)$(APP).nm $(BUILD_DIR)$(APP).elf $(BUILD_DIR)$(APP).bin
-	rm -rf $(MODIFIED_DIR)
+	rm -rf $(foreach d, $(sort $(SOURCE_DIRS)), $(call modified_dir, $(d)))
 
