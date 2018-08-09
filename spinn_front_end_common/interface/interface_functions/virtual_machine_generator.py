@@ -1,5 +1,10 @@
 # spinn_machine imports
+import logging
+
 from spinn_machine import VirtualMachine
+from spinn_utilities.log import FormatAdapter
+
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class VirtualMachineGenerator(object):
@@ -38,5 +43,9 @@ class VirtualMachineGenerator(object):
         # Work out and add the SpiNNaker links and FPGA links
         machine.add_spinnaker_links(version)
         machine.add_fpga_links(version)
+
+        logger.info(
+            "Created a virtual machine which has {}".format(
+                machine.cores_and_link_output_string()))
 
         return machine
