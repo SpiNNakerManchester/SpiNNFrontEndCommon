@@ -43,6 +43,8 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
+_SDP_MAX_PACKAGE_SIZE = 272
+
 
 class BufferManager(object):
     """ Manager of send buffers.
@@ -426,7 +428,7 @@ class BufferManager(object):
             min_size_of_packet = _MIN_MESSAGE_SIZE
             while (vertex.is_next_timestamp(region) and
                     bytes_to_go > min_size_of_packet):
-                space_available = min(bytes_to_go, 280)
+                space_available = min(bytes_to_go, _SDP_MAX_PACKAGE_SIZE)
                 next_message = self._create_message_to_send(
                     space_available, vertex, region)
                 if next_message is None:
