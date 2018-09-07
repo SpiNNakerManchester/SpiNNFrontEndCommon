@@ -38,7 +38,7 @@ before_install:
 install:
   # These things ought to be enough
   - pip install -r requirements-test.txt
-  - pip install python-coveralls
+  - pip install python-coveralls 'coverage>=4.4'
   - python ./setup.py install
 
 before_script:

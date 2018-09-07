@@ -45,7 +45,7 @@ class MemoryMapOnHostChipReport(object):
     def _describe_mem_map(self, f, txrx, x, y, p):
         # pylint: disable=too-many-arguments
         # Read the memory map data from the given core
-        user_0_addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        user_0_addr = txrx.get_user_0_register_address_from_core(p)
         pointer_table_addr = self._get_app_pointer_table(
             txrx, x, y, user_0_addr)
         memmap_data = txrx.read_memory(

@@ -114,7 +114,7 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def __read_user_0(txrx, x, y, p):
-        addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        addr = txrx.get_user_0_register_address_from_core(p)
         return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
 
     def _check_for_success(
