@@ -1252,6 +1252,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "scamp_connections_data")
             inputs["MaxCoreId"] = self._read_config_int(
                 "Machine", "core_limit")
+            # add max SDRAM size which we're going to allow (debug purposes)
+            inputs["MaxSDRAMSize"] = self._read_config_int(
+                "Machine", "max_sdram_allowed_per_chip")
 
             algorithms.append("MachineGenerator")
 
@@ -1266,6 +1269,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._max_machine_outputs = executor.get_items()
             self._machine_outputs = self._max_machine_outputs
             self._machine_tokens = executor.get_completed_tokens()
+            self._create_app_id_and_check_n_required_chips()
 
         if self._use_virtual_board:
             inputs["IPAddress"] = "virtual"
@@ -1454,12 +1458,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "violate_no_vertex_in_graphs_restriction") and
                 self._machine_graph.n_vertices == 0)):
             inputs["MemoryApplicationGraph"] = self._application_graph
-            algorithms.extend(self._config.get(
-                "Mapping",
-                "application_to_machine_graph_algorithms").split(","))
-            outputs.append("MemoryMachineGraph")
-            outputs.append("MemoryGraphMapper")
-            do_partitioning = True
+            app_to_machine_algorithms = helpful_functions.read_config(
+                self._config, "Mapping",
+                "application_to_machine_graph_algorithms")
+            if app_to_machine_algorithms is not None:
+                algorithms.extend(self._config.get(
+                    "Mapping",
+                    "application_to_machine_graph_algorithms").split(","))
+                outputs.append("MemoryMachineGraph")
+                outputs.append("MemoryGraphMapper")
+                do_partitioning = True
 
         # only add machine graph is it has vertices. as the check for
         # no vertices in both graphs is checked above.
@@ -1499,7 +1507,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "MemoryMachineGraph")
             self._graph_mapper = executor.get_item(
                 "MemoryGraphMapper")
+        self._create_app_id_and_check_n_required_chips()
 
+    def _create_app_id_and_check_n_required_chips(self):
         if self._txrx is not None and self._app_id is None:
             self._app_id = self._txrx.app_id_tracker.get_new_id()
 

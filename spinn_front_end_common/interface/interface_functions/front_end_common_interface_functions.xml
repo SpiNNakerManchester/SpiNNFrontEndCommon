@@ -1641,6 +1641,7 @@
             <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
+                <param_type>MemoryExtendedVirtualMachine</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
