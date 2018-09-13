@@ -64,7 +64,7 @@ title:
   The Common code for supporting all front ends on mapping applications to run
   on SpiNNaker machines
 version:
-date-released: 2017-09-17
+date-released:
 url: http://spinnakermanchester.github.io/
 repository: https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon
 contact:
