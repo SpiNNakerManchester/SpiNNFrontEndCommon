@@ -54,9 +54,10 @@ script:
   - flake8 unittests integration_tests
   # XML
   - find spinn_front_end_common -name '*.xml' | xargs -n 1 support/validate-xml.sh
-  # C 
+  # C  # Vera before make to avoid vera seeing modified stuff
+  - support/run-vera.sh c_common/front_end_common_lib
+  - support/run-vera.sh c_common/models
   - make -C c_common
-  - support/run-vera.sh c_common
   # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json
