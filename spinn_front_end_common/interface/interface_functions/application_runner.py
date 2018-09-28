@@ -94,8 +94,15 @@ class ApplicationRunner(object):
             txrx.send_signal(app_id, sync_signal)
 
         # verify all cores are in running states
-        txrx.wait_for_cores_to_be_in_state(
-            executable_targets.all_core_subsets, app_id, _GOOD_STATES)
+        try:
+            txrx.wait_for_cores_to_be_in_state(
+                executable_targets.all_core_subsets, app_id, _GOOD_STATES)
+        except Exception:
+            logger.warning(
+                "Could not verify that the application is running.  This could"
+                " be because it sends a lot of traffic upon starting."
+                " Additional errors may appear while waiting for the"
+                " application to stop.")
 
         # Send start notification
         notifier.send_start_resume_notification()
