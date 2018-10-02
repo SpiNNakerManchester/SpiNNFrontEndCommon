@@ -71,6 +71,9 @@ import sys
 
 # Version number imports
 from numpy import __version__ as numpy_version
+
+from tool_citation_generation import CitationAggregator
+
 try:
     from scipy import __version__ as scipy_version
 except ImportError:
@@ -354,14 +357,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Version information from the front end
         "_front_end_versions",
 
-        "_last_except_hook"
+        "_last_except_hook",
+
+        # the top module which started this run (used in citation file
+        # generation)
+        "_top_level_module"
     ]
 
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, default_config_paths=None,
-            validation_cfg=None, front_end_versions=None):
+            validation_cfg=None, front_end_versions=None,
+            top_level_module=None):
         # pylint: disable=too-many-arguments
 
         # global params
@@ -524,6 +532,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Front End version information
         self._front_end_versions = front_end_versions
+
+        # top level module, used for citation work
+        self._top_level_module = top_level_module
 
         self._last_except_hook = sys.excepthook
 
@@ -2614,6 +2625,22 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
+        # add aggregated citation file to reports
+        if self._top_level_module is not None:
+            citation_aggregator = CitationAggregator()
+            citation_aggregator.create_aggregated_citation_file(
+                self._top_level_module, self._report_default_directory)
+            logger.warning(
+                "To cite this software version for reproducibility and "
+                "for recognising the contributions of the software developers"
+                " whom make this software possible. Please use the "
+                "CITATION.cff file located within the reports folder with the "
+                "citation-file-format tools for converting between "
+                "CITATION.cff and bibtex entries. This can be found at the "
+                "following address: \n\n "
+                " https://github.com/citation-file-format/cff-converter-python")
+
+        # if there is an exception, raise it upwards
         if exc_info is not None:
             reraise(*exc_info)
 
