@@ -79,19 +79,23 @@ void simulation_run() {
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t callback){
 
+    // Pause the simulation
+    spin1_pause();
+
     stored_resume_function = callback;
 
     // Store provenance data as required
     _execute_provenance_storage();
-
-    // Pause the simulation
-    spin1_pause();
 }
 
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
 void simulation_exit(){
     simulation_handle_pause_resume(NULL);
+}
+
+void simulation_ready_to_read() {
+    sark_cpu_state(CPU_STATE_WAIT);
 }
 
 //! \brief method for sending OK response to the host when a command message
