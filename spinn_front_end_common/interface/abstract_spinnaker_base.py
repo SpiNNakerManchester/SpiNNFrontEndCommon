@@ -2638,7 +2638,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "citation-file-format tools for converting between "
                 "CITATION.cff and bibtex entries. This can be found at the "
                 "following address: \n\n "
-                " https://github.com/citation-file-format/cff-converter-python")
+                " https://github.com/citation-file-format/cff-converter-"
+                "python")
 
         # if there is an exception, raise it upwards
         if exc_info is not None:
