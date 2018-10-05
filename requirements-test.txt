@@ -5,3 +5,4 @@ pytest-cov
 sphinx==1.5.3
 testfixtures
 httpretty
+cffconvert
