@@ -21,7 +21,6 @@ from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
 from spinnman.exceptions import SpinnmanTimeoutException
-from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.model.enums.cpu_state import CPUState
 from spinnman.connections.udp_packet_connections import UDPConnection
 
