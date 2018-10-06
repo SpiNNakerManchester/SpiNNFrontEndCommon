@@ -413,7 +413,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # Set the reverse IP tag up to receive the data on this board
         # Use RIPtag as this will respond to address received on so works
         # through any firewall / NAT router
-        self._transceiver.set_reverse_ip_tag(ReverseIPTag(
+        transceiver.set_reverse_ip_tag(ReverseIPTag(
             self._remote_host, self._remote_tag, self._remote_port,
             placement.x, placement.y, placement.p, self.SDP_PORT))
 
