@@ -57,7 +57,8 @@ class InsertLivePacketGatherersToGraphs(object):
             app_vtx = self._create_vertex(LivePacketGather, params)
             app_graph.add_vertex(app_vtx)
             resources = app_vtx.get_resources_used_by_atoms(_slice)
-            m_vtx = app_vtx.create_machine_vertex(_slice, resources)
+            m_vtx = app_vtx.create_machine_vertex(
+                _slice, resources, label="LivePacketGatherer")
             mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
             m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
