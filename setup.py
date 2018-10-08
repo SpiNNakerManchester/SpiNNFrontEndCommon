@@ -43,7 +43,8 @@ setup(
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
-                      'six'],
+                      'six',
+                      'cffconvert'],
     maintainer="SpiNNakerTeam",
     maintainer_email="spinnakerusers@googlegroups.com"
 )
