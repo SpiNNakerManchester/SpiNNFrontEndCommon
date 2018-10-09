@@ -66,6 +66,14 @@ class BufferedReceivingData(object):
         self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
 
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        if self._db is not None:
+            self._db.close()
+            self._db = None
+
     def __init_db(self):
         """ Set up the database if required. """
         self._db.row_factory = sqlite3.Row
