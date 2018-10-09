@@ -2689,6 +2689,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         extractor(
             transceiver=self._txrx,
             executable_targets=self._last_run_outputs["ExecutableTargets"],
+            self._executable_finder,
             provenance_file_path=self._provenance_file_path)
 
     def add_socket_address(self, socket_address):
