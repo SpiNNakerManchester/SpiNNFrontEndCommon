@@ -49,11 +49,15 @@ class BufferedReceivingData(object):
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
+        :param database_file: The name of a file that contains (or will\
+            contain) an SQLite database holding the data.
+        :type database_file: str
         """
         self._data = None
         self._db = None
         if database_file is not None:
             self._db = sqlite3.connect(database_file)
+            self._db.text_factory = memoryview
             self.__init_db()
         elif store_to_file:
             self._data = defaultdict(BufferedTempfileDataStorage)
@@ -87,28 +91,28 @@ class BufferedReceivingData(object):
             + "VALUES(?, ?, ?, ?, ?) "
             + "ON CONFLICT(x, y, processor, region) DO "
             + "UPDATE SET content = storage.content || excluded.content",
-            (x, y, p, region, contents))
+            (x, y, p, region, sqlite3.Binary(contents)))
 
     def __hacky_append(self, cursor, x, y, p, region, contents):
         """ Used to do an UPSERT when the version of SQLite used by Python\
             doesn't support the correct syntax for it (because it is older\
-            than 3.24).
+            than 3.24). Not really a problem with Python 3.6 or later.
         """
         cursor.execute(
             "INSERT OR IGNORE INTO storage(x, y, processor, region, content) "
             + "VALUES(?, ?, ?, ?, ?)",
-            (x, y, p, region, b""))
+            (x, y, p, region, sqlite3.Binary(b"")))
         cursor.execute(
             "UPDATE storage SET content = content || ? "
             + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
-            (contents, x, y, p, region))
+            (sqlite3.Binary(contents), x, y, p, region))
 
     def _read_contents(self, cursor, x, y, p, region):
         for row in cursor.execute(
-                "SELECT contents FROM storage "
+                "SELECT content FROM storage "
                 + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
                 (x, y, p, region)):
-            return row["contents"]
+            return row["content"]
         return b""
 
     def __delete_contents(self, cursor, x, y, p, region):
@@ -135,10 +139,12 @@ class BufferedReceivingData(object):
         # pylint: disable=too-many-arguments
         if self._db is not None:
             try:
-                with self._db.cursor() as c, self._db:
+                with self._db:
+                    c = self._db.cursor()
                     self.__append_contents(c, x, y, p, region, data)
             except sqlite3.Error:
-                with self._db.cursor() as c, self._db:
+                with self._db:
+                    c = self._db.cursor()
                     self.__hacky_append(c, x, y, p, region, data)
         else:
             self._data[x, y, p, region].write(data)
@@ -287,7 +293,8 @@ class BufferedReceivingData(object):
         if (x, y, p, region) not in self._end_buffering_state:
             missing = (x, y, p, region)
         if self._db is not None:
-            with self._db.cursor() as c, self._db:
+            with self._db:
+                c = self._db.cursor()
                 data = self._read_contents(c, x, y, p, region)
         else:
             data = self._data[x, y, p, region].read_all()
@@ -424,7 +431,8 @@ class BufferedReceivingData(object):
         """
         del self._end_buffering_state[x, y, p, region_id]
         if self._db is not None:
-            with self._db.cursor() as c, self._db:
+            with self._db:
+                c = self._db.cursor()
                 self.__delete_contents(c, x, y, p, region_id)
         else:
             del self._data[x, y, p, region_id]
@@ -441,18 +449,15 @@ class DBWrapper(AbstractBufferedDataStorage):
 
     @overrides(AbstractBufferedDataStorage.write)
     def write(self, data):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.read)
     def read(self, data_size):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.readinto)
     def readinto(self, data):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.read_all)
     def read_all(self):
@@ -462,30 +467,24 @@ class DBWrapper(AbstractBufferedDataStorage):
 
     @overrides(AbstractBufferedDataStorage.seek_read)
     def seek_read(self, offset, whence=os.SEEK_SET):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.seek_write)
     def seek_write(self, offset, whence=os.SEEK_SET):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.tell_read)
     def tell_read(self):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.tell_write)
     def tell_write(self):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.eof)
     def eof(self):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
 
     @overrides(AbstractBufferedDataStorage.close)
     def close(self):
-        # TODO implement this? Not actually used...
-        pass
+        raise NotImplementedError()
