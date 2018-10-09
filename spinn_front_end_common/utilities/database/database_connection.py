@@ -96,7 +96,7 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = str(data[2:])
+        database_path = data[2:].decode()
 
         # Call the callback
         database_reader = DatabaseReader(database_path)
