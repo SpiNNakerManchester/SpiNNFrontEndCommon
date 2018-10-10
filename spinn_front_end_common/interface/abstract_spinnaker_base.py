@@ -1651,10 +1651,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append(
                 "InsertChipPowerMonitorsToGraphs")
-            inputs['MemorySamplingFrequency'] = self._config.getfloat(
+            inputs['MemorySamplingFrequency'] = self._config.getint(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                self._config.getfloat(
+                self._config.getint(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
@@ -2024,14 +2024,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
-        if not self._use_virtual_board:
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._load_outputs["ExecutableTargets"],
-                    self._executable_finder)
+        inputs["ExtractIobufFromCores"] = self._config.get(
+            "Reports", "extract_iobuf_from_cores")
+        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+            "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -2240,14 +2236,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf_cores = CoreSubsets()
-        for placement in self._placements:
-            iobuf_cores.add_processor(placement.x, placement.y, placement.p)
-
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores, self._provenance_file_path)
+                self._txrx, executable_targets, self._executable_finder,
+                self._provenance_file_path,
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_binary_types")
+            )
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2750,7 +2746,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         extractor = ChipIOBufExtractor()
         extractor(
             transceiver=self._txrx,
-            core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
+            executable_targets=self._last_run_outputs["ExecutableTargets"],
             provenance_file_path=self._provenance_file_path)
 
     def add_socket_address(self, socket_address):

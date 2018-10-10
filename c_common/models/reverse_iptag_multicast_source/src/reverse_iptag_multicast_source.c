@@ -1064,13 +1064,13 @@ void timer_callback(uint unused0, uint unused1) {
 
     if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
 
+        // Enter pause and resume state to avoid another tick
+        simulation_handle_pause_resume(resume_callback);
+
         // Wait for recording to finish
         while (recording_in_progress) {
             spin1_wfi();
         }
-
-        // Enter pause and resume state to avoid another tick
-        simulation_handle_pause_resume(resume_callback);
 
         // close recording channels
         if (recording_flags > 0) {
@@ -1084,6 +1084,7 @@ void timer_callback(uint unused0, uint unused1) {
         // run
         time = simulation_ticks - 1;
 
+        simulation_ready_to_read();
         return;
     }
 

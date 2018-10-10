@@ -286,7 +286,7 @@ class ChipPowerMonitorMachineVertex(
 
         :return: starttype enum
         """
-        return ExecutableType.SYSTEM
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
