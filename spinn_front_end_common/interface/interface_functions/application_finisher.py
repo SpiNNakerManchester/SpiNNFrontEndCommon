@@ -26,9 +26,8 @@ class ApplicationFinisher(object):
             "Turning off all the cores within the simulation")
 
         # check that the right number of processors are finished
-        processors_finished = sum(
-            txrx.get_core_state_count(app_id, state)
-            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state)
+        processors_finished = txrx.get_core_state_count(
+            app_id, CPUState.FINISHED)
         finished_cores = processors_finished
 
         while processors_finished != total_processors:
@@ -49,10 +48,10 @@ class ApplicationFinisher(object):
                         total_processors))
 
             successful_cores_finished = CoreSubsets()
-            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state:
-                subsets = txrx.get_cores_in_state(all_core_subsets, state)
-                for subset in subsets.core_subsets:
-                    successful_cores_finished.add_core_subset(subset)
+            subsets = txrx.get_cores_in_state(
+                all_core_subsets, CPUState.FINISHED)
+            for subset in subsets.core_subsets:
+                successful_cores_finished.add_core_subset(subset)
 
             for core_subset in all_core_subsets:
                 for processor in core_subset.processor_ids:
@@ -61,10 +60,8 @@ class ApplicationFinisher(object):
                         self._update_provenance_and_exit(
                             txrx, processor, core_subset)
 
-            processors_finished = sum(
-                txrx.get_core_state_count(app_id, state)
-                for state in
-                ExecutableType.USES_SIMULATION_INTERFACE.end_state)
+            processors_finished = txrx.get_core_state_count(
+                app_id, CPUState.FINISHED)
 
         progress.end()
 
