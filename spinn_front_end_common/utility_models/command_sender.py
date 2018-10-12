@@ -7,8 +7,6 @@ from pacman.model.graphs.application import ApplicationVertex
 # spinn front end common imports
 from spinn_front_end_common.abstract_models import \
     AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models import \
-    AbstractVertexWithEdgeToDependentVertices
 from spinn_front_end_common.abstract_models \
     import AbstractGeneratesDataSpecification
 from .command_sender_machine_vertex import CommandSenderMachineVertex
@@ -59,12 +57,9 @@ class CommandSender(
     def get_binary_file_name(self):
         return CommandSenderMachineVertex.BINARY_FILE_NAME
 
-    @overrides(AbstractVertexWithEdgeToDependentVertices.dependent_vertices)
-    def dependent_vertices(self):
-        return self._vertex_to_key_map.keys()
-
     def edges_and_partitions(self):
-        return self._machine_vertex.get_edges_and_partitions(ApplicationEdge)
+        return self._machine_vertex.get_edges_and_partitions(
+            self, ApplicationEdge)
 
     @overrides(AbstractProvidesOutgoingPartitionConstraints.
                get_outgoing_partition_constraints)

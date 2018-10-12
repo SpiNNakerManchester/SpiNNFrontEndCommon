@@ -329,7 +329,7 @@ class CommandSenderMachineVertex(
                 self._DEFAULT_COMMAND_MASK)
         ])]
 
-    def get_edges_and_partitions(self, edge_type):
+    def get_edges_and_partitions(self, pre_vertex, edge_type):
         edges = list()
         partition_ids = list()
         keys_added = set()
@@ -337,10 +337,10 @@ class CommandSenderMachineVertex(
             for key in self._vertex_to_key_map[vertex]:
                 if key not in keys_added:
                     keys_added.add(key)
-                    app_edge = edge_type(self, vertex)
+                    app_edge = edge_type(pre_vertex, vertex)
                     edges.append(app_edge)
                     partition_ids.append(self._keys_to_partition_id[key])
         return edges, partition_ids
 
     def edges_and_partitions(self):
-        return self.get_edges_and_partitions(MachineEdge)
+        return self.get_edges_and_partitions(self, MachineEdge)
