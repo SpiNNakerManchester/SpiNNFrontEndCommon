@@ -4,6 +4,17 @@ from collections import Counter
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
+from pacman.model.graphs.machine.machine_edge import MachineEdge
+from spinn_front_end_common.utilities import constants
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.executor.injection_decorator import inject_items
+from pacman.model.constraints.key_allocator_constraints \
+    import FixedKeyAndMaskConstraint
+from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
+from spinn_front_end_common.abstract_models \
+    import AbstractProvidesOutgoingPartitionConstraints
+from spinn_front_end_common.abstract_models \
+    import AbstractGeneratesDataSpecification
 from spinn_front_end_common.interface.provenance \
     import ProvidesProvenanceDataFromMachineImpl
 from spinn_front_end_common.interface.simulation.simulation_utilities \
@@ -15,7 +26,8 @@ from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 class CommandSenderMachineVertex(
         MachineVertex, ProvidesProvenanceDataFromMachineImpl,
-        AbstractHasAssociatedBinary):
+        AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification,
+        AbstractProvidesOutgoingPartitionConstraints):
 
     # Regions for populations
     DATA_REGIONS = Enum(
@@ -51,17 +63,62 @@ class CommandSenderMachineVertex(
     # The name of the binary file
     BINARY_FILE_NAME = 'command_sender_multicast_source.aplx'
 
-    def __init__(
-            self, constraints, resources_required, label,
-            commands_at_start_resume, commands_at_pause_stop, timed_commands):
-        # pylint: disable=too-many-arguments
+    # all commands will use this mask
+    _DEFAULT_COMMAND_MASK = 0xFFFFFFFF
+
+    def __init__(self, label, constraints):
         super(CommandSenderMachineVertex, self).__init__(label, constraints)
 
-        # container of different types of command
-        self._timed_commands = timed_commands
-        self._commands_at_start_resume = commands_at_start_resume
-        self._commands_at_pause_stop = commands_at_pause_stop
-        self._resources = resources_required
+        self._timed_commands = list()
+        self._commands_at_start_resume = list()
+        self._commands_at_pause_stop = list()
+        self._partition_id_to_keys = dict()
+        self._keys_to_partition_id = dict()
+        self._edge_partition_id_counter = 0
+        self._vertex_to_key_map = dict()
+
+    def add_commands(
+            self, start_resume_commands, pause_stop_commands,
+            timed_commands, vertex_to_send_to):
+        """ Add commands to be sent down a given edge
+
+        :param start_resume_commands: The commands to send when the simulation\
+            starts or resumes from pause
+        :type start_resume_commands: \
+            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
+        :param pause_stop_commands: the commands to send when the simulation\
+            stops or pauses after running
+        :type pause_stop_commands: \
+            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
+        :param timed_commands: The commands to send at specific times
+        :type timed_commands: \
+            iterable(:py:class:`spinn_front_end_common.utility_models.multi_cast_command.MultiCastCommand`)
+        :param vertex_to_send_to: The vertex these commands are to be sent to
+        """
+
+        # container for keys for partition mapping (remove duplicates)
+        command_keys = set()
+        self._vertex_to_key_map[vertex_to_send_to] = set()
+
+        # update holders
+        self._commands_at_start_resume.extend(start_resume_commands)
+        self._commands_at_pause_stop.extend(pause_stop_commands)
+        self._timed_commands.extend(timed_commands)
+
+        for commands in (
+                start_resume_commands, pause_stop_commands, timed_commands):
+            for command in commands:
+                # track keys
+                command_keys.add(command.key)
+                self._vertex_to_key_map[vertex_to_send_to].add(command.key)
+
+        # create mapping between keys and partitions via partition constraint
+        for key in command_keys:
+
+            partition_id = "COMMANDS{}".format(self._edge_partition_id_counter)
+            self._keys_to_partition_id[key] = partition_id
+            self._partition_id_to_keys[partition_id] = key
+            self._edge_partition_id_counter += 1
 
     @property
     @overrides(ProvidesProvenanceDataFromMachineImpl._provenance_region_id)
@@ -76,14 +133,33 @@ class CommandSenderMachineVertex(
     @property
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
-        return self._resources
+        sdram = (
+            self.get_timed_commands_bytes() +
+            self.get_n_command_bytes(self._commands_at_start_resume) +
+            self.get_n_command_bytes(self._commands_at_pause_stop) +
+            constants.SYSTEM_BYTES_REQUIREMENT +
+            self.get_provenance_data_size(0) +
+            (self.get_number_of_mallocs_used_by_dsg() *
+             constants.SARK_PER_MALLOC_SDRAM_USAGE))
 
+        # Return the SDRAM and 1 core
+        return ResourceContainer(sdram=SDRAMResource(sdram))
+
+    @inject_items({
+        "machine_time_step": "MachineTimeStep",
+        "time_scale_factor": "TimeScaleFactor",
+        "n_machine_time_steps": "RunTimeMachineTimeSteps"
+        })
+    @overrides(
+        AbstractGeneratesDataSpecification.generate_data_specification,
+        additional_arguments={
+            "machine_time_step", "time_scale_factor", "n_machine_time_steps"
+        })
     def generate_data_specification(
             self, spec, placement, machine_time_step, time_scale_factor,
             n_machine_time_steps):  # @UnusedVariable
         # pylint: disable=too-many-arguments
-        timed_commands_size = \
-            self.get_timed_commands_bytes(self._timed_commands)
+        timed_commands_size = self.get_timed_commands_bytes()
         start_resume_commands_size = \
             self.get_n_command_bytes(self._commands_at_start_resume)
         pause_stop_commands_size = \
@@ -210,13 +286,12 @@ class CommandSenderMachineVertex(
 
         vertex.reserve_provenance_data_region(spec)
 
-    @staticmethod
-    def get_timed_commands_bytes(timed_commands):
+    def get_timed_commands_bytes(self):
         n_bytes = CommandSenderMachineVertex._N_COMMANDS_SIZE
         n_bytes += (
             (CommandSenderMachineVertex._COMMAND_TIMESTAMP_SIZE +
              CommandSenderMachineVertex._COMMAND_WITH_PAYLOAD_SIZE) *
-            len(timed_commands)
+            len(self._timed_commands)
         )
         return n_bytes
 
@@ -244,3 +319,28 @@ class CommandSenderMachineVertex(
     @staticmethod
     def get_number_of_mallocs_used_by_dsg():
         return CommandSenderMachineVertex.TOTAL_REQUIRED_MALLOCS
+
+    @overrides(AbstractProvidesOutgoingPartitionConstraints.
+               get_outgoing_partition_constraints)
+    def get_outgoing_partition_constraints(self, partition):
+        return [FixedKeyAndMaskConstraint([
+            BaseKeyAndMask(
+                self._partition_id_to_keys[partition.identifier],
+                self._DEFAULT_COMMAND_MASK)
+        ])]
+
+    def get_edges_and_partitions(self, edge_type):
+        edges = list()
+        partition_ids = list()
+        keys_added = set()
+        for vertex in self._vertex_to_key_map:
+            for key in self._vertex_to_key_map[vertex]:
+                if key not in keys_added:
+                    keys_added.add(key)
+                    app_edge = edge_type(self, vertex)
+                    edges.append(app_edge)
+                    partition_ids.append(self._keys_to_partition_id[key])
+        return edges, partition_ids
+
+    def edges_and_partitions(self):
+        return self.get_edges_and_partitions(MachineEdge)
