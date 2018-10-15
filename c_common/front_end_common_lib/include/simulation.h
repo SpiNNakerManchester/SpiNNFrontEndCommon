@@ -96,7 +96,9 @@ void simulation_set_provenance_function(
 void simulation_set_exit_function(exit_callback_t exit_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
+//!        the resetting up of states as required to resume.  Note that
+//!        following this function, the code should call
+//!        simulation_ready_to_read (see later).
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t resume_function);
@@ -107,6 +109,10 @@ void simulation_exit();
 
 //! \brief Starts the simulation running, returning when it is complete,
 void simulation_run();
+
+//! \brief Indicates that all data has been written and the core is going
+//!        idle, so any data can now be read
+void simulation_ready_to_read();
 
 //! \brief Registers an additional SDP callback on a given SDP port.  This is
 //!        required when using simulation_register_sdp_callback, as this will
