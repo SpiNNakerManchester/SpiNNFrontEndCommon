@@ -25,6 +25,7 @@ from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utility_models import CommandSenderMachineVertex
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
@@ -1043,13 +1044,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return False
 
     def _add_commands_to_command_sender(self):
-        for vertex in self._application_graph.vertices:
+        vertices = self._application_graph.vertices
+        graph = self._application_graph
+        command_sender_vertex = CommandSender
+        if len(vertices) == 0:
+            vertices = self._machine_graph.vertices
+            graph = self._machine_graph
+            command_sender_vertex = CommandSenderMachineVertex
+        for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
                 if self._command_sender is None:
-                    self._command_sender = CommandSender(
+                    self._command_sender = command_sender_vertex(
                         "auto_added_command_sender", None)
-                    self._application_graph.add_vertex(self._command_sender)
+                    graph.add_vertex(self._command_sender)
 
                 # allow the command sender to create key to partition map
                 self._command_sender.add_commands(
@@ -1061,7 +1069,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._command_sender is not None:
             edges, partition_ids = self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
-                self._application_graph.add_edge(edge, partition_id)
+                graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
