@@ -1342,7 +1342,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = \
+                self._read_config_int("Machine", "NCoresPerChip")
+            inputs["RouterTableEntriesPerRouter"] = \
+                self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+            inputs["MaxSDRAMSize"] = self._read_config_int(
+                "Machine", "MaxSDRAMSize")
 
             algorithms.append("VirtualMachineGenerator")
 
