@@ -48,7 +48,6 @@ class TestConvertJson(unittest.TestCase):
         print(filename)
         assert filecmp.cmp(filename, "spinn4_fiddle.json")
 
-
     def testSpin2(self):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
