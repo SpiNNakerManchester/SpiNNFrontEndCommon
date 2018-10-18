@@ -31,6 +31,24 @@ class TestConvertJson(unittest.TestCase):
         print(filename)
         assert filecmp.cmp(filename, "spinn4.json")
 
+        # Create a machione with Exception
+        chip = machine.get_chip_at(1, 1)
+        chip._sdram._size = chip._sdram._size - 100
+        chip.reserve_a_system_processor()
+        chip._router._clock_speed = chip._router._clock_speed - 100
+        chip._router._n_available_multicast_entries -= 10
+        chip._virtual = not chip._virtual
+        chip = machine.get_chip_at(1, 2)
+        chip._sdram._size = chip._sdram._size - 101
+        chip.reserve_a_system_processor()
+        chip.reserve_a_system_processor()
+
+        fn = "test_spinn4_fiddle.json"
+        filename = jsonAlgo(machine, str(fn))
+        print(filename)
+        assert filecmp.cmp(filename, "spinn4_fiddle.json")
+
+
     def testSpin2(self):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
