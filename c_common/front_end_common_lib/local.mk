@@ -63,7 +63,9 @@ endef
 
 # Add the default libraries and options
 LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
-FEC_DEBUG := PRODUCTION_CODE
+ifndef FEC_DEBUG
+	FEC_DEBUG := PRODUCTION_CODE
+endif
 PROFILER := PROFILER_DISABLED
 
 # Set up the default C Flags
