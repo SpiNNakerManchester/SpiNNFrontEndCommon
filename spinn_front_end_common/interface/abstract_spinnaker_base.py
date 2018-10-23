@@ -1400,8 +1400,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # get the biggest machine available to the system (might be the real
         # machine when using virtual or a physical machine)
         self._get_max_available_machine()
-        if self._machine is not None:
-            return self._machine
 
         inputs = dict(self._max_machine_outputs)
         # set up machine provenance
@@ -1415,6 +1413,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._get_system_functionality_algorithms_and_inputs()
         inputs.update(system_inputs)
         algorithms.extend(system_algorithms)
+
+        if self._machine is not None:
+            self._max_machine_outputs.update(system_inputs)
+            return self._machine
 
         # add the application and machine graphs as needed
         if (self._application_graph is not None and
