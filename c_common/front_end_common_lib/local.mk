@@ -66,7 +66,9 @@ LIBRARIES += -lspinn_frontend_common -lspinn_common -lm
 ifndef FEC_DEBUG
 	FEC_DEBUG := PRODUCTION_CODE
 endif
-PROFILER := PROFILER_DISABLED
+ifndef PROFILER
+	PROFILER := PROFILER_DISABLED
+endif
 
 # Set up the default C Flags
 FEC_OPT = $(OTIME)
