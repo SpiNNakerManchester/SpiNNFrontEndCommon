@@ -13,7 +13,27 @@ class BufferManagerCreator(object):
             uses_advanced_monitors, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
-            fixed_routes=None):
+            fixed_routes=None, database_file=None):
+        """
+
+        :param placements:
+        :param tags:
+        :param txrx:
+        :param store_to_file: A boolean to identify if the data will be stored\
+            in memory using a byte array or in a temporary file on the disk
+            Ignored if database_file is not null.
+        :type store_to_file: bool
+        :param uses_advanced_monitors:
+        :param extra_monitor_cores:
+        :param extra_monitor_to_chip_mapping:
+        :param extra_monitor_cores_to_ethernet_connection_map:
+        :param machine:
+        :param fixed_routes:
+        :param database_file: The name of a file that contains (or will\
+            contain) an SQLite database holding the data.
+        :type database_file: str
+        :return:
+        """
         # pylint: disable=too-many-arguments
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
@@ -26,7 +46,7 @@ class BufferManagerCreator(object):
                 extra_monitor_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
             machine=machine, uses_advanced_monitors=uses_advanced_monitors,
-            fixed_routes=fixed_routes)
+            fixed_routes=fixed_routes, database_file=database_file)
 
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):

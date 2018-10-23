@@ -48,6 +48,7 @@ class BufferedReceivingData(object):
         """
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
+            Ignored if database_file is not null.
         :type store_to_file: bool
         :param database_file: The name of a file that contains (or will\
             contain) an SQLite database holding the data.
@@ -445,7 +446,7 @@ class DBWrapper(AbstractBufferedDataStorage):
         self.__x = x
         self.__y = y
         self.__p = p
-        self.__r = region
+        self.__region = region
 
     @overrides(AbstractBufferedDataStorage.write)
     def write(self, data):
@@ -461,8 +462,8 @@ class DBWrapper(AbstractBufferedDataStorage):
 
     @overrides(AbstractBufferedDataStorage.read_all)
     def read_all(self):
-        with self.__brd._db.cursor() as c, self.__brd._db:
-            return self.__brd._read_contents(
+        c = self.__brd._db.cursor()
+        return self.__brd._read_contents(
                 c, self.__x, self.__y, self.__p, self.__region)
 
     @overrides(AbstractBufferedDataStorage.seek_read)

@@ -126,7 +126,8 @@ class BufferManager(object):
             The transceiver to use for sending and receiving information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
         :param store_to_file: True if the data should be temporarily stored\
-            in a file instead of in RAM (default uses RAM)
+            in a file instead of in RAM (default uses RAM).
+            Ignored if database_file is not None.
         :type store_to_file: bool
         :param database_file: The file to use as an SQL database.
         :type database_file: str
