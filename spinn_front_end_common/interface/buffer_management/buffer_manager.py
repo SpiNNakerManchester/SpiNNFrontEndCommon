@@ -570,17 +570,16 @@ class BufferManager(object):
             with self._thread_lock_buffer_out:
                 self._finished = True
 
-    def get_data_for_vertices(self, vertices, progress=None):
+    def get_data_for_placements(self, placements, progress=None):
         with self._thread_lock_buffer_out:
-            self._get_data_for_vertices_locked(vertices, progress)
+            self._get_data_for_placements_locked(placements, progress)
 
-    def _get_data_for_vertices_locked(self, vertices, progress=None):
+    def _get_data_for_placements_locked(self, placements, progress=None):
         receivers = OrderedSet()
         if self._uses_advanced_monitors:
 
             # locate receivers
-            for vertex in vertices:
-                placement = self._placements.get_placement_of_vertex(vertex)
+            for placement in placements:
                 receivers.add(funs.locate_extra_monitor_mc_receiver(
                     self._machine, placement.x, placement.y,
                     self._extra_monitor_cores_to_ethernet_connection_map))
@@ -593,10 +592,9 @@ class BufferManager(object):
                         self._extra_monitor_cores))
 
         # get data
-        for vertex in vertices:
-            placement = self._placements.get_placement_of_vertex(vertex)
-            for recording_region_id in vertex.get_recorded_region_ids():
-                self.get_data_by_vertex(placement, recording_region_id)
+        for placement in placements:
+            for recording_region_id in placement.vertex.get_recorded_region_ids():
+                self.get_data_by_placement(placement, recording_region_id)
                 if progress is not None:
                     progress.update()
 
@@ -617,9 +615,9 @@ class BufferManager(object):
             the missing flag as before
 
         """
-        raise NotImplementedError("Use get_data_by_vertex instead!.")
+        raise NotImplementedError("Use get_data_by_placement instead!.")
 
-    def get_data_by_vertex(self, placement, recording_region_id):
+    def get_data_by_placement(self, placement, recording_region_id):
 
         """ Get a handle to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
@@ -636,10 +634,10 @@ class BufferManager(object):
 
         # Ensure that any transfers in progress are complete first
         with self._thread_lock_buffer_out:
-            return self._get_data_by_vertex_locked(
+            return self._get_data_by_placement_locked(
                 placement, recording_region_id)
 
-    def _get_data_by_vertex_locked(self, placement, recording_region_id):
+    def _get_data_by_placement_locked(self, placement, recording_region_id):
         """ Get the data for a vertex; must be locked first
 
         :param placement: the placement to get the data from

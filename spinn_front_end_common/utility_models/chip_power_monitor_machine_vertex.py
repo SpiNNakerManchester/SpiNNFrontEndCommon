@@ -348,7 +348,7 @@ class ChipPowerMonitorMachineVertex(
         """
         # for buffering output info is taken form the buffer manager
         # get raw data as a byte array
-        record_raw, data_missing = buffer_manager.get_data_by_vertex(
+        record_raw, data_missing = buffer_manager.get_data_by_placement(
             placement, self.SAMPLE_RECORDING_REGION)
         if data_missing:
             logger.warning(
