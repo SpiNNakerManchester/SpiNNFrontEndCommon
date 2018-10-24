@@ -593,7 +593,8 @@ class BufferManager(object):
 
         # get data
         for placement in placements:
-            for recording_region_id in placement.vertex.get_recorded_region_ids():
+            vertex = placement.vertex
+            for recording_region_id in vertex.get_recorded_region_ids():
                 self.get_data_by_placement(placement, recording_region_id)
                 if progress is not None:
                     progress.update()

@@ -3,8 +3,6 @@ import os
 import sqlite3
 from spinn_storage_handlers import (
     BufferedBytearrayDataStorage, BufferedTempfileDataStorage)
-from spinn_storage_handlers.abstract_classes import AbstractBufferedDataStorage
-from spinn_utilities.overrides import overrides
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
