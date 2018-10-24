@@ -302,31 +302,12 @@ class BufferedReceivingData(object):
         return data, missing
 
     def get_region_data_pointer(self, x, y, p, region):
-        """ Get the data received during the simulation for a region of a core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
-        :return: all the data received during the simulation, and a flag\
-            indicating if any data was lost
-        :rtype: \
-            tuple(:py:class:`spinn_storage_handlers.abstract_classes.AbstractBufferedDataStorage`,\
-            bool)
         """
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = True
-        else:
-            missing = self._end_buffering_state[x, y, p, region].missing_info
-        if self._db is not None:
-            data_pointer = DBWrapper(self, x, y, p, region)
-        else:
-            data_pointer = self._data[x, y, p, region]
-        return data_pointer, missing
+        It is no longer possible to get access to the data pointer.
+
+        Use get_region_data to get the data and missing flag directly.
+        """
+        raise NotImplementedError("Use get_region_data instead!.")
 
     def store_end_buffering_state(self, x, y, p, region, state):
         """ Store the end state of buffering
@@ -438,54 +419,3 @@ class BufferedReceivingData(object):
         else:
             del self._data[x, y, p, region_id]
         del self._is_flushed[x, y, p, region_id]
-
-
-class DBWrapper(AbstractBufferedDataStorage):
-    def __init__(self, brd, x, y, p, region):
-        self.__brd = brd
-        self.__x = x
-        self.__y = y
-        self.__p = p
-        self.__region = region
-
-    @overrides(AbstractBufferedDataStorage.write)
-    def write(self, data):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.read)
-    def read(self, data_size):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.readinto)
-    def readinto(self, data):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.read_all)
-    def read_all(self):
-        c = self.__brd._db.cursor()
-        return self.__brd._read_contents(
-                c, self.__x, self.__y, self.__p, self.__region)
-
-    @overrides(AbstractBufferedDataStorage.seek_read)
-    def seek_read(self, offset, whence=os.SEEK_SET):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.seek_write)
-    def seek_write(self, offset, whence=os.SEEK_SET):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.tell_read)
-    def tell_read(self):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.tell_write)
-    def tell_write(self):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.eof)
-    def eof(self):
-        raise NotImplementedError()
-
-    @overrides(AbstractBufferedDataStorage.close)
-    def close(self):
-        raise NotImplementedError()

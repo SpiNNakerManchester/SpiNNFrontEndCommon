@@ -347,15 +347,13 @@ class ChipPowerMonitorMachineVertex(
         :rtype: numpy array with 1 dimension
         """
         # for buffering output info is taken form the buffer manager
-        samples, data_missing = buffer_manager.get_data_for_vertex(
+        # get raw data as a byte array
+        record_raw, data_missing = buffer_manager.get_data_by_vertex(
             placement, self.SAMPLE_RECORDING_REGION)
         if data_missing:
             logger.warning(
                 "Chip Power monitor has lost data on chip({}, {})",
                 placement.x, placement.y)
-
-        # get raw data as a byte array
-        record_raw = samples.read_all()
 
         results = (
             numpy.frombuffer(record_raw, dtype="uint32").reshape(-1, 18) /

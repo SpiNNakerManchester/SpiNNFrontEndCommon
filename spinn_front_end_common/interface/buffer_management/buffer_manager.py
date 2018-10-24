@@ -596,7 +596,7 @@ class BufferManager(object):
         for vertex in vertices:
             placement = self._placements.get_placement_of_vertex(vertex)
             for recording_region_id in vertex.get_recorded_region_ids():
-                self.get_data_for_vertex(placement, recording_region_id)
+                self.get_data_by_vertex(placement, recording_region_id)
                 if progress is not None:
                     progress.update()
 
@@ -609,6 +609,18 @@ class BufferManager(object):
                         self._extra_monitor_cores))
 
     def get_data_for_vertex(self, placement, recording_region_id):
+        """
+        It is no longer possible to get access to the data pointer.
+
+        Use get_data_by_vertex instead which returns
+            the data that pointer.read_all() used to return
+            the missing flag as before
+
+        """
+        raise NotImplementedError("Use get_data_by_vertex instead!.")
+
+    def get_data_by_vertex(self, placement, recording_region_id):
+
         """ Get a handle to the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
@@ -617,16 +629,17 @@ class BufferManager(object):
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
         :return: object which will contain the data
-        :rtype:\
-            :py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`
+        :return: an array contained all the data received during the\
+            simulation, and a flag indicating if any data was missing
+        :rtype: (bytearray, bool)
         """
 
         # Ensure that any transfers in progress are complete first
         with self._thread_lock_buffer_out:
-            return self._get_data_for_vertex_locked(
+            return self._get_data_by_vertex_locked(
                 placement, recording_region_id)
 
-    def _get_data_for_vertex_locked(self, placement, recording_region_id):
+    def _get_data_by_vertex_locked(self, placement, recording_region_id):
         """ Get the data for a vertex; must be locked first
 
         :param placement: the placement to get the data from
@@ -774,11 +787,9 @@ class BufferManager(object):
                     data)
 
         # data flush has been completed - return appropriate data
-        # the two returns can be exchanged - one returns data and the other
-        # returns a pointer to the structure holding the data
-        data = self._received_data.get_region_data_pointer(
+        (byte_array, missing) = self._received_data.get_region_data_pointer(
             placement.x, placement.y, placement.p, recording_region_id)
-        return data
+        return byte_array, missing
 
     def _process_last_ack(self, placement, region_id, end_state):
         # if the last ACK packet has not been processed on the chip,
