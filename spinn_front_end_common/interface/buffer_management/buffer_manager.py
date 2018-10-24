@@ -787,7 +787,7 @@ class BufferManager(object):
                     data)
 
         # data flush has been completed - return appropriate data
-        (byte_array, missing) = self._received_data.get_region_data_pointer(
+        (byte_array, missing) = self._received_data.get_region_data(
             placement.x, placement.y, placement.p, recording_region_id)
         return byte_array, missing
 
