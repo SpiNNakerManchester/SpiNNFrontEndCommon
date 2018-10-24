@@ -37,6 +37,7 @@ from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer \
     import PlacementsProvenanceGatherer
+from .placements_to_json import PlacementsToJson
 from .pre_allocate_resources_for_chip_power_monitor \
     import PreAllocateResourcesForChipPowerMonitor
 from .pre_allocate_resources_for_live_packet_gatherers \

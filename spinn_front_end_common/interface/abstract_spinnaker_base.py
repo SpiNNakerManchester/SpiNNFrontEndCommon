@@ -2037,6 +2037,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # end regardless of multirun, but only run if using a real machine
         if not self._use_virtual_board:
             algorithms.append("BufferExtractor")
+            # TODO FIX WHEN TO DO OR NOT
+            algorithms.append("PlacementsToJson")
+            inputs["PlacementsJsonFilePath"] = os.path.join(
+                self._json_folder, "placements.json")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")

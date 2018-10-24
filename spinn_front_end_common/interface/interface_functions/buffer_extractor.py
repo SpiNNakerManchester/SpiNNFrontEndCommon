@@ -18,12 +18,6 @@ class BufferExtractor(object):
         progress = ProgressBar(
             n_regions_to_read, "Extracting buffers from the last run")
         try:
-            readPlacements = list()
-            for placement in placements:
-                if placement.vertex in vertices:
-                    print(placement)
-                    print(placement.vertex.get_recorded_region_ids())
-                    print(placement.vertex.get_recording_region_base_address(buffer_manager._transceiver, placement))
             buffer_manager.get_data_for_vertices(vertices, progress)
         finally:
             progress.end()

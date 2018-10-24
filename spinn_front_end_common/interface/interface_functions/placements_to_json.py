@@ -6,7 +6,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models \
 from spinn_utilities.progress_bar import ProgressBar
 
 
-class PlacementsToJava(object):
+class PlacementsToJson(object):
     """ Extracts data in between runs
     """
 
@@ -27,9 +27,11 @@ class PlacementsToJava(object):
                 json_placement["x"] = placement.x
                 json_placement["y"] = placement.y
                 json_placement["p"] = placement.p
+                vertex = placement.vertex
                 json_vertex = OrderedDict()
-                json_vertex["recordedRegionIds"] = placement.vertex.get_recorded_region_ids()
-                json_vertex["recordingRegionBaseAddress"] = placement.vertex.get_recording_region_base_address(transceiver, placement)
+                json_vertex["label"] = vertex.label
+                json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
+                json_vertex["recordingRegionBaseAddress"] = vertex.get_recording_region_base_address(transceiver, placement)
                 json_placement["vertex"] = json_vertex
                 json_obj.append(json_placement)
 
