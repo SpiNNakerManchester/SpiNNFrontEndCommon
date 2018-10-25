@@ -5,8 +5,8 @@ import re
 import os
 
 
-ERROR_ENTRY = re.compile("\[ERROR\]\s+\((.*)\):\s+(.*)")
-WARNING_ENTRY = re.compile("\[WARNING\]\s+\((.*)\):\s+(.*)")
+ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
+WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
