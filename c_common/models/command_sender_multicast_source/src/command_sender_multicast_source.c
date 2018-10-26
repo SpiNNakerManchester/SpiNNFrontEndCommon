@@ -221,15 +221,18 @@ void timer_callback(uint unused0, uint unused1) {
     }
 
     if (((infinite_run != TRUE) && (time >= simulation_ticks))) {
+        simulation_handle_pause_resume(NULL);
+
         run_stop_pause_commands();
 
         log_info("in pause resume mode");
         resume = true;
-        simulation_handle_pause_resume(NULL);
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
         time -= 1;
+
+        simulation_ready_to_read();
         return;
     }
 

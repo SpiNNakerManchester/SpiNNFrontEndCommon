@@ -71,8 +71,7 @@ class MemoryMapOnChipReport(object):
 
     @staticmethod
     def _get_report_data_address(txrx, x, y, p):
-        data_address_pointer = txrx.get_user_1_register_address_from_core(
-            x, y, p)
+        data_address_pointer = txrx.get_user_1_register_address_from_core(p)
         data_address_encoded = txrx.read_memory(
             x, y, data_address_pointer, 4)
         return _ONE_WORD.unpack_from(data_address_encoded)[0]

@@ -17,7 +17,7 @@ class ChipRuntimeUpdater(object):
             executable_types[ExecutableType.USES_SIMULATION_INTERFACE]
 
         txrx.wait_for_cores_to_be_in_state(
-            core_subsets, app_id, [CPUState.PAUSED])
+            core_subsets, app_id, [CPUState.PAUSED, CPUState.READY])
 
         infinite_run = 0
         if no_machine_timesteps is None:

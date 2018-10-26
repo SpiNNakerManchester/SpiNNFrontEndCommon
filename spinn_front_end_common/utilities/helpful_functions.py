@@ -59,7 +59,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param p: Core ID on chip.
     :param address: Value to write (32-bit integer)
     """
-    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
+    user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 
@@ -293,69 +293,6 @@ def sort_out_downed_chips_cores_links(
             x, y, link_id = downed_link.split(",")
             ignored_links.add((int(x), int(y), int(link_id)))
     return ignored_chips, ignored_cores, ignored_links
-
-
-def translate_iobuf_extraction_elements(
-        hard_coded_cores, hard_coded_model_binary, executable_targets,
-        executable_finder):
-    """
-    :param hard_coded_cores: list of cores to read iobuf from
-    :param hard_coded_model_binary: list of binary names to read iobuf from
-    :param executable_targets: the targets of cores and executable binaries
-    :param executable_finder: where to find binaries paths from binary names
-    :return: core subsets for the cores to read iobuf from
-    """
-    # all the cores
-    if hard_coded_cores == "ALL" and hard_coded_model_binary == "None":
-        return executable_targets.all_core_subsets
-
-    # some hard coded cores
-    if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        ignored_cores = convert_string_into_chip_and_core_subset(
-            hard_coded_cores)
-        return ignored_cores
-
-    # some binaries
-    if hard_coded_cores == "None" and hard_coded_model_binary != "None":
-        return _handle_model_binaries(
-            hard_coded_model_binary, executable_targets, executable_finder)
-
-    # nothing
-    if hard_coded_cores == "None" and hard_coded_model_binary == "None":
-        return CoreSubsets()
-
-    # bit of both
-    if hard_coded_cores != "None" and hard_coded_model_binary != "None":
-        model_core_subsets = _handle_model_binaries(
-            hard_coded_model_binary, executable_targets, executable_finder)
-        hard_coded_core_core_subsets = \
-            convert_string_into_chip_and_core_subset(hard_coded_cores)
-        for core_subset in hard_coded_core_core_subsets:
-            model_core_subsets.add_core_subset(core_subset)
-        return model_core_subsets
-
-    # should never get here,
-    raise ConfigurationException("Something odd has happened")
-
-
-def _handle_model_binaries(
-        hard_coded_model_binary, executable_targets, executable_finder):
-    """
-    :param hard_coded_model_binary: list of binary names to read iobuf from
-    :param executable_targets: the targets of cores and executable binaries
-    :param executable_finder: where to find binaries paths from binary names
-    :return: core subsets from binaries that need iobuf to be read from them
-    """
-    model_binaries = hard_coded_model_binary.split(",")
-    cores = CoreSubsets()
-    for model_binary in model_binaries:
-        model_binary_path = \
-            executable_finder.get_executable_path(model_binary)
-        core_subsets = \
-            executable_targets.get_cores_for_binary(model_binary_path)
-        for core_subset in core_subsets:
-            cores.add_core_subset(core_subset)
-    return cores
 
 
 def read_config(config, section, item):

@@ -21,8 +21,8 @@ class ExecutableType(Enum):
         "Calls spin1_start(SYNC_WAIT) and then eventually spin1_exit()")
     USES_SIMULATION_INTERFACE = (
         2,
-        [CPUState.SYNC0, CPUState.SYNC1, CPUState.PAUSED],
-        [CPUState.PAUSED],
+        [CPUState.SYNC0, CPUState.SYNC1, CPUState.PAUSED, CPUState.READY],
+        [CPUState.READY],
         True,
         "Calls simulation_run() and simulation_exit() / "
         "simulation_handle_pause_resume()")
