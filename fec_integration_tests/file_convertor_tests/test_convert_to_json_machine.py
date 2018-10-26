@@ -1,4 +1,6 @@
 import filecmp
+import os
+import sys
 import unittest
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
@@ -14,6 +16,11 @@ class TestConvertJson(unittest.TestCase):
     spalloc = "spinnaker.cs.man.ac.uk"
     spin2Port = 22245
     mainPort = 22244
+
+    def setUp(self):
+        class_file = sys.modules[self.__module__].__file__
+        path = os.path.dirname(os.path.abspath(class_file))
+        os.chdir(path)
 
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
