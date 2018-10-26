@@ -809,6 +809,10 @@
                 <param_name>max_sdram_size</param_name>
                 <param_type>MaxSDRAMSize</param_type>
             </parameter>
+            <parameter>
+                <param_name>router_entries_per_chip</param_name>
+                <param_type>RouterTableEntriesPerRouter</param_type>
+            </parameter>
         </input_definitions>
         <optional_inputs>
             <param_name>width</param_name>
@@ -821,6 +825,7 @@
             <param_name>down_cores</param_name>
             <param_name>down_links</param_name>
             <param_name>max_sdram_size</param_name>
+            <param_name>router_entries_per_chip</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryMachine</param_type>
@@ -1450,20 +1455,37 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>core_subsets</param_name>
-                <param_type>CoresToExtractIOBufFrom</param_type>
+                <param_name>executable_targets</param_name>
+                <param_type>ExecutableTargets</param_type>
+            </parameter>
+            <parameter>
+                <param_name>executable_finder</param_name>
+                <param_type>ExecutableFinder</param_type>
             </parameter>
             <parameter>
                 <param_name>provenance_file_path</param_name>
                 <param_type>ProvenanceFilePath</param_type>
             </parameter>
+            <parameter>
+                <param_name>from_cores</param_name>
+                <param_type>ExtractIobufFromCores</param_type>
+            </parameter>
+            <parameter>
+                <param_name>binary_types</param_name>
+                <param_type>ExtractIobufFromBinaryTypes</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
-            <param_name>core_subsets</param_name>
+            <param_name>executable_targets</param_name>
+            <param_name>executable_finder</param_name>
             <param_name>provenance_file_path</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
+        <optional_inputs>
+            <param_name>from_cores</param_name>
+            <param_name>binary_types</param_name>
+        </optional_inputs>
         <outputs>
             <param_type>ErrorMessages</param_type>
             <param_type>WarnMessages</param_type>

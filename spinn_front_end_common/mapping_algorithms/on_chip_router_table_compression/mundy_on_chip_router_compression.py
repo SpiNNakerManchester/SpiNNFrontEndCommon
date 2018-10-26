@@ -114,7 +114,7 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def __read_user_0(txrx, x, y, p):
-        addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        addr = txrx.get_user_0_register_address_from_core(p)
         return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
 
     def _check_for_success(
@@ -154,7 +154,7 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets.all_core_subsets,
+            txrx, executable_targets,
             provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)

@@ -25,6 +25,7 @@ from spinn_front_end_common.abstract_models import \
     AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utility_models import CommandSenderMachineVertex
 from spinn_front_end_common.utilities \
     import helpful_functions, globals_variables, SimulatorInterface
 from spinn_front_end_common.utilities import function_list
@@ -860,6 +861,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._machine_graph.add_vertex(vertex)
         for outgoing_partition in \
                 self._original_machine_graph.outgoing_edge_partitions:
+            self._machine_graph.add_outgoing_edge_partition(outgoing_partition)
             for edge in outgoing_partition.edges:
                 self._machine_graph.add_edge(
                     edge, outgoing_partition.identifier)
@@ -1051,13 +1053,20 @@ class AbstractSpinnakerBase(SimulatorInterface):
         return False
 
     def _add_commands_to_command_sender(self):
-        for vertex in self._application_graph.vertices:
+        vertices = self._application_graph.vertices
+        graph = self._application_graph
+        command_sender_vertex = CommandSender
+        if len(vertices) == 0:
+            vertices = self._machine_graph.vertices
+            graph = self._machine_graph
+            command_sender_vertex = CommandSenderMachineVertex
+        for vertex in vertices:
             if isinstance(vertex, AbstractSendMeMulticastCommandsVertex):
                 # if there's no command sender yet, build one
                 if self._command_sender is None:
-                    self._command_sender = CommandSender(
+                    self._command_sender = command_sender_vertex(
                         "auto_added_command_sender", None)
-                    self._application_graph.add_vertex(self._command_sender)
+                    graph.add_vertex(self._command_sender)
 
                 # allow the command sender to create key to partition map
                 self._command_sender.add_commands(
@@ -1069,7 +1078,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._command_sender is not None:
             edges, partition_ids = self._command_sender.edges_and_partitions()
             for edge, partition_id in zip(edges, partition_ids):
-                self._application_graph.add_edge(edge, partition_id)
+                graph.add_edge(edge, partition_id)
 
     def _add_dependent_verts_and_edges_for_application_graph(self):
         for vertex in self._application_graph.vertices:
@@ -1279,7 +1288,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["CPUsPerVirtualChip"] = 16
+            inputs["CPUsPerVirtualChip"] = \
+                self._read_config_int("Machine", "NCoresPerChip")
+            inputs["RouterTableEntriesPerRouter"] = \
+                self._read_config_int("Machine", "RouterTableEntriesPerRouter")
+            inputs["MaxSDRAMSize"] = self._read_config_int(
+                "Machine", "MaxSDRAMSize")
 
             # add max SDRAM size which we're going to allow (debug purposes)
             inputs["MaxSDRAMSize"] = self._read_config_int(
@@ -1640,10 +1654,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._config.getboolean("Reports", "write_energy_report"):
             algorithms.append(
                 "InsertChipPowerMonitorsToGraphs")
-            inputs['MemorySamplingFrequency'] = self._config.getfloat(
+            inputs['MemorySamplingFrequency'] = self._config.getint(
                 "EnergyMonitor", "sampling_frequency")
             inputs['MemoryNumberSamplesPerRecordingEntry'] = \
-                self._config.getfloat(
+                self._config.getint(
                     "EnergyMonitor", "n_samples_per_recording_entry")
 
         # handle extra monitor functionality
@@ -2013,14 +2027,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if run_until_complete:
             inputs["RunUntilCompleteFlag"] = True
 
-        if not self._use_virtual_board:
-            inputs["CoresToExtractIOBufFrom"] = \
-                helpful_functions.translate_iobuf_extraction_elements(
-                    self._config.get("Reports", "extract_iobuf_from_cores"),
-                    self._config.get(
-                        "Reports", "extract_iobuf_from_binary_types"),
-                    self._load_outputs["ExecutableTargets"],
-                    self._executable_finder)
+        inputs["ExtractIobufFromCores"] = self._config.get(
+            "Reports", "extract_iobuf_from_cores")
+        inputs["ExtractIobufFromBinaryTypes"] = self._config.get(
+            "Reports", "extract_iobuf_from_binary_types")
 
         # update algorithm list with extra pre algorithms if needed
         if self._extra_pre_run_algorithms is not None:
@@ -2229,14 +2239,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._all_provenance_items.append(prov_items)
 
         # Read IOBUF where possible (that should be everywhere)
-        iobuf_cores = CoreSubsets()
-        for placement in self._placements:
-            iobuf_cores.add_processor(placement.x, placement.y, placement.p)
-
         iobuf = ChipIOBufExtractor()
         try:
             errors, warnings = iobuf(
-                self._txrx, iobuf_cores, self._provenance_file_path)
+                self._txrx, executable_targets, self._executable_finder,
+                self._provenance_file_path,
+                self._config.get("Reports", "extract_iobuf_from_cores"),
+                self._config.get("Reports", "extract_iobuf_from_binary_types")
+            )
         except Exception:
             logger.exception("Could not get iobuf")
             errors, warnings = [], []
@@ -2739,7 +2749,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         extractor = ChipIOBufExtractor()
         extractor(
             transceiver=self._txrx,
-            core_subsets=self._last_run_outputs["CoresToExtractIOBufFrom"],
+            executable_targets=self._last_run_outputs["ExecutableTargets"],
+            executable_finder=self._executable_finder,
             provenance_file_path=self._provenance_file_path)
 
     def add_socket_address(self, socket_address):
