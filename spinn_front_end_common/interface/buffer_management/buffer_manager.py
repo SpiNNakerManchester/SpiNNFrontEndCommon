@@ -29,6 +29,7 @@ from .recording_utilities import TRAFFIC_IDENTIFIER, \
     get_last_sequence_number, get_region_pointer
 
 # general imports
+import os
 import threading
 from multiprocessing.pool import ThreadPool
 import logging
@@ -72,6 +73,9 @@ class BufferManager(object):
         # storage area for received data from cores
         "_received_data",
 
+        # File used to hold received data
+        "_received_data_db",
+
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
 
@@ -112,7 +116,8 @@ class BufferManager(object):
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  extra_monitor_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, store_to_file=False):
+                 uses_advanced_monitors, store_to_file=False,
+                 database_file=None):
         """
         :param placements: The placements of the vertices
         :type placements:\
@@ -125,6 +130,8 @@ class BufferManager(object):
         :param store_to_file: True if the data should be temporarily stored\
             in a file instead of in RAM (default uses RAM)
         :type store_to_file: bool
+        :param database_file: The file to use as an SQL database.
+        :type database_file: str
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -148,7 +155,9 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData(store_to_file)
+        self._received_data = BufferedReceivingData(
+            store_to_file, database_file)
+        self._received_data_db = database_file
         self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
@@ -318,7 +327,13 @@ class BufferManager(object):
             data files
         """
         # reset buffered out
-        self._received_data = BufferedReceivingData(self._store_to_file)
+        if self._received_data is not None:
+            self._received_data.close()
+        if self._received_data_db is not None:
+            # Nuke the DB if it existed; it will be recreated
+            os.remove(self._received_data_db)
+        self._received_data = BufferedReceivingData(
+            self._store_to_file, self._received_data_db)
 
         # rewind buffered in
         for vertex in self._sender_vertices:

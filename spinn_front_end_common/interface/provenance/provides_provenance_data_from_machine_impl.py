@@ -159,7 +159,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         data_items.append(ProvenanceDataItem(
             self._add_name(names, "Times_the_timer_tic_over_ran"),
             number_of_times_timer_tic_over_ran,
-            report=number_of_times_timer_tic_over_ran > 4,
+            report=number_of_times_timer_tic_over_ran != 0,
             message=(
                 "A Timer tick callback was still executing when the next "
                 "timer tick callback was fired off for {} on {}, {}, {}, {} "
