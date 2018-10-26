@@ -110,7 +110,7 @@ class MachineGenerator(object):
     @staticmethod
     def _parse_bmp_boards(bmp_boards):
         # If the string is a range of boards, get the range
-        range_match = re.match("(\d+)-(\d+)", bmp_boards)
+        range_match = re.match(r"(\d+)-(\d+)", bmp_boards)
         if range_match is not None:
             return list(range(int(range_match.group(1)),
                               int(range_match.group(2)) + 1))
