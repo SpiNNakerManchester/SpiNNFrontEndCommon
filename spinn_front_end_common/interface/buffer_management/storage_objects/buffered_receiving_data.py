@@ -1,8 +1,6 @@
 from collections import defaultdict
 import os
 import sqlite3
-from spinn_storage_handlers import (
-    BufferedBytearrayDataStorage, BufferedTempfileDataStorage)
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
@@ -17,9 +15,6 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # the data to store, unless a DB is used
-        "_data",
-
         # the database holding the data to store, if used
         "_db",
 
@@ -42,7 +37,7 @@ class BufferedReceivingData(object):
         "_end_buffering_state"
     ]
 
-    def __init__(self, store_to_file=False, database_file=None):
+    def __init__(self, database_file=None):
         """
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
@@ -52,16 +47,9 @@ class BufferedReceivingData(object):
             contain) an SQLite database holding the data.
         :type database_file: str
         """
-        self._data = None
-        self._db = None
-        if database_file is not None:
-            self._db = sqlite3.connect(database_file)
-            self._db.text_factory = memoryview
-            self.__init_db()
-        elif store_to_file:
-            self._data = defaultdict(BufferedTempfileDataStorage)
-        else:
-            self._data = defaultdict(BufferedBytearrayDataStorage)
+        self._db = sqlite3.connect(database_file)
+        self._db.text_factory = memoryview
+        self.__init_db()
         self._is_flushed = defaultdict(lambda: False)
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
@@ -136,17 +124,14 @@ class BufferedReceivingData(object):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
-        if self._db is not None:
-            try:
-                with self._db:
-                    c = self._db.cursor()
-                    self.__append_contents(c, x, y, p, region, data)
-            except sqlite3.Error:
-                with self._db:
-                    c = self._db.cursor()
-                    self.__hacky_append(c, x, y, p, region, data)
-        else:
-            self._data[x, y, p, region].write(data)
+        try:
+            with self._db:
+                c = self._db.cursor()
+                self.__append_contents(c, x, y, p, region, data)
+        except sqlite3.Error:
+            with self._db:
+                c = self._db.cursor()
+                self.__hacky_append(c, x, y, p, region, data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
         """ Check if the data region has been flushed
@@ -291,12 +276,9 @@ class BufferedReceivingData(object):
         missing = None
         if (x, y, p, region) not in self._end_buffering_state:
             missing = (x, y, p, region)
-        if self._db is not None:
-            with self._db:
-                c = self._db.cursor()
-                data = self._read_contents(c, x, y, p, region)
-        else:
-            data = self._data[x, y, p, region].read_all()
+        with self._db:
+            c = self._db.cursor()
+            data = self._read_contents(c, x, y, p, region)
         return data, missing
 
     def get_region_data_pointer(self, x, y, p, region):
@@ -410,10 +392,7 @@ class BufferedReceivingData(object):
         :rtype: None
         """
         del self._end_buffering_state[x, y, p, region_id]
-        if self._db is not None:
-            with self._db:
-                c = self._db.cursor()
-                self.__delete_contents(c, x, y, p, region_id)
-        else:
-            del self._data[x, y, p, region_id]
+        with self._db:
+            c = self._db.cursor()
+            self.__delete_contents(c, x, y, p, region_id)
         del self._is_flushed[x, y, p, region_id]

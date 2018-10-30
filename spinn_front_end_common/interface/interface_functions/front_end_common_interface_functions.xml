@@ -963,10 +963,6 @@
                 <param_type>MemoryTransceiver</param_type>
             </parameter>
             <parameter>
-                <param_name>store_data_in_file</param_name>
-                <param_type>StoreBufferDataInFile</param_type>
-            </parameter>
-            <parameter>
                 <param_name>extra_monitor_cores</param_name>
                 <param_type>MemoryExtraMonitorVertices</param_type>
             </parameter>
@@ -992,10 +988,10 @@
             </parameter>
        </input_definitions>
         <required_inputs>
+            <param_name>database_file</param_name>
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>
-            <param_name>store_data_in_file</param_name>
             <param_name>uses_advanced_monitors</param_name>
         </required_inputs>
         <optional_inputs>
@@ -1004,7 +1000,6 @@
             <param_name>extra_monitor_to_chip_mapping</param_name>
             <param_name>fixed_routes</param_name>
             <param_name>machine</param_name>
-            <param_name>database_file</param_name>
         </optional_inputs>
         <outputs>
             <param_type>BufferManager</param_type>

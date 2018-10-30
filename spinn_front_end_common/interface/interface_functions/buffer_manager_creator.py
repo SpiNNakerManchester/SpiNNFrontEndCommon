@@ -9,7 +9,7 @@ class BufferManagerCreator(object):
     __slots__ = []
 
     def __call__(
-            self, placements, tags, txrx, store_data_in_file,
+            self, placements, tags, txrx,
             uses_advanced_monitors, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
@@ -19,10 +19,6 @@ class BufferManagerCreator(object):
         :param placements:
         :param tags:
         :param txrx:
-        :param store_to_file: A boolean to identify if the data will be stored\
-            in memory using a byte array or in a temporary file on the disk
-            Ignored if database_file is not null.
-        :type store_to_file: bool
         :param uses_advanced_monitors:
         :param extra_monitor_cores:
         :param extra_monitor_to_chip_mapping:
@@ -40,7 +36,6 @@ class BufferManagerCreator(object):
         # Create the buffer manager
         buffer_manager = BufferManager(
             placements=placements, tags=tags, transceiver=txrx,
-            store_to_file=store_data_in_file,
             extra_monitor_cores=extra_monitor_cores,
             extra_monitor_cores_to_ethernet_connection_map=(
                 extra_monitor_cores_to_ethernet_connection_map),

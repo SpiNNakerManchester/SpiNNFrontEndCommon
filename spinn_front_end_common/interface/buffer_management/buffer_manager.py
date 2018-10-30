@@ -86,9 +86,6 @@ class BufferManager(object):
         # listener port
         "_listener_port",
 
-        # Store to file flag
-        "_store_to_file",
-
         # Buffering out thread pool
         "_buffering_out_thread_pool",
 
@@ -114,8 +111,7 @@ class BufferManager(object):
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  extra_monitor_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, store_to_file=False,
-                 database_file=None):
+                 uses_advanced_monitors, database_file):
         """
         :param placements: The placements of the vertices
         :type placements:\
@@ -125,10 +121,6 @@ class BufferManager(object):
         :param transceiver: \
             The transceiver to use for sending and receiving information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
-        :param store_to_file: True if the data should be temporarily stored\
-            in a file instead of in RAM (default uses RAM).
-            Ignored if database_file is not None.
-        :type store_to_file: bool
         :param database_file: The file to use as an SQL database.
         :type database_file: str
         """
@@ -154,10 +146,8 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData(
-            store_to_file, database_file)
+        self._received_data = BufferedReceivingData(database_file)
         self._received_data_db = database_file
-        self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
@@ -331,8 +321,7 @@ class BufferManager(object):
         if self._received_data_db is not None:
             # Nuke the DB if it existed; it will be recreated
             os.remove(self._received_data_db)
-        self._received_data = BufferedReceivingData(
-            self._store_to_file, self._received_data_db)
+        self._received_data = BufferedReceivingData(self._received_data_db)
 
         # rewind buffered in
         for vertex in self._sender_vertices:
