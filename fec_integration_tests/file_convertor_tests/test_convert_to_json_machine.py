@@ -17,11 +17,10 @@ class TestConvertJson(unittest.TestCase):
     spin2Port = 22245
     mainPort = 22244
 
-    def setUp(self):
+"""    def setUp(self):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
@@ -79,3 +78,4 @@ class TestConvertJson(unittest.TestCase):
 
         print(filename)
         assert filecmp.cmp(filename, "spinn2.json")
+"""
