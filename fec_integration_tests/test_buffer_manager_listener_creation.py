@@ -1,3 +1,5 @@
+import os
+import tempfile
 import unittest
 from spinn_utilities.overrides import overrides
 from spinn_front_end_common.interface.buffer_management import BufferManager
@@ -52,8 +54,14 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
+        dbfile = os.path.join(tempfile.mkdtemp(), "db.sqlite")
         # Create buffer manager
-        bm = BufferManager(pl, t, trnx, None, None, None, None, None)
+        bm = BufferManager(
+            placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
+            extra_monitor_cores_to_ethernet_connection_map=None,
+            extra_monitor_to_chip_mapping=None, machine=None,
+            fixed_routes=None, uses_advanced_monitors=True,
+            database_file=dbfile)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
