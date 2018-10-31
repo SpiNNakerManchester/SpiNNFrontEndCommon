@@ -2036,9 +2036,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
         if not self._use_virtual_board:
-            algorithms.append("BufferExtractor")
-            # TODO FIX WHEN TO DO OR NOT
+            #algorithms.append("BufferExtractor")
             algorithms.append("PlacementsToJson")
+            algorithms.append("JavaBufferExtractor")
+            # TODO FIX WHEN TO DO OR NOT
 
             inputs["PlacementsJsonFilePath"] = os.path.join(
                 self._json_folder, "placements.json")
@@ -2046,6 +2047,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             outputs.append("PlacementsJsonFile")
             inputs["JsonMachinePath"] = os.path.join(
                 self._json_folder, "machine.json")
+
         if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")
 

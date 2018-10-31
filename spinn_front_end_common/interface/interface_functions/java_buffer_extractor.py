@@ -1,3 +1,5 @@
+import subprocess
+
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
 from spinn_utilities.progress_bar import ProgressBar
@@ -9,26 +11,12 @@ class JavaBufferExtractor(object):
 
     __slots__ = []
 
-    def __call__(self, json_machine, json_placements, buffer_manager):
-
-        # Count the regions to be read
-        n_regions_to_read, vertices = self._count_regions(machine_graph)
+    def __call__(self, json_machine, json_placements, database_file):
 
         # Read back the regions
-        progress = ProgressBar(
-            n_regions_to_read, "Extracting buffers from the last run")
+        progress = ProgressBar(1, "JavaBufferExtractor")
         try:
-            buffer_manager.get_data_for_vertices(vertices, progress)
+            subprocess.call(['java', '-jar', '/home/brenninc/spinnaker/JavaSpiNNaker/SpiNNaker-front-end/target/spinnaker-exe.jar',
+                             'upload', json_placements, json_machine, database_file])
         finally:
             progress.end()
-
-    @staticmethod
-    def _count_regions(machine_graph):
-        # Count the regions to be read
-        n_regions_to_read = 0
-        vertices = list()
-        for vertex in machine_graph.vertices:
-            if isinstance(vertex, AbstractReceiveBuffersToHost):
-                n_regions_to_read += len(vertex.get_recorded_region_ids())
-                vertices.append(vertex)
-        return n_regions_to_read, vertices

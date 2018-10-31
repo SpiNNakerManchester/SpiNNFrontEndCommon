@@ -1697,6 +1697,30 @@
             <token>ApplicationRun</token>
         </required_inputs>
     </algorithm>
+    <algorithm name="JavaBufferExtractor">
+        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
+        <python_class>JavaBufferExtractor</python_class>
+        <input_definitions>
+            <parameter>
+                <param_name>json_machine</param_name>
+                <param_type>JsonMachine</param_type>
+            </parameter>
+            <parameter>
+                <param_name>json_placements</param_name>
+                <param_type>PlacementsJsonFile</param_type>
+            </parameter>
+             <parameter>
+                <param_name>database_file</param_name>
+                <param_type>BufferDatabaseFile</param_type>
+            </parameter>
+        </input_definitions>
+        <required_inputs>
+            <param_name>json_machine</param_name>
+            <param_name>json_placements</param_name>
+            <param_name>database_file</param_name>
+            <token>ApplicationRun</token>
+        </required_inputs>
+    </algorithm>
     <algorithm name="PlacementsToJson">
         <python_module>spinn_front_end_common.interface.interface_functions</python_module>
         <python_class>PlacementsToJson</python_class>

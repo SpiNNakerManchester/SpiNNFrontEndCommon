@@ -28,6 +28,7 @@ from .insert_extra_monitor_vertices_to_graphs \
     import InsertExtraMonitorVerticesToGraphs
 from .insert_live_packet_gatherers_to_graphs \
     import InsertLivePacketGatherersToGraphs
+from .java_buffer_extractor import JavaBufferExtractor
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
