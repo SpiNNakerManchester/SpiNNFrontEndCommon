@@ -41,6 +41,8 @@ class PlacementsToJson(object):
 
             progress.end()
 
+        return file_path
+
     @staticmethod
     def _count_regions(machine_graph):
         # Count the regions to be read

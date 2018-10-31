@@ -9,7 +9,7 @@ class JavaBufferExtractor(object):
 
     __slots__ = []
 
-    def __call__(self, machine_graph, placements, buffer_manager):
+    def __call__(self, json_machine, json_placements, buffer_manager):
 
         # Count the regions to be read
         n_regions_to_read, vertices = self._count_regions(machine_graph)

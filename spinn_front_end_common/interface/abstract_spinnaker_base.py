@@ -2039,9 +2039,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
             algorithms.append("BufferExtractor")
             # TODO FIX WHEN TO DO OR NOT
             algorithms.append("PlacementsToJson")
+
             inputs["PlacementsJsonFilePath"] = os.path.join(
                 self._json_folder, "placements.json")
-
+            outputs.append("JsonMachine")
+            outputs.append("PlacementsJsonFile")
+            inputs["JsonMachinePath"] = os.path.join(
+                self._json_folder, "machine.json")
         if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")
 
