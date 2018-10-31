@@ -14,7 +14,7 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         try:
             self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
-            brd = BufferedReceivingData(False, f)
+            brd = BufferedReceivingData(f)
 
             self.assertTrue(os.path.isfile(f), "DB now exists")
 

@@ -9,24 +9,39 @@ class BufferManagerCreator(object):
     __slots__ = []
 
     def __call__(
-            self, placements, tags, txrx, store_data_in_file,
+            self, placements, tags, txrx,
             uses_advanced_monitors, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
-            fixed_routes=None):
+            fixed_routes=None, database_file=None):
+        """
+
+        :param placements:
+        :param tags:
+        :param txrx:
+        :param uses_advanced_monitors:
+        :param extra_monitor_cores:
+        :param extra_monitor_to_chip_mapping:
+        :param extra_monitor_cores_to_ethernet_connection_map:
+        :param machine:
+        :param fixed_routes:
+        :param database_file: The name of a file that contains (or will\
+            contain) an SQLite database holding the data.
+        :type database_file: str
+        :return:
+        """
         # pylint: disable=too-many-arguments
         progress = ProgressBar(placements.placements, "Initialising buffers")
 
         # Create the buffer manager
         buffer_manager = BufferManager(
             placements=placements, tags=tags, transceiver=txrx,
-            store_to_file=store_data_in_file,
             extra_monitor_cores=extra_monitor_cores,
             extra_monitor_cores_to_ethernet_connection_map=(
                 extra_monitor_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
             machine=machine, uses_advanced_monitors=uses_advanced_monitors,
-            fixed_routes=fixed_routes)
+            fixed_routes=fixed_routes, database_file=database_file)
 
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):
