@@ -1,6 +1,6 @@
 import filecmp
 import os
-import time
+import sys
 import unittest
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
@@ -17,8 +17,12 @@ class TestConvertJson(unittest.TestCase):
     spin2Port = 22245
     mainPort = 22244
 
+    def setUp(self):
+        class_file = sys.modules[self.__module__].__file__
+        path = os.path.dirname(os.path.abspath(class_file))
+        os.chdir(path)
+
     def testSpin4(self):
-        assert False
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
@@ -28,12 +32,11 @@ class TestConvertJson(unittest.TestCase):
 
         jsonAlgo = ConvertToJavaMachine()
 
-        fn = os.path.join(os.path.dirname(__file__), "test_spinn4.json")
+        fn = "test_spinn4.json"
         filename = jsonAlgo(machine, str(fn))
 
         print(filename)
-        check = os.path.join(os.path.dirname(__file__), "spinn4.json")
-        assert filecmp.cmp(filename, "check")
+        assert filecmp.cmp(filename, "spinn4.json")
 
         # Create a machione with Exception
         chip = machine.get_chip_at(1, 1)
@@ -47,64 +50,36 @@ class TestConvertJson(unittest.TestCase):
         chip.reserve_a_system_processor()
         chip.reserve_a_system_processor()
 
-        fn = os.path.join(os.path.dirname(__file__), "test_spinn4_fiddle.json")
+        fn = "test_spinn4_fiddle.json"
         filename = jsonAlgo(machine, str(fn))
         print(filename)
-        check = os.path.join(os.path.dirname(__file__), "spinn4_fiddle.json")
-        assert filecmp.cmp(filename, check)
+        assert filecmp.cmp(filename, "spinn4_fiddle.json")
+
+        trans.close()
 
     def testSpin2(self):
         if not Ping.host_is_reachable(self.spalloc):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         spallocAlgo = SpallocAllocator()
 
-        print("Spalloc started ")
         (hostname, version, _, _, _, _, _, machine_allocation_controller) = \
             spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
                         self.spin2Port)
 
         print("Spalloc returned " + hostname)
-
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)
         trans.ensure_board_is_ready()
-        print("board ready")
         machine = trans.get_machine_details()
         print(machine)
-
-        #print("Foreever keep alive");
-        #while (True):
-        #    time.sleep(1)
 
         machine_allocation_controller.close()
 
         jsonAlgo = ConvertToJavaMachine()
 
-        fn = os.path.join(os.path.dirname(__file__), "test_spinn2.json")
+        fn = "test_spinn2.json"
         filename = jsonAlgo(machine, str(fn))
 
         print(filename)
-        check = os.path.join(os.path.dirname(__file__), "spinn2.json")
-        assert filecmp.cmp(filename, check)
+        assert filecmp.cmp(filename, "spinn2.json")
 
-
-spin4Host = "spinn-4.cs.man.ac.uk"
-spalloc = "spinnaker.cs.man.ac.uk"
-spin2Port = 22245
-mainPort = 22244
-spallocAlgo = SpallocAllocator()
-
-print("Spalloc started ")
-(hostname, version, _, _, _, _, _, machine_allocation_controller) = \
-    spallocAlgo(spalloc, "Integration testing ok to kill", 20,
-                spin2Port)
-
-print("Spalloc returned " + hostname)
-
-trans = transceiver.create_transceiver_from_hostname(hostname, 5)
-trans.ensure_board_is_ready()
-print("board ready")
-machine = trans.get_machine_details()
-print(machine)
-print("Foreever keep alive");
-while (True):
-    time.sleep(1)
+        trans.close()
