@@ -598,57 +598,60 @@ bool recording_initialize(
         time_between_triggers);
 
     // Set up the space for holding recording pointers and sizes
-    region_addresses = (address_t*) spin1_malloc(
-        n_recording_regions * sizeof(address_t));
-    if (region_addresses == NULL) {
-        log_error("Not enough space to allocate recording addresses");
-        return false;
-    }
-    region_sizes = (uint32_t *) spin1_malloc(
-        n_recording_regions * sizeof(uint32_t));
-    if (region_sizes == NULL) {
-        log_error("Not enough space to allocate region sizes");
-        return false;
-    }
-
-    // Set up the recording flags
-    if (recording_flags != NULL) {
-        *recording_flags = 0;
-    }
-
-    // Reserve the actual recording regions.
-    // An extra sizeof(recording_channel_t) bytes are reserved per channel
-    // to store the data after recording
-    for (uint32_t counter = 0; counter < n_recording_regions; counter++) {
-        uint32_t size = recording_data_address[
-            REGION_POINTERS_START + n_recording_regions + counter];
-        if (size > 0) {
-            region_sizes[counter] = size;
-            region_addresses[counter] = sark_xalloc(
-                sv->sdram_heap, size + sizeof(recording_channel_t), 0,
-                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
-            if (region_addresses[counter] == NULL) {
-                log_error(
-                    "Could not allocate recording region %u of %u bytes",
-                    counter, size);
-                return false;
-            }
-            recording_data_address[REGION_POINTERS_START + counter] =
-                (uint32_t) region_addresses[counter];
-            *recording_flags = (*recording_flags | (1 << counter));
-        } else {
-            recording_data_address[REGION_POINTERS_START + counter] = 0;
-            region_addresses[counter] = 0;
-            region_sizes[counter] = 0;
+    if (n_recording_regions != 0){
+        region_addresses = (address_t*) spin1_malloc(
+            n_recording_regions * sizeof(address_t));
+        if (region_addresses == NULL) {
+            log_error("Not enough space to allocate recording addresses");
+            return false;
         }
+        region_sizes = (uint32_t *) spin1_malloc(
+            n_recording_regions * sizeof(uint32_t));
+        if (region_sizes == NULL) {
+            log_error("Not enough space to allocate region sizes");
+            return false;
+        }
+
+        // Set up the recording flags
+        if (recording_flags != NULL) {
+            *recording_flags = 0;
+        }
+
+        // Reserve the actual recording regions.
+        // An extra sizeof(recording_channel_t) bytes are reserved per channel
+        // to store the data after recording
+        for (uint32_t counter = 0; counter < n_recording_regions; counter++) {
+            uint32_t size = recording_data_address[
+                REGION_POINTERS_START + n_recording_regions + counter];
+            if (size > 0) {
+                region_sizes[counter] = size;
+                region_addresses[counter] = sark_xalloc(
+                    sv->sdram_heap, size + sizeof(recording_channel_t), 0,
+                    ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                if (region_addresses[counter] == NULL) {
+                    log_error(
+                        "Could not allocate recording region %u of %u bytes",
+                        counter, size);
+                    return false;
+                }
+                recording_data_address[REGION_POINTERS_START + counter] =
+                    (uint32_t) region_addresses[counter];
+                *recording_flags = (*recording_flags | (1 << counter));
+            } else {
+                recording_data_address[REGION_POINTERS_START + counter] = 0;
+                region_addresses[counter] = 0;
+                region_sizes[counter] = 0;
+            }
+        }
+        g_recording_channels = (recording_channel_t*) sark_alloc(
+            1, n_recording_regions * sizeof(recording_channel_t));
+        if (!g_recording_channels) {
+            log_error("Not enough space to create recording channels");
+            return false;
+        }
+        log_debug(
+            "Allocated recording channels to 0x%08x", g_recording_channels);
     }
-    g_recording_channels = (recording_channel_t*) sark_alloc(
-        1, n_recording_regions * sizeof(recording_channel_t));
-    if (!g_recording_channels) {
-        log_error("Not enough space to create recording channels");
-        return false;
-    }
-    log_debug("Allocated recording channels to 0x%08x", g_recording_channels);
 
     // Set up the channels and write the initial state data
     recording_reset();
