@@ -1,7 +1,6 @@
 import subprocess
 
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
+from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
 from spinn_utilities.progress_bar import ProgressBar
 
 
@@ -16,7 +15,12 @@ class JavaBufferExtractor(object):
         # Read back the regions
         progress = ProgressBar(1, "JavaBufferExtractor")
         try:
-            subprocess.call(['java', '-jar', '/home/brenninc/spinnaker/JavaSpiNNaker/SpiNNaker-front-end/target/spinnaker-exe.jar',
-                             'upload', json_placements, json_machine, database_file])
+            result = subprocess.call(
+                ['java', '-jar',
+                 '/home/brenninc/spinnaker/JavaSpiNNaker/SpiNNaker-front-end/target/spinnaker-exe.jar',
+                 'upload', json_placements, json_machine, database_file])
+            if result != 0:
+                raise PacmanExternalAlgorithmFailedToCompleteException(
+                    "Java call exited with value " + str(result))
         finally:
             progress.end()
