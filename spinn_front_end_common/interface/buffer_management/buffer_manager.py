@@ -584,7 +584,7 @@ class BufferManager(object):
         for placement in placements:
             vertex = placement.vertex
             for recording_region_id in vertex.get_recorded_region_ids():
-                self.get_data_by_placement(placement, recording_region_id)
+                self._retreive_by_placement(placement, recording_region_id)
                 if progress is not None:
                     progress.update()
 
@@ -609,7 +609,7 @@ class BufferManager(object):
 
     def get_data_by_placement(self, placement, recording_region_id):
 
-        """ Get a handle to the data container for all the data retrieved\
+        """ Get the data container for all the data retrieved\
             during the simulation from a specific region area of a core
 
         :param placement: the placement to get the data from
@@ -624,10 +624,12 @@ class BufferManager(object):
 
         # Ensure that any transfers in progress are complete first
         with self._thread_lock_buffer_out:
-            return self._get_data_by_placement_locked(
-                placement, recording_region_id)
+            # data flush has been completed - return appropriate data
+            (byte_array, missing) = self._received_data.get_region_data(
+                placement.x, placement.y, placement.p, recording_region_id)
+            return byte_array, missing
 
-    def _get_data_by_placement_locked(self, placement, recording_region_id):
+    def _retreive_by_placement(self, placement, recording_region_id):
         """ Get the data for a vertex; must be locked first
 
         :param placement: the placement to get the data from
@@ -773,11 +775,6 @@ class BufferManager(object):
                 self._received_data.flushing_data_from_region(
                     placement.x, placement.y, placement.p, recording_region_id,
                     data)
-
-        # data flush has been completed - return appropriate data
-        (byte_array, missing) = self._received_data.get_region_data(
-            placement.x, placement.y, placement.p, recording_region_id)
-        return byte_array, missing
 
     def _process_last_ack(self, placement, region_id, end_state):
         # if the last ACK packet has not been processed on the chip,
