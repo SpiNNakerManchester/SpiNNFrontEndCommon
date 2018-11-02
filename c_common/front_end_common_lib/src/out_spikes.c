@@ -46,6 +46,10 @@ bool out_spikes_record(
         uint8_t channel, uint32_t time, uint32_t n_words,
         recording_complete_callback_t callback) {
     if (out_spikes_is_empty()) {
+        // call callback if needed to release resources
+        if (callback != NULL) {
+            callback();
+        }
         return false;
     } else {
         spikes->time = time;
