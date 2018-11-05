@@ -99,7 +99,8 @@ class BufferedReceivingData(object):
                 "SELECT content FROM storage "
                 + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
                 (x, y, p, region)):
-            return row["content"]
+            data = row["content"]
+            return memoryview(data)
         return b""
 
     def __delete_contents(self, cursor, x, y, p, region):
