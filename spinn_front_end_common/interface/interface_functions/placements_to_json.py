@@ -39,7 +39,11 @@ class PlacementsToJson(object):
         with open(file_path, "w") as f:
             json.dump(json_obj, f)
 
-            progress.end()
+        progress.end()
+
+        with open(file_path, "r") as f:
+            for line in f:
+                print(line)
 
         return file_path
 
