@@ -193,7 +193,7 @@ class CommandSenderMachineVertex(
                 (machine_time_step * time_scale_factor // 2) // max_n_commands)
         spec.switch_write_focus(
             CommandSenderMachineVertex.DATA_REGIONS.SETUP.value)
-        spec.write_value(time_between_commands)
+        spec.write_value(int(time_between_commands))
 
         # write commands
         spec.switch_write_focus(
