@@ -1125,7 +1125,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 min_time_steps = min_time_steps_this_chip
             else:
                 min_time_steps = min(
-                    (min_time_steps, min_time_steps_this_chip))
+                    min_time_steps, min_time_steps_this_chip)
 
         # clear injectable
         clear_injectables()
