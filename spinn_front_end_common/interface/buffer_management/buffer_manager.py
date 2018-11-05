@@ -44,6 +44,8 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
 
+_SDP_MAX_PACKAGE_SIZE = 272
+
 
 class BufferManager(object):
     """ Manager of send buffers.
@@ -192,7 +194,7 @@ class BufferManager(object):
             transceiver, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
 
-    def receive_buffer_command_message(self, packet):
+    def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
 
         :param packet: The EIEIO message received
@@ -248,7 +250,7 @@ class BufferManager(object):
 
     def _create_connection(self, tag):
         connection = self._transceiver.register_udp_listener(
-            self.receive_buffer_command_message, EIEIOConnection,
+            self._receive_buffer_command_message, EIEIOConnection,
             local_port=tag.port, local_host=tag.ip_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
         utility_functions.send_port_trigger_message(
@@ -422,10 +424,9 @@ class BufferManager(object):
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        region_base_address = funs.locate_memory_region_for_placement(
-            self._placements.get_placement_of_vertex(vertex), region,
-            self._transceiver)
         placement = self._placements.get_placement_of_vertex(vertex)
+        region_base_address = funs.locate_memory_region_for_placement(
+            placement, region, self._transceiver)
 
         # Add packets until out of space
         sent_message = False
@@ -441,7 +442,7 @@ class BufferManager(object):
             min_size_of_packet = _MIN_MESSAGE_SIZE
             while (vertex.is_next_timestamp(region) and
                     bytes_to_go > min_size_of_packet):
-                space_available = min(bytes_to_go, 280)
+                space_available = min(bytes_to_go, _SDP_MAX_PACKAGE_SIZE)
                 next_message = self._create_message_to_send(
                     space_available, vertex, region)
                 if next_message is None:
