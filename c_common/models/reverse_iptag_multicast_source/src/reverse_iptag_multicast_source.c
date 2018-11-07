@@ -65,8 +65,8 @@ typedef enum provenance_items {
 //! the amount of ticks to wait between requests
 #define TICKS_BETWEEN_REQUESTS 25
 
-//! the maximum size of a packet
-#define MAX_PACKET_SIZE 280
+//! the maximum size of a packet excluding header
+#define MAX_PACKET_SIZE 272
 
 #pragma pack(1)
 
