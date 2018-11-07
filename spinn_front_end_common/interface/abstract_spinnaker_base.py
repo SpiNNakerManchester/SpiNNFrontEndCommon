@@ -2039,12 +2039,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
             #algorithms.append("BufferExtractor")
             algorithms.append("PlacementsToJson")
             algorithms.append("JavaBufferExtractor")
+            outputs.append("JsonMachine")
+            outputs.append("PlacementsJsonFile")
             # TODO FIX WHEN TO DO OR NOT
 
             inputs["PlacementsJsonFilePath"] = os.path.join(
-                self._json_folder, "placements.json")
-            outputs.append("JsonMachine")
-            outputs.append("PlacementsJsonFile")
+                self._json_folder, "java_placements.json")
             inputs["JsonMachinePath"] = os.path.join(
                 self._json_folder, "machine.json")
 
