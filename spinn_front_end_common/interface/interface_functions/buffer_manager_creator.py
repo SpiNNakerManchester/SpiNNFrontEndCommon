@@ -10,10 +10,10 @@ class BufferManagerCreator(object):
 
     def __call__(
             self, placements, tags, txrx,
-            uses_advanced_monitors, extra_monitor_cores=None,
+            uses_advanced_monitors, database_file, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
-            fixed_routes=None, database_file=None):
+            fixed_routes=None):
         """
 
         :param placements:

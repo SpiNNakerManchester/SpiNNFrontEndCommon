@@ -107,13 +107,16 @@ class BufferManager(object):
         "_machine",
 
         # flag for what data extraction to use
-        "_uses_advanced_monitors"
+        "_uses_advanced_monitors",
+
+        # Support class to help call Java
+        "_java_caller"
     ]
 
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  extra_monitor_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, database_file):
+                 uses_advanced_monitors, database_file, java_caller=None):
         """
         :param placements: The placements of the vertices
         :type placements:\
@@ -158,6 +161,7 @@ class BufferManager(object):
 
         self._finished = False
         self._listener_port = None
+        self._java_caller = java_caller
 
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
