@@ -36,6 +36,7 @@ from spinn_front_end_common.utility_models import \
     CommandSender, DataSpeedUpPacketGatherMachineVertex
 from spinn_front_end_common.interface.buffer_management.buffer_models \
     import AbstractReceiveBuffersToHost
+from spinn_front_end_common.interface.java_caller import JavaCaller
 from spinn_front_end_common.interface.provenance \
     import PacmanProvenanceExtractor
 from spinn_front_end_common.interface.simulator_state import Simulator_State
@@ -163,6 +164,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # The manager of streaming buffered data in and out of the SpiNNaker
         # machine
         "_buffer_manager",
+
+        # Handler for keep all the calls to Java in a single space.
+        # May be null is configs request not to use Java
+        "_java_caller",
 
         #
         "_ip_address",
@@ -423,6 +428,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._machine = None
         self._txrx = None
         self._buffer_manager = None
+        self._java_caller = None
         self._ip_address = None
         self._executable_types = None
 
@@ -944,6 +950,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 # to be rebuilt.
                 self._machine = None
                 self._buffer_manager = None
+                self._java_caller = None
                 if self._txrx is not None:
                     self._txrx.close()
                     self._app_id = None
@@ -1718,6 +1725,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 outputs.append("BufferManager")
             else:
                 inputs["BufferManager"] = self._buffer_manager
+            if self._java_caller is None:
+                if self._config.getboolean("Java", "use_java"):
+                    java_call = self._config.get("Java", "java_call")
+                    javaspinnaker_path = self._config.get_str(
+                        "Java", "javaspinnaker_path")
+                    self._java_caller = JavaCaller(
+                        self._json_folder, java_call, javaspinnaker_path)
+            inputs["JavaCaller"] = self._java_caller
 
         # Execute the mapping algorithms
         executor = self._run_algorithms(
@@ -2036,17 +2051,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
         if not self._use_virtual_board:
-            #algorithms.append("BufferExtractor")
-            algorithms.append("PlacementsToJson")
-            algorithms.append("JavaBufferExtractor")
-            outputs.append("JsonMachine")
-            outputs.append("PlacementsJsonFile")
-            # TODO FIX WHEN TO DO OR NOT
-
-            inputs["PlacementsJsonFilePath"] = os.path.join(
-                self._json_folder, "java_placements.json")
-            inputs["JsonMachinePath"] = os.path.join(
-                self._json_folder, "machine.json")
+            algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")

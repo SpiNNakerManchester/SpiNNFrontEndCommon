@@ -13,7 +13,7 @@ class BufferManagerCreator(object):
             uses_advanced_monitors, database_file, extra_monitor_cores=None,
             extra_monitor_to_chip_mapping=None,
             extra_monitor_cores_to_ethernet_connection_map=None, machine=None,
-            fixed_routes=None):
+            fixed_routes=None, java_caller=None):
         """
 
         :param placements:
@@ -41,7 +41,8 @@ class BufferManagerCreator(object):
                 extra_monitor_cores_to_ethernet_connection_map),
             extra_monitor_to_chip_mapping=extra_monitor_to_chip_mapping,
             machine=machine, uses_advanced_monitors=uses_advanced_monitors,
-            fixed_routes=fixed_routes, database_file=database_file)
+            fixed_routes=fixed_routes, database_file=database_file,
+            java_caller=java_caller)
 
         for placement in progress.over(placements.placements):
             if isinstance(placement.vertex, AbstractSendsBuffersFromHost):

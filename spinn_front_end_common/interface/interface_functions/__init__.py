@@ -28,7 +28,6 @@ from .insert_extra_monitor_vertices_to_graphs \
     import InsertExtraMonitorVerticesToGraphs
 from .insert_live_packet_gatherers_to_graphs \
     import InsertLivePacketGatherersToGraphs
-from .java_buffer_extractor import JavaBufferExtractor
 from .load_executable_images import LoadExecutableImages
 from .load_fixed_routes import LoadFixedRoutes
 from .locate_executable_start_type import LocateExecutableStartType
@@ -38,7 +37,6 @@ from .machine_generator import MachineGenerator
 from .notification_protocol import NotificationProtocol
 from .placements_provenance_gatherer \
     import PlacementsProvenanceGatherer
-from .placements_to_json import PlacementsToJson
 from .pre_allocate_resources_for_chip_power_monitor \
     import PreAllocateResourcesForChipPowerMonitor
 from .pre_allocate_resources_for_live_packet_gatherers \

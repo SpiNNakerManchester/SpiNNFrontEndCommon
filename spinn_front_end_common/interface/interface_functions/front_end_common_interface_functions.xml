@@ -986,6 +986,10 @@
                 <param_name>database_file</param_name>
                 <param_type>BufferDatabaseFile</param_type>
             </parameter>
+             <parameter>
+                <param_name>java_caller</param_name>
+                <param_type>JavaCaller</param_type>
+            </parameter>
        </input_definitions>
         <required_inputs>
             <param_name>database_file</param_name>
@@ -1000,6 +1004,7 @@
             <param_name>extra_monitor_to_chip_mapping</param_name>
             <param_name>fixed_routes</param_name>
             <param_name>machine</param_name>
+            <param_name>java_caller</param_name>
         </optional_inputs>
         <outputs>
             <param_type>BufferManager</param_type>
@@ -1696,62 +1701,6 @@
             <param_name>buffer_manager</param_name>
             <token>ApplicationRun</token>
         </required_inputs>
-    </algorithm>
-    <algorithm name="JavaBufferExtractor">
-        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>JavaBufferExtractor</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>json_machine</param_name>
-                <param_type>JsonMachine</param_type>
-            </parameter>
-            <parameter>
-                <param_name>json_placements</param_name>
-                <param_type>PlacementsJsonFile</param_type>
-            </parameter>
-             <parameter>
-                <param_name>database_file</param_name>
-                <param_type>BufferDatabaseFile</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>json_machine</param_name>
-            <param_name>json_placements</param_name>
-            <param_name>database_file</param_name>
-            <token>ApplicationRun</token>
-        </required_inputs>
-    </algorithm>
-    <algorithm name="PlacementsToJson">
-        <python_module>spinn_front_end_common.interface.interface_functions</python_module>
-        <python_class>PlacementsToJson</python_class>
-        <input_definitions>
-            <parameter>
-                <param_name>machine_graph</param_name>
-                <param_type>MemoryMachineGraph</param_type>
-            </parameter>
-            <parameter>
-                <param_name>placements</param_name>
-                <param_type>MemoryPlacements</param_type>
-            </parameter>
-            <parameter>
-                <param_name>transceiver</param_name>
-                <param_type>MemoryTransceiver</param_type>
-            </parameter>
-            <parameter>
-                <param_name>file_path</param_name>
-                <param_type>PlacementsJsonFilePath</param_type>
-            </parameter>
-        </input_definitions>
-        <required_inputs>
-            <param_name>machine_graph</param_name>
-            <param_name>placements</param_name>
-            <param_name>transceiver</param_name>
-            <param_name>file_path</param_name>
-            <token>ApplicationRun</token>
-        </required_inputs>
-        <outputs>
-            <param_type>PlacementsJsonFile</param_type>
-        </outputs>
     </algorithm>
     <algorithm name="ProfileDataGatherer">
         <python_module>spinn_front_end_common.interface.interface_functions.profile_data_gatherer</python_module>

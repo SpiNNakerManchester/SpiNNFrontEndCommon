@@ -128,6 +128,9 @@ class BufferManager(object):
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
         :param database_file: The file to use as an SQL database.
         :type database_file: str
+        :param java_caller: Support class to call Java or None to use python
+        :type java_caller:\
+            :py;class:`spinn_front_end_common.interface.java_caller`
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -162,6 +165,9 @@ class BufferManager(object):
         self._finished = False
         self._listener_port = None
         self._java_caller = java_caller
+        if self._java_caller is not None:
+            self._java_caller.set_machine(machine)
+            self._java_caller.set_database(database_file)
 
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
@@ -565,8 +571,14 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_placements(self, placements, progress=None):
-        with self._thread_lock_buffer_out:
-            self._get_data_for_placements_locked(placements, progress)
+        if self._java_caller is None:
+            with self._thread_lock_buffer_out:
+                self._get_data_for_placements_locked(placements, progress)
+        else:
+            self._java_caller.set_placements(placements, self._transceiver)
+            self._java_caller.get_all_data()
+            if progress:
+                progress.end()
 
     def _get_data_for_placements_locked(self, placements, progress=None):
         receivers = OrderedSet()
