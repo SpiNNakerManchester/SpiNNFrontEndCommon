@@ -9,7 +9,9 @@ from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints)
 from spinn_front_end_common.abstract_models.impl import (
     ProvidesKeyToAtomMappingImpl)
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import (
+    DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE, MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
+    SDP_PORTS)
 from .reverse_ip_tag_multicast_source_machine_vertex import (
     ReverseIPTagMulticastSourceMachineVertex)
 from spinn_front_end_common.abstract_models import (
@@ -37,8 +39,7 @@ class ReverseIpTagMultiCastSource(
 
             # Live input parameters
             receive_port=None,
-            receive_sdp_port=(
-                constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
+            receive_sdp_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
             receive_tag=None,
             receive_rate=10,
 
@@ -49,8 +50,7 @@ class ReverseIpTagMultiCastSource(
             # Send buffer parameters
             send_buffer_times=None,
             send_buffer_partition_id=None,
-            send_buffer_max_space=(
-                constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
+            send_buffer_max_space=MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             send_buffer_space_before_notify=640,
 
             # Buffer parameters
@@ -203,9 +203,8 @@ class ReverseIpTagMultiCastSource(
 
     def enable_recording(
             self,
-            record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
-            buffer_size_before_receive=(
-                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            record_buffer_size=MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
+            buffer_size_before_receive=DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE,
             time_between_requests=0):
         self._record_buffer_size = record_buffer_size
         self._record_buffer_size_before_receive = buffer_size_before_receive

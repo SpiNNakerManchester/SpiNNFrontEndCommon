@@ -7,8 +7,8 @@ from pacman.model.graphs.common import Slice, GraphMapper
 from pacman.model.placements import Placements, Placement
 from pacman.model.graphs.application import ApplicationVertex
 from pacman.model.graphs.machine import MachineVertex
-from data_specification import constants
-from data_specification import utility_calls
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.utility_calls import get_region_base_address_offset
 from spinn_front_end_common.abstract_models import (
     AbstractRewritesDataSpecification)
 from spinn_front_end_common.interface.interface_functions import (
@@ -113,7 +113,7 @@ class _MockTransceiver(object):
     def read_memory(self, x, y, base_address, length, cpu=0):
         addresses = [i + base_address for i in self._region_addresses]
         return struct.pack(
-            "<{}I".format(constants.MAX_MEM_REGIONS), *addresses)
+            "<{}I".format(MAX_MEM_REGIONS), *addresses)
 
     def write_memory(
             self, x, y, base_address, data, n_bytes=None, offset=0,
@@ -149,7 +149,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             (placement.x, placement.y, placement.p): i * 1000
             for i, placement in enumerate(placements.placements)
         }
-        region_addresses = [i for i in range(constants.MAX_MEM_REGIONS)]
+        region_addresses = [i for i in range(MAX_MEM_REGIONS)]
         transceiver = _MockTransceiver(user_0_addresses, region_addresses)
 
         reloader = DSGRegionReloader()
@@ -175,7 +175,7 @@ class TestFrontEndCommonDSGRegionReloader(unittest.TestCase):
             for j in range(len(reload_region_data)):
                 pos = (i * len(reload_region_data)) + j
                 region, data = reload_region_data[j]
-                address = utility_calls.get_region_base_address_offset(
+                address = get_region_base_address_offset(
                     user_0_address, 0) + region_addresses[region]
                 data = bytearray(numpy.array(data, dtype="uint32").tobytes())
 

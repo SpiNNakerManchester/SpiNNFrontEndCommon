@@ -16,10 +16,12 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
-from spinn_front_end_common.utilities import (
-    helpful_functions as funs, exceptions)
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
+from spinn_front_end_common.utilities.exceptions import (
+    BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import (
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
@@ -178,7 +180,7 @@ class BufferManager(object):
                 placement_x, placement_y, address, length)
 
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
-        receiver = funs.locate_extra_monitor_mc_receiver(
+        receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
             self._extra_monitor_cores_to_ethernet_connection_map)
         return receiver.get_data(
@@ -416,14 +418,14 @@ class BufferManager(object):
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
         placement = self._placements.get_placement_of_vertex(vertex)
-        region_base_address = funs.locate_memory_region_for_placement(
+        region_base_address = locate_memory_region_for_placement(
             placement, region, self._transceiver)
 
         # Add packets until out of space
         sent_message = False
         bytes_to_go = vertex.get_region_buffer_size(region)
         if bytes_to_go % 2 != 0:
-            raise exceptions.SpinnFrontEndException(
+            raise SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
         all_data = b""
@@ -449,7 +451,7 @@ class BufferManager(object):
                 progress.update(len(data))
 
         if not sent_message:
-            raise exceptions.BufferableRegionTooSmall(
+            raise BufferableRegionTooSmall(
                 "The buffer size {} is too small for any data to be added for"
                 " region {} of vertex {}".format(bytes_to_go, region, vertex))
 
@@ -572,7 +574,7 @@ class BufferManager(object):
             # locate receivers
             for vertex in vertices:
                 placement = self._placements.get_placement_of_vertex(vertex)
-                receivers.add(funs.locate_extra_monitor_mc_receiver(
+                receivers.add(locate_extra_monitor_mc_receiver(
                     self._machine, placement.x, placement.y,
                     self._extra_monitor_cores_to_ethernet_connection_map))
 
@@ -706,7 +708,7 @@ class BufferManager(object):
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
                 if length < 0:
-                    raise exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "The amount of data to read is negative!")
                 logger.debug(
                     "> Reading {} bytes from {}, {}, {}: {} for region {}",

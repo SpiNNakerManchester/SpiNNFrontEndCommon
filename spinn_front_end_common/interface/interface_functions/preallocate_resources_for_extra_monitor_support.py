@@ -58,8 +58,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         :param progress: the progress bar to operate one
         :rtype: None
         """
-        sdram_usage = ExtraMonitorSupportMachineVertex.\
-            static_resources_required()
+        sdram_usage = \
+            ExtraMonitorSupportMachineVertex.static_resources_required()
         for chip in progress.over(machine.chips):
             cores.append(CoreResource(chip=chip, n_cores=1))
             sdrams.append(SpecificChipSDRAMResource(
