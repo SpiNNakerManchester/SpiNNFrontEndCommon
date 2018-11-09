@@ -1,7 +1,6 @@
 import unittest
-
-from spinn_front_end_common.utilities import FailedState
-from spinn_front_end_common.utilities import globals_variables
+from spinn_front_end_common.utilities import (
+    FailedState, globals_variables)
 
 
 class FakeFailedState(object):

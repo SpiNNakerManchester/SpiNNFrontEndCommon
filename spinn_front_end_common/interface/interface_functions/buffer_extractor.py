@@ -1,6 +1,7 @@
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
 from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.interface.buffer_management.buffer_models \
+    import (
+        AbstractReceiveBuffersToHost)
 
 
 class BufferExtractor(object):

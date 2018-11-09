@@ -1,18 +1,13 @@
-# spinnman imports
-from multiprocessing.pool import ThreadPool
-from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.command_messages import DatabaseConfirmation
-from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages \
-    import NotificationProtocolPauseStop, NotificationProtocolStartResume
-
-# front end common imports
-from spinn_front_end_common.utilities.constants \
-    import MAX_DATABASE_PATH_LENGTH
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
 import logging
-
+from multiprocessing.pool import ThreadPool
+from spinn_utilities.log import FormatAdapter
+from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.messages.eieio.command_messages import (
+    DatabaseConfirmation, NotificationProtocolPauseStop,
+    NotificationProtocolStartResume)
+from spinn_front_end_common.utilities.constants import (
+    MAX_DATABASE_PATH_LENGTH)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

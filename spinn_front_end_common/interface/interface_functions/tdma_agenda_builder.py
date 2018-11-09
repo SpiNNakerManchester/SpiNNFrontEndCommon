@@ -1,5 +1,5 @@
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import math
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 _CPU_CYCLES_PER_INTERRUPT_TO_CALLBACK = 40
 _CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES = 200

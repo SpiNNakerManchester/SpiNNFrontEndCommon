@@ -1,20 +1,15 @@
-# spinnman imports
+import logging
+from threading import Thread
+from six import raise_from
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinnman.exceptions \
-    import SpinnmanIOException, SpinnmanInvalidPacketException, \
-    SpinnmanTimeoutException
+from spinnman.exceptions import (
+    SpinnmanIOException, SpinnmanInvalidPacketException,
+    SpinnmanTimeoutException)
 from spinnman.messages.eieio.command_messages import EIEIOCommandHeader
 from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.constants import EIEIO_COMMAND_IDS as CMDS
-
-# FrontEndCommon imports
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from .database_reader import DatabaseReader
-
-# general imports
-from threading import Thread
-from six import raise_from
-import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

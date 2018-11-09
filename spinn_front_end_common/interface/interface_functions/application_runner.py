@@ -1,11 +1,9 @@
 import logging
 import time
-
+from spinn_utilities.log import FormatAdapter
+from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
-from spinnman.messages.scp.enums import Signal
-from spinn_utilities.log import FormatAdapter
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

@@ -1,89 +1,70 @@
 """
 main interface for the SpiNNaker tools
 """
-import spinn_utilities.conf_loader as conf_loader
-from spinn_utilities.timer import Timer
-from spinn_utilities import __version__ as spinn_utils_version
-
-# pacman imports
-from pacman.executor.injection_decorator import provide_injectables, \
-    clear_injectables
-from pacman.model.graphs.common import GraphMapper
-from pacman.model.placements import Placements
-from pacman.executor import PACMANAlgorithmExecutor
-from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
-from pacman.model.graphs.application import ApplicationGraph
-from pacman.model.graphs.application import ApplicationEdge
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.graphs.machine import MachineGraph, MachineVertex
-from pacman.model.resources import PreAllocatedResourceContainer
-from pacman import __version__ as pacman_version
-
-# common front end imports
-from spinn_front_end_common.abstract_models import \
-    AbstractSendMeMulticastCommandsVertex, AbstractRecordable, \
-    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utility_models import CommandSenderMachineVertex
-from spinn_front_end_common.utilities \
-    import helpful_functions, globals_variables, SimulatorInterface
-from spinn_front_end_common.utilities import function_list
-from spinn_front_end_common.utilities.utility_objs \
-    import ExecutableType, ProvenanceDataItem
-from spinn_front_end_common.utilities.report_functions import EnergyReport
-from spinn_front_end_common.utility_models import \
-    CommandSender, DataSpeedUpPacketGatherMachineVertex
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.java_caller import JavaCaller
-from spinn_front_end_common.interface.provenance \
-    import PacmanProvenanceExtractor
-from spinn_front_end_common.interface.simulator_state import Simulator_State
-from spinn_front_end_common.interface.interface_functions \
-    import ProvenanceXMLWriter
-from spinn_front_end_common.interface.interface_functions \
-    import ProvenanceJSONWriter
-from spinn_front_end_common.interface.interface_functions \
-    import ChipProvenanceUpdater
-from spinn_front_end_common.interface.interface_functions \
-    import PlacementsProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import RouterProvenanceGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-from spinn_front_end_common import __version__ as fec_version
-
-# spinnman imports
-from spinnman.model.enums.cpu_state import CPUState
-from spinnman import __version__ as spinnman_version
-
-# spinnmachine imports
-from spinn_machine import CoreSubsets
-from spinn_machine import __version__ as spinn_machine_version
-
-# general imports
 from collections import defaultdict
 import logging
 import math
 import os
 import signal
-from six import iteritems, iterkeys, reraise
 import sys
-
-# Version number imports
+from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
+import spinn_utilities.conf_loader as conf_loader
+from spinn_utilities.timer import Timer
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities import __version__ as spinn_utils_version
+from spinn_machine import CoreSubsets
+from spinn_machine import __version__ as spinn_machine_version
+from spinnman.model.enums.cpu_state import CPUState
+from spinnman import __version__ as spinnman_version
+from spinn_storage_handlers import __version__ as spinn_storage_version
+from data_specification import __version__ as data_spec_version
+from spalloc import __version__ as spalloc_version
+from pacman.executor.injection_decorator import (
+    provide_injectables, clear_injectables)
+from pacman.model.graphs.common import GraphMapper
+from pacman.model.placements import Placements
+from pacman.executor import PACMANAlgorithmExecutor
+from pacman.exceptions import PacmanAlgorithmFailedToCompleteException
+from pacman.model.graphs.application import (
+    ApplicationGraph, ApplicationEdge, ApplicationVertex)
+from pacman.model.graphs.machine import MachineGraph, MachineVertex
+from pacman.model.resources import PreAllocatedResourceContainer
+from pacman import __version__ as pacman_version
+from spinn_front_end_common.abstract_models import (
+    AbstractSendMeMulticastCommandsVertex, AbstractRecordable,
+    AbstractVertexWithEdgeToDependentVertices, AbstractChangableAfterRun)
+from spinn_front_end_common.utilities import (
+    globals_variables, SimulatorInterface)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.function_list import (
+    get_front_end_common_pacman_xml_paths)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_time_diff_to_total_milliseconds,
+    read_config, read_config_boolean, read_config_int,
+    set_up_report_specifics, set_up_output_application_data_specifics,
+    sort_out_downed_chips_cores_links, write_finished_file)
+from spinn_front_end_common.utilities.report_functions import EnergyReport
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ProvenanceDataItem)
+from spinn_front_end_common.utility_models import (
+    CommandSender, CommandSenderMachineVertex,
+    DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.provenance import (
+    PacmanProvenanceExtractor)
+from spinn_front_end_common.interface.simulator_state import Simulator_State
+from spinn_front_end_common.interface.interface_functions import (
+    ProvenanceXMLWriter, ProvenanceJSONWriter, ChipProvenanceUpdater,
+    PlacementsProvenanceGatherer, RouterProvenanceGatherer, ChipIOBufExtractor)
+from spinn_front_end_common import __version__ as fec_version
 try:
     from scipy import __version__ as scipy_version
 except ImportError:
     scipy_version = "scipy not installed"
-from data_specification import __version__ as data_spec_version
-from spinn_storage_handlers import __version__ as spinn_storage_version
-from spalloc import __version__ as spalloc_version
-
 
 logger = FormatAdapter(logging.getLogger(__name__))
-
 CONFIG_FILE = "spinnaker.cfg"
 
 
@@ -482,8 +463,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._this_run_time_string = None
         self._infinite_run = False
 
-        self._app_id = helpful_functions.read_config_int(
-            self._config, "Machine", "app_id")
+        self._app_id = read_config_int(self._config, "Machine", "app_id")
 
         # folders
         self._report_default_directory = None
@@ -583,7 +563,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._n_chips_required = n_chips_required
 
     def add_extraction_timing(self, timing):
-        ms = helpful_functions.convert_time_diff_to_total_milliseconds(timing)
+        ms = convert_time_diff_to_total_milliseconds(timing)
         self._extraction_time += ms
 
     def add_live_packet_gatherer_parameters(
@@ -699,18 +679,17 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # set up reports default folder
         (self._report_default_directory, self._report_simulation_top_directory,
-         self._this_run_time_string) = \
-            helpful_functions.set_up_report_specifics(
-                default_report_file_path=self._config.get(
-                    "Reports", "default_report_file_path"),
-                max_reports_kept=self._config.getint(
-                    "Reports", "max_reports_kept"),
-                n_calls_to_run=self._n_calls_to_run,
-                this_run_time_string=self._this_run_time_string)
+         self._this_run_time_string) = set_up_report_specifics(
+             default_report_file_path=self._config.get(
+                 "Reports", "default_report_file_path"),
+             max_reports_kept=self._config.getint(
+                 "Reports", "max_reports_kept"),
+             n_calls_to_run=self._n_calls_to_run,
+             this_run_time_string=self._this_run_time_string)
 
         # set up application report folder
         self._app_data_runtime_folder, self._app_data_top_simulation_folder = \
-            helpful_functions.set_up_output_application_data_specifics(
+            set_up_output_application_data_specifics(
                 max_application_binaries_kept=self._config.getint(
                     "Reports", "max_application_binaries_kept"),
                 where_to_write_application_data_files=self._config.get(
@@ -1225,7 +1204,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                helpful_functions.write_finished_file(
+                write_finished_file(
                     self._app_data_top_simulation_folder,
                     self._report_simulation_top_directory)
             except Exception:
@@ -1492,11 +1471,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :param inputs: the input dict
         :rtype: None
         """
-        down_chips, down_cores, down_links = \
-            helpful_functions.sort_out_downed_chips_cores_links(
-                self._config.get("Machine", "down_chips"),
-                self._config.get("Machine", "down_cores"),
-                self._config.get("Machine", "down_links"))
+        down_chips, down_cores, down_links = sort_out_downed_chips_cores_links(
+            self._config.get("Machine", "down_chips"),
+            self._config.get("Machine", "down_cores"),
+            self._config.get("Machine", "down_links"))
         inputs["DownedChipsDetails"] = down_chips
         inputs["DownedCoresDetails"] = down_cores
         inputs["DownedLinksDetails"] = down_links
@@ -1758,9 +1736,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             self._buffer_manager = executor.get_item("BufferManager")
 
-        self._mapping_time += \
-            helpful_functions.convert_time_diff_to_total_milliseconds(
-                mapping_total_timer.take_sample())
+        self._mapping_time += convert_time_diff_to_total_milliseconds(
+            mapping_total_timer.take_sample())
 
     def _do_data_generation(self, n_machine_time_steps):
 
@@ -1784,9 +1761,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._mapping_outputs = executor.get_items()
         self._mapping_tokens = executor.get_completed_tokens()
 
-        self._dsg_time += \
-            helpful_functions.convert_time_diff_to_total_milliseconds(
-                data_gen_timer.take_sample())
+        self._dsg_time += convert_time_diff_to_total_milliseconds(
+            data_gen_timer.take_sample())
 
     def _do_load(self, application_graph_changed):
         # set up timing
@@ -1816,7 +1792,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = helpful_functions.read_config(
+        loading_algorithm = read_config(
             self._config, "Mapping", "loading_algorithms")
         if loading_algorithm is not None and application_graph_changed:
             algorithms.extend(loading_algorithm.split(","))
@@ -1889,9 +1865,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._load_outputs = executor.get_items()
         self._load_tokens = executor.get_completed_tokens()
 
-        self._load_time += \
-            helpful_functions.convert_time_diff_to_total_milliseconds(
-                load_timer.take_sample())
+        self._load_time += convert_time_diff_to_total_milliseconds(
+            load_timer.take_sample())
 
     def _do_run(self, n_machine_time_steps, loading_done, run_until_complete):
         # start timer
@@ -1925,9 +1900,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._has_reset_last = False
             self._has_ran = True
 
-            self._execute_time += \
-                helpful_functions.convert_time_diff_to_total_milliseconds(
-                    run_timer.take_sample())
+            self._execute_time += convert_time_diff_to_total_milliseconds(
+                run_timer.take_sample())
 
         except KeyboardInterrupt:
             logger.error("User has aborted the simulation")
@@ -2263,8 +2237,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         else:
             xml_paths = xml_paths.split(",")
 
-        xml_paths.extend(
-            function_list.get_front_end_common_pacman_xml_paths())
+        xml_paths.extend(get_front_end_common_pacman_xml_paths())
 
         if extra_algorithm_xml_paths is not None:
             xml_paths.extend(extra_algorithm_xml_paths)
@@ -2634,7 +2607,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 message = "Provenance from run {}".format(i)
             self._check_provenance(provenance_items, message)
 
-        helpful_functions.write_finished_file(
+        write_finished_file(
             self._app_data_top_simulation_folder,
             self._report_simulation_top_directory)
 
@@ -2740,13 +2713,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 logger.warning(item.message)
 
     def _read_config(self, section, item):
-        return helpful_functions.read_config(self._config, section, item)
+        return read_config(self._config, section, item)
 
     def _read_config_int(self, section, item):
-        return helpful_functions.read_config_int(self._config, section, item)
+        return read_config_int(self._config, section, item)
 
     def _read_config_boolean(self, section, item):
-        return helpful_functions.read_config_boolean(
+        return read_config_boolean(
             self._config, section, item)
 
     def _turn_off_on_board_to_save_power(self, config_flag):
@@ -2758,7 +2731,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
         # check if machine should be turned off
-        turn_off = helpful_functions.read_config_boolean(
+        turn_off = read_config_boolean(
             self._config, "EnergySavings", config_flag)
         if turn_off is None:
             return

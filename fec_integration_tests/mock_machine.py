@@ -1,13 +1,12 @@
-from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.messages.scp import SCPRequestHeader
-from spinnman.messages.scp.enums import SCPResult
-from spinnman.connections.udp_packet_connections import utils
-from spinnman.connections.udp_packet_connections import UDPConnection
-
 from threading import Thread
 from collections import deque
 import struct
 import traceback
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
+from spinnman.messages.scp import SCPRequestHeader
+from spinnman.messages.scp.enums import SCPResult
+from spinnman.connections.udp_packet_connections import (
+    utils, UDPConnection)
 
 
 class _SCPOKMessage(SDPMessage):
