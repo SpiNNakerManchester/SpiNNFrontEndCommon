@@ -28,14 +28,12 @@ class TestConvertJson(unittest.TestCase):
         trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
         trans.ensure_board_is_ready()
         machine = trans.get_machine_details()
-        print(machine)
 
         jsonAlgo = ConvertToJavaMachine()
 
         fn = "test_spinn4.json"
         filename = jsonAlgo(machine, str(fn))
 
-        print(filename)
         assert filecmp.cmp(filename, "spinn4.json")
 
         # Create a machione with Exception
@@ -52,7 +50,6 @@ class TestConvertJson(unittest.TestCase):
 
         fn = "test_spinn4_fiddle.json"
         filename = jsonAlgo(machine, str(fn))
-        print(filename)
         assert filecmp.cmp(filename, "spinn4_fiddle.json")
 
         trans.close()
@@ -66,11 +63,9 @@ class TestConvertJson(unittest.TestCase):
             spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
                         self.spin2Port)
 
-        print("Spalloc returned " + hostname)
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)
         trans.ensure_board_is_ready()
         machine = trans.get_machine_details()
-        print(machine)
 
         machine_allocation_controller.close()
 
@@ -79,7 +74,6 @@ class TestConvertJson(unittest.TestCase):
         fn = "test_spinn2.json"
         filename = jsonAlgo(machine, str(fn))
 
-        print(filename)
         assert filecmp.cmp(filename, "spinn2.json")
 
         trans.close()
