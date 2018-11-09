@@ -579,7 +579,7 @@ class BufferManager(object):
 
             # locate receivers
             for placement in placements:
-                receivers.add(funs.locate_extra_monitor_mc_receiver(
+                receivers.add(locate_extra_monitor_mc_receiver(
                     self._machine, placement.x, placement.y,
                     self._extra_monitor_cores_to_ethernet_connection_map))
 
