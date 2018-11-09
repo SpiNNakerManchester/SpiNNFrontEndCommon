@@ -180,7 +180,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: SpinnakerRequestReadData packet received
         :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
         """
         self._last_packet_received[x, y, p] = packet
 
@@ -195,7 +195,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: SpinnakerRequestReadData packet received
         :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
         """
         return self._last_packet_received[x, y, p]
 
@@ -210,7 +210,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: last HostDataRead packet sent
         :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
         """
         self._last_packet_sent[x, y, p] = packet
 
@@ -225,7 +225,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: last HostDataRead packet sent
         :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
         """
         return self._last_packet_sent[x, y, p]
 

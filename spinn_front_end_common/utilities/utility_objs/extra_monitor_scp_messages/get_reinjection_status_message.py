@@ -1,12 +1,11 @@
 from spinnman.messages.scp import SCPRequestHeader
-from spinnman.messages.scp.abstract_messages \
-    import AbstractSCPRequest, AbstractSCPResponse
+from spinnman.messages.scp.abstract_messages import (
+    AbstractSCPRequest, AbstractSCPResponse)
 from spinnman.messages.scp.enums import SCPResult
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
-from spinn_front_end_common.utilities.utility_objs.reinjection_status \
-    import ReInjectionStatus
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
 from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
@@ -31,7 +30,7 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
-                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
+                    SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
             SCPRequestHeader(command=ReinjectorSCPCommands.GET_STATUS))
