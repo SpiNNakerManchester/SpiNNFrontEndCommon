@@ -1,12 +1,11 @@
 import struct
 import logging
 from six import iterkeys
-
 from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
-from spinn_front_end_common.utilities.constants \
-    import SDP_PORTS, SDP_RUNNING_MESSAGE_CODES
+from spinn_front_end_common.utilities.constants import (
+    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = logging.getLogger(__name__)

@@ -1,14 +1,9 @@
 from spinn_utilities.overrides import overrides
-
-# pacman imports
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
-
-# spinn front end common imports
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary,
+    AbstractGeneratesDataSpecification)
 from .command_sender_machine_vertex import CommandSenderMachineVertex
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 

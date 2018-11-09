@@ -1,26 +1,21 @@
-from enum import Enum
 from collections import Counter
-
+from enum import Enum
 from spinn_utilities.overrides import overrides
-from pacman.model.graphs.machine import MachineVertex
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
-from pacman.model.graphs.machine.machine_edge import MachineEdge
-from spinn_front_end_common.utilities import constants
-from pacman.model.resources import ResourceContainer, SDRAMResource
 from pacman.executor.injection_decorator import inject_items
-from pacman.model.constraints.key_allocator_constraints \
-    import FixedKeyAndMaskConstraint
-from pacman.model.routing_info.base_key_and_mask import BaseKeyAndMask
-from spinn_front_end_common.abstract_models \
-    import AbstractProvidesOutgoingPartitionConstraints
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification
-from spinn_front_end_common.interface.provenance \
-    import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-from spinn_front_end_common.utilities.constants \
-    import SYSTEM_BYTES_REQUIREMENT
+from pacman.model.constraints.key_allocator_constraints import (
+    FixedKeyAndMaskConstraint)
+from pacman.model.graphs.machine import MachineVertex, MachineEdge
+from pacman.model.resources import ResourceContainer, SDRAMResource
+from pacman.model.routing_info import BaseKeyAndMask
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractProvidesOutgoingPartitionConstraints,
+    AbstractGeneratesDataSpecification)
+from spinn_front_end_common.interface.provenance import (
+    ProvidesProvenanceDataFromMachineImpl)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
+from spinn_front_end_common.utilities.constants import (
+    SYSTEM_BYTES_REQUIREMENT, SARK_PER_MALLOC_SDRAM_USAGE)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -137,10 +132,10 @@ class CommandSenderMachineVertex(
             self.get_timed_commands_bytes() +
             self.get_n_command_bytes(self._commands_at_start_resume) +
             self.get_n_command_bytes(self._commands_at_pause_stop) +
-            constants.SYSTEM_BYTES_REQUIREMENT +
+            SYSTEM_BYTES_REQUIREMENT +
             self.get_provenance_data_size(0) +
             (self.get_number_of_mallocs_used_by_dsg() *
-             constants.SARK_PER_MALLOC_SDRAM_USAGE))
+             SARK_PER_MALLOC_SDRAM_USAGE))
 
         # Return the SDRAM and 1 core
         return ResourceContainer(sdram=SDRAMResource(sdram))

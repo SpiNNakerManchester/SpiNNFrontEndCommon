@@ -1,21 +1,15 @@
-from spinn_utilities.progress_bar import ProgressBar
-from spinn_utilities.log import FormatAdapter
-
-# data spec imports
-from data_specification import DataSpecificationExecutor
-from data_specification.constants import MAX_MEM_REGIONS
-from data_specification.exceptions import DataSpecificationException
-
-# spinn_storage_handlers import
-from spinn_storage_handlers import FileDataReader
-
 import logging
 import struct
 import numpy
 from six import iteritems
-
-from spinn_front_end_common.utilities.helpful_functions \
-    import write_address_to_user0
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_utilities.log import FormatAdapter
+from data_specification import DataSpecificationExecutor
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.exceptions import DataSpecificationException
+from spinn_storage_handlers import FileDataReader
+from spinn_front_end_common.utilities.helpful_functions import (
+    write_address_to_user0)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")

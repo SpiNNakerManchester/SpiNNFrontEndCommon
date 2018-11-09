@@ -1,11 +1,12 @@
 import unittest
-from testfixtures import LogCapture
 import json
 import logging
-import httpretty
 import time
+import httpretty
+from testfixtures import LogCapture
 from spinn_front_end_common.interface.interface_functions.hbp_allocator \
-    import _HBPJobController
+    import (
+        _HBPJobController)
 
 
 class TestHBPAllocator(unittest.TestCase):

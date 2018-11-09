@@ -1,14 +1,12 @@
 import os
 import sys
 import unittest
-
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 import spinn_front_end_common.interface.abstract_spinnaker_base as base
-from spinn_front_end_common.interface.abstract_spinnaker_base \
-    import AbstractSpinnakerBase
+from spinn_front_end_common.interface.abstract_spinnaker_base import (
+    AbstractSpinnakerBase)
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
-from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities import FailedState
+from spinn_front_end_common.utilities import globals_variables, FailedState
 
 
 class Close_Once(object):

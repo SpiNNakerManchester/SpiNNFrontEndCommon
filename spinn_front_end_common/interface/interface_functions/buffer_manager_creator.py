@@ -1,8 +1,8 @@
 from spinn_utilities.progress_bar import ProgressBar
-
 from spinn_front_end_common.interface.buffer_management import BufferManager
 from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost
+    import (
+        AbstractSendsBuffersFromHost, AbstractReceiveBuffersToHost)
 
 
 class BufferManagerCreator(object):

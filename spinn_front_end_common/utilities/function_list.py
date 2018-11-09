@@ -1,5 +1,4 @@
 import os
-
 from spinn_front_end_common.interface import interface_functions
 from spinn_front_end_common.utilities import report_functions
 from spinn_front_end_common import mapping_algorithms

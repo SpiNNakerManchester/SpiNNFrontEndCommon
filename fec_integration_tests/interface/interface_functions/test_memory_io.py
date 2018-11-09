@@ -1,23 +1,17 @@
 import struct
 import tempfile
 import numpy
-
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from pacman.model.graphs.machine.machine_graph import MachineGraph
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
-
-from spinnman.model.heap_element import HeapElement
+from pacman.executor import PACMANAlgorithmExecutor
+from pacman.model.resources import ResourceContainer
+from pacman.model.graphs.machine import MachineVertex, MachineGraph
+from pacman.model.placements import Placements, Placement
+from spinnman.model import HeapElement
 from spinnman.exceptions import SpinnmanInvalidParameterException
-from spinnman.messages.spinnaker_boot.system_variable_boot_values \
-    import SystemVariableDefinition
-
-from spinn_front_end_common.utilities.function_list \
-    import get_front_end_common_pacman_xml_paths
-from spinn_front_end_common.abstract_models.abstract_uses_memory_io \
-    import AbstractUsesMemoryIO
+from spinnman.messages.spinnaker_boot import SystemVariableDefinition
+from spinn_front_end_common.utilities.function_list import (
+    get_front_end_common_pacman_xml_paths)
+from spinn_front_end_common.abstract_models.abstract_uses_memory_io import (
+    AbstractUsesMemoryIO)
 
 
 class _MockTransceiver(object):
