@@ -1,4 +1,3 @@
-# spinn_machine imports
 from spinn_machine import VirtualMachine, Machine, Router
 
 

@@ -1,4 +1,3 @@
-
 _failed_state = None
 _simulator = None
 

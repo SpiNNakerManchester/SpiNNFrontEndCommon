@@ -1,6 +1,5 @@
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
 from spinnman.model.enums import CPUState
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.scp import UpdateRuntimeProcess
 
 

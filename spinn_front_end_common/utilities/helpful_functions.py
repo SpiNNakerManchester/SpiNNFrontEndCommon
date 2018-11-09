@@ -1,22 +1,14 @@
-# dsg imports
-from data_specification import utility_calls
-
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
-# SpiNMachine imports
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_machine import CoreSubsets
-
-# general imports
 import os
 import logging
 import struct
 import datetime
 import shutil
-
-from spinnman.model.enums import CPUState
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
+from spinnman.model.enums import CPUState
+from data_specification import utility_calls
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 APP_DIRNAME = 'application_generated_data_files'
