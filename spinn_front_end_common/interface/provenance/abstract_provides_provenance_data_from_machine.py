@@ -16,5 +16,5 @@ class AbstractProvidesProvenanceDataFromMachine(object):
 
         :param transceiver: the SpinnMan interface object
         :param placement: the placement of the object
-        :return: iterable of ProvenanceDataItem
+        :return: iterable of :py:class:`ProvenanceDataItem`
         """

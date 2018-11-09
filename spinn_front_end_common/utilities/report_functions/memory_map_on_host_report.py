@@ -9,7 +9,7 @@ _FOLDER_NAME = "memory_map_from_processor_to_address_space"
 
 
 class MemoryMapOnHostReport(object):
-    """ Report on memory usage
+    """ Report on memory usage.
     """
 
     def __call__(

@@ -118,7 +118,7 @@ class LiveEventConnection(DatabaseConnection):
         :param live_event_callback: A function to be called when events are\
             received. This should take as parameters the label of the vertex,\
             the simulation timestep when the event occurred, and an\
-            array-like of atom ids.
+            array-like of atom IDs.
         :type live_event_callback: function(str, int, [int]) -> None
         """
         label_id = self._receive_labels.index(label)
@@ -238,7 +238,7 @@ class LiveEventConnection(DatabaseConnection):
                 db_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
         if not strip_sdp:
-            raise Exception("Currently, only IPtags which strip the SDP "
+            raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
         return host, port, board_address
 
@@ -257,7 +257,6 @@ class LiveEventConnection(DatabaseConnection):
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
             target=callback, args=(label, self),
-            verbose=True,
             name="{} callback thread for live_event_connection {}:{}".format(
                 kind, self._local_port, self._local_ip_address))
         thread.start()
@@ -320,11 +319,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: \
             The label of the vertex from which the event will originate
         :type label: str
-        :param atom_id: The id of the atom sending the event
+        :param atom_id: The ID of the atom sending the event
         :type atom_id: int
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
-            send 16-bit atom ids directly
+            send 16-bit atom IDs directly
         :type send_full_keys: bool
         """
         self.send_events(label, [atom_id], send_full_keys)
@@ -335,11 +334,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: \
             The label of the vertex from which the events will originate
         :type label: str
-        :param atom_ids: array-like of atom ids sending events
+        :param atom_ids: array-like of atom IDs sending events
         :type atom_ids: [int]
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
-            send 16-bit atom ids directly
+            send 16-bit atom IDs directly
         :type send_full_keys: bool
         """
         max_keys = _MAX_HALF_KEYS_PER_PACKET

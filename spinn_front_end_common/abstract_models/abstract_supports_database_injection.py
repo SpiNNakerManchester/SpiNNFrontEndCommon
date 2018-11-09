@@ -12,4 +12,5 @@ class AbstractSupportsDatabaseInjection(object):
 
     @abstractproperty
     def is_in_injection_mode(self):
-        """Whether this vertex is actually in injection mode."""
+        """ Whether this vertex is actually in injection mode.
+        """

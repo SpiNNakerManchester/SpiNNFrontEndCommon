@@ -36,7 +36,7 @@ class DatabaseConnection(UDPConnection):
             take any parameters or return anything.
         :type start_resume_callback_function: function() -> None
         :param local_host: Optional specification of the local hostname or\
-            ip address of the interface to listen on
+            IP address of the interface to listen on
         :type local_host: str
         :param local_port: Optional specification of the local port to listen \
             on.  Must match the port that the toolchain will send the \
@@ -91,7 +91,7 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = str(data[2:])
+        database_path = data[2:].decode()
 
         # Call the callback
         database_reader = DatabaseReader(database_path)

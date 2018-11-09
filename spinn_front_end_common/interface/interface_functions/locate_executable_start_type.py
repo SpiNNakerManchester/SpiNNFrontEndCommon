@@ -12,7 +12,7 @@ class LocateExecutableStartType(object):
 
         binary_start_types = dict()
         progress = ProgressBar(
-            graph.n_vertices, "Finding executable_start_types")
+            graph.n_vertices, "Finding executable start types")
         for vertex in progress.over(graph.vertices):
             # try to locate binary type, but possible it doesn't have one
             placement_binary_start_type = None
@@ -32,13 +32,13 @@ class LocateExecutableStartType(object):
                         CoreSubsets()
 
                 if isinstance(vertex, MachineVertex):
-                    self._sort_out_machine_vertex(
+                    self._add_vertex_to_subset(
                         vertex, placements,
                         binary_start_types[placement_binary_start_type])
                 elif graph_mapper is not None:
                     machine_verts = graph_mapper.get_machine_vertices(vertex)
                     for machine_vertex in machine_verts:
-                        self._sort_out_machine_vertex(
+                        self._add_vertex_to_subset(
                             machine_vertex, placements,
                             binary_start_types[placement_binary_start_type])
 
@@ -49,7 +49,7 @@ class LocateExecutableStartType(object):
         return binary_start_types
 
     @staticmethod
-    def _sort_out_machine_vertex(machine_vertex, placements, core_subsets):
+    def _add_vertex_to_subset(machine_vertex, placements, core_subsets):
         placement = placements.get_placement_of_vertex(machine_vertex)
         core_subsets.add_processor(x=placement.x, y=placement.y,
                                    processor_id=placement.p)

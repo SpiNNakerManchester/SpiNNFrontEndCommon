@@ -6,10 +6,10 @@ _CONVERSION_BETWEEN_MICRO_TO_CPU_CYCLES = 200
 
 
 class TDMAAgendaBuilder(object):
-    """ algorithm that builds an agenda for transmissions. It uses a TDMA \
-        (Time division multiple access) system and graph colouring to deduce\
+    """ Algorithm that builds an agenda for transmissions. It uses a TDMA \
+        (time-division multiple access) system and graph colouring to deduce\
         the agenda set up. Ensures parallel transmissions so that the\
-        destination should never be overloaded
+        destination should never be overloaded.
     """
 
     def __call__(
@@ -43,7 +43,7 @@ class TDMAAgendaBuilder(object):
     def _build_agenda(
             self, machine_graph, cpu_cycles_needed_per_window, time_offset,
             n_packets_per_time_window):
-        """ builds the TDMA system
+        """ Builds the TDMA system.
 
         :param machine_graph: the machine graph of the application
         :param cpu_cycles_needed_per_window:\
@@ -70,7 +70,7 @@ class TDMAAgendaBuilder(object):
 
     @staticmethod
     def _calculate_max_edges(machine_graph):
-        """ deduces the max incoming edges for any vertex
+        """ Deduces the max incoming edges for any vertex
 
         :param machine_graph: the machine graph of the application
         :return:\
@@ -85,7 +85,7 @@ class TDMAAgendaBuilder(object):
         return max_in_edges
 
     def _handle_colouring(self, max_in_edges, machine_graph, time_offset):
-        """ operates the graph colouring greedy code.
+        """ Operates the graph colouring greedy code.
 
         :param max_in_edges: the number of colours to colour the graph
         :param machine_graph:\
@@ -105,7 +105,7 @@ class TDMAAgendaBuilder(object):
 
     def _get_colour_for_vertex(
             self, vertex, machine_graph, colours, colour_mapping):
-        """ cycles though available colours
+        """ Cycles though available colours
 
         :param vertex: the vertex in question
         :param machine_graph:\
@@ -122,7 +122,7 @@ class TDMAAgendaBuilder(object):
 
     @staticmethod
     def _available(colour, vertex, machine_graph, colour_mapping):
-        """ checks its neighbours to see if its colour is available
+        """ Checks its neighbours to see if its colour is available
 
         :param colour: the colour to verify against
         :param vertex: the vertex in question
@@ -143,12 +143,12 @@ class TDMAAgendaBuilder(object):
             self, number_of_cpu_cycles_per_receive, machine_time_step,
             time_scale_factor, n_packets_per_time_window, max_in_edges,
             safety_factor, other_cpu_demands_in_cpu_cycles):
-        """ calculates the cpu cycles per window, and therefore verifies if\
+        """ Calculates the CPU cycles per window, and therefore verifies if\
             there is enough time to do so with a end user safety margin
 
         :param number_of_cpu_cycles_per_receive:\
-            how long the packet reception callback takes in cpu cycles
-        :param machine_time_step: the timer tick in micro seconds
+            how long the packet reception callback takes in CPU cycles
+        :param machine_time_step: the timer tick in microseconds
         :param time_scale_factor:\
             the multiplicative factor on the machine time step.
         :param n_packets_per_time_window:\
@@ -158,7 +158,7 @@ class TDMAAgendaBuilder(object):
         :param safety_factor: the end user safely factor
         :param other_cpu_demands_in_cpu_cycles:\
             extra costs (e.g. timer tick callback etc.)
-        :return: cpu cycles available per window.
+        :return: CPU cycles available per window.
         :rtype: float
         :raises ConfigurationException:\
             if the overall time is below what is possible to receive packets\

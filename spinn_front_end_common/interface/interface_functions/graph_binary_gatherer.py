@@ -5,7 +5,7 @@ from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
 class GraphBinaryGatherer(object):
-    """ Extracts binaries to be executed
+    """ Extracts binaries to be executed.
     """
 
     __slots__ = []

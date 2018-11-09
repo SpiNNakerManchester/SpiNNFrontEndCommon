@@ -53,7 +53,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
         AbstractReceiveBuffersToHost, AbstractRecordable):
-    """ A model which allows events to be injected into spinnaker and\
+    """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets
     """
 

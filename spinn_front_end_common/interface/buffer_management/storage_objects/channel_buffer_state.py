@@ -17,7 +17,7 @@ class ChannelBufferState(object):
         # address where data was last written (32 bits)
         "_current_write",
 
-        # address where the dma write got up to (32 bits)
+        # address where the DMA write got up to (32 bits)
         "_current_dma_write",
 
         # address where data was last read (32 bits)
@@ -26,7 +26,7 @@ class ChannelBufferState(object):
         # The address of first byte after the buffer (32 bits)
         "_end_address",
 
-        # The id of the region (8 bits)
+        # The ID of the region (8 bits)
         "_region_id",
 
         # True if the region overflowed during the simulation (8 bits)
@@ -54,11 +54,11 @@ class ChannelBufferState(object):
         :param current_read: address where data was last read (32 bits)
         :param end_address: \
             The address of first byte after the buffer (32 bits)
-        :param region_id: The id of the region (8 bits)
-        :param missing_info: True if the region overflowed during the\
-            simulation (8 bits)
-        :param last_buffer_operation: Last operation performed on the buffer\
-            - read or write (8 bits)
+        :param region_id: The ID of the region (8 bits)
+        :param missing_info: \
+            True if the region overflowed during the simulation (8 bits)
+        :param last_buffer_operation: \
+            Last operation performed on the buffer - read or write (8 bits)
         """
         # pylint: disable=too-many-arguments
         self._start_address = start_address

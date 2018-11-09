@@ -9,7 +9,7 @@ from spinn_front_end_common.abstract_models import AbstractUsesMemoryIO
 
 class WriteMemoryIOData(object):
     """ An algorithm that handles objects implementing the interface\
-        AbstractUsesMemoryIO
+        :py:class:`AbstractUsesMemoryIO`
     """
 
     __slots__ = [
@@ -25,10 +25,9 @@ class WriteMemoryIOData(object):
             transceiver=None, graph_mapper=None,
             processor_to_app_data_base_address=None):
         """
-
         :param graph: The graph to process
         :param placements: The placements of vertices of the graph
-        :param app_id: The id of the application
+        :param app_id: The ID of the application
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param transceiver:\
@@ -116,7 +115,7 @@ class WriteMemoryIOData(object):
         :param placement: The placement of the machine vertex
         :param vertex:\
             The vertex to write data for (might be an application vertex)
-        :param app_id: The id of the application
+        :param app_id: The ID of the application
         :param app_data_runtime_folder: The location of data files
         :param hostname: The host name of the machine
         :param base_address_map: Dictionary of processor to base address

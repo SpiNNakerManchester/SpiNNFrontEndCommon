@@ -7,14 +7,13 @@ logger = logging.getLogger(__name__)
 
 
 class LoadExecutableImages(object):
+    """ Go through the executable targets and load each binary to everywhere\
+        and then send a start request to the cores that actually use it.
+    """
+
     __slots__ = []
 
     def __call__(self, executable_targets, app_id, transceiver):
-        """ Go through the executable targets and load each binary to \
-            everywhere and then send a start request to the cores that \
-            actually use it
-        """
-
         progress = ProgressBar(
             executable_targets.total_processors + 1,
             "Loading executables onto the machine")

@@ -12,7 +12,7 @@ class AbstractMachineAllocationController(object):
     @abstractmethod
     def extend_allocation(self, new_total_run_time):
         """ Extend the allocation of the machine from the original\
-            run time
+            run time.
 
         :param new_total_run_time: The total run time that is now required\
             starting from when the machine was first allocated

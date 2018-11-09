@@ -79,7 +79,7 @@ class DatabaseWriter(object):
         """ Auto detects if there is a need to activate the database system
 
         :param machine_graph: the machine graph of the application\
-                problem space.
+            problem space.
         :return: a bool which represents if the database is needed
         """
         return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
