@@ -1,13 +1,12 @@
-from pacman.model.graphs.common import EdgeTrafficType
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesOutgoingPartitionConstraints, \
-    AbstractProvidesIncomingPartitionConstraints
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.graphs.common import EdgeTrafficType
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesOutgoingPartitionConstraints,
+    AbstractProvidesIncomingPartitionConstraints)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class ProcessPartitionConstraints(object):
-
     def __call__(self, machine_graph=None, application_graph=None,
                  graph_mapper=None):
 

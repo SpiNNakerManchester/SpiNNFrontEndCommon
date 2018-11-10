@@ -1,12 +1,12 @@
-from spinn_utilities.make_tools.replacer import Replacer
-from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.utilities import helpful_functions
 import re
 import os
+from spinn_utilities.make_tools.replacer import Replacer
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_string_into_chip_and_core_subset)
 
-
-ERROR_ENTRY = re.compile("\[ERROR\]\s+\((.*)\):\s+(.*)")
-WARNING_ENTRY = re.compile("\[WARNING\]\s+\((.*)\):\s+(.*)")
+ERROR_ENTRY = re.compile(r"\[ERROR\]\s+\((.*)\):\s+(.*)")
+WARNING_ENTRY = re.compile(r"\[WARNING\]\s+\((.*)\):\s+(.*)")
 ENTRY_FILE = 1
 ENTRY_TEXT = 2
 
@@ -41,9 +41,7 @@ class ChipIOBufExtractor(object):
                 progress = ProgressBar(len(executable_targets.binaries),
                                        "Extracting IOBUF from the machine")
                 binaries = executable_finder.get_executable_paths(binary_types)
-                iocores = (helpful_functions.
-                           convert_string_into_chip_and_core_subset(
-                                from_cores))
+                iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     if binary in binaries:
                         core_subsets = executable_targets.get_cores_for_binary(
@@ -61,9 +59,7 @@ class ChipIOBufExtractor(object):
                 # some hard coded cores
                 progress = ProgressBar(len(executable_targets.binaries),
                                        "Extracting IOBUF from the machine")
-                iocores = (helpful_functions.
-                           convert_string_into_chip_and_core_subset(
-                                from_cores))
+                iocores = convert_string_into_chip_and_core_subset(from_cores)
                 for binary in progress.over(executable_targets.binaries):
                     core_subsets = iocores.intersect(
                         executable_targets.get_cores_for_binary(binary))

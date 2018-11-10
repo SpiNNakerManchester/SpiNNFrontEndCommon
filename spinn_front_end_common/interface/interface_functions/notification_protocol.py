@@ -1,8 +1,6 @@
-from spinn_front_end_common.utilities.notification_protocol \
-    import NotificationProtocol as Notification
-
 import logging
-
+from spinn_front_end_common.utilities.notification_protocol import (
+    NotificationProtocol as Notification)
 
 logger = logging.getLogger(__name__)
 

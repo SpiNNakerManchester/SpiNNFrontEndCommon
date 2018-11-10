@@ -1,15 +1,14 @@
+import unittest
+from six import itervalues
+from spinn_machine import VirtualMachine
+from spinnman.messages.eieio import EIEIOType
 from pacman.model.graphs.application import ApplicationGraph, ApplicationVertex
 from pacman.model.graphs.common import GraphMapper
 from pacman.model.graphs.machine import MachineGraph
-from spinn_front_end_common.interface.interface_functions import \
-    InsertLivePacketGatherersToGraphs
-from spinn_front_end_common.utilities.utility_objs import \
-    LivePacketGatherParameters
-from spinn_machine import VirtualMachine
-from spinnman.messages.eieio import EIEIOType
-
-import unittest
-from six import itervalues
+from spinn_front_end_common.interface.interface_functions import (
+    InsertLivePacketGatherersToGraphs)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
 
 
 class TestInsertLPGs(unittest.TestCase):
