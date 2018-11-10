@@ -2016,8 +2016,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board and n_machine_time_steps is not None:
             algorithms.append("BufferExtractor")
 
-        if (self._config.getboolean("Reports", "write_provenance_data") and
-                n_machine_time_steps is not None):
+        if self._config.getboolean("Reports", "write_provenance_data"):
             algorithms.append("GraphProvenanceGatherer")
 
         # add any extra post algorithms as needed
