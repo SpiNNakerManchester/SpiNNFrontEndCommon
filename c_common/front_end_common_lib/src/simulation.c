@@ -58,10 +58,10 @@ static address_t _simulation_store_provenance_data() {
 //! \brief helper private method for running provenance data storage
 static void _execute_provenance_storage() {
     if (stored_provenance_data_address != NULL) {
-        log_debug("Starting basic provenance gathering");
+        log_info("Starting basic provenance gathering");
         address_t address_to_start_with = _simulation_store_provenance_data();
         if (stored_provenance_function != NULL){
-            log_debug("running other provenance gathering");
+            log_info("running other provenance gathering");
             stored_provenance_function(address_to_start_with);
         }
     }
@@ -126,23 +126,23 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
 
     switch (msg->cmd_rc) {
         case CMD_STOP:
-            log_debug("Received exit signal. Program complete.");
+            log_info("Received exit signal. Program complete.");
 
             // free the message to stop overload
             spin1_msg_free(msg);
 
             // call any stored exit callbacks
             if (stored_exit_function != NULL){
-                log_debug("Calling pre-exit function");
+                log_info("Calling pre-exit function");
                 stored_exit_function();
             }
-            log_debug("Exiting");
+            log_info("Exiting");
             spin1_exit(0);
             break;
 
         case CMD_RUNTIME:
-            log_debug("Setting the runtime of this model to %d", msg->arg1);
-            log_debug("Setting the flag of infinite run for this model to %d",
+            log_info("Setting the runtime of this model to %d", msg->arg1);
+            log_info("Setting the flag of infinite run for this model to %d",
                      msg->arg2);
 
             // resetting the simulation time pointer
@@ -150,11 +150,11 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             *pointer_to_infinite_run = msg->arg2;
 
             if (stored_resume_function != NULL) {
-                log_debug("Calling pre-resume function");
+                log_info("Calling pre-resume function");
                 stored_resume_function();
                 stored_resume_function = NULL;
             }
-            log_debug("Resuming");
+            log_info("Resuming");
             spin1_resume(SYNC_WAIT);
 
             // If we are told to send a response, send it now
@@ -167,14 +167,14 @@ void _simulation_control_scp_callback(uint mailbox, uint port) {
             break;
 
         case PROVENANCE_DATA_GATHERING:
-            log_debug("Forced provenance gathering");
+            log_info("Forced provenance gathering");
 
             // force provenance to be executed and then exit
             _execute_provenance_storage();
 
             // call any stored exit callbacks
             if (stored_exit_function != NULL){
-                log_debug("Calling pre-exit function");
+                log_info("Calling pre-exit function");
                 stored_exit_function();
             }
             spin1_msg_free(msg);
