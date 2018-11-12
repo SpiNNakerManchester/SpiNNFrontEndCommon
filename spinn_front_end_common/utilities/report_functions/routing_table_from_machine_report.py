@@ -1,10 +1,9 @@
-from spinn_utilities.progress_bar import ProgressBar
-from pacman.model.routing_tables import MulticastRoutingTable, \
-    MulticastRoutingTables
-from pacman.operations.algorithm_reports import reports
-
 import logging
 import os
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.routing_tables import (
+    MulticastRoutingTable, MulticastRoutingTables)
+from pacman.operations.algorithm_reports import reports
 
 logger = logging.getLogger(__name__)
 

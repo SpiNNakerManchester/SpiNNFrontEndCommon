@@ -1,6 +1,7 @@
-from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
-    import ClearReinjectionQueueMessage
 from spinnman.processes import AbstractMultiConnectionProcess
+from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
+    import (
+        ClearReinjectionQueueMessage)
 
 
 class ClearQueueProcess(AbstractMultiConnectionProcess):

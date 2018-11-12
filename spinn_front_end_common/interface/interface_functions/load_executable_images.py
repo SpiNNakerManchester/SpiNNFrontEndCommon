@@ -1,10 +1,7 @@
+import logging
 from spinn_utilities.progress_bar import ProgressBar
-
 from spinnman.messages.scp.enums import Signal
 from spinnman.model.enums import CPUState
-
-# general imports
-import logging
 
 logger = logging.getLogger(__name__)
 

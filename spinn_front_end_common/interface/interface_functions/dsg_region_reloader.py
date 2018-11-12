@@ -1,20 +1,18 @@
 import shutil
+import os
+import struct
 
 from spinn_utilities.progress_bar import ProgressBar
 from spinn_machine import SDRAM
-
-from data_specification import DataSpecificationExecutor
-from data_specification import utility_calls
-from data_specification.constants import MAX_MEM_REGIONS
-
-from spinn_front_end_common.abstract_models \
-    import AbstractRewritesDataSpecification
-from spinn_front_end_common.utilities import helpful_functions
-
 from spinn_storage_handlers import FileDataReader
-
-import os
-import struct
+from data_specification import DataSpecificationExecutor
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.utility_calls import (
+    get_region_base_address_offset, get_data_spec_and_file_writer_filename)
+from spinn_front_end_common.abstract_models import (
+    AbstractRewritesDataSpecification)
+from spinn_front_end_common.utilities.helpful_functions import (
+    generate_unique_folder_name)
 
 
 class DSGRegionReloader(object):
@@ -41,9 +39,16 @@ class DSGRegionReloader(object):
         # pylint: disable=too-many-arguments, too-many-locals
 
         # build file paths for reloaded stuff
-        reloaded_dsg_data_files_file_path = \
-            self._subdir(application_data_file_path)
-        reloaded_dsg_report_files_file_path = self._subdir(report_directory)
+        reloaded_dsg_data_files_file_path = generate_unique_folder_name(
+            application_data_file_path, "reloaded_data_regions", "")
+        reloaded_dsg_report_files_file_path = generate_unique_folder_name(
+            report_directory, "reloaded_data_regions", "")
+
+        # build new folders
+        if not os.path.exists(reloaded_dsg_data_files_file_path):
+            os.makedirs(reloaded_dsg_data_files_file_path)
+        if not os.path.exists(reloaded_dsg_report_files_file_path):
+            os.makedirs(reloaded_dsg_report_files_file_path)
 
         application_vertices_to_reset = set()
 
@@ -86,15 +91,6 @@ class DSGRegionReloader(object):
             shutil.rmtree(reloaded_dsg_report_files_file_path)
 
     @staticmethod
-    def _subdir(base_dir):
-        new_dir_name = helpful_functions.generate_unique_folder_name(
-            base_dir, "reloaded_data_regions", "")
-        # Directory should not exist at this point
-        os.makedirs(new_dir_name)
-        # Directory will exist at this point
-        return new_dir_name
-
-    @staticmethod
     def _regenerate_data_spec_for_vertices(
             transceiver, placement, vertex, hostname,
             reloaded_dsg_report_files_file_path, write_text_specs,
@@ -110,7 +106,7 @@ class DSGRegionReloader(object):
             return True
 
         # build the writers for the reports and data
-        spec_file, spec = utility_calls.get_data_spec_and_file_writer_filename(
+        spec_file, spec = get_data_spec_and_file_writer_filename(
             placement.x, placement.y, placement.p, hostname,
             reloaded_dsg_report_files_file_path,
             write_text_specs, reloaded_dsg_data_files_file_path)
@@ -127,9 +123,8 @@ class DSGRegionReloader(object):
         # Read the region table for the placement
         regions_base_address = transceiver.get_cpu_information_from_core(
             placement.x, placement.y, placement.p).user[0]
-        start_region = utility_calls.get_region_base_address_offset(
-            regions_base_address, 0)
-        table_size = utility_calls.get_region_base_address_offset(
+        start_region = get_region_base_address_offset(regions_base_address, 0)
+        table_size = get_region_base_address_offset(
             regions_base_address, MAX_MEM_REGIONS) - start_region
         offsets = struct.unpack_from(
             "<{}I".format(MAX_MEM_REGIONS),
