@@ -19,7 +19,7 @@ class DSGRegionReloader(object):
     """ Regenerates and reloads the data specifications.
     """
 
-    _DELETE_TEMP_DIRS = True
+    _DELETE_TEMP_DIRS = False
 
     def __call__(
             self, transceiver, placements, hostname, report_directory,
