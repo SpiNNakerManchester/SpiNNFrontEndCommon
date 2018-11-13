@@ -27,7 +27,8 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BufferedSendingRegion)
 from spinn_front_end_common.utilities.constants import (
     DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE, MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
-    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, SYSTEM_BYTES_REQUIREMENT,
+    SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
@@ -445,7 +446,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
-            size=SYSTEM_BYTES_REQUIREMENT, label='SYSTEM')
+            size=SIMULATION_N_BYTES, label='SYSTEM')
         spec.reserve_memory_region(
             region=self._REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')

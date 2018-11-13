@@ -10,6 +10,7 @@ from data_specification.exceptions import DataSpecificationException
 from spinn_storage_handlers import FileDataReader
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
+from pacman.executor.injection_decorator import inject_items
 
 logger = FormatAdapter(logging.getLogger(__name__))
 _ONE_WORD = struct.Struct("<I")
@@ -50,7 +51,8 @@ class HostExecuteDataSpecification(object):
         return processor_to_app_data_base_address
 
     @staticmethod
-    def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
+    @inject_items({"placements": "MemoryPlacements"})
+    def _execute(txrx, machine, app_id, x, y, p, data_spec_path, placements):
         # pylint: disable=too-many-arguments, too-many-locals
 
         # build specification reader
@@ -60,6 +62,8 @@ class HostExecuteDataSpecification(object):
         # however system updates the memory available
         # independently, so the check on the space available actually
         # happens when memory is allocated
+        vertex = placements.get_vertex_on_processor(x, y, p)
+        sdram = vertex.resources_required.sdram.get_value()
 
         # generate data spec executor
         executor = DataSpecificationExecutor(
@@ -75,6 +79,10 @@ class HostExecuteDataSpecification(object):
             raise
 
         bytes_used_by_spec = executor.get_constructed_data_size()
+        if bytes_used_by_spec > sdram:
+            raise Exception("Spec on {} {} {} for vertex {} used {} > {} bytes"
+                            .format(
+                                x, y, p, vertex, bytes_used_by_spec, sdram))
 
         # allocate memory where the app data is going to be written; this
         # raises an exception in case there is not enough SDRAM to allocate

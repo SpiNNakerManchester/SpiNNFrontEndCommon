@@ -1,4 +1,5 @@
 from enum import Enum
+from data_specification.constants import APP_PTR_TABLE_BYTE_SIZE
 
 LIVE_GATHERER_CORE_APPLICATION_ID = 0xAC0
 COMMAND_SENDER_CORE_APPLICATION_ID = 0xAC6
@@ -16,11 +17,6 @@ MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP = 1 * 1024 * 1024
 # The default size of a recording buffer before receive request is sent
 DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE = 16 * 1024
 
-# The number of words in the AbstractDataSpecable basic setup information
-# 4 for MAGIC NUMBER
-# 4 for DSG VERSION
-DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES = 8
-
 # The number of words used by the simulation interface
 # 4 for machine_time_step,
 # 4 for SDP port
@@ -32,8 +28,7 @@ SIMULATION_N_BYTES = 12
 MULTICAST_SPEEDUP_N_BYTES = 4
 
 # The number of bytes used by the DSG and simulation interfaces
-SYSTEM_BYTES_REQUIREMENT = \
-    (DATA_SPECABLE_BASIC_SETUP_INFO_N_BYTES + SIMULATION_N_BYTES)
+SYSTEM_BYTES_REQUIREMENT = (APP_PTR_TABLE_BYTE_SIZE + SIMULATION_N_BYTES)
 
 # The number of bytes used by SARK per memory allocation
 SARK_PER_MALLOC_SDRAM_USAGE = 8

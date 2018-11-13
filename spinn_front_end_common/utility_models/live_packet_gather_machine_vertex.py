@@ -17,7 +17,7 @@ from spinn_front_end_common.abstract_models import (
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT)
+    SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 
 _ONE_SHORT = struct.Struct("<H")
 _TWO_BYTES = struct.Struct("<BB")
@@ -178,7 +178,7 @@ class LivePacketGatherMachineVertex(
             region=(
                 LivePacketGatherMachineVertex.
                 _LIVE_DATA_GATHER_REGIONS.SYSTEM.value),
-            size=SYSTEM_BYTES_REQUIREMENT,
+            size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
             region=(

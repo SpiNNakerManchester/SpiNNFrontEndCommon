@@ -18,7 +18,7 @@ from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.constants import (
-    SARK_PER_MALLOC_SDRAM_USAGE, SYSTEM_BYTES_REQUIREMENT)
+    SARK_PER_MALLOC_SDRAM_USAGE, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.helpful_functions import (
     locate_memory_region_for_placement, read_config_int)
@@ -264,7 +264,7 @@ class ChipPowerMonitorMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value,
-            size=SYSTEM_BYTES_REQUIREMENT,
+            size=SIMULATION_N_BYTES,
             label='system')
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,

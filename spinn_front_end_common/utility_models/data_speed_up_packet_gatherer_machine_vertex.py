@@ -26,7 +26,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utilities.constants import (
-    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
 
@@ -192,7 +192,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # pylint: disable=too-many-arguments, arguments-differ
 
         # Setup words + 1 for flags + 1 for recording size
-        setup_size = SYSTEM_BYTES_REQUIREMENT
+        setup_size = SIMULATION_N_BYTES
 
         # Create the data regions for hello world
         DataSpeedUpPacketGatherMachineVertex._reserve_memory_regions(

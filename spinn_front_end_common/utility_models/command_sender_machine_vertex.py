@@ -15,7 +15,7 @@ from spinn_front_end_common.interface.provenance import (
 from spinn_front_end_common.interface.simulation.simulation_utilities import (
     get_simulation_header_array)
 from spinn_front_end_common.utilities.constants import (
-    SYSTEM_BYTES_REQUIREMENT, SARK_PER_MALLOC_SDRAM_USAGE)
+    SYSTEM_BYTES_REQUIREMENT, SARK_PER_MALLOC_SDRAM_USAGE, SIMULATION_N_BYTES)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
@@ -258,7 +258,7 @@ class CommandSenderMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
-            size=SYSTEM_BYTES_REQUIREMENT, label='system')
+            size=SIMULATION_N_BYTES, label='system')
 
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SETUP.value,
