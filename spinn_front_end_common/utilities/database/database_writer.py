@@ -1,13 +1,12 @@
 import logging
 import os
-import sys
 import sqlite3
 from spinn_utilities.log import FormatAdapter
-from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
 from pacman.model.graphs.common import EdgeTrafficType
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesKeyToAtomMapping, AbstractRecordable,
     AbstractSupportsDatabaseInjection)
+from pacman.utilities.utility_calls import get_max_atoms_per_core
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -300,15 +299,13 @@ class DatabaseWriter(object):
         with self._connection:
             # add vertices
             for vertex in application_graph.vertices:
+                max_atoms_per_core = get_max_atoms_per_core(vertex)
                 if isinstance(vertex, AbstractRecordable):
                     self.__insert_app_vertex(
-                        vertex, vertex.get_max_atoms_per_core(),
+                        vertex, max_atoms_per_core,
                         vertex.is_recording_spikes())
-                elif isinstance(vertex, AbstractHasGlobalMaxAtoms):
-                    self.__insert_app_vertex(
-                        vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
-                    self.__insert_app_vertex(vertex, sys.maxsize, 0)
+                    self.__insert_app_vertex(vertex, max_atoms_per_core, 0)
 
             # add edges
             for vertex in application_graph.vertices:
