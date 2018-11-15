@@ -569,14 +569,11 @@ class BufferManager(object):
                 self._finished = True
 
     def get_data_for_placements(self, placements, progress=None):
-        if self._java_caller is None:
-            with self._thread_lock_buffer_out:
-                self._get_data_for_placements_locked(placements, progress)
-        else:
+        if self._java_caller is not None:
             self._java_caller.set_placements(placements, self._transceiver)
-            self._java_caller.get_all_data()
-            if progress:
-                progress.end()
+
+        with self._thread_lock_buffer_out:
+            self._get_data_for_placements_locked(placements, progress)
 
     def _get_data_for_placements_locked(self, placements, progress=None):
         receivers = OrderedSet()
@@ -596,12 +593,17 @@ class BufferManager(object):
                         self._extra_monitor_cores))
 
         # get data
-        for placement in placements:
-            vertex = placement.vertex
-            for recording_region_id in vertex.get_recorded_region_ids():
-                self._retreive_by_placement(placement, recording_region_id)
-                if progress is not None:
-                    progress.update()
+        if self._java_caller is None:
+            for placement in placements:
+                vertex = placement.vertex
+                for recording_region_id in vertex.get_recorded_region_ids():
+                    self._retreive_by_placement(placement, recording_region_id)
+                    if progress is not None:
+                        progress.update()
+        else:
+            self._java_caller.get_all_data()
+            if progress:
+                progress.end()
 
         # revert time out
         if self._uses_advanced_monitors:

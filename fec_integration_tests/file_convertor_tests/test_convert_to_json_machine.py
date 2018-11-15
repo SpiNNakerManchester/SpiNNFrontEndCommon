@@ -64,7 +64,7 @@ class TestConvertJson(unittest.TestCase):
         try:
             (hostname, version, _, _, _, _, _, m_allocation_controller) = \
                 spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
-                        self.spin2Port)
+                            self.spin2Port)
         except (JobDestroyedError):
             self.skipTest("Skipping as getting Job failed")
 

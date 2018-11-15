@@ -87,7 +87,6 @@ class JavaCaller(object):
         self._gatherer_iptags = None
         self._gatherer_cores = None
 
-
     def set_machine(self, machine):
         """
         Passes the machine in leaving this class to decide pass it to Java.
@@ -178,18 +177,17 @@ class JavaCaller(object):
         return json_placement
 
     def _json_iptag(self, iptag):
+        json_tag = OrderedDict()
+        json_tag["x"] = iptag.destination_x
+        json_tag["y"] = iptag.destination_y
+        json_tag["boardAddress"] = iptag.board_address
+        json_tag["targetAddress"] = iptag.ip_address
+        # Intentionally not including port!
+        json_tag["stripSDP"] = iptag.strip_sdp
+        json_tag["tagID"] = iptag.tag
+        json_tag["trafficIdentifier"] = iptag.traffic_identifier
 
-         json_tag = OrderedDict()
-         json_tag["x"] = iptag.destination_x
-         json_tag["y"] = iptag.destination_y
-         json_tag["boardAddress"] = iptag.board_address
-         json_tag["targetAddress"] = iptag.ip_address
-         # Intentionally not including port!
-         json_tag["stripSDP"] = iptag.strip_sdp
-         json_tag["tagID"] = iptag.tag
-         json_tag["trafficIdentifier"] = iptag.traffic_identifier
-
-         return json_tag
+        return json_tag
 
     def _placements_grouped(self, placements):
         by_ethernet = defaultdict(lambda: defaultdict(list))
@@ -255,7 +253,7 @@ class JavaCaller(object):
             self._javaspinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
         if self._gatherer_iptags is None:
-           result = subprocess.call(
+            result = subprocess.call(
                 [self._java_call, '-jar', jar_file, 'upload',
                  self._placement_json, self._machine_json(),
                  self._database_file])
