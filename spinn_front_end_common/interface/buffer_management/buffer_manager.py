@@ -88,7 +88,7 @@ class BufferManager(object):
         "_extra_monitor_cores",
 
         # the extra_monitor to Ethernet connection map
-        "_extra_monitor_cores_to_ethernet_connection_map",
+        "_packet_gather_cores_to_ethernet_connection_map",
 
         # monitor cores via chip ID
         "_extra_monitor_cores_by_chip",
@@ -107,7 +107,7 @@ class BufferManager(object):
     ]
 
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
-                 extra_monitor_cores_to_ethernet_connection_map,
+                 packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
                  uses_advanced_monitors, database_file, java_caller=None):
         """
@@ -119,6 +119,8 @@ class BufferManager(object):
         :param transceiver: \
             The transceiver to use for sending and receiving information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+:param packet_gather_cores_to_ethernet_connection_map
+
         :param database_file: The file to use as an SQL database.
         :type database_file: str
         :param java_caller: Support class to call Java or None to use python
@@ -130,8 +132,8 @@ class BufferManager(object):
         self._tags = tags
         self._transceiver = transceiver
         self._extra_monitor_cores = extra_monitor_cores
-        self._extra_monitor_cores_to_ethernet_connection_map = \
-            extra_monitor_cores_to_ethernet_connection_map
+        self._packet_gather_cores_to_ethernet_connection_map = \
+            packet_gather_cores_to_ethernet_connection_map
         self._extra_monitor_cores_by_chip = extra_monitor_to_chip_mapping
         self._fixed_routes = fixed_routes
         self._machine = machine
@@ -165,7 +167,7 @@ class BufferManager(object):
                 self._java_caller.set_advanced_monitors(
                     self._placements, self._tags,
                     self._extra_monitor_cores_by_chip,
-                    self._extra_monitor_cores_to_ethernet_connection_map)
+                    self._packet_gather_cores_to_ethernet_connection_map)
 
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
@@ -188,7 +190,7 @@ class BufferManager(object):
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
         receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
-            self._extra_monitor_cores_to_ethernet_connection_map)
+            self._packet_gather_cores_to_ethernet_connection_map)
         return receiver.get_data(
             transceiver, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
@@ -583,7 +585,7 @@ class BufferManager(object):
             for placement in placements:
                 receivers.add(locate_extra_monitor_mc_receiver(
                     self._machine, placement.x, placement.y,
-                    self._extra_monitor_cores_to_ethernet_connection_map))
+                    self._packet_gather_cores_to_ethernet_connection_map))
 
             # set time out
             for receiver in receivers:

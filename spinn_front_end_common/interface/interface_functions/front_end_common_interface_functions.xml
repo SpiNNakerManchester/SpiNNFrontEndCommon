@@ -967,7 +967,7 @@
                 <param_type>MemoryExtraMonitorVertices</param_type>
             </parameter>
             <parameter>
-                <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+                <param_name>packet_gather_cores_to_ethernet_connection_map</param_name>
                 <param_type>MemoryMCGatherVertexToEthernetConnectedChipMapping</param_type>
             </parameter>
             <parameter>
@@ -1000,7 +1000,7 @@
         </required_inputs>
         <optional_inputs>
             <param_name>extra_monitor_cores</param_name>
-            <param_name>extra_monitor_cores_to_ethernet_connection_map</param_name>
+            <param_name>packet_gather_cores_to_ethernet_connection_map</param_name>
             <param_name>extra_monitor_to_chip_mapping</param_name>
             <param_name>fixed_routes</param_name>
             <param_name>machine</param_name>
