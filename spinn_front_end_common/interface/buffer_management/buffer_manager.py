@@ -161,6 +161,11 @@ class BufferManager(object):
         if self._java_caller is not None:
             self._java_caller.set_machine(machine)
             self._java_caller.set_database(database_file)
+            if self._uses_advanced_monitors:
+                self._java_caller.set_advanced_monitors(
+                    self._placements, self._tags,
+                    self._extra_monitor_cores_by_chip,
+                    self._extra_monitor_cores_to_ethernet_connection_map)
 
     def _request_data(self, transceiver, placement_x, placement_y, address,
                       length):
