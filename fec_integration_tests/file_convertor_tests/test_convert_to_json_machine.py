@@ -2,6 +2,7 @@ import filecmp
 import os
 import sys
 import unittest
+from spalloc.job import JobDestroyedError
 from spinn_utilities.ping import Ping
 import spinnman.transceiver as transceiver
 from pacman.utilities.file_format_converters.convert_to_java_machine \
@@ -27,6 +28,7 @@ class TestConvertJson(unittest.TestCase):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
         trans = transceiver.create_transceiver_from_hostname(self.spin4Host, 5)
         trans.ensure_board_is_ready()
+
         machine = trans.get_machine_details()
 
         jsonAlgo = ConvertToJavaMachine()
@@ -59,15 +61,18 @@ class TestConvertJson(unittest.TestCase):
             raise unittest.SkipTest(self.spalloc + " appears to be down")
         spallocAlgo = SpallocAllocator()
 
-        (hostname, version, _, _, _, _, _, machine_allocation_controller) = \
-            spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
+        try:
+            (hostname, version, _, _, _, _, _, m_allocation_controller) = \
+                spallocAlgo(self.spalloc, "Integration testing ok to kill", 20,
                         self.spin2Port)
+        except (JobDestroyedError):
+            self.skipTest("Skipping as getting Job failed")
 
         trans = transceiver.create_transceiver_from_hostname(hostname, 5)
         trans.ensure_board_is_ready()
         machine = trans.get_machine_details()
 
-        machine_allocation_controller.close()
+        m_allocation_controller.close()
 
         jsonAlgo = ConvertToJavaMachine()
 
