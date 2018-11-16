@@ -96,9 +96,17 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = str(data[2:])
+
+        # check command is correct
+        command = EIEIOCommandHeader.from_bytestring(data, 0).command
+        if command != CMDS.DATABASE_CONFIRMATION.value:
+            raise SpinnmanInvalidPacketException(
+                    "command_code",
+                    "expected a database confirmation command code now, "
+                    "and did not receive it")
 
         # Call the callback
+        database_path = str(data[2:])
         database_reader = DatabaseReader(database_path)
         for database_callback in self._database_callback_functions:
             database_callback(database_reader)
