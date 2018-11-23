@@ -361,14 +361,19 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Version information from the front end
         "_front_end_versions",
 
-        "_last_except_hook"
+        #
+        "_last_except_hook",
+
+        #
+        "_chip_id_allocator"
     ]
 
     def __init__(
             self, configfile, executable_finder, graph_label=None,
             database_socket_addresses=None, extra_algorithm_xml_paths=None,
             n_chips_required=None, default_config_paths=None,
-            validation_cfg=None, front_end_versions=None):
+            validation_cfg=None, front_end_versions=None,
+            chip_id_allocator=None):
         # pylint: disable=too-many-arguments
 
         # global params
@@ -455,6 +460,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._extra_pre_run_algorithms = list()
         self._extra_post_run_algorithms = list()
         self._extra_load_algorithms = list()
+
+        if chip_id_allocator is None:
+            self._chip_id_allocator = "MallocBasedChipIDAllocator"
+        else:
+            self._chip_id_allocator = chip_id_allocator
 
         self._dsg_algorithm = "GraphDataSpecificationWriter"
 
@@ -1408,6 +1418,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         algorithms = list()
         outputs = list()
 
+        algorithms.append(self._chip_id_allocator)
+
         # add system algorithms/inputs as required
         system_inputs, system_algorithms = \
             self._get_system_functionality_algorithms_and_inputs()
@@ -1722,8 +1734,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Reports", "write_network_specification_report")):
                 algorithms.append("NetworkSpecificationReport")
 
+        if "MemoryExtendedMachine" not in self._machine_outputs:
+            algorithms.append(self._chip_id_allocator)
+
         # only add the partitioner if there isn't already a machine graph
-        algorithms.append("MallocBasedChipIDAllocator")
         if (self._application_graph.n_vertices and
                 not self._machine_graph.n_vertices):
             full = self._config.get(
