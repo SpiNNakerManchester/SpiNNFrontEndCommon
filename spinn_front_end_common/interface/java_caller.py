@@ -25,7 +25,7 @@ class JavaCaller(object):
         # The call to get java to work. Including the path if required.
         "_java_call",
         # The local https://github.com/SpiNNakerManchester/JavaSpiNNaker
-        "_javaspinnaker_path",
+        "_java_spinnaker_path",
         # the folder to write the any json files into
         "_json_folder",
         # The location where the machine json is written
@@ -34,7 +34,7 @@ class JavaCaller(object):
         "_placement_json"
     ]
 
-    def __init__(self, json_folder, java_call, javaspinnaker_path=None):
+    def __init__(self, json_folder, java_call, java_spinnaker_path=None):
         """
         Creates a Jason caller and checks the user/ config parameters
 
@@ -42,7 +42,7 @@ class JavaCaller(object):
         :type json_folder: str
         :param java_call: Call to start java. Including the path if required.
         :type java_call: str
-        :param javaspinnaker_path: the path where the java code can be found.
+        :param java_spinnaker_path: the path where the java code can be found.
             This must point to a local copy of \
             https://github.com/SpiNNakerManchester/JavaSpiNNaker. \
             It must also have been built! \
@@ -60,17 +60,17 @@ class JavaCaller(object):
                 "Please set [Java] java_call to the absolute path "
                 "to start java. (in config file)".format(self._java_call))
 
-        if javaspinnaker_path is None:
+        if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)
             spinnfrontendcommon = os.path.dirname(spinn_front_end_common)
             parent = os.path.dirname(spinnfrontendcommon)
-            self._javaspinnaker_path = os.path.join(parent, "JavaSpiNNaker")
+            self._java_spinnaker_path = os.path.join(parent, "JavaSpiNNaker")
         else:
-            self._javaspinnaker_path = javaspinnaker_path
-        if not os.path.isdir(self._javaspinnaker_path):
+            self._java_spinnaker_path = java_spinnaker_path
+        if not os.path.isdir(self._java_spinnaker_path):
             raise ConfigurationException(
-                "No Java code found at {}".format(self._javaspinnaker_path))
+                "No Java code found at {}".format(self._java_spinnaker_path))
 
         self._machine_json = None
         self._placement_json = None
@@ -148,7 +148,7 @@ class JavaCaller(object):
 
         """
         jar_file = os.path.join(
-            self._javaspinnaker_path, "SpiNNaker-front-end",
+            self._java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
         result = subprocess.call(
             [self._java_call, '-jar', jar_file, 'upload',

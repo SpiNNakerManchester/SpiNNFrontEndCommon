@@ -1710,10 +1710,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             if self._java_caller is None:
                 if self._config.getboolean("Java", "use_java"):
                     java_call = self._config.get("Java", "java_call")
-                    javaspinnaker_path = self._config.get_str(
-                        "Java", "javaspinnaker_path")
+                    java_spinnaker_path = self._config.get_str(
+                        "Java", "java_spinnaker_path")
                     self._java_caller = JavaCaller(
-                        self._json_folder, java_call, javaspinnaker_path)
+                        self._json_folder, java_call, java_spinnaker_path)
             inputs["JavaCaller"] = self._java_caller
 
         # Execute the mapping algorithms
