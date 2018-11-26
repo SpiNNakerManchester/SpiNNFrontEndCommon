@@ -996,8 +996,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 loading_done = True
 
         # Run for each of the given steps
-        logger.info("Running for {} steps for a total of {}ms",
-                    len(steps), run_time)
+        if run_time is not None:
+            logger.info("Running for {} steps for a total of {}ms",
+                        len(steps), run_time)
+        else:
+            logger.info("Running forever")
         for i, step in enumerate(steps):
             logger.info("Run {} of {}", i + 1, len(steps))
             self._do_run(step, loading_done, run_until_complete)
@@ -2010,7 +2013,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board:
+        if not self._use_virtual_board and run_time is not None:
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
