@@ -116,7 +116,8 @@ class JavaCaller(object):
         self._placement_json = self._write_placements(
             placements, transceiver, path)
 
-    def _write_placements(self, placements, transceiver, path):
+    @staticmethod
+    def _write_placements(placements, transceiver, path):
 
         # Read back the regions
         json_obj = list()
