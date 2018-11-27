@@ -158,7 +158,8 @@ class JavaCaller(object):
             self._placement_json = self._write_gather(
                 placements, transceiver, path)
 
-    def _json_placement(self, placement, transceiver):
+    @staticmethod
+    def _json_placement(placement, transceiver):
 
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
@@ -176,7 +177,8 @@ class JavaCaller(object):
 
         return json_placement
 
-    def _json_iptag(self, iptag):
+    @staticmethod
+    def _json_iptag(iptag):
         json_tag = OrderedDict()
         json_tag["x"] = iptag.destination_x
         json_tag["y"] = iptag.destination_y
@@ -236,7 +238,7 @@ class JavaCaller(object):
         # Read back the regions
         json_obj = list()
         for placement in placements:
-            json_obj.append(self._json_placement(placement, transceiver))
+            json_obj.append(JavaCaller._json_placement(placement, transceiver))
 
         # dump to json file
         with open(path, "w") as f:
