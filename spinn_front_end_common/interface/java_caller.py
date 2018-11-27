@@ -63,8 +63,8 @@ class JavaCaller(object):
         if java_spinnaker_path is None:
             interface = os.path.dirname(os.path.realpath(__file__))
             spinn_front_end_common = os.path.dirname(interface)
-            spinnfrontendcommon = os.path.dirname(spinn_front_end_common)
-            parent = os.path.dirname(spinnfrontendcommon)
+            github_checkout_dir = os.path.dirname(spinn_front_end_common)
+            parent = os.path.dirname(github_checkout_dir)
             self._java_spinnaker_path = os.path.join(parent, "JavaSpiNNaker")
         else:
             self._java_spinnaker_path = java_spinnaker_path
