@@ -16,6 +16,7 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from spinn_front_end_common.interface.database import SqlLiteDatabase
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.utilities.exceptions import (
@@ -66,8 +67,8 @@ class BufferManager(object):
         # storage area for received data from cores
         "_received_data",
 
-        # File used to hold received data
-        "_received_data_db",
+        # Database used to hold data
+        "_data_db",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -147,8 +148,9 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData(database_file)
-        self._received_data_db = database_file
+
+        self._data_db = SqlLiteDatabase(database_file)
+        self._received_data = BufferedReceivingData(self._data_db)
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
@@ -315,25 +317,25 @@ class BufferManager(object):
                 self._send_initial_messages(vertex, region, progress)
         progress.end()
 
-    def reset(self):
-        """ Resets the buffered regions to start transmitting from the\
-            beginning of its expected regions and clears the buffered out\
-            data files
-        """
-        # reset buffered out
-        if self._received_data is not None:
-            self._received_data.close()
-        if self._received_data_db is not None:
-            # Nuke the DB if it existed; it will be recreated
-            os.remove(self._received_data_db)
-        self._received_data = BufferedReceivingData(self._received_data_db)
+    # ToDo Will be changed in later pr so off for now
+    #def reset(self):
+    #    """ Resets the buffered regions to start transmitting from the\
+    #        beginning of its expected regions and clears the buffered out\
+    #        data files
+    #    """
+    #    # reset buffered out
+    #    if self._received_data is not None:
+    #        self._received_data.close()
+    #    # Nuke the DB if it existed; it will be recreated
+    #    os.remove(self._data_db)
+    #    self._received_data = BufferedReceivingData(self._received_data_db)
 
-        # rewind buffered in
-        for vertex in self._sender_vertices:
-            for region in vertex.get_regions():
-                vertex.rewind(region)
+    #    # rewind buffered in
+    #    for vertex in self._sender_vertices:
+    #        for region in vertex.get_regions():
+    #            vertex.rewind(region)
 
-        self._finished = False
+    #    self._finished = False
 
     def resume(self):
         """ Resets any data structures needed before starting running again

@@ -15,7 +15,7 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # the database holding the data to store, if used
+        # the AbstractDatabase holding the data to store
         "_db",
 
         # dict of booleans indicating if a region on a core has been flushed
@@ -37,77 +37,22 @@ class BufferedReceivingData(object):
         "_end_buffering_state"
     ]
 
-    def __init__(self, database_file=None):
+    def __init__(self, database):
         """
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
             Ignored if database_file is not null.
         :type store_to_file: bool
-        :param database_file: The name of a file that contains (or will\
-            contain) an SQLite database holding the data.
+        :param database: The database used to store some of the data.
         :type database_file: str
         """
-        self._db = sqlite3.connect(database_file)
-        self._db.text_factory = memoryview
-        self.__init_db()
+        self._db = database
         self._is_flushed = defaultdict(lambda: False)
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
-
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        if self._db is not None:
-            self._db.close()
-            self._db = None
-
-    def __init_db(self):
-        """ Set up the database if required. """
-        self._db.row_factory = sqlite3.Row
-        with open(DDL_FILE) as f:
-            sql = f.read()
-        self._db.executescript(sql)
-
-    def __append_contents(self, cursor, x, y, p, region, contents):
-        cursor.execute(
-            "INSERT INTO storage(x, y, processor, region, content) "
-            + "VALUES(?, ?, ?, ?, ?) "
-            + "ON CONFLICT(x, y, processor, region) DO "
-            + "UPDATE SET content = storage.content || excluded.content",
-            (x, y, p, region, sqlite3.Binary(contents)))
-
-    def __hacky_append(self, cursor, x, y, p, region, contents):
-        """ Used to do an UPSERT when the version of SQLite used by Python\
-            doesn't support the correct syntax for it (because it is older\
-            than 3.24). Not really a problem with Python 3.6 or later.
-        """
-        cursor.execute(
-            "INSERT OR IGNORE INTO storage(x, y, processor, region, content) "
-            + "VALUES(?, ?, ?, ?, ?)",
-            (x, y, p, region, sqlite3.Binary(b"")))
-        cursor.execute(
-            "UPDATE storage SET content = content || ? "
-            + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
-            (sqlite3.Binary(contents), x, y, p, region))
-
-    def _read_contents(self, cursor, x, y, p, region):
-        for row in cursor.execute(
-                "SELECT content FROM storage "
-                + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
-                (x, y, p, region)):
-            data = row["content"]
-            return memoryview(data)
-        return b""
-
-    def __delete_contents(self, cursor, x, y, p, region):
-        cursor.execute(
-            "DELETE FROM storage WHERE " +
-            "x = ? AND y = ? AND processor = ? AND region = ?",
-            (x, y, p, region))
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
@@ -125,14 +70,7 @@ class BufferedReceivingData(object):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
-        try:
-            with self._db:
-                c = self._db.cursor()
-                self.__append_contents(c, x, y, p, region, data)
-        except sqlite3.Error:
-            with self._db:
-                c = self._db.cursor()
-                self.__hacky_append(c, x, y, p, region, data)
+        self._db.store_data_in_region_buffer(x, y, p, region, data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
         """ Check if the data region has been flushed
@@ -274,13 +212,7 @@ class BufferedReceivingData(object):
             simulation, and a flag indicating if any data was missing
         :rtype: (bytearray, bool)
         """
-        missing = None
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = (x, y, p, region)
-        with self._db:
-            c = self._db.cursor()
-            data = self._read_contents(c, x, y, p, region)
-        return data, missing
+        return self._db.get_region_data(x, y, p, region)
 
     def get_region_data_pointer(self, x, y, p, region):
         """
@@ -382,18 +314,19 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
 
-    def clear(self, x, y, p, region_id):
-        """ Clears the data from a given data region (only clears things\
-            associated with a given data recording region).
+    # ToDo Being changed in later Pr so currently broken
+    # def clear(self, x, y, p, region_id):
+    #    """ Clears the data from a given data region (only clears things\
+    #        associated with a given data recording region).
 
-        :param x: placement x coordinate
-        :param y: placement y coordinate
-        :param p: placement p coordinate
-        :param region_id: the recording region ID to clear data from
-        :rtype: None
-        """
-        del self._end_buffering_state[x, y, p, region_id]
-        with self._db:
-            c = self._db.cursor()
-            self.__delete_contents(c, x, y, p, region_id)
-        del self._is_flushed[x, y, p, region_id]
+    #    :param x: placement x coordinate
+    #    :param y: placement y coordinate
+    #    :param p: placement p coordinate
+    #    :param region_id: the recording region ID to clear data from
+    #    :rtype: None
+    #    """
+    #    del self._end_buffering_state[x, y, p, region_id]
+    #    with self._db:
+    #        c = self._db.cursor()
+    #        self.__delete_contents(c, x, y, p, region_id)
+    #    del self._is_flushed[x, y, p, region_id]

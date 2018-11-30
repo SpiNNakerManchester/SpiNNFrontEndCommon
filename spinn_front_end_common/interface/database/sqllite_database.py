@@ -1,11 +1,11 @@
-from collections import defaultdict
 import os
 import sqlite3
+from .abstract_database import AbstractDatabase
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
 
-class SqlLiteDatabase(DatabaseInterface):
+class SqlLiteDatabase(AbstractDatabase):
     """ Specific implemematation of the Database for SqlLite
     """
 
@@ -35,6 +35,12 @@ class SqlLiteDatabase(DatabaseInterface):
         if self._db is not None:
             self._db.close()
             self._db = None
+
+    def clear(self):
+        print ("TODO")
+
+    def commit(self):
+        # DO nothing!
 
     def __init_db(self):
         """ Set up the database if required. """
@@ -104,167 +110,3 @@ class SqlLiteDatabase(DatabaseInterface):
             with self._db:
                 c = self._db.cursor()
                 self.__hacky_append(c, x, y, p, region, data)
-
-    def is_data_from_region_flushed(self, x, y, p, region):
-        """ Check if the data region has been flushed
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
-        :return: True if the region has been flushed. False otherwise
-        :rtype: bool
-        """
-        return self._is_flushed[x, y, p, region]
-
-    def flushing_data_from_region(self, x, y, p, region, data):
-        """ Store flushed data from a region of a core on a chip, and mark it\
-            as being flushed
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data to be stored
-        :type region: int
-        :param data: data to be stored
-        :type data: bytearray
-        """
-        # pylint: disable=too-many-arguments
-        self.store_data_in_region_buffer(x, y, p, region, data)
-        self._is_flushed[x, y, p, region] = True
-
-    def store_last_received_packet_from_core(self, x, y, p, packet):
-        """ Store the most recent packet received from SpiNNaker for a given\
-            core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param packet: SpinnakerRequestReadData packet received
-        :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
-        """
-        self._last_packet_received[x, y, p] = packet
-
-    def last_received_packet_from_core(self, x, y, p):
-        """ Get the last packet received for a given core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :return: SpinnakerRequestReadData packet received
-        :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
-        """
-        return self._last_packet_received[x, y, p]
-
-    def store_last_sent_packet_to_core(self, x, y, p, packet):
-        """ Store the last packet sent to the given core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param packet: last HostDataRead packet sent
-        :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
-        """
-        self._last_packet_sent[x, y, p] = packet
-
-    def last_sent_packet_to_core(self, x, y, p):
-        """ Retrieve the last packet sent to a core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :return: last HostDataRead packet sent
-        :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
-        """
-        return self._last_packet_sent[x, y, p]
-
-    def last_sequence_no_for_core(self, x, y, p):
-        """ Get the last sequence number for a core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :return: last sequence number used
-        :rtype: int
-        """
-        return self._sequence_no[x, y, p]
-
-    def update_sequence_no_for_core(self, x, y, p, sequence_no):
-        """ Set the last sequence number used
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param sequence_no: last sequence number used
-        :type sequence_no: int
-        :rtype: None
-        """
-        self._sequence_no[x, y, p] = sequence_no
-
-    def get_region_data(self, x, y, p, region):
-        """ Get the data stored for a given region of a given core
-
-        :param x: x coordinate of the chip
-        :type x: int
-        :param y: y coordinate of the chip
-        :type y: int
-        :param p: Core within the specified chip
-        :type p: int
-        :param region: Region containing the data
-        :type region: int
-        :return: an array contained all the data received during the\
-            simulation, and a flag indicating if any data was missing
-        :rtype: (bytearray, bool)
-        """
-        missing = None
-        if (x, y, p, region) not in self._end_buffering_state:
-            missing = (x, y, p, region)
-        with self._db:
-            c = self._db.cursor()
-            data = self._read_contents(c, x, y, p, region)
-        return data, missing
-
-    def clear(self, x, y, p, region_id):
-        """ Clears the data from a given data region (only clears things\
-            associated with a given data recording region).
-
-        :param x: placement x coordinate
-        :param y: placement y coordinate
-        :param p: placement p coordinate
-        :param region_id: the recording region ID to clear data from
-        :rtype: None
-        """
-        del self._end_buffering_state[x, y, p, region_id]
-        with self._db:
-            c = self._db.cursor()
-            self.__delete_contents(c, x, y, p, region_id)
-        del self._is_flushed[x, y, p, region_id]
