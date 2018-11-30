@@ -1,14 +1,13 @@
 import math
-from spinn_utilities.overrides import overrides
-
-from spalloc import Job
-from spalloc.states import JobState
 import six
 import sys
-from spinn_front_end_common.abstract_models.impl \
-    import MachineAllocationController
-from spinn_front_end_common.abstract_models \
-    import AbstractMachineAllocationController
+from spinn_utilities.overrides import overrides
+from spalloc import Job
+from spalloc.states import JobState
+from spinn_front_end_common.abstract_models import (
+    AbstractMachineAllocationController)
+from spinn_front_end_common.abstract_models.impl import (
+    MachineAllocationController)
 
 
 class _SpallocJobController(MachineAllocationController):

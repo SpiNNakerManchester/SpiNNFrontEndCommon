@@ -1,5 +1,6 @@
 from spinn_front_end_common.utilities.utility_objs.extra_monitor_scp_messages\
-    import ResetCountersMessage
+    import (
+        ResetCountersMessage)
 from spinnman.processes import AbstractMultiConnectionProcess
 
 

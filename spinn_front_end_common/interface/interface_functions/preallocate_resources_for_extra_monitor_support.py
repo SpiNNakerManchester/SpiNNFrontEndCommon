@@ -1,14 +1,14 @@
-from pacman.model.resources import SpecificChipSDRAMResource, CoreResource, \
-    PreAllocatedResourceContainer, SpecificBoardReverseIPtagResource
-from spinn_front_end_common.utility_models import \
-    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.resources import (
+    SpecificChipSDRAMResource, CoreResource,
+    PreAllocatedResourceContainer, SpecificBoardReverseIPtagResource)
 from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
-from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex)
 
 
 class PreAllocateResourcesForExtraMonitorSupport(object):
-
     def __call__(
             self, machine, pre_allocated_resources=None,
             n_cores_to_allocate=1):
@@ -82,7 +82,8 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # pylint: disable=too-many-arguments
 
         # get resources from packet gatherer
-        resources = DataSpeedUp.static_resources_required()
+        resources = DataSpeedUpPacketGatherMachineVertex.\
+            static_resources_required()
 
         # locate Ethernet connected chips that the vertices reside on
         for ethernet_connected_chip in \
