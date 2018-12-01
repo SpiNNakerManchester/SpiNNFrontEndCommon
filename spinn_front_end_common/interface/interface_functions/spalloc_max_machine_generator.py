@@ -10,7 +10,8 @@ class SpallocMaxMachineGenerator(object):
     __slots__ = []
 
     def __call__(
-            self, spalloc_server, spalloc_port=22244, spalloc_machine=None):
+            self, spalloc_server, spalloc_port=22244, spalloc_machine=None,
+            max_sdram_size=None, max_core_id=None):
         with ProtocolClient(spalloc_server, spalloc_port) as client:
             machines = client.list_machines()
             # Close the context immediately; don't want to keep this particular
@@ -38,7 +39,8 @@ class SpallocMaxMachineGenerator(object):
         # arounds or version.
         return VirtualMachine(
             width=max_width, height=max_height, with_wrap_arounds=None,
-            version=None)
+            version=None, sdram_per_chip=max_sdram_size,
+            n_cpus_per_chip=max_core_id)
 
     @staticmethod
     def _filter(machines, target_name):
