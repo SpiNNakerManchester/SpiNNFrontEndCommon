@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 from multiprocessing.pool import ThreadPool
 from six.moves import xrange
@@ -68,6 +69,7 @@ class BufferManager(object):
 
         # Database used to hold data
         "_data_db",
+        "_database_file",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -149,6 +151,7 @@ class BufferManager(object):
         # storage area for received data from cores
 
         self._data_db = SqlLiteDatabase(database_file)
+        self._database_file = database_file
         self._received_data = BufferedReceivingData(self._data_db)
 
         # Lock to avoid multiple messages being processed at the same time
@@ -316,25 +319,24 @@ class BufferManager(object):
                 self._send_initial_messages(vertex, region, progress)
         progress.end()
 
-    # ToDo Will be changed in later pr so off for now
-    # def reset(self):
-    #    """ Resets the buffered regions to start transmitting from the\
-    #        beginning of its expected regions and clears the buffered out\
-    #        data files
-    #    """
-    #    # reset buffered out
-    #    if self._received_data is not None:
-    #        self._received_data.close()
-    #    # Nuke the DB if it existed; it will be recreated
-    #    os.remove(self._data_db)
-    #    self._received_data = BufferedReceivingData(self._received_data_db)
+    def reset(self):
+        """ Resets the buffered regions to start transmitting from the\
+            beginning of its expected regions and clears the buffered out\
+            data files
+        """
 
-    #    # rewind buffered in
-    #    for vertex in self._sender_vertices:
-    #        for region in vertex.get_regions():
-    #            vertex.rewind(region)
+        # Nuke the DB if it existed; it will be recreated
+        self._data_db.close()
+        os.remove(self._database_file)
+        self._data_db = SqlLiteDatabase(self._database_file)
+        self._received_data = BufferedReceivingData(self._data_db)
 
-    #    self._finished = False
+        # rewind buffered in
+        for vertex in self._sender_vertices:
+            for region in vertex.get_regions():
+                vertex.rewind(region)
+
+        self._finished = False
 
     def resume(self):
         """ Resets any data structures needed before starting running again
