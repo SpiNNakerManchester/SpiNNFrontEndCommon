@@ -4,6 +4,7 @@ import os
 import shutil
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
+from spinn_front_end_common.interface.database import SqlLiteDatabase
 
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
@@ -14,10 +15,10 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
         try:
             self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
-            brd = BufferedReceivingData(f)
-
+            db = SqlLiteDatabase(f)
             self.assertTrue(os.path.isfile(f), "DB now exists")
 
+            brd = BufferedReceivingData(db)
             brd.store_data_in_region_buffer(0, 0, 0, 0, b"abc")
             brd.flushing_data_from_region(0, 0, 0, 0, b"def")
             brd.store_end_buffering_state(0, 0, 0, 0, "LOLWUT")
