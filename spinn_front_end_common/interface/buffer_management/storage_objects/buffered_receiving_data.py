@@ -1,6 +1,5 @@
 from collections import defaultdict
 import os
-import sqlite3
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 

@@ -1,5 +1,4 @@
 import logging
-import os
 import threading
 from multiprocessing.pool import ThreadPool
 from six.moves import xrange
@@ -318,7 +317,7 @@ class BufferManager(object):
         progress.end()
 
     # ToDo Will be changed in later pr so off for now
-    #def reset(self):
+    # def reset(self):
     #    """ Resets the buffered regions to start transmitting from the\
     #        beginning of its expected regions and clears the buffered out\
     #        data files

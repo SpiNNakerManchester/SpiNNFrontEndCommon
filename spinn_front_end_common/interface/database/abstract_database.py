@@ -1,6 +1,6 @@
 from six import add_metaclass
 from spinn_utilities.abstract_base import (
-    AbstractBase, abstractmethod, abstractproperty)
+    AbstractBase, abstractmethod)
 
 
 @add_metaclass(AbstractBase)
@@ -16,7 +16,8 @@ class AbstractDatabase(object):
         a new one created.
 
     Do not assume that just because 2 database objects where opened with the
-        same parameters (for example sqllite file) that they hold the same data.
+        same parameters (for example sqllite file)
+        that they hold the same data.
         In fact the second init is allowed to delete any previous data.
 
     While not recommended implementation objects are allowed to hold data in
@@ -29,10 +30,8 @@ class AbstractDatabase(object):
     @abstractmethod
     def commit(self):
         """
-        Ensures that all data expected is sent to the database and is peristant.
-
-        Note: There is currently no transaction support so data may well be written
-            and persistant before this call is made.
+        Ensures that all data expected is sent to the database and is
+            peristant.
         """
 
     @abstractmethod

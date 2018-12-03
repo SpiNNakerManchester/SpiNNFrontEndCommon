@@ -24,7 +24,6 @@ class TestBufferedReceivingDataWithDB(unittest.TestCase):
             # self.assertIsNotNone(missing, "data should be 'missing'")
             # self.assertEqual(data, b"")
 
-
             brd.store_data_in_region_buffer(0, 0, 0, 0, b"abc")
             brd.flushing_data_from_region(0, 0, 0, 0, b"def")
             brd.store_end_buffering_state(0, 0, 0, 0, "LOLWUT")
