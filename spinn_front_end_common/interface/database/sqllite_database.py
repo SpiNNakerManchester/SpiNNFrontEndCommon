@@ -37,10 +37,13 @@ class SqlLiteDatabase(AbstractDatabase):
             self._db = None
 
     def clear(self):
-        print ("TODO")
+        print("TODO")
 
     def commit(self):
-        # DO nothing!
+        """
+        No need to commit
+        :return:
+        """
 
     def __init_db(self):
         """ Set up the database if required. """
@@ -110,3 +113,27 @@ class SqlLiteDatabase(AbstractDatabase):
             with self._db:
                 c = self._db.cursor()
                 self.__hacky_append(c, x, y, p, region, data)
+
+    def get_region_data(self, x, y, p, region):
+        """ Get the data stored for a given region of a given core
+        :param x: x coordinate of the chip
+        :type x: int
+        :param y: y coordinate of the chip
+        :type y: int
+        :param p: Core within the specified chip
+        :type p: int
+        :param region: Region containing the data
+        :type region: int
+        :return: an array contained all the data received during the\
+            simulation, and a flag indicating if any data was missing
+        :rtype: (bytearray, bool)
+        """
+        missing = None
+        if self._db is not None:
+            with self._db:
+                c = self._db.cursor()
+                data = self._read_contents(c, x, y, p, region)
+                # TODO missing data
+        else:
+            data = self._data[x, y, p, region].read_all()
+        return data, missing
