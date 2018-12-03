@@ -1,5 +1,6 @@
 from spalloc import ProtocolClient
 from spinn_machine.virtual_machine import VirtualMachine
+from spinn_machine.machine import Machine
 
 
 class SpallocMaxMachineGenerator(object):
@@ -34,6 +35,9 @@ class SpallocMaxMachineGenerator(object):
         if max_width is None:
             raise Exception(
                 "The spalloc server appears to have no compatible machines")
+
+        if max_core_id is None:
+            max_core_id = Machine.MAX_CORES_PER_CHIP
 
         # Return the width and height, and make no assumption about wrap-
         # arounds or version.
