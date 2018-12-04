@@ -191,7 +191,7 @@ class LiveEventConnection(DatabaseConnection):
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def _init_sender(self, db, vertex_sizes):
-        if self._sender_connection is not None:
+        if self._sender_connection is None:
             self._sender_connection = EIEIOConnection()
         for label in self._send_labels:
             self._send_address_details[label] = self.__get_live_input_details(
@@ -207,7 +207,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def _init_receivers(self, db, vertex_sizes):
         # Set up a single connection for receive
-        if self._receiver_connection is not None:
+        if self._receiver_connection is None:
             self._receiver_connection = EIEIOConnection()
         receivers = set()
         for label_id, label in enumerate(self._receive_labels):
