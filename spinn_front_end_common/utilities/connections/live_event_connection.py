@@ -5,7 +5,6 @@ from threading import Thread
 from collections import OrderedDict
 from six import iterkeys, iteritems, reraise
 from spinn_utilities.log import FormatAdapter
-from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.eieio.data_messages import (
     EIEIODataMessage, KeyPayloadDataElement)
 from spinnman.messages.eieio import EIEIOType
@@ -39,13 +38,13 @@ class LiveEventConnection(DatabaseConnection):
         "_atom_id_to_key",
         "_init_callbacks",
         "_key_to_atom_id_and_label",
-        "_listeners",
         "_live_event_callbacks",
         "_live_packet_gather_label",
         "_machine_vertices",
         "_pause_stop_callbacks",
         "_receive_labels",
-        "_receivers",
+        "_receiver_connection",
+        "_receiver_listener",
         "_send_address_details",
         "_send_labels",
         "_sender_connection",
@@ -101,8 +100,8 @@ class LiveEventConnection(DatabaseConnection):
                 self._start_resume_callbacks[label] = list()
                 self._pause_stop_callbacks[label] = list()
                 self._init_callbacks[label] = list()
-        self._receivers = dict()
-        self._listeners = dict()
+        self._receiver_listener = None
+        self._receiver_connection = None
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
@@ -192,7 +191,8 @@ class LiveEventConnection(DatabaseConnection):
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def _init_sender(self, db, vertex_sizes):
-        self._sender_connection = EIEIOConnection()
+        if self._sender_connection is not None:
+            self._sender_connection = EIEIOConnection()
         for label in self._send_labels:
             self._send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -206,22 +206,24 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def _init_receivers(self, db, vertex_sizes):
+        # Set up a single connection for receive
+        if self._receiver_connection is not None:
+            self._receiver_connection = EIEIOConnection()
+        receivers = set()
         for label_id, label in enumerate(self._receive_labels):
             _, port, board_address, tag = self.__get_live_output_details(
                 db, label)
-            if port not in self._receivers:
-                receiver = EIEIOConnection()
-                self.__update_tag(receiver, board_address, tag)
-                listener = ConnectionListener(receiver)
-                listener.add_callback(self._receive_packet_callback)
-                listener.start()
-                self._receivers[port] = receiver
-                self._listeners[port] = listener
 
-            send_port_trigger_message(receiver, board_address)
+            # Update the tag if not already done
+            if (board_address, port, tag) not in receivers:
+                self.__update_tag(
+                    self._receiver_connection, board_address, tag)
+                receivers.add((board_address, port, tag))
+
             logger.info(
                 "Listening for traffic from {} on {}:{}",
-                label, receiver.local_ip_address, receiver.local_port)
+                label, self._receiver_connection.local_ip_address,
+                self._receiver_connection.local_port)
 
             if self._machine_vertices:
                 key, _ = db.get_machine_live_output_key(
@@ -233,6 +235,12 @@ class LiveEventConnection(DatabaseConnection):
                 for key, atom_id in iteritems(key_to_atom_id):
                     self._key_to_atom_id_and_label[key] = (atom_id, label_id)
                 vertex_sizes[label] = len(key_to_atom_id)
+
+        # Last of all, set up the listener for packets
+        # NOTE: Has to be done last as otherwise will receive SCP messages
+        # sent above!
+        self._receiver_listener = ConnectionListener(self._receiver_connection)
+        self._receiver_listener.start()
 
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
@@ -285,12 +293,12 @@ class LiveEventConnection(DatabaseConnection):
         if self._sender_connection is not None:
             self._sender_connection.close()
             self._sender_connection = None
-        for port in self._receivers:
-            self._receivers[port].close()
-        self._receivers = dict()
-        for port in self._listeners:
-            self._listeners[port].close()
-        self._listeners = dict()
+        if self._receiver_connection is not None:
+            self._receiver_connection.close()
+            self._receiver_connection = None
+        if self._receiver_listener is not None:
+            self._receiver_listener.close()
+            self._receiver_listener = None
 
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
