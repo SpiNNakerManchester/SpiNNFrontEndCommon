@@ -207,7 +207,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def _init_receivers(self, db, vertex_sizes):
         for label_id, label in enumerate(self._receive_labels):
-            host, port, board_address, tag = self.__get_live_output_details(
+            _, port, board_address, tag = self.__get_live_output_details(
                 db, label)
             if port not in self._receivers:
                 receiver = EIEIOConnection()
@@ -221,7 +221,7 @@ class LiveEventConnection(DatabaseConnection):
             send_port_trigger_message(receiver, board_address)
             logger.info(
                 "Listening for traffic from {} on {}:{}",
-                label, host, port)
+                label, receiver.local_ip_address, receiver.local_port)
 
             if self._machine_vertices:
                 key, _ = db.get_machine_live_output_key(
@@ -256,6 +256,8 @@ class LiveEventConnection(DatabaseConnection):
     def __update_tag(self, connection, board_address, tag):
         # Update an IP Tag with the sender's address and port
         # This avoids issues with NAT firewalls
+        logger.info("Updating tag to {}:{}".format(connection.local_ip_address,
+                                                   connection.local_port))
         request = IPTagSet(
             0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
         request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
@@ -270,7 +272,10 @@ class LiveEventConnection(DatabaseConnection):
                 request.get_scp_response().read_bytestring(response_data, 2)
             except SpinnmanTimeoutException:
                 if not tries_to_go:
+                    logger.info("No more tries - Error!")
                     reraise(**sys.exc_info())
+
+                logger.info("Timeout, retrying")
                 tries_to_go -= 1
 
     def _handle_possible_rerun_state(self):
