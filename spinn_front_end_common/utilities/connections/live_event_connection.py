@@ -287,7 +287,7 @@ class LiveEventConnection(DatabaseConnection):
             except SpinnmanTimeoutException:
                 if not tries_to_go:
                     logger.info("No more tries - Error!")
-                    reraise(**sys.exc_info())
+                    reraise(*sys.exc_info())
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
