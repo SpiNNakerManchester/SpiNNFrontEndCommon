@@ -270,6 +270,7 @@ class LiveEventConnection(DatabaseConnection):
                 connection.send_to(data, (board_address, SCP_SCAMP_PORT))
                 response_data = connection.receive(1.0)
                 request.get_scp_response().read_bytestring(response_data, 2)
+                sent = True
             except SpinnmanTimeoutException:
                 if not tries_to_go:
                     logger.info("No more tries - Error!")
@@ -277,6 +278,7 @@ class LiveEventConnection(DatabaseConnection):
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
+        logger.info("Done updating tag")
 
     def _handle_possible_rerun_state(self):
         # reset from possible previous calls
