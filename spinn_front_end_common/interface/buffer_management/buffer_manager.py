@@ -926,9 +926,3 @@ class BufferManager(object):
         """ The vertices which are buffered
         """
         return self._sender_vertices
-
-    @property
-    def reload_buffer_files(self):
-        """ The file paths for each buffered region for each sender vertex
-        """
-        return self._reload_buffer_file_paths
