@@ -1,7 +1,9 @@
 import logging
+import struct
+import sys
 from threading import Thread
 from collections import OrderedDict
-from six import iterkeys, iteritems
+from six import iterkeys, iteritems, reraise
 from spinn_utilities.log import FormatAdapter
 from spinnman.utilities.utility_functions import send_port_trigger_message
 from spinnman.messages.eieio.data_messages import (
@@ -11,6 +13,11 @@ from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinnman.messages.sdp.sdp_flag import SDPFlag
+from spinnman.connections.udp_packet_connections.utils import (
+    update_sdp_header_for_udp_send)
+from spinnman.messages.scp.impl.iptag_set import IPTagSet
+from spinnman.exceptions import SpinnmanTimeoutException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -19,6 +26,8 @@ _MAX_FULL_KEYS_PER_PACKET = 63
 
 # The maximum number of 16-bit keys that will fit in a packet
 _MAX_HALF_KEYS_PER_PACKET = 127
+
+_TWO_SKIP = struct.Struct("<2x")
 
 
 class LiveEventConnection(DatabaseConnection):
@@ -197,10 +206,11 @@ class LiveEventConnection(DatabaseConnection):
 
     def _init_receivers(self, db, vertex_sizes):
         for label_id, label in enumerate(self._receive_labels):
-            host, port, board_address = self.__get_live_output_details(
+            host, port, board_address, tag = self.__get_live_output_details(
                 db, label)
             if port not in self._receivers:
-                receiver = EIEIOConnection(local_port=port)
+                receiver = EIEIOConnection()
+                self.__update_tag(receiver, tag)
                 listener = ConnectionListener(receiver)
                 listener.add_callback(self._receive_packet_callback)
                 listener.start()
@@ -230,17 +240,37 @@ class LiveEventConnection(DatabaseConnection):
 
     def __get_live_output_details(self, db_reader, receive_label):
         if self._machine_vertices:
-            host, port, strip_sdp, board_address = \
+            host, port, strip_sdp, board_address, tag = \
                 db_reader.get_machine_live_output_details(
                     receive_label, self._live_packet_gather_label)
         else:
-            host, port, strip_sdp, board_address = \
+            host, port, strip_sdp, board_address, tag = \
                 db_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
         if not strip_sdp:
             raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
-        return host, port, board_address
+        return host, port, board_address, tag
+
+    def __update_tag(self, connection, tag):
+        # Update an IP Tag with the sender's address and port
+        # This avoids issues with NAT firewalls
+        request = IPTagSet(
+            0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
+        request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
+        update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
+        data = _TWO_SKIP.pack() + request.bytestring
+        sent = False
+        tries_to_go = 3
+        while not sent:
+            try:
+                connection.send(data)
+                response_data = connection.receive(1.0)
+                request.get_scp_response().read_bytestring(response_data, 2)
+            except SpinnmanTimeoutException:
+                if not tries_to_go:
+                    reraise(**sys.exc_info())
+                tries_to_go -= 1
 
     def _handle_possible_rerun_state(self):
         # reset from possible previous calls
