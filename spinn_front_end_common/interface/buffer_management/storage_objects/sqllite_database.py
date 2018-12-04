@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from spinn_front_end_common.interface.buffer_management.abstract_database import AbstractDatabase
+from spinn_front_end_common.interface.buffer_management.storage_objects.abstract_database import AbstractDatabase
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 

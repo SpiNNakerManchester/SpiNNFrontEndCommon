@@ -27,7 +27,6 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
 from .recording_utilities import (
     TRAFFIC_IDENTIFIER, get_last_sequence_number, get_region_pointer)
-from .sqllite_database import SqlLiteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -66,10 +65,6 @@ class BufferManager(object):
 
         # storage area for received data from cores
         "_received_data",
-
-        # Database used to hold data
-        "_data_db",
-        "_database_file",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -149,10 +144,7 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-
-        self._data_db = SqlLiteDatabase(database_file)
-        self._database_file = database_file
-        self._received_data = BufferedReceivingData(self._data_db)
+        self._received_data = BufferedReceivingData(database_file)
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
@@ -324,12 +316,7 @@ class BufferManager(object):
             beginning of its expected regions and clears the buffered out\
             data files
         """
-
-        # Nuke the DB if it existed; it will be recreated
-        self._data_db.close()
-        os.remove(self._database_file)
-        self._data_db = SqlLiteDatabase(self._database_file)
-        self._received_data = BufferedReceivingData(self._data_db)
+        self._received_data.reset()
 
         # rewind buffered in
         for vertex in self._sender_vertices:

@@ -1,5 +1,6 @@
-from collections import defaultdict
 import os
+from collections import defaultdict
+from .sqllite_database import SqlLiteDatabase
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
@@ -16,6 +17,9 @@ class BufferedReceivingData(object):
     __slots__ = [
         # the AbstractDatabase holding the data to store
         "_db",
+
+        # the path to the database
+        "_db_file",
 
         # dict of booleans indicating if a region on a core has been flushed
         "_is_flushed",
@@ -36,7 +40,7 @@ class BufferedReceivingData(object):
         "_end_buffering_state"
     ]
 
-    def __init__(self, database):
+    def __init__(self, database_file):
         """
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
@@ -45,13 +49,20 @@ class BufferedReceivingData(object):
         :param database: The database used to store some of the data.
         :type database_file: str
         """
-        self._db = database
+        self._db_file = database_file
+        self.reset()
+
+    def reset(self):
+        if os.path.exists(self._db_file):
+            os.remove(self._db_file)
+        self._db = SqlLiteDatabase(self._db_file)
         self._is_flushed = defaultdict(lambda: False)
         self._sequence_no = defaultdict(lambda: 0xFF)
         self._last_packet_received = defaultdict(lambda: None)
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
+
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
