@@ -1,7 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
     SpecificChipSDRAMResource, CoreResource,
-    PreAllocatedResourceContainer, SpecificBoardReverseIPtagResource)
+    PreAllocatedResourceContainer, SpecificBoardTagResource)
 from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
 from spinn_front_end_common.utility_models import (
@@ -38,7 +38,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
         # create pre allocated resource container
         extra_monitor_pre_allocations = PreAllocatedResourceContainer(
             specific_sdram_usage=sdrams, core_resources=cores,
-            specific_reverse_iptag_resources=tags)
+            specific_iptag_resources=tags)
 
         # add other pre allocated resources
         if pre_allocated_resources is not None:
@@ -95,8 +95,10 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
                 sdram_usage=resources.sdram.get_value()))
             cores.append(CoreResource(
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
-            tags.append(SpecificBoardReverseIPtagResource(
+            tags.append(SpecificBoardTagResource(
                 board=ethernet_connected_chip.ip_address,
-                port=resources.reverse_iptags[0].port,
-                tag=resources.reverse_iptags[0].tag,
-                sdp_port=resources.reverse_iptags[0].sdp_port))
+                ip_address=resources.iptags[0].ip_address,
+                port=resources.iptags[0].port,
+                strip_sdp=resources.iptags[0].strip_sdp,
+                tag=resources.iptags[0].tag,
+                traffic_identifier=resources.iptags[0].traffic_identifier))

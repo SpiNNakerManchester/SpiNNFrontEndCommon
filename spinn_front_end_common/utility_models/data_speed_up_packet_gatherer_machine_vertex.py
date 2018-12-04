@@ -4,19 +4,23 @@ import logging
 import math
 import time
 import struct
+import sys
 from enum import Enum
 from six.moves import xrange
+from six import reraise
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
-from spinn_machine.tags.reverse_iptag import ReverseIPTag
+from spinn_machine.tags import IPTag
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
 from spinnman.connections.udp_packet_connections import UDPConnection
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.model.enums.cpu_state import CPUState
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import (
-    ResourceContainer, SDRAMResource, ReverseIPtagResource)
+    ResourceContainer, SDRAMResource, IPtagResource)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_vertices_to_core_subset)
 from spinn_front_end_common.abstract_models import (
@@ -29,6 +33,7 @@ from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
+from spinnman.messages.scp.impl.iptag_set import IPTagSet
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
@@ -53,8 +58,6 @@ class DataSpeedUpPacketGatherMachineVertex(
         "_max_seq_num",
         "_output",
         "_provenance_data_items",
-        "_remote_host",
-        "_remote_port",
         "_remote_tag",
         "_report_path",
         "_write_data_speed_up_report",
@@ -139,9 +142,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._output = None
 
         # Create a connection to be used
-        self._connection = UDPConnection()
-        self._remote_host = ip_address
-        self._remote_port = None
+        self._connection = SCAMPConnection(
+            chip_x=x, chip_y=y, remote_host=ip_address)
+        self._remote_tag = None
 
         # local provenance storage
         self._provenance_data_items = defaultdict(list)
@@ -168,8 +171,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             sdram=SDRAMResource(
                 SYSTEM_BYTES_REQUIREMENT +
                 DataSpeedUpPacketGatherMachineVertex.CONFIG_SIZE),
-            reverse_iptags=[ReverseIPtagResource(
-                sdp_port=DataSpeedUpPacketGatherMachineVertex.SDP_PORT)])
+            iptags=[IPtagResource(
+                port=None, strip_sdp=True,
+                ip_address="localhost", traffic_identifier="DATA_SPEED_UP")])
 
     @overrides(AbstractHasAssociatedBinary.get_binary_start_type)
     def get_binary_start_type(self):
@@ -223,11 +227,11 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(end_flag_key)
 
         # locate the tag ID for our data and update with port
-        riptags = tags.get_reverse_ip_tags_for_vertex(self)
-        riptag = riptags[0]
-        spec.write_value(riptag.tag)
-        self._remote_port = riptag.port
-        self._remote_tag = riptag.tag
+        iptags = tags.get_ip_tags_for_vertex(self)
+        iptag = iptags[0]
+        iptag.port = self._connection.local_port
+        spec.write_value(iptag.tag)
+        self._remote_tag = iptag.tag
 
         # End-of-Spec:
         spec.end_specification()
@@ -399,16 +403,43 @@ class DataSpeedUpPacketGatherMachineVertex(
                 length_in_bytes].append((end - start, [0]))
             return data
 
+        # Update the IP Tag to work through a NAT firewall
+        request = IPTagSet(
+            self._connection.chip_x, self._connection.chip_y, [0, 0, 0, 0], 0,
+            self._remote_tag, strip=True, use_sender=True)
+        data = self._connection.get_scp_data(request)
+        sent = False
+        tries_to_go = 3
+        while not sent:
+            try:
+                self._connection.send(data)
+                _, _, response, offset = \
+                    self._connection.receive_scp_response()
+                request.get_scp_response().read_bytestring(response, offset)
+                sent = True
+            except SpinnmanTimeoutException:
+                if not tries_to_go:
+                    reraise(*sys.exc_info())
+                tries_to_go -= 1
+
         data = _THREE_WORDS.pack(
             self.SDP_PACKET_START_SENDING_COMMAND_ID,
             memory_address, length_in_bytes)
 
-        # logger.debug("sending to core %d:%d:%d",
-        #              placement.x, placement.y, placement.p)
+        # send
+        self._connection.send_sdp_message(SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=placement.x,
+                destination_chip_y=placement.y,
+                destination_cpu=placement.p,
+                destination_port=self.SDP_PORT,
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=data))
 
         # Set the reverse IP tag up to receive the data on this board
         # Use RIPtag as this will respond to address received on so works
         # through any firewall / NAT router
+        transceiver.set_ip_tag(IPTag(self._remote_host, destination_x, destination_y, tag, ip_address, port, strip_sdp, traffic_identifier))
         transceiver.set_reverse_ip_tag(ReverseIPTag(
             self._remote_host, self._remote_tag, self._remote_port,
             placement.x, placement.y, placement.p, self.SDP_PORT))
