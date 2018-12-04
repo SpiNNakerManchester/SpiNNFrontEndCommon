@@ -242,8 +242,11 @@ class LiveEventConnection(DatabaseConnection):
         # Last of all, set up the listener for packets
         # NOTE: Has to be done last as otherwise will receive SCP messages
         # sent above!
-        self._receiver_listener = ConnectionListener(self._receiver_connection)
-        self._receiver_listener.start()
+        if self._receiver_listener is None:
+            self._receiver_listener = ConnectionListener(
+                self._receiver_connection)
+            self._receiver_listener.add_callback(self._receive_packet_callback)
+            self._receiver_listener.start()
 
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
