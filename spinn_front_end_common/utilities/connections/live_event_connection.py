@@ -18,6 +18,7 @@ from spinnman.connections.udp_packet_connections.utils import (
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.constants import SCP_SCAMP_PORT
+from spinnman.utilities.utility_functions import send_port_trigger_message
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -219,6 +220,8 @@ class LiveEventConnection(DatabaseConnection):
                 self.__update_tag(
                     self._receiver_connection, board_address, tag)
                 receivers.add((board_address, port, tag))
+                send_port_trigger_message(
+                    self._receiver_connection, board_address)
 
             logger.info(
                 "Listening for traffic from {} on {}:{}",
@@ -264,8 +267,7 @@ class LiveEventConnection(DatabaseConnection):
     def __update_tag(self, connection, board_address, tag):
         # Update an IP Tag with the sender's address and port
         # This avoids issues with NAT firewalls
-        logger.info("Updating tag to {}:{}".format(connection.local_ip_address,
-                                                   connection.local_port))
+        logger.info("Updating tag for {}".format(board_address))
         request = IPTagSet(
             0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
         request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
@@ -286,7 +288,7 @@ class LiveEventConnection(DatabaseConnection):
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
-        logger.info("Done updating tag")
+        logger.info("Done updating tag for {}".format(board_address))
 
     def _handle_possible_rerun_state(self):
         # reset from possible previous calls
