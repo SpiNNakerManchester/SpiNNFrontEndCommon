@@ -18,6 +18,7 @@ from spinnman.connections.udp_packet_connections.utils import (
     update_sdp_header_for_udp_send)
 from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.constants import SCP_SCAMP_PORT
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -210,7 +211,7 @@ class LiveEventConnection(DatabaseConnection):
                 db, label)
             if port not in self._receivers:
                 receiver = EIEIOConnection()
-                self.__update_tag(receiver, tag)
+                self.__update_tag(receiver, board_address, tag)
                 listener = ConnectionListener(receiver)
                 listener.add_callback(self._receive_packet_callback)
                 listener.start()
@@ -252,7 +253,7 @@ class LiveEventConnection(DatabaseConnection):
                             "headers are supported")
         return host, port, board_address, tag
 
-    def __update_tag(self, connection, tag):
+    def __update_tag(self, connection, board_address, tag):
         # Update an IP Tag with the sender's address and port
         # This avoids issues with NAT firewalls
         request = IPTagSet(
@@ -264,7 +265,7 @@ class LiveEventConnection(DatabaseConnection):
         tries_to_go = 3
         while not sent:
             try:
-                connection.send(data)
+                connection.send_to(data, (board_address, SCP_SCAMP_PORT))
                 response_data = connection.receive(1.0)
                 request.get_scp_response().read_bytestring(response_data, 2)
             except SpinnmanTimeoutException:
