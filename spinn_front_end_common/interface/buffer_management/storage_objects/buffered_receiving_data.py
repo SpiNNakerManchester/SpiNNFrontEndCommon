@@ -63,7 +63,6 @@ class BufferedReceivingData(object):
         self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
 
-
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
             specific chip, core and region

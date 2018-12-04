@@ -1,5 +1,4 @@
 import logging
-import os
 import threading
 from multiprocessing.pool import ThreadPool
 from six.moves import xrange
