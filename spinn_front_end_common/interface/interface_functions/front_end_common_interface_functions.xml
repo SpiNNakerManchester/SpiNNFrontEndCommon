@@ -852,10 +852,6 @@
                 <param_type>WriteTextSpecsFlag</param_type>
             </parameter>
             <parameter>
-                <param_name>app_data_runtime_folder</param_name>
-                <param_type>ApplicationDataFolder</param_type>
-            </parameter>
-            <parameter>
                 <param_name>machine</param_name>
                 <param_type>MemoryExtendedMachine</param_type>
             </parameter>
@@ -869,7 +865,6 @@
             <param_name>hostname</param_name>
             <param_name>report_default_directory</param_name>
             <param_name>write_text_specs</param_name>
-            <param_name>app_data_runtime_folder</param_name>
             <param_name>machine</param_name>
         </required_inputs>
         <optional_inputs>
