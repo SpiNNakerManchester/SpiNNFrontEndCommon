@@ -4,7 +4,8 @@ import os
 import shutil
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
-from spinn_front_end_common.interface.database import SqlLiteDatabase
+from spinn_front_end_common.interface.buffer_management.sqllite_database \
+    import SqlLiteDatabase
 
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):

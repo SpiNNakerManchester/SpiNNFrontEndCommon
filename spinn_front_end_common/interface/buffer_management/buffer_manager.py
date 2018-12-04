@@ -16,7 +16,6 @@ from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
-from spinn_front_end_common.interface.database import SqlLiteDatabase
 from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, BUFFERING_OPERATIONS)
 from spinn_front_end_common.utilities.exceptions import (
@@ -28,6 +27,7 @@ from spinn_front_end_common.interface.buffer_management.storage_objects \
         BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
 from .recording_utilities import (
     TRAFFIC_IDENTIFIER, get_last_sequence_number, get_region_pointer)
+from .sqllite_database import SqlLiteDatabase
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
