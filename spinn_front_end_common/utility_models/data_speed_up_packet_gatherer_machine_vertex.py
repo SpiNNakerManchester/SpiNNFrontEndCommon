@@ -10,11 +10,10 @@ from six.moves import xrange
 from six import reraise
 from spinn_utilities.overrides import overrides
 from spinn_utilities.log import FormatAdapter
-from spinn_machine.tags import IPTag
-from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.connections.udp_packet_connections import UDPConnection
-from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
+from spinnman.messages.scp.impl.iptag_set import IPTagSet
+from spinnman.connections.udp_packet_connections import SCAMPConnection
 from spinnman.model.enums.cpu_state import CPUState
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
@@ -33,7 +32,6 @@ from spinn_front_end_common.utilities.constants import (
     SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
 from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 from spinn_front_end_common.interface.simulation import simulation_utilities
-from spinnman.messages.scp.impl.iptag_set import IPTagSet
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20
@@ -426,6 +424,9 @@ class DataSpeedUpPacketGatherMachineVertex(
             self.SDP_PACKET_START_SENDING_COMMAND_ID,
             memory_address, length_in_bytes)
 
+        # logger.debug("sending to core %d:%d:%d",
+        #              placement.x, placement.y, placement.p)
+
         # send
         self._connection.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
@@ -435,18 +436,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                 destination_port=self.SDP_PORT,
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=data))
-
-        # Set the reverse IP tag up to receive the data on this board
-        # Use RIPtag as this will respond to address received on so works
-        # through any firewall / NAT router
-        transceiver.set_ip_tag(IPTag(self._remote_host, destination_x, destination_y, tag, ip_address, port, strip_sdp, traffic_identifier))
-        transceiver.set_reverse_ip_tag(ReverseIPTag(
-            self._remote_host, self._remote_tag, self._remote_port,
-            placement.x, placement.y, placement.p, self.SDP_PORT))
-
-        # send - this also triggers the port on any firewall and sets the
-        # reply-to address and port on the RIPTag
-        self._connection.send_to(data, (self._remote_host, self._remote_port))
 
         # receive
         self._output = bytearray(length_in_bytes)
@@ -500,7 +489,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         local_ip = self._connection.local_ip_address
         remote_ip = self._connection.remote_ip_address
         self._connection.close()
-        self._connection = UDPConnection(
+        self._connection = SCAMPConnection(
             local_port=local_port, remote_port=remote_port,
             local_host=local_ip, remote_host=remote_ip)
 
@@ -643,11 +632,15 @@ class DataSpeedUpPacketGatherMachineVertex(
                     seq_num_offset + size_of_data_left_to_transmit])
             seq_num_offset += length_left_in_packet
 
-            # Send the data in - this will be via the RIPTag and will
-            # re-trigger the port through the firewall / NAT router, as well
-            # as resetting the reply-to address in the tag
-            self._connection.send_to(
-                data, (self._remote_host, self._remote_port))
+            # build SDP message and send it to the core
+            transceiver.send_sdp_message(message=SDPMessage(
+                sdp_header=SDPHeader(
+                    destination_chip_x=placement.x,
+                    destination_chip_y=placement.y,
+                    destination_cpu=placement.p,
+                    destination_port=self.SDP_PORT,
+                    flags=SDPFlag.REPLY_NOT_EXPECTED),
+                data=data))
 
             # sleep for ensuring core doesn't lose packets
             time.sleep(self.TIME_OUT_FOR_SENDING_IN_SECONDS)
