@@ -1,7 +1,7 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.resources import (
     SpecificChipSDRAMResource, CoreResource,
-    PreAllocatedResourceContainer, SpecificBoardTagResource)
+    PreAllocatedResourceContainer, SpecificBoardIPtagResource)
 from spinn_front_end_common.utility_models import (
     ExtraMonitorSupportMachineVertex)
 from spinn_front_end_common.utility_models import (
@@ -95,7 +95,7 @@ class PreAllocateResourcesForExtraMonitorSupport(object):
                 sdram_usage=resources.sdram.get_value()))
             cores.append(CoreResource(
                 chip=ethernet_connected_chip, n_cores=n_cores_to_allocate))
-            tags.append(SpecificBoardTagResource(
+            tags.append(SpecificBoardIPtagResource(
                 board=ethernet_connected_chip.ip_address,
                 ip_address=resources.iptags[0].ip_address,
                 port=resources.iptags[0].port,
