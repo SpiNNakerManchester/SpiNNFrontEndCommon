@@ -39,22 +39,19 @@ class HostExecuteDataSpecification(object):
 
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets, "Executing data specifications and loading data")
+            dsg_targets.n_targets(), "Executing data specifications and loading data")
 
-        for (x, y, p), data_spec_file_path in \
+        for (x, y, p), reader in \
                 progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
             processor_to_app_data_base_address[x, y, p] = self._execute(
-                transceiver, machine, app_id, x, y, p, data_spec_file_path)
+                transceiver, machine, app_id, x, y, p, reader)
 
         return processor_to_app_data_base_address
 
     @staticmethod
-    def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
+    def _execute(txrx, machine, app_id, x, y, p, reader):
         # pylint: disable=too-many-arguments, too-many-locals
-
-        # build specification reader
-        reader = FileDataReader(data_spec_path)
 
         # maximum available memory
         # however system updates the memory available

@@ -3,11 +3,10 @@ from spinn_storage_handlers.abstract_classes import (
     AbstractDataReader, AbstractContextManager)
 
 
-class DataRowWriter(AbstractDataReader, AbstractContextManager):
+class DataRowReader(AbstractDataReader, AbstractContextManager):
     __slots__ = [
         "_index",
         "_data",
-
     ]
 
     def __init__(self, data):
