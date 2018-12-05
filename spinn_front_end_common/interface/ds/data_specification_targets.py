@@ -17,6 +17,9 @@ class DataSpecificationTargets(object):
     def n_targets(self):
         return len(self._temp)
 
-    def iteritems(self):
-         for key, value in iteritems(self._temp):
-             yield key, DataRowReader(value)
+    def items(self):
+        for key, value in iteritems(self._temp):
+            yield key, DataRowReader(value)
+
+    # Python 2 backward compatibility
+    iteritems = items

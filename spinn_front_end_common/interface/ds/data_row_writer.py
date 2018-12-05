@@ -12,6 +12,7 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
         "_data"
 
     ]
+
     def __init__(self, x, y, p, targets):
         self._x = x
         self._y = y

@@ -38,7 +38,8 @@ class HostExecuteDataSpecification(object):
 
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets.n_targets(), "Executing data specifications and loading data")
+            dsg_targets.n_targets(),
+            "Executing data specifications and loading data")
 
         for (x, y, p), reader in \
                 progress.over(iteritems(dsg_targets)):
