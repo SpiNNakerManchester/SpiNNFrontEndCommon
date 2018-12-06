@@ -85,7 +85,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
                     # add application graph as needed
                     if application_graph is not None:
                         equiv_vertex = self._exists_equiv_vertex(
-                            chip.x, chip.y, application_graph, ExtraMonitorSupport)
+                            chip.x, chip.y, vertex_to_chip_map,
+                            ExtraMonitorSupport)
                         if equiv_vertex is None:
                             app_vertex = self.__new_app_monitor(chip)
                             application_graph.add_vertex(app_vertex)
@@ -99,8 +100,8 @@ class InsertExtraMonitorVerticesToGraphs(object):
             if isinstance(map[x, y], vertex_type)and any(
                     constraint.x == x and constraint.y == y
                     for constraint in locate_constraints_of_type(
-                        vertex.constraints, ChipAndCoreConstraint)):
-                return vertex
+                        map[x, y].constraints, ChipAndCoreConstraint)):
+                return map[x, y]
         return None
 
     def _handle_data_extraction_vertices(
