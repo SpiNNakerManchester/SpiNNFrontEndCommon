@@ -96,12 +96,11 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
     @staticmethod
     def _exists_equiv_vertex(x, y, map, vertex_type):
-        if (x, y) in map:
-            if isinstance(map[x, y], vertex_type)and any(
-                    constraint.x == x and constraint.y == y
-                    for constraint in locate_constraints_of_type(
-                        map[x, y].constraints, ChipAndCoreConstraint)):
-                return map[x, y]
+        if (x, y) in map and isinstance(map[x, y], vertex_type) and any(
+            constraint.x == x and constraint.y == y
+            for constraint in locate_constraints_of_type(
+                map[x, y].constraints, ChipAndCoreConstraint)):
+            return map[x, y]
         return None
 
     def _handle_data_extraction_vertices(
