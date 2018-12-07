@@ -1,13 +1,15 @@
 import unittest
 from six import iteritems
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
+from spinn_front_end_common.interface.ds.ds_pretend_database import\
+    DsPretendDatabase
 
 
 class TestDsWriteInfo(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        asDict = DsWriteInfo()
+        asDict = DsWriteInfo(DsPretendDatabase())
         c1 = (0, 0, 0)
         foo = dict()
         foo['start_address'] = 123
@@ -29,10 +31,10 @@ class TestDsWriteInfo(unittest.TestCase):
         self.assertEqual(2, len(asDict))
 
         for key in asDict:
-            self.assertEqual(check[key], asDict[key])
+            self.assertDictEqual(check[key], asDict[key])
 
         for key, value in iteritems(asDict):
-            self.assertEqual(check[key], value)
+            self.assertDictEqual(check[key], value)
 
 
 if __name__ == "__main__":

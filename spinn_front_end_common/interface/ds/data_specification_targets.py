@@ -9,6 +9,8 @@ from .ds_pretend_database import DsPretendDatabase
 
 class DataSpecificationTargets(MutableMapping):
 
+    __slots__ = ["_machine", "_db"]
+
     def __init__(self, machine, report_folder):
         """
 
@@ -76,3 +78,12 @@ class DataSpecificationTargets(MutableMapping):
 
     # Python 2 backward compatibility
     iteritems = items
+
+    def get_database(self):
+        """
+        Expose the database so it can be shared
+
+        :rtype:
+            py:class:`spinn_front_end_common.interface.ds.DsAbstractDatabase`
+        """
+        return self._db

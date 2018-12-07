@@ -67,21 +67,18 @@ class DsAbstractDatabase(object):
     @abstractmethod
     def ds_iteritems(self):
         """
-        Yields the keys for the DS data
-        :return Yields the (x, y, p) of  each saved ds
-        :rtype: iterataor of (int, int, int)
+        Yields the keys and values  for the DS data
+
+        :return Yields the (x, y, p) and saved ds pairs
+        :rtype: ((int, int, int),  bytearray)
         """
 
     @abstractmethod
     def ds_n_cores(self):
         """
         Returns the number for cores there is a ds saved for
-        """
 
-    def ds_iter_items(self):
-        """
-
-        :return:
+        :rtype: int
         """
 
     @abstractmethod
@@ -94,4 +91,35 @@ class DsAbstractDatabase(object):
         :param p: core p
         :rtype: dict() with the keys
             'start_address', 'memory_used' and 'memory_written'
+        """
+
+    @abstractmethod
+    def set_write_info(self, x, y, p, info):
+        """
+        Gets the provenance returned by the Data Spec executor
+
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :param info: dict() with the keys
+            'start_address', 'memory_used' and 'memory_written'
+        """
+
+    @abstractmethod
+    def info_n_cores(self):
+        """
+        Returns the number for cores there is a info saved for
+        :rtype: int
+        """
+
+    @abstractmethod
+    def info_iteritems(self):
+        """
+        Yields the keys and values  for the Info data
+
+        dict with the keys
+            'start_address', 'memory_used' and 'memory_written'
+
+        :return Yields the (x, y, p) and Info
+        :rtype: ((int, int, int),  dict)
         """

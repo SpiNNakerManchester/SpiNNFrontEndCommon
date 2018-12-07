@@ -4,10 +4,11 @@ from .ds_abstact_database import DsAbstractDatabase
 
 
 class DsPretendDatabase(DsAbstractDatabase):
-    __slots__ = ["_ds_temp"]
+    __slots__ = ["_ds_temp", "_info_temp"]
 
     def __init__(self):
         self._ds_temp = dict()
+        self._info_temp = dict()
 
     def commit(self):
         """
@@ -45,12 +46,16 @@ class DsPretendDatabase(DsAbstractDatabase):
 
     @overrides(DsAbstractDatabase.get_write_info)
     def get_write_info(self, x, y, p):
-        """
-        Gets the provenance returned by the Data Spec executor
+        return self._info_temp[(x, y, p)]
 
-        :param x: core x
-        :param y: core y
-        :param p: core p
-        :rtype: dict() with the keys
-            'start_address', 'memory_used' and 'memory_written'
-        """
+    @overrides(DsAbstractDatabase.set_write_info)
+    def set_write_info(self, x, y, p, info):
+        self._info_temp[(x, y, p)] = info
+
+    @overrides(DsAbstractDatabase.info_n_cores)
+    def info_n_cores(self):
+        return len(self._info_temp)
+
+    @overrides(DsAbstractDatabase.info_iteritems)
+    def info_iteritems(self):
+        return iteritems(self._info_temp)
