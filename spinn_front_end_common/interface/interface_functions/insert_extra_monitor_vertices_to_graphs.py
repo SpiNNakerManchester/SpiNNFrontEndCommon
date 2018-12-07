@@ -1,7 +1,6 @@
 from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
 from pacman.model.graphs.common import Slice
-from pacman.utilities.utility_calls import locate_constraints_of_type
 from spinn_front_end_common.utility_models import (
     DataSpeedUpPacketGather, DataSpeedUpPacketGatherMachineVertex,
     ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
@@ -25,7 +24,9 @@ class InsertExtraMonitorVerticesToGraphs(object):
             determine whether to write the report for data speed up
         :param graph_mapper: graph mapper
         :param application_graph: app graph.
-        :return: vertex to Ethernet connection map
+        :return: vertex to Ethernet connection map, \
+            list of extra_monitor_vertices, \
+            vertex_to_chip_map
         """
         # pylint: disable=too-many-arguments
 
@@ -71,37 +72,20 @@ class InsertExtraMonitorVerticesToGraphs(object):
 
         for chip in progress.over(machine.chips):
             if not chip.virtual:
-                machine_vertex = self._exists_equiv_vertex(
-                    chip.x, chip.y, machine_graph,
-                    ExtraMonitorSupportMachineVertex)
-                if machine_vertex is None:
-                    # add to machine graph
-                    machine_vertex = self.__new_mach_monitor(chip)
-                    machine_graph.add_vertex(machine_vertex)
+                # add to machine graph
+                machine_vertex = self.__new_mach_monitor(chip)
+                machine_graph.add_vertex(machine_vertex)
 
                 vertex_to_chip_map[chip.x, chip.y] = machine_vertex
                 extra_monitor_vertices.append(machine_vertex)
 
                 # add application graph as needed
                 if application_graph is not None:
-                    equiv_vertex = self._exists_equiv_vertex(
-                        chip.x, chip.y, application_graph, ExtraMonitorSupport)
-                    if equiv_vertex is None:
-                        app_vertex = self.__new_app_monitor(chip)
-                        application_graph.add_vertex(app_vertex)
-                        graph_mapper.add_vertex_mapping(
-                            machine_vertex, Slice(0, 0), app_vertex)
+                    app_vertex = self.__new_app_monitor(chip)
+                    application_graph.add_vertex(app_vertex)
+                    graph_mapper.add_vertex_mapping(
+                        machine_vertex, Slice(0, 0), app_vertex)
         return extra_monitor_vertices
-
-    @staticmethod
-    def _exists_equiv_vertex(x, y, graph, vertex_type):
-        for vertex in graph.vertices:
-            if isinstance(vertex, vertex_type) and any(
-                    constraint.x == x and constraint.y == y
-                    for constraint in locate_constraints_of_type(
-                        vertex.constraints, ChipAndCoreConstraint)):
-                return vertex
-        return None
 
     def _handle_data_extraction_vertices(
             self, progress, machine, application_graph, machine_graph,
@@ -128,29 +112,19 @@ class InsertExtraMonitorVerticesToGraphs(object):
                 machine.ethernet_connected_chips, finish_at_end=False):
             # add to application graph if possible
             if application_graph is not None:
-                equiv_vertex = self._exists_equiv_vertex(
-                    ethernet_chip.x, ethernet_chip.y, application_graph,
-                    DataSpeedUpPacketGather)
-                if equiv_vertex is None:
-                    app_vertex = self.__new_app_gatherer(
-                        ethernet_chip, default_report_directory,
-                        write_data_speed_up_report)
-                    machine_vertex = app_vertex.machine_vertex
-                    machine_graph.add_vertex(machine_vertex)
-                    application_graph.add_vertex(app_vertex)
-                    graph_mapper.add_vertex_mapping(
-                        machine_vertex, Slice(0, 0), app_vertex)
-                else:
-                    machine_vertex = equiv_vertex.machine_vertex
+                app_vertex = self.__new_app_gatherer(
+                    ethernet_chip, default_report_directory,
+                    write_data_speed_up_report)
+                machine_vertex = app_vertex.machine_vertex
+                machine_graph.add_vertex(machine_vertex)
+                application_graph.add_vertex(app_vertex)
+                graph_mapper.add_vertex_mapping(
+                    machine_vertex, Slice(0, 0), app_vertex)
             else:
-                machine_vertex = self._exists_equiv_vertex(
-                    ethernet_chip.x, ethernet_chip.y, machine_graph,
-                    DataSpeedUpPacketGather)
-                if machine_vertex is None:
-                    machine_vertex = self.__new_mach_gatherer(
-                        ethernet_chip, default_report_directory,
-                        write_data_speed_up_report)
-                    machine_graph.add_vertex(machine_vertex)
+                machine_vertex = self.__new_mach_gatherer(
+                    ethernet_chip, default_report_directory,
+                    write_data_speed_up_report)
+                machine_graph.add_vertex(machine_vertex)
 
             # update mapping for edge builder
             vertex_to_ethernet_connected_chip_mapping[
