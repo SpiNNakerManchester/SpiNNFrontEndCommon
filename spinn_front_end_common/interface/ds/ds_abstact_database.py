@@ -7,6 +7,7 @@ from spinn_utilities.abstract_base import (
 class DsAbstractDatabase(object):
     __slots__ = []
 
+    @abstractmethod
     def commit(self):
         """
         Ensures that all data expected is sent to the database and is
@@ -20,43 +21,6 @@ class DsAbstractDatabase(object):
             Once this is called any other method in this API is allowed to
                 raise any kind of exception.
         """
-
-    @abstractmethod
-    def save_ds(self, chip_x, chip_y, chip_p, ethernet_x, ethernet_y, ds):
-        """
-
-        :param chip_x: x of the core ds applies to
-        :param chip_y: y of the core ds applies to
-        :param p: p of the core ds applies to
-        :param ethernet_x: x of the ethernet chip of the board core is on
-        :param ethernet_y: y of the ethernet chip of the board core is on
-        :param ds: the data spec as byte code nbby
-        :type ds: bytearray
-        """
-
-    def save_ds(self, chip, p, ds):
-        """
-        Saves the data spec as byte code for this chip
-
-        :param chip: the chip to save it for
-        :type chip: :py:class:`~spinn_machine.Chip`
-        :param p: p of the core ds applies to
-        :param ds: the data spec as byte code
-        :type ds: bytearray
-        """
-        self.save_ds(chip.x, chip.y, p,
-                     chip.nearest_ethernet_x, chip.nearest_ethernet_y, ds)
-
-    @abstractmethod
-    def get_ds(self, x, y, p):
-        """
-        Retreives the data spec as byte code for this core
-        :param x: core x
-        :param y: core y
-        :param p: core p
-        :return: data spec as byte code
-        """
-
     def save_boards(self, machine):
         """
         Prepares the board table
@@ -75,6 +39,49 @@ class DsAbstractDatabase(object):
 
         :param ethernet_chip:
         :type chip: :py:class:`~spinn_machine.Chip`
+        """
+
+    @abstractmethod
+    def save_ds(self, core_x, core_y, core_p, ethernet_x, ethernet_y, ds):
+        """
+
+        :param core_x: x of the core ds applies to
+        :param core_y: y of the core ds applies to
+        :param p: p of the core ds applies to
+        :param ethernet_x: x of the ethernet chip of the board core is on
+        :param ethernet_y: y of the ethernet chip of the board core is on
+        :param ds: the data spec as byte code nbby
+        :type ds: bytearray
+        """
+
+    @abstractmethod
+    def get_ds(self, x, y, p):
+        """
+        Retreives the data spec as byte code for this core
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :return: data spec as byte code
+        """
+
+    @abstractmethod
+    def ds_iteritems(self):
+        """
+        Yields the keys for the DS data
+        :return Yields the (x, y, p) of  each saved ds
+        :rtype: iterataor of (int, int, int)
+        """
+
+    @abstractmethod
+    def ds_n_cores(self):
+        """
+        Returns the number for cores there is a ds saved for
+        """
+
+    def ds_iter_items(self):
+        """
+
+        :return:
         """
 
     @abstractmethod

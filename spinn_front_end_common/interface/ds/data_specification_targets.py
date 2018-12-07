@@ -1,16 +1,25 @@
-from six import iteritems
 try:
     from collections import MutableMapping
 except ImportError:
     from UserDict import DictMixin as MutableMapping
 from .data_row_writer import DataRowWriter
 from .data_row_reader import DataRowReader
+from .ds_pretend_database import DsPretendDatabase
 
 
 class DataSpecificationTargets(MutableMapping):
 
-    def __init__(self):
-        self._temp = dict()
+    def __init__(self, machine, report_folder):
+        """
+
+        :param machine:
+        :type machine: :py:class:`spinn_machine.Machine`
+        :param report_folder:
+        """
+        # real DB would write to report_folder
+        self._machine = machine
+        self._db = DsPretendDatabase()
+        self._db.save_boards(machine)
 
     def __getitem__(self, core):
         """
@@ -20,22 +29,28 @@ class DataSpecificationTargets(MutableMapping):
         :rtype: dict() with the keys
             'start_address', 'memory_used' and 'memory_written'
         """
-        return DataRowReader(self._temp[core])
+        (x, y, p) = core
+        return DataRowReader(self._db.get_ds(x, y, p))
 
     def __setitem__(self, core, info):
-        (x, y, p) = core
-        self.write(x, y, p, info)
+        raise NotImplementedError(
+            "Direct set not supported. See create_data_spec")
 
     def __delitem__(self):
         raise NotImplementedError("Delete not supported")
 
     def keys(self):
         """
-        TEMP implementation
+        Yields the keys.
+
+        As the more typical call is iteritems this makes use of that
 
         :return:
         """
-        return self._temp.keys()
+        for key, value in self._db.ds_iteritems():
+            yield key
+
+    __iter__ = keys
 
     def __len__(self):
         """
@@ -43,29 +58,21 @@ class DataSpecificationTargets(MutableMapping):
 
         :return:
         """
-        return len(self._temp)
+        return self._db.ds_n_cores()
 
-    def __iter__(self):
-        """
-        TEMP implementation
-
-        :return:
-        """
-        return self._temp.__iter__()
+    n_targets = __len__
 
     def create_data_spec(self, x, y, p):
         return DataRowWriter(x, y, p, self)
 
-    def write(self, x, y, p, data):
-        self._temp[(x, y, p)] = data
-
-    def n_targets(self):
-        return len(self)
+    def write_data_spec(self, x, y, p, ds):
+        chip = self._machine.get_chip_at(x, y)
+        self._db.save_ds(x, y, p,
+                         chip.nearest_ethernet_x, chip.nearest_ethernet_y, ds)
 
     def items(self):
-        for key, value in iteritems(self._temp):
+        for key, value in self._db.ds_iteritems():
             yield key, DataRowReader(value)
 
     # Python 2 backward compatibility
     iteritems = items
-

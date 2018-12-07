@@ -40,3 +40,10 @@ class DataRowReader(AbstractDataReader, AbstractContextManager):
     @overrides(AbstractContextManager.close, extend_doc=False)
     def close(self):
         """ Does Nothing """
+
+    def __eq__(self, other):
+        """
+        Equality mainly for testing.
+
+        """
+        return self._data == other._data

@@ -64,7 +64,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = VirtualMachine(2, 2)
 
-        dsg_targets = DataSpecificationTargets()
+        dsg_targets = DataSpecificationTargets(machine, None)
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)

@@ -38,4 +38,4 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
         :raise spinn_storage_handlers.exceptions.DataWriteException: \
             If the file cannot be closed
         """
-        self._targets.write(self._x, self._y, self._p, self._data)
+        self._targets.write_data_spec(self._x, self._y, self._p, self._data)

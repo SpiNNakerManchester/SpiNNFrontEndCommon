@@ -50,7 +50,8 @@ class GraphDataSpecificationWriter(object):
 
         # iterate though vertices and call generate_data_spec for each
         # vertex
-        dsg_targets = DataSpecificationTargets()
+        dsg_targets = DataSpecificationTargets(
+            machine, report_default_directory)
 
         if placement_order is None:
             placement_order = placements.placements
