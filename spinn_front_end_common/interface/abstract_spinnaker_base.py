@@ -216,9 +216,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_create_database",
 
         #
-        "_database_file_path",
-
-        #
         "_has_ran",
 
         #
@@ -442,7 +439,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._database_socket_addresses.update(database_socket_addresses)
         self._database_interface = None
         self._create_database = None
-        self._database_file_path = None
 
         # holder for timing related values
         self._has_ran = False
