@@ -51,7 +51,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         MachineVertex, AbstractGeneratesDataSpecification,
         AbstractHasAssociatedBinary, AbstractProvidesLocalProvenanceData):
     __slots__ = [
-        "_connection",
+        "_x", "_y",
+        "_ip_address",
         "_last_status",
         "_max_seq_num",
         "_output",
@@ -141,8 +142,9 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._output = None
 
         # Create a connection to be used
-        self._connection = SCAMPConnection(
-            chip_x=x, chip_y=y, remote_host=ip_address)
+        self._x = x
+        self._y = y
+        self._ip_address = ip_address
         self._remote_tag = None
 
         # local provenance storage
@@ -160,9 +162,6 @@ class DataSpeedUpPacketGatherMachineVertex(
     @overrides(MachineVertex.resources_required)
     def resources_required(self):
         return self.static_resources_required()
-
-    def close_connection(self):
-        self._connection.close()
 
     @staticmethod
     def static_resources_required():
@@ -228,7 +227,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         # locate the tag ID for our data and update with port
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
-        iptag.port = self._connection.local_port
+        iptag.port = 10000
         spec.write_value(iptag.tag)
         self._remote_tag = iptag.tag
 
@@ -403,17 +402,19 @@ class DataSpeedUpPacketGatherMachineVertex(
             return data
 
         # Update the IP Tag to work through a NAT firewall
+        connection = SCAMPConnection(
+            chip_x=self._x, chip_y=self._y, remote_host=self._ip_address)
         request = IPTagSet(
-            self._connection.chip_x, self._connection.chip_y, [0, 0, 0, 0], 0,
+            self._x, self._y, [0, 0, 0, 0], 0,
             self._remote_tag, strip=True, use_sender=True)
-        data = self._connection.get_scp_data(request)
+        data = connection.get_scp_data(request)
         sent = False
         tries_to_go = 3
         while not sent:
             try:
-                self._connection.send(data)
+                connection.send(data)
                 _, _, response, offset = \
-                    self._connection.receive_scp_response()
+                    connection.receive_scp_response()
                 request.get_scp_response().read_bytestring(response, offset)
                 sent = True
             except SpinnmanTimeoutException:
@@ -429,7 +430,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         #              placement.x, placement.y, placement.p)
 
         # send
-        self._connection.send_sdp_message(SDPMessage(
+        connection.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
@@ -442,7 +443,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._output = bytearray(length_in_bytes)
         self._view = memoryview(self._output)
         self._max_seq_num = self.calculate_max_seq_num()
-        lost_seq_nums = self._receive_data(transceiver, placement)
+        lost_seq_nums = self._receive_data(transceiver, placement, connection)
 
         end = float(time.time())
         self._provenance_data_items[
@@ -458,7 +459,7 @@ class DataSpeedUpPacketGatherMachineVertex(
 
         # Stop anything else getting through
         data = _ONE_WORD.pack(self.SDP_PACKET_CLEAR)
-        self._connection.send_sdp_message(SDPMessage(
+        connection.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
@@ -467,16 +468,18 @@ class DataSpeedUpPacketGatherMachineVertex(
                 flags=SDPFlag.REPLY_NOT_EXPECTED),
             data=data))
 
+        connection.close()
+
         return self._output
 
-    def _receive_data(self, transceiver, placement):
+    def _receive_data(self, transceiver, placement, connection):
         seq_nums = set()
         lost_seq_nums = list()
         timeoutcount = 0
         finished = False
         while not finished:
             try:
-                data = self._connection.receive(
+                data = connection.receive(
                     timeout=self.TIMEOUT_PER_RECEIVE_IN_SECONDS)
                 timeoutcount = 0
                 seq_nums, finished = self._process_data(
@@ -489,21 +492,11 @@ class DataSpeedUpPacketGatherMachineVertex(
                         "Please try removing firewalls".format(timeoutcount))
 
                 timeoutcount += 1
-                self.__reset_connection()
+                # self.__reset_connection()
                 if not finished:
                     finished = self._determine_and_retransmit_missing_seq_nums(
                         seq_nums, transceiver, placement, lost_seq_nums)
         return lost_seq_nums
-
-    def __reset_connection(self):
-        remote_port = self._connection.remote_port
-        local_port = self._connection.local_port
-        local_ip = self._connection.local_ip_address
-        remote_ip = self._connection.remote_ip_address
-        self._connection.close()
-        self._connection = SCAMPConnection(
-            local_port=local_port, remote_port=remote_port,
-            local_host=local_ip, remote_host=remote_ip)
 
     @staticmethod
     def _determine_which_routers_were_used(placement, fixed_routes, machine):
