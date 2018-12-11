@@ -98,6 +98,7 @@ class DataSpeedUpPacketGatherMachineVertex(
     SDP_PACKET_START_SENDING_COMMAND_ID = 100
     SDP_PACKET_START_MISSING_SEQ_COMMAND_ID = 1000
     SDP_PACKET_MISSING_SEQ_COMMAND_ID = 1001
+    SDP_PACKET_CLEAR = 2000
 
     # number of items used up by the re transmit code for its header
     SDP_RETRANSMISSION_HEADER_SIZE = 2
@@ -454,6 +455,17 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placement, fixed_routes, transceiver.get_machine_details())
             self._write_routers_used_into_report(
                 self._report_path, routers_been_in_use, placement)
+
+        # Stop anything else getting through
+        data = _ONE_WORD.pack(self.SDP_PACKET_CLEAR)
+        self._connection.send_sdp_message(SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=placement.x,
+                destination_chip_y=placement.y,
+                destination_cpu=placement.p,
+                destination_port=self.SDP_PORT,
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=data))
 
         return self._output
 
