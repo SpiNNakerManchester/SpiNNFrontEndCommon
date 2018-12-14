@@ -9,7 +9,8 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
         "_y",
         "_p",
         "_targets",
-        "_data"
+        "_data",
+        "_closed"
 
     ]
 
@@ -19,9 +20,11 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
         self._p = p
         self._targets = targets
         self._data = bytearray()
+        self._closed = False
 
     @overrides(AbstractDataWriter.write)
     def write(self, data):
+        assert self._closed == False
         self._data += data
 
     @overrides(AbstractDataWriter.tell)
@@ -32,10 +35,10 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
 
     @overrides(AbstractContextManager.close, extend_doc=False)
     def close(self):
-        """ Closes the file.
+        """ Closes the writer if not already closed.
 
-        :rtype: None
-        :raise spinn_storage_handlers.exceptions.DataWriteException: \
-            If the file cannot be closed
         """
-        self._targets.write_data_spec(self._x, self._y, self._p, self._data)
+        if not self._closed:
+            self._targets.write_data_spec(
+                self._x, self._y, self._p, self._data)
+            self._closed = True

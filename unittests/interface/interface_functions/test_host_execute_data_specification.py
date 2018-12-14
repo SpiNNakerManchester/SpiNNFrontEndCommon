@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from spinn_machine.virtual_machine import VirtualMachine
 from data_specification.constants import MAX_MEM_REGIONS
@@ -63,8 +64,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = VirtualMachine(2, 2)
+        tempdir = tempfile.mkdtemp()
 
-        dsg_targets = DataSpecificationTargets(machine, None)
+        dsg_targets = DataSpecificationTargets(machine, tempdir)
         with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
             spec = DataSpecificationGenerator(spec_writer)
             spec.reserve_memory_region(0, 100)
@@ -78,7 +80,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.write_value(3)
             spec.end_specification()
 
-        executor.__call__(transceiver, machine, 30, dsg_targets)
+        infos = executor.__call__(transceiver, machine, 30, dsg_targets)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -112,6 +114,9 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # Size of user 0
         self.assertEqual(len(regions[3][1]), 4)
 
+        info = infos[(0, 0, 0)]
+        self.assertEqual(info["memory_used"], 372)
+        self.assertEqual(info["memory_written"], 88)
 
 if __name__ == "__main__":
     unittest.main()

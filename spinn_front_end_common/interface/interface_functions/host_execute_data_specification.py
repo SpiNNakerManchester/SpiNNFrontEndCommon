@@ -33,10 +33,15 @@ class HostExecuteDataSpecification(object):
 
         :return: map of placement and DSG data, and loaded data flag.
         """
-        # pylint: disable=too-many-arguments
+        # While the database supports having the info in it a python bugs does
+        # not like iterating over and writing intermingled so using a dict
+
+        # dw_write_info = DsWriteInfo(
+        #    dsg_targets.get_database())
         if processor_to_app_data_base_address is None:
-            processor_to_app_data_base_address = DsWriteInfo(
-                dsg_targets.get_database())
+            processor_to_app_data_base_address = dict()
+            #for core, info in iteritems(processor_to_app_data_base_address):
+            #    dw_write_info[core] = info
 
         # create a progress bar for end users
         progress = ProgressBar(
@@ -46,8 +51,9 @@ class HostExecuteDataSpecification(object):
         for (x, y, p), reader in \
                 progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
-            processor_to_app_data_base_address[x, y, p] = self._execute(
+            info = self._execute(
                 transceiver, machine, app_id, x, y, p, reader)
+            processor_to_app_data_base_address[x, y, p] = info
 
         return processor_to_app_data_base_address
 

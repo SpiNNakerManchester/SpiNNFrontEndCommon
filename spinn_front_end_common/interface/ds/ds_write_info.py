@@ -77,3 +77,9 @@ class DsWriteInfo(MutableMapping):
         :return:
         """
         return self._db.info_n_cores()
+
+    def items(self):
+        return self._db.info_iteritems()
+
+    # Python 2 backward compatibility
+    iteritems = items

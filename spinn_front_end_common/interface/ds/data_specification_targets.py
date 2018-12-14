@@ -4,12 +4,12 @@ except ImportError:
     from UserDict import DictMixin as MutableMapping
 from .data_row_writer import DataRowWriter
 from .data_row_reader import DataRowReader
-from .ds_pretend_database import DsPretendDatabase
+from .ds_sqllite_database import DsSqlliteDatabase
 
 
 class DataSpecificationTargets(MutableMapping):
 
-    __slots__ = ["_machine", "_db"]
+    __slots__ = ["_db"]
 
     def __init__(self, machine, report_folder):
         """
@@ -19,8 +19,7 @@ class DataSpecificationTargets(MutableMapping):
         :param report_folder:
         """
         # real DB would write to report_folder
-        self._machine = machine
-        self._db = DsPretendDatabase()
+        self._db = DsSqlliteDatabase(machine, report_folder)
 
     def __getitem__(self, core):
         """

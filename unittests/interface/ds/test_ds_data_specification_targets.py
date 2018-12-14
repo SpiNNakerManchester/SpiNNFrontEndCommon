@@ -1,3 +1,4 @@
+import tempfile
 import unittest
 from six import iteritems
 from spinn_front_end_common.interface.ds.data_specification_targets import\
@@ -11,7 +12,7 @@ class TestDataSpecificationTargets(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        asDict = DataSpecificationTargets(self.machine, None)
+        asDict = DataSpecificationTargets(self.machine, tempfile.mkdtemp())
         c1 = (0, 0, 0)
         foo = bytearray(b"foo")
         with asDict.create_data_spec(0, 0, 0) as writer:

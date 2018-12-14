@@ -1,15 +1,23 @@
+import tempfile
 import unittest
 from six import iteritems
+from spinn_front_end_common.interface.ds.data_specification_targets import\
+    DataSpecificationTargets
 from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.interface.ds.ds_pretend_database import\
     DsPretendDatabase
+from spinn_machine.virtual_machine import VirtualMachine
 
 
 class TestDsWriteInfo(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        asDict = DsWriteInfo(DsPretendDatabase())
+        machine = VirtualMachine(2, 2)
+        tempdir = tempfile.mkdtemp()
+        dst = DataSpecificationTargets(machine, tempdir)
+        print(tempdir)
+        asDict = DsWriteInfo(dst.get_database())
         c1 = (0, 0, 0)
         foo = dict()
         foo['start_address'] = 123
@@ -19,7 +27,7 @@ class TestDsWriteInfo(unittest.TestCase):
         check[c1] = foo
         self.assertEqual(foo, asDict[c1])
 
-        c2 = (1, 2, 3)
+        c2 = (1, 1, 3)
         bar = dict()
         bar['start_address'] = 456
         bar['memory_used'] = 45
