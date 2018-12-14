@@ -8,13 +8,6 @@ class DsAbstractDatabase(object):
     __slots__ = []
 
     @abstractmethod
-    def commit(self):
-        """
-        Ensures that all data expected is sent to the database and is
-            peristant.
-        """
-
-    @abstractmethod
     def close(self):
         """
             Signals that the database can be closed and will not be reused.

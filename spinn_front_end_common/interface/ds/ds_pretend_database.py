@@ -10,11 +10,6 @@ class DsPretendDatabase(DsAbstractDatabase):
         self._ds_temp = dict()
         self._info_temp = dict()
 
-    def commit(self):
-        """
-            database may need to commit data here
-        """
-
     @overrides(DsAbstractDatabase.close)
     def close(self):
         """
