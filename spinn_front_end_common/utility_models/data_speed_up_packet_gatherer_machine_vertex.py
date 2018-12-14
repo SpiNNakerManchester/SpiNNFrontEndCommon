@@ -224,7 +224,8 @@ class DataSpeedUpPacketGatherMachineVertex(
         spec.write_value(first_data_key)
         spec.write_value(end_flag_key)
 
-        # locate the tag ID for our data and update with port
+        # locate the tag ID for our data and update with a port
+        # Note: The port doesn't matter as we are going to override this later
         iptags = tags.get_ip_tags_for_vertex(self)
         iptag = iptags[0]
         iptag.port = 10000
@@ -445,6 +446,18 @@ class DataSpeedUpPacketGatherMachineVertex(
         self._max_seq_num = self.calculate_max_seq_num()
         lost_seq_nums = self._receive_data(transceiver, placement, connection)
 
+        # Stop anything else getting through (and reduce traffic)
+        data = _ONE_WORD.pack(self.SDP_PACKET_CLEAR)
+        connection.send_sdp_message(SDPMessage(
+            sdp_header=SDPHeader(
+                destination_chip_x=placement.x,
+                destination_chip_y=placement.y,
+                destination_cpu=placement.p,
+                destination_port=self.SDP_PORT,
+                flags=SDPFlag.REPLY_NOT_EXPECTED),
+            data=data))
+        connection.close()
+
         end = float(time.time())
         self._provenance_data_items[
             placement, memory_address, length_in_bytes].append(
@@ -456,19 +469,6 @@ class DataSpeedUpPacketGatherMachineVertex(
                 placement, fixed_routes, transceiver.get_machine_details())
             self._write_routers_used_into_report(
                 self._report_path, routers_been_in_use, placement)
-
-        # Stop anything else getting through
-        data = _ONE_WORD.pack(self.SDP_PACKET_CLEAR)
-        connection.send_sdp_message(SDPMessage(
-            sdp_header=SDPHeader(
-                destination_chip_x=placement.x,
-                destination_chip_y=placement.y,
-                destination_cpu=placement.p,
-                destination_port=self.SDP_PORT,
-                flags=SDPFlag.REPLY_NOT_EXPECTED),
-            data=data))
-
-        connection.close()
 
         return self._output
 

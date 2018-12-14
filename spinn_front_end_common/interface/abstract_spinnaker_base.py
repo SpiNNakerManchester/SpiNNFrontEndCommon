@@ -67,6 +67,9 @@ except ImportError:
 logger = FormatAdapter(logging.getLogger(__name__))
 CONFIG_FILE = "spinnaker.cfg"
 
+# Number of cores to be used when using a Virtual Machine and not specified
+DEFAULT_N_VIRTUAL_CORES = 16
+
 
 class AbstractSpinnakerBase(SimulatorInterface):
     """ Main interface into the tools logic flow
@@ -1325,7 +1328,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["RouterTableEntriesPerRouter"] = \
                 self._read_config_int("Machine", "RouterTableEntriesPerRouter")
             if inputs["MaxCoreID"] is None:
-                inputs["MaxCoreID"] = 16
+                inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             algorithms.append("VirtualMachineGenerator")
 
@@ -1378,7 +1381,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            inputs["MaxCoreID"] = 16
+            inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             do_partitioning = False
             if need_virtual_board:

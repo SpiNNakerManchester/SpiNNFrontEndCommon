@@ -1080,8 +1080,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 }
             }
         }
-    } else if (msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_CLEAR) {
+    } else if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_CLEAR) {
         stop = 1;
     } else {
         io_printf(IO_BUF, "received unknown SDP packet\n");
