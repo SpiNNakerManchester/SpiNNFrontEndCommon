@@ -5,6 +5,13 @@ from spinn_utilities.abstract_base import (
 
 @add_metaclass(AbstractBase)
 class DsAbstractDatabase(object):
+    """
+    Class which minics the actions of a the databse but only uses two dicts.
+
+    Not currently used but would be faster if Python only and relatively small
+
+    Kept in case needed or for possible testing.
+    """
     __slots__ = []
 
     @abstractmethod
