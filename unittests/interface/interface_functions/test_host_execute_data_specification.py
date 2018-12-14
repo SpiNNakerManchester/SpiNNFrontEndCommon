@@ -118,5 +118,6 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         self.assertEqual(info["memory_used"], 372)
         self.assertEqual(info["memory_written"], 88)
 
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,5 @@
 import logging
 import os
-from six import iteritems
 import sqlite3
 from spinn_utilities.overrides import overrides
 from .ds_abstact_database import DsAbstractDatabase
@@ -73,9 +72,9 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         with self._db:
             cursor = self._db.cursor()
             for row in cursor.execute(
-                    "SELECT board_id FROM board "
-                    + "WHERE ethernet_x = ? AND ethernet_y = ?",
-                (ethernet_x, ethernet_y)):
+                "SELECT board_id FROM board "
+                + "WHERE ethernet_x = ? AND ethernet_y = ?",
+                    (ethernet_x, ethernet_y)):
                 return row["board_id"]
         return self._root_board_id
 

@@ -7,7 +7,7 @@ from spinn_utilities.log import FormatAdapter
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
-from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
+# from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 
@@ -40,7 +40,7 @@ class HostExecuteDataSpecification(object):
         #    dsg_targets.get_database())
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
-            #for core, info in iteritems(processor_to_app_data_base_address):
+            # for core, info in iteritems(processor_to_app_data_base_address):
             #    dw_write_info[core] = info
 
         # create a progress bar for end users

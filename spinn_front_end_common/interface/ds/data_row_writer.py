@@ -24,7 +24,7 @@ class DataRowWriter(AbstractDataWriter, AbstractContextManager):
 
     @overrides(AbstractDataWriter.write)
     def write(self, data):
-        assert self._closed == False
+        assert self._closed is False
         self._data += data
 
     @overrides(AbstractDataWriter.tell)
