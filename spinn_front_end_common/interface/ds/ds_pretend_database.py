@@ -4,7 +4,7 @@ from .ds_abstact_database import DsAbstractDatabase
 
 
 class DsPretendDatabase(DsAbstractDatabase):
-    __slots__ = ["_ds_temp", "_info_temp"]
+    __slots__ = ["_ds_temp", "_info_temp", "_app_id"]
 
     def __init__(self):
         self._ds_temp = dict()
@@ -32,6 +32,16 @@ class DsPretendDatabase(DsAbstractDatabase):
     @overrides(DsAbstractDatabase.ds_n_cores)
     def ds_n_cores(self):
         return len(self._ds_temp)
+
+    @overrides(DsAbstractDatabase.ds_set_app_id)
+    def ds_set_app_id(self, app_id):
+        self._app_id = app_id
+
+    @overrides(DsAbstractDatabase.ds_get_app_id)
+    def ds_get_app_id(self, x, y, p):
+        if (x, y, p) in self._ds_temp:
+            return self._app_id
+        return None
 
     @overrides(DsAbstractDatabase.get_write_info)
     def get_write_info(self, x, y, p):

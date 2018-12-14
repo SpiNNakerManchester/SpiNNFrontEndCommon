@@ -61,6 +61,26 @@ class DsAbstractDatabase(object):
         """
 
     @abstractmethod
+    def ds_set_app_id(self, app_id):
+        """
+        Sets the same app_id for all rows that have ds content
+
+        :param app_id: value to set
+        :rtype app_id: int
+        """
+
+    @abstractmethod
+    def ds_get_app_id(self, x, y, p):
+        """
+        Gets the app_id set for this core
+
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :rtype: int
+        """
+
+    @abstractmethod
     def get_write_info(self, x, y, p):
         """
         Gets the provenance returned by the Data Spec executor

@@ -120,6 +120,39 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 return row["count"]
         raise Exception("Count query failed")
 
+    @overrides(DsAbstractDatabase.ds_set_app_id)
+    def ds_set_app_id(self, app_id):
+        """
+        Sets the same app_id for all rows that have ds content
+
+        :param app_id: value to set
+        :rtype app_id: int
+        """
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute(
+                "UPDATE core SET app_id = ? "
+                + "WHERE content IS NOT NULL",
+                (app_id,))
+
+    @overrides(DsAbstractDatabase.ds_get_app_id)
+    def ds_get_app_id(self, x, y, p):
+        """
+        Gets the app_id set for this core
+
+        :param x: core x
+        :param y: core y
+        :param p: core p
+        :rtype: int
+        """
+        with self._db:
+            cursor = self._db.cursor()
+            for row in cursor.execute(
+                    "SELECT app_id FROM core "
+                    + "WHERE x = ? AND y = ? AND processor = ? ", (x, y, p)):
+                return row["app_id"]
+        return None
+
     def _row_to_info(self, row):
         return {key: row[key]
                 for key in ["start_address", "memory_used", "memory_written"]}

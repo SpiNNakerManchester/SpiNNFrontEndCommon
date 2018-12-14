@@ -29,8 +29,12 @@ class TestDataSpecificationTargets(unittest.TestCase):
 
         self.assertEqual(2, len(asDict))
 
+        asDict.set_app_id(12)
+
         for key in asDict:
             self.assertEqual(check[key], asDict[key])
+            (x, y, p) = key
+            self.assertEqual(12, asDict.get_app_id(x, y, p))
 
         for key, value in iteritems(asDict):
             self.assertEqual(check[key], value)
