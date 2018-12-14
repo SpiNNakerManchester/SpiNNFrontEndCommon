@@ -21,7 +21,6 @@ class DataSpecificationTargets(MutableMapping):
         # real DB would write to report_folder
         self._machine = machine
         self._db = DsPretendDatabase()
-        self._db.save_boards(machine)
 
     def __getitem__(self, core):
         """
@@ -68,9 +67,7 @@ class DataSpecificationTargets(MutableMapping):
         return DataRowWriter(x, y, p, self)
 
     def write_data_spec(self, x, y, p, ds):
-        chip = self._machine.get_chip_at(x, y)
-        self._db.save_ds(x, y, p,
-                         chip.nearest_ethernet_x, chip.nearest_ethernet_y, ds)
+        self._db.save_ds(x, y, p, ds)
 
     def items(self):
         for key, value in self._db.ds_iteritems():

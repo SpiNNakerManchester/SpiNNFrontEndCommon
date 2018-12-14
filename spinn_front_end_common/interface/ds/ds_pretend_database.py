@@ -21,14 +21,8 @@ class DsPretendDatabase(DsAbstractDatabase):
             close the database
         """
 
-    @overrides(DsAbstractDatabase.save_board)
-    def save_board(self, ethernet_chip):
-        """
-            The ds would create a board row here
-        """
-
     @overrides(DsAbstractDatabase.save_ds)
-    def save_ds(self, core_x, core_y, core_p, ethernet_x, ethernet_y, ds):
+    def save_ds(self, core_x, core_y, core_p, ds):
         # In the database map the core to the board using ethernet x and y
         self._ds_temp[(core_x, core_y, core_p)] = ds
 

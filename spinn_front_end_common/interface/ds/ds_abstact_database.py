@@ -21,35 +21,14 @@ class DsAbstractDatabase(object):
             Once this is called any other method in this API is allowed to
                 raise any kind of exception.
         """
-    def save_boards(self, machine):
-        """
-        Prepares the board table
-
-        :param machine: Machine to get the boards from
-        :type machine: :py:class:`~spinn_machine.Machine`
-        :return:
-        """
-        for chip in machine.ethernet_connected_chips:
-            self.save_board(chip)
 
     @abstractmethod
-    def save_board(self, ethernet_chip):
-        """
-        Saves a board based on its ethernet chip
-
-        :param ethernet_chip:
-        :type chip: :py:class:`~spinn_machine.Chip`
-        """
-
-    @abstractmethod
-    def save_ds(self, core_x, core_y, core_p, ethernet_x, ethernet_y, ds):
+    def save_ds(self, core_x, core_y, core_p, ds):
         """
 
         :param core_x: x of the core ds applies to
         :param core_y: y of the core ds applies to
         :param p: p of the core ds applies to
-        :param ethernet_x: x of the ethernet chip of the board core is on
-        :param ethernet_y: y of the ethernet chip of the board core is on
         :param ds: the data spec as byte code nbby
         :type ds: bytearray
         """
