@@ -1,5 +1,4 @@
 import logging
-import os
 import threading
 from multiprocessing.pool import ThreadPool
 from six.moves import xrange
@@ -65,9 +64,6 @@ class BufferManager(object):
 
         # storage area for received data from cores
         "_received_data",
-
-        # File used to hold received data
-        "_received_data_db",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -150,7 +146,6 @@ class BufferManager(object):
 
         # storage area for received data from cores
         self._received_data = BufferedReceivingData(database_file)
-        self._received_data_db = database_file
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
@@ -327,13 +322,7 @@ class BufferManager(object):
             beginning of its expected regions and clears the buffered out\
             data files
         """
-        # reset buffered out
-        if self._received_data is not None:
-            self._received_data.close()
-        if self._received_data_db is not None:
-            # Nuke the DB if it existed; it will be recreated
-            os.remove(self._received_data_db)
-        self._received_data = BufferedReceivingData(self._received_data_db)
+        self._received_data.reset()
 
         # rewind buffered in
         for vertex in self._sender_vertices:
@@ -932,9 +921,3 @@ class BufferManager(object):
         """ The vertices which are buffered
         """
         return self._sender_vertices
-
-    @property
-    def reload_buffer_files(self):
-        """ The file paths for each buffered region for each sender vertex
-        """
-        return self._reload_buffer_file_paths
