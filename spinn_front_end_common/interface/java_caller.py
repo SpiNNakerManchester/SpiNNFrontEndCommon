@@ -20,8 +20,8 @@ class JavaCaller(object):
     """
 
     __slots__ = [
-        # The sqllite databse
-        "_database_file",
+        # The folder holding sqllite databases ect.
+        "_report_folder",
         # The call to get java to work. Including the path if required.
         "_java_call",
         # The local https://github.com/SpiNNakerManchester/JavaSpiNNaker
@@ -258,7 +258,7 @@ class JavaCaller(object):
             "target", "spinnaker-exe.jar")
         if self._gatherer_iptags is None:
             result = subprocess.call(
-                [self._java_call, '-jar', jar_file, 'upload',
+                [self._java_call, '-jar', jar_file, 'download',
                  self._placement_json, self._machine_json(),
                  self._report_folder])
         else:
