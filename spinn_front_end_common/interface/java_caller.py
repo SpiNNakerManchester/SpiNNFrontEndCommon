@@ -267,5 +267,7 @@ class JavaCaller(object):
                  self._placement_json, self._machine_json(),
                  self._report_folder])
         if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
-                "Java call exited with value " + str(result))
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
