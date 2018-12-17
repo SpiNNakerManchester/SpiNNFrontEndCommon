@@ -947,16 +947,16 @@
                 <param_type>MemoryFixedRoutes</param_type>
             </parameter>
              <parameter>
-                <param_name>database_file</param_name>
-                <param_type>BufferDatabaseFile</param_type>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
             </parameter>
-             <parameter>
+            <parameter>
                 <param_name>java_caller</param_name>
                 <param_type>JavaCaller</param_type>
             </parameter>
-       </input_definitions>
+        </input_definitions>
         <required_inputs>
-            <param_name>database_file</param_name>
+            <param_name>report_folder</param_name>
             <param_name>placements</param_name>
             <param_name>tags</param_name>
             <param_name>txrx</param_name>

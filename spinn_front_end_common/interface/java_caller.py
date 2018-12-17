@@ -122,14 +122,15 @@ class JavaCaller(object):
             self._machine_json_path = algo(self._machine, path)
         return self._machine_json_path
 
-    def set_database(self, database_file):
+    def set_report_folder(self, report_folder):
         """
         Passes the database file in.
 
-        :param database_file: Path to the sql lite databse
-        :type database_file: str
+        :param report_folder: Path to directory with sqllite databases
+            and into which java will write
+        :type report_folder: str
         """
-        self._database_file = database_file
+        self._report_folder = report_folder
 
     def set_placements(self, placements, transceiver, monitor_cores=None,
                        packet_gathers=None):
@@ -259,12 +260,12 @@ class JavaCaller(object):
             result = subprocess.call(
                 [self._java_call, '-jar', jar_file, 'upload',
                  self._placement_json, self._machine_json(),
-                 self._database_file])
+                 self._report_folder])
         else:
             result = subprocess.call(
                 [self._java_call, '-jar', jar_file, 'gather',
                  self._placement_json, self._machine_json(),
-                 self._database_file])
+                 self._report_folder])
         if result != 0:
             raise PacmanExternalAlgorithmFailedToCompleteException(
                 "Java call exited with value " + str(result))

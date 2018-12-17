@@ -3,6 +3,7 @@ from collections import defaultdict
 from .sqllite_database import SqlLiteDatabase
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
+DB_FILE_NAME = "buffer.sqlite3"
 
 
 class BufferedReceivingData(object):
@@ -40,16 +41,17 @@ class BufferedReceivingData(object):
         "_end_buffering_state"
     ]
 
-    def __init__(self, database_file):
+    def __init__(self, report_folder):
         """
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
             Ignored if database_file is not null.
         :type store_to_file: bool
-        :param database: The database used to store some of the data.
-        :type database_file: str
+        :param report_folder: The directory to write the database used to
+            store some of the data.
+        :type report_folder: str
         """
-        self._db_file = database_file
+        self._db_file = os.path.join(report_folder, DB_FILE_NAME)
         self.reset()
 
     def reset(self):

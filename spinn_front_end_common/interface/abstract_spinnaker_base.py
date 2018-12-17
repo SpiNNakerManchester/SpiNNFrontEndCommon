@@ -1697,8 +1697,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # Create a buffer manager if there isn't one already
         if not self._use_virtual_board:
             if self._buffer_manager is None:
-                inputs["BufferDatabaseFile"] = os.path.join(
-                    self._report_default_directory, "buffer.sqlite3")
                 algorithms.append("BufferManagerCreator")
                 outputs.append("BufferManager")
             else:

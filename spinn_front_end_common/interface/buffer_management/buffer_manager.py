@@ -105,7 +105,7 @@ class BufferManager(object):
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  packet_gather_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, database_file, java_caller=None):
+                 uses_advanced_monitors, report_folder, java_caller=None):
         """
         :param placements: The placements of the vertices
         :type placements:\
@@ -115,10 +115,10 @@ class BufferManager(object):
         :param transceiver: \
             The transceiver to use for sending and receiving information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
-:param packet_gather_cores_to_ethernet_connection_map
-
-        :param database_file: The file to use as an SQL database.
-        :type database_file: str
+        :param packet_gather_cores_to_ethernet_connection_map
+        :param report_folder: The directory for reports which includes the
+            file to use as an SQL database.
+        :type report_folder: str
         :param java_caller: Support class to call Java or None to use python
         :type java_caller:\
             :py;class:`spinn_front_end_common.interface.java_caller`
@@ -145,7 +145,7 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData(database_file)
+        self._received_data = BufferedReceivingData(report_folder)
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
@@ -157,7 +157,7 @@ class BufferManager(object):
         self._java_caller = java_caller
         if self._java_caller is not None:
             self._java_caller.set_machine(machine)
-            self._java_caller.set_database(database_file)
+            self._java_caller.set_report_folder(report_folder)
             if self._uses_advanced_monitors:
                 self._java_caller.set_advanced_monitors(
                     self._placements, self._tags,

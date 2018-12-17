@@ -4,17 +4,19 @@ import os
 import shutil
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import BufferedReceivingData
+from spinn_front_end_common.interface.buffer_management.storage_objects\
+    .buffered_receiving_data import DB_FILE_NAME
 
 
 class TestBufferedReceivingDataWithDB(unittest.TestCase):
 
     def test_use_database(self):
         d = tempfile.mkdtemp()
-        f = os.path.join(d, "test.db")
+        f = os.path.join(d, DB_FILE_NAME)
         try:
             self.assertFalse(os.path.isfile(f), "no existing DB at first")
 
-            brd = BufferedReceivingData(f)
+            brd = BufferedReceivingData(d)
             self.assertTrue(os.path.isfile(f), "DB now exists")
 
             # TODO missing
