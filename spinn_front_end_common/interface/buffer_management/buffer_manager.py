@@ -568,41 +568,43 @@ class BufferManager(object):
 
     def _get_data_for_placements_locked(self, placements, progress=None):
         receivers = OrderedSet()
-        if self._uses_advanced_monitors:
-
-            # locate receivers
-            for placement in placements:
-                receivers.add(locate_extra_monitor_mc_receiver(
-                    self._machine, placement.x, placement.y,
-                    self._packet_gather_cores_to_ethernet_connection_map))
-
-            # set time out
-            for receiver in receivers:
-                receiver.set_cores_for_data_extraction(
-                    transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=(
-                        self._extra_monitor_cores))
-
-        # get data
         if self._java_caller is None:
+            if self._uses_advanced_monitors:
+
+                # locate receivers
+                for placement in placements:
+                    receivers.add(locate_extra_monitor_mc_receiver(
+                        self._machine, placement.x, placement.y,
+                        self._packet_gather_cores_to_ethernet_connection_map))
+
+                # set time out
+                for receiver in receivers:
+                    receiver.set_cores_for_data_extraction(
+                        transceiver=self._transceiver,
+                        placements=self._placements,
+                        extra_monitor_cores_for_router_timeout=(
+                            self._extra_monitor_cores))
+
+            # get data
             for placement in placements:
                 vertex = placement.vertex
                 for recording_region_id in vertex.get_recorded_region_ids():
                     self._retreive_by_placement(placement, recording_region_id)
                     if progress is not None:
                         progress.update()
+
+            # revert time out
+            if self._uses_advanced_monitors:
+                for receiver in receivers:
+                    receiver.unset_cores_for_data_extraction(
+                        transceiver=self._transceiver,
+                        placements=self._placements,
+                        extra_monitor_cores_for_router_timeout=(
+                            self._extra_monitor_cores))
         else:
             self._java_caller.get_all_data()
             if progress:
                 progress.end()
-
-        # revert time out
-        if self._uses_advanced_monitors:
-            for receiver in receivers:
-                receiver.unset_cores_for_data_extraction(
-                    transceiver=self._transceiver, placements=self._placements,
-                    extra_monitor_cores_for_router_timeout=(
-                        self._extra_monitor_cores))
 
     def get_data_for_vertex(self, placement, recording_region_id):
         """
