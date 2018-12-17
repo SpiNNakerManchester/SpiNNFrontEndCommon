@@ -1,12 +1,13 @@
+import tempfile
 import unittest
-from tempfile import mktemp
 from spinn_machine.virtual_machine import VirtualMachine
-from spinn_storage_handlers.file_data_writer import FileDataWriter
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.data_specification_generator import (
     DataSpecificationGenerator)
 from spinn_front_end_common.interface.interface_functions import (
     HostExecuteDataSpecification)
+from spinn_front_end_common.interface.ds.data_specification_targets import \
+    DataSpecificationTargets
 
 
 class _MockCPUInfo(object):
@@ -63,25 +64,23 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         executor = HostExecuteDataSpecification()
         transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = VirtualMachine(2, 2)
+        tempdir = tempfile.mkdtemp()
 
-        # Write a data spec to execute
-        temp_spec = mktemp()
-        spec_writer = FileDataWriter(temp_spec)
-        spec = DataSpecificationGenerator(spec_writer)
-        spec.reserve_memory_region(0, 100)
-        spec.reserve_memory_region(1, 100, empty=True)
-        spec.reserve_memory_region(2, 100)
-        spec.switch_write_focus(0)
-        spec.write_value(0)
-        spec.write_value(1)
-        spec.write_value(2)
-        spec.switch_write_focus(2)
-        spec.write_value(3)
-        spec.end_specification()
+        dsg_targets = DataSpecificationTargets(machine, tempdir)
+        with dsg_targets.create_data_spec(0, 0, 0) as spec_writer:
+            spec = DataSpecificationGenerator(spec_writer)
+            spec.reserve_memory_region(0, 100)
+            spec.reserve_memory_region(1, 100, empty=True)
+            spec.reserve_memory_region(2, 100)
+            spec.switch_write_focus(0)
+            spec.write_value(0)
+            spec.write_value(1)
+            spec.write_value(2)
+            spec.switch_write_focus(2)
+            spec.write_value(3)
+            spec.end_specification()
 
-        # Execute the spec
-        dsg_targets = {(0, 0, 0): temp_spec}
-        executor.__call__(transceiver, machine, 30, dsg_targets)
+        infos = executor.__call__(transceiver, machine, 30, dsg_targets)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded
@@ -114,6 +113,10 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
         # Size of user 0
         self.assertEqual(len(regions[3][1]), 4)
+
+        info = infos[(0, 0, 0)]
+        self.assertEqual(info["memory_used"], 372)
+        self.assertEqual(info["memory_written"], 88)
 
 
 if __name__ == "__main__":

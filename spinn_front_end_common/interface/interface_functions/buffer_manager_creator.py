@@ -31,7 +31,7 @@ class BufferManagerCreator(object):
         :return:
         """
         # pylint: disable=too-many-arguments
-        progress = ProgressBar(placements.placements, "Initialising buffers")
+        progress = ProgressBar(placements.n_placements, "Initialising buffers")
 
         # Create the buffer manager
         buffer_manager = BufferManager(

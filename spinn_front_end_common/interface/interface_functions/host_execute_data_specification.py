@@ -7,7 +7,7 @@ from spinn_utilities.log import FormatAdapter
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
-from spinn_storage_handlers import FileDataReader
+# from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 
@@ -33,28 +33,33 @@ class HostExecuteDataSpecification(object):
 
         :return: map of placement and DSG data, and loaded data flag.
         """
-        # pylint: disable=too-many-arguments
+        # While the database supports having the info in it a python bugs does
+        # not like iterating over and writing intermingled so using a dict
+
+        # dw_write_info = DsWriteInfo(
+        #    dsg_targets.get_database())
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
+            # for core, info in iteritems(processor_to_app_data_base_address):
+            #    dw_write_info[core] = info
 
         # create a progress bar for end users
         progress = ProgressBar(
-            dsg_targets, "Executing data specifications and loading data")
+            dsg_targets.n_targets(),
+            "Executing data specifications and loading data")
 
-        for (x, y, p), data_spec_file_path in \
+        for (x, y, p), reader in \
                 progress.over(iteritems(dsg_targets)):
             # write information for the memory map report
-            processor_to_app_data_base_address[x, y, p] = self._execute(
-                transceiver, machine, app_id, x, y, p, data_spec_file_path)
+            info = self._execute(
+                transceiver, machine, app_id, x, y, p, reader)
+            processor_to_app_data_base_address[x, y, p] = info
 
         return processor_to_app_data_base_address
 
     @staticmethod
-    def _execute(txrx, machine, app_id, x, y, p, data_spec_path):
+    def _execute(txrx, machine, app_id, x, y, p, reader):
         # pylint: disable=too-many-arguments, too-many-locals
-
-        # build specification reader
-        reader = FileDataReader(data_spec_path)
 
         # maximum available memory
         # however system updates the memory available
