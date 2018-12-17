@@ -28,13 +28,6 @@ class AbstractDatabase(object):
     __slots__ = ()
 
     @abstractmethod
-    def commit(self):
-        """
-        Ensures that all data expected is sent to the database and is
-            peristant.
-        """
-
-    @abstractmethod
     def close(self):
         """
             Signals that the database can be closed and will not be reused.
@@ -78,15 +71,10 @@ class AbstractDatabase(object):
         """
 
     @abstractmethod
-    def clear(self, x, y, p, region_id):
-        """ Clears the data from a given data region (only clears things\
-            associated with a given data recording region).
+    def clear(self):
+        """ Clears the data for all regions.
 
         Warning: This method will be removed when the database moves to
             keeping data after reset.
-        :param x: placement x coordinate
-        :param y: placement y coordinate
-        :param p: placement p coordinate
-        :param region_id: the recording region ID to clear data from
         :rtype: None
         """

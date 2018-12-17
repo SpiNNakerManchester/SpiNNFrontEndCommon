@@ -1,7 +1,9 @@
 import os
 import sqlite3
+import time
 from spinn_front_end_common.interface.buffer_management.storage_objects \
     import AbstractDatabase
+from spinn_utilities.overrides import overrides
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
@@ -32,19 +34,21 @@ class SqlLiteDatabase(AbstractDatabase):
     def __del__(self):
         self.close()
 
+    @overrides(AbstractDatabase.close)
     def close(self):
         if self._db is not None:
             self._db.close()
             self._db = None
 
+    @overrides(AbstractDatabase.clear)
     def clear(self):
-        print("TODO")
-
-    def commit(self):
-        """
-        No need to commit
-        :return:
-        """
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute(
+                "UPDATE region "
+                + "SET content = ?, fetches = 0, append_time = NULL",
+                (sqlite3.Binary(b"")))
+        pop = 1/0
 
     def __init_db(self):
         """ Set up the database if required. """
@@ -53,43 +57,43 @@ class SqlLiteDatabase(AbstractDatabase):
             sql = f.read()
         self._db.executescript(sql)
 
-    def __append_contents(self, cursor, x, y, p, region, contents):
-        cursor.execute(
-            "INSERT INTO storage(x, y, processor, region, content) "
-            + "VALUES(?, ?, ?, ?, ?) "
-            + "ON CONFLICT(x, y, processor, region) DO "
-            + "UPDATE SET content = storage.content || excluded.content",
-            (x, y, p, region, sqlite3.Binary(contents)))
-
-    def __hacky_append(self, cursor, x, y, p, region, contents):
-        """ Used to do an UPSERT when the version of SQLite used by Python\
-            doesn't support the correct syntax for it (because it is older\
-            than 3.24). Not really a problem with Python 3.6 or later.
-        """
-        cursor.execute(
-            "INSERT OR IGNORE INTO storage(x, y, processor, region, content) "
-            + "VALUES(?, ?, ?, ?, ?)",
-            (x, y, p, region, sqlite3.Binary(b"")))
-        cursor.execute(
-            "UPDATE storage SET content = content || ? "
-            + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
-            (sqlite3.Binary(contents), x, y, p, region))
-
     def _read_contents(self, cursor, x, y, p, region):
         for row in cursor.execute(
-                "SELECT content FROM storage "
-                + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
+                "SELECT content FROM region_view "
+                + "WHERE x = ? AND y = ? AND processor = ? "
+                + "AND local_region_index = ?",
                 (x, y, p, region)):
             data = row["content"]
             return memoryview(data)
         return b""
 
-    def __delete_contents(self, cursor, x, y, p, region):
+    def _get_core_id(self, cursor, x, y, p):
+        for row in cursor.execute(
+                "SELECT core_id FROM region_view "
+                + "WHERE x = ? AND y = ? AND processor = ? ",
+                (x, y, p)):
+            return row["core_id"]
         cursor.execute(
-            "DELETE FROM storage WHERE " +
-            "x = ? AND y = ? AND processor = ? AND region = ?",
-            (x, y, p, region))
+            "INSERT INTO core(x, y, processor) VALUES(?, ?, ?)",
+            (x, y, p))
+        return cursor.lastrowid
 
+    def _get_region_id(self, cursor, x, y, p, region):
+        for row in cursor.execute(
+                "SELECT region_id FROM region_view "
+                + "WHERE x = ? AND y = ? AND processor = ? "
+                + "AND local_region_index = ?",
+                (x, y, p, region)):
+            return row["region_id"]
+        core_id = self._get_core_id(cursor, x, y, p)
+        cursor.execute(
+            "INSERT INTO region(core_id, local_region_index, content, "
+            + "fetches) "
+            + "VALUES(?, ?, ?, 0)",
+            (core_id, region, sqlite3.Binary(b"")))
+        return cursor.lastrowid
+
+    @overrides(AbstractDatabase.store_data_in_region_buffer)
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
             specific chip, core and region
@@ -106,15 +110,19 @@ class SqlLiteDatabase(AbstractDatabase):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
-        try:
-            with self._db:
-                c = self._db.cursor()
-                self.__append_contents(c, x, y, p, region, data)
-        except sqlite3.Error:
-            with self._db:
-                c = self._db.cursor()
-                self.__hacky_append(c, x, y, p, region, data)
+        with self._db:
+            cursor = self._db.cursor()
+            region_id = self._get_region_id(cursor, x, y, p, region)
+            print(region_id)
+            print(data)
+            cursor.execute(
+                "UPDATE region SET content = content || ?, "
+                + "fetches = fetches + 1, append_time = ?"
+                + "WHERE region_id = ? ",
+                (sqlite3.Binary(data), int(time.time() * 1000), region_id))
+            assert cursor.rowcount == 1
 
+    @overrides(AbstractDatabase.get_region_data)
     def get_region_data(self, x, y, p, region):
         """ Get the data stored for a given region of a given core
         :param x: x coordinate of the chip
