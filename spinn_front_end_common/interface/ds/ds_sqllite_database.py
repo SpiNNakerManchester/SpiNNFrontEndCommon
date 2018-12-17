@@ -107,7 +107,6 @@ class DsSqlliteDatabase(DsAbstractDatabase):
             for row in cursor.execute(
                     "SELECT x, y, processor, content FROM core "
                     + "WHERE content IS NOT NULL"):
-                print(row["x"], row["y"], row["processor"])
                 yield (row["x"], row["y"], row["processor"]), row["content"]
 
     @overrides(DsAbstractDatabase.ds_n_cores)
