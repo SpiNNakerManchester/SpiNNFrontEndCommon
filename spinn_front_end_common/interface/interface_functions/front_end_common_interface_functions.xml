@@ -505,10 +505,18 @@
                 <param_type>DataSpecificationTargets</param_type>
             </parameter>
             <parameter>
+                <param_name>report_folder</param_name>
+                <param_type>ReportFolder</param_type>
+            </parameter>
+             <parameter>
+                <param_name>java_caller</param_name>
+                <param_type>JavaCaller</param_type>
+            </parameter>
+            <parameter>
                 <param_name>processor_to_app_data_base_address</param_name>
                 <param_type>ProcessorToAppDataBaseAddress</param_type>
             </parameter>
-        </input_definitions>
+       </input_definitions>
         <required_inputs>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
@@ -516,6 +524,8 @@
             <param_name>dsg_targets</param_name>
         </required_inputs>
         <optional_inputs>
+            <param_name>report_folder</param_name>
+            <param_name>java_caller</param_name>
             <param_name>processor_to_app_data_base_address</param_name>
         </optional_inputs>
         <outputs>

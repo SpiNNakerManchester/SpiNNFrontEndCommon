@@ -80,7 +80,8 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
             spec.write_value(3)
             spec.end_specification()
 
-        infos = executor.__call__(transceiver, machine, 30, dsg_targets)
+        infos = executor.__call__(
+            transceiver, machine, 30, dsg_targets, tempdir)
 
         # Test regions - although 3 are created, only 2 should be uploaded
         # (0 and 2), and only the data written should be uploaded

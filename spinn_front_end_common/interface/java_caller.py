@@ -247,25 +247,42 @@ class JavaCaller(object):
 
         return path
 
+    @property
+    def _jar_file(self):
+        return os.path.join(
+            self._java_spinnaker_path, "SpiNNaker-front-end",
+            "target", "spinnaker-exe.jar")
+
     def get_all_data(self):
         """
         Gets all the data from the previously set placements
         and put these in the previously set database.
 
         """
-        jar_file = os.path.join(
-            self._java_spinnaker_path, "SpiNNaker-front-end",
-            "target", "spinnaker-exe.jar")
         if self._gatherer_iptags is None:
             result = subprocess.call(
-                [self._java_call, '-jar', jar_file, 'download',
+                [self._java_call, '-jar', self._jar_file, 'download',
                  self._placement_json, self._machine_json(),
                  self._report_folder])
         else:
             result = subprocess.call(
-                [self._java_call, '-jar', jar_file, 'gather',
+                [self._java_call, '-jar', self._jar_file, 'gather',
                  self._placement_json, self._machine_json(),
                  self._report_folder])
+        if result != 0:
+            log_file = os.path.join(self._report_folder, "jspin.log")
+            raise PacmanExternalAlgorithmFailedToCompleteException(
+                "Java call exited with value " + str(result) + " see "
+                + str(log_file) + " for logged info")
+
+    def host_execute_data_dpecification(self):
+        """
+        Writes all the data specs
+
+        """
+        result = subprocess.call(
+            [self._java_call, '-jar', self._jar_file, 'dse',
+                 self._machine_json(), self._report_folder])
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(

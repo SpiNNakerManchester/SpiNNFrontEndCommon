@@ -7,7 +7,7 @@ from spinn_utilities.log import FormatAdapter
 from data_specification import DataSpecificationExecutor
 from data_specification.constants import MAX_MEM_REGIONS
 from data_specification.exceptions import DataSpecificationException
-# from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
+from spinn_front_end_common.interface.ds.ds_write_info import DsWriteInfo
 from spinn_front_end_common.utilities.helpful_functions import (
     write_address_to_user0)
 
@@ -24,24 +24,121 @@ class HostExecuteDataSpecification(object):
 
     def __call__(
             self, transceiver, machine, app_id, dsg_targets,
+            report_folder=None, java_caller=None,
             processor_to_app_data_base_address=None):
         """
-        :param machine: the python representation of the SpiNNaker machine
-        :param transceiver: the spinnman instance
-        :param app_id: the application ID of the simulation
-        :param dsg_targets: map of placement to file path
+        Does the Data Specification Execution and loading
 
-        :return: map of placement and DSG data, and loaded data flag.
+        :param transceiver: the spinnman instance
+        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param machine: the python representation of the SpiNNaker machine
+        :type machine: :py:class:`spinn_machine.machine.Machine`
+        :param app_id: the application ID of the simulation
+        :type app_id: int
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: :py:class:`spinn_front_end_common.interface.\
+            ds.data_specification_targets.DataSpecificationTargets`
+        :param report_folder: The path where
+            the SQLite database holding the data will be placed,
+            and where any java provenance can be written.
+            report_folder can not be None if java_caller is not None.
+        :type report_folder: str
+        :param java_caller: The support class to run via Java.
+            If None pure python is used.
+        :type java_caller: :py:class:`spinn_front_end_common.interface.
+            java_caller.JavaCaller`
+        :param processor_to_app_data_base_address The write info which is a
+            dict of cores to a dict of
+                'start_address', 'memory_used', 'memory_written
+        :return: map of of cores to a dict of
+                'start_address', 'memory_used', 'memory_written
+            Note: If using python the return type is an actual dict object.
+            If using Java the return is a DsWriteInfo
+                but this implements the same mapping interface as dict
+        :rtype: dict or :py:class:
+            `spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
+        """
+        if java_caller is None:
+            return self._python_all_(
+                transceiver, machine, app_id, dsg_targets,
+                processor_to_app_data_base_address)
+        else:
+            return self._java_all_(
+                machine, app_id, dsg_targets, java_caller,
+                report_folder, processor_to_app_data_base_address)
+
+    def _java_all_(
+            self, machine, app_id, dsg_targets, java_caller, report_folder,
+            processor_to_app_data_base_address):
+        """
+        Does the Data Specification Execution and loading using Java
+
+        :param machine: the python representation of the SpiNNaker machine
+        :type machine: :py:class:`spinn_machine.machine.Machine`
+        :param app_id: the application ID of the simulation
+        :type app_id: int
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: :py:class:`spinn_front_end_common.interface.\
+            ds.data_specification_targets.DataSpecificationTargets`
+        :param report_folder: The path where
+            the SQLite database holding the data will be placed,
+            and where any java provenance can be written.
+            report_folder can not be None if java_caller is not None.
+        :type report_folder: str
+        :param java_caller: The support class to run via Java.
+            If None pure python is used.
+        :type java_caller: :py:class:`spinn_front_end_common.interface.
+            java_caller.JavaCaller`
+        :param processor_to_app_data_base_address The write info which is a
+            dict of cores to a dict of
+                'start_address', 'memory_used', 'memory_written
+        :return: map of of cores to a dict of
+                'start_address', 'memory_used', 'memory_written
+        :rtype: spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo
+        """
+
+        # create a progress bar for end users
+        progress = ProgressBar(1,
+            "Executing data specifications and loading data using Java")
+
+        # Copy data from WriteMemoryIOData to database
+        dw_write_info = DsWriteInfo(dsg_targets.get_database())
+        if processor_to_app_data_base_address is not None:
+            for core, info in iteritems(processor_to_app_data_base_address):
+                dw_write_info[core] = info
+
+        dsg_targets.set_app_id(app_id)
+        java_caller.set_machine(machine)
+        java_caller.set_report_folder(report_folder)
+        java_caller.host_execute_data_dpecification()
+
+        return dw_write_info
+
+    def _python_all_(
+            self, transceiver, machine, app_id, dsg_targets,
+            processor_to_app_data_base_address=None):
+        """
+        Does the Data Specification Execution and loading using python
+
+        :param transceiver: the spinnman instance
+        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
+        :param machine: the python representation of the SpiNNaker machine
+        :type machine: :py:class:`spinn_machine.machine.Machine`
+        :param app_id: the application ID of the simulation
+        :type app_id: int
+        :param dsg_targets: map of placement to file path
+        :type dsg_targets: :py:class:`spinn_front_end_common.interface.\
+            ds.data_specification_targets.DataSpecificationTargets`
+        :param processor_to_app_data_base_address The write info which is a
+            dict of cores to a dict of
+                'start_address', 'memory_used', 'memory_written
+        :return: dict of cores to a dict of
+                'start_address', 'memory_used', 'memory_written
         """
         # While the database supports having the info in it a python bugs does
         # not like iterating over and writing intermingled so using a dict
-
-        # dw_write_info = DsWriteInfo(
-        #    dsg_targets.get_database())
         if processor_to_app_data_base_address is None:
             processor_to_app_data_base_address = dict()
-            # for core, info in iteritems(processor_to_app_data_base_address):
-            #    dw_write_info[core] = info
 
         # create a progress bar for end users
         progress = ProgressBar(
