@@ -17,7 +17,9 @@
 -- This file should be a clone of
 -- JavaSpiNNaker/SpiNNaker-storage/src/main/resources/dse.sql
 
+-- https://www.sqlite.org/pragma.html#pragma_synchronous
 PRAGMA main.synchronous = OFF;
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the boards.
 CREATE TABLE IF NOT EXISTS board(

@@ -13,7 +13,9 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+-- https://www.sqlite.org/pragma.html#pragma_synchronous
 PRAGMA main.synchronous = OFF;
+
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the cores.
 CREATE TABLE IF NOT EXISTS core(
