@@ -17,6 +17,7 @@
 -- This file should be a clone of
 -- JavaSpiNNaker/SpiNNaker-storage/src/main/resources/dse.sql
 
+PRAGMA main.synchronous = OFF;
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the boards.
 CREATE TABLE IF NOT EXISTS board(
