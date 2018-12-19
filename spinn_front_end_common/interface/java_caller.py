@@ -39,7 +39,8 @@ class JavaCaller(object):
         # Dict of ethernet (x, y) to the p of the packetGather vertex
         "_gatherer_cores",
         # The location where the latest placement json is written
-        "_placement_json"
+        "_placement_json",
+        "_java_properties"
     ]
 
     def __init__(self, json_folder, java_call, java_spinnaker_path=None):
@@ -86,6 +87,8 @@ class JavaCaller(object):
         self._monitor_cores = None
         self._gatherer_iptags = None
         self._gatherer_cores = None
+        #self._java_properties = "-Dlogginglevel=DEBUG"
+        self._java_properties = None
 
     def set_machine(self, machine):
         """
@@ -253,6 +256,15 @@ class JavaCaller(object):
             self._java_spinnaker_path, "SpiNNaker-front-end",
             "target", "spinnaker-exe.jar")
 
+    def _run_java(self, *args):
+        if self._java_properties is None:
+            params = [self._java_call, '-jar', self._jar_file]
+        else:
+            params = [self._java_call, '-jar', self._java_properties,
+                    self._jar_file]
+        params.extend(args)
+        return subprocess.call(params)
+
     def get_all_data(self):
         """
         Gets all the data from the previously set placements
@@ -260,15 +272,13 @@ class JavaCaller(object):
 
         """
         if self._gatherer_iptags is None:
-            result = subprocess.call(
-                [self._java_call, '-jar', self._jar_file, 'download',
-                 self._placement_json, self._machine_json(),
-                 self._report_folder])
+            result = self._run_java(
+                'download', self._placement_json, self._machine_json(),
+                self._report_folder)
         else:
-            result = subprocess.call(
-                [self._java_call, '-jar', self._jar_file, 'gather',
-                 self._placement_json, self._machine_json(),
-                 self._report_folder])
+            result =  self._run_java(
+                'gather', self._placement_json, self._machine_json(),
+                 self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
@@ -280,9 +290,8 @@ class JavaCaller(object):
         Writes all the data specs
 
         """
-        result = subprocess.call(
-            [self._java_call, '-jar', self._jar_file, 'dse',
-                 self._machine_json(), self._report_folder])
+        result = self._run_java(
+            'dse', self._machine_json(), self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(
