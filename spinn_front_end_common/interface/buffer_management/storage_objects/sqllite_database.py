@@ -113,8 +113,6 @@ class SqlLiteDatabase(AbstractDatabase):
         with self._db:
             cursor = self._db.cursor()
             region_id = self._get_region_id(cursor, x, y, p, region)
-            print(region_id)
-            print(data)
             cursor.execute(
                 "UPDATE region SET content = content || ?, "
                 + "fetches = fetches + 1, append_time = ?"
