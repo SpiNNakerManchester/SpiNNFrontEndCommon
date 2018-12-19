@@ -40,10 +40,12 @@ class JavaCaller(object):
         "_gatherer_cores",
         # The location where the latest placement json is written
         "_placement_json",
+        # Properties flag to be passed to Java
         "_java_properties"
     ]
 
-    def __init__(self, json_folder, java_call, java_spinnaker_path=None):
+    def __init__(self, json_folder, java_call, java_spinnaker_path=None,
+                 java_properties=None):
         """
         Creates a Jason caller and checks the user/ config parameters
 
@@ -57,6 +59,11 @@ class JavaCaller(object):
             It must also have been built! \
             If None the assumption is that it is the same parent directory as \
             https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.
+        :param java_properties:
+            Optional properites that will be passed to Java
+            Must start with -D
+            For example -Dlogging.level=DEBUG
+        :type java_properties: str
         :raise ConfigurationException if simple parameter checking fails.
         """
         self._json_folder = json_folder
@@ -87,8 +94,12 @@ class JavaCaller(object):
         self._monitor_cores = None
         self._gatherer_iptags = None
         self._gatherer_cores = None
-        #self._java_properties = "-Dlogging.level=DEBUG"
-        self._java_properties = None
+        self._java_properties = java_properties
+        if self._java_properties is not None:
+            if self._java_properties[:2] != "-D":
+                raise ConfigurationException(
+                    "Java Properties must start with -D found at {}".format(
+                        self._java_properties))
 
     def set_machine(self, machine):
         """
@@ -260,7 +271,7 @@ class JavaCaller(object):
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
         else:
-            params = [self._java_call, '-jar', self._java_properties, self._jar_file]
+            params = [self._java_call, self._java_properties, '-jar', self._jar_file]
         params.extend(args)
         return subprocess.call(params)
 
