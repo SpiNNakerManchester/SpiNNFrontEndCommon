@@ -87,7 +87,7 @@ class JavaCaller(object):
         self._monitor_cores = None
         self._gatherer_iptags = None
         self._gatherer_cores = None
-        #self._java_properties = "-Dlogginglevel=DEBUG"
+        #self._java_properties = "-Dlogging.level=DEBUG"
         self._java_properties = None
 
     def set_machine(self, machine):
@@ -260,8 +260,7 @@ class JavaCaller(object):
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
         else:
-            params = [self._java_call, '-jar', self._java_properties,
-                    self._jar_file]
+            params = [self._java_call, '-jar', self._java_properties, self._jar_file]
         params.extend(args)
         return subprocess.call(params)
 
