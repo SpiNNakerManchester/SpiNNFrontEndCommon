@@ -106,11 +106,32 @@ class JavaCaller(object):
         Passes the machine in leaving this class to decide pass it to Java.
 
         :param machine: A machine Object
+        :type machine: :py:class:`spinn_machine.machine.Machine`
         """
         self._machine = machine
 
     def set_advanced_monitors(
             self, placements, tags, monitor_cores, packet_gathers):
+        """
+        :param placements: The placements of the vertices
+        :type placements:\
+            :py:class:`pacman.model.placements.Placements`
+        :param tags: The tags assigned to the vertices
+        :type tags: :py:class:`pacman.model.tags.Tags`
+        :param packet_gather_cores_to_ethernet_connection_map
+        :param report_folder: The directory for reports which includes the
+            file to use as an SQL database.
+        :type report_folder: str
+        :param java_caller: Support class to call Java or None to use python
+        :type java_caller:\
+            :py;class:`spinn_front_end_common.interface.java_caller`
+
+        :param placements:
+        :param tags:
+        :param monitor_cores:
+        :param packet_gathers:
+        :return:
+        """
         self._monitor_cores = dict()
         for core, monitor_core in monitor_cores.items():
             placement = placements.get_placement_of_vertex(monitor_core)

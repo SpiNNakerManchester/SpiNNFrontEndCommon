@@ -115,7 +115,8 @@ class BufferManager(object):
         :param transceiver: \
             The transceiver to use for sending and receiving information
         :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
-        :param packet_gather_cores_to_ethernet_connection_map
+        :param packet_gather_cores_to_ethernet_connection_map:
+            mapping of cores to
         :param report_folder: The directory for reports which includes the
             file to use as an SQL database.
         :type report_folder: str
