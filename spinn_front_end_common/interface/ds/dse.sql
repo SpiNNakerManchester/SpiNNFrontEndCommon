@@ -21,7 +21,7 @@
 PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
--- A table describing the boards.
+-- A table describing the ethernets.
 CREATE TABLE IF NOT EXISTS ethernet(
 	ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ethernet_x INTEGER NOT NULL,

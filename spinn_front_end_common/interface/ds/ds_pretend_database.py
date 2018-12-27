@@ -18,7 +18,7 @@ class DsPretendDatabase(DsAbstractDatabase):
 
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):
-        # In the database map the core to the board using ethernet x and y
+        # In the database map the core to the ethernet
         self._ds_temp[(core_x, core_y, core_p)] = ds
 
     @overrides(DsAbstractDatabase.get_ds)

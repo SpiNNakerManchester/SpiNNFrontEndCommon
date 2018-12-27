@@ -13,7 +13,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
     __slots__ = [
         # the database holding the data to store, if used
         "_db",
-        # The machine cached for getting the "board"
+        # The machine cached for getting the "ethernet"s
         "_machine",
         # The root ethernet id if required
         "_root_ethernet_id"
@@ -68,7 +68,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
             self._db.close()
             self._db = None
 
-    def _get_board(self, ethernet_x, ethernet_y):
+    def _get_etherent(self, ethernet_x, ethernet_y):
         with self._db:
             cursor = self._db.cursor()
             for row in cursor.execute(
@@ -76,19 +76,19 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 + "WHERE ethernet_x = ? AND ethernet_y = ?",
                     (ethernet_x, ethernet_y)):
                 return row["ethernet_id"]
-        return self._root_board_id
+        return self._root_ethernet_id
 
     @overrides(DsAbstractDatabase.save_ds)
     def save_ds(self, core_x, core_y, core_p, ds):
         chip = self._machine.get_chip_at(core_x, core_y)
-        board_id = self._get_board(
+        ethernet_id = self._get_etherent(
             chip.nearest_ethernet_x, chip.nearest_ethernet_y)
         with self._db:
             cursor = self._db.cursor()
             cursor.execute(
                 "INSERT INTO core(x, y, processor, ethernet_id, content) "
                 + "VALUES(?, ?, ?, ?, ?) ",
-                (core_x, core_y, core_p, board_id, sqlite3.Binary(ds)))
+                (core_x, core_y, core_p, ethernet_id, sqlite3.Binary(ds)))
 
     @overrides(DsAbstractDatabase.get_ds)
     def get_ds(self, x, y, p):
@@ -188,13 +188,13 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                  info["memory_written"], x, y, p))
             if cursor.rowcount == 0:
                 chip = self._machine.get_chip_at(x, y)
-                board_id = self._get_board(
+                ethernet_id = self._get_etherent(
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 cursor.execute(
                     "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "start_address, memory_used, memory_written) "
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
-                    (x, y, p, board_id, info["start_address"],
+                    (x, y, p, ethernet_id, info["start_address"],
                      info["memory_used"], info["memory_written"]))
 
     @overrides(DsAbstractDatabase.info_n_cores)
