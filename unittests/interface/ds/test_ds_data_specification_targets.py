@@ -12,7 +12,9 @@ class TestDataSpecificationTargets(unittest.TestCase):
 
     def test_dict(self):
         check = dict()
-        asDict = DataSpecificationTargets(self.machine, tempfile.mkdtemp())
+        testdir = tempfile.mkdtemp()
+        print(testdir)
+        asDict = DataSpecificationTargets(self.machine, testdir)
         c1 = (0, 0, 0)
         foo = bytearray(b"foo")
         with asDict.create_data_spec(0, 0, 0) as writer:

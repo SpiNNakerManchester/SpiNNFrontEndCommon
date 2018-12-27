@@ -15,8 +15,8 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         "_db",
         # The machine cached for getting the "board"
         "_machine",
-        # The root ethernet board id if required
-        "_root_board_id"
+        # The root ethernet id if required
+        "_root_ethernet_id"
     ]
 
     def __init__(self, machine, report_folder):
@@ -37,24 +37,24 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         first_id = None
         first_x = None
         first_y = None
-        self._root_board_id = None
+        self._root_ethernet_id = None
         with self._db:
             cursor = self._db.cursor()
             for ethernet in self._machine.ethernet_connected_chips:
                 cursor.execute(
-                    "INSERT INTO board(ethernet_x, ethernet_y, address) "
+                    "INSERT INTO ethernet(ethernet_x, ethernet_y, ip_address) "
                     + "VALUES(?, ?, ?) ",
                     (ethernet.x, ethernet.y, ethernet.ip_address))
                 if (ethernet.x == 0 and ethernet.y == 0):
-                    self._root_board_id = cursor.lastrowid
+                    self._root_ethernet_id = cursor.lastrowid
                 elif first_id is None:
                     first_id = cursor.lastrowid
                     first_x = ethernet.x
                     first_y = ethernet.y
-        if self._root_board_id is None:
+        if self._root_ethernet_id is None:
             if first_id is None:
                 raise Exception("No ethernet chip found")
-            self._root_board_id = first_id
+            self._root_ethernet_id = first_id
             logger.warning(
                 "No Ethernet chip found at 0, 0 using {} : {} "
                 "for all boards with no ip address.".format(first_x, first_y))
@@ -72,10 +72,10 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         with self._db:
             cursor = self._db.cursor()
             for row in cursor.execute(
-                "SELECT board_id FROM board "
+                "SELECT ethernet_id FROM ethernet "
                 + "WHERE ethernet_x = ? AND ethernet_y = ?",
                     (ethernet_x, ethernet_y)):
-                return row["board_id"]
+                return row["ethernet_id"]
         return self._root_board_id
 
     @overrides(DsAbstractDatabase.save_ds)
@@ -86,7 +86,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
         with self._db:
             cursor = self._db.cursor()
             cursor.execute(
-                "INSERT INTO core(x, y, processor, board_id, content) "
+                "INSERT INTO core(x, y, processor, ethernet_id, content) "
                 + "VALUES(?, ?, ?, ?, ?) ",
                 (core_x, core_y, core_p, board_id, sqlite3.Binary(ds)))
 
@@ -191,7 +191,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                 board_id = self._get_board(
                     chip.nearest_ethernet_x, chip.nearest_ethernet_y)
                 cursor.execute(
-                    "INSERT INTO core(x, y, processor, board_id, "
+                    "INSERT INTO core(x, y, processor, ethernet_id, "
                     + "start_address, memory_used, memory_written) "
                     + "VALUES(?, ?, ?, ?, ?, ?, ?) ",
                     (x, y, p, board_id, info["start_address"],

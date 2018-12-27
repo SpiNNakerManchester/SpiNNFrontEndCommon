@@ -22,13 +22,13 @@ PRAGMA main.synchronous = OFF;
 
 -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 -- A table describing the boards.
-CREATE TABLE IF NOT EXISTS board(
-	board_id INTEGER PRIMARY KEY AUTOINCREMENT,
+CREATE TABLE IF NOT EXISTS ethernet(
+	ethernet_id INTEGER PRIMARY KEY AUTOINCREMENT,
 	ethernet_x INTEGER NOT NULL,
 	ethernet_y INTEGER NOT NULL,
-	address TEXT UNIQUE NOT NULL);
--- Every board has a unique ethernet chip location in virtual space.
-CREATE UNIQUE INDEX IF NOT EXISTS boardSanity ON board(
+	ip_address TEXT UNIQUE NOT NULL);
+-- Every ethernet has a unique chip location in virtual space.
+CREATE UNIQUE INDEX IF NOT EXISTS ethernetSanity ON ethernet(
 	ethernet_x ASC, ethernet_y ASC);
 
 
@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS core(
 	x INTEGER NOT NULL,
 	y INTEGER NOT NULL,
 	processor INTEGER NOT NULL,
-	board_id INTEGER NOT NULL
-		REFERENCES board(board_id) ON DELETE RESTRICT,
+	ethernet_id INTEGER NOT NULL
+		REFERENCES ethernet(ethernet_id) ON DELETE RESTRICT,
 	app_id INTEGER,
 	content BLOB,
 	start_address INTEGER,
@@ -51,8 +51,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS coreSanity ON core(
 	x ASC, y ASC, processor ASC);
 
 CREATE VIEW IF NOT EXISTS core_view AS
-	SELECT board_id, core_id,
-		ethernet_x, ethernet_y, board.address AS ethernet_address,
+	SELECT ethernet_id, core_id,
+		ethernet_x, ethernet_y, ip_address,
 		x, y, processor, app_id, content,
 		start_address, memory_used, memory_written
-FROM board NATURAL JOIN core;
+	FROM ethernet NATURAL JOIN core;

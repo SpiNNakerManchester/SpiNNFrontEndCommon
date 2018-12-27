@@ -54,13 +54,15 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
         # trnx.register_udp_listener(callback=None,
         #        connection_class=EIEIOConnection)
 
+        testdir = tempfile.mkdtemp()
+        print(testdir)
         # Create buffer manager
         bm = BufferManager(
             placements=pl, tags=t, transceiver=trnx, extra_monitor_cores=None,
             packet_gather_cores_to_ethernet_connection_map=None,
             extra_monitor_to_chip_mapping=None, machine=None,
             fixed_routes=None, uses_advanced_monitors=True,
-            report_folder=tempfile.mkdtemp())
+            report_folder=testdir)
 
         # Register two listeners, and check the second listener uses the
         # first rather than creating a new one
