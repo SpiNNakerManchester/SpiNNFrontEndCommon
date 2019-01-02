@@ -204,7 +204,7 @@ class DsSqlliteDatabase(DsAbstractDatabase):
             cursor.execute(
                 "UPDATE core SET "
                 + "start_address = NULL, memory_used = NULL, "
-                +  "memory_written = NULL")
+                + "memory_written = NULL")
 
     @overrides(DsAbstractDatabase.info_n_cores)
     def info_n_cores(self):

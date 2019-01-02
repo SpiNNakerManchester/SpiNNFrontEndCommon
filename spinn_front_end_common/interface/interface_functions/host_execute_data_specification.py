@@ -60,10 +60,6 @@ class HostExecuteDataSpecification(object):
         :rtype: dict or :py:class:
             `spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
         """
-        #if HostExecuteDataSpecification.first:
-        #    HostExecuteDataSpecification.first = False
-        #else:
-        #    java_caller = None
         if java_caller is None:
             return self._python_all_(
                 transceiver, machine, app_id, dsg_targets,
