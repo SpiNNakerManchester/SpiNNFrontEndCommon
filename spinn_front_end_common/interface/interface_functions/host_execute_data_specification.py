@@ -98,8 +98,8 @@ class HostExecuteDataSpecification(object):
         """
 
         # create a progress bar for end users
-        progress = ProgressBar(1,
-            "Executing data specifications and loading data using Java")
+        progress = ProgressBar(
+            1, "Executing data specifications and loading data using Java")
 
         # Copy data from WriteMemoryIOData to database
         dw_write_info = DsWriteInfo(dsg_targets.get_database())
@@ -112,6 +112,7 @@ class HostExecuteDataSpecification(object):
         java_caller.set_report_folder(report_folder)
         java_caller.host_execute_data_dpecification()
 
+        progress.end()
         return dw_write_info
 
     def _python_all_(

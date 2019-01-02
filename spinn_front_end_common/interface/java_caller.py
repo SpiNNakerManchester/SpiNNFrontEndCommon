@@ -292,7 +292,8 @@ class JavaCaller(object):
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
         else:
-            params = [self._java_call, self._java_properties, '-jar', self._jar_file]
+            params = [
+                self._java_call, self._java_properties, '-jar', self._jar_file]
         params.extend(args)
         return subprocess.call(params)
 
@@ -307,9 +308,9 @@ class JavaCaller(object):
                 'download', self._placement_json, self._machine_json(),
                 self._report_folder)
         else:
-            result =  self._run_java(
+            result = self._run_java(
                 'gather', self._placement_json, self._machine_json(),
-                 self._report_folder)
+                self._report_folder)
         if result != 0:
             log_file = os.path.join(self._report_folder, "jspin.log")
             raise PacmanExternalAlgorithmFailedToCompleteException(

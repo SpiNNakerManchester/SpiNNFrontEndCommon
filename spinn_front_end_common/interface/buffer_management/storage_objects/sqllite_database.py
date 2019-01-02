@@ -48,7 +48,6 @@ class SqlLiteDatabase(AbstractDatabase):
                 "UPDATE region "
                 + "SET content = ?, fetches = 0, append_time = NULL",
                 (sqlite3.Binary(b"")))
-        pop = 1/0
 
     def __init_db(self):
         """ Set up the database if required. """
