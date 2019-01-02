@@ -197,6 +197,15 @@ class DsSqlliteDatabase(DsAbstractDatabase):
                     (x, y, p, ethernet_id, info["start_address"],
                      info["memory_used"], info["memory_written"]))
 
+    @overrides(DsAbstractDatabase.clear_write_info)
+    def clear_write_info(self):
+        with self._db:
+            cursor = self._db.cursor()
+            cursor.execute(
+                "UPDATE core SET "
+                + "start_address = NULL, memory_used = NULL, "
+                +  "memory_written = NULL")
+
     @overrides(DsAbstractDatabase.info_n_cores)
     def info_n_cores(self):
         with self._db:

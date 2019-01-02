@@ -56,6 +56,7 @@ class BufferedReceivingData(object):
 
     def reset(self):
         if os.path.exists(self._db_file):
+            self._db.close()
             os.remove(self._db_file)
         self._db = SqlLiteDatabase(self._db_file)
         self._is_flushed = defaultdict(lambda: False)

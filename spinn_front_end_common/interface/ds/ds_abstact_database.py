@@ -105,6 +105,12 @@ class DsAbstractDatabase(object):
         """
 
     @abstractmethod
+    def clear_write_info(self):
+        """
+        Clears the provenance for all rows
+        """
+
+    @abstractmethod
     def info_n_cores(self):
         """
         Returns the number for cores there is a info saved for

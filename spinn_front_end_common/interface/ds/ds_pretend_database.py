@@ -51,6 +51,10 @@ class DsPretendDatabase(DsAbstractDatabase):
     def set_write_info(self, x, y, p, info):
         self._info_temp[(x, y, p)] = info
 
+    @overrides(DsAbstractDatabase.clear_write_info)
+    def clear_write_info(self):
+        self._info_temp = dict()
+
     @overrides(DsAbstractDatabase.info_n_cores)
     def info_n_cores(self):
         return len(self._info_temp)

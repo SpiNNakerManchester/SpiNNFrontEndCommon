@@ -22,6 +22,8 @@ class HostExecuteDataSpecification(object):
 
     __slots__ = []
 
+    first = True
+
     def __call__(
             self, transceiver, machine, app_id, dsg_targets,
             report_folder=None, java_caller=None,
@@ -58,6 +60,10 @@ class HostExecuteDataSpecification(object):
         :rtype: dict or :py:class:
             `spinn_front_end_common.interface.ds.ds_write_info.DsWriteInfo`
         """
+        #if HostExecuteDataSpecification.first:
+        #    HostExecuteDataSpecification.first = False
+        #else:
+        #    java_caller = None
         if java_caller is None:
             return self._python_all_(
                 transceiver, machine, app_id, dsg_targets,
@@ -99,17 +105,19 @@ class HostExecuteDataSpecification(object):
 
         # create a progress bar for end users
         progress = ProgressBar(
-            1, "Executing data specifications and loading data using Java")
+            3, "Executing data specifications and loading data using Java")
 
         # Copy data from WriteMemoryIOData to database
         dw_write_info = DsWriteInfo(dsg_targets.get_database())
+        dw_write_info.clear_write_info()
         if processor_to_app_data_base_address is not None:
             for core, info in iteritems(processor_to_app_data_base_address):
                 dw_write_info[core] = info
-
+        progress.update()
         dsg_targets.set_app_id(app_id)
         java_caller.set_machine(machine)
         java_caller.set_report_folder(report_folder)
+        progress.update()
         java_caller.host_execute_data_dpecification()
 
         progress.end()

@@ -46,7 +46,8 @@ class DsWriteInfo(MutableMapping):
 
     def setInfo(self, x, y, p, info):
         """
-        TEMP implementation
+        Sets the info for the core x, y, p
+
         :param x: core x
         :param y: core y
         :param p: core p
@@ -54,6 +55,12 @@ class DsWriteInfo(MutableMapping):
             'start_address', 'memory_used' and 'memory_written'
         """
         self._db.set_write_info(x, y, p, info)
+
+    def clear_write_info(self):
+        """
+        Clears the info for all cores
+        """
+        self._db.clear_write_info()
 
     def __delitem__(self):
         raise NotImplementedError("Delete not supported")
