@@ -1,9 +1,8 @@
-from data_specification.constants import MAX_MEM_REGIONS
-from spinn_utilities.progress_bar import ProgressBar
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from data_specification.constants import MAX_MEM_REGIONS
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
@@ -71,8 +70,7 @@ class MemoryMapOnChipReport(object):
 
     @staticmethod
     def _get_report_data_address(txrx, x, y, p):
-        data_address_pointer = txrx.get_user_1_register_address_from_core(
-            x, y, p)
+        data_address_pointer = txrx.get_user_1_register_address_from_core(p)
         data_address_encoded = txrx.read_memory(
             x, y, data_address_pointer, 4)
         return _ONE_WORD.unpack_from(data_address_encoded)[0]

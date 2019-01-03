@@ -1,6 +1,6 @@
 import os
-from spinn_front_end_common.utilities.constants import SDP_PORTS
 from pacman.utilities.utility_calls import md5
+from spinn_front_end_common.utilities.constants import SDP_PORTS
 
 
 def get_simulation_header_array(

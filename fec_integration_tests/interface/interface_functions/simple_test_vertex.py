@@ -1,15 +1,11 @@
-
-"""
-test vertex used in many unit tests
+""" test vertex used in many unit tests
 """
 
-# pacman imports
-
-from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import DTCMResource, ResourceContainer, \
-    ConstantSDRAM, CPUCyclesPerTickResource
-from pacman.model.graphs.machine import SimpleMachineVertex
 from spinn_utilities.overrides import overrides
+from pacman.model.graphs.application import ApplicationVertex
+from pacman.model.resources import (
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, ResourceContainer)
+from pacman.model.graphs.machine import SimpleMachineVertex
 
 
 class SimpleTestVertex(ApplicationVertex):

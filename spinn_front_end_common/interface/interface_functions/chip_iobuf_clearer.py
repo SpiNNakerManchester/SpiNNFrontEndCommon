@@ -1,5 +1,4 @@
 from spinn_front_end_common.utilities.scp import ClearIOBUFProcess
-
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 

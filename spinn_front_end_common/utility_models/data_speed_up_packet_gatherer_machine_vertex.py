@@ -1,28 +1,3 @@
-from spinn_utilities.overrides import overrides
-from spinn_utilities.log import FormatAdapter
-
-from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, ConstantSDRAM, \
-    IPtagResource
-from spinn_front_end_common.utilities.helpful_functions \
-    import convert_vertices_to_core_subset
-from spinn_front_end_common.abstract_models \
-    import AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
-from spinn_front_end_common.interface.provenance import \
-    AbstractProvidesLocalProvenanceData
-from spinn_front_end_common.utilities.utility_objs import ExecutableType, \
-    ProvenanceDataItem
-from spinn_front_end_common.utilities.constants \
-    import SDP_PORTS, SYSTEM_BYTES_REQUIREMENT
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.interface.simulation import simulation_utilities
-
-from spinnman.exceptions import SpinnmanTimeoutException
-from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
-from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.model.enums.cpu_state import CPUState
-
 from collections import defaultdict
 import os
 import logging
@@ -30,8 +5,34 @@ import math
 import time
 import struct
 from enum import Enum
-from pacman.executor.injection_decorator import inject_items
 from six.moves import xrange
+
+from spinn_utilities.overrides import overrides
+from spinn_utilities.log import FormatAdapter
+
+from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.messages.sdp import SDPMessage, SDPHeader, SDPFlag
+from spinnman.connections.udp_packet_connections import SCAMPConnection
+from spinnman.model.enums.cpu_state import CPUState
+
+from pacman.executor.injection_decorator import inject_items
+from pacman.model.graphs.common import EdgeTrafficType
+from pacman.model.graphs.machine import MachineVertex
+from pacman.model.resources import (
+    ConstantSDRAM, IPtagResource, ResourceContainer)
+
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset)
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesLocalProvenanceData)
+from spinn_front_end_common.utilities.utility_objs import (
+    ExecutableType, ProvenanceDataItem)
+from spinn_front_end_common.utilities.constants import (
+    SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.interface.simulation import simulation_utilities
 
 log = FormatAdapter(logging.getLogger(__name__))
 TIMEOUT_RETRY_LIMIT = 20

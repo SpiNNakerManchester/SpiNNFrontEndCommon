@@ -1,12 +1,12 @@
+import struct
+import sys
+import math
+from pacman.model.resources import (
+    ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.interface.buffer_management.storage_objects\
     import ChannelBufferState
-from spinn_front_end_common.utilities.constants \
-    import SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS
-
-from pacman.model.resources \
-    import ResourceContainer, IPtagResource, ConstantSDRAM
-
-import struct
+from spinn_front_end_common.utilities.constants import (
+    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS)
 
 # The offset of the last sequence number field in bytes
 _LAST_SEQUENCE_NUMBER_OFFSET = 4 * 6

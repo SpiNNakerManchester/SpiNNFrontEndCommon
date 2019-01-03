@@ -1,21 +1,16 @@
 from spinn_utilities.overrides import overrides
-# pacman imports
-from pacman.model.constraints.placer_constraints\
-    import RadialPlacementFromChipConstraint
+from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+from pacman.model.constraints.placer_constraints import (
+    RadialPlacementFromChipConstraint)
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import \
-    (ConstantSDRAM, IPtagResource, ResourceContainer)
-
-# spinn front end imports
+from pacman.model.resources import (
+    ConstantSDRAM, CPUCyclesPerTickResource, DTCMResource, IPtagResource,
+    ResourceContainer)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
-# spinnman imports
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 
 
 class LivePacketGather(

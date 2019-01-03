@@ -1,19 +1,15 @@
-from spinn_utilities.progress_bar import ProgressBar
-
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.mapping_algorithms \
-    import on_chip_router_table_compression
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-
-from spinnman.model.enums import CPUState
-from spinnman.model import ExecutableTargets
-
-from spinn_machine import CoreSubsets, Router
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import CPUState
+from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.mapping_algorithms import (
+    on_chip_router_table_compression)
+from spinn_front_end_common.interface.interface_functions import (
+    ChipIOBufExtractor)
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
@@ -114,7 +110,7 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def __read_user_0(txrx, x, y, p):
-        addr = txrx.get_user_0_register_address_from_core(x, y, p)
+        addr = txrx.get_user_0_register_address_from_core(p)
         return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
 
     def _check_for_success(
@@ -154,7 +150,7 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets.all_core_subsets,
+            txrx, executable_targets,
             provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)

@@ -1,14 +1,8 @@
-# pacman imports
-from pacman.model.resources import CoreResource
-from pacman.model.resources import PreAllocatedResourceContainer
-from pacman.model.resources import SpecificChipSDRAMResource
-
-# front end common imports
-from spinn_front_end_common.utility_models import \
-    ChipPowerMonitorMachineVertex as ChipPowerMonitor
-
-# utils
 from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.resources import (
+    CoreResource, PreAllocatedResourceContainer, SpecificChipSDRAMResource)
+from spinn_front_end_common.utility_models import (
+    ChipPowerMonitorMachineVertex)
 
 
 class PreAllocateResourcesForChipPowerMonitor(object):
@@ -36,7 +30,7 @@ class PreAllocateResourcesForChipPowerMonitor(object):
             machine.n_chips, "Preallocating resources for chip power monitor")
 
         # store how much SDRAM the power monitor uses per core
-        resources = ChipPowerMonitor.get_resources(
+        resources = ChipPowerMonitorMachineVertex.get_resources(
             n_machine_time_steps=n_machine_time_steps,
             n_samples_per_recording=n_samples_per_recording,
             sampling_frequency=sampling_frequency,

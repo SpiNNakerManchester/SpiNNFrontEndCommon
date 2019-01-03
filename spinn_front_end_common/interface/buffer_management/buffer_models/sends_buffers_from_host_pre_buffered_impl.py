@@ -1,12 +1,8 @@
-# general imports
 import logging
 from six import add_metaclass
-
-# spinn front end common imports
+from spinn_utilities.abstract_base import (
+    AbstractBase, abstractmethod, abstractproperty)
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
-
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod, \
-    abstractproperty
 
 logger = logging.getLogger(__name__)
 

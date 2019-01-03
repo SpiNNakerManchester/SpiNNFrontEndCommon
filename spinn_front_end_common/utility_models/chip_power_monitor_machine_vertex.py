@@ -1,31 +1,31 @@
-import numpy
-from enum import Enum
 import math
 import logging
-
+from enum import Enum
+import numpy
+from spinn_utilities.log import FormatAdapter
+from spinn_utilities.overrides import overrides
 from data_specification.enums import DataType
-from pacman.executor.injection_decorator import inject_items, \
-    supports_injection
+from pacman.executor.injection_decorator import (
+    inject_items, supports_injection)
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import ResourceContainer, VariableSDRAM, \
-    CPUCyclesPerTickResource, DTCMResource
-
-from spinn_front_end_common.abstract_models import \
-    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.interface.buffer_management import \
-    recording_utilities
-from spinn_front_end_common.interface.buffer_management.buffer_models import \
-    AbstractReceiveBuffersToHost
+from pacman.model.resources import (
+    CPUCyclesPerTickResource, DTCMResource, ResourceContainer, VariableSDRAM)
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
+from spinn_front_end_common.interface.buffer_management import (
+    recording_utilities)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    AbstractReceiveBuffersToHost)
 from spinn_front_end_common.utilities import globals_variables
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import (
+    SARK_PER_MALLOC_SDRAM_USAGE, SYSTEM_BYTES_REQUIREMENT)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.helpful_functions import (
-    locate_memory_region_for_placement)
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-
 from spinn_utilities.overrides import overrides
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement, read_config_int)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 BINARY_FILE_NAME = "chip_power_monitor.aplx"
@@ -104,9 +104,9 @@ class ChipPowerMonitorMachineVertex(
         recording_per_step = (samples_per_step / n_samples_per_recording)
         max_recording_per_step = math.ceil(recording_per_step)
         overflow_recordings = max_recording_per_step - recording_per_step
-        fixed_sdram = constants.SYSTEM_BYTES_REQUIREMENT + \
+        fixed_sdram = SYSTEM_BYTES_REQUIREMENT + \
             CONFIG_SIZE_IN_BYTES + DEFAULT_MALLOCS_USED * \
-            constants.SARK_PER_MALLOC_SDRAM_USAGE
+            SARK_PER_MALLOC_SDRAM_USAGE
         with_overflow = (
             fixed_sdram + overflow_recordings * RECORDING_SIZE_PER_ENTRY)
         per_temestep = recording_per_step * RECORDING_SIZE_PER_ENTRY
@@ -123,10 +123,10 @@ class ChipPowerMonitorMachineVertex(
 
         :return: int
         """
-        return constants.SYSTEM_BYTES_REQUIREMENT + \
+        return SYSTEM_BYTES_REQUIREMENT + \
             ChipPowerMonitorMachineVertex.CONFIG_SIZE_IN_BYTES + \
             ChipPowerMonitorMachineVertex.DEFAULT_MALLOCS_USED * \
-            constants.SARK_PER_MALLOC_SDRAM_USAGE
+            SARK_PER_MALLOC_SDRAM_USAGE
 
     @overrides(AbstractHasAssociatedBinary.get_binary_file_name)
     def get_binary_file_name(self):
@@ -233,7 +233,7 @@ class ChipPowerMonitorMachineVertex(
         # Reserve memory:
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.SYSTEM.value,
-            size=constants.SYSTEM_BYTES_REQUIREMENT,
+            size=SYSTEM_BYTES_REQUIREMENT,
             label='system')
         spec.reserve_memory_region(
             region=self.CHIP_POWER_MONITOR_REGIONS.CONFIG.value,
@@ -253,7 +253,7 @@ class ChipPowerMonitorMachineVertex(
 
         :return: starttype enum
         """
-        return ExecutableType.SYSTEM
+        return ExecutableType.USES_SIMULATION_INTERFACE
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):
