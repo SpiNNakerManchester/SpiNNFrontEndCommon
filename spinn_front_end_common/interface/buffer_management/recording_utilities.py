@@ -1,6 +1,4 @@
 import struct
-import sys
-import math
 from pacman.model.resources import (
     ConstantSDRAM, IPtagResource, ResourceContainer)
 from spinn_front_end_common.interface.buffer_management.storage_objects\

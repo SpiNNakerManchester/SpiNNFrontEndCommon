@@ -169,12 +169,12 @@ class ReverseIpTagMultiCastSource(
             # If applicable a 2 d array but if only single passed in single
             # n_keys the number of atoms
             # See ReverseIPTagMulticastSourceMachineVertex
-            #   get_n_timesteps_in_buffer_space (commented out as dead)
+            # get_n_timesteps_in_buffer_space (commented out as dead)
             sdram=VariableSDRAM(
-                fixed_sdram= \
+                fixed_sdram=\
                     ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                        self._send_buffer_times, self._send_buffer_max_space,
-                        self._record_buffer_size > 0),
+                    self._send_buffer_times, self._send_buffer_max_space,
+                    self._record_buffer_size > 0),
                 per_timestep_sdram=0),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),

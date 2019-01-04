@@ -1,5 +1,4 @@
 import math
-import sys
 import struct
 from enum import Enum
 from six.moves import xrange
@@ -11,8 +10,8 @@ from pacman.model.constraints.key_allocator_constraints import (
     FixedKeyAndMaskConstraint)
 from pacman.model.constraints.placer_constraints import BoardConstraint
 from pacman.model.resources import (
-    CPUCyclesPerTickResource, DTCMResource, IPtagResource, ReverseIPtagResource, ResourceContainer,
-    VariableSDRAM)
+    CPUCyclesPerTickResource, DTCMResource, IPtagResource,
+    ReverseIPtagResource, ResourceContainer, VariableSDRAM)
 from pacman.model.routing_info import BaseKeyAndMask
 from pacman.model.graphs.machine import MachineVertex
 from spinn_front_end_common.utilities.helpful_functions import (

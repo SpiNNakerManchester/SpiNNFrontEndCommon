@@ -3,15 +3,13 @@ from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
 
 from pacman.model.resources import ResourceContainer, ConstantSDRAM
-from pacman.model.routing_info import BaseKeyAndMask
-from pacman.executor.injection_decorator import inject_items
 
-from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary,
     AbstractGeneratesDataSpecification)
-from .command_sender_machine_vertex import CommandSenderMachineVertex
+from spinn_front_end_common.utilities import constants
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
+from .command_sender_machine_vertex import CommandSenderMachineVertex
 
 
 class CommandSender(
