@@ -166,9 +166,11 @@ class ReverseIpTagMultiCastSource(
         container = ResourceContainer(
             # TODO work out cost per timestep and ideally even soft
             sdram=VariableSDRAM(
-                ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
-                    self._send_buffer_times, self._send_buffer_max_space,
-                    self._record_buffer_size > 0), 0),
+                fixed_sdram= \
+                    ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(
+                        self._send_buffer_times, self._send_buffer_max_space,
+                        self._record_buffer_size > 0),
+                per_timestep_sdram=0),
             dtcm=DTCMResource(
                 ReverseIPTagMulticastSourceMachineVertex.get_dtcm_usage()),
             cpu_cycles=CPUCyclesPerTickResource(
