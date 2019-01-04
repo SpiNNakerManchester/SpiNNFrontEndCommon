@@ -164,7 +164,12 @@ class ReverseIpTagMultiCastSource(
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):  # @UnusedVariable
         container = ResourceContainer(
-            # TODO work out cost per timestep and ideally even soft
+            # TODO work out cost per timestep and vertex and ideally even soft
+            # self._send_buffer_times holds the spike times for all atoms
+            # If applicable a 2 d array but if only single passed in single
+            # n_keys the number of atoms
+            # See ReverseIPTagMulticastSourceMachineVertex
+            #   get_n_timesteps_in_buffer_space (commented out as dead)
             sdram=VariableSDRAM(
                 fixed_sdram= \
                     ReverseIPTagMulticastSourceMachineVertex.get_sdram_usage(

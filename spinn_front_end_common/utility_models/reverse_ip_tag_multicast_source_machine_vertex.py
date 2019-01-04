@@ -644,8 +644,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         self._fill_send_buffer(
             machine_time_step, first_machine_time_step, n_machine_time_steps)
 
-    # TODO use this in get_resources
-    def xet_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
+    # TODO This code is unused
+    # but may help to improve get_resources_used_by_atoms
+    """
+    def get_n_timesteps_in_buffer_space(self, buffer_space, machine_time_step):
 
         # If not recording, not an issue
         if self._record_buffer_size == 0:
@@ -668,6 +670,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # BROKEN
         return recording_utilities.xet_n_timesteps_in_buffer_space(
             buffer_space, [bytes_per_timestep])
+    """
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
