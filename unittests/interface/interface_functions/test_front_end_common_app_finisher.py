@@ -5,11 +5,10 @@ from spinnman.model.enums.cpu_state import CPUState
 from spinn_front_end_common.interface.interface_functions \
     import ApplicationFinisher
 
-from threading import Thread, RLock
-import time
+from threading import RLock
 
 
-class _MockTransceiver(Thread):
+class _MockTransceiver(object):
 
     def __init__(self, core_states, time_between_states):
         super(_MockTransceiver, self).__init__()
@@ -18,13 +17,6 @@ class _MockTransceiver(Thread):
         self._current_state = 0
         self._lock = RLock()
         self.sdp_send_count = 0
-        self.start()
-
-    def run(self):
-        while self._current_state < len(self._core_states):
-            time.sleep(self._time_between_states)
-            with self._lock:
-                self._current_state += 1
 
     def get_core_state_count(self, _app_id, state):
         with self._lock:
@@ -51,6 +43,7 @@ class _MockTransceiver(Thread):
                         elif core_states[x, y, p] == states:
                             cores_in_state.add_processor(x, y, p)
 
+            self._current_state += 1
             return cores_in_state
 
     def send_sdp_message(self, message):
