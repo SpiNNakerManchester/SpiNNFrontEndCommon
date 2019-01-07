@@ -1222,6 +1222,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["UsingAdvancedMonitorSupport"] = self._config.getboolean(
             "Machine", "enable_advanced_monitor_support")
 
+        if (
+                self._config.getboolean("Buffers",
+                                        "use_auto_pause_and_resume")):
+            inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
+        else:
+            inputs["PlanNTimeSteps"] = min(
+                n_machine_time_steps, self._minimum_auto_time_steps)
+
         # add algorithms for handling LPG placement and edge insertion
         if self._live_packet_recorder_params:
             algorithms.append("PreAllocateResourcesForLivePacketGatherers")
@@ -1488,11 +1496,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         inputs["TotalRunTime"] = total_run_time
         inputs["TotalMachineTimeSteps"] = n_machine_time_steps
 
-        if (self._config.getboolean("Buffers", "use_auto_pause_and_resume")):
-            inputs["PlanNTimeSteps"] = self._minimum_auto_time_steps
-        else:
-            inputs["PlanNTimeSteps"] = min(
-                n_machine_time_steps, self._minimum_auto_time_steps)
         inputs["PostSimulationOverrunBeforeError"] = self._config.getint(
             "Machine", "post_simulation_overrun_before_error")
 
