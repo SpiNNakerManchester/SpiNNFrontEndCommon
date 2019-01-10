@@ -292,8 +292,9 @@ class JavaCaller(object):
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
         else:
+            each_param = self._java_properties.split()
             params = [
-                self._java_call, self._java_properties, '-jar', self._jar_file]
+                self._java_call, *each_param, '-jar', self._jar_file]
         params.extend(args)
         return subprocess.call(params)
 
