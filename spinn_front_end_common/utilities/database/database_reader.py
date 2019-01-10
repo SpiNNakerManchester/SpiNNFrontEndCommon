@@ -211,6 +211,62 @@ class DatabaseReader(object):
             " LIMIT 1", (parameter_name, ))
         return float(self._cursor.fetchone()["value"])
 
+    def get_placement(self, label):
+        """ Get the placement of a machine vertex with a given label
+
+        :param label: The label of the vertex
+        :type label: str
+        :return: The x, y, p coordinates of the vertex
+        :rtype: (int, int, int)
+        """
+        self._cursor.execute(
+            "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
+            " JOIN Machine_Vertices AS vertex"
+            " ON vertex.vertex_id = placement.vertex_id"
+            " WHERE vertex.label = ? LIMIT 1", (label, ))
+        row = self._cursor.fetchone()
+        return (int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
+
+    def get_placements(self, label):
+        """ Get the placements of an application vertex with a given label
+
+        :param label: The label of the vertex
+        :type label:str
+        :return: A list of x, y, p coordinates of the vertices
+        :rtype: list of (int, int, int)
+        """
+        self._cursor.execute(
+            "SELECT chip_x, chip_y, chip_p FROM Placements AS placement"
+            " JOIN graph_mapper_vertex AS mapper"
+            "   ON placement.vertex_id = mapper.machine_vertex_id"
+            " JOIN Application_vertices AS vertex"
+            "   ON mapper.application_vertex_id = vertex.vertex_id"
+            " WHERE vertex.vertex_label = ?", (label, ))
+        rows = self._cursor.fetchall()
+        return [(int(row["chip_x"]), int(row["chip_y"]), int(row["chip_p"]))
+                for row in rows]
+
+    def get_ip_address(self, x, y):
+        """ Get an IP address to contact a chip
+
+        :param x: The x-coordinate of the chip
+        :param y: The y-coordinate of the chip
+        :return: The IP address of the Ethernet to use to contact the chip
+        """
+        self._cursor.execute(
+            "SELECT eth_chip.ip_address FROM Machine_chip as chip"
+            " JOIN Machine_chip as eth_chip"
+            "   ON chip.nearest_ethernet_x = eth_chip.chip_x AND "
+            "     chip.nearest_ethernet_y = eth_chip.chip_y"
+            " WHERE chip.chip_x = ? AND chip.chip_y = ?", (x, y))
+        row = self._cursor.fetchone()
+        if row is None:
+            self._cursor.execute(
+                "SELECT ip_address FROM Machine_chip"
+                " WHERE chip_x=0 AND chip_y=0")
+            row = self._cursor.fetchone()
+        return row["ip_address"]
+
     def close(self):
         self._connection.close()
 

@@ -19,6 +19,9 @@ from spinnman.messages.scp.impl.iptag_set import IPTagSet
 from spinnman.exceptions import SpinnmanTimeoutException
 from spinnman.constants import SCP_SCAMP_PORT
 from spinnman.utilities.utility_functions import send_port_trigger_message
+from spinnman.messages.sdp.sdp_message import SDPMessage
+from spinnman.messages.sdp.sdp_header import SDPHeader
+from spinnman.connections.udp_packet_connections import UDPConnection
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -193,7 +196,7 @@ class LiveEventConnection(DatabaseConnection):
 
     def _init_sender(self, db, vertex_sizes):
         if self._sender_connection is None:
-            self._sender_connection = EIEIOConnection()
+            self._sender_connection = UDPConnection()
         for label in self._send_labels:
             self._send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -250,8 +253,12 @@ class LiveEventConnection(DatabaseConnection):
 
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
-            return db_reader.get_machine_live_input_details(send_label)
-        return db_reader.get_live_input_details(send_label)
+            x, y, p = db_reader.get_placement(send_label)
+        else:
+            x, y, p = db_reader.get_placements(send_label)[0]
+
+        ip_address = db_reader.get_ip_address(x, y)
+        return x, y, p, ip_address
 
     def __get_live_output_details(self, db_reader, receive_label):
         if self._machine_vertices:
@@ -399,6 +406,7 @@ class LiveEventConnection(DatabaseConnection):
             msg_type = EIEIOType.KEY_32_BIT
 
         pos = 0
+        x, y, p, ip_address = self._send_address_details[label]
         while pos < len(atom_ids):
             message = EIEIODataMessage.create(msg_type)
             events_in_packet = 0
@@ -409,9 +417,20 @@ class LiveEventConnection(DatabaseConnection):
                 message.add_key(key)
                 pos += 1
                 events_in_packet += 1
-            ip_address, port = self._send_address_details[label]
-            self._sender_connection.send_eieio_message_to(
-                message, ip_address, port)
+
+            # Create an SDP message - no reply so source is unimportant
+            # SDP port can be anything except 0 as the target doesn't care
+            sdp_message = SDPMessage(
+                SDPHeader(
+                    flags=SDPFlag.REPLY_NOT_EXPECTED, tag=0,
+                    destination_port=1, destination_cpu=p,
+                    destination_chip_x=x, destination_chip_y=y,
+                    source_port=0, source_cpu=0,
+                    source_chip_x=0, source_chip_y=0),
+                data=message.bytestring)
+            self._sender_connection.send_to(
+                _TWO_SKIP.pack() + sdp_message.bytestring,
+                (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
         DatabaseConnection.close(self)
