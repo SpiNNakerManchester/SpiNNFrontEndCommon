@@ -610,7 +610,7 @@
             </parameter>
             <parameter>
                 <param_name>max_core_id</param_name>
-                <param_type>MAxCoreID</param_type>
+                <param_type>MaxCoreID</param_type>
             </parameter>
         </input_definitions>
         <required_inputs>
@@ -766,7 +766,7 @@
             </parameter>
             <parameter>
                 <param_name>n_cpus_per_chip</param_name>
-                <param_type>CPUsPerVirtualChip</param_type>
+                <param_type>MaxCoreID</param_type>
             </parameter>
             <parameter>
                 <param_name>with_monitors</param_name>
@@ -1598,6 +1598,14 @@
                 <param_name>spalloc_machine</param_name>
                 <param_type>SpallocMachine</param_type>
             </parameter>
+            <parameter>
+                <param_name>max_sdram_size</param_name>
+                <param_type>MaxSDRAMSize</param_type>
+            </parameter>
+            <parameter>
+                <param_name>max_core_id</param_name>
+                <param_type>MaxCoreID</param_type>
+            </parameter>
         </input_definitions>
         <required_inputs>
             <param_name>spalloc_server</param_name>
@@ -1605,6 +1613,8 @@
         <optional_inputs>
             <param_name>spalloc_port</param_name>
             <param_name>spalloc_machine</param_name>
+            <param_name>max_sdram_size</param_name>
+            <param_name>max_core_id</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryVirtualMachine</param_type>

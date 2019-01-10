@@ -68,6 +68,9 @@ except ImportError:
 logger = FormatAdapter(logging.getLogger(__name__))
 CONFIG_FILE = "spinnaker.cfg"
 
+# Number of cores to be used when using a Virtual Machine and not specified
+DEFAULT_N_VIRTUAL_CORES = 16
+
 
 class AbstractSpinnakerBase(SimulatorInterface):
     """ Main interface into the tools logic flow
@@ -1278,9 +1281,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
-        # add max SDRAM size which we're going to allow (debug purposes)
+        # add max SDRAM size and n_cores which we're going to allow
+        # (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
+        inputs["MaxCoreID"] = self._read_config_int(
+            "Machine", "core_limit")
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
@@ -1300,8 +1306,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
                 "Machine", "scamp_connections_data")
-            inputs["MaxCoreId"] = self._read_config_int(
-                "Machine", "core_limit")
 
             algorithms.append("MachineGenerator")
 
@@ -1328,12 +1332,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["CPUsPerVirtualChip"] = \
-                self._read_config_int("Machine", "NCoresPerChip")
             inputs["RouterTableEntriesPerRouter"] = \
                 self._read_config_int("Machine", "RouterTableEntriesPerRouter")
-            inputs["MaxSDRAMSize"] = self._read_config_int(
-                "Machine", "MaxSDRAMSize")
+            if inputs["MaxCoreID"] is None:
+                inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             algorithms.append("VirtualMachineGenerator")
 
@@ -1386,7 +1388,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            inputs["CPUsPerVirtualChip"] = 16
+            inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             do_partitioning = False
             if need_virtual_board:
