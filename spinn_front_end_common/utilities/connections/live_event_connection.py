@@ -418,19 +418,23 @@ class LiveEventConnection(DatabaseConnection):
                 pos += 1
                 events_in_packet += 1
 
-            # Create an SDP message - no reply so source is unimportant
-            # SDP port can be anything except 0 as the target doesn't care
-            sdp_message = SDPMessage(
-                SDPHeader(
-                    flags=SDPFlag.REPLY_NOT_EXPECTED, tag=0,
-                    destination_port=1, destination_cpu=p,
-                    destination_chip_x=x, destination_chip_y=y,
-                    source_port=0, source_cpu=0,
-                    source_chip_x=0, source_chip_y=0),
-                data=message.bytestring)
             self._sender_connection.send_to(
-                _TWO_SKIP.pack() + sdp_message.bytestring,
+                self._get_sdp_data(message, x, y, p),
                 (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
         DatabaseConnection.close(self)
+
+    @staticmethod
+    def _get_sdp_data(message, x, y, p):
+        # Create an SDP message - no reply so source is unimportant
+        # SDP port can be anything except 0 as the target doesn't care
+        sdp_message = SDPMessage(
+            SDPHeader(
+                flags=SDPFlag.REPLY_NOT_EXPECTED, tag=0,
+                destination_port=1, destination_cpu=p,
+                destination_chip_x=x, destination_chip_y=y,
+                source_port=0, source_cpu=0,
+                source_chip_x=0, source_chip_y=0),
+            data=message.bytestring)
+        return _TWO_SKIP.pack() + sdp_message.bytestring
