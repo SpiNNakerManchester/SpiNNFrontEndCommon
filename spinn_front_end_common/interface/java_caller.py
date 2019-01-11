@@ -152,9 +152,9 @@ class JavaCaller(object):
         :param machine: A machine Object
         """
         if self._machine_json_path is None:
-            algo = ConvertToJavaMachine()
             path = os.path.join(self._json_folder, "machine.json")
-            self._machine_json_path = algo(self._machine, path)
+            self._machine_json_path = ConvertToJavaMachine.do_convert(
+                self._machine, path)
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
