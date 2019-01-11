@@ -82,8 +82,10 @@ class LiveEventConnection(DatabaseConnection):
         self.add_database_callback(self._read_database_callback)
 
         self._live_packet_gather_label = live_packet_gather_label
-        self._receive_labels = receive_labels
-        self._send_labels = send_labels
+        self._receive_labels = (
+            list(receive_labels) if receive_labels is not None else None)
+        self._send_labels = (
+            list(send_labels) if send_labels is not None else None)
         self._machine_vertices = machine_vertices
         self._sender_connection = None
         self._send_address_details = dict()
@@ -106,6 +108,23 @@ class LiveEventConnection(DatabaseConnection):
                 self._init_callbacks[label] = list()
         self._receiver_listener = None
         self._receiver_connection = None
+
+    def add_send_label(self, label):
+        if self._send_labels is None:
+            self._send_labels = list()
+        self._send_labels.append(label)
+        self._start_resume_callbacks[label] = list()
+        self._pause_stop_callbacks[label] = list()
+        self._init_callbacks[label] = list()
+
+    def add_receive_label(self, label):
+        if self._receive_labels is None:
+            self._receive_labels = list()
+        self._receive_labels.append(label)
+        self._live_event_callbacks.append(list())
+        self._start_resume_callbacks[label] = list()
+        self._pause_stop_callbacks[label] = list()
+        self._init_callbacks[label] = list()
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
