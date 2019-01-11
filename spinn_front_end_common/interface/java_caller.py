@@ -199,7 +199,7 @@ class JavaCaller(object):
 
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
-        json_placement["y"] = placement.x
+        json_placement["y"] = placement.y
         json_placement["p"] = placement.p
 
         vertex = placement.vertex
