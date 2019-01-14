@@ -52,7 +52,8 @@ class LiveEventConnection(DatabaseConnection):
         "_send_address_details",
         "_send_labels",
         "_sender_connection",
-        "_start_resume_callbacks"]
+        "_start_resume_callbacks",
+        "_error_keys"]
 
     def __init__(self, live_packet_gather_label, receive_labels=None,
                  send_labels=None, local_host=None, local_port=NOTIFY_PORT,
@@ -108,6 +109,7 @@ class LiveEventConnection(DatabaseConnection):
                 self._init_callbacks[label] = list()
         self._receiver_listener = None
         self._receiver_connection = None
+        self._error_keys = set()
 
     def add_send_label(self, label):
         if self._send_labels is None:
@@ -371,6 +373,8 @@ class LiveEventConnection(DatabaseConnection):
                 if label_id not in key_times_labels[time]:
                     key_times_labels[time][label_id] = list()
                 key_times_labels[time][label_id].append(atom_id)
+            else:
+                self.__handle_unknown_key(key)
 
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
@@ -390,6 +394,13 @@ class LiveEventConnection(DatabaseConnection):
                                  element.payload)
                     else:
                         callback(self._receive_labels[label_id], atom_id)
+            else:
+                self.__handle_unknown_key(key)
+
+    def __handle_unknown_key(self, key):
+        if key not in self._error_keys:
+            self._error_keys.add(key)
+            logger.warning("Received unexpected key {}".format(key))
 
     def send_event(self, label, atom_id, send_full_keys=False):
         """ Send an event from a single atom
