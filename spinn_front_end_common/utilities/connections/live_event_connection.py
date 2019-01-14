@@ -156,6 +156,8 @@ class LiveEventConnection(DatabaseConnection):
         :type live_event_callback: function(str, int, [int]) -> None
         """
         label_id = self._receive_labels.index(label)
+        logger.info("Receive callback {} registered to label {}".format(
+            live_event_callback, label))
         self._live_event_callbacks[label_id].append(live_event_callback)
 
     def add_start_callback(self, label, start_callback):
@@ -379,8 +381,10 @@ class LiveEventConnection(DatabaseConnection):
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
                 label = self._receive_labels[label_id]
-                logger.info("{} spiked at {}".format(label, time))
+                logger.info("{}:{} spiked at {}".format(
+                    label, key_times_labels[time][label_id], time))
                 for callback in self._live_event_callbacks[label_id]:
+                    logger.info("    Calling {}".format(callback))
                     callback(label, time, key_times_labels[time][label_id])
 
     def __handle_no_time_packet(self, packet):
