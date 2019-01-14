@@ -379,6 +379,7 @@ class LiveEventConnection(DatabaseConnection):
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
                 label = self._receive_labels[label_id]
+                logger.info("{} spiked at {}".format(label, key_times_labels[time][label_id]))
                 for callback in self._live_event_callbacks[label_id]:
                     callback(label, time, key_times_labels[time][label_id])
 
