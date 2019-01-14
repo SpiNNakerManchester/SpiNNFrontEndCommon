@@ -1,4 +1,3 @@
-import os
 import tempfile
 import unittest
 from spinn_utilities.overrides import overrides

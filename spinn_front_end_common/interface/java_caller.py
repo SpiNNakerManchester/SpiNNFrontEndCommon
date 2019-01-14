@@ -100,8 +100,8 @@ class JavaCaller(object):
             for property in self._java_properties:
                 if property[:2] != "-D":
                     raise ConfigurationException(
-                        "Java Properties must start with -D found at {}".\
-                            format(property))
+                        "Java Properties must start with -D found at {}".
+                        format(property))
 
     def set_machine(self, machine):
         """
