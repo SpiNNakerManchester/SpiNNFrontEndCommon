@@ -114,7 +114,7 @@ class HostExecuteDataSpecification(object):
         java_caller.set_machine(machine)
         java_caller.set_report_folder(report_folder)
         progress.update()
-        java_caller.host_execute_data_dpecification()
+        java_caller.host_execute_data_specification()
 
         progress.end()
         return dw_write_info

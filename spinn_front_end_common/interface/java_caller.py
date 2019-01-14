@@ -96,10 +96,12 @@ class JavaCaller(object):
         self._gatherer_cores = None
         self._java_properties = java_properties
         if self._java_properties is not None:
-            if self._java_properties[:2] != "-D":
-                raise ConfigurationException(
-                    "Java Properties must start with -D found at {}".format(
-                        self._java_properties))
+            self._java_properties = self._java_properties.split()
+            for property in self._java_properties:
+                if property[:2] != "-D":
+                    raise ConfigurationException(
+                        "Java Properties must start with -D found at {}".\
+                            format(property))
 
     def set_machine(self, machine):
         """
@@ -292,8 +294,8 @@ class JavaCaller(object):
         if self._java_properties is None:
             params = [self._java_call, '-jar', self._jar_file]
         else:
-            each_param = self._java_properties.split()
-            params = [self._java_call] + each_param + ['-jar', self._jar_file]
+            params = [self._java_call] + self._java_properties \
+                     + ['-jar', self._jar_file]
         params.extend(args)
         return subprocess.call(params)
 
@@ -317,7 +319,7 @@ class JavaCaller(object):
                 "Java call exited with value " + str(result) + " see "
                 + str(log_file) + " for logged info")
 
-    def host_execute_data_dpecification(self):
+    def host_execute_data_specification(self):
         """
         Writes all the data specs
 
