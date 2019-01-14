@@ -324,12 +324,12 @@ class LiveEventConnection(DatabaseConnection):
         if self._sender_connection is not None:
             self._sender_connection.close()
             self._sender_connection = None
-        if self._receiver_connection is not None:
-            self._receiver_connection.close()
-            self._receiver_connection = None
         if self._receiver_listener is not None:
             self._receiver_listener.close()
             self._receiver_listener = None
+        if self._receiver_connection is not None:
+            self._receiver_connection.close()
+            self._receiver_connection = None
 
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
@@ -442,6 +442,7 @@ class LiveEventConnection(DatabaseConnection):
                 (ip_address, SCP_SCAMP_PORT))
 
     def close(self):
+        self._handle_possible_rerun_state()
         DatabaseConnection.close(self)
 
     @staticmethod
