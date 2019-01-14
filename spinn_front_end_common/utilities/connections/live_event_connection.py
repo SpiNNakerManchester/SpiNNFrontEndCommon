@@ -349,6 +349,7 @@ class LiveEventConnection(DatabaseConnection):
                 self.__launch_thread("pause_stop", label, callback)
 
     def _receive_packet_callback(self, packet):
+        logger.info("Received packet")
         try:
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
