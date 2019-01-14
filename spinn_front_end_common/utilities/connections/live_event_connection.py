@@ -114,19 +114,23 @@ class LiveEventConnection(DatabaseConnection):
     def add_send_label(self, label):
         if self._send_labels is None:
             self._send_labels = list()
-        self._send_labels.append(label)
-        self._start_resume_callbacks[label] = list()
-        self._pause_stop_callbacks[label] = list()
-        self._init_callbacks[label] = list()
+        if label not in self._send_labels:
+            self._send_labels.append(label)
+        if label not in self._start_resume_callbacks:
+            self._start_resume_callbacks[label] = list()
+            self._pause_stop_callbacks[label] = list()
+            self._init_callbacks[label] = list()
 
     def add_receive_label(self, label):
         if self._receive_labels is None:
             self._receive_labels = list()
-        self._receive_labels.append(label)
-        self._live_event_callbacks.append(list())
-        self._start_resume_callbacks[label] = list()
-        self._pause_stop_callbacks[label] = list()
-        self._init_callbacks[label] = list()
+        if label not in self._receive_labels:
+            self._receive_labels.append(label)
+            self._live_event_callbacks.append(list())
+        if label not in self._start_resume_callbacks:
+            self._start_resume_callbacks[label] = list()
+            self._pause_stop_callbacks[label] = list()
+            self._init_callbacks[label] = list()
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
