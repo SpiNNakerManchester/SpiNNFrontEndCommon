@@ -304,7 +304,7 @@ class LiveEventConnection(DatabaseConnection):
     def __update_tag(self, connection, board_address, tag):
         # Update an IP Tag with the sender's address and port
         # This avoids issues with NAT firewalls
-        logger.info("Updating tag for {}".format(board_address))
+        logger.debug("Updating tag for {}".format(board_address))
         request = IPTagSet(
             0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
         request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
@@ -325,7 +325,7 @@ class LiveEventConnection(DatabaseConnection):
 
                 logger.info("Timeout, retrying")
                 tries_to_go -= 1
-        logger.info("Done updating tag for {}".format(board_address))
+        logger.debug("Done updating tag for {}".format(board_address))
 
     def _handle_possible_rerun_state(self):
         # reset from possible previous calls
@@ -357,7 +357,7 @@ class LiveEventConnection(DatabaseConnection):
                 self.__launch_thread("pause_stop", label, callback)
 
     def _receive_packet_callback(self, packet):
-        logger.info("Received packet")
+        logger.debug("Received packet")
         try:
             if packet.eieio_header.is_time:
                 self.__handle_time_packet(packet)
@@ -385,10 +385,10 @@ class LiveEventConnection(DatabaseConnection):
         for time in iterkeys(key_times_labels):
             for label_id in iterkeys(key_times_labels[time]):
                 label = self._receive_labels[label_id]
-                logger.info("{}:{} spiked at {}".format(
+                logger.debug("{}:{} spiked at {}".format(
                     label, key_times_labels[time][label_id], time))
                 for callback in self._live_event_callbacks[label_id]:
-                    logger.info("    Calling {}".format(callback))
+                    logger.debug("    Calling {}".format(callback))
                     callback(label, time, key_times_labels[time][label_id])
 
     def __handle_no_time_packet(self, packet):
