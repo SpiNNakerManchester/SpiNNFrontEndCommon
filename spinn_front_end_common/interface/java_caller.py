@@ -34,6 +34,8 @@ class JavaCaller(object):
         "_machine_json_path",
         # Dict of chip (x, y) to the p of the montitor vertex
         "_monitor_cores",
+        # Flag to indicate if at least one placement is recording
+        "_recording",
         # Dict of ethernet (x, y) and tha packetGather IPtago
         "_gatherer_iptags",
         # Dict of ethernet (x, y) to the p of the packetGather vertex
@@ -189,6 +191,7 @@ class JavaCaller(object):
         """
 
         path = os.path.join(self._json_folder, "java_placements.json")
+        self._recording = False
         if self._gatherer_iptags is None:
             self._placement_json = self._write_placements(
                 placements, transceiver, path)
@@ -196,15 +199,19 @@ class JavaCaller(object):
             self._placement_json = self._write_gather(
                 placements, transceiver, path)
 
-    @staticmethod
-    def _json_placement(placement, transceiver):
+    def _json_placement(self, placement, transceiver):
+
+        vertex = placement.vertex
+        if len(vertex.get_recorded_region_ids()) == 0:
+            return None
+        else:
+            self._recording = True
 
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
         json_placement["p"] = placement.p
 
-        vertex = placement.vertex
         json_vertex = OrderedDict()
         json_vertex["label"] = vertex.label
         json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
@@ -257,12 +264,15 @@ class JavaCaller(object):
                 json_chip["p"] = self._monitor_cores[chip_xy]
                 json_placements = list()
                 for placement in placements:
-                    json_placements.append(
-                        self._json_placement(placement, transceiver))
-                json_chip["placements"] = json_placements
-                json_chips.append(json_chip)
-            json_gather["monitors"] = json_chips
-        json_obj.append(json_gather)
+                    json_p = self._json_placement(placement, transceiver)
+                    if json_p:
+                        json_placements.append(json_p)
+                if len(json_placements) > 0:
+                    json_chip["placements"] = json_placements
+                    json_chips.append(json_chip)
+            if len(json_chips) > 0:
+                json_gather["monitors"] = json_chips
+                json_obj.append(json_gather)
 
         # dump to json file
         with open(path, "w") as f:
@@ -270,13 +280,14 @@ class JavaCaller(object):
 
         return path
 
-    @staticmethod
-    def _write_placements(placements, transceiver, path):
+    def _write_placements(self, placements, transceiver, path):
 
         # Read back the regions
         json_obj = list()
         for placement in placements:
-            json_obj.append(JavaCaller._json_placement(placement, transceiver))
+            json_p = self._json_placement(placement, transceiver)
+            if json_p:
+                json_obj.append(json_p)
 
         # dump to json file
         with open(path, "w") as f:
@@ -305,6 +316,9 @@ class JavaCaller(object):
         and put these in the previously set database.
 
         """
+        if not self._recording:
+            return
+
         if self._gatherer_iptags is None:
             result = self._run_java(
                 'download', self._placement_json, self._machine_json(),
