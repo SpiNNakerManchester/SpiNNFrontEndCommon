@@ -435,7 +435,7 @@ class DataSpeedUpPacketGatherMachineVertex(
         #              placement.x, placement.y, placement.p)
 
         # send
-        self._connection.send_sdp_message(SDPMessage(
+        connection.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 destination_chip_x=placement.x,
                 destination_chip_y=placement.y,
