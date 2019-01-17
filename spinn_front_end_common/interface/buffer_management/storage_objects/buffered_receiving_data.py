@@ -1,9 +1,12 @@
+import logging
 import os
 from collections import defaultdict
+from spinn_utilities.log import FormatAdapter
 from .sqllite_database import SqlLiteDatabase
 
 DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 DB_FILE_NAME = "buffer.sqlite3"
+logger = FormatAdapter(logging.getLogger(__name__))
 
 
 class BufferedReceivingData(object):
@@ -52,11 +55,13 @@ class BufferedReceivingData(object):
         :type report_folder: str
         """
         self._db_file = os.path.join(report_folder, DB_FILE_NAME)
+        self._db = None
         self.reset()
 
     def reset(self):
         if os.path.exists(self._db_file):
-            self._db.close()
+            if self._db:
+                self._db.close()
             os.remove(self._db_file)
         self._db = SqlLiteDatabase(self._db_file)
         self._is_flushed = defaultdict(lambda: False)
@@ -326,19 +331,24 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
 
-    # ToDo Being changed in later Pr so currently broken
-    # def clear(self, x, y, p, region_id):
-    #    """ Clears the data from a given data region (only clears things\
-    #        associated with a given data recording region).
+    # ToDo Being changed in later PR so currently broken
+    def clear(self, x, y, p, region_id):
+        """ Clears the data from a given data region (only clears things\
+            associated with a given data recording region).
 
-    #    :param x: placement x coordinate
-    #    :param y: placement y coordinate
-    #    :param p: placement p coordinate
-    #    :param region_id: the recording region ID to clear data from
-    #    :rtype: None
-    #    """
-    #    del self._end_buffering_state[x, y, p, region_id]
-    #    with self._db:
-    #        c = self._db.cursor()
-    #        self.__delete_contents(c, x, y, p, region_id)
-    #    del self._is_flushed[x, y, p, region_id]
+        :param x: placement x coordinate
+        :type x: int
+        :param y: placement y coordinate
+        :type y: int
+        :param p: placement p coordinate
+        :type p: int
+        :param region_id: the recording region ID to clear data from
+        :type region_id: int
+        :rtype: None
+        """
+        logger.warning("unimplemented method")
+        # del self._end_buffering_state[x, y, p, region_id]
+        # with self._db:
+        #     c = self._db.cursor()
+        #     self.__delete_contents(c, x, y, p, region_id)
+        # del self._is_flushed[x, y, p, region_id]

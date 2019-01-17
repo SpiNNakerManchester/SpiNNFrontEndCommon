@@ -170,12 +170,17 @@ class BufferManager(object):
         """ Uses the extra monitor cores for data extraction.
 
         :param transceiver: the spinnman interface
+        :type transceiver: :py:class:`spinnman.transceiver.Transceiver`
         :param placement_x: \
             the placement x coord where data is to be extracted from
+        :type placement_x: int
         :param placement_y: \
             the placement y coord where data is to be extracted from
+        :type placement_y: int
         :param address: the memory address to start at
+        :type address: int
         :param length: the number of bytes to extract
+        :type length: int
         :return: data as a byte array
         """
         # pylint: disable=too-many-arguments
@@ -192,7 +197,7 @@ class BufferManager(object):
             address, length, self._fixed_routes)
 
     def _receive_buffer_command_message(self, packet):
-        """ Handle an EIEIO command message for the buffers
+        """ Handle an EIEIO command message for the buffers.
 
         :param packet: The EIEIO message received
         :type packet:\
@@ -287,8 +292,10 @@ class BufferManager(object):
                         self._create_connection(tag)
 
     def add_receiving_vertex(self, vertex):
-        """ Add a vertex into the managed list for vertices\
-            which require buffers to be received from them during runtime
+        """ Add a vertex into the managed list for vertices which require\
+            buffers to be received from them during runtime.
+
+        :param vertex: the vertex to be managed
         """
         self._add_buffer_listeners(vertex)
 
@@ -304,7 +311,7 @@ class BufferManager(object):
         self._add_buffer_listeners(vertex)
 
     def load_initial_buffers(self):
-        """ Load the initial buffers for the senders using mem writes
+        """ Load the initial buffers for the senders using mem writes.
         """
         total_data = 0
         for vertex in self._sender_vertices:
@@ -321,7 +328,7 @@ class BufferManager(object):
     def reset(self):
         """ Resets the buffered regions to start transmitting from the\
             beginning of its expected regions and clears the buffered out\
-            data files
+            data files.
         """
         self._received_data.reset()
 
@@ -333,7 +340,7 @@ class BufferManager(object):
         self._finished = False
 
     def resume(self):
-        """ Resets any data structures needed before starting running again
+        """ Resets any data structures needed before starting running again.
         """
 
         # update the received data items
@@ -343,10 +350,14 @@ class BufferManager(object):
     def clear_recorded_data(self, x, y, p, recording_region_id):
         """ Removes the recorded data stored in memory.
 
-        :param x: placement x coord
-        :param y: placement y coord
-        :param p: placement p coord
+        :param x: placement x coordinate
+        :type x: int
+        :param y: placement y coordinate
+        :type y: int
+        :param p: placement p coordinate
+        :type p: int
         :param recording_region_id: the recording region ID
+        :type recording_region_id: int
         """
         self._received_data.clear(x, y, p, recording_region_id)
 
@@ -400,7 +411,7 @@ class BufferManager(object):
         return message
 
     def _send_initial_messages(self, vertex, region, progress):
-        """ Send the initial set of messages
+        """ Send the initial set of messages.
 
         :param vertex: The vertex to get the keys from
         :type vertex:\
@@ -479,7 +490,7 @@ class BufferManager(object):
             placement.x, placement.y, region_base_address, all_data)
 
     def _send_messages(self, size, vertex, region, sequence_no):
-        """ Send a set of messages
+        """ Send a set of messages.
         """
 
         # Get the sent messages for the vertex
@@ -538,7 +549,7 @@ class BufferManager(object):
             self._send_request(vertex, message)
 
     def _send_request(self, vertex, message):
-        """ Sends a request
+        """ Sends a request.
 
         :param vertex: The vertex to send to
         :param message: The message to send
@@ -554,7 +565,7 @@ class BufferManager(object):
 
     def stop(self):
         """ Indicates that the simulation has finished, so no further\
-            outstanding requests need to be processed
+            outstanding requests need to be processed.
         """
         with self._thread_lock_buffer_in:
             with self._thread_lock_buffer_out:
@@ -608,31 +619,26 @@ class BufferManager(object):
                 progress.end()
 
     def get_data_for_vertex(self, placement, recording_region_id):
-        """
-        It is no longer possible to get access to the data pointer.
+        """ It is no longer possible to get access to the data pointer.
 
-        Use get_data_by_vertex instead which returns
-            the data that pointer.read_all() used to return
+        Use get_data_by_vertex instead which returns\
+            the data that pointer.read_all() used to return\
             the missing flag as before
-
         """
         raise NotImplementedError("Use get_data_by_placement instead!.")
 
     def get_data_by_placement(self, placement, recording_region_id):
-
         """ Get the data container for all the data retrieved\
-            during the simulation from a specific region area of a core
+            during the simulation from a specific region area of a core.
 
         :param placement: the placement to get the data from
         :type placement: pacman.model.placements.Placement
         :param recording_region_id: desired recording data region
         :type recording_region_id: int
-        :return: object which will contain the data
         :return: an array contained all the data received during the\
             simulation, and a flag indicating if any data was missing
         :rtype: (bytearray, bool)
         """
-
         # Ensure that any transfers in progress are complete first
         with self._thread_lock_buffer_out:
             # data flush has been completed - return appropriate data
@@ -641,7 +647,7 @@ class BufferManager(object):
             return byte_array, missing
 
     def _retreive_by_placement(self, placement, recording_region_id):
-        """ Get the data for a vertex; must be locked first
+        """ Get the data for a vertex; must be locked first.
 
         :param placement: the placement to get the data from
         :type placement: pacman.model.placements.Placement
@@ -921,6 +927,6 @@ class BufferManager(object):
 
     @property
     def sender_vertices(self):
-        """ The vertices which are buffered
+        """ The vertices which are buffered.
         """
         return self._sender_vertices
