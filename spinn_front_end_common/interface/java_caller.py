@@ -2,21 +2,20 @@ from collections import defaultdict, OrderedDict
 import json
 import os
 import subprocess
-
 from pacman.exceptions import PacmanExternalAlgorithmFailedToCompleteException
-from pacman.utilities.file_format_converters.convert_to_java_machine import \
-    ConvertToJavaMachine
+from pacman.utilities.file_format_converters.convert_to_java_machine import (
+    ConvertToJavaMachine)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class JavaCaller(object):
     """ Support class that holds all the stuff for running stuff in Java.
 
-        This includes the work of preparing data for transmitting to Java and
+        This includes the work of preparing data for transmitting to Java and\
         back.
 
-        This seperates the choices of how to call the Java batch vs streaming,
-            jar locations, paramters ect from the rest of the python code.
+        This separates the choices of how to call the Java batch vs streaming,\
+        jar locations, parameters, etc from the rest of the python code.
     """
 
     __slots__ = [
@@ -48,10 +47,9 @@ class JavaCaller(object):
 
     def __init__(self, json_folder, java_call, java_spinnaker_path=None,
                  java_properties=None):
-        """
-        Creates a Jason caller and checks the user/ config parameters
+        """ Creates a java caller and checks the user/config parameters.
 
-        :param json_folder: The location where the machine json is written.
+        :param json_folder: The location where the machine JSON is written.
         :type json_folder: str
         :param java_call: Call to start java. Including the path if required.
         :type java_call: str
@@ -62,7 +60,7 @@ class JavaCaller(object):
             If None the assumption is that it is the same parent directory as \
             https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon.
         :param java_properties:
-            Optional properites that will be passed to Java
+            Optional properties that will be passed to Java.\
             Must start with -D
             For example -Dlogging.level=DEBUG
         :type java_properties: str
@@ -99,15 +97,14 @@ class JavaCaller(object):
         self._java_properties = java_properties
         if self._java_properties is not None:
             self._java_properties = self._java_properties.split()
-            for property in self._java_properties:
-                if property[:2] != "-D":
+            for _property in self._java_properties:
+                if _property[:2] != "-D":
                     raise ConfigurationException(
                         "Java Properties must start with -D found at {}".
-                        format(property))
+                        format(_property))
 
     def set_machine(self, machine):
-        """
-        Passes the machine in leaving this class to decide pass it to Java.
+        """ Passes the machine in leaving this class to decide pass it to Java.
 
         :param machine: A machine Object
         :type machine: :py:class:`spinn_machine.machine.Machine`
@@ -122,19 +119,9 @@ class JavaCaller(object):
             :py:class:`pacman.model.placements.Placements`
         :param tags: The tags assigned to the vertices
         :type tags: :py:class:`pacman.model.tags.Tags`
-        :param packet_gather_cores_to_ethernet_connection_map
-        :param report_folder: The directory for reports which includes the
-            file to use as an SQL database.
-        :type report_folder: str
-        :param java_caller: Support class to call Java or None to use python
-        :type java_caller:\
-            :py;class:`spinn_front_end_common.interface.java_caller`
-
-        :param placements:
-        :param tags:
         :param monitor_cores:
         :param packet_gathers:
-        :return:
+        :rtype: None
         """
         self._monitor_cores = dict()
         for core, monitor_core in monitor_cores.items():
@@ -150,10 +137,9 @@ class JavaCaller(object):
             self._gatherer_cores[core] = placement.p
 
     def _machine_json(self):
-        """
-        Passes the machine in leaving this class to decide pass it to Java.
+        """ Converts the machine in this class to JSON.
 
-        :param machine: A machine Object
+        :return: the name of the file containing the JSON
         """
         if self._machine_json_path is None:
             path = os.path.join(self._json_folder, "machine.json")
@@ -162,10 +148,9 @@ class JavaCaller(object):
         return self._machine_json_path
 
     def set_report_folder(self, report_folder):
-        """
-        Passes the database file in.
+        """ Passes the database file in.
 
-        :param report_folder: Path to directory with sqllite databases
+        :param report_folder: Path to directory with SQLite databases\
             and into which java will write
         :type report_folder: str
         """
@@ -173,23 +158,22 @@ class JavaCaller(object):
 
     def set_placements(self, placements, transceiver, monitor_cores=None,
                        packet_gathers=None):
-        """
-        Passes in the placements leaving this class to decide pass it to Java.
+        """ Passes in the placements leaving this class to decide pass it to\
+            Java.
 
-        This method may obtain extra information about he placements which is \
-            why it also needs the transceiver.
+        This method may obtain extra information about he placements which is\
+        why it also needs the transceiver.
 
-        Currently the extra information extracted is recording region
-            base address but this could change if recording region saved in
-            the database.
+        Currently the extra information extracted is recording region\
+        base address but this could change if recording region saved in\
+        the database.
 
-        Currently this method uses json but that may well change to using the
-            database.
+        Currently this method uses JSON but that may well change to using the\
+        database.
 
         :param placements: The Placements Object
         :param transceiver: The Transceiver
         """
-
         path = os.path.join(self._json_folder, "java_placements.json")
         self._recording = False
         if self._gatherer_iptags is None:
@@ -207,6 +191,8 @@ class JavaCaller(object):
         else:
             self._recording = True
 
+    @staticmethod
+    def _json_placement(placement, transceiver):
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
@@ -282,6 +268,8 @@ class JavaCaller(object):
 
     def _write_placements(self, placements, transceiver, path):
 
+    @staticmethod
+    def _write_placements(placements, transceiver, path):
         # Read back the regions
         json_obj = list()
         for placement in placements:
@@ -311,10 +299,8 @@ class JavaCaller(object):
         return subprocess.call(params)
 
     def get_all_data(self):
-        """
-        Gets all the data from the previously set placements
-        and put these in the previously set database.
-
+        """ Gets all the data from the previously set placements\
+            and put these in the previously set database.
         """
         if not self._recording:
             return
@@ -334,9 +320,7 @@ class JavaCaller(object):
                 + str(log_file) + " for logged info")
 
     def host_execute_data_specification(self):
-        """
-        Writes all the data specs
-
+        """ Writes all the data specs, uploading the result to the machine.
         """
         result = self._run_java(
             'dse', self._machine_json(), self._report_folder)
