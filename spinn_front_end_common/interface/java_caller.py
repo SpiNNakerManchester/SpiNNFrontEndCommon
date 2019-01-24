@@ -190,15 +190,11 @@ class JavaCaller(object):
             return None
         else:
             self._recording = True
-
-    @staticmethod
-    def _json_placement(placement, transceiver):
         json_placement = OrderedDict()
         json_placement["x"] = placement.x
         json_placement["y"] = placement.y
         json_placement["p"] = placement.p
 
-        vertex = placement.vertex
         json_vertex = OrderedDict()
         json_vertex["label"] = vertex.label
         json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
@@ -209,8 +205,7 @@ class JavaCaller(object):
 
         return json_placement
 
-    @staticmethod
-    def _json_iptag(iptag):
+    def _json_iptag(self, iptag):
         json_tag = OrderedDict()
         json_tag["x"] = iptag.destination_x
         json_tag["y"] = iptag.destination_y
@@ -268,9 +263,6 @@ class JavaCaller(object):
         return path
 
     def _write_placements(self, placements, transceiver, path):
-
-    @staticmethod
-    def _write_placements(placements, transceiver, path):
         # Read back the regions
         json_obj = list()
         for placement in placements:
