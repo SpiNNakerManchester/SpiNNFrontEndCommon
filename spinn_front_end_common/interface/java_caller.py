@@ -198,6 +198,7 @@ class JavaCaller(object):
         json_placement["y"] = placement.y
         json_placement["p"] = placement.p
 
+        vertex = placement.vertex
         json_vertex = OrderedDict()
         json_vertex["label"] = vertex.label
         json_vertex["recordedRegionIds"] = vertex.get_recorded_region_ids()
@@ -273,7 +274,7 @@ class JavaCaller(object):
         # Read back the regions
         json_obj = list()
         for placement in placements:
-            json_p = self._json_placement(placement, transceiver)
+            json_p = JavaCaller._json_placement(placement, transceiver)
             if json_p:
                 json_obj.append(json_p)
 
