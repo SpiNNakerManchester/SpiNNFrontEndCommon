@@ -221,9 +221,9 @@ void timer_callback(uint unused0, uint unused1) {
     }
 
     if (((infinite_run != TRUE) && (time >= simulation_ticks))) {
-        simulation_handle_pause_resume(NULL);
-
         run_stop_pause_commands();
+
+        simulation_handle_pause_resume(NULL);
 
         log_info("in pause resume mode");
         resume = true;
