@@ -44,6 +44,8 @@ from spinn_front_end_common.interface.buffer_management.recording_utilities \
         get_recording_resources)
 from spinn_front_end_common.utilities.utility_objs import (
     ProvenanceDataItem, ExecutableType)
+from data_specification.enums.data_type import DataType
+
 
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
@@ -82,7 +84,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
     #          5. has key, 6. key, 7. mask, 8. buffer space,
     #          9. send buffer flag before notify, 10. tag,
     #          11. tag destination (y, x), 12. receive SDP port)
-    _CONFIGURATION_REGION_SIZE = 12 * 4
+    _CONFIGURATION_REGION_SIZE = 13*4#12 * 4
 
     def __init__(
             self, n_keys, label, constraints=None,
@@ -551,6 +553,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # write SDP port to which SDP packets will be received
         spec.write_value(data=self._receive_sdp_port)
+        #write random tx offset in microseconds
+        import numpy as np
+        tx_offset = 0.5 * np.random.rand()
+        spec.write_value(data=tx_offset,data_type=DataType.S1615)
 
     @inject_items({
         "machine_time_step": "MachineTimeStep",
