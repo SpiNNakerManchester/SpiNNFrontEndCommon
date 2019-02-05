@@ -19,6 +19,7 @@ class JavaCaller(object):
     """
 
     __slots__ = [
+        "_chipxy_by_ethernet",
         # The folder holding sqllite databases ect.
         "_report_folder",
         # The call to get java to work. Including the path if required.
@@ -136,6 +137,12 @@ class JavaCaller(object):
             placement = placements.get_placement_of_vertex(packet_gather)
             self._gatherer_cores[core] = placement.p
 
+        self._chipxy_by_ethernet = defaultdict(list)
+        for chip in self._machine.chips:
+            chip_xy = (chip.x, chip.y)
+            ethernet = (chip.nearest_ethernet_x, chip.nearest_ethernet_y)
+            self._chipxy_by_ethernet[ethernet].append(chip_xy)
+
     def _machine_json(self):
         """ Converts the machine in this class to JSON.
 
@@ -229,9 +236,9 @@ class JavaCaller(object):
 
     def _write_gather(self, placements, transceiver, path):
 
-        by_ethernet = self._placements_grouped(placements)
+        placements_by_ethernet = self._placements_grouped(placements)
         json_obj = list()
-        for ethernet, by_chip in by_ethernet.items():
+        for ethernet, by_chip in placements_by_ethernet.items():
             json_gather = OrderedDict()
             json_gather["x"] = ethernet[0]
             json_gather["y"] = ethernet[1]
@@ -239,22 +246,22 @@ class JavaCaller(object):
             json_gather["iptag"] = self._json_iptag(
                 self._gatherer_iptags[ethernet])
             json_chips = list()
-            for chip_xy, placements in by_chip.items():
+            for chip_xy in self._chipxy_by_ethernet[ethernet]:
                 json_chip = OrderedDict()
                 json_chip["x"] = chip_xy[0]
                 json_chip["y"] = chip_xy[1]
                 json_chip["p"] = self._monitor_cores[chip_xy]
-                json_placements = list()
-                for placement in placements:
-                    json_p = self._json_placement(placement, transceiver)
-                    if json_p:
-                        json_placements.append(json_p)
-                if len(json_placements) > 0:
-                    json_chip["placements"] = json_placements
-                    json_chips.append(json_chip)
-            if len(json_chips) > 0:
-                json_gather["monitors"] = json_chips
-                json_obj.append(json_gather)
+                if chip_xy in by_chip:
+                    json_placements = list()
+                    for placement in by_chip[chip_xy]:
+                        json_p = self._json_placement(placement, transceiver)
+                        if json_p:
+                            json_placements.append(json_p)
+                    if len(json_placements) > 0:
+                        json_chip["placements"] = json_placements
+                json_chips.append(json_chip)
+            json_gather["monitors"] = json_chips
+            json_obj.append(json_gather)
 
         # dump to json file
         with open(path, "w") as f:
