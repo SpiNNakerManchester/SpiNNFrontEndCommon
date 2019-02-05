@@ -31,6 +31,17 @@ class ProvidesProvenanceDataFromMachineImpl(
     )
     NUM_PROVENANCE_DATA_ENTRIES = len(PROVENANCE_DATA_ENTRIES)
 
+    _TIMER_TICK_OVERRUN = "Times_the_timer_tic_over_ran"
+    _MAX_TIMER_TICK_OVERRUN = "max_number_of_times_timer_tic_over_ran"
+    _TIMES_DMA_QUEUE_OVERLOADED = "Times_the_dma_queue_was_overloaded"
+    _TIMES_TRANSMISSION_SPIKES_OVERRAN = \
+        "Times_the_transmission_of_spikes_overran"
+    _TIMES_CALLBACK_QUEUE_OVERLOADED = \
+        "Times_the_callback_queue_was_overloaded"
+
+
+
+
     @abstractproperty
     def _provenance_region_id(self):
         """
@@ -115,7 +126,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         label, x, y, p, names = self._get_placement_details(placement)
         data_items = list()
         data_items.append(ProvenanceDataItem(
-            self._add_name(names, "Times_the_transmission_of_spikes_overran"),
+            self._add_name(names, self._TIMES_TRANSMISSION_SPIKES_OVERRAN),
             transmission_event_overflow,
             report=transmission_event_overflow != 0,
             message=(
@@ -129,7 +140,7 @@ class ProvidesProvenanceDataFromMachineImpl(
                     label, x, y, p, transmission_event_overflow))))
 
         data_items.append(ProvenanceDataItem(
-            self._add_name(names, "Times_the_callback_queue_was_overloaded"),
+            self._add_name(names, self._TIMES_CALLBACK_QUEUE_OVERLOADED),
             callback_queue_overloaded,
             report=callback_queue_overloaded != 0,
             message=(
@@ -141,7 +152,7 @@ class ProvidesProvenanceDataFromMachineImpl(
                     label, x, y, p, callback_queue_overloaded))))
 
         data_items.append(ProvenanceDataItem(
-            self._add_name(names, "Times_the_dma_queue_was_overloaded"),
+            self._add_name(names, self._TIMES_DMA_QUEUE_OVERLOADED),
             dma_queue_overloaded,
             report=dma_queue_overloaded != 0,
             message=(
@@ -153,7 +164,7 @@ class ProvidesProvenanceDataFromMachineImpl(
                     label, x, y, p, dma_queue_overloaded))))
 
         data_items.append(ProvenanceDataItem(
-            self._add_name(names, "Times_the_timer_tic_over_ran"),
+            self._add_name(names, self._TIMER_TICK_OVERRUN),
             number_of_times_timer_tic_over_ran,
             report=number_of_times_timer_tic_over_ran != 0,
             message=(
@@ -166,7 +177,7 @@ class ProvidesProvenanceDataFromMachineImpl(
                     label, x, y, p, number_of_times_timer_tic_over_ran))))
 
         data_items.append(ProvenanceDataItem(
-            self._add_name(names, "max_number_of_times_timer_tic_over_ran"),
+            self._add_name(names, self._MAX_TIMER_TICK_OVERRUN),
             max_number_of_times_timer_tic_over_ran,
             report=max_number_of_times_timer_tic_over_ran > 4,
             message=(
