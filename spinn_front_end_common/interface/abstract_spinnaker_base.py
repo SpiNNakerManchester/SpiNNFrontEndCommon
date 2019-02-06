@@ -1113,20 +1113,18 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        min_time_steps = None
+        min_time_steps = n_machine_time_steps
         for x, y in vertex_by_chip:
             vertices_on_chip = vertex_by_chip[x, y]
             sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
-            min_time_steps = min(
+            min_time_steps = min(min_time_steps, min(
                 int(vertex.get_n_timesteps_in_buffer_space(
                     sdram_per_vertex, self._machine_time_step))
-                for vertex in vertices_on_chip)
+                for vertex in vertices_on_chip))
 
         # clear injectable
         clear_injectables()
 
-        if min_time_steps is None:
-            return [n_machine_time_steps]
         return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
