@@ -1,19 +1,13 @@
-# pacman imports
-from pacman.model.graphs.common import EdgeTrafficType
-from pacman.model.routing_info \
-    import DictBasedMachinePartitionNKeysMap
-
-# utilities imports
 from spinn_utilities.progress_bar import ProgressBar
-
-# front end common imports
-from spinn_front_end_common.abstract_models import \
-    AbstractProvidesNKeysForPartition
+from pacman.model.graphs.common import EdgeTrafficType
+from pacman.model.routing_info import DictBasedMachinePartitionNKeysMap
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesNKeysForPartition)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class EdgeToNKeysMapper(object):
-    """ Works out the number of keys needed for each edge
+    """ Works out the number of keys needed for each edge.
     """
 
     __slots__ = []

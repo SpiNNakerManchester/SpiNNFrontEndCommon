@@ -1,12 +1,12 @@
 from spinn_utilities.progress_bar import ProgressBar
-
-from spinn_front_end_common.utilities import exceptions
-from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.exceptions import (
+    ExecutableNotFoundException)
+from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
 
 class GraphBinaryGatherer(object):
-    """ Extracts binaries to be executed
+    """ Extracts binaries to be executed.
     """
 
     __slots__ = []
@@ -42,7 +42,7 @@ class GraphBinaryGatherer(object):
         # Attempt to find this within search paths
         binary_path = executable_finder.get_executable_path(binary_name)
         if binary_path is None:
-            raise exceptions.ExecutableNotFoundException(binary_name)
+            raise ExecutableNotFoundException(binary_name)
 
         executable_targets.add_processor(
             binary_path, placement.x, placement.y, placement.p)

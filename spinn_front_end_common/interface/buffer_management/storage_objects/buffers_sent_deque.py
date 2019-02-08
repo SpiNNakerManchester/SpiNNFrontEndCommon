@@ -1,15 +1,10 @@
-# spinnman imports
-from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages \
-    import EventStopRequest, HostSendSequencedData
-
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-
-# general imports
 from collections import deque
 from threading import Lock
 import logging
+from spinn_utilities.log import FormatAdapter
+from spinnman.messages.eieio.command_messages import (
+    EventStopRequest, HostSendSequencedData)
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -47,7 +42,6 @@ class BuffersSentDeque(object):
     def __init__(self, region, sent_stop_message=False,
                  n_sequences_per_tranmission=64):
         """
-
         :param region: The region being managed
         :type region: int
         :param sent_stop_message: True if the stop message has been sent
@@ -127,8 +121,8 @@ class BuffersSentDeque(object):
     def messages(self):
         """ The messages that have been added to the set
 
-        :rtype: iterable of\
-            :py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`
+        :rtype: \
+            iterable(:py:class:`spinnman.messages.eieio.command_messages.host_send_sequenced_data.HostSendSequencedData`)
         """
         return self._buffers_sent
 

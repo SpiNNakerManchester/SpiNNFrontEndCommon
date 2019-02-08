@@ -1,21 +1,22 @@
+from spinn_utilities.progress_bar import ProgressBar
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.machine import MachineEdge
-from spinn_front_end_common.utilities.constants \
-    import PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP
-from spinn_front_end_common.utility_models import \
-    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp, \
-    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex
-from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.constants import (
+    PARTITION_ID_FOR_MULTICAST_DATA_SPEED_UP)
+from spinn_front_end_common.utility_models import (
+    DataSpeedUpPacketGatherMachineVertex as DataSpeedUp,
+    ExtraMonitorSupport, ExtraMonitorSupportMachineVertex)
 
 
 class InsertEdgesToExtraMonitorFunctionality(object):
+    """ Inserts edges between vertices who use MC speed up and its local\
+        MC data gatherer.
+    """
 
     def __call__(self, machine_graph, placements, machine,
                  vertex_to_ethernet_connected_chip_mapping,
                  application_graph=None, graph_mapper=None):
-        """ Inserts edges between vertices who use MC speed up and its local\
-            MC data gatherer
-
+        """
         :param machine_graph: the machine graph instance
         :param placements: the placements
         :param machine: the machine object
@@ -57,14 +58,14 @@ class InsertEdgesToExtraMonitorFunctionality(object):
             self, vertex, machine, placements, machine_graph,
             vertex_to_ethernet_connected_chip_mapping, application_graph,
             graph_mapper):
-        """ inserts edges as required for a given vertex
+        """ Inserts edges as required for a given vertex
 
         :param vertex: the extra monitor core
         :param machine: the spinnMachine instance
         :param placements: the placements object
         :param machine_graph: machine graph object
         :param vertex_to_ethernet_connected_chip_mapping: \
-            the ethernet to mc gatherer map
+            the ethernet to multicast gatherer map
         :param application_graph: app graph object
         :param graph_mapper: the mapping between app and machine graph
         :rtype: None
@@ -108,7 +109,7 @@ class InsertEdgesToExtraMonitorFunctionality(object):
 
     @staticmethod
     def _has_edge_already(source, destination, graph):
-        """ checks if a edge already exists
+        """ Checks if a edge already exists
 
         :param source: the source of the edge
         :param destination: destination of the edge

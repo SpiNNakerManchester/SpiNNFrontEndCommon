@@ -1,10 +1,8 @@
-from spinn_front_end_common.utilities.helpful_functions \
-    import generate_unique_folder_name
-
-# general imports
-from lxml import etree
 import itertools
 import string
+from lxml import etree
+from spinn_front_end_common.utilities.helpful_functions import (
+    generate_unique_folder_name)
 
 _VALID_CHARS = frozenset(
     "-_.() {}{}".format(string.ascii_letters, string.digits))
@@ -19,11 +17,11 @@ class ProvenanceXMLWriter(object):
     __slots__ = []
 
     def __call__(self, provenance_data_items, provenance_data_path):
-        """ writes provenance in xml format
+        """ Writes provenance in XML format
 
         :param provenance_data_items: data items for provenance
         :param provenance_data_path: the file path to store provenance in
-        :return:  None
+        :return: None
         """
 
         # Group data by the first name

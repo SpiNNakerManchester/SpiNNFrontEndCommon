@@ -1,21 +1,16 @@
 from spinn_utilities.overrides import overrides
-# pacman imports
-from pacman.model.constraints.placer_constraints\
-    import RadialPlacementFromChipConstraint
+from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
+from pacman.model.constraints.placer_constraints import (
+    RadialPlacementFromChipConstraint)
 from pacman.model.graphs.application import ApplicationVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import IPtagResource, ResourceContainer
-from pacman.model.resources import SDRAMResource
-
-# spinn front end imports
+from pacman.model.resources import (
+    CPUCyclesPerTickResource, DTCMResource, IPtagResource, ResourceContainer,
+    SDRAMResource)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from .live_packet_gather_machine_vertex import LivePacketGatherMachineVertex
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
-
-# spinnman imports
-from spinnman.messages.eieio import EIEIOType, EIEIOPrefix
 
 
 class LivePacketGather(
@@ -23,7 +18,7 @@ class LivePacketGather(
         AbstractHasAssociatedBinary):
     """ A model which stores all the events it receives during a timer tick\
         and then compresses them into Ethernet packets and sends them out of\
-        a spinnaker machine.
+        a SpiNNaker machine.
     """
 
     def __init__(
@@ -34,8 +29,6 @@ class LivePacketGather(
             payload_prefix=None, payload_right_shift=0,
             number_of_packets_sent_per_time_step=0, constraints=None,
             label=None):
-        """
-        """
         # pylint: disable=too-many-arguments, too-many-locals
         if ((message_type == EIEIOType.KEY_PAYLOAD_32_BIT or
              message_type == EIEIOType.KEY_PAYLOAD_16_BIT) and

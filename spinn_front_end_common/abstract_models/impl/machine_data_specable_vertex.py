@@ -1,11 +1,9 @@
-from spinn_utilities.overrides import overrides
-from pacman.executor.injection_decorator \
-    import supports_injection, inject_items
-
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification
-
 from abc import abstractmethod
+from spinn_utilities.overrides import overrides
+from pacman.executor.injection_decorator import (
+    supports_injection, inject_items)
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification)
 
 
 @supports_injection

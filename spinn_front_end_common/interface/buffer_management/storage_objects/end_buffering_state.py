@@ -2,7 +2,7 @@ from .channel_buffer_state import ChannelBufferState
 
 
 class EndBufferingState(object):
-    """ Stores the buffering state at the end of a simulation
+    """ Stores the buffering state at the end of a simulation.
     """
 
     __slots__ = [
@@ -16,7 +16,6 @@ class EndBufferingState(object):
 
     def __init__(self, buffering_out_fsm_state, list_channel_buffer_state):
         """
-
         :param buffering_out_fsm_state: Final sequence number received
         :param list_channel_buffer_state: a list of channel state, where each\
             channel is stored in a ChannelBufferState object

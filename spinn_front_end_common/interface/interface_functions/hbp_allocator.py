@@ -1,11 +1,10 @@
 import logging
 import requests
 from spinn_utilities.overrides import overrides
-
-from spinn_front_end_common.abstract_models.impl \
-    import MachineAllocationController
-from spinn_front_end_common.abstract_models \
-    import AbstractMachineAllocationController
+from spinn_front_end_common.abstract_models.impl import (
+    MachineAllocationController)
+from spinn_front_end_common.abstract_models import (
+    AbstractMachineAllocationController)
 
 
 class _HBPJobController(MachineAllocationController):
@@ -90,13 +89,12 @@ class _HBPJobController(MachineAllocationController):
 
 class HBPAllocator(object):
     """ Request a machine from the HBP remote access server that will fit\
-        a number of chips
+        a number of chips.
     """
 
     def __call__(
             self, hbp_server_url, total_run_time, n_chips):
         """
-
         :param hbp_server_url: \
             The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request

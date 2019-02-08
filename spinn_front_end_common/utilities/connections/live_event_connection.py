@@ -1,28 +1,34 @@
+import logging
+import struct
+import sys
 from threading import Thread
 from collections import OrderedDict
-from six import iterkeys, iteritems
-import logging
-
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinn_front_end_common.utilities.database import DatabaseConnection
-
-from spinnman.utilities.utility_functions import send_port_trigger_message
-from spinnman.messages.eieio.data_messages import EIEIODataMessage
+from six import iterkeys, iteritems, reraise
+from spinn_utilities.log import FormatAdapter
+from spinnman.messages.eieio.data_messages import (
+    EIEIODataMessage, KeyPayloadDataElement)
 from spinnman.messages.eieio import EIEIOType
 from spinnman.connections import ConnectionListener
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.data_messages import KeyPayloadDataElement
-
-from spinn_utilities.log import FormatAdapter
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
+from spinn_front_end_common.utilities.database import DatabaseConnection
+from spinnman.messages.sdp.sdp_flag import SDPFlag
+from spinnman.connections.udp_packet_connections.utils import (
+    update_sdp_header_for_udp_send)
+from spinnman.messages.scp.impl.iptag_set import IPTagSet
+from spinnman.exceptions import SpinnmanTimeoutException
+from spinnman.constants import SCP_SCAMP_PORT
+from spinnman.utilities.utility_functions import send_port_trigger_message
 
 logger = FormatAdapter(logging.getLogger(__name__))
-
 
 # The maximum number of 32-bit keys that will fit in a packet
 _MAX_FULL_KEYS_PER_PACKET = 63
 
 # The maximum number of 16-bit keys that will fit in a packet
 _MAX_HALF_KEYS_PER_PACKET = 127
+
+_TWO_SKIP = struct.Struct("<2x")
 
 
 class LiveEventConnection(DatabaseConnection):
@@ -33,13 +39,13 @@ class LiveEventConnection(DatabaseConnection):
         "_atom_id_to_key",
         "_init_callbacks",
         "_key_to_atom_id_and_label",
-        "_listeners",
         "_live_event_callbacks",
         "_live_packet_gather_label",
         "_machine_vertices",
         "_pause_stop_callbacks",
         "_receive_labels",
-        "_receivers",
+        "_receiver_connection",
+        "_receiver_listener",
         "_send_address_details",
         "_send_labels",
         "_sender_connection",
@@ -95,8 +101,8 @@ class LiveEventConnection(DatabaseConnection):
                 self._start_resume_callbacks[label] = list()
                 self._pause_stop_callbacks[label] = list()
                 self._init_callbacks[label] = list()
-        self._receivers = dict()
-        self._listeners = dict()
+        self._receiver_listener = None
+        self._receiver_connection = None
 
     def add_init_callback(self, label, init_callback):
         """ Add a callback to be called to initialise a vertex
@@ -122,7 +128,7 @@ class LiveEventConnection(DatabaseConnection):
         :param live_event_callback: A function to be called when events are\
             received. This should take as parameters the label of the vertex,\
             the simulation timestep when the event occurred, and an\
-            array-like of atom ids.
+            array-like of atom IDs.
         :type live_event_callback: function(str, int, [int]) -> None
         """
         label_id = self._receive_labels.index(label)
@@ -186,7 +192,8 @@ class LiveEventConnection(DatabaseConnection):
                     label, vertex_size, run_time_ms, machine_timestep_ms)
 
     def _init_sender(self, db, vertex_sizes):
-        self._sender_connection = EIEIOConnection()
+        if self._sender_connection is None:
+            self._sender_connection = EIEIOConnection()
         for label in self._send_labels:
             self._send_address_details[label] = self.__get_live_input_details(
                 db, label)
@@ -200,21 +207,26 @@ class LiveEventConnection(DatabaseConnection):
                 vertex_sizes[label] = len(self._atom_id_to_key[label])
 
     def _init_receivers(self, db, vertex_sizes):
+        # Set up a single connection for receive
+        if self._receiver_connection is None:
+            self._receiver_connection = EIEIOConnection()
+        receivers = set()
         for label_id, label in enumerate(self._receive_labels):
-            host, port, board_address = self.__get_live_output_details(
+            _, port, board_address, tag = self.__get_live_output_details(
                 db, label)
-            if port not in self._receivers:
-                receiver = EIEIOConnection(local_port=port)
-                listener = ConnectionListener(receiver)
-                listener.add_callback(self._receive_packet_callback)
-                listener.start()
-                self._receivers[port] = receiver
-                self._listeners[port] = listener
 
-            send_port_trigger_message(receiver, board_address)
+            # Update the tag if not already done
+            if (board_address, port, tag) not in receivers:
+                self.__update_tag(
+                    self._receiver_connection, board_address, tag)
+                receivers.add((board_address, port, tag))
+                send_port_trigger_message(
+                    self._receiver_connection, board_address)
+
             logger.info(
                 "Listening for traffic from {} on {}:{}",
-                label, host, port)
+                label, self._receiver_connection.local_ip_address,
+                self._receiver_connection.local_port)
 
             if self._machine_vertices:
                 key, _ = db.get_machine_live_output_key(
@@ -227,6 +239,15 @@ class LiveEventConnection(DatabaseConnection):
                     self._key_to_atom_id_and_label[key] = (atom_id, label_id)
                 vertex_sizes[label] = len(key_to_atom_id)
 
+        # Last of all, set up the listener for packets
+        # NOTE: Has to be done last as otherwise will receive SCP messages
+        # sent above!
+        if self._receiver_listener is None:
+            self._receiver_listener = ConnectionListener(
+                self._receiver_connection)
+            self._receiver_listener.add_callback(self._receive_packet_callback)
+            self._receiver_listener.start()
+
     def __get_live_input_details(self, db_reader, send_label):
         if self._machine_vertices:
             return db_reader.get_machine_live_input_details(send_label)
@@ -234,34 +255,59 @@ class LiveEventConnection(DatabaseConnection):
 
     def __get_live_output_details(self, db_reader, receive_label):
         if self._machine_vertices:
-            host, port, strip_sdp, board_address = \
+            host, port, strip_sdp, board_address, tag = \
                 db_reader.get_machine_live_output_details(
                     receive_label, self._live_packet_gather_label)
         else:
-            host, port, strip_sdp, board_address = \
+            host, port, strip_sdp, board_address, tag = \
                 db_reader.get_live_output_details(
                     receive_label, self._live_packet_gather_label)
         if not strip_sdp:
-            raise Exception("Currently, only IPtags which strip the SDP "
+            raise Exception("Currently, only IP tags which strip the SDP "
                             "headers are supported")
-        return host, port, board_address
+        return host, port, board_address, tag
+
+    def __update_tag(self, connection, board_address, tag):
+        # Update an IP Tag with the sender's address and port
+        # This avoids issues with NAT firewalls
+        logger.info("Updating tag for {}".format(board_address))
+        request = IPTagSet(
+            0, 0, [0, 0, 0, 0], 0, tag, strip=True, use_sender=True)
+        request.sdp_header.flags = SDPFlag.REPLY_EXPECTED_NO_P2P
+        update_sdp_header_for_udp_send(request.sdp_header, 0, 0)
+        data = _TWO_SKIP.pack() + request.bytestring
+        sent = False
+        tries_to_go = 3
+        while not sent:
+            try:
+                connection.send_to(data, (board_address, SCP_SCAMP_PORT))
+                response_data = connection.receive(1.0)
+                request.get_scp_response().read_bytestring(response_data, 2)
+                sent = True
+            except SpinnmanTimeoutException:
+                if not tries_to_go:
+                    logger.info("No more tries - Error!")
+                    reraise(*sys.exc_info())
+
+                logger.info("Timeout, retrying")
+                tries_to_go -= 1
+        logger.info("Done updating tag for {}".format(board_address))
 
     def _handle_possible_rerun_state(self):
         # reset from possible previous calls
         if self._sender_connection is not None:
             self._sender_connection.close()
             self._sender_connection = None
-        for port in self._receivers:
-            self._receivers[port].close()
-        self._receivers = dict()
-        for port in self._listeners:
-            self._listeners[port].close()
-        self._listeners = dict()
+        if self._receiver_connection is not None:
+            self._receiver_connection.close()
+            self._receiver_connection = None
+        if self._receiver_listener is not None:
+            self._receiver_listener.close()
+            self._receiver_listener = None
 
     def __launch_thread(self, kind, label, callback):
         thread = Thread(
             target=callback, args=(label, self),
-            verbose=True,
             name="{} callback thread for live_event_connection {}:{}".format(
                 kind, self._local_port, self._local_ip_address))
         thread.start()
@@ -324,11 +370,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: \
             The label of the vertex from which the event will originate
         :type label: str
-        :param atom_id: The id of the atom sending the event
+        :param atom_id: The ID of the atom sending the event
         :type atom_id: int
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
-            send 16-bit atom ids directly
+            send 16-bit atom IDs directly
         :type send_full_keys: bool
         """
         self.send_events(label, [atom_id], send_full_keys)
@@ -339,11 +385,11 @@ class LiveEventConnection(DatabaseConnection):
         :param label: \
             The label of the vertex from which the events will originate
         :type label: str
-        :param atom_ids: array-like of atom ids sending events
+        :param atom_ids: array-like of atom IDs sending events
         :type atom_ids: [int]
         :param send_full_keys: Determines whether to send full 32-bit keys,\
             getting the key for each atom from the database, or whether to\
-            send 16-bit atom ids directly
+            send 16-bit atom IDs directly
         :type send_full_keys: bool
         """
         max_keys = _MAX_HALF_KEYS_PER_PACKET

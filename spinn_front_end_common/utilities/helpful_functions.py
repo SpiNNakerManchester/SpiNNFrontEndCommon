@@ -1,22 +1,14 @@
-# dsg imports
-from data_specification import utility_calls
-
-# front end common imports
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
-# SpiNMachine imports
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_machine import CoreSubsets
-
-# general imports
 import os
 import logging
 import struct
 import datetime
 import shutil
-
-from spinnman.model.enums import CPUState
 from spinn_utilities.log import FormatAdapter
+from spinn_machine import CoreSubsets
+from spinnman.model.enums import CPUState
+from data_specification import utility_calls
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 logger = FormatAdapter(logging.getLogger(__name__))
 APP_DIRNAME = 'application_generated_data_files'
@@ -59,7 +51,7 @@ def write_address_to_user0(txrx, x, y, p, address):
     :param p: Core ID on chip.
     :param address: Value to write (32-bit integer)
     """
-    user_0_address = txrx.get_user_0_register_address_from_core(x, y, p)
+    user_0_address = txrx.get_user_0_register_address_from_core(p)
     txrx.write_memory(x, y, user_0_address, _ONE_WORD.pack(address))
 
 
@@ -70,7 +62,7 @@ def locate_memory_region_for_placement(placement, region, transceiver):
     :type region: int
     :param placement: the placement object to get the region address of
     :type placement: pacman.model.placements.Placement
-    :param transceiver: the python interface to the spinnaker machine
+    :param transceiver: the python interface to the SpiNNaker machine
     :type transceiver: spiNNMan.transciever.Transciever
     """
     regions_base_address = transceiver.get_cpu_information_from_core(
@@ -98,7 +90,6 @@ def set_up_output_application_data_specifics(
         max_application_binaries_kept, n_calls_to_run,
         this_run_time_string):
     """
-
     :param where_to_write_application_data_files:\
         the location where all app data is by default written to, or DEFAULT
     :type where_to_write_application_data_files: str
@@ -142,7 +133,6 @@ def set_up_report_specifics(
         default_report_file_path, max_reports_kept, n_calls_to_run,
         this_run_time_string=None):
     """
-
     :param default_report_file_path: The location where all reports reside
     :type default_report_file_path: str
     :param max_reports_kept:\
@@ -274,7 +264,7 @@ def sort_out_downed_chips_cores_links(
         a tuple of (\
             set of (x, y) of down chips, \
             set of (x, y, p) of down cores, \
-            set of ((x, y), link id) of down links)
+            set of ((x, y), link ID) of down links)
     :rtype: (set((int, int)), set((int, int, int)), set(((int, int), int)))
     """
     ignored_chips = set()
@@ -295,70 +285,6 @@ def sort_out_downed_chips_cores_links(
             x, y, link_id = downed_link.split(",")
             ignored_links.add((int(x), int(y), int(link_id)))
     return ignored_chips, ignored_cores, ignored_links
-
-
-def translate_iobuf_extraction_elements(
-        hard_coded_cores, hard_coded_model_binary, executable_targets,
-        executable_finder):
-    """
-
-    :param hard_coded_cores: list of cores to read iobuf from
-    :param hard_coded_model_binary: list of binary names to read iobuf from
-    :param executable_targets: the targets of cores and executable binaries
-    :param executable_finder: where to find binaries paths from binary names
-    :return: core subsets for the cores to read iobuf from
-    """
-    # all the cores
-    if hard_coded_cores == "ALL" and hard_coded_model_binary == "None":
-        return executable_targets.all_core_subsets
-
-    # some hard coded cores
-    if hard_coded_cores != "None" and hard_coded_model_binary == "None":
-        ignored_cores = convert_string_into_chip_and_core_subset(
-            hard_coded_cores)
-        return ignored_cores
-
-    # some binaries
-    if hard_coded_cores == "None" and hard_coded_model_binary != "None":
-        return _handle_model_binaries(
-            hard_coded_model_binary, executable_targets, executable_finder)
-
-    # nothing
-    if hard_coded_cores == "None" and hard_coded_model_binary == "None":
-        return CoreSubsets()
-
-    # bit of both
-    if hard_coded_cores != "None" and hard_coded_model_binary != "None":
-        model_core_subsets = _handle_model_binaries(
-            hard_coded_model_binary, executable_targets, executable_finder)
-        hard_coded_core_core_subsets = \
-            convert_string_into_chip_and_core_subset(hard_coded_cores)
-        for core_subset in hard_coded_core_core_subsets:
-            model_core_subsets.add_core_subset(core_subset)
-        return model_core_subsets
-
-    # should never get here,
-    raise ConfigurationException("Something odd has happened")
-
-
-def _handle_model_binaries(
-        hard_coded_model_binary, executable_targets, executable_finder):
-    """
-    :param hard_coded_model_binary: list of binary names to read iobuf from
-    :param executable_targets: the targets of cores and executable binaries
-    :param executable_finder: where to find binaries paths from binary names
-    :return: core subsets from binaries that need iobuf to be read from them
-    """
-    model_binaries = hard_coded_model_binary.split(",")
-    cores = CoreSubsets()
-    for model_binary in model_binaries:
-        model_binary_path = \
-            executable_finder.get_executable_path(model_binary)
-        core_subsets = \
-            executable_targets.get_cores_for_binary(model_binary_path)
-        for core_subset in core_subsets:
-            cores.add_core_subset(core_subset)
-    return cores
 
 
 def read_config(config, section, item):
@@ -417,9 +343,9 @@ def generate_unique_folder_name(folder, filename, extension):
 
 
 def get_ethernet_chip(machine, board_address):
-    """ locate the chip with the given board IP address
+    """ Locate the chip with the given board IP address
 
-    :param machine: the spinnaker machine
+    :param machine: the SpiNNaker machine
     :param board_address: the board address to locate the chip of.
     :return: The chip that supports that board address
     :raises ConfigurationException:\
@@ -434,7 +360,7 @@ def get_ethernet_chip(machine, board_address):
 
 
 def convert_time_diff_to_total_milliseconds(sample):
-    """ converts between a time diff and total milliseconds
+    """ Convert between a time diff and total milliseconds.
 
     :return: total milliseconds
     :rtype: float
@@ -443,7 +369,7 @@ def convert_time_diff_to_total_milliseconds(sample):
 
 
 def determine_flow_states(executable_types, no_sync_changes):
-    """ returns the start and end states for these executable types
+    """ Get the start and end states for these executable types.
 
     :param executable_types: \
         the execute types to locate start and end states from

@@ -1,13 +1,8 @@
-# spinnman imports
+import re
 from spinnman.connections import SocketAddressWithChip
 from spinnman.transceiver import create_transceiver_from_hostname
 from spinnman.model import BMPConnectionData
-
-# front end common imports
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
-# general imports
-import re
 
 
 class MachineGenerator(object):
@@ -22,7 +17,7 @@ class MachineGenerator(object):
             scamp_connection_data, boot_port_num, reset_machine_on_start_up,
             max_sdram_size=None, max_core_id=None):
         """
-        :param hostname: the hostname or IP address of the spinnaker machine
+        :param hostname: the hostname or IP address of the SpiNNaker machine
         :param bmp_details: the details of the BMP connections
         :param downed_chips: \
             the chips that are down which SARK thinks are alive
@@ -110,7 +105,7 @@ class MachineGenerator(object):
     @staticmethod
     def _parse_bmp_boards(bmp_boards):
         # If the string is a range of boards, get the range
-        range_match = re.match("(\d+)-(\d+)", bmp_boards)
+        range_match = re.match(r"(\d+)-(\d+)", bmp_boards)
         if range_match is not None:
             return list(range(int(range_match.group(1)),
                               int(range_match.group(2)) + 1))
