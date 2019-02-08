@@ -1,10 +1,9 @@
 from spinn_utilities.progress_bar import ProgressBar
-
 from spinnman.constants import ROUTER_REGISTER_REGISTERS
 from spinnman.model import DiagnosticFilter
-from spinnman.model.enums \
-    import DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType
-from spinnman.model.enums import DiagnosticFilterSource
+from spinnman.model.enums import (
+    DiagnosticFilterDefaultRoutingStatus, DiagnosticFilterPacketType,
+    DiagnosticFilterSource)
 
 
 class RoutingTableLoader(object):

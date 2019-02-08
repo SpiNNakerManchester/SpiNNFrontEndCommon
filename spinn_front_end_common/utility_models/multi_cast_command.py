@@ -2,7 +2,7 @@ from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class MultiCastCommand(object):
-    """ A command to be sent to a vertex
+    """ A command to be sent to a vertex.
     """
 
     def __init__(

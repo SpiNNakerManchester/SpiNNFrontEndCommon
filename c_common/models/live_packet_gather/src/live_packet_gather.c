@@ -180,6 +180,8 @@ void timer_callback(uint unused0, uint unused1) {
         // Subtract 1 from the time so this tick gets done again on the next
         // run
         time -= 1;
+
+        simulation_ready_to_read();
     }
 }
 
@@ -197,7 +199,7 @@ void flush_events_if_full(void) {
     }
 }
 
-// process mc packet without payload
+// processes an incoming multicast packet without payload
 void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
@@ -244,7 +246,7 @@ void process_incoming_event(uint key) {
     flush_events_if_full();
 }
 
-// processes mc packet with payload
+// processes an incoming multicast packet with payload
 void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 

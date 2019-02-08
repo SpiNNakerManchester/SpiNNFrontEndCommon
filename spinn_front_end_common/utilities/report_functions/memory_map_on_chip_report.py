@@ -1,9 +1,8 @@
-from data_specification.constants import MAX_MEM_REGIONS
-from spinn_utilities.progress_bar import ProgressBar
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from data_specification.constants import MAX_MEM_REGIONS
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
@@ -13,11 +12,11 @@ MEM_MAP_FILENAME = "memory_map_from_processor_{0:d}_{1:d}_{2:d}.txt"
 
 
 class MemoryMapOnChipReport(object):
-    """ Report on memory usage
+    """ Report on memory usage.
     """
 
     def __call__(self, report_default_directory, dsg_targets, transceiver):
-        """ creates a report that states where in sdram each region is
+        """ Creates a report that states where in SDRAM each region is
 
         :param report_default_directory: the folder where reports are written
         :param dsg_targets: the map between placement and file writer
@@ -71,8 +70,7 @@ class MemoryMapOnChipReport(object):
 
     @staticmethod
     def _get_report_data_address(txrx, x, y, p):
-        data_address_pointer = txrx.get_user_1_register_address_from_core(
-            x, y, p)
+        data_address_pointer = txrx.get_user_1_register_address_from_core(p)
         data_address_encoded = txrx.read_memory(
             x, y, data_address_pointer, 4)
         return _ONE_WORD.unpack_from(data_address_encoded)[0]

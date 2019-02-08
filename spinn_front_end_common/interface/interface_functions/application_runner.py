@@ -1,16 +1,11 @@
 import logging
 import time
-
+from spinn_utilities.log import FormatAdapter
+from spinnman.messages.scp.enums import Signal
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
-from spinnman.messages.scp.enums import Signal
-from spinnman.model.enums import CPUState
-from spinn_utilities.log import FormatAdapter
-
 logger = FormatAdapter(logging.getLogger(__name__))
-_GOOD_STATES = frozenset([
-    CPUState.RUNNING, CPUState.PAUSED, CPUState.FINISHED])
 
 
 class _NotificationWrapper(object):
@@ -93,11 +88,7 @@ class ApplicationRunner(object):
             # fire all signals as required
             txrx.send_signal(app_id, sync_signal)
 
-        # verify all cores are in running states
-        txrx.wait_for_cores_to_be_in_state(
-            executable_targets.all_core_subsets, app_id, _GOOD_STATES)
-
-        # Send start notification
+        # Send start notification to external applications
         notifier.send_start_resume_notification()
 
         # Wait for the application to finish
@@ -150,8 +141,8 @@ class ApplicationRunner(object):
 
     @staticmethod
     def _determine_simulation_sync_signals(executable_types, no_sync_changes):
-        """ sorts out start states, and creates core subsets of the states for
-        further checks.
+        """ Determines the start states, and creates core subsets of the\
+            states for further checks.
 
         :param no_sync_changes: sync counter
         :param executable_types: the types of executables

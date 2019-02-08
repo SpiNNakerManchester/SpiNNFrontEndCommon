@@ -1,27 +1,23 @@
+import struct
+from enum import Enum
 from spinn_utilities.overrides import overrides
-
+from spinnman.messages.eieio import EIEIOType
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.machine import MachineVertex
-from pacman.model.resources import CPUCyclesPerTickResource, DTCMResource
-from pacman.model.resources import IPtagResource, ResourceContainer
-from pacman.model.resources import SDRAMResource
-
-from spinn_front_end_common.interface.provenance \
-    import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary, \
-    AbstractSupportsDatabaseInjection
-from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableType
-from spinn_front_end_common.utilities.constants \
-    import SYSTEM_BYTES_REQUIREMENT
-
-from spinnman.messages.eieio import EIEIOType
-
-from enum import Enum
-import struct
+from pacman.model.resources import (
+    CPUCyclesPerTickResource, DTCMResource, IPtagResource, ResourceContainer,
+    SDRAMResource)
+from spinn_front_end_common.interface.provenance import (
+    ProvidesProvenanceDataFromMachineImpl)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
+from spinn_front_end_common.abstract_models import (
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.utilities.utility_objs import (
+    ProvenanceDataItem, ExecutableType)
+from spinn_front_end_common.utilities.constants import (
+    SYSTEM_BYTES_REQUIREMENT)
 
 _ONE_SHORT = struct.Struct("<H")
 _TWO_BYTES = struct.Struct("<BB")
@@ -175,7 +171,6 @@ class LivePacketGatherMachineVertex(
     def _reserve_memory_regions(self, spec):
         """ Reserve SDRAM space for memory areas
         """
-
         spec.comment("\nReserving memory space for data regions:\n\n")
 
         # Reserve memory:
@@ -193,15 +188,15 @@ class LivePacketGatherMachineVertex(
         self.reserve_provenance_data_region(spec)
 
     def _write_configuration_region(self, spec, iptags):
-        """ writes the configuration region to the spec
+        """ Write the configuration region to the spec
 
-        :param spec: the spec object for the dsg
+        :param spec: the spec object for the DSG
         :type spec: \
-                    :py:class:`spinn_storage_handlers.FileDataWriter`
-        :param iptags: The set of ip tags assigned to the object
-        :type iptags: iterable of :py:class:`spinn_machine.tags.IPTag`
-        :raise DataSpecificationException: when something goes wrong with the\
-                    dsg generation
+            :py:class:`spinn_storage_handlers.FileDataWriter`
+        :param iptags: The set of IP tags assigned to the object
+        :type iptags: iterable(:py:class:`spinn_machine.tags.IPTag`)
+        :raise DataSpecificationException: \
+            when something goes wrong with the DSG generation
         """
         spec.switch_write_focus(
             region=(
@@ -264,9 +259,7 @@ class LivePacketGatherMachineVertex(
 
     def _write_setup_info(self, spec, machine_time_step, time_scale_factor):
         """ Write basic info to the system region
-
         """
-
         # Write this to the system region (to be picked up by the simulation):
         spec.switch_write_focus(
             region=(LivePacketGatherMachineVertex.
@@ -286,7 +279,6 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_sdram_usage():
         """ Get the SDRAM used by this vertex
-
         """
         return (
             SYSTEM_BYTES_REQUIREMENT +
@@ -297,6 +289,5 @@ class LivePacketGatherMachineVertex(
     @staticmethod
     def get_dtcm_usage():
         """ Get the DTCM used by this vertex
-
         """
         return LivePacketGatherMachineVertex._CONFIG_SIZE

@@ -1,23 +1,22 @@
 from enum import Enum
-
+from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
 from pacman.model.graphs.common import EdgeTrafficType
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer, SDRAMResource
-from spinn_front_end_common.abstract_models import \
-    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification
+from spinn_front_end_common.abstract_models import (
+    AbstractHasAssociatedBinary, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities import globals_variables
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.utilities.utility_objs.\
-    extra_monitor_scp_processes import \
-    ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess, \
-    SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess, \
-    ClearQueueProcess
-from .data_speed_up_packet_gatherer_machine_vertex import \
-    DataSpeedUpPacketGatherMachineVertex
-from spinn_utilities.overrides import overrides
-from spinn_front_end_common.utilities.helpful_functions \
-    import convert_vertices_to_core_subset
+    extra_monitor_scp_processes import (
+        ReadStatusProcess, ResetCountersProcess, SetPacketTypesProcess,
+        SetRouterEmergencyTimeoutProcess, SetRouterTimeoutProcess,
+        ClearQueueProcess)
+from .data_speed_up_packet_gatherer_machine_vertex import (
+    DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.utilities.helpful_functions import (
+    convert_vertices_to_core_subset)
 
 
 class ExtraMonitorSupportMachineVertex(
@@ -25,7 +24,7 @@ class ExtraMonitorSupportMachineVertex(
         AbstractGeneratesDataSpecification):
 
     __slots__ = (
-        # if we reinject mc packets
+        # if we reinject multicast packets
         "_reinject_multicast",
         # if we reinject point to point packets
         "_reinject_point_to_point",
@@ -48,13 +47,12 @@ class ExtraMonitorSupportMachineVertex(
             self, constraints, reinject_multicast=None,
             reinject_point_to_point=False, reinject_nearest_neighbour=False,
             reinject_fixed_route=False):
-        """ constructor
-
+        """
         :param constraints: constraints on this vertex
-        :param reinject_multicast: if we reinject mc packets
-        :param reinject_point_to_point: if we reinject point to point packets
-        :param reinject_nearest_neighbour: if we reinject nearest neighbour\
-            packets
+        :param reinject_multicast: if we reinject multicast packets
+        :param reinject_point_to_point: if we reinject point-to-point packets
+        :param reinject_nearest_neighbour: \
+            if we reinject nearest-neighbour packets
         :param reinject_fixed_route: if we reinject fixed route packets
         """
         # pylint: disable=too-many-arguments
@@ -240,7 +238,7 @@ class ExtraMonitorSupportMachineVertex(
         process.reset_counters(core_subsets)
 
     def get_reinjection_status(self, placements, transceiver):
-        """ gets the reinjection status from this extra monitor vertex
+        """ Get the reinjection status from this extra monitor vertex
 
         :param transceiver: the spinnMan interface
         :param placements: the placements object
@@ -253,7 +251,7 @@ class ExtraMonitorSupportMachineVertex(
 
     def get_reinjection_status_for_vertices(
             self, placements, extra_monitor_cores_for_data, transceiver):
-        """ gets the reinjection status from a set of extra monitor cores
+        """ Get the reinjection status from a set of extra monitor cores
 
         :param placements: the placements object
         :param extra_monitor_cores_for_data: \

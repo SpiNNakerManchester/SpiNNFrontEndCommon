@@ -1,23 +1,18 @@
 from collections import defaultdict
-
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.abstract_models \
-    import AbstractRewritesDataSpecification
-
-from data_specification.utility_calls \
-    import get_data_spec_and_file_writer_filename
-
-from spinn_front_end_common.abstract_models import \
-    AbstractGeneratesDataSpecification
+from data_specification.utility_calls import (
+    get_data_spec_and_file_writer_filename)
+from spinn_front_end_common.abstract_models import (
+    AbstractRewritesDataSpecification, AbstractGeneratesDataSpecification)
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 
 class GraphDataSpecificationWriter(object):
-    """ Executes data specification generation
+    """ Executes the data specification generation step.
     """
 
     __slots__ = (
-        # Dict of sdram usage by chip coordinates
+        # Dict of SDRAM usage by chip coordinates
         "_sdram_usage",
         # Dict of list of region sizes by vertex
         "_region_sizes",
@@ -36,21 +31,20 @@ class GraphDataSpecificationWriter(object):
             app_data_runtime_folder, machine, graph_mapper=None,
             placement_order=None):
         """
-
         :param placements: placements of machine graph to cores
-        :param hostname: spinnaker machine name
+        :param hostname: SpiNNaker machine name
         :param report_default_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
         :param app_data_runtime_folder:\
             Folder where data specifications should be written to
-        :param machine: the python representation of the spinnaker machine
+        :param machine: the python representation of the SpiNNaker machine
         :param graph_mapper:\
             the mapping between application and machine graph
         :param placement:\
             the optional order in which placements should be examined
 
-        :return: dsg targets (map of placement tuple and filename)
+        :return: DSG targets (map of placement tuple and filename)
         """
         # pylint: disable=too-many-arguments
 
@@ -99,17 +93,17 @@ class GraphDataSpecificationWriter(object):
             report_default_directory, write_text_specs,
             app_data_runtime_folder, machine):
         """
-
         :param placement: placement of machine graph to cores
-        :param vertex: the specific vertex to write dsg for.
-        :param hostname: spinnaker machine name
+        :param vertex: the specific vertex to write DSG for.
+        :param hostname: SpiNNaker machine name
         :param report_default_directory: the location where reports are stored
         :param write_text_specs:\
             True if the textual version of the specification is to be written
         :param app_data_runtime_folder: \
             Folder where data specifications should be written to
-        :param machine: the python representation of the spinnaker machine
-        :return: True if the vertex was data specable, False otherwise
+        :param machine: the python representation of the SpiNNaker machine
+        :return: True if the vertex was data spec-able, False otherwise
+        :rtype: bool
         """
         # pylint: disable=too-many-arguments
 
@@ -123,11 +117,11 @@ class GraphDataSpecificationWriter(object):
             report_default_directory,
             write_text_specs, app_data_runtime_folder)
 
-        # link dsg file to vertex
+        # link DSG file to vertex
         dsg_targets[placement.x, placement.y, placement.p] = \
             data_writer_filename
 
-        # generate the dsg file
+        # generate the DSG file
         vertex.generate_data_specification(spec, placement)
 
         # Check the memory usage

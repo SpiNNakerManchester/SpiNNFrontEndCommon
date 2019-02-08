@@ -1,5 +1,4 @@
 from six import add_metaclass
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 
@@ -14,5 +13,5 @@ class AbstractProvidesLocalProvenanceData(object):
     def get_local_provenance_data(self):
         """ Get an iterable of provenance data items
 
-        :return: iterable of ProvenanceDataItem
+        :return: iterable of :py:class:`ProvenanceDataItem`
         """

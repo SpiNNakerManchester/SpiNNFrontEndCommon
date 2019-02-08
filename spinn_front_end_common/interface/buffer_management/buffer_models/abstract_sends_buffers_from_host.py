@@ -1,7 +1,5 @@
-# general imports
 import logging
 from six import add_metaclass
-
 from spinn_utilities.abstract_base import AbstractBase, abstractmethod
 
 logger = logging.getLogger(__name__)
@@ -24,8 +22,8 @@ class AbstractSendsBuffersFromHost(object):
     def get_regions(self):
         """ Get the set of regions for which there are keys to be sent
 
-        :return: Iterable of region ids
-        :rtype: iterable of int
+        :return: Iterable of region IDs
+        :rtype: iterable(int)
         """
 
     @abstractmethod

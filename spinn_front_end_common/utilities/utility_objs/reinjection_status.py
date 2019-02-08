@@ -1,6 +1,5 @@
 import struct
-
-from spinn_front_end_common.utilities.utility_objs.dpri_flags import DPRIFlags
+from .dpri_flags import DPRIFlags
 
 _PATTERN = struct.Struct("<IIIIIIIII")
 

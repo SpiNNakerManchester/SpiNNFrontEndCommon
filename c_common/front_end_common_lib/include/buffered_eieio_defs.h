@@ -13,13 +13,13 @@ typedef enum eieio_command_messages {
     // End of all buffers, stop execution
     EVENT_STOP_COMMANDS,
 
-    // Stop complaining that there is sdram free space for buffers
+    // Stop complaining that there is SDRAM free space for buffers
     STOP_SENDING_REQUESTS,
 
-    // Start complaining that there is sdram free space for buffers
+    // Start complaining that there is SDRAM free space for buffers
     START_SENDING_REQUESTS,
 
-    // Spinnaker requesting new buffers for spike source population
+    // SpiNNaker requesting new buffers for spike source population
     SPINNAKER_REQUEST_BUFFERS,
 
     // Buffers being sent from host to SpiNNaker

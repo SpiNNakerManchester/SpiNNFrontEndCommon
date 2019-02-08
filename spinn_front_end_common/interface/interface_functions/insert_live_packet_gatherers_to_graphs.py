@@ -1,33 +1,26 @@
-# spinn front end common imports
-from spinn_front_end_common.utility_models \
-    import LivePacketGather, LivePacketGatherMachineVertex
-
-# pacman imports
-from pacman.model.graphs.common import Slice
-from pacman.model.constraints.placer_constraints\
-    import ChipAndCoreConstraint
-
-from spinn_utilities.progress_bar import ProgressBar
-
 from collections import defaultdict
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.model.graphs.common import Slice
+from pacman.model.constraints.placer_constraints import ChipAndCoreConstraint
+from spinn_front_end_common.utility_models import (
+    LivePacketGather, LivePacketGatherMachineVertex)
 
 
 class InsertLivePacketGatherersToGraphs(object):
-    """ function to add LPG's as required into a given graph
+    """ Adds LPGs as required into a given graph
     """
 
     def __call__(
             self, live_packet_gatherer_parameters, machine, machine_graph,
             application_graph=None, graph_mapper=None):
-        """ call that adds LPG vertices on Ethernet connected chips as\
-            required.
+        """ Add LPG vertices on Ethernet connected chips as required.
 
         :param live_packet_gatherer_parameters:\
             the Live Packet Gatherer parameters requested by the script
-        :param machine: the spinnaker machine as discovered
+        :param machine: the SpiNNaker machine as discovered
         :param application_graph: the application graph
         :param machine_graph: the machine graph
-        :return: mapping between LPG params and LPG vertex
+        :return: mapping between LPG parameters and LPG vertex
         """
         # pylint: disable=too-many-arguments
 
@@ -58,7 +51,8 @@ class InsertLivePacketGatherersToGraphs(object):
             app_vtx = self._create_vertex(LivePacketGather, params)
             app_graph.add_vertex(app_vtx)
             resources = app_vtx.get_resources_used_by_atoms(_slice)
-            m_vtx = app_vtx.create_machine_vertex(_slice, resources)
+            m_vtx = app_vtx.create_machine_vertex(
+                _slice, resources, label="LivePacketGatherer")
             mapper.add_vertex_mapping(m_vtx, _slice, app_vtx)
         else:
             m_vtx = self._create_vertex(LivePacketGatherMachineVertex, params)
@@ -72,7 +66,7 @@ class InsertLivePacketGatherersToGraphs(object):
         """ Creates a Live Packet Gather Vertex
 
         :param lpg_vertex_class: the type to create for the vertex
-        :param params: the params of the vertex
+        :param params: the parameters of the vertex
         :return the vertex built
         """
         return lpg_vertex_class(

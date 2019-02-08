@@ -1,19 +1,15 @@
-# general imports
 import logging
 from six import add_metaclass
-
-# spinn front end common imports
+from spinn_utilities.abstract_base import (
+    AbstractBase, abstractmethod, abstractproperty)
 from .abstract_sends_buffers_from_host import AbstractSendsBuffersFromHost
-
-from spinn_utilities.abstract_base import AbstractBase, abstractmethod, \
-    abstractproperty
 
 logger = logging.getLogger(__name__)
 
 
 @add_metaclass(AbstractBase)
 class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
-    """ Implementation of the AbstractSendsBuffersFromHost\
+    """ Implementation of :py:class:`AbstractSendsBuffersFromHost`\
         which uses an existing set of buffers for the details
     """
 
@@ -63,7 +59,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def get_next_timestamp(self, region):
         """ Return the next time stamp available in the buffered region
 
-        :param region: the region id which is being asked
+        :param region: the region ID which is being asked
         :return: the next time stamp
         """
         return self.send_buffers[region].next_timestamp
@@ -72,8 +68,8 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
         """ Check if there is more keys to transmit for a given region in a\
             given timestamp
 
-        :param region: the region id to check
-        :param timestamp:  the timestamp to check
+        :param region: the region ID to check
+        :param timestamp: the timestamp to check
         :return: bool
         """
         return self.send_buffers[region].is_next_key(timestamp)
@@ -88,7 +84,7 @@ class SendsBuffersFromHostPreBufferedImpl(AbstractSendsBuffersFromHost):
     def is_empty(self, region):
         """ Check if a region is empty
 
-        :param region: the region id to check
+        :param region: the region ID to check
         :return: bool
         """
         return len(self.send_buffers[region].timestamps) == 0

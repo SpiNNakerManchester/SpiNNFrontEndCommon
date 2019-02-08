@@ -56,13 +56,13 @@ static void reset_core_counters(void)
 {
     int i;
     for (i=0 ; i<NUM_CORES ; i++) {
-	    core_counters[i] = 0;
+        core_counters[i] = 0;
     }
     sample_count = 0;
 }
 
 //! \brief the function to call when resuming a simulation
-//! return None
+//! \return None
 void resume_callback() {
     // change simulation ticks to be a number related to sampling frequency
     simulation_ticks = (simulation_ticks * timer) / sample_frequency;
@@ -85,18 +85,21 @@ static void sample_in_slot(uint unused0, uint unused1)
     // check if the simulation has run to completion
     if ((infinite_run != TRUE) && (time >= simulation_ticks)) {
 
-        recording_finalise();
         simulation_handle_pause_resume(resume_callback);
+
+        recording_finalise();
 
         // Subtract 1 from the time so this tick gets done again on the next
         // run
         time -= 1;
+
+        simulation_ready_to_read();
     }
 
     uint32_t sc = ++sample_count;
     uint32_t offset = get_random_busy();
     while (offset --> 0) {
-	    // Do nothing
+        // Do nothing
     }
 
     uint32_t sample = get_sample();
@@ -146,7 +149,7 @@ static bool initialize(uint32_t *timer)
     log_info("total_sim_ticks = %d", simulation_ticks);
 
     address_t recording_region =
-	    data_specification_get_region(RECORDING, address);
+        data_specification_get_region(RECORDING, address);
     bool success = recording_initialize(recording_region, &recording_flags);
     return success;
 }

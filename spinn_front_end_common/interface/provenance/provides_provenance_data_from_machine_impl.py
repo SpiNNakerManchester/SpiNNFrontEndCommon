@@ -1,15 +1,11 @@
-from six import add_metaclass
-
-from spinn_utilities.abstract_base import AbstractBase, abstractproperty
-
-from .abstract_provides_provenance_data_from_machine \
-    import AbstractProvidesProvenanceDataFromMachine
-from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
-
-from data_specification.utility_calls import get_region_base_address_offset
-
 import struct
 from enum import Enum
+from six import add_metaclass
+from spinn_utilities.abstract_base import AbstractBase, abstractproperty
+from data_specification.utility_calls import get_region_base_address_offset
+from .abstract_provides_provenance_data_from_machine import (
+    AbstractProvidesProvenanceDataFromMachine)
+from spinn_front_end_common.utilities.utility_objs import ProvenanceDataItem
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -18,7 +14,7 @@ _ONE_WORD = struct.Struct("<I")
 class ProvidesProvenanceDataFromMachineImpl(
         AbstractProvidesProvenanceDataFromMachine):
     """ An implementation that gets provenance data from a region of ints on\
-        the machine
+        the machine.
     """
 
     __slots__ = ()
@@ -38,14 +34,12 @@ class ProvidesProvenanceDataFromMachineImpl(
     @abstractproperty
     def _provenance_region_id(self):
         """
-
         :return: provenance_region_id
         """
 
     @abstractproperty
     def _n_additional_data_items(self):
         """
-
         :return: n_additional_data_items
         """
 
@@ -161,7 +155,7 @@ class ProvidesProvenanceDataFromMachineImpl(
         data_items.append(ProvenanceDataItem(
             self._add_name(names, "Times_the_timer_tic_over_ran"),
             number_of_times_timer_tic_over_ran,
-            report=number_of_times_timer_tic_over_ran > 4,
+            report=number_of_times_timer_tic_over_ran != 0,
             message=(
                 "A Timer tick callback was still executing when the next "
                 "timer tick callback was fired off for {} on {}, {}, {}, {} "
