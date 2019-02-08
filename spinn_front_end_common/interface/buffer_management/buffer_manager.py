@@ -1,6 +1,6 @@
 import logging
 import threading
-from multiprocessing.pool import ThreadPool
+from concurrent.futures import ThreadPoolExecutor
 from six.moves import xrange
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
@@ -151,7 +151,7 @@ class BufferManager(object):
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
         self._thread_lock_buffer_in = threading.RLock()
-        self._buffering_out_thread_pool = ThreadPool(processes=1)
+        self._buffering_out_thread_pool = ThreadPoolExecutor(max_workers=1)
 
         self._finished = False
         self._listener_port = None
@@ -247,8 +247,8 @@ class BufferManager(object):
             ack_message = SDPMessage(
                 ack_message_header, ack_message_data.bytestring)
             self._transceiver.send_sdp_message(ack_message)
-        self._buffering_out_thread_pool.apply_async(
-            self._process_buffered_in_packet, args=[packet])
+        self._buffering_out_thread_pool.submit(
+            self._process_buffered_in_packet, packet)
 
     def _create_connection(self, tag):
         connection = self._transceiver.register_udp_listener(
