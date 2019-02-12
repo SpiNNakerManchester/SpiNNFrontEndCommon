@@ -1,21 +1,18 @@
-from pacman.model.resources import CoreResource
-from pacman.model.resources import PreAllocatedResourceContainer
-from pacman.model.resources import SpecificChipSDRAMResource
-from spinn_front_end_common.interface.interface_functions import \
-    PreAllocateResourcesForLivePacketGatherers
-from spinn_front_end_common.utilities.utility_objs import \
-    LivePacketGatherParameters
-from spinn_front_end_common.utility_models import \
-    LivePacketGatherMachineVertex
+import unittest
 from spinn_machine import VirtualMachine
 from spinnman.messages.eieio import EIEIOType
-
-import unittest
+from pacman.model.resources import (
+    CoreResource, PreAllocatedResourceContainer, SpecificChipSDRAMResource)
+from spinn_front_end_common.interface.interface_functions import (
+    PreAllocateResourcesForLivePacketGatherers)
+from spinn_front_end_common.utilities.utility_objs import (
+    LivePacketGatherParameters)
+from spinn_front_end_common.utility_models import (
+    LivePacketGatherMachineVertex)
 
 
 class TestLPGPreAllocateRes(unittest.TestCase):
     """ tests the interaction of the pre resource calculations
-
     """
 
     def test_one_lpg_params(self):

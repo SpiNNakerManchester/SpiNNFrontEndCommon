@@ -1,5 +1,4 @@
 import os
-
 from spinn_utilities.progress_bar import ProgressBar
 
 

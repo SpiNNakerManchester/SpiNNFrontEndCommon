@@ -13,3 +13,5 @@ lastfailed
 .coverage
 *.o
 *.class
+*modified_src/
+*.dict

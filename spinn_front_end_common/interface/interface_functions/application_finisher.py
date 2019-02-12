@@ -1,12 +1,13 @@
 import struct
-
-from spinn_front_end_common.utilities import constants, exceptions
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
-from spinn_machine import CoreSubsets
-
+import time
+from spinn_utilities.progress_bar import ProgressBar
 from spinnman.messages.sdp import SDPFlag, SDPHeader, SDPMessage
 from spinnman.model.enums import CPUState
-from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.utilities.constants import (
+    SDP_PORTS, SDP_RUNNING_MESSAGE_CODES)
+from spinn_front_end_common.utilities.exceptions import (
+    ExecutableFailedToStopException)
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 _ONE_WORD = struct.Struct("<I")
 
@@ -26,14 +27,13 @@ class ApplicationFinisher(object):
             "Turning off all the cores within the simulation")
 
         # check that the right number of processors are finished
-        processors_finished = sum(
-            txrx.get_core_state_count(app_id, state)
-            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state)
+        processors_finished = txrx.get_core_state_count(
+            app_id, CPUState.FINISHED)
         finished_cores = processors_finished
 
         while processors_finished != total_processors:
             if processors_finished > finished_cores:
-                progress.update(finished_cores - processors_finished)
+                progress.update(processors_finished - finished_cores)
                 finished_cores = processors_finished
 
             processors_rte = txrx.get_core_state_count(
@@ -42,17 +42,14 @@ class ApplicationFinisher(object):
                 app_id, CPUState.WATCHDOG)
 
             if processors_rte > 0 or processors_watchdogged > 0:
-                raise exceptions.ExecutableFailedToStopException(
+                raise ExecutableFailedToStopException(
                     "{} of {} processors went into an error state when"
                     " shutting down".format(
                         processors_rte + processors_watchdogged,
                         total_processors))
 
-            successful_cores_finished = CoreSubsets()
-            for state in ExecutableType.USES_SIMULATION_INTERFACE.end_state:
-                subsets = txrx.get_cores_in_state(all_core_subsets, state)
-                for subset in subsets.core_subsets:
-                    successful_cores_finished.add_core_subset(subset)
+            successful_cores_finished = txrx.get_cores_in_state(
+                all_core_subsets, CPUState.FINISHED)
 
             for core_subset in all_core_subsets:
                 for processor in core_subset.processor_ids:
@@ -60,25 +57,23 @@ class ApplicationFinisher(object):
                             core_subset.x, core_subset.y, processor):
                         self._update_provenance_and_exit(
                             txrx, processor, core_subset)
+            time.sleep(0.5)
 
-            processors_finished = sum(
-                txrx.get_core_state_count(app_id, state)
-                for state in
-                ExecutableType.USES_SIMULATION_INTERFACE.end_state)
+            processors_finished = txrx.get_core_state_count(
+                app_id, CPUState.FINISHED)
 
         progress.end()
 
     @staticmethod
     def _update_provenance_and_exit(txrx, processor, core_subset):
         byte_data = _ONE_WORD.pack(
-            constants.SDP_RUNNING_MESSAGE_CODES
+            SDP_RUNNING_MESSAGE_CODES
             .SDP_UPDATE_PROVENCE_REGION_AND_EXIT.value)
 
         txrx.send_sdp_message(SDPMessage(
             sdp_header=SDPHeader(
                 flags=SDPFlag.REPLY_NOT_EXPECTED,
-                destination_port=(
-                    constants.SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value),
+                destination_port=SDP_PORTS.RUNNING_COMMAND_SDP_PORT.value,
                 destination_cpu=processor,
                 destination_chip_x=core_subset.x,
                 destination_chip_y=core_subset.y),

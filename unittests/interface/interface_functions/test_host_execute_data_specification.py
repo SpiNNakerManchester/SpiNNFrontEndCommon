@@ -1,16 +1,12 @@
 import unittest
 from tempfile import mktemp
-
 from spinn_machine.virtual_machine import VirtualMachine
-
 from spinn_storage_handlers.file_data_writer import FileDataWriter
-from data_specification import constants
-
-from spinn_front_end_common.interface.interface_functions \
-    import HostExecuteDataSpecification
-
-from data_specification.data_specification_generator \
-    import DataSpecificationGenerator
+from data_specification.constants import MAX_MEM_REGIONS
+from data_specification.data_specification_generator import (
+    DataSpecificationGenerator)
+from spinn_front_end_common.interface.interface_functions import (
+    HostExecuteDataSpecification)
 
 
 class _MockCPUInfo(object):
@@ -49,8 +45,8 @@ class _MockTransceiver(object):
         self._next_address += size
         return address
 
-    def get_user_0_register_address_from_core(self, x, y, p):
-        return self._user_0_addresses[(x, y, p)]
+    def get_user_0_register_address_from_core(self, p):
+        return self._user_0_addresses[p]
 
     def get_cpu_information_from_core(self, x, y, p):
         return _MockCPUInfo(self._user_0_addresses[(x, y, p)])
@@ -65,7 +61,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
 
     def test_call(self):
         executor = HostExecuteDataSpecification()
-        transceiver = _MockTransceiver(user_0_addresses={(0, 0, 0): 1000})
+        transceiver = _MockTransceiver(user_0_addresses={0: 1000})
         machine = VirtualMachine(2, 2)
 
         # Write a data spec to execute
@@ -91,7 +87,7 @@ class TestHostExecuteDataSpecification(unittest.TestCase):
         # (0 and 2), and only the data written should be uploaded
         # The space between regions should be as allocated regardless of
         # how much data is written
-        header_and_table_size = (constants.MAX_MEM_REGIONS + 2) * 4
+        header_and_table_size = (MAX_MEM_REGIONS + 2) * 4
         regions = transceiver.regions_written
         self.assertEqual(len(regions), 4)
 

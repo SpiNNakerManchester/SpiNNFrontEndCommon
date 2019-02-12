@@ -1,38 +1,32 @@
-# spinn_utilites imports
+import logging
+import os
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from six.moves import xrange
+from spinn_utilities.log import FormatAdapter
 from spinn_utilities.ordered_set import OrderedSet
 from spinn_utilities.progress_bar import ProgressBar
-
-# spinnman imports
 from spinnman.constants import UDP_MESSAGE_MAX_SIZE
 from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages \
-    import EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData, \
-    HostDataReadAck
-from spinnman.messages.eieio.command_messages \
-    import HostDataRead, SpinnakerRequestBuffers, PaddingRequest
-from spinnman.messages.eieio.command_messages \
-    import HostSendSequencedData, EventStopRequest
+from spinnman.messages.eieio.command_messages import (
+    EIEIOCommandMessage, StopRequests, SpinnakerRequestReadData,
+    HostDataReadAck, HostDataRead, SpinnakerRequestBuffers, PaddingRequest,
+    HostSendSequencedData, EventStopRequest)
 from spinnman.utilities import utility_functions
 from spinnman.messages.sdp import SDPHeader, SDPMessage, SDPFlag
 from spinnman.messages.eieio import EIEIOType, create_eieio_command
 from spinnman.messages.eieio.data_messages import EIEIODataMessage
-
-# front end common imports
-from spinn_front_end_common.utilities import helpful_functions as funs
-from spinn_front_end_common.utilities import exceptions
+from spinn_front_end_common.utilities.constants import (
+    SDP_PORTS, BUFFERING_OPERATIONS)
+from spinn_front_end_common.utilities.exceptions import (
+    BufferableRegionTooSmall, ConfigurationException, SpinnFrontEndException)
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement, locate_extra_monitor_mc_receiver)
 from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BuffersSentDeque, BufferedReceivingData, ChannelBufferState
-from spinn_front_end_common.utilities.constants \
-    import SDP_PORTS, BUFFERING_OPERATIONS
-from .recording_utilities import TRAFFIC_IDENTIFIER, \
-    get_last_sequence_number, get_region_pointer
-
-# general imports
-import threading
-from multiprocessing.pool import ThreadPool
-import logging
-from six.moves import xrange
+    import (
+        BuffersSentDeque, BufferedReceivingData, ChannelBufferState)
+from .recording_utilities import (
+    TRAFFIC_IDENTIFIER, get_last_sequence_number, get_region_pointer)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -42,6 +36,8 @@ _MIN_MESSAGE_SIZE = EIEIODataMessage.min_packet_length(
 
 # The number of bytes in each key to be sent
 _N_BYTES_PER_KEY = EIEIOType.KEY_32_BIT.key_bytes  # @UndefinedVariable
+
+_SDP_MAX_PACKAGE_SIZE = 272
 
 
 class BufferManager(object):
@@ -69,6 +65,9 @@ class BufferManager(object):
 
         # storage area for received data from cores
         "_received_data",
+
+        # File used to hold received data
+        "_received_data_db",
 
         # Lock to avoid multiple messages being processed at the same time
         "_thread_lock_buffer_out",
@@ -110,7 +109,8 @@ class BufferManager(object):
     def __init__(self, placements, tags, transceiver, extra_monitor_cores,
                  extra_monitor_cores_to_ethernet_connection_map,
                  extra_monitor_to_chip_mapping, machine, fixed_routes,
-                 uses_advanced_monitors, store_to_file=False):
+                 uses_advanced_monitors, store_to_file=False,
+                 database_file=None):
         """
         :param placements: The placements of the vertices
         :type placements:\
@@ -123,6 +123,8 @@ class BufferManager(object):
         :param store_to_file: True if the data should be temporarily stored\
             in a file instead of in RAM (default uses RAM)
         :type store_to_file: bool
+        :param database_file: The file to use as an SQL database.
+        :type database_file: str
         """
         # pylint: disable=too-many-arguments
         self._placements = placements
@@ -146,13 +148,15 @@ class BufferManager(object):
         self._sent_messages = dict()
 
         # storage area for received data from cores
-        self._received_data = BufferedReceivingData(store_to_file)
+        self._received_data = BufferedReceivingData(
+            store_to_file, database_file)
+        self._received_data_db = database_file
         self._store_to_file = store_to_file
 
         # Lock to avoid multiple messages being processed at the same time
         self._thread_lock_buffer_out = threading.RLock()
         self._thread_lock_buffer_in = threading.RLock()
-        self._buffering_out_thread_pool = ThreadPool(processes=1)
+        self._buffering_out_thread_pool = ThreadPoolExecutor(max_workers=1)
 
         self._finished = False
         self._listener_port = None
@@ -176,14 +180,14 @@ class BufferManager(object):
                 placement_x, placement_y, address, length)
 
         sender = self._extra_monitor_cores_by_chip[placement_x, placement_y]
-        receiver = funs.locate_extra_monitor_mc_receiver(
+        receiver = locate_extra_monitor_mc_receiver(
             self._machine, placement_x, placement_y,
             self._extra_monitor_cores_to_ethernet_connection_map)
         return receiver.get_data(
             transceiver, self._placements.get_placement_of_vertex(sender),
             address, length, self._fixed_routes)
 
-    def receive_buffer_command_message(self, packet):
+    def _receive_buffer_command_message(self, packet):
         """ Handle an EIEIO command message for the buffers
 
         :param packet: The EIEIO message received
@@ -234,12 +238,12 @@ class BufferManager(object):
             ack_message = SDPMessage(
                 ack_message_header, ack_message_data.bytestring)
             self._transceiver.send_sdp_message(ack_message)
-        self._buffering_out_thread_pool.apply_async(
-            self._process_buffered_in_packet, args=[packet])
+        self._buffering_out_thread_pool.submit(
+            self._process_buffered_in_packet, packet)
 
     def _create_connection(self, tag):
         connection = self._transceiver.register_udp_listener(
-            self.receive_buffer_command_message, EIEIOConnection,
+            self._receive_buffer_command_message, EIEIOConnection,
             local_port=tag.port, local_host=tag.ip_address)
         self._seen_tags.add((tag.ip_address, connection.local_port))
         utility_functions.send_port_trigger_message(
@@ -316,7 +320,13 @@ class BufferManager(object):
             data files
         """
         # reset buffered out
-        self._received_data = BufferedReceivingData(self._store_to_file)
+        if self._received_data is not None:
+            self._received_data.close()
+        if self._received_data_db is not None:
+            # Nuke the DB if it existed; it will be recreated
+            os.remove(self._received_data_db)
+        self._received_data = BufferedReceivingData(
+            self._store_to_file, self._received_data_db)
 
         # rewind buffered in
         for vertex in self._sender_vertices:
@@ -407,16 +417,15 @@ class BufferManager(object):
 
         # Get the vertex load details
         # region_base_address = self._locate_region_address(region, vertex)
-        region_base_address = funs.locate_memory_region_for_placement(
-            self._placements.get_placement_of_vertex(vertex), region,
-            self._transceiver)
         placement = self._placements.get_placement_of_vertex(vertex)
+        region_base_address = locate_memory_region_for_placement(
+            placement, region, self._transceiver)
 
         # Add packets until out of space
         sent_message = False
         bytes_to_go = vertex.get_region_buffer_size(region)
         if bytes_to_go % 2 != 0:
-            raise exceptions.SpinnFrontEndException(
+            raise SpinnFrontEndException(
                 "The buffer region of {} must be divisible by 2".format(
                     vertex))
         all_data = b""
@@ -426,7 +435,7 @@ class BufferManager(object):
             min_size_of_packet = _MIN_MESSAGE_SIZE
             while (vertex.is_next_timestamp(region) and
                     bytes_to_go > min_size_of_packet):
-                space_available = min(bytes_to_go, 280)
+                space_available = min(bytes_to_go, _SDP_MAX_PACKAGE_SIZE)
                 next_message = self._create_message_to_send(
                     space_available, vertex, region)
                 if next_message is None:
@@ -442,7 +451,7 @@ class BufferManager(object):
                 progress.update(len(data))
 
         if not sent_message:
-            raise exceptions.BufferableRegionTooSmall(
+            raise BufferableRegionTooSmall(
                 "The buffer size {} is too small for any data to be added for"
                 " region {} of vertex {}".format(bytes_to_go, region, vertex))
 
@@ -565,7 +574,7 @@ class BufferManager(object):
             # locate receivers
             for vertex in vertices:
                 placement = self._placements.get_placement_of_vertex(vertex)
-                receivers.add(funs.locate_extra_monitor_mc_receiver(
+                receivers.add(locate_extra_monitor_mc_receiver(
                     self._machine, placement.x, placement.y,
                     self._extra_monitor_cores_to_ethernet_connection_map))
 
@@ -699,7 +708,7 @@ class BufferManager(object):
             elif read_ptr > write_ptr:
                 length = end_ptr - read_ptr
                 if length < 0:
-                    raise exceptions.ConfigurationException(
+                    raise ConfigurationException(
                         "The amount of data to read is negative!")
                 logger.debug(
                     "> Reading {} bytes from {}, {}, {}: {} for region {}",

@@ -1,6 +1,12 @@
 from collections import defaultdict
-from spinn_storage_handlers \
-    import BufferedBytearrayDataStorage, BufferedTempfileDataStorage
+import os
+import sqlite3
+from spinn_storage_handlers import (
+    BufferedBytearrayDataStorage, BufferedTempfileDataStorage)
+from spinn_storage_handlers.abstract_classes import AbstractBufferedDataStorage
+from spinn_utilities.overrides import overrides
+
+DDL_FILE = os.path.join(os.path.dirname(__file__), "db.sql")
 
 
 class BufferedReceivingData(object):
@@ -13,8 +19,11 @@ class BufferedReceivingData(object):
     """
 
     __slots__ = [
-        # the data to store
+        # the data to store, unless a DB is used
         "_data",
+
+        # the database holding the data to store, if used
+        "_db",
 
         # dict of booleans indicating if a region on a core has been flushed
         "_is_flushed",
@@ -35,15 +44,22 @@ class BufferedReceivingData(object):
         "_end_buffering_state"
     ]
 
-    def __init__(self, store_to_file=False):
+    def __init__(self, store_to_file=False, database_file=None):
         """
         :param store_to_file: A boolean to identify if the data will be stored\
             in memory using a byte array or in a temporary file on the disk
         :type store_to_file: bool
+        :param database_file: The name of a file that contains (or will\
+            contain) an SQLite database holding the data.
+        :type database_file: str
         """
-
         self._data = None
-        if store_to_file:
+        self._db = None
+        if database_file is not None:
+            self._db = sqlite3.connect(database_file)
+            self._db.text_factory = memoryview
+            self.__init_db()
+        elif store_to_file:
             self._data = defaultdict(BufferedTempfileDataStorage)
         else:
             self._data = defaultdict(BufferedBytearrayDataStorage)
@@ -53,6 +69,57 @@ class BufferedReceivingData(object):
         self._last_packet_sent = defaultdict(lambda: None)
         self._end_buffering_sequence_no = dict()
         self._end_buffering_state = dict()
+
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        if self._db is not None:
+            self._db.close()
+            self._db = None
+
+    def __init_db(self):
+        """ Set up the database if required. """
+        self._db.row_factory = sqlite3.Row
+        with open(DDL_FILE) as f:
+            sql = f.read()
+        self._db.executescript(sql)
+
+    def __append_contents(self, cursor, x, y, p, region, contents):
+        cursor.execute(
+            "INSERT INTO storage(x, y, processor, region, content) "
+            + "VALUES(?, ?, ?, ?, ?) "
+            + "ON CONFLICT(x, y, processor, region) DO "
+            + "UPDATE SET content = storage.content || excluded.content",
+            (x, y, p, region, sqlite3.Binary(contents)))
+
+    def __hacky_append(self, cursor, x, y, p, region, contents):
+        """ Used to do an UPSERT when the version of SQLite used by Python\
+            doesn't support the correct syntax for it (because it is older\
+            than 3.24). Not really a problem with Python 3.6 or later.
+        """
+        cursor.execute(
+            "INSERT OR IGNORE INTO storage(x, y, processor, region, content) "
+            + "VALUES(?, ?, ?, ?, ?)",
+            (x, y, p, region, sqlite3.Binary(b"")))
+        cursor.execute(
+            "UPDATE storage SET content = content || ? "
+            + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
+            (sqlite3.Binary(contents), x, y, p, region))
+
+    def _read_contents(self, cursor, x, y, p, region):
+        for row in cursor.execute(
+                "SELECT content FROM storage "
+                + "WHERE x = ? AND y = ? AND processor = ? AND region = ?",
+                (x, y, p, region)):
+            return row["content"]
+        return b""
+
+    def __delete_contents(self, cursor, x, y, p, region):
+        cursor.execute(
+            "DELETE FROM storage WHERE " +
+            "x = ? AND y = ? AND processor = ? AND region = ?",
+            (x, y, p, region))
 
     def store_data_in_region_buffer(self, x, y, p, region, data):
         """ Store some information in the correspondent buffer class for a\
@@ -70,7 +137,17 @@ class BufferedReceivingData(object):
         :type data: bytearray
         """
         # pylint: disable=too-many-arguments
-        self._data[x, y, p, region].write(data)
+        if self._db is not None:
+            try:
+                with self._db:
+                    c = self._db.cursor()
+                    self.__append_contents(c, x, y, p, region, data)
+            except sqlite3.Error:
+                with self._db:
+                    c = self._db.cursor()
+                    self.__hacky_append(c, x, y, p, region, data)
+        else:
+            self._data[x, y, p, region].write(data)
 
     def is_data_from_region_flushed(self, x, y, p, region):
         """ Check if the data region has been flushed
@@ -119,7 +196,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: SpinnakerRequestReadData packet received
         :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
         """
         self._last_packet_received[x, y, p] = packet
 
@@ -134,7 +211,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: SpinnakerRequestReadData packet received
         :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.spinnaker_request_read_data.SpinnakerRequestReadData`
+            :py:class:`spinnman.messages.eieio.command_messages.SpinnakerRequestReadData`
         """
         return self._last_packet_received[x, y, p]
 
@@ -149,7 +226,7 @@ class BufferedReceivingData(object):
         :type p: int
         :param packet: last HostDataRead packet sent
         :type packet:\
-            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
         """
         self._last_packet_sent[x, y, p] = packet
 
@@ -164,7 +241,7 @@ class BufferedReceivingData(object):
         :type p: int
         :return: last HostDataRead packet sent
         :rtype:\
-            :py:class:`spinnman.messages.eieio.command_messages.host_data_read.HostDataRead`
+            :py:class:`spinnman.messages.eieio.command_messages.HostDataRead`
         """
         return self._last_packet_sent[x, y, p]
 
@@ -215,7 +292,12 @@ class BufferedReceivingData(object):
         missing = None
         if (x, y, p, region) not in self._end_buffering_state:
             missing = (x, y, p, region)
-        data = self._data[x, y, p, region].read_all()
+        if self._db is not None:
+            with self._db:
+                c = self._db.cursor()
+                data = self._read_contents(c, x, y, p, region)
+        else:
+            data = self._data[x, y, p, region].read_all()
         return data, missing
 
     def get_region_data_pointer(self, x, y, p, region):
@@ -232,15 +314,17 @@ class BufferedReceivingData(object):
         :return: all the data received during the simulation, and a flag\
             indicating if any data was lost
         :rtype: \
-            tuple(:py:class:`spinn_front_end_common.interface.buffer_management.buffer_models.AbstractBufferedDataStorage`,\
+            tuple(:py:class:`spinn_storage_handlers.abstract_classes.AbstractBufferedDataStorage`,\
             bool)
         """
-        missing = False
         if (x, y, p, region) not in self._end_buffering_state:
             missing = True
         else:
             missing = self._end_buffering_state[x, y, p, region].missing_info
-        data_pointer = self._data[x, y, p, region]
+        if self._db is not None:
+            data_pointer = DBWrapper(self, x, y, p, region)
+        else:
+            data_pointer = self._data[x, y, p, region]
         return data_pointer, missing
 
     def store_end_buffering_state(self, x, y, p, region, state):
@@ -346,5 +430,61 @@ class BufferedReceivingData(object):
         :rtype: None
         """
         del self._end_buffering_state[x, y, p, region_id]
-        del self._data[x, y, p, region_id]
+        if self._db is not None:
+            with self._db:
+                c = self._db.cursor()
+                self.__delete_contents(c, x, y, p, region_id)
+        else:
+            del self._data[x, y, p, region_id]
         del self._is_flushed[x, y, p, region_id]
+
+
+class DBWrapper(AbstractBufferedDataStorage):
+    def __init__(self, brd, x, y, p, region):
+        self.__brd = brd
+        self.__x = x
+        self.__y = y
+        self.__p = p
+        self.__r = region
+
+    @overrides(AbstractBufferedDataStorage.write)
+    def write(self, data):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.read)
+    def read(self, data_size):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.readinto)
+    def readinto(self, data):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.read_all)
+    def read_all(self):
+        with self.__brd._db.cursor() as c, self.__brd._db:
+            return self.__brd._read_contents(
+                c, self.__x, self.__y, self.__p, self.__region)
+
+    @overrides(AbstractBufferedDataStorage.seek_read)
+    def seek_read(self, offset, whence=os.SEEK_SET):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.seek_write)
+    def seek_write(self, offset, whence=os.SEEK_SET):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.tell_read)
+    def tell_read(self):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.tell_write)
+    def tell_write(self):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.eof)
+    def eof(self):
+        raise NotImplementedError()
+
+    @overrides(AbstractBufferedDataStorage.close)
+    def close(self):
+        raise NotImplementedError()

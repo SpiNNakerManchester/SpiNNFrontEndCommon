@@ -1,16 +1,13 @@
-# spinn front end common
-from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
-from pacman.model.graphs.common import EdgeTrafficType
-from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.abstract_models \
-    import AbstractProvidesKeyToAtomMapping, AbstractRecordable, \
-    AbstractSupportsDatabaseInjection
-
-# general imports
 import logging
 import os
-import sqlite3
 import sys
+import sqlite3
+from spinn_utilities.log import FormatAdapter
+from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
+from pacman.model.graphs.common import EdgeTrafficType
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesKeyToAtomMapping, AbstractRecordable,
+    AbstractSupportsDatabaseInjection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 

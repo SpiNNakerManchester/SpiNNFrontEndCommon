@@ -1,13 +1,9 @@
 import unittest
-
+from spinn_machine.tags import IPTag, ReverseIPTag
 from pacman.model.tags import Tags
 from pacman.model.graphs.machine import MachineVertex
 from pacman.model.resources import ResourceContainer
-
-from spinn_machine.tags import IPTag, ReverseIPTag
-
-from spinn_front_end_common.interface.interface_functions \
-    import TagsLoader
+from spinn_front_end_common.interface.interface_functions import TagsLoader
 
 
 class _MockTransceiver(object):

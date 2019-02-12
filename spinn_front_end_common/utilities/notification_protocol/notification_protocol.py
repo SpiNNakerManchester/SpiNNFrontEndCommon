@@ -1,18 +1,13 @@
-# spinnman imports
-from multiprocessing.pool import ThreadPool
-from spinnman.connections.udp_packet_connections import EIEIOConnection
-from spinnman.messages.eieio.command_messages import DatabaseConfirmation
-from spinn_utilities.log import FormatAdapter
-from spinnman.messages.eieio.command_messages \
-    import NotificationProtocolPauseStop, NotificationProtocolStartResume
-
-# front end common imports
-from spinn_front_end_common.utilities.constants \
-    import MAX_DATABASE_PATH_LENGTH
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-
 import logging
-
+from concurrent.futures import ThreadPoolExecutor, wait
+from spinn_utilities.log import FormatAdapter
+from spinnman.connections.udp_packet_connections import EIEIOConnection
+from spinnman.messages.eieio.command_messages import (
+    DatabaseConfirmation, NotificationProtocolPauseStop,
+    NotificationProtocolStartResume)
+from spinn_front_end_common.utilities.constants import (
+    MAX_DATABASE_PATH_LENGTH)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -28,7 +23,8 @@ class NotificationProtocol(object):
         # Determines whether to wait for confirmation that the database
         # has been read before starting the simulation
         self._wait_for_read_confirmation = wait_for_read_confirmation
-        self._wait_pool = ThreadPool(processes=1)
+        self._wait_pool = ThreadPoolExecutor(max_workers=1)
+        self._wait_futures = list()
         self._data_base_message_connections = list()
         for socket_address in socket_addresses:
             self._data_base_message_connections.append(EIEIOConnection(
@@ -44,8 +40,8 @@ class NotificationProtocol(object):
         """
         logger.info("** Awaiting for a response from an external source "
                     "to state its ready for the simulation to start **")
-        self._wait_pool.close()
-        self._wait_pool.join()
+        wait(self._wait_futures)
+        self._wait_futures = list()
 
     def send_start_resume_notification(self):
         """ Either waits till all sources have confirmed read the database\
@@ -95,8 +91,8 @@ class NotificationProtocol(object):
         :rtype: None
         """
         if database_path is not None:
-            self._wait_pool.apply_async(self._send_read_notification,
-                                        args=[database_path])
+            self._wait_futures.append(self._wait_pool.submit(
+                self._send_read_notification, database_path))
 
     def _send_read_notification(self, database_path):
         """ Sends notifications to a list of socket addresses that the\
@@ -160,4 +156,7 @@ class NotificationProtocol(object):
     def close(self):
         """ Closes the thread pool
         """
-        self._wait_pool.close()
+        if self._wait_pool:
+            self._wait_pool.shutdown()
+            self._wait_futures = list()
+            self._wait_pool = None

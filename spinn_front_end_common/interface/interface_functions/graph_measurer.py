@@ -1,12 +1,9 @@
-from spinn_utilities.progress_bar import ProgressBar
-
-# pacman imports
-from pacman.utilities.utility_objs import ResourceTracker
-from pacman.utilities.algorithm_utilities.placer_algorithm_utilities \
-    import sort_vertices_by_known_constraints
-
-# general imports
 import logging
+from spinn_utilities.progress_bar import ProgressBar
+from pacman.utilities.utility_objs import ResourceTracker
+from pacman.utilities.algorithm_utilities.placer_algorithm_utilities import (
+    sort_vertices_by_known_constraints)
+
 logger = logging.getLogger(__name__)
 
 
