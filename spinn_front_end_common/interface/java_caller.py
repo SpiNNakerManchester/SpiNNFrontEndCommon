@@ -238,7 +238,8 @@ class JavaCaller(object):
 
         placements_by_ethernet = self._placements_grouped(placements)
         json_obj = list()
-        for ethernet, by_chip in placements_by_ethernet.items():
+        for ethernet in self._chipxy_by_ethernet:
+            by_chip = placements_by_ethernet[ethernet]
             json_gather = OrderedDict()
             json_gather["x"] = ethernet[0]
             json_gather["y"] = ethernet[1]
