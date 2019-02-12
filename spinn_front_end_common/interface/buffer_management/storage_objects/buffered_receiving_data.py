@@ -1,4 +1,7 @@
-from collections import defaultdict
+try:
+    from collections.abc import defaultdict
+except ImportError:
+    from collections import defaultdict
 import os
 import sqlite3
 from spinn_storage_handlers import (

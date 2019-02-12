@@ -1,4 +1,7 @@
-from collections import Counter
+try:
+    from collections.abc import Counter
+except ImportError:
+    from collections import Counter
 from enum import Enum
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items

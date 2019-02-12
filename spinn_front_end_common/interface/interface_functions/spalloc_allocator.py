@@ -116,7 +116,9 @@ class SpallocAllocator(object):
         )
 
     def _launch_job(self, n_boards, spalloc_kw_args):
-        job = Job(n_boards, **spalloc_kw_args)
+        # THIS IS A HACK
+        job = Job(2, 2, **spalloc_kw_args)
+        #job = Job(n_boards, **spalloc_kw_args)
         try:
             job.wait_until_ready()
             # get param from jobs before starting, so that hanging doesn't
