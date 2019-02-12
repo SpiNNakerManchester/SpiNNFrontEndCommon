@@ -67,6 +67,9 @@ except ImportError:
 logger = FormatAdapter(logging.getLogger(__name__))
 CONFIG_FILE = "spinnaker.cfg"
 
+# Number of cores to be used when using a Virtual Machine and not specified
+DEFAULT_N_VIRTUAL_CORES = 16
+
 
 class AbstractSpinnakerBase(SimulatorInterface):
     """ Main interface into the tools logic flow
@@ -214,9 +217,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         #
         "_create_database",
-
-        #
-        "_database_file_path",
 
         #
         "_has_ran",
@@ -442,7 +442,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._database_socket_addresses.update(database_socket_addresses)
         self._database_interface = None
         self._create_database = None
-        self._database_file_path = None
 
         # holder for timing related values
         self._has_ran = False
@@ -996,8 +995,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 loading_done = True
 
         # Run for each of the given steps
-        logger.info("Running for {} steps for a total of {}ms",
-                    len(steps), run_time)
+        if run_time is not None:
+            logger.info("Running for {} steps for a total of {}ms",
+                        len(steps), run_time)
+        else:
+            logger.info("Running forever")
         for i, step in enumerate(steps):
             logger.info("Run {} of {}", i + 1, len(steps))
             self._do_run(step, loading_done, run_until_complete)
@@ -1089,35 +1091,36 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         for placement in self._placements.placements:
             vertex = placement.vertex
+            resources = vertex.resources_required
+            if (placement.x, placement.y) not in sdram_tracker:
+                sdram_tracker[placement.x, placement.y] = \
+                    self._machine.get_chip_at(
+                        placement.x, placement.y).sdram.size
+            sdram = resources.sdram.get_value()
             if isinstance(vertex, AbstractReceiveBuffersToHost):
-
-                resources = vertex.resources_required
-                if (placement.x, placement.y) not in sdram_tracker:
-                    sdram_tracker[placement.x, placement.y] = \
-                        self._machine.get_chip_at(
-                            placement.x, placement.y).sdram.size
-                sdram = (
-                    resources.sdram.get_value() -
-                    vertex.get_minimum_buffer_sdram_usage())
-                sdram_tracker[placement.x, placement.y] -= sdram
+                sdram -= vertex.get_minimum_buffer_sdram_usage()
                 vertex_by_chip[placement.x, placement.y].append(vertex)
+            sdram_tracker[placement.x, placement.y] -= sdram
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        min_time_steps = None
+        min_time_steps = n_machine_time_steps
         for x, y in vertex_by_chip:
             vertices_on_chip = vertex_by_chip[x, y]
             sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
-            min_time_steps = min(
+            min_time_steps_this_chip = min(
                 int(vertex.get_n_timesteps_in_buffer_space(
                     sdram_per_vertex, self._machine_time_step))
                 for vertex in vertices_on_chip)
+            if min_time_steps is None:
+                min_time_steps = min_time_steps_this_chip
+            else:
+                min_time_steps = min(
+                    min_time_steps, min_time_steps_this_chip)
 
         # clear injectable
         clear_injectables()
 
-        if min_time_steps is None:
-            return [n_machine_time_steps]
         return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
@@ -1272,9 +1275,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
-        # add max SDRAM size which we're going to allow (debug purposes)
+        # add max SDRAM size and n_cores which we're going to allow
+        # (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
+        inputs["MaxCoreID"] = self._read_config_int(
+            "Machine", "core_limit")
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
@@ -1294,8 +1300,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
                 "Machine", "scamp_connections_data")
-            inputs["MaxCoreId"] = self._read_config_int(
-                "Machine", "core_limit")
 
             algorithms.append("MachineGenerator")
 
@@ -1322,12 +1326,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["CPUsPerVirtualChip"] = \
-                self._read_config_int("Machine", "NCoresPerChip")
             inputs["RouterTableEntriesPerRouter"] = \
                 self._read_config_int("Machine", "RouterTableEntriesPerRouter")
-            inputs["MaxSDRAMSize"] = self._read_config_int(
-                "Machine", "MaxSDRAMSize")
+            if inputs["MaxCoreID"] is None:
+                inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             algorithms.append("VirtualMachineGenerator")
 
@@ -1380,7 +1382,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            inputs["CPUsPerVirtualChip"] = 16
+            inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             do_partitioning = False
             if need_virtual_board:
@@ -2010,7 +2012,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board:
+        if not self._use_virtual_board and run_time is not None:
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
