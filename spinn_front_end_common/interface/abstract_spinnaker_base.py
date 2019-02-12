@@ -1098,18 +1098,16 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         for placement in self._placements.placements:
             vertex = placement.vertex
+            resources = vertex.resources_required
+            if (placement.x, placement.y) not in sdram_tracker:
+                sdram_tracker[placement.x, placement.y] = \
+                    self._machine.get_chip_at(
+                        placement.x, placement.y).sdram.size
+            sdram = resources.sdram.get_value()
             if isinstance(vertex, AbstractReceiveBuffersToHost):
-
-                resources = vertex.resources_required
-                if (placement.x, placement.y) not in sdram_tracker:
-                    sdram_tracker[placement.x, placement.y] = \
-                        self._machine.get_chip_at(
-                            placement.x, placement.y).sdram.size
-                sdram = (
-                    resources.sdram.get_value() -
-                    vertex.get_minimum_buffer_sdram_usage())
-                sdram_tracker[placement.x, placement.y] -= sdram
+                sdram -= vertex.get_minimum_buffer_sdram_usage()
                 vertex_by_chip[placement.x, placement.y].append(vertex)
+            sdram_tracker[placement.x, placement.y] -= sdram
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
@@ -1117,10 +1115,15 @@ class AbstractSpinnakerBase(SimulatorInterface):
         for x, y in vertex_by_chip:
             vertices_on_chip = vertex_by_chip[x, y]
             sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
-            min_time_steps = min(min_time_steps, min(
+            min_time_steps_this_chip = min(
                 int(vertex.get_n_timesteps_in_buffer_space(
                     sdram_per_vertex, self._machine_time_step))
-                for vertex in vertices_on_chip))
+                for vertex in vertices_on_chip)
+            if min_time_steps is None:
+                min_time_steps = min_time_steps_this_chip
+            else:
+                min_time_steps = min(
+                    min_time_steps, min_time_steps_this_chip)
 
         # clear injectable
         clear_injectables()
