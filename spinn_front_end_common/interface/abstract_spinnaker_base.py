@@ -1099,6 +1099,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 max = (size - sdram.fixed) // sdram.per_timestep
                 max_time_steps = min(max_time_steps, max)
 
+        # clear injectable
+        # clear_injectables()
+
         return max_time_steps
 
     @staticmethod
