@@ -260,33 +260,31 @@ static inline bool _recording_write_memory(
                 channel, data, write_pointer, length, write_pointer + length,
                 callback);
             write_pointer += length;
-            goto update_current_write;
+        } else {
+            uint32_t total_space =
+                final_space + ((uint32_t) read_pointer - (uint32_t) buffer_region);
+            if (total_space < length) {
+                log_debug("Not enough space in final area (%u bytes)", total_space);
+                return false;
+            }
+
+            log_debug("Copying first %d bytes to final space of %u", final_space);
+
+            _recording_write(
+                channel, data, write_pointer, final_space, buffer_region, NULL);
+
+            write_pointer = buffer_region;
+            data += final_space;
+
+            uint32_t final_len = length - final_space;
+            log_debug("Copying remaining %u bytes", final_len);
+
+            _recording_write(
+                channel, data, write_pointer, final_len, write_pointer + final_len,
+                callback);
+
+            write_pointer += final_len;
         }
-
-        uint32_t total_space =
-            final_space + ((uint32_t) read_pointer - (uint32_t) buffer_region);
-        if (total_space < length) {
-            log_debug("Not enough space in final area (%u bytes)", total_space);
-            return false;
-        }
-
-        log_debug("Copying first %d bytes to final space of %u", final_space);
-
-        _recording_write(
-            channel, data, write_pointer, final_space, buffer_region, NULL);
-
-        write_pointer = buffer_region;
-        data += final_space;
-
-        uint32_t final_len = length - final_space;
-        log_debug("Copying remaining %u bytes", final_len);
-
-        _recording_write(
-            channel, data, write_pointer, final_len, write_pointer + final_len,
-            callback);
-
-        write_pointer += final_len;
-        goto update_current_write;
     } else if (write_pointer < read_pointer) {
         uint32_t middle_space =
             (uint32_t) read_pointer - (uint32_t) write_pointer;
@@ -301,14 +299,13 @@ static inline bool _recording_write_memory(
             channel, data, write_pointer, length, write_pointer + length,
             callback);
         write_pointer += length;
-        goto update_current_write;
+    } else {
+        log_debug("reached end");
+
+        log_debug("Buffer already full");
+        return false;
     }
-    log_debug("reached end");
 
-    log_debug("Buffer already full");
-    return false;
-
-  update_current_write:
     if (write_pointer == end_of_buffer_region) {
         write_pointer = buffer_region;
         log_debug("channel %u, write wrap around", channel);
