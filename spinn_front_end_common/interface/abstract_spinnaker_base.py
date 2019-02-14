@@ -1115,9 +1115,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :type n_steps_per_segment: int
         :return: list of time steps
         """
+        if (n_steps == 0):
+            return [0]
         n_full_iterations = int(math.floor(n_steps / n_steps_per_segment))
         left_over_steps = n_steps - n_full_iterations * n_steps_per_segment
-
         steps = [int(n_steps_per_segment)] * n_full_iterations
         if left_over_steps:
             steps.append(int(left_over_steps))
