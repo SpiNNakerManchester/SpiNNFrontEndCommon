@@ -1,7 +1,3 @@
-try:
-    from collections.abc import Counter
-except ImportError:
-    from collections import Counter
 from enum import Enum
 from spinn_utilities.overrides import overrides
 from pacman.executor.injection_decorator import inject_items
@@ -31,11 +27,10 @@ class CommandSenderMachineVertex(
     DATA_REGIONS = Enum(
         value="DATA_REGIONS",
         names=[('SYSTEM_REGION', 0),
-               ('SETUP', 1),
-               ('COMMANDS_WITH_ARBITRARY_TIMES', 2),
-               ('COMMANDS_AT_START_RESUME', 3),
-               ('COMMANDS_AT_STOP_PAUSE', 4),
-               ('PROVENANCE_REGION', 5)])
+               ('COMMANDS_WITH_ARBITRARY_TIMES', 1),
+               ('COMMANDS_AT_START_RESUME', 2),
+               ('COMMANDS_AT_STOP_PAUSE', 3),
+               ('PROVENANCE_REGION', 4)])
 
     # 4 for key, 4 for has payload, 4 for payload 4 for repeats, 4 for delays
     _COMMAND_WITH_PAYLOAD_SIZE = 20
@@ -51,9 +46,6 @@ class CommandSenderMachineVertex(
 
     # bool for if the command does not have a payload (false = 0)
     _HAS_NO_PAYLOAD = 0
-
-    # Setup data size (one word)
-    _SETUP_DATA_SIZE = 4
 
     # the number of malloc requests used by the DSG
     TOTAL_REQUIRED_MALLOCS = 5
@@ -176,23 +168,6 @@ class CommandSenderMachineVertex(
             self.get_binary_file_name(), machine_time_step,
             time_scale_factor))
 
-        # Write setup region
-        # Find the maximum number of commands per timestep
-        max_n_commands = 0
-        if self._timed_commands:
-            counter = Counter(self._timed_commands)
-            max_n_commands = counter.most_common(1)[0][1]
-        max_n_commands = max([
-            max_n_commands, len(self._commands_at_start_resume),
-            len(self._commands_at_pause_stop)])
-        time_between_commands = 0
-        if max_n_commands > 0:
-            time_between_commands = (
-                (machine_time_step * time_scale_factor // 2) // max_n_commands)
-        spec.switch_write_focus(
-            CommandSenderMachineVertex.DATA_REGIONS.SETUP.value)
-        spec.write_value(int(time_between_commands))
-
         # write commands
         spec.switch_write_focus(
             region=CommandSenderMachineVertex.DATA_REGIONS.
@@ -262,10 +237,6 @@ class CommandSenderMachineVertex(
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.DATA_REGIONS.SYSTEM_REGION.value,
             size=SYSTEM_BYTES_REQUIREMENT, label='system')
-
-        spec.reserve_memory_region(
-            region=CommandSenderMachineVertex.DATA_REGIONS.SETUP.value,
-            size=CommandSenderMachineVertex._SETUP_DATA_SIZE, label='setup')
 
         spec.reserve_memory_region(
             region=CommandSenderMachineVertex.
