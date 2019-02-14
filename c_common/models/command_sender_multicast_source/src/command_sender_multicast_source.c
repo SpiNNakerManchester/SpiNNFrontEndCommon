@@ -29,8 +29,6 @@ static uint32_t n_timed_commands;
 static uint32_t n_start_resume_commands;
 static uint32_t n_pause_stop_commands;
 static uint32_t next_timed_command;
-static uint32_t expected_next_send;
-static uint32_t time_between_sends;
 static bool resume = true;
 
 //! values for the priority for each callback
@@ -40,9 +38,8 @@ typedef enum callback_priorities{
 
 //! region identifiers
 typedef enum region_identifiers{
-    SYSTEM_REGION = 0, SETUP = 1, COMMANDS_WITH_ARBITRARY_TIMES = 2,
-    COMMANDS_AT_START_RESUME = 3, COMMANDS_AT_STOP_PAUSE = 4,
-    PROVENANCE_REGION = 5
+    SYSTEM_REGION = 0, COMMANDS_WITH_ARBITRARY_TIMES,
+    COMMANDS_AT_START_RESUME, COMMANDS_AT_STOP_PAUSE, PROVENANCE_REGION
 } region_identifiers;
 
 //! address data
@@ -61,13 +58,6 @@ typedef enum n_commands_id{
 } n_commands_id;
 
 static void transmit_command(command *command_to_send) {
-
-    // Wait until the expected time to send
-    while (tc[T1_COUNT] > expected_next_send) {
-
-        // Do Nothing
-    }
-    expected_next_send -= time_between_sends;
 
     // check for repeats
     if (command_to_send->repeats != 0) {
@@ -200,19 +190,11 @@ bool read_pause_stop_commands(address_t address) {
     return true;
 }
 
-void read_setup(address_t address) {
-    time_between_sends = address[0] * sv->cpu_clk;
-    log_info("Separating sends by %u clock cycles", time_between_sends);
-}
-
 // Callbacks
 void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time++;
-
-    // Set the next expected time to wait for between spike sending
-    expected_next_send = tc[T1_COUNT] - time_between_sends;
 
     if (resume) {
         log_info("running first start resume commands");
@@ -265,7 +247,6 @@ bool initialize(uint32_t *timer_period) {
     simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
-    read_setup(data_specification_get_region(SETUP, address));
     read_scheduled_parameters(data_specification_get_region(
         COMMANDS_WITH_ARBITRARY_TIMES, address));
     read_start_resume_commands(data_specification_get_region(
