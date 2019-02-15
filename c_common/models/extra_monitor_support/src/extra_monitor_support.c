@@ -882,10 +882,34 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         }
         missing_sdp_seq_num_sdram_address = sark_xalloc(
             sv->sdram_heap, size_of_data, 0,
-        ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+            ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+
+        // if not got enough sdram to alllocate all missing seq nums
         if(missing_sdp_seq_num_sdram_address == NULL){
-            io_printf(IO_BUF, "cant allocate sdram for missing seq nums");
-            rt_error(RTE_SWERR);
+
+            // biggest sdram block
+            uint32_t max_bytes = sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
+
+            // if can hold more than this packets worth of data
+            if (max_bytes >= (
+                    (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)*
+                    WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE){
+                io_printf(IO_BUF, "Activate bacon protocol!");
+                // allocate biggest block
+                missing_sdp_seq_num_sdram_address = sark_xalloc(
+                    sv->sdram_heap, max_bytes, 0,
+                    ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                // determine max full seq num packets to store
+                max_bytes = (max_bytes - (
+                    ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE) *
+                    WORD_TO_BYTE_MULTIPLIER) - END_FLAG_SIZE;
+                number_of_missing_seq_sdp_packets = 1+ (max_bytes / (
+                        (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER)));
+            }
+            else{
+                io_printf(IO_BUF, "cant allocate sdram for missing seq nums");
+                rt_error(RTE_SWERR);
+            }
         }
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
@@ -896,7 +920,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
         number_of_missing_seq_sdp_packets -= 1;
     } else {
-        io_printf(IO_BUF, "Unexpected Missing Sequence number \n");
+        io_printf(IO_BUF, "Unable to save missing sequence number \n");
     }
 }
 
