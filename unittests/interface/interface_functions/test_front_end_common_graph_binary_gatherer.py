@@ -1,13 +1,9 @@
 import unittest
-
 from pacman.model.graphs.machine import MachineVertex, MachineGraph
 from pacman.model.resources import ResourceContainer
 from pacman.model.placements import Placements, Placement
-
-from spinn_front_end_common.interface.interface_functions \
-    import GraphBinaryGatherer
-from spinn_front_end_common.interface.interface_functions \
-    import LocateExecutableStartType
+from spinn_front_end_common.interface.interface_functions import (
+    GraphBinaryGatherer, LocateExecutableStartType)
 from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from spinn_front_end_common.abstract_models import AbstractHasAssociatedBinary
 
@@ -67,7 +63,7 @@ class TestFrontEndCommonGraphBinaryGatherer(unittest.TestCase):
             placements, graph, _TestExecutableFinder())
         gatherer = LocateExecutableStartType()
         start_type = gatherer.__call__(graph, placements)
-        self.assertEqual(start_type.keys()[0], ExecutableType.RUNNING)
+        self.assertEqual(next(iter(start_type)), ExecutableType.RUNNING)
         self.assertEqual(targets.total_processors, 3)
 
         test_cores = targets.get_cores_for_binary("test.aplx")

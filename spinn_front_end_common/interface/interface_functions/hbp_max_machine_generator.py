@@ -3,18 +3,16 @@ from spinn_machine.virtual_machine import VirtualMachine
 
 
 class HBPMaxMachineGenerator(object):
-
     """ Generates the width and height of the maximum machine a given\
-        HBP server can generate
+        HBP server can generate.
     """
 
     __slots__ = []
 
     def __call__(self, hbp_server_url, total_run_time):
         """
-
-        :param hbp_server_url: The URL of the HBP server from which to get\
-                    the machine
+        :param hbp_server_url: \
+            The URL of the HBP server from which to get the machine
         :param total_run_time: The total run time to request
         """
 
@@ -28,6 +26,7 @@ class HBPMaxMachineGenerator(object):
     def _max_machine_request(self, url, total_run_time):
         if url.endswith("/"):
             url = url[:-1]
-        return requests.get(
-            "{}/max".format(url),
-            params={'runTime': total_run_time}).json()
+        r = requests.get("{}/max".format(url), params={
+            'runTime': total_run_time})
+        r.raise_for_status()
+        return r.json()

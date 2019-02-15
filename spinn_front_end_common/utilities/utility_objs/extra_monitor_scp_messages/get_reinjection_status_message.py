@@ -1,24 +1,21 @@
 from spinnman.messages.scp import SCPRequestHeader
-from spinnman.messages.scp.abstract_messages \
-    import AbstractSCPRequest, AbstractSCPResponse
+from spinnman.messages.scp.abstract_messages import (
+    AbstractSCPRequest, AbstractSCPResponse)
 from spinnman.messages.scp.enums import SCPResult
 from spinnman.messages.sdp import SDPFlag, SDPHeader
 from spinnman.exceptions import SpinnmanUnexpectedResponseCodeException
-from spinn_front_end_common.utilities.utility_objs.reinjection_status import \
-    ReInjectionStatus
-from spinn_front_end_common.utilities import constants
+from spinn_front_end_common.utilities.constants import SDP_PORTS
+from spinn_front_end_common.utilities.utility_objs import ReInjectionStatus
+from .reinjector_scp_commands import ReinjectorSCPCommands
 
 
 class GetReinjectionStatusMessage(AbstractSCPRequest):
     """ An SCP Request to get the status of the dropped packet reinjection
     """
 
-    __slots__ = [
-        # command code
-        "_command_code"
-    ]
+    __slots__ = []
 
-    def __init__(self, x, y, p, command_code):
+    def __init__(self, x, y, p):
         """
         :param x: The x-coordinate of a chip, between 0 and 255
         :type x: int
@@ -27,25 +24,20 @@ class GetReinjectionStatusMessage(AbstractSCPRequest):
         :param p: \
             The processor running the extra monitor vertex, between 0 and 17
         :type p: int
-        :param command_code: the command code used by the extra monitor \
-            vertex for getting reinjection status
-        :type command_code: \
-            :py:class:`spinnman.messages.scp.scp_command.SCPCommand`
         """
-
-        self._command_code = command_code
 
         super(GetReinjectionStatusMessage, self).__init__(
             SDPHeader(
                 flags=SDPFlag.REPLY_EXPECTED,
                 destination_port=(
-                    constants.SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
+                    SDP_PORTS.EXTRA_MONITOR_CORE_REINJECTION.value),
                 destination_cpu=p, destination_chip_x=x,
                 destination_chip_y=y),
-            SCPRequestHeader(command=command_code))
+            SCPRequestHeader(command=ReinjectorSCPCommands.GET_STATUS))
 
     def get_scp_response(self):
-        return GetReinjectionStatusMessageResponse(self._command_code)
+        return GetReinjectionStatusMessageResponse(
+            ReinjectorSCPCommands.GET_STATUS)
 
 
 class GetReinjectionStatusMessageResponse(AbstractSCPResponse):

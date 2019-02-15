@@ -1,47 +1,49 @@
-from spinn_utilities.overrides import overrides
-
-from pacman.executor.injection_decorator \
-    import inject_items, supports_injection, inject
-from pacman.model.constraints.key_allocator_constraints \
-    import FixedKeyAndMaskConstraint
-from pacman.model.constraints.placer_constraints import BoardConstraint
-from pacman.model.resources import IPtagResource, ReverseIPtagResource
-from pacman.model.resources import ResourceContainer, DTCMResource
-from pacman.model.resources import SDRAMResource, CPUCyclesPerTickResource
-from pacman.model.routing_info import BaseKeyAndMask
-from pacman.model.graphs.machine import MachineVertex
-
-from spinn_front_end_common.utilities.helpful_functions \
-    import locate_memory_region_for_placement
-from spinn_front_end_common.interface.buffer_management.recording_utilities \
-    import TRAFFIC_IDENTIFIER
-from spinn_front_end_common.interface.buffer_management.buffer_models \
-    import SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost
-from spinn_front_end_common.interface.buffer_management.storage_objects \
-    import BufferedSendingRegion
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.exceptions import ConfigurationException
-from spinn_front_end_common.abstract_models \
-    import AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable
-from spinn_front_end_common.abstract_models \
-    import AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary
-from spinn_front_end_common.abstract_models \
-    import AbstractSupportsDatabaseInjection
-from spinn_front_end_common.interface.simulation.simulation_utilities \
-    import get_simulation_header_array
-from spinn_front_end_common.interface.provenance \
-    import ProvidesProvenanceDataFromMachineImpl
-from spinn_front_end_common.interface.buffer_management\
-    import recording_utilities
-from spinn_front_end_common.utilities.utility_objs \
-    import ProvenanceDataItem, ExecutableType
-
-from spinnman.messages.eieio import EIEIOPrefix
-
-from enum import Enum
 import math
 import sys
 import struct
+from enum import Enum
+from six.moves import xrange
+from spinn_utilities.overrides import overrides
+from spinnman.messages.eieio import EIEIOPrefix
+from pacman.executor.injection_decorator import (
+    inject_items, supports_injection, inject)
+from pacman.model.constraints.key_allocator_constraints import (
+    FixedKeyAndMaskConstraint)
+from pacman.model.constraints.placer_constraints import BoardConstraint
+from pacman.model.resources import (
+    IPtagResource, ReverseIPtagResource, ResourceContainer, DTCMResource,
+    SDRAMResource, CPUCyclesPerTickResource)
+from pacman.model.routing_info import BaseKeyAndMask
+from pacman.model.graphs.machine import MachineVertex
+from spinn_front_end_common.utilities.helpful_functions import (
+    locate_memory_region_for_placement)
+from spinn_front_end_common.interface.buffer_management.recording_utilities \
+    import (
+        TRAFFIC_IDENTIFIER)
+from spinn_front_end_common.interface.buffer_management.buffer_models import (
+    SendsBuffersFromHostPreBufferedImpl, AbstractReceiveBuffersToHost)
+from spinn_front_end_common.interface.buffer_management.storage_objects \
+    import (
+        BufferedSendingRegion)
+from spinn_front_end_common.utilities.constants import (
+    DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE, MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
+    SARK_PER_MALLOC_SDRAM_USAGE, SDP_PORTS, SYSTEM_BYTES_REQUIREMENT)
+from spinn_front_end_common.utilities.exceptions import ConfigurationException
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesOutgoingPartitionConstraints, AbstractRecordable,
+    AbstractGeneratesDataSpecification, AbstractHasAssociatedBinary,
+    AbstractSupportsDatabaseInjection)
+from spinn_front_end_common.interface.simulation.simulation_utilities import (
+    get_simulation_header_array)
+from spinn_front_end_common.interface.provenance import (
+    ProvidesProvenanceDataFromMachineImpl)
+from spinn_front_end_common.interface.buffer_management.recording_utilities \
+    import (
+        get_n_timesteps_in_buffer_space, get_recorded_region_ids,
+        get_recording_header_array, get_recording_header_size,
+        get_recording_resources)
+from spinn_front_end_common.utilities.utility_objs import (
+    ProvenanceDataItem, ExecutableType)
 
 _DEFAULT_MALLOC_REGIONS = 2
 _ONE_WORD = struct.Struct("<I")
@@ -56,7 +58,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         AbstractProvidesOutgoingPartitionConstraints,
         SendsBuffersFromHostPreBufferedImpl,
         AbstractReceiveBuffersToHost, AbstractRecordable):
-    """ A model which allows events to be injected into spinnaker and\
+    """ A model which allows events to be injected into SpiNNaker and\
         converted in to multicast packets
     """
 
@@ -90,8 +92,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
             # Live input parameters
             receive_port=None,
-            receive_sdp_port=(
-                constants.SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value),
+            receive_sdp_port=SDP_PORTS.INPUT_BUFFERING_SDP_PORT.value,
             receive_tag=None,
             receive_rate=10,
 
@@ -102,8 +103,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
             # Send buffer parameters
             send_buffer_times=None,
             send_buffer_partition_id=None,
-            send_buffer_max_space=(
-                constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP),
+            send_buffer_max_space=MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
             send_buffer_space_before_notify=640,
 
             # Buffer notification details
@@ -296,12 +296,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
             iptags=self._iptags,
             reverse_iptags=self._reverse_iptags)
         if self._iptags is None:
-            resources.extend(recording_utilities.get_recording_resources(
+            resources.extend(get_recording_resources(
                 [self._record_buffer_size],
                 self._buffer_notification_ip_address,
                 self._buffer_notification_port, self._buffer_notification_tag))
         else:
-            resources.extend(recording_utilities.get_recording_resources(
+            resources.extend(get_recording_resources(
                 [self._record_buffer_size]))
         return resources
 
@@ -315,10 +315,10 @@ class ReverseIPTagMulticastSourceMachineVertex(
         mallocs = \
             ReverseIPTagMulticastSourceMachineVertex.n_regions_to_allocate(
                 send_buffer_times is not None, recording_enabled)
-        allocation_size = mallocs * constants.SARK_PER_MALLOC_SDRAM_USAGE
+        allocation_size = mallocs * SARK_PER_MALLOC_SDRAM_USAGE
 
         return (
-            constants.SYSTEM_BYTES_REQUIREMENT +
+            SYSTEM_BYTES_REQUIREMENT +
             (ReverseIPTagMulticastSourceMachineVertex.
                 _CONFIGURATION_REGION_SIZE) +
             send_buffer_size + allocation_size +
@@ -418,9 +418,8 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
     def enable_recording(
             self,
-            record_buffer_size=constants.MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
-            buffer_size_before_receive=(
-                constants.DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE),
+            record_buffer_size=MAX_SIZE_OF_BUFFERED_REGION_ON_CHIP,
+            buffer_size_before_receive=DEFAULT_BUFFER_SIZE_BEFORE_RECEIVE,
             time_between_triggers=0):
         """ Enable recording of the keys sent
 
@@ -446,7 +445,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Reserve system and configuration memory regions:
         spec.reserve_memory_region(
             region=self._REGIONS.SYSTEM.value,
-            size=constants.SYSTEM_BYTES_REQUIREMENT, label='SYSTEM')
+            size=SYSTEM_BYTES_REQUIREMENT, label='SYSTEM')
         spec.reserve_memory_region(
             region=self._REGIONS.CONFIGURATION.value,
             size=self._CONFIGURATION_REGION_SIZE, label='CONFIGURATION')
@@ -454,7 +453,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Reserve recording buffer regions if required
         spec.reserve_memory_region(
             region=self._REGIONS.RECORDING.value,
-            size=recording_utilities.get_recording_header_size(1),
+            size=get_recording_header_size(1),
             label="RECORDING")
 
         # Reserve send buffer region if required
@@ -590,7 +589,7 @@ class ReverseIPTagMulticastSourceMachineVertex(
         # Write the additional recording information
         iptags = tags.get_ip_tags_for_vertex(self)
         spec.switch_write_focus(self._REGIONS.RECORDING.value)
-        spec.write_array(recording_utilities.get_recording_header_array(
+        spec.write_array(get_recording_header_array(
             [self._record_buffer_size],
             self._time_between_triggers, self._buffer_size_before_receive,
             iptags, self._buffer_notification_tag))
@@ -654,11 +653,11 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # If not recording, not an issue
         if self._record_buffer_size == 0:
-            return sys.maxint
+            return sys.maxsize
 
         # If recording and using pre-defined keys, use the maximum
         if self._send_buffer is not None:
-            return recording_utilities.get_n_timesteps_in_buffer_space(
+            return get_n_timesteps_in_buffer_space(
                 buffer_space, [self._send_buffer.max_packets_in_timestamp])
 
         # If recording and not using pre-defined keys, use the specified
@@ -669,13 +668,12 @@ class ReverseIPTagMulticastSourceMachineVertex(
 
         # 4 bytes per key + 2 byte header + 4 byte timestamp
         bytes_per_timestep = (keys_per_timestep * 4) + 6
-        return recording_utilities.get_n_timesteps_in_buffer_space(
+        return get_n_timesteps_in_buffer_space(
             buffer_space, [bytes_per_timestep])
 
     @overrides(AbstractReceiveBuffersToHost.get_recorded_region_ids)
     def get_recorded_region_ids(self):
-        return recording_utilities.get_recorded_region_ids(
-            [self._record_buffer_size])
+        return get_recorded_region_ids([self._record_buffer_size])
 
     @overrides(AbstractReceiveBuffersToHost.get_recording_region_base_address)
     def get_recording_region_base_address(self, txrx, placement):

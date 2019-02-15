@@ -1,10 +1,7 @@
-from spinn_utilities.progress_bar import ProgressBar
-
-# front end common imports
-from spinn_front_end_common.interface.profiling import AbstractHasProfileData
-
 import os
 import logging
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_front_end_common.interface.profiling import AbstractHasProfileData
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +21,7 @@ class ProfileDataGatherer(object):
         :param machine_time_step: machine time step in ms
         """
         # pylint: disable=too-many-arguments
-        machine_time_step_ms = machine_time_step / 1000
+        machine_time_step_ms = machine_time_step // 1000
 
         progress = ProgressBar(
             placements.n_placements, "Getting profile data")

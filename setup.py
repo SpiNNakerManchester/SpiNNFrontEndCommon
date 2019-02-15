@@ -9,7 +9,7 @@ assert __version__
 # Build a list of all project modules, as well as supplementary files
 main_package = "spinn_front_end_common"
 extensions = {".aplx", ".boot", ".cfg", ".json", ".sql", ".template", ".xml",
-              ".xsd"}
+              ".xsd", ".dict"}
 main_package_dir = os.path.join(os.path.dirname(__file__), main_package)
 start = len(main_package_dir)
 packages = []
@@ -29,7 +29,7 @@ for dirname, dirnames, filenames in os.walk(main_package_dir):
 setup(
     name="SpiNNFrontEndCommon",
     version=__version__,
-    description="Common Spinnaker Front end functions",
+    description="Common SpiNNaker Front end functions",
     url="https://github.com/SpiNNakerManchester/SpiNNFrontEndCommon",
     packages=packages,
     package_data=package_data,
@@ -43,5 +43,6 @@ setup(
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
+                      'futures; python_version == "2.7"',
                       'six']
 )

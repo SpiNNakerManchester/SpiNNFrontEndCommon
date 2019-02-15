@@ -14,7 +14,7 @@
 #include "common-typedefs.h"
 #include <spin1_api.h>
 
-// constant for how many dma ids you can use (caps the values of the tags as
+// constant for how many DMA IDs you can use (caps the values of the tags as
 // well)
 #define MAX_DMA_CALLBACK_TAG 16
 
@@ -96,7 +96,9 @@ void simulation_set_provenance_function(
 void simulation_set_exit_function(exit_callback_t exit_function);
 
 //! \brief cleans up the house keeping, falls into a sync state and handles
-//!        the resetting up of states as required to resume.
+//!        the resetting up of states as required to resume.  Note that
+//!        following this function, the code should call
+//!        simulation_ready_to_read (see later).
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
 void simulation_handle_pause_resume(resume_callback_t resume_function);
@@ -107,6 +109,10 @@ void simulation_exit();
 
 //! \brief Starts the simulation running, returning when it is complete,
 void simulation_run();
+
+//! \brief Indicates that all data has been written and the core is going
+//!        idle, so any data can now be read
+void simulation_ready_to_read();
 
 //! \brief Registers an additional SDP callback on a given SDP port.  This is
 //!        required when using simulation_register_sdp_callback, as this will
@@ -121,14 +127,14 @@ bool simulation_sdp_callback_on(
 //| \param[in] sdp_port The SDP port to disable callbacks for
 void simulation_sdp_callback_off(uint sdp_port);
 
-//! \brief registers a dma transfer callback to the simulation system
-//! \param[in] tag: the dma transfer tag to register against
+//! \brief registers a DMA transfer callback to the simulation system
+//! \param[in] tag: the DMA transfer tag to register against
 //! \param[in] callback: the callback to register for the given tag
 //! \return true if successful, false otherwise
 bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback);
 
-//! \brief turns off a registered callback for a given dma transfer done tag
-//! \param[in] tag: the dma transfer tag to de-register
+//! \brief turns off a registered callback for a given DMA transfer done tag
+//! \param[in] tag: the DMA transfer tag to de-register
 void simulation_dma_transfer_done_callback_off(uint tag);
 
 #endif // _SIMULATION_H_

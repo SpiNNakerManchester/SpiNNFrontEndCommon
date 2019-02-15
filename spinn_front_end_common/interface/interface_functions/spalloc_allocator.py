@@ -1,12 +1,13 @@
 import math
+import six
+import sys
 from spinn_utilities.overrides import overrides
-
 from spalloc import Job
 from spalloc.states import JobState
-from spinn_front_end_common.abstract_models.impl \
-    import MachineAllocationController
-from spinn_front_end_common.abstract_models \
-    import AbstractMachineAllocationController
+from spinn_front_end_common.abstract_models import (
+    AbstractMachineAllocationController)
+from spinn_front_end_common.abstract_models.impl import (
+    MachineAllocationController)
 
 
 class _SpallocJobController(MachineAllocationController):
@@ -51,13 +52,18 @@ class _SpallocJobController(MachineAllocationController):
         try:
             if self._state != JobState.destroyed:
                 self._state = self._job.wait_for_state_change(self._state)
+        except Exception:
+            if not self._exited:
+                six.reraise(*sys.exc_info())
         except TypeError:
             pass
         return self._state != JobState.destroyed
 
     @overrides(MachineAllocationController._teardown)
     def _teardown(self):
-        self._job.close()
+        if not self._exited:
+            self._job.close()
+        super(_SpallocJobController, self)._teardown()
 
 
 class SpallocAllocator(object):
@@ -73,7 +79,6 @@ class SpallocAllocator(object):
             self, spalloc_server, spalloc_user, n_chips, spalloc_port=None,
             spalloc_machine=None):
         """
-
         :param spalloc_server: \
             The server from which the machine should be requested
         :param spalloc_port: The port of the SPALLOC server
@@ -106,8 +111,8 @@ class SpallocAllocator(object):
         machine_allocation_controller = _SpallocJobController(job)
 
         return (
-            hostname, self._MACHINE_VERSION, None, None, None, None, False,
-            False, None, None, None, machine_allocation_controller
+            hostname, self._MACHINE_VERSION, None, False,
+            False, None, None, machine_allocation_controller
         )
 
     def _launch_job(self, n_boards, spalloc_kw_args):

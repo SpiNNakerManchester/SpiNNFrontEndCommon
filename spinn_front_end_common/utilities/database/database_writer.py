@@ -1,16 +1,13 @@
-# spinn front end common
-from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
-from pacman.model.graphs.common import EdgeTrafficType
-from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.abstract_models \
-    import AbstractProvidesKeyToAtomMapping, AbstractRecordable, \
-    AbstractSupportsDatabaseInjection
-
-# general imports
 import logging
 import os
-import sqlite3
 import sys
+import sqlite3
+from spinn_utilities.log import FormatAdapter
+from pacman.model.abstract_classes import AbstractHasGlobalMaxAtoms
+from pacman.model.graphs.common import EdgeTrafficType
+from spinn_front_end_common.abstract_models import (
+    AbstractProvidesKeyToAtomMapping, AbstractRecordable,
+    AbstractSupportsDatabaseInjection)
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -82,7 +79,7 @@ class DatabaseWriter(object):
         """ Auto detects if there is a need to activate the database system
 
         :param machine_graph: the machine graph of the application\
-                problem space.
+            problem space.
         :return: a bool which represents if the database is needed
         """
         return any(isinstance(vertex, AbstractSupportsDatabaseInjection)
@@ -99,8 +96,8 @@ class DatabaseWriter(object):
             c.execute(sql, args)
             return c.lastrowid
         except Exception:
-            logger.error("problem with insertion; argument types are {}",
-                         str(map(type, args)), exc_info=True)
+            logger.exception("problem with insertion; argument types are {}",
+                             str(map(type, args)))
             raise
 
     def create_schema(self):
@@ -311,7 +308,7 @@ class DatabaseWriter(object):
                     self.__insert_app_vertex(
                         vertex, vertex.get_max_atoms_per_core(), 0)
                 else:
-                    self.__insert_app_vertex(vertex, sys.maxint, 0)
+                    self.__insert_app_vertex(vertex, sys.maxsize, 0)
 
             # add edges
             for vertex in application_graph.vertices:

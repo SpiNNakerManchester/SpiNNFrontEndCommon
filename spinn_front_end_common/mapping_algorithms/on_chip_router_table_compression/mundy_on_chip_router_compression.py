@@ -1,19 +1,15 @@
-from spinn_utilities.progress_bar import ProgressBar
-
-from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
-from spinn_front_end_common.mapping_algorithms \
-    import on_chip_router_table_compression
-from spinn_front_end_common.interface.interface_functions \
-    import ChipIOBufExtractor
-
-from spinnman.model.enums import CPUState
-from spinnman.model import ExecutableTargets
-
-from spinn_machine import CoreSubsets, Router
-
 import logging
 import os
 import struct
+from spinn_utilities.progress_bar import ProgressBar
+from spinn_machine import CoreSubsets, Router
+from spinnman.model.enums import CPUState
+from spinnman.model import ExecutableTargets
+from spinn_front_end_common.utilities.exceptions import SpinnFrontEndException
+from spinn_front_end_common.mapping_algorithms import (
+    on_chip_router_table_compression)
+from spinn_front_end_common.interface.interface_functions import (
+    ChipIOBufExtractor)
 
 logger = logging.getLogger(__name__)
 _ONE_WORD = struct.Struct("<I")
@@ -41,8 +37,8 @@ class MundyOnChipRouterCompression(object):
         """
         :param routing_tables: the memory routing tables to be compressed
         :param transceiver: the spinnman interface
-        :param machine: the spinnaker machine representation
-        :param app_id: the app-id used by the main application
+        :param machine: the SpiNNaker machine representation
+        :param app_id: the application ID used by the main application
         :param provenance_file_path: the path to where to write the data
         :return: flag stating routing compression and loading has been done
         """
@@ -54,7 +50,7 @@ class MundyOnChipRouterCompression(object):
             "Running routing table compression on chip")
         compressor_app_id = transceiver.app_id_tracker.get_new_id()
 
-        # figure size of sdram needed for each chip for storing the routing
+        # figure size of SDRAM needed for each chip for storing the routing
         # table
         for routing_table in progress.over(routing_tables, False):
             self._load_routing_table(
@@ -109,18 +105,18 @@ class MundyOnChipRouterCompression(object):
         base_address = txrx.malloc_sdram(
             table.x, table.y, len(data), compressor_app_id, _SDRAM_TAG)
 
-        # write sdram requirements per chip
+        # write SDRAM requirements per chip
         txrx.write_memory(table.x, table.y, base_address, data)
 
     @staticmethod
     def __read_user_0(txrx, x, y, p):
-        addr = txrx.get_user_0_register_address_from_core(x, y, p)
-        return struct.unpack("<I", str(txrx.read_memory(x, y, addr, 4)))[0]
+        addr = txrx.get_user_0_register_address_from_core(p)
+        return struct.unpack("<I", txrx.read_memory(x, y, addr, 4))[0]
 
     def _check_for_success(
             self, executable_targets, txrx, provenance_file_path,
             compressor_app_id):
-        """ goes through the cores checking for cores that have failed to\
+        """ Goes through the cores checking for cores that have failed to\
             compress the routing tables to the level where they fit into the\
             router
         """
@@ -154,7 +150,7 @@ class MundyOnChipRouterCompression(object):
         logger.info("Router compressor has failed")
         iobuf_extractor = ChipIOBufExtractor()
         io_errors, io_warnings = iobuf_extractor(
-            txrx, executable_targets.all_core_subsets,
+            txrx, executable_targets,
             provenance_file_path)
         for warning in io_warnings:
             logger.warning(warning)
@@ -165,12 +161,12 @@ class MundyOnChipRouterCompression(object):
 
     @staticmethod
     def _load_executables(routing_tables, compressor_app_id, txrx, machine):
-        """ loads the router compressor onto the chips.
+        """ Loads the router compressor onto the chips.
 
         :param routing_tables: the router tables needed to be compressed
-        :param compressor_app_id: the app id of the compressor compressor
+        :param compressor_app_id: the app ID of the compressor compressor
         :param txrx: the spinnman interface
-        :param machine: the spinnaker machine representation
+        :param machine: the SpiNNaker machine representation
         :return:\
             the executable targets that represent all cores/chips which have\
             active routing tables
@@ -198,11 +194,11 @@ class MundyOnChipRouterCompression(object):
     def _build_data(
             self, routing_table, app_id, compress_only_when_needed,
             compress_as_much_as_possible):
-        """ convert the router table into the data needed by the router\
+        """ Convert the router table into the data needed by the router\
             compressor c code.
 
         :param routing_table: the pacman router table instance
-        :param app_id: the app-id to load the entries in by
+        :param app_id: the application ID to load the entries in by
         :param compress_only_when_needed:\
             If True, the compressor will only compress if the table doesn't\
             fit in the current router space, otherwise it will just load\
@@ -216,8 +212,8 @@ class MundyOnChipRouterCompression(object):
         :return: The byte array of data
         """
 
-        # write header data of the app id to load the data, if to store
-        # results in sdram and the router table entries
+        # write header data of the app ID to load the data, if to store
+        # results in SDRAM and the router table entries
 
         data = b''
         data += _FOUR_WORDS.pack(

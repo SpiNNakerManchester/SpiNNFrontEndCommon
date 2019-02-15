@@ -1,8 +1,6 @@
 from spinn_utilities.progress_bar import ProgressBar
-
-# front end common imports
-from spinn_front_end_common.interface.provenance \
-    import AbstractProvidesLocalProvenanceData
+from spinn_front_end_common.interface.provenance import (
+    AbstractProvidesLocalProvenanceData)
 
 
 class GraphProvenanceGatherer(object):
@@ -12,7 +10,6 @@ class GraphProvenanceGatherer(object):
             self, machine_graph, application_graph=None,
             provenance_data_objects=None):
         """
-
         :param machine_graph: The machine graph to inspect
         :param application_graph: The optional application graph
         :param provenance_data_objects: Any existing objects to append to

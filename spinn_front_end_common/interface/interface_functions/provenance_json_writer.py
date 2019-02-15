@@ -1,10 +1,8 @@
-from spinn_front_end_common.utilities.helpful_functions \
-    import generate_unique_folder_name
-
-# general imports
 import itertools
 import json
 import string
+from spinn_front_end_common.utilities.helpful_functions import (
+    generate_unique_folder_name)
 
 _VALID_CHARS = frozenset(
     "-_.() {}{}".format(string.ascii_letters, string.digits))

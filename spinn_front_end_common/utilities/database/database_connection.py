@@ -1,19 +1,15 @@
-# spinnman imports
+import logging
+from threading import Thread
+from six import raise_from
 from spinn_utilities.log import FormatAdapter
-from spinn_front_end_common.utilities.constants import NOTIFY_PORT
-from spinnman.exceptions \
-    import SpinnmanIOException, SpinnmanInvalidPacketException, \
-    SpinnmanTimeoutException
+from spinnman.exceptions import (
+    SpinnmanIOException, SpinnmanInvalidPacketException,
+    SpinnmanTimeoutException)
 from spinnman.messages.eieio.command_messages import EIEIOCommandHeader
 from spinnman.connections.udp_packet_connections import UDPConnection
 from spinnman.constants import EIEIO_COMMAND_IDS as CMDS
-
-# FrontEndCommon imports
+from spinn_front_end_common.utilities.constants import NOTIFY_PORT
 from .database_reader import DatabaseReader
-
-# general imports
-from threading import Thread
-import logging
 
 logger = FormatAdapter(logging.getLogger(__name__))
 
@@ -35,13 +31,12 @@ class DatabaseConnection(UDPConnection):
                  stop_pause_callback_function=None, local_host=None,
                  local_port=NOTIFY_PORT):
         """
-
         :param start_resume_callback_function: A function to be called when \
             the start message has been received.  This function should not \
             take any parameters or return anything.
         :type start_resume_callback_function: function() -> None
         :param local_host: Optional specification of the local hostname or\
-            ip address of the interface to listen on
+            IP address of the interface to listen on
         :type local_host: str
         :param local_port: Optional specification of the local port to listen \
             on.  Must match the port that the toolchain will send the \
@@ -88,7 +83,7 @@ class DatabaseConnection(UDPConnection):
         except Exception as e:
             logger.error("Failure processing database callback",
                          exc_info=True)
-            raise SpinnmanIOException(str(e))
+            raise_from(SpinnmanIOException(str(e)), e)
         finally:
             self._running = False
 
@@ -96,7 +91,7 @@ class DatabaseConnection(UDPConnection):
         # Read the read packet confirmation
         logger.info("{}:{} Reading database",
                     self.local_ip_address, self.local_port)
-        database_path = str(data[2:])
+        database_path = data[2:].decode()
 
         # Call the callback
         database_reader = DatabaseReader(database_path)
@@ -146,8 +141,6 @@ class DatabaseConnection(UDPConnection):
             return self.receive_with_address(timeout=3)
         except SpinnmanTimeoutException:
             return None, None
-        except SpinnmanIOException:
-            raise
 
     def close(self):
         self._running = False

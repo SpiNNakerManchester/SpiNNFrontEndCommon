@@ -1,23 +1,17 @@
 import struct
 import tempfile
 import numpy
-
-from pacman.model.resources.resource_container import ResourceContainer
-from pacman.executor.pacman_algorithm_executor import PACMANAlgorithmExecutor
-from pacman.model.graphs.machine.machine_vertex import MachineVertex
-from pacman.model.graphs.machine.machine_graph import MachineGraph
-from pacman.model.placements.placements import Placements
-from pacman.model.placements.placement import Placement
-
-from spinnman.model.heap_element import HeapElement
+from pacman.executor import PACMANAlgorithmExecutor
+from pacman.model.resources import ResourceContainer
+from pacman.model.graphs.machine import MachineVertex, MachineGraph
+from pacman.model.placements import Placements, Placement
+from spinnman.model import HeapElement
 from spinnman.exceptions import SpinnmanInvalidParameterException
-from spinnman.messages.spinnaker_boot.system_variable_boot_values \
-    import SystemVariableDefinition
-
-from spinn_front_end_common.utilities.function_list \
-    import get_front_end_common_pacman_xml_paths
-from spinn_front_end_common.abstract_models.abstract_uses_memory_io \
-    import AbstractUsesMemoryIO
+from spinnman.messages.spinnaker_boot import SystemVariableDefinition
+from spinn_front_end_common.utilities.function_list import (
+    get_front_end_common_pacman_xml_paths)
+from spinn_front_end_common.abstract_models.abstract_uses_memory_io import (
+    AbstractUsesMemoryIO)
 
 
 class _MockTransceiver(object):
@@ -60,7 +54,7 @@ class _MockTransceiver(object):
         data_to_fill = numpy.array([repeat_value], dtype="uint{}".format(
             data_type.value * 8)).view("uint8")
         data_to_write = numpy.tile(
-            data_to_fill, bytes_to_fill / data_type.value)
+            data_to_fill, bytes_to_fill // data_type.value)
         memory[address:address + bytes_to_fill] = data_to_write
 
     def get_heap(self, x, y, heap):
@@ -118,7 +112,7 @@ class MyVertex(MachineVertex, AbstractUsesMemoryIO):
         memory.write(struct.pack("<I", tag))
         memory.seek(0)
         self._tag = tag
-        self._test_tag = struct.unpack("<I", memory.read(4))[0]
+        self._test_tag, = struct.unpack("<I", memory.read(4))
 
 
 def test_memory_io():
@@ -129,7 +123,7 @@ def test_memory_io():
     placements.add_placement(Placement(vertex, 0, 0, 1))
     transceiver = _MockTransceiver()
     temp = tempfile.mkdtemp()
-    print "ApplicationDataFolder =", temp
+    print("ApplicationDataFolder = {}".format(temp))
     inputs = {
         "MemoryTransceiver": transceiver,
         "MemoryMachineGraph": graph,

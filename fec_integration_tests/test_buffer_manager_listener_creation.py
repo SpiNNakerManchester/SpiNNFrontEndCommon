@@ -1,13 +1,13 @@
 import unittest
 from spinn_utilities.overrides import overrides
-from spinn_front_end_common.interface.buffer_management import BufferManager
 from pacman.model.placements import Placement, Placements
 from pacman.model.tags import Tags
 from pacman.model.graphs.application import ApplicationVertex
-from spinnman.transceiver import Transceiver
-from spinnman.connections.udp_packet_connections import SCAMPConnection
-from spinnman.connections.udp_packet_connections import EIEIOConnection
 from spinn_machine.tags import IPTag
+from spinnman.transceiver import Transceiver
+from spinnman.connections.udp_packet_connections import (
+    SCAMPConnection, EIEIOConnection)
+from spinn_front_end_common.interface.buffer_management import BufferManager
 
 
 class TestBufferManagerListenerCreation(unittest.TestCase):
@@ -68,7 +68,7 @@ class TestBufferManagerListenerCreation(unittest.TestCase):
             # same listener for the buffer manager
             if not i[1] is None:
                 number_of_listeners += 1
-            print i
+            print(i)
         self.assertEqual(number_of_listeners, 1)
 
 
