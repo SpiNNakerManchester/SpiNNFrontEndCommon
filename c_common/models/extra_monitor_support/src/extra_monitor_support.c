@@ -878,14 +878,21 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         missing_sdp_seq_num_sdram_address = sark_xalloc(
             sv->sdram_heap, size_of_data, 0,
         ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+        if(missing_sdp_seq_num_sdram_address == NULL){
+            log_error("cant allocate sdram for missing seq nums");
+            rt_error(RTE_SWERR);
+        }
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
     }
-
-    // write data to SDRAM and update packet counter
-    write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
-    number_of_missing_seq_sdp_packets -= 1;
+    if (number_of_missing_seq_sdp_packets > 0) {
+        // write data to SDRAM and update packet counter
+        write_missing_sdp_seq_nums_into_sdram(data, length, start_reading_offset);
+        number_of_missing_seq_sdp_packets -= 1;
+    } else {
+        io_printf(IO_BUF, "Unexpected Missing Sequence number \n");
+    }
 }
 
 //! \brief sets off a DMA for retransmission stuff
@@ -1066,17 +1073,19 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 if (number_of_missing_seq_sdp_packets == 0) {
                     // packets all received, add finish flag for DMA stoppage
 
-                    //io_printf(IO_BUF, "starting resend process\n");
-                    missing_sdp_seq_num_sdram_address[
-                    number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                    number_of_missing_seq_nums_in_sdram += 1;
-                    position_in_read_data = 0;
-                    position_for_retransmission = 0;
+                    if(number_of_missing_seq_nums_in_sdram != 0) {
+                        //io_printf(IO_BUF, "starting resend process\n");
+                        missing_sdp_seq_num_sdram_address[
+                            number_of_missing_seq_nums_in_sdram] = END_FLAG;
+                        number_of_missing_seq_nums_in_sdram += 1;
+                        position_in_read_data = 0;
+                        position_for_retransmission = 0;
 
-                    //log_info("start retransmission");
-                    // start DMA off
-                    in_re_transmission_mode = true;
-                    retransmission_dma_read();
+                        //log_info("start retransmission");
+                        // start DMA off
+                        in_re_transmission_mode = true;
+                        retransmission_dma_read();
+                    }
                 }
             }
         }
