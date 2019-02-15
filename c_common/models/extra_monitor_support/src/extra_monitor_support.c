@@ -884,7 +884,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
             sv->sdram_heap, size_of_data, 0,
         ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
         if(missing_sdp_seq_num_sdram_address == NULL){
-            log_error("cant allocate sdram for missing seq nums");
+            io_printf(IO_BUF, "cant allocate sdram for missing seq nums");
             rt_error(RTE_SWERR);
         }
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
