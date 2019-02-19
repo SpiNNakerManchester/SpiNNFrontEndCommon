@@ -1,15 +1,11 @@
 from spinn_utilities.overrides import overrides
 from pacman.model.graphs.application import ApplicationEdge
 from pacman.model.graphs.application import ApplicationVertex
-
-from pacman.model.resources import ResourceContainer, ConstantSDRAM
-
 from spinn_front_end_common.abstract_models import (
     AbstractProvidesOutgoingPartitionConstraints, AbstractHasAssociatedBinary,
     AbstractGeneratesDataSpecification)
-from spinn_front_end_common.utilities import constants
-from spinn_front_end_common.utilities.utility_objs import ExecutableType
 from .command_sender_machine_vertex import CommandSenderMachineVertex
+from spinn_front_end_common.utilities.utility_objs import ExecutableType
 
 
 class CommandSender(
@@ -45,21 +41,7 @@ class CommandSender(
 
     @overrides(ApplicationVertex.get_resources_used_by_atoms)
     def get_resources_used_by_atoms(self, vertex_slice):
-
-        sdram = (
-            CommandSenderMachineVertex.get_timed_commands_bytes(
-                self._timed_commands) +
-            CommandSenderMachineVertex.get_n_command_bytes(
-                self._commands_at_start_resume) +
-            CommandSenderMachineVertex.get_n_command_bytes(
-                self._commands_at_pause_stop) +
-            constants.SYSTEM_BYTES_REQUIREMENT +
-            CommandSenderMachineVertex.get_provenance_data_size(0) +
-            (CommandSenderMachineVertex.get_number_of_mallocs_used_by_dsg() *
-             constants.SARK_PER_MALLOC_SDRAM_USAGE))
-
-        # Return the SDRAM and 1 core
-        return ResourceContainer(sdram=ConstantSDRAM(sdram))
+        return self._machine_vertex.resources_required
 
     @property
     @overrides(ApplicationVertex.n_atoms)
