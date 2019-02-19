@@ -140,31 +140,27 @@ class ChipPowerMonitorMachineVertex(
 
     @inject_items({"time_scale_factor": "TimeScaleFactor",
                    "machine_time_step": "MachineTimeStep",
-                   "n_machine_time_steps": "TotalMachineTimeSteps",
-                   "ip_tags": "MemoryIpTags"})
+                   "n_machine_time_steps": "TotalMachineTimeSteps"})
     @overrides(AbstractGeneratesDataSpecification.generate_data_specification,
                additional_arguments={
                    "machine_time_step", "time_scale_factor",
-                   "n_machine_time_steps", "ip_tags"})
+                   "n_machine_time_steps"})
     def generate_data_specification(
             self, spec, placement,  # @UnusedVariable
-            machine_time_step, time_scale_factor, n_machine_time_steps,
-            ip_tags):
+            machine_time_step, time_scale_factor, n_machine_time_steps):
         # pylint: disable=too-many-arguments, arguments-differ
         self._generate_data_specification(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps,
-            ip_tags)
+            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
 
     def _generate_data_specification(
             self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps, ip_tags):
+            n_machine_time_steps):
         """ Supports the application vertex calling this directly
 
         :param spec: data spec
         :param machine_time_step: machine time step
         :param time_scale_factor: time scale factor
         :param n_machine_time_steps: n_machine time steps
-        :param ip_tags: IP tags
         :rtype: None
         """
         # pylint: disable=too-many-arguments
@@ -173,8 +169,7 @@ class ChipPowerMonitorMachineVertex(
         # Construct the data images needed for the Neuron:
         self._reserve_memory_regions(spec)
         self._write_setup_info(
-            spec, machine_time_step, time_scale_factor, n_machine_time_steps,
-            ip_tags)
+            spec, machine_time_step, time_scale_factor, n_machine_time_steps)
         self._write_configuration_region(spec)
 
         # End-of-Spec:
@@ -194,7 +189,7 @@ class ChipPowerMonitorMachineVertex(
 
     def _write_setup_info(
             self, spec, machine_time_step, time_scale_factor,
-            n_machine_time_steps, ip_tags):
+            n_machine_time_steps):
         """ Writes the system data as required.
 
         :param spec: the DSG spec writer
@@ -210,15 +205,11 @@ class ChipPowerMonitorMachineVertex(
 
         spec.switch_write_focus(
             region=self.CHIP_POWER_MONITOR_REGIONS.RECORDING.value)
-        recorded_region_sizes = recording_utilities.get_recorded_region_sizes(
-            [self._deduce_sdram_requirements_per_timer_tick(
-                machine_time_step, time_scale_factor) * n_machine_time_steps],
-            [self.MAX_BUFFER_SIZE])
+        recorded_region_sizes = [
+            self._deduce_sdram_requirements_per_timer_tick(
+                machine_time_step, time_scale_factor) * n_machine_time_steps]
         spec.write_array(recording_utilities.get_recording_header_array(
-            recorded_region_sizes,
-            globals_variables.get_simulator().config.getint(
-                "Buffers", "time_between_requests"),
-            None, ip_tags))
+            recorded_region_sizes))
 
     def _reserve_memory_regions(self, spec):
         """ Reserve the DSG memory regions as required

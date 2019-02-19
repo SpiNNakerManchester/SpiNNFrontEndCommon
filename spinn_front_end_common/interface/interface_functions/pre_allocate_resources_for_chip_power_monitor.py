@@ -31,7 +31,6 @@ class PreAllocateResourcesForChipPowerMonitor(object):
 
         # store how much SDRAM the power monitor uses per core
         resources = ChipPowerMonitorMachineVertex.get_resources(
-            n_machine_time_steps=n_machine_time_steps,
             n_samples_per_recording=n_samples_per_recording,
             sampling_frequency=sampling_frequency,
             time_scale_factor=time_scale_factor,
