@@ -51,8 +51,6 @@ class ChipPowerMonitorMachineVertex(
 
     # default magic numbers
     SAMPLE_RECORDING_REGION = 0
-    MAX_CORES_PER_CHIP = 18
-    MAX_BUFFER_SIZE = 1048576
 
     def __init__(
             self, label, constraints, n_samples_per_recording,
