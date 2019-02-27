@@ -24,72 +24,54 @@ static circular_buffer with_payload_buffer;
 static bool processing_events = false;
 
 //! Provenance data store
-typedef struct provenance_data_struct {
+struct provenance_data_struct {
     uint32_t number_of_over_flows_none_payload;
     uint32_t number_of_over_flows_payload;
-} provenance_data_struct;
+};
 
 //! values for the priority for each callback
-typedef enum callback_priorities{
-    MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 3, DMA=2
-} callback_priorities;
+enum callback_priorities {
+    MC_PACKET = -1, SDP = 0, USER = 1, TIMER = 3, DMA = 2
+};
 
 //! struct holding the provenance data
-provenance_data_struct provenance_data;
-
-// P bit
-static uint32_t apply_prefix;
-
-// Prefix data
-static uint32_t prefix;
-
-// Type bits
-static uint32_t packet_type;
-
-// F bit (for the receiver)
-static uint32_t prefix_type;
-
-// Right payload shift (for the sender)
-static uint32_t key_right_shift;
-
-// T bit
-static uint32_t payload_timestamp;
-
-// D bit
-static uint32_t payload_apply_prefix;
-
-// Payload prefix data (for the receiver)
-static uint32_t payload_prefix;
-
-// Right payload shift (for the sender)
-static uint32_t payload_right_shift;
-static uint32_t sdp_tag;
-static uint16_t sdp_dest;
-static uint32_t packets_per_timestamp;
+struct provenance_data_struct provenance_data;
 
 //! human readable definitions of each region in SDRAM
-typedef enum regions_e {
+enum regions_e {
     SYSTEM_REGION,
     CONFIGURATION_REGION,
     PROVENANCE_REGION
-} regions_e;
+};
 
 //! Human readable definitions of each element in the configuration region in
 //! SDRAM
-typedef enum configuration_region_components_e {
-    APPLY_PREFIX,
-    PREFIX,
-    PREFIX_TYPE,
-    PACKET_TYPE,
-    KEY_RIGHT_SHIFT,
-    PAYLOAD_TIMESTAMP,
-    PAYLOAD_APPLY_PREFIX,
-    PAYLOAD_PREFIX,
-    PAYLOAD_RIGHT_SHIFT,
-    SDP_TAG,
-    SDP_DEST,
-    PACKETS_PER_TIMESTEP
-} configuration_region_components_e;
+struct configuration_region_t {
+    // P bit
+    uint32_t apply_prefix;
+    // Prefix data
+    uint32_t prefix;
+    // F bit (for the receiver)
+    uint32_t prefix_type;
+    // Type bits
+    uint32_t packet_type;
+    // Right payload shift (for the sender)
+    uint32_t key_right_shift;
+    // T bit
+    uint32_t payload_timestamp;
+    // D bit
+    uint32_t payload_apply_prefix;
+    // Payload prefix data (for the receiver)
+    uint32_t payload_prefix;
+    // Right payload shift (for the sender)
+    uint32_t payload_right_shift;
+    uint32_t sdp_tag;
+    uint32_t sdp_destination;
+    uint32_t packets_per_timestamp;
+};
+
+struct configuration_region_t config;
+static uint16_t sdp_dest; // Not in the configuration_region_t; type different
 
 //! How to test if a bit flag is set
 #define FLAG_IS_SET(flags, bit)		(((flags) & (bit)) != 0)
@@ -109,11 +91,11 @@ void flush_events(void) {
         uint8_t event_count;
         uint16_t bytes_to_clear = 0;
 
-        if ((packets_per_timestamp == 0)
-                || (packets_sent < packets_per_timestamp)) {
+        if ((config.packets_per_timestamp == 0)
+                || (packets_sent < config.packets_per_timestamp)) {
 
             // Get the event count depending on if there is a payload or not
-            if (HAVE_PAYLOAD(packet_type)) {
+            if (HAVE_PAYLOAD(config.packet_type)) {
                 event_count = buffer_index >> 1;
             } else {
                 event_count = buffer_index;
@@ -127,10 +109,10 @@ void flush_events(void) {
             g_event_message.length = sizeof(sdp_hdr_t) + header_len
                                      + event_count * event_size;
 
-            if (payload_apply_prefix && payload_timestamp) {
+            if (config.payload_apply_prefix && config.payload_timestamp) {
                 uint16_t *temp = (uint16_t *) sdp_msg_aer_payload_prefix;
 
-                if (!HAVE_WIDE_LOAD(packet_type)) {
+                if (!HAVE_WIDE_LOAD(config.packet_type)) {
                     temp[0] = CLAMP16(time);
                 } else {
                     temp[0] = CLAMP16(time);
@@ -188,7 +170,7 @@ void timer_callback(uint unused0, uint unused1) {
 void flush_events_if_full(void) {
     uint8_t event_count;
 
-    if (HAVE_PAYLOAD(packet_type)) {
+    if (HAVE_PAYLOAD(config.packet_type)) {
         event_count = buffer_index >> 1;
     } else {
         event_count = buffer_index;
@@ -205,17 +187,17 @@ void process_incoming_event(uint key) {
 
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
-    if (!HAVE_WIDE_LOAD(packet_type)) {
+    if (!HAVE_WIDE_LOAD(config.packet_type)) {
 
         // 16 bit packet
-        buf_pointer[buffer_index] = CLAMP16(key >> key_right_shift);
+        buf_pointer[buffer_index] = CLAMP16(key >> config.key_right_shift);
         buffer_index++;
 
         // if there is a payload to be added
-        if (HAVE_PAYLOAD(packet_type) && !payload_timestamp) {
+        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
             buf_pointer[buffer_index] = 0;
             buffer_index++;
-        } else if (HAVE_PAYLOAD(packet_type) && payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
             buf_pointer[buffer_index] = CLAMP16(time);
             buffer_index++;
         }
@@ -229,12 +211,12 @@ void process_incoming_event(uint key) {
         buffer_index++;
 
         // if there is a payload to be added
-        if (HAVE_PAYLOAD(packet_type) && !payload_timestamp) {
+        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
             spike_index = buffer_index << 1;
             buf_pointer[spike_index] = 0;
             buf_pointer[spike_index + 1] = 0;
             buffer_index++;
-        } else if (HAVE_PAYLOAD(packet_type) && payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
             spike_index = buffer_index << 1;
             buf_pointer[spike_index] = CLAMP16(time);
             buf_pointer[spike_index + 1] = CLAMP16(time >> 16);
@@ -252,17 +234,17 @@ void process_incoming_event_payload(uint key, uint payload) {
 
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
-    if (!HAVE_WIDE_LOAD(packet_type)) {
+    if (!HAVE_WIDE_LOAD(config.packet_type)) {
 
         //16 bit packet
-        buf_pointer[buffer_index] = CLAMP16(key >> key_right_shift);
+        buf_pointer[buffer_index] = CLAMP16(key >> config.key_right_shift);
         buffer_index++;
 
         //if there is a payload to be added
-        if (HAVE_PAYLOAD(packet_type) && !payload_timestamp) {
-            buf_pointer[buffer_index] = CLAMP16(payload >> payload_right_shift);
+        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+            buf_pointer[buffer_index] = CLAMP16(payload >> config.payload_right_shift);
             buffer_index++;
-        } else if (HAVE_PAYLOAD(packet_type) && payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
             buf_pointer[buffer_index] = CLAMP16(time);
             buffer_index++;
         }
@@ -276,12 +258,12 @@ void process_incoming_event_payload(uint key, uint payload) {
         buffer_index++;
 
         //if there is a payload to be added
-        if (HAVE_PAYLOAD(packet_type) && !payload_timestamp){
+        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
             spike_index = buffer_index << 1;
             buf_pointer[spike_index] = CLAMP16(payload);
             buf_pointer[spike_index + 1] = CLAMP16(payload >> 16);
             buffer_index++;
-        } else if (HAVE_PAYLOAD(packet_type) && payload_timestamp) {
+        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
             spike_index = buffer_index << 1;
             buf_pointer[spike_index] = CLAMP16(time);
             buf_pointer[spike_index + 1] = CLAMP16(time >> 16);
@@ -332,59 +314,33 @@ void incoming_event_payload_callback(uint key, uint payload) {
             processing_events = true;
             spin1_trigger_user_event(0, 0);
         }
-    }
-    else {
+    } else {
         provenance_data.number_of_over_flows_payload += 1;
     }
 }
 
 void read_parameters(address_t region_address) {
+    struct configuration_region_t *config_ptr =
+	    (struct configuration_region_t *) region_address;
 
-    // P bit
-    apply_prefix = region_address[APPLY_PREFIX];
+    config = &config_ptr;
+    sdp_dest = config_ptr->sdp_destination;
 
-    // Prefix data
-    prefix = region_address[PREFIX];
-
-    // F bit (for the receiver)
-    prefix_type = region_address[PREFIX_TYPE];
-
-    // Type bits
-    packet_type = region_address[PACKET_TYPE];
-
-    // Right packet shift (for the sender)
-    key_right_shift = region_address[KEY_RIGHT_SHIFT];
-
-    // T bit
-    payload_timestamp = region_address[PAYLOAD_TIMESTAMP];
-
-    // D bit
-    payload_apply_prefix = region_address[PAYLOAD_APPLY_PREFIX];
-
-    // Payload prefix data (for the receiver)
-    payload_prefix = region_address[PAYLOAD_PREFIX];
-
-    // Right payload shift (for the sender)
-    payload_right_shift = region_address[PAYLOAD_RIGHT_SHIFT];
-    sdp_tag = region_address[SDP_TAG];
-    sdp_dest = region_address[SDP_DEST];
-    packets_per_timestamp = region_address[PACKETS_PER_TIMESTEP];
-
-    log_info("apply_prefix: %d\n", apply_prefix);
-    log_info("prefix: %08x\n", prefix);
-    log_info("prefix_type: %d\n", prefix_type);
-    log_info("packet_type: %d\n", packet_type);
-    log_info("key_right_shift: %d\n", key_right_shift);
-    log_info("payload_timestamp: %d\n", payload_timestamp);
-    log_info("payload_apply_prefix: %d\n", payload_apply_prefix);
-    log_info("payload_prefix: %08x\n", payload_prefix);
-    log_info("payload_right_shift: %d\n", payload_right_shift);
-    log_info("sdp_tag: %d\n", sdp_tag);
+    log_info("apply_prefix: %d\n", config.apply_prefix);
+    log_info("prefix: %08x\n", config.prefix);
+    log_info("prefix_type: %d\n", config.prefix_type);
+    log_info("packet_type: %d\n", config.packet_type);
+    log_info("key_right_shift: %d\n", config.key_right_shift);
+    log_info("payload_timestamp: %d\n", config.payload_timestamp);
+    log_info("payload_apply_prefix: %d\n", config.payload_apply_prefix);
+    log_info("payload_prefix: %08x\n", config.payload_prefix);
+    log_info("payload_right_shift: %d\n", config.payload_right_shift);
+    log_info("sdp_tag: %d\n", config.sdp_tag);
     log_info("sdp_dest: 0x%04x\n", sdp_dest);
-    log_info("packets_per_timestamp: %d\n", packets_per_timestamp);
+    log_info("packets_per_timestamp: %d\n", config.packets_per_timestamp);
 }
 
-bool initialize(uint32_t *timer_period) {
+bool initialize(uint32_t *timer_period_ptr) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -397,7 +353,7 @@ bool initialize(uint32_t *timer_period) {
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM_REGION, address),
-            APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
+            APPLICATION_NAME_HASH, timer_period_ptr, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         return false;
     }
@@ -426,7 +382,7 @@ bool configure_sdp_msg(void) {
     event_size = 0;
 
     // initialise SDP header
-    g_event_message.tag = sdp_tag;
+    g_event_message.tag = config.sdp_tag;
 
     // No reply required
     g_event_message.flags = 0x07;
@@ -442,14 +398,14 @@ bool configure_sdp_msg(void) {
     g_event_message.srce_port = (3 << PORT_SHIFT) | spin1_get_core_id();
 
     // check incompatible options
-    if (payload_timestamp && payload_apply_prefix
-            && HAVE_PAYLOAD(packet_type)) {
+    if (config.payload_timestamp && config.payload_apply_prefix
+            && HAVE_PAYLOAD(config.packet_type)) {
         log_error("Timestamp can either be included as payload prefix or as"
                   "payload to each key, not both\n");
         return false;
     }
-    if (payload_timestamp && !payload_apply_prefix
-            && !HAVE_PAYLOAD(packet_type)) {
+    if (config.payload_timestamp && !config.payload_apply_prefix
+            && !HAVE_PAYLOAD(config.packet_type)) {
         log_error("Timestamp can either be included as payload prefix or as"
                   "payload to each key, but current configuration does not"
                   "specify either of these\n");
@@ -460,28 +416,28 @@ bool configure_sdp_msg(void) {
     // pointer to data space
     sdp_msg_aer_header = &g_event_message.cmd_rc;
 
-    temp_header |= (apply_prefix << 15);
-    temp_header |= (prefix_type << 14);
-    temp_header |= (payload_apply_prefix << 13);
-    temp_header |= (payload_timestamp << 12);
-    temp_header |= (packet_type << 10);
+    temp_header |= (config.apply_prefix << 15);
+    temp_header |= (config.prefix_type << 14);
+    temp_header |= (config.payload_apply_prefix << 13);
+    temp_header |= (config.payload_timestamp << 12);
+    temp_header |= (config.packet_type << 10);
 
     header_len = 2;
 
     // pointers for AER packet header, prefix and data
-    if (apply_prefix) {
+    if (config.apply_prefix) {
 
         // pointer to key prefix
         sdp_msg_aer_key_prefix = (sdp_msg_aer_header + 1);
         temp_ptr = (void *) (sdp_msg_aer_header + 2);
-        sdp_msg_aer_key_prefix[0] = (uint16_t) prefix;
+        sdp_msg_aer_key_prefix[0] = (uint16_t) config.prefix;
         header_len += 2;
     } else {
         sdp_msg_aer_key_prefix = NULL;
         temp_ptr = (void *) (sdp_msg_aer_header + 1);
     }
 
-    if (payload_apply_prefix) {
+    if (config.payload_apply_prefix) {
         sdp_msg_aer_payload_prefix = temp_ptr;
         uint16_t *a = (uint16_t *) sdp_msg_aer_payload_prefix;
 
@@ -491,15 +447,15 @@ bool configure_sdp_msg(void) {
         // pointer to payload prefix
         sdp_msg_aer_payload_prefix = temp_ptr;
 
-        if (!HAVE_WIDE_LOAD(packet_type)) {
+        if (!HAVE_WIDE_LOAD(config.packet_type)) {
 
             //16 bit payload prefix
             temp_ptr = (void *) (a + 1);
             header_len += 2;
-            if (!payload_timestamp) {
+            if (!config.payload_timestamp) {
 
                 // add payload prefix as required - not a timestamp
-                a[0] = payload_prefix;
+                a[0] = config.payload_prefix;
             }
             log_debug("16 bit - temp_ptr: %08x\n", (uint32_t) temp_ptr);
 
@@ -508,11 +464,11 @@ bool configure_sdp_msg(void) {
             //32 bit payload prefix
             temp_ptr = (void *) (a + 2);
             header_len += 4;
-            if (!payload_timestamp) {
+            if (!config.payload_timestamp) {
 
                 // add payload prefix as required - not a timestamp
-                a[0] = CLAMP16(payload_prefix);
-                a[1] = CLAMP16(payload_prefix >> 16);
+                a[0] = CLAMP16(config.payload_prefix);
+                a[1] = CLAMP16(config.payload_prefix >> 16);
             }
             log_debug("32 bit - temp_ptr: %08x\n", (uint32_t) temp_ptr);
         }
@@ -523,7 +479,7 @@ bool configure_sdp_msg(void) {
     // pointer to write data
     sdp_msg_aer_data = (void *) temp_ptr;
 
-    switch (packet_type) {
+    switch (config.packet_type) {
     case 0:
         event_size = 2;
         break;
@@ -541,7 +497,7 @@ bool configure_sdp_msg(void) {
         break;
 
     default:
-        log_error("unknown packet type: %d\n", packet_type);
+        log_error("unknown packet type: %d\n", config.packet_type);
         return false;
     }
 

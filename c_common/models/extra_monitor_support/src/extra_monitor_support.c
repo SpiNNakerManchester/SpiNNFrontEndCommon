@@ -146,14 +146,14 @@ extern INT_HANDLER sark_int_han(void);
 // ------------------------------------------------------------------------
 
 //! struct for a SDP message with pure data, no SCP header
-typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
-    struct sdp_msg *next;		// Next in free list
+struct sdp_msg_pure_data {	// SDP message (=292 bytes)
+    struct sdp_msg *next;	// Next in free list
     uint16_t length;		// length
     uint16_t checksum;		// checksum (if used)
 
     // sdp_hdr_t
     uint8_t flags;	    	// SDP flag byte
-    uint8_t tag;		      	// SDP IPtag
+    uint8_t tag;		// SDP IPtag
     uint8_t dest_port;		// SDP destination port/CPU
     uint8_t srce_port;		// SDP source port/CPU
     uint16_t dest_addr;		// SDP destination address
@@ -163,24 +163,24 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     uint32_t data[ITEMS_PER_DATA_PACKET];
 
     uint32_t _PAD;		// Private padding
-} sdp_msg_pure_data;
+};
 
 //! dumped packet type
-typedef struct {
+struct dumped_packet_t {
     uint hdr;
     uint key;
     uint pld;
-} dumped_packet_t;
+};
 
 //! packet queue type
-typedef struct {
+struct pkt_queue_t {
     uint head;
     uint tail;
-    dumped_packet_t queue[PKT_QUEUE_SIZE];
-} pkt_queue_t;
+    struct dumped_packet_t queue[PKT_QUEUE_SIZE];
+};
 
 //! SDP tags used by the SDRAM reader component.
-typedef enum dma_tags_for_data_speed_up {
+enum dma_tags_for_data_speed_up {
     //! DMA complete tag for original transmission, this isn't used yet, but
     //! needed for full protocol
     DMA_TAG_READ_FOR_TRANSMISSION = 0,
@@ -190,24 +190,23 @@ typedef enum dma_tags_for_data_speed_up {
     DMA_TAG_RETRANSMISSION_READING = 2,
     //! DMA complete tag for writing the missing SEQ numbers to SDRAM
     DMA_TAG_FOR_WRITING_MISSING_SEQ_NUMS = 3
-} dma_tags_for_data_speed_up;
+};
 
-//! \brief message positions for the separate data speed up SDP messages
-typedef enum sending_data_sdp_data_positions {
-    COMMAND_ID_POSITION = 0,
-    SDRAM_POSITION = 1,
-    LENGTH_OF_DATA_READ = 2
-} sending_data_sdp_data_positions;
+//! \brief message header for the separate data speed up SDP messages
+struct sending_data_header_t {
+    uint32_t command;
+    uint32_t sdram;
+    uint32_t length;
+};
 
 //! \brief position in SDP message for missing sequence numbers
-typedef enum missing_seq_num_sdp_data_positions {
+enum missing_seq_num_sdp_data_positions {
     POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS = 1,
     START_OF_MISSING_SEQ_NUMS = 2
-} missing_seq_num_sdp_data_positions;
-
+};
 
 // Dropped packet re-injection internal control commands (RC of SCP message)
-typedef enum reinjector_command_codes {
+enum reinjector_command_codes {
     CMD_DPRI_SET_ROUTER_TIMEOUT = 0,
     CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT = 1,
     CMD_DPRI_SET_PACKET_TYPES = 2,
@@ -215,59 +214,63 @@ typedef enum reinjector_command_codes {
     CMD_DPRI_RESET_COUNTERS = 4,
     CMD_DPRI_EXIT = 5,
     CMD_DPRI_CLEAR = 6
-} reinjector_command_codes;
+};
 
 //! flag positions for packet types being reinjected
-typedef enum reinjection_flag_positions {
+enum reinjection_flag_positions {
     DPRI_PACKET_TYPE_MC = 1,
     DPRI_PACKET_TYPE_PP = 2,
     DPRI_PACKET_TYPE_NN = 4,
     DPRI_PACKET_TYPE_FR = 8
-} reinjection_flag_positions;
+};
 
-//! positions in response packet for reinjector status
-typedef enum reinjector_status_response_packet_format {
-    ROUTER_TIME_OUT_POSITION = 0,
-    ROUTER_EMERGENCY_TIMEOUT_POSITION = 1,
-    NUMBER_DROPPED_PACKETS_POSITION = 2,
-    NUMBER_MISSED_DROPPED_PACKETS_POSITION = 3,
-    NUMBER_DROPPED_PACKETS_OVERFLOWS_POSITION = 4,
-    NUMBER_REINJECTED_PACKETS_POSITION = 5,
-    NUMBER_LINK_DUMPED_PACKETS_POSITION = 6,
-    NUMBER_PROCESSOR_DUMPED_PACKETS_POSITION = 7,
-    PACKET_TYPES_REINJECTED_POSITION = 8,
-    LENGTH_OF_DATA_FOR_STATUS_RESPONSE = 9
-} reinjector_status_response_packet_format;
+//! layout of response packet for reinjector status
+struct reinjector_status_t {
+    uint timeout;
+    uint emergency_timeout;
+    uint n_dropped_packets;
+    uint n_missed_dropped_packets;
+    uint n_dropped_packet_overflows;
+    uint n_reinjected_packets;
+    uint n_link_dumped_packets;
+    uint n_processor_dumped_packets;
+    uint packet_types_reinjected;
+};
 
-//! values for the position of data in memory.
-typedef enum positions_in_memory_for_the_reinject_flags {
-    REINJECT_MULTICAST = 0,
-    REINJECT_POINT_To_POINT = 1,
-    REINJECT_FIXED_ROUTE = 2,
-    REINJECT_NEAREST_NEIGHBOUR = 3
-} positions_in_memory_for_the_reinject_flags;
+//! human readable definitions of each element in the reinjection control
+//! region
+struct reinject_config_t {
+    uint32_t reinject_multicast;
+    uint32_t reinject_point_to_point;
+    uint32_t reinject_fixed_route;
+    uint32_t reinject_nearest_neighbour;
+};
 
 //! values for port numbers this core will respond to
-typedef enum functionality_to_port_num_map {
+enum functionality_to_port_num_map {
     RE_INJECTION_FUNCTIONALITY = 4,
     DATA_SPEED_UP_FUNCTIONALITY = 5
-} functionality_to_port_num_map;
+};
 
-typedef enum data_spec_regions{
+enum data_spec_regions {
     CONFIG_REINJECTION = 0,
     CONFIG_DATA_SPEED_UP = 1
-} data_spec_regions;
+};
 
-//! human readable definitions of each element in the transmission region
-typedef enum data_speed_config_data_elements {
-    MY_KEY, NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, MB
-} data_speed_config_data_elements;
+//! human readable definitions of each element in the data speedup control
+//! region
+struct data_speed_config_t {
+    uint32_t my_key;
+    uint32_t new_seq_key;
+    uint32_t first_data_key;
+    uint32_t end_flag_key;
+};
 
 //! values for the priority for each callback
-typedef enum callback_priorities {
+enum callback_priorities {
     SDP = 0,
     DMA = 0
-} callback_priorities;
+};
 
 // ------------------------------------------------------------------------
 // global variables for reinjector functionality
@@ -277,7 +280,7 @@ typedef enum callback_priorities {
 static uint cc_sar;
 
 // dumped packet queue
-static pkt_queue_t pkt_queue;
+static struct pkt_queue_t pkt_queue;
 
 // statistics
 static uint n_dropped_packets;
@@ -498,30 +501,30 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-void reinjection_read_packet_types(address_t address){
+void reinjection_read_packet_types(struct reinject_config_t *config_ptr){
     // process multicast reinject flag
-    if (address[REINJECT_MULTICAST] == 1) {
+    if (config_ptr->reinject_multicast == 1) {
         reinject_mc = false;
     } else {
         reinject_mc = true;
     }
 
     // process point to point flag
-    if (address[REINJECT_POINT_To_POINT] == 1) {
+    if (config_ptr->reinject_point_to_point == 1) {
         reinject_pp = false;
     } else {
         reinject_pp = true;
     }
 
     // process fixed route flag
-    if (address[REINJECT_FIXED_ROUTE] == 1) {
+    if (config_ptr->reinject_fixed_route == 1) {
         reinject_fr = false;
     } else {
         reinject_fr = true;
     }
 
     // process fixed route flag
-    if (address[REINJECT_NEAREST_NEIGHBOUR] == 1) {
+    if (config_ptr->reinject_nearest_neighbour == 1) {
         reinject_nn = false;
     } else {
         reinject_nn = true;
@@ -532,7 +535,8 @@ void reinjection_read_packet_types(address_t address){
 //! \param[in] msg: the message with the commands
 //! \return the length of extra data put into the message for return
 static uint handle_reinjection_command(sdp_msg_t *msg) {
-    if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_TIMEOUT) {
+    switch (msg->cmd_rc) {
+    case CMD_DPRI_SET_ROUTER_TIMEOUT:
         // Set the router wait1 timeout
         if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
             msg->cmd_rc = RC_ARG;
@@ -545,7 +549,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         msg->cmd_rc = RC_OK;
         return 0;
 
-    } else if (msg->cmd_rc == CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT) {
+    case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
         // Set the router wait2 timeout
         if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
             msg->cmd_rc = RC_ARG;
@@ -558,7 +562,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         msg->cmd_rc = RC_OK;
         return 0;
 
-    } else if (msg->cmd_rc == CMD_DPRI_SET_PACKET_TYPES) {
+    case CMD_DPRI_SET_PACKET_TYPES:
         // Set the re-injection options
         reinject_mc = msg->arg1;
         reinject_pp = msg->arg2;
@@ -569,48 +573,46 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         msg->cmd_rc = RC_OK;
         return 0;
 
-    } else if (msg->cmd_rc == CMD_DPRI_GET_STATUS) {
+    case CMD_DPRI_GET_STATUS: {
         // Get the status and put it in the packet
-        uint *data = &(msg->arg1);
+	struct reinjector_status_t *data = (struct reinjector_status_t *)
+		&msg->arg1;
 
         // Put the router timeouts in the packet
         uint control = (uint) (rtr[RTR_CONTROL] & 0xFFFF0000);
-        data[ROUTER_TIME_OUT_POSITION] = (control >> 16) & ROUTER_TIMEOUT_MASK;
-        data[ROUTER_EMERGENCY_TIMEOUT_POSITION] =
-            (control >> 24) & ROUTER_TIMEOUT_MASK;
+        data->timeout = (control >> 16) & ROUTER_TIMEOUT_MASK;
+        data->emergency_timeout = (control >> 24) & ROUTER_TIMEOUT_MASK;
 
         // Put the statistics in the packet
-        data[NUMBER_DROPPED_PACKETS_POSITION] = n_dropped_packets;
-        data[NUMBER_MISSED_DROPPED_PACKETS_POSITION] =
-            n_missed_dropped_packets;
-        data[NUMBER_DROPPED_PACKETS_OVERFLOWS_POSITION] =
-            n_dropped_packet_overflows;
-        data[NUMBER_REINJECTED_PACKETS_POSITION] = n_reinjected_packets;
-        data[NUMBER_LINK_DUMPED_PACKETS_POSITION] = n_link_dumped_packets;
-        data[NUMBER_PROCESSOR_DUMPED_PACKETS_POSITION] =
-            n_processor_dumped_packets;
+        data->n_dropped_packets = n_dropped_packets;
+        data->n_missed_dropped_packets = n_missed_dropped_packets;
+        data->n_dropped_packet_overflows = n_dropped_packet_overflows;
+        data->n_reinjected_packets = n_reinjected_packets;
+        data->n_link_dumped_packets = n_link_dumped_packets;
+        data->n_processor_dumped_packets = n_processor_dumped_packets;
 
         io_printf(IO_BUF, "dropped packets %d\n", n_dropped_packets);
 
         // Put the current services enabled in the packet
-        data[PACKET_TYPES_REINJECTED_POSITION] = 0;
+        data->packet_types_reinjected = 0;
         bool values_to_check[] = {reinject_mc, reinject_pp,
                                   reinject_nn, reinject_fr};
         int flags[] = {DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
                        DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR};
         for (int i = 0; i < 4; i++) {
             if (values_to_check[i]) {
-                data[PACKET_TYPES_REINJECTED_POSITION] |= flags[i];
+                data->packet_types_reinjected |= flags[i];
             }
         }
 
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         // Return the number of bytes in the packet
-        return LENGTH_OF_DATA_FOR_STATUS_RESPONSE * 4;
+        return sizeof(reinjector_status_t);
+    }
 
-    } else if (msg->cmd_rc == CMD_DPRI_RESET_COUNTERS) {
-        // Reset the counters
+    case CMD_DPRI_RESET_COUNTERS:
+	// Reset the counters
         n_dropped_packets = 0;
         n_missed_dropped_packets = 0;
         n_dropped_packet_overflows = 0;
@@ -621,7 +623,8 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
-    } else if (msg->cmd_rc == CMD_DPRI_EXIT) {
+
+    case CMD_DPRI_EXIT:
         uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
         vic[VIC_DISABLE] = int_select;
         vic[VIC_DISABLE] = (1 << CC_TNF_INT);
@@ -631,7 +634,8 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
-    } else if (msg->cmd_rc == CMD_DPRI_CLEAR) {
+
+    case CMD_DPRI_CLEAR:
         // Disable FIQ for queue access
         uint cpsr = cpu_fiq_disable();
         // Clear any stored dropped packets
@@ -644,12 +648,13 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
-    }
 
-    // If we are here, the command was not recognised, so fail (ARG as the
-    // command is an argument)
-    msg->cmd_rc = RC_ARG;
-    return 0;
+    default:
+	// If we are here, the command was not recognised, so fail (ARG as the
+	// command is an argument)
+	msg->cmd_rc = RC_ARG;
+	return 0;
+    }
 }
 
 // \brief SARK level timer interrupt setup
@@ -673,7 +678,7 @@ void reinjection_configure_comms_controller() {
 void reinjection_configure_router() {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) |
-        ROUTER_INITIAL_TIMEOUT;
+	    ROUTER_INITIAL_TIMEOUT;
 
     // clear router interrupts,
     (void) rtr[RTR_STATUS];
@@ -684,7 +689,6 @@ void reinjection_configure_router() {
     // and enable router interrupts when dumping packets
     rtr[RTR_CONTROL] |= RTR_DENABLE_MASK;
 }
-
 
 //-----------------------------------------------------------------------------
 // data speed up main functions
@@ -698,7 +702,7 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
-    // Empty body; CC array is volatile
+	// Empty body; CC array is volatile
     }
     cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = data;
@@ -740,7 +744,7 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
     address_t data_sdram_position = (address_t)
-        &store_address[position_in_store];
+            &store_address[position_in_store];
 
     // update positions as needed
     position_in_store += items_to_read;
@@ -754,7 +758,6 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
     dma[DMA_ADRS] = (uint) data_sdram_position;
     dma[DMA_ADRT] = (uint) &(data_to_transmit[transmit_dma_pointer][offset]);
     dma[DMA_DESC] = desc;
-
 }
 
 //! \brief sends a end flag via multicast
@@ -835,8 +838,8 @@ void write_missing_sdp_seq_nums_into_sdram(
         uint32_t data[], ushort length, uint32_t start_offset) {
     for (ushort offset=start_offset; offset < length; offset ++) {
         missing_sdp_seq_num_sdram_address[
-        number_of_missing_seq_nums_in_sdram +
-        (offset - start_offset)] = data[offset];
+                number_of_missing_seq_nums_in_sdram +
+                (offset - start_offset)] = data[offset];
         if (data[offset] > max_seq_num){
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
             data[offset], max_seq_num);
@@ -872,12 +875,12 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
         //log_info("doing first with allocation of %d bytes", size_of_data);
         if (missing_sdp_seq_num_sdram_address != NULL) {
             sark_xfree(sv->sdram_heap, missing_sdp_seq_num_sdram_address,
-                       ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                    ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
             missing_sdp_seq_num_sdram_address = NULL;
         }
         missing_sdp_seq_num_sdram_address = sark_xalloc(
-            sv->sdram_heap, size_of_data, 0,
-        ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
+                sv->sdram_heap, size_of_data, 0,
+                ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
         start_reading_offset = START_OF_MISSING_SEQ_NUMS;
         //log_info("address to write to is %d",
         //         missing_sdp_seq_num_sdram_address);
@@ -933,7 +936,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
                 (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
             uint32_t left_over_portion =
                 bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER -
-            position_in_store;
+                position_in_store;
 
             //io_printf(IO_BUF, "for seq %d, pos = %d, left %d\n",
             //missing_seq_num_being_processed, position_in_store,
@@ -969,14 +972,14 @@ void dma_complete_reading_retransmission_data() {
 
     if (missing_seq_num_being_processed > max_seq_num) {
         io_printf(
-            IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
+                IO_BUF, "Got some bad seq num here. max is %d and got %d \n",
                 max_seq_num, missing_seq_num_being_processed);
     }
 
     // send new data back to host
     //log_info("doing retransmission !!!!!!");
     send_data_block(transmit_dma_pointer, retransmitted_seq_num_items_read,
-                    new_sequence_key);
+            new_sequence_key);
 
     position_in_read_data += 1;
     the_dma_complete_read_missing_seqeuence_nums();
@@ -990,19 +993,20 @@ void dma_complete_writing_missing_seq_to_sdram() {
 //! \brief the handler for all messages coming in for data speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_speed_up(sdp_msg_pure_data *msg) {
-
-    if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_SENDING_DATA) {
+void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
+    struct sending_data_header_t *header = (struct sending_data_header_t *)
+	    msg->data;
+    switch (header->command) {
+    case SDP_COMMAND_FOR_SENDING_DATA:
         stop = 0;
 
         //io_printf(IO_BUF, "starting the send of original data\n");
         // set SDRAM position and length
-        store_address = (address_t*) msg->data[SDRAM_POSITION];
-        bytes_to_read_write = msg->data[LENGTH_OF_DATA_READ];
+        store_address = (address_t *) header->sdram;
+        bytes_to_read_write = header->length;
         sark_msg_free((sdp_msg_t *) msg);
 
-        max_seq_num = (float)bytes_to_read_write / (float)(67 * 4);
-        max_seq_num = ceil(max_seq_num);
+        max_seq_num = ceil((float) bytes_to_read_write / (float)(67 * WORD_TO_BYTE_MULTIPLIER));
         //io_printf(IO_BUF, "address %d, bytes to write %d\n", store_address,
         //          bytes_to_read_write);
 
@@ -1010,8 +1014,8 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         first_transmission = true;
         transmit_dma_pointer = 0;
         position_in_store = 0;
-        number_of_elements_to_read_from_sdram =
-            (uint)(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
+        number_of_elements_to_read_from_sdram = (uint)
+        	(bytes_to_read_write / WORD_TO_BYTE_MULTIPLIER);
         //io_printf(IO_BUF, "elements to read %d \n",
         //          number_of_elements_to_read_from_sdram);
 
@@ -1023,72 +1027,74 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
             read(DMA_TAG_READ_FOR_TRANSMISSION, 1,
                 ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE);
         }
-    }
-    // start or continue to gather missing packet list
-    else if (msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS ||
-            msg->data[COMMAND_ID_POSITION] ==
-            SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS) {
+        break;
+
+    case SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS:
+	// start or continue to gather missing packet list
         //log_info("starting re send mode");
 
-        // if aready in a retrnamission phase, dont process as normal
-        if (msg->data[COMMAND_ID_POSITION] ==
-                    SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS &&
-                    number_of_missing_seq_sdp_packets != 0){
-                //io_printf(IO_BUF, "forcing start of retranmission packet\n");
-                sark_msg_free((sdp_msg_t *) msg);
-                number_of_missing_seq_sdp_packets = 0;
-                missing_sdp_seq_num_sdram_address[
+        // if already in a retransmission phase, don't process as normal
+        if (number_of_missing_seq_sdp_packets != 0) {
+            //io_printf(IO_BUF, "forcing start of retransmission packet\n");
+            sark_msg_free((sdp_msg_t *) msg);
+            number_of_missing_seq_sdp_packets = 0;
+            missing_sdp_seq_num_sdram_address[
                     number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                number_of_missing_seq_nums_in_sdram += 1;
-                position_in_read_data = 0;
-                position_for_retransmission = 0;
-                in_re_transmission_mode = true;
-                retransmission_dma_read();
-        } else {
-            // reset state, as could be here from multiple attempts
-            if (!in_re_transmission_mode) {
+            number_of_missing_seq_nums_in_sdram += 1;
+            position_in_read_data = 0;
+            position_for_retransmission = 0;
+            in_re_transmission_mode = true;
+            retransmission_dma_read();
+            break;
+        }
+        // fallthrough...
 
-                // put missing sequence numbers into SDRAM
-                //io_printf(IO_BUF, "storing thing\n");
-                store_missing_seq_nums(
-                    msg->data,
+    case SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS:
+        // reset state, as could be here from multiple attempts
+        if (!in_re_transmission_mode) {
+            // put missing sequence numbers into SDRAM
+            //io_printf(IO_BUF, "storing thing\n");
+            store_missing_seq_nums(
+        	    msg->data,
                     (msg->length - LENGTH_OF_SDP_HEADER) /
                      WORD_TO_BYTE_MULTIPLIER,
-                    msg->data[COMMAND_ID_POSITION] ==
+                    header->command ==
                         SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS);
 
-                //log_info("free message");
-                //io_printf(IO_BUF, "freeing SDP packet\n");
-                sark_msg_free((sdp_msg_t *) msg);
+            //log_info("free message");
+            //io_printf(IO_BUF, "freeing SDP packet\n");
+            sark_msg_free((sdp_msg_t *) msg);
 
-                // if got all missing packets, start retransmitting them to host
-                if (number_of_missing_seq_sdp_packets == 0) {
-                    // packets all received, add finish flag for DMA stoppage
+            // if got all missing packets, start retransmitting them to host
+            if (number_of_missing_seq_sdp_packets == 0) {
+        	// packets all received, add finish flag for DMA stoppage
 
-                    //io_printf(IO_BUF, "starting resend process\n");
-                    missing_sdp_seq_num_sdram_address[
-                    number_of_missing_seq_nums_in_sdram] = END_FLAG;
-                    number_of_missing_seq_nums_in_sdram += 1;
-                    position_in_read_data = 0;
-                    position_for_retransmission = 0;
+        	//io_printf(IO_BUF, "starting resend process\n");
+        	missing_sdp_seq_num_sdram_address[
+                        number_of_missing_seq_nums_in_sdram] = END_FLAG;
+        	number_of_missing_seq_nums_in_sdram += 1;
+        	position_in_read_data = 0;
+        	position_for_retransmission = 0;
 
-                    //log_info("start retransmission");
-                    // start DMA off
-                    in_re_transmission_mode = true;
-                    retransmission_dma_read();
-                }
+        	//log_info("start retransmission");
+        	// start DMA off
+        	in_re_transmission_mode = true;
+        	retransmission_dma_read();
             }
         }
-    } else if (msg->data[COMMAND_ID_POSITION] == SDP_COMMAND_FOR_CLEAR) {
+        break;
+
+    case SDP_COMMAND_FOR_CLEAR:
         stop = 1;
-    } else {
+        break;
+
+    default:
         io_printf(IO_BUF, "received unknown SDP packet\n");
     }
 }
 
 //! \brief the handler for all DMA'S complete!
-INT_HANDLER speed_up_handle_dma(){
+INT_HANDLER speed_up_handle_dma() {
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (stop) {
@@ -1126,9 +1132,9 @@ void __wrap_sark_int(void *pc) {
             sark_msg_cpy(msg, shm_msg);
             sark_shmsg_free(shm_msg);
 
-            io_printf(
-                IO_BUF,
-                "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+            //io_printf(
+            //    IO_BUF,
+            //    "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
 
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
             case RE_INJECTION_FUNCTIONALITY:
@@ -1145,12 +1151,12 @@ void __wrap_sark_int(void *pc) {
                 sark_msg_send(msg, 10);
                 break;
             case DATA_SPEED_UP_FUNCTIONALITY:
-                handle_data_speed_up((sdp_msg_pure_data *) msg);
+                handle_data_speed_up((struct sdp_msg_pure_data *) msg);
                 break;
             default:
-                io_printf(IO_BUF, "port %d\n",
-                          (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
-            // Do nothing
+                io_printf(IO_BUF, "unexpected port %d\n",
+                	(msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                // Do nothing
             }
             sark_msg_free(msg);
         } else {
@@ -1166,18 +1172,18 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
+static inline void *region_address(uint32_t region_index) {
+    // Get the address this core's DTCM data starts at from SRAM
+    vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
+    address_t address = (address_t)
+	    sark_virtual_processor_info[sark.virt_cpu].user0;
+    return (void *) address[DSG_HEADER + region_index];
+}
 
 //! \brief sets up data required by the reinjection functionality
 void reinjection_initialise() {
-    // set up config region
-    // Get the address this core's DTCM data starts at from SRAM
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_REINJECTION]);
-
-    // process data
-    reinjection_read_packet_types(address);
+    // set up config region and process data
+    reinjection_read_packet_types(region_address(CONFIG_REINJECTION));
 
     // Setup the CPU interrupt for WDOG
     vic_controls[sark_vec->sark_slot] = 0;
@@ -1199,23 +1205,21 @@ void reinjection_initialise() {
 
 //! \brief sets up data required by the data speed up functionality
 void data_speed_up_initialise() {
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
-    basic_data_key = address[MY_KEY];
-    new_sequence_key = address[NEW_SEQ_KEY];
-    first_data_key = address[FIRST_DATA_KEY];
-    end_flag_key = address[END_FLAG_KEY];
+    struct data_speed_config_t *config_ptr =
+	    region_address(CONFIG_DATA_SPEED_UP);
 
+    basic_data_key = config_ptr->my_key;
+    new_sequence_key = config_ptr->new_seq_key;
+    first_data_key = config_ptr->first_data_key;
+    end_flag_key = config_ptr->end_flag_key;
 
     vic_vectors[DMA_SLOT]  = speed_up_handle_dma;
     vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
-        data_to_transmit[i] = (uint32_t*) sark_xalloc(
-            sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
-        ALLOC_LOCK);
+        data_to_transmit[i] = (uint32_t *) sark_xalloc(
+        	sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
+		ALLOC_LOCK);
         if (data_to_transmit[i] == NULL){
             io_printf(IO_BUF, "failed to allocate dtcm for DMA buffers\n");
             rt_error(RTE_SWERR);

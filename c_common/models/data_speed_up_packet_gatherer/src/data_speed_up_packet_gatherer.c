@@ -18,7 +18,7 @@
 #define WORD_TO_BYTE_MULTIPLIER 4
 
 //! struct for a SDP message with pure data, no SCP header
-typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
+struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     struct sdp_msg *next;	// Next in free list
     uint16_t length;		// length
     uint16_t checksum;		// checksum (if used)
@@ -35,7 +35,7 @@ typedef struct sdp_msg_pure_data {	// SDP message (=292 bytes)
     uint32_t data[ITEMS_PER_DATA_PACKET];
 
     uint32_t _PAD;		// Private padding
-} sdp_msg_pure_data;
+};
 
 //! control value, which says how many timer ticks to run for before exiting
 static uint32_t simulation_ticks = 0;
@@ -59,23 +59,29 @@ static uint32_t data[ITEMS_PER_DATA_PACKET];
 static uint32_t position_in_store = 0;
 
 //! SDP message holder for transmissions
-sdp_msg_pure_data my_msg;
+static struct sdp_msg_pure_data my_msg;
 
 
 //! human readable definitions of each region in SDRAM
-typedef enum regions_e {
-    SYSTEM_REGION, CONFIG
-} regions_e;
+enum regions_e {
+    SYSTEM_REGION,
+    CONFIG
+};
 
 //! human readable definitions of the data in each region
-typedef enum config_elements {
-    NEW_SEQ_KEY, FIRST_DATA_KEY, END_FLAG_KEY, TAG_ID
-} config_elements;
+typedef struct {
+    uint32_t new_sequence_key;
+    uint32_t first_data_key;
+    uint32_t end_flag_key;
+    uint32_t sdp_tag;
+} config_t;
 
 //! values for the priority for each callback
-typedef enum callback_priorities{
-    MC_PACKET = -1, SDP = 0, DMA = 0
-} callback_priorities;
+enum callback_priorities{
+    MC_PACKET = -1,
+    SDP = 0,
+    DMA = 0
+};
 
 
 void resume_callback() {
@@ -92,10 +98,10 @@ void send_data(){
 	    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
     //log_info("my length is %d with position %d", my_msg.length, position_in_store);
 
-    if (seq_num > max_seq_num){
+    if (seq_num > max_seq_num) {
         log_error(
-            "got a funky seq num in sending. max is %d, received %d",
-            max_seq_num, seq_num);
+        	"got a funky seq num in sending. max is %d, received %d",
+		max_seq_num, seq_num);
     }
 
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
@@ -119,13 +125,12 @@ void receive_data(uint key, uint payload) {
         seq_num = payload;
         position_in_store = 1;
 
-        if (payload > max_seq_num){
+        if (payload > max_seq_num) {
             log_error(
-                "got a funky seq num. max is %d, received %d",
-                max_seq_num, payload);
+        	    "got a funky seq num. max is %d, received %d",
+		    max_seq_num, payload);
         }
     } else {
-
         //log_info(" payload = %d posiiton = %d", payload, position_in_store);
         data[position_in_store] = payload;
         position_in_store += 1;
@@ -139,7 +144,7 @@ void receive_data(uint key, uint payload) {
             max_seq_num = payload;
         }
 
-        if (key == end_flag_key){
+        if (key == end_flag_key) {
             // set end flag bit in seq num
             data[0] = data[0] + (1 << 31);
 
@@ -177,12 +182,13 @@ static bool initialize(uint32_t *timer_period) {
         return false;
     }
 
-    address_t config_address = data_specification_get_region(CONFIG, address);
-    new_sequence_key = config_address[NEW_SEQ_KEY];
-    first_data_key = config_address[FIRST_DATA_KEY];
-    end_flag_key = config_address[END_FLAG_KEY];
+    config_t *config_ptr = (config_t *)
+	    data_specification_get_region(CONFIG, address);
+    new_sequence_key = config_ptr->new_sequence_key;
+    first_data_key = config_ptr->first_data_key;
+    end_flag_key = config_ptr->end_flag_key;
 
-    my_msg.tag = config_address[TAG_ID];	// IPTag 1
+    my_msg.tag = config_ptr->sdp_tag;		// IPTag 1
     my_msg.dest_port = PORT_ETH;		// Ethernet
     my_msg.dest_addr = sv->eth_addr;		// Nearest Ethernet chip
 

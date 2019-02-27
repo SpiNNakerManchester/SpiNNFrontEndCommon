@@ -9,20 +9,21 @@
 
 #define NUM_RANDOM_BITS 12
 
-typedef enum {
+enum regions_t {
     SYSTEM = 0, CONFIG = 1, RECORDING = 2
-} region;
+};
 
-typedef enum {
-    SAMPLE_COUNT_LIMIT = 0, SAMPLE_FREQUENCY = 1
-} parameter_layout;
+struct parameters_t {
+    uint32_t sample_count_limit;
+    uint32_t sample_frequency;
+};
 
 static uint32_t RECORDING_REGION_ID = 0;
 
 //! values for the priority for each callback
-typedef enum callback_priorities{
+enum callback_priorities {
     SDP = 1, TIMER = 0, DMA=2
-} callback_priorities;
+};
 
 static uint32_t simulation_ticks = 0;
 static uint32_t infinite_run = 0;
@@ -37,7 +38,7 @@ uint32_t sample_frequency;
 
 static uint32_t get_sample(void)
 {
-    return sc[SC_SLEEP] & ((1<<NUM_CORES) - 1);
+    return sc[SC_SLEEP] & ((1 << NUM_CORES) - 1);
 }
 
 // Length of busy loop used to break up chance periodicities in sampling
@@ -98,6 +99,7 @@ static void sample_in_slot(uint unused0, uint unused1)
 
     uint32_t sc = ++sample_count;
     uint32_t offset = get_random_busy();
+    // TODO: use SARK to do this short delay
     while (offset --> 0) {
         // Do nothing
     }
@@ -120,10 +122,11 @@ static void sample_in_slot(uint unused0, uint unused1)
 
 }
 
-bool read_parameters(address_t address)
+bool read_parameters(struct parameters_t *params)
 {
-    sample_count_limit = address[SAMPLE_COUNT_LIMIT];
-    sample_frequency = address[SAMPLE_FREQUENCY];
+    sample_count_limit = params->sample_count_limit;
+    sample_frequency = params->sample_frequency;
+
     log_info("count limit %d", sample_count_limit);
     log_info("sample frequency %d", sample_frequency);
     //TODO anything else that needs to be read here?
@@ -139,7 +142,7 @@ static bool initialize(uint32_t *timer)
             &infinite_run, SDP, DMA)) {
         return false;
     }
-    if (!read_parameters(
+    if (!read_parameters((struct parameters_t *)
             data_specification_get_region(CONFIG, address))) {
         return false;
     }

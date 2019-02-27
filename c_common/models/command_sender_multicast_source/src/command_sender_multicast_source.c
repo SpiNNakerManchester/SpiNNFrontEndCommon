@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 // Command structure
-typedef struct command {
+typedef struct {
     uint32_t key;
     bool has_payload;
     uint32_t payload;
@@ -13,7 +13,7 @@ typedef struct command {
     uint32_t delay;
 } command;
 
-typedef struct timed_command {
+typedef struct {
     uint32_t time;
     command command;
 } timed_command;
@@ -33,35 +33,40 @@ static bool resume = true;
 
 //! values for the priority for each callback
 typedef enum callback_priorities{
-    SDP = 0, TIMER = 2, DMA=1
+    SDP = 0,
+    DMA = 1,
+    TIMER = 2
 } callback_priorities;
 
 //! region identifiers
-typedef enum region_identifiers{
-    SYSTEM_REGION = 0, COMMANDS_WITH_ARBITRARY_TIMES,
-    COMMANDS_AT_START_RESUME, COMMANDS_AT_STOP_PAUSE, PROVENANCE_REGION
-} region_identifiers;
+enum region_identifiers {
+    SYSTEM_REGION = 0,
+    COMMANDS_WITH_ARBITRARY_TIMES,
+    COMMANDS_AT_START_RESUME,
+    COMMANDS_AT_STOP_PAUSE,
+    PROVENANCE_REGION
+};
 
-//! address data
-typedef enum address_data{
-    SCHEDULE_SIZE = 0, START_OF_SCHEDULE = 1
-} address_data;
+//! setup data
+typedef struct {
+    uint32_t size;
+    command commands[];
+} triggered_commands_t;
+
+//! setup data
+typedef struct {
+    uint32_t size;
+    timed_command commands[];
+} timed_commands_t;
 
 //! time ID
-typedef enum time_id{
+enum time_id {
     FIRST_TIME = 0
-} time_id;
-
-//! n_commands enum
-typedef enum n_commands_id{
-    N_COMMANDS = 0
-} n_commands_id;
+};
 
 static void transmit_command(command *command_to_send) {
-
     // check for repeats
     if (command_to_send->repeats != 0) {
-
         for (uint32_t repeat_count = 0;
                 repeat_count <= command_to_send->repeats;
                 repeat_count++) {
@@ -71,8 +76,8 @@ static void transmit_command(command *command_to_send) {
                     "%u delay ", command_to_send->key, command_to_send->payload,
                     time, command_to_send->repeats, command_to_send->delay);
                 spin1_send_mc_packet(
-                    command_to_send->key, command_to_send->payload,
-                    WITH_PAYLOAD);
+                	command_to_send->key, command_to_send->payload,
+			WITH_PAYLOAD);
             } else {
                 log_debug(
                     "Sending %08x at time %u with %u repeats and "
@@ -94,7 +99,8 @@ static void transmit_command(command *command_to_send) {
 
             //if no repeats, then just send the message
             spin1_send_mc_packet(
-                command_to_send->key, command_to_send->payload, WITH_PAYLOAD);
+        	    command_to_send->key, command_to_send->payload,
+		    WITH_PAYLOAD);
         } else {
             log_debug("Sending %08x at time %u", command_to_send->key, time);
             spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
@@ -116,8 +122,8 @@ static void run_start_resume_commands() {
     }
 }
 
-bool read_scheduled_parameters(address_t address) {
-    n_timed_commands = address[SCHEDULE_SIZE];
+bool read_scheduled_parameters(timed_commands_t *message_ptr) {
+    n_timed_commands = message_ptr->size;
     log_info("%d timed commands", n_timed_commands);
 
     // if no data, do not read it in
@@ -126,26 +132,24 @@ bool read_scheduled_parameters(address_t address) {
     }
 
     // Allocate the space for the scheduled_commands
-    timed_commands = (timed_command*) spin1_malloc(
-        n_timed_commands * sizeof(timed_command));
-
+    timed_commands = (timed_command *)
+	    spin1_malloc(n_timed_commands * sizeof(timed_command));
     if (timed_commands == NULL) {
         log_error("Could not allocate the scheduled commands");
         return false;
     }
 
     spin1_memcpy(
-        timed_commands, &address[START_OF_SCHEDULE],
-        n_timed_commands * sizeof(timed_command));
+	    timed_commands, message_ptr->commands,
+	    n_timed_commands * sizeof(timed_command));
 
-    log_info(
-        "Schedule commands starts at time %u", timed_commands[FIRST_TIME].time);
-
+    log_info("Schedule commands starts at time %u",
+	    timed_commands[FIRST_TIME].time);
     return true;
 }
 
-bool read_start_resume_commands(address_t address) {
-    n_start_resume_commands = address[SCHEDULE_SIZE];
+bool read_start_resume_commands(triggered_commands_t *message_ptr) {
+    n_start_resume_commands = message_ptr->size;
     log_info("%u start/resume commands", n_start_resume_commands);
 
     if (n_start_resume_commands == 0) {
@@ -153,40 +157,38 @@ bool read_start_resume_commands(address_t address) {
     }
 
     // Allocate the space for the start resume
-    start_resume_commands = (command*) spin1_malloc(
-        n_start_resume_commands * sizeof(command));
-
+    start_resume_commands = (command *)
+	    spin1_malloc(n_start_resume_commands * sizeof(command));
     if (start_resume_commands == NULL) {
         log_error("Could not allocate the start/resume commands");
         return false;
     }
-    spin1_memcpy(
-        start_resume_commands, &address[START_OF_SCHEDULE],
-        n_start_resume_commands * sizeof(command));
 
+    spin1_memcpy(
+	    start_resume_commands, message_ptr->commands,
+	    n_start_resume_commands * sizeof(command));
     return true;
 }
 
-bool read_pause_stop_commands(address_t address) {
-    n_pause_stop_commands = address[SCHEDULE_SIZE];
+bool read_pause_stop_commands(triggered_commands_t *message_ptr) {
+    n_pause_stop_commands = message_ptr->size;
     log_info("%u pause/stop commands", n_pause_stop_commands);
 
-    if (n_pause_stop_commands == 0){
+    if (n_pause_stop_commands == 0) {
         return true;
     }
 
     // Allocate the space for the start resume
-    pause_stop_commands = (command*) spin1_malloc(
-        n_pause_stop_commands * sizeof(command));
-
+    pause_stop_commands = (command *)
+	    spin1_malloc(n_pause_stop_commands * sizeof(command));
     if (pause_stop_commands == NULL) {
         log_error("Could not allocate the pause/stop commands");
         return false;
     }
-    spin1_memcpy(
-        pause_stop_commands, &address[START_OF_SCHEDULE],
-        n_pause_stop_commands * sizeof(command));
 
+    spin1_memcpy(
+	    pause_stop_commands, message_ptr->commands,
+	    n_pause_stop_commands * sizeof(command));
     return true;
 }
 
@@ -247,12 +249,15 @@ bool initialize(uint32_t *timer_period) {
     simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
-    read_scheduled_parameters(data_specification_get_region(
-        COMMANDS_WITH_ARBITRARY_TIMES, address));
-    read_start_resume_commands(data_specification_get_region(
-        COMMANDS_AT_START_RESUME, address));
-    read_pause_stop_commands(data_specification_get_region(
-        COMMANDS_AT_STOP_PAUSE, address));
+    read_scheduled_parameters(
+	    (timed_commands_t *) data_specification_get_region(
+		    COMMANDS_WITH_ARBITRARY_TIMES, address));
+    read_start_resume_commands(
+	    (triggered_commands_t *) data_specification_get_region(
+		    COMMANDS_AT_START_RESUME, address));
+    read_pause_stop_commands(
+	    (triggered_commands_t *) data_specification_get_region(
+		    COMMANDS_AT_STOP_PAUSE, address));
     return true;
 }
 

@@ -21,21 +21,30 @@ typedef enum callback_priorities {
     SDP_CALLBACK = 1, TIMER = 2, DMA = 0
 }callback_priorities;
 
-typedef enum eieio_data_message_types {
+enum eieio_data_message_types {
     KEY_16_BIT, KEY_PAYLOAD_16_BIT, KEY_32_BIT, KEY_PAYLOAD_32_bIT
-} eieio_data_message_types;
+};
 
 //! The EIEIO prefix types
 typedef enum eieio_prefix_types {
     PREFIX_TYPE_LOWER_HALF_WORD, PREFIX_TYPE_UPPER_HALF_WORD
 } eieio_prefix_types;
 
-//! The parameter positions
-typedef enum read_in_parameters{
-    APPLY_PREFIX, PREFIX, PREFIX_TYPE, CHECK_KEYS, HAS_KEY, KEY_SPACE, MASK,
-    BUFFER_REGION_SIZE, SPACE_BEFORE_DATA_REQUEST, RETURN_TAG_ID,
-    RETURN_TAG_DEST, BUFFERED_IN_SDP_PORT
-} read_in_parameters;
+//! The parameters
+struct configuration_t {
+    uint32_t apply_prefix;
+    uint32_t prefix;
+    uint32_t prefix_type;
+    uint32_t check_keys;
+    uint32_t has_key;
+    uint32_t key_space;
+    uint32_t mask;
+    uint32_t buffer_region_size;
+    uint32_t space_before_data_request;
+    uint32_t return_tag_id;
+    uint32_t return_tag_dest;
+    uint32_t buffered_in_sdp_port;
+};
 
 //! The memory regions
 typedef enum memory_regions{
@@ -54,6 +63,13 @@ typedef enum provenance_items {
     INCORRECT_PACKETS,
     LATE_PACKETS
 } provenance_items;
+struct provenance_t {
+    uint32_t num_received_packets;
+    uint32_t num_sent_packets;
+    uint32_t incorrect_keys;
+    uint32_t incorrect_packets;
+    uint32_t late_packets;
+};
 
 //! The number of regions that can be recorded
 #define NUMBER_OF_REGIONS_TO_RECORD 1
@@ -139,6 +155,12 @@ static bool stopped = false;
 static bool recording_in_progress = false;
 static recorded_packet_t *recorded_packet;
 
+// How to extract bit-flags and packet types from a field
+#define FLAG_IS_SET(flags, bit_idx) ((bool)(((flags) >> (bit_idx)) & 0x1))
+#define PKT_TYPE(flags, type_idx)   ((uint8_t)(((flags) >> (type_idx)) & 0x03))
+
+// ------------------------------------------------------------------------
+
 static inline uint16_t calculate_eieio_packet_command_size(
         eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -170,9 +192,9 @@ static inline uint16_t calculate_eieio_packet_command_size(
 static inline uint16_t calculate_eieio_packet_event_size(
         eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (uint8_t)(data_hdr_value >> 10 & 0x3);
-    bool pkt_apply_prefix = (bool)(data_hdr_value >> 15);
-    bool pkt_payload_prefix_apply = (bool)(data_hdr_value >> 13 & 0x1);
+    uint8_t pkt_type = PKT_TYPE(data_hdr_value, 10);
+    bool pkt_apply_prefix = FLAG_IS_SET(data_hdr_value, 15);
+    bool pkt_payload_prefix_apply = FLAG_IS_SET(data_hdr_value, 13);
     uint8_t event_count = data_hdr_value & 0xFF;
     uint16_t event_size, total_size;
     uint16_t header_size = 2;
@@ -194,7 +216,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
         header_size += 2;
     }
     if (pkt_payload_prefix_apply) {
-        if (pkt_type == 0 || pkt_type == 1) {
+        if (pkt_type == KEY_16_BIT || pkt_type == KEY_PAYLOAD_16_BIT) {
             header_size += 2;
         } else {
             header_size += 4;
@@ -207,7 +229,7 @@ static inline uint16_t calculate_eieio_packet_event_size(
 
 static inline uint16_t calculate_eieio_packet_size(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (data_hdr_value >> 14) & 0x03;
+    uint8_t pkt_type = PKT_TYPE(data_hdr_value, 14);
 
     if (pkt_type == 0x01) {
         return calculate_eieio_packet_command_size(eieio_msg_ptr);
@@ -253,7 +275,7 @@ static inline void signal_software_error(
 #endif
 }
 
-static inline uint32_t get_sdram_buffer_space_available() {
+static inline uint32_t get_sdram_buffer_space_available(void) {
     if (read_pointer < write_pointer) {
         uint32_t final_space =
             (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
@@ -288,9 +310,9 @@ static inline bool is_eieio_packet_in_buffer(void) {
 
 static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    bool pkt_has_timestamp = (bool) ((data_hdr_value >> 12) & 0x1);
-    bool pkt_apply_prefix = (bool) ((data_hdr_value >> 15) & 0x1);
-    bool pkt_mode = (bool) ((data_hdr_value >> 14) & 0x1);
+    bool pkt_has_timestamp = FLAG_IS_SET(data_hdr_value, 12);
+    bool pkt_apply_prefix = FLAG_IS_SET(data_hdr_value, 15);
+    bool pkt_mode = FLAG_IS_SET(data_hdr_value, 14);
 
     // If the packet is actually a command packet, return the current time
     if (!pkt_apply_prefix && pkt_mode) {
@@ -299,8 +321,8 @@ static inline uint32_t extract_time_from_eieio_msg(eieio_msg_t eieio_msg_ptr) {
 
     // If the packet indicates that payloads are timestamps
     if (pkt_has_timestamp) {
-        bool pkt_payload_prefix_apply = (bool) ((data_hdr_value >> 13) & 0x1);
-        uint8_t pkt_type = (uint8_t) ((data_hdr_value >> 10) & 0x3);
+        bool pkt_payload_prefix_apply = FLAG_IS_SET(data_hdr_value, 13);
+        uint8_t pkt_type = PKT_TYPE(data_hdr_value, 10);
         uint32_t payload_time = 0;
         bool got_payload_time = false;
         uint16_t *event_ptr = &eieio_msg_ptr[1];
@@ -535,7 +557,7 @@ static inline void process_32_bit_packets(
     }
 }
 
-void recording_done_callback() {
+void recording_done_callback(void) {
     recording_in_progress = false;
 }
 
@@ -584,16 +606,16 @@ static inline bool eieio_data_parse_packet(
     log_debug("event_pointer: %08x", (uint32_t) event_pointer);
     print_packet(eieio_msg_ptr);
 
-    bool pkt_apply_prefix = (bool) ((data_hdr_value >> 15) & 0x1);
-    bool pkt_prefix_upper = (bool) ((data_hdr_value >> 14) & 0x1);
-    bool pkt_payload_apply_prefix = (bool) ((data_hdr_value >> 13) & 0x1);
-    uint8_t pkt_type = (uint8_t) ((data_hdr_value >> 10) & 0x3);
+    bool pkt_apply_prefix = FLAG_IS_SET(data_hdr_value, 15);
+    bool pkt_prefix_upper = FLAG_IS_SET(data_hdr_value, 14);
+    bool pkt_payload_apply_prefix = FLAG_IS_SET(data_hdr_value, 13);
+    uint8_t pkt_type = PKT_TYPE(data_hdr_value, 10);
     uint8_t pkt_count = (uint8_t) (data_hdr_value & 0xFF);
     bool pkt_has_payload = (bool) (pkt_type & 0x1);
 
     uint32_t pkt_key_prefix = 0;
     uint32_t pkt_payload_prefix = 0;
-    bool pkt_payload_is_timestamp = (bool)((data_hdr_value >> 12) & 0x1);
+    bool pkt_payload_is_timestamp = FLAG_IS_SET(data_hdr_value, 12);
 
     log_debug("data_hdr_value: %04x", data_hdr_value);
     log_debug("pkt_apply_prefix: %d", pkt_apply_prefix);
@@ -679,6 +701,7 @@ static inline void eieio_command_parse_stop_requests(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
+
     log_debug("Stopping packet requests - parse_stop_packet_reqs");
     send_packet_reqs = false;
     last_stop_notification_request = time;
@@ -688,6 +711,7 @@ static inline void eieio_command_parse_start_requests(
         eieio_msg_t eieio_msg_ptr, uint16_t length) {
     use(eieio_msg_ptr);
     use(length);
+
     log_debug("Starting packet requests - parse_start_packet_reqs");
     send_packet_reqs = true;
 }
@@ -770,7 +794,7 @@ static inline bool packet_handler_selector(eieio_msg_t eieio_msg_ptr,
     log_debug("packet_handler_selector");
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
-    uint8_t pkt_type = (data_hdr_value >> 14) & 0x03;
+    uint8_t pkt_type = PKT_TYPE(data_hdr_value, 14);
 
     if (pkt_type == 0x01) {
         log_debug("parsing a command packet");
@@ -781,7 +805,7 @@ static inline bool packet_handler_selector(eieio_msg_t eieio_msg_ptr,
     }
 }
 
-void fetch_and_process_packet() {
+void fetch_and_process_packet(void) {
     uint32_t last_len = 2;
 
     log_debug("in fetch_and_process_packet");
@@ -888,20 +912,21 @@ void send_buffer_request_pkt(void) {
 }
 
 bool read_parameters(address_t region_address) {
+    struct configuration_t *config_ptr = (struct configuration_t *) region_address;
 
     // Get the configuration data
-    apply_prefix = region_address[APPLY_PREFIX];
-    prefix = region_address[PREFIX];
-    prefix_type = (eieio_prefix_types) region_address[PREFIX_TYPE];
-    check = region_address[CHECK_KEYS];
-    has_key = region_address[HAS_KEY];
-    key_space = region_address[KEY_SPACE];
-    mask = region_address[MASK];
-    buffer_region_size = region_address[BUFFER_REGION_SIZE];
-    space_before_data_request = region_address[SPACE_BEFORE_DATA_REQUEST];
-    return_tag_id = region_address[RETURN_TAG_ID];
-    return_tag_dest = region_address[RETURN_TAG_DEST];
-    buffered_in_sdp_port = region_address[BUFFERED_IN_SDP_PORT];
+    apply_prefix = config_ptr->apply_prefix;
+    prefix = config_ptr->prefix;
+    prefix_type = (eieio_prefix_types) config_ptr->prefix_type;
+    check = config_ptr->check_keys;
+    has_key = config_ptr->has_key;
+    key_space = config_ptr->key_space;
+    mask = config_ptr->mask;
+    buffer_region_size = config_ptr->buffer_region_size;
+    space_before_data_request = config_ptr->space_before_data_request;
+    return_tag_id = config_ptr->return_tag_id;
+    return_tag_dest = config_ptr->return_tag_id;
+    buffered_in_sdp_port = config_ptr->buffered_in_sdp_port;
 
     // There is no point in sending requests until there is space for
     // at least one packet
@@ -971,7 +996,7 @@ bool setup_buffer_region(address_t region_address) {
 
 //! \brief Initialises the recording parts of the model
 //! \return True if recording initialisation is successful, false otherwise
-static bool initialise_recording(){
+static bool initialise_recording(void) {
     address_t address = data_specification_get_data_address();
     address_t recording_region = data_specification_get_region(
             RECORDING_REGION, address);
@@ -984,11 +1009,13 @@ static bool initialise_recording(){
 }
 
 static void provenance_callback(address_t address) {
-    address[N_RECEIVED_PACKETS] = n_received_packets;
-    address[N_SENT_PACKETS] = n_send_packets;
-    address[INCORRECT_KEYS] = incorrect_keys;
-    address[INCORRECT_PACKETS] = incorrect_packets;
-    address[LATE_PACKETS] = late_packets;
+    struct provenance_t *provenance_ptr = (struct provenance_t *) address;
+
+    provenance_ptr->num_received_packets = n_received_packets;
+    provenance_ptr->num_sent_packets = n_send_packets;
+    provenance_ptr->incorrect_keys = incorrect_keys;
+    provenance_ptr->incorrect_packets = incorrect_packets;
+    provenance_ptr->late_packets = late_packets;
 }
 
 bool initialise(uint32_t *timer_period) {
@@ -1034,7 +1061,7 @@ bool initialise(uint32_t *timer_period) {
     return true;
 }
 
-void resume_callback() {
+void resume_callback(void) {
 
     address_t address = data_specification_get_data_address();
     setup_buffer_region(data_specification_get_region(
@@ -1111,6 +1138,7 @@ void timer_callback(uint unused0, uint unused1) {
 
 void sdp_packet_callback(uint mailbox, uint port) {
     use(port);
+
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
     uint16_t length = msg->length;
     eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
