@@ -323,7 +323,7 @@ void read_parameters(address_t region_address) {
     struct configuration_region_t *config_ptr =
 	    (struct configuration_region_t *) region_address;
 
-    config = &config_ptr;
+    config = *config_ptr;
     sdp_dest = config_ptr->sdp_destination;
 
     log_info("apply_prefix: %d\n", config.apply_prefix);
