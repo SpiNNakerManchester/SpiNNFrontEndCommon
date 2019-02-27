@@ -331,7 +331,7 @@ static uint32_t dma_port_last_used = 0;
 static bool in_re_transmission_mode = false;
 
 //! SDP message holder for transmissions
-sdp_msg_pure_data my_msg;
+struct sdp_msg_pure_data my_msg;
 
 //! state for how many bytes it needs to send, gives approximate bandwidth if
 //! round number.
@@ -608,7 +608,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         // Return the number of bytes in the packet
-        return sizeof(reinjector_status_t);
+        return sizeof(struct reinjector_status_t);
     }
 
     case CMD_DPRI_RESET_COUNTERS:
@@ -624,8 +624,9 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         msg->cmd_rc = RC_OK;
         return 0;
 
-    case CMD_DPRI_EXIT:
+    case CMD_DPRI_EXIT: {
         uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
+
         vic[VIC_DISABLE] = int_select;
         vic[VIC_DISABLE] = (1 << CC_TNF_INT);
         vic[VIC_SELECT] = 0;
@@ -634,10 +635,12 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
+    }
 
-    case CMD_DPRI_CLEAR:
+    case CMD_DPRI_CLEAR: {
         // Disable FIQ for queue access
         uint cpsr = cpu_fiq_disable();
+
         // Clear any stored dropped packets
         pkt_queue.head = 0;
         pkt_queue.tail = 0;
@@ -648,6 +651,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
         // set SCP command to OK , as successfully completed
         msg->cmd_rc = RC_OK;
         return 0;
+    }
 
     default:
 	// If we are here, the command was not recognised, so fail (ARG as the
