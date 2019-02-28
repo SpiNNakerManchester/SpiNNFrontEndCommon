@@ -596,10 +596,9 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
     # options names are all lower without _ inside config
     DEBUG_ENABLE_OPTS = frozenset([
-        "reportsenabled", "displayalgorithmtimings",
+        "reportsenabled",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
     REPORT_DISABLE_OPTS = frozenset([
-        "displayalgorithmtimings",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
 
     def _adjust_config(self, runtime):
