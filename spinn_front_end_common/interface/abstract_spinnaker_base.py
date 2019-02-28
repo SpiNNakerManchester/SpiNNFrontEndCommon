@@ -1763,6 +1763,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._config.getboolean("Reports", "write_memory_map_report") and
             application_graph_changed
         )
+        inputs["NoSyncChanges"] = self._no_sync_changes
 
         if not application_graph_changed and self._has_ran:
             inputs["ExecutableTargets"] = self._last_run_outputs[
@@ -1816,7 +1817,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # add optional algorithms
         optional_algorithms = list()
-        optional_algorithms.append("RoutingTableLoader")
+        #optional_algorithms.append("RoutingTableLoader")
         optional_algorithms.append("TagsLoader")
         optional_algorithms.append("WriteMemoryIOData")
 
@@ -1847,6 +1848,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         executor = self._run_algorithms(
             inputs, algorithms, [], tokens, required_tokens, "loading",
             optional_algorithms)
+        self._no_sync_changes = executor.get_item("NoSyncChanges")
         self._load_outputs = executor.get_items()
         self._load_tokens = executor.get_completed_tokens()
 
