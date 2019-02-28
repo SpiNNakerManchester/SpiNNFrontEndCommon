@@ -1991,10 +1991,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if not self._use_virtual_board:
             algorithms.append("NotificationProtocol")
 
-        # Sort out reload if needed
-        if self._config.getboolean("Reports", "write_reload_steps"):
-            logger.warning("Reload script is not supported in this version")
-
         outputs = [
             "NoSyncChanges"
         ]
