@@ -11,7 +11,7 @@
 // The mask to apply to the version number to get the minor version
 #define VERSION_MASK 0xFFFF
 
-typedef enum region_elements{
+typedef enum region_elements {
     dse_magic_number, dse_version,
 } region_elements;
 
@@ -33,7 +33,7 @@ address_t data_specification_get_data_address() {
     // Get the address this core's DTCM data starts at from the user data member
     // of the structure associated with this virtual processor
     address_t address =
-        (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
+            (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
 
     log_debug("SDRAM data begins at address: %08x", address);
 
@@ -63,8 +63,8 @@ bool data_specification_read_header(uint32_t* address) {
 
     // Log what we have found
     log_info("magic = %08x, version = %d.%d", address[dse_magic_number],
-             address[dse_version] >> VERSION_SHIFT,
-             address[dse_version] & VERSION_MASK);
+            address[dse_version] >> VERSION_SHIFT,
+            address[dse_version] & VERSION_MASK);
     return (true);
 }
 
