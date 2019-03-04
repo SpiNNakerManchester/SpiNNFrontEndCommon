@@ -482,9 +482,6 @@ void recording_finalise() {
     for (uint32_t channel = 0; channel < n_recording_regions; channel++) {
         // If this channel's in use
         if (_has_been_initialsed(channel)) {
-            recording_channel_t *recording_channel =
-                    &g_recording_channels[channel];
-
             /* Calculate the number of bytes that have been written and write
              * back to SDRAM counter */
             if (g_recording_channels[channel].missing_info) {
