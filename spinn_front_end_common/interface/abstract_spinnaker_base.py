@@ -74,6 +74,7 @@ DEFAULT_N_VIRTUAL_CORES = 16
 # The minimum time a board is kept in the off state in seconds
 MINIMUM_OFF_STATE_TIME = 20
 
+
 class AbstractSpinnakerBase(SimulatorInterface):
     """ Main interface into the tools logic flow
     """
