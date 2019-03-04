@@ -11,7 +11,7 @@ ifndef PRINT_DEBUG
     PRINT_DEBUG = PRODUCTION_CODE
 endif
 
-CFLAGS += $(OSPACE) -I include -D$(PRINT_DEBUG)
+CFLAGS += -Wall -Wextra $(OSPACE) -I include -D$(PRINT_DEBUG)
 LDFLAGS += -lspinn_common
 
 # Objects
