@@ -119,7 +119,6 @@ void _send_ok_response(sdp_msg_t *msg){
 void _simulation_control_scp_callback(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
-    uint16_t length = msg->length;
 
     switch (msg->cmd_rc) {
     case CMD_STOP:

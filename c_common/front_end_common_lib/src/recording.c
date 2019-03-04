@@ -115,6 +115,7 @@ static inline bool _close_channel(uint8_t channel) {
 
 static inline void _recording_host_data_read(
         host_data_read_packet_t *hdr_msg, uint length) {
+    use(length);
     uint8_t n_requests = hdr_msg->header.request;
     uint8_t sequence = hdr_msg->header.sequence;
 
@@ -150,6 +151,7 @@ static inline void _recording_host_data_read(
 
 static inline void _recording_host_data_read_ack(
         host_data_read_ack_packet_t *hdra_msg, uint length) {
+    use(length);
     uint8_t sequence = hdra_msg->header.sequence;
 
     if (sequence != sequence_number) {
@@ -422,7 +424,6 @@ bool recording_record_and_notify(
         uint8_t channel, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
     if (_has_been_initialsed(channel)) {
-        recording_channel_t *recording_channel = &g_recording_channels[channel];
         uint32_t space_available = compute_available_space_in_channel(channel);
 
         // If there's space to record
@@ -467,8 +468,6 @@ void _recording_buffer_state_data_write(){
 }
 
 void recording_finalise() {
-    uint8_t i;
-
     log_debug("Finalising recording channels");
 
     // wait till all DMA's have been finished
@@ -506,16 +505,19 @@ void recording_finalise() {
 
 //! \brief updates host read point as DMA has finished
 void _recording_dma_finished(uint unused, uint tag) {
-    // pop region and write pointer from circular queue
+    use(unused);
+    use(tag);
     uint32_t channel_id;
     uint32_t dma_current_write;
     uint32_t callback_address;
+
+    // pop region and write pointer from circular queue
     circular_buffer_get_next(dma_complete_buffer, &channel_id);
     circular_buffer_get_next(dma_complete_buffer, &dma_current_write);
     circular_buffer_get_next(dma_complete_buffer, &callback_address);
 
     recording_complete_callback_t callback =
-        (recording_complete_callback_t) callback_address;
+            (recording_complete_callback_t) callback_address;
 
     // update recording region dma_current_write
     g_recording_channels[(uint8_t) channel_id].dma_current_write =
