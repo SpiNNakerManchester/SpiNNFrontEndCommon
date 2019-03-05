@@ -503,7 +503,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-void reinjection_read_packet_types(address_t address){
+void reinjection_read_packet_types(address_t address) {
     // process multicast reinject flag
     if (address[REINJECT_MULTICAST] == 1) {
         reinject_mc = false;
@@ -768,7 +768,7 @@ void data_speed_up_send_end_flag() {
 }
 
 //! \brief DMA complete callback for reading for original transmission
-void dma_complete_reading_for_original_transmission(){
+void dma_complete_reading_for_original_transmission() {
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = basic_data_key;
@@ -842,7 +842,7 @@ void write_missing_sdp_seq_nums_into_sdram(
         missing_sdp_seq_num_sdram_address[
         number_of_missing_seq_nums_in_sdram +
         (offset - start_offset)] = data[offset];
-        if (data[offset] > max_seq_num){
+        if (data[offset] > max_seq_num) {
             io_printf(IO_BUF, "storing some bad seq num. WTF %d %d\n",
             data[offset], max_seq_num);
         } else {
@@ -860,7 +860,7 @@ void write_missing_sdp_seq_nums_into_sdram(
 //! there is different behaviour
 void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     uint32_t start_reading_offset = 1;
-    if (first){
+    if (first) {
         number_of_missing_seq_sdp_packets =
             data[POSITION_OF_NO_MISSING_SEQ_SDP_PACKETS];
 
@@ -885,7 +885,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
             ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
 
         // if not got enough sdram to alllocate all missing seq nums
-        if(missing_sdp_seq_num_sdram_address == NULL){
+        if (missing_sdp_seq_num_sdram_address == NULL) {
 
             // biggest sdram block
             uint32_t max_bytes = sark_heap_max(sv->sdram_heap, ALLOC_LOCK);
@@ -893,7 +893,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
             // if can hold more than this packets worth of data
             if (max_bytes >= (
                     (ITEMS_PER_DATA_PACKET - SEQUENCE_NUMBER_SIZE)*
-                    WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE){
+                    WORD_TO_BYTE_MULTIPLIER) + END_FLAG_SIZE) {
                 io_printf(IO_BUF, "Activate bacon protocol!");
                 // allocate biggest block
                 missing_sdp_seq_num_sdram_address = sark_xalloc(
@@ -905,8 +905,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
                     WORD_TO_BYTE_MULTIPLIER) - END_FLAG_SIZE;
                 number_of_missing_seq_sdp_packets = 1+ (max_bytes / (
                         (ITEMS_PER_DATA_PACKET * WORD_TO_BYTE_MULTIPLIER)));
-            }
-            else{
+            } else {
                 io_printf(IO_BUF, "cant allocate sdram for missing seq nums");
                 rt_error(RTE_SWERR);
             }
@@ -1070,7 +1069,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
         // if aready in a retrnamission phase, dont process as normal
         if (msg->data[COMMAND_ID_POSITION] ==
                     SDP_COMMAND_FOR_START_OF_MISSING_SDP_PACKETS &&
-                    number_of_missing_seq_sdp_packets != 0){
+                    number_of_missing_seq_sdp_packets != 0) {
                 //io_printf(IO_BUF, "forcing start of retranmission packet\n");
                 sark_msg_free((sdp_msg_t *) msg);
                 number_of_missing_seq_sdp_packets = 0;
@@ -1102,7 +1101,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
                 if (number_of_missing_seq_sdp_packets == 0) {
                     // packets all received, add finish flag for DMA stoppage
 
-                    if(number_of_missing_seq_nums_in_sdram != 0) {
+                    if (number_of_missing_seq_nums_in_sdram != 0) {
                         //io_printf(IO_BUF, "starting resend process\n");
                         missing_sdp_seq_num_sdram_address[
                             number_of_missing_seq_nums_in_sdram] = END_FLAG;
@@ -1126,7 +1125,7 @@ void handle_data_speed_up(sdp_msg_pure_data *msg) {
 }
 
 //! \brief the handler for all DMA'S complete!
-INT_HANDLER speed_up_handle_dma(){
+INT_HANDLER speed_up_handle_dma() {
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (stop) {
@@ -1146,7 +1145,7 @@ INT_HANDLER speed_up_handle_dma(){
     vic[VIC_VADDR] = (uint) vic;
 }
 
-INT_HANDLER speed_up_handle_dma_error(){
+INT_HANDLER speed_up_handle_dma_error() {
     io_printf(IO_BUF, "DMA Failed: 0x%08x!\n", dma[DMA_STAT]);
     dma[DMA_CTRL] = 0x4;
     vic[VIC_VADDR] = (uint) vic;
@@ -1271,7 +1270,7 @@ void data_speed_up_initialise() {
         data_to_transmit[i] = (uint32_t*) sark_xalloc(
             sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
         ALLOC_LOCK);
-        if (data_to_transmit[i] == NULL){
+        if (data_to_transmit[i] == NULL) {
             io_printf(IO_BUF, "failed to allocate dtcm for DMA buffers\n");
             rt_error(RTE_SWERR);
         }
