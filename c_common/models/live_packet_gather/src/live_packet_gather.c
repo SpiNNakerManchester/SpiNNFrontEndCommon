@@ -373,7 +373,7 @@ static bool initialize(uint32_t *timer_period_ptr) {
     return true;
 }
 
-static static bool configure_sdp_msg(void) {
+static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg\n");
 
     void *temp_ptr;
