@@ -155,6 +155,9 @@ static bool stopped = false;
 static bool recording_in_progress = false;
 static recorded_packet_t *recorded_packet;
 
+// Forward declaration of main entry point
+void c_main(void);
+
 // How to extract bit-flags and packet types from a field
 #define FLAG_IS_SET(flags, bit_idx) ((bool)(((flags) >> (bit_idx)) & 0x1))
 #define PKT_TYPE(flags, type_idx)   ((uint8_t)(((flags) >> (type_idx)) & 0x03))
@@ -557,7 +560,7 @@ static inline void process_32_bit_packets(
     }
 }
 
-void recording_done_callback(void) {
+static void recording_done_callback(void) {
     recording_in_progress = false;
 }
 
@@ -582,8 +585,8 @@ static inline void record_packet(eieio_msg_t eieio_msg_ptr, uint32_t length) {
         // bytes in this data will be random, but are also ignored by
         // whatever reads the data.
         recording_record_and_notify(
-            SPIKE_HISTORY_CHANNEL, recorded_packet, recording_length + 8,
-            recording_done_callback);
+        	SPIKE_HISTORY_CHANNEL, recorded_packet, recording_length + 8,
+		recording_done_callback);
     }
 }
 
@@ -596,7 +599,6 @@ static inline bool eieio_data_parse_packet(
     void *event_pointer = (void *) &eieio_msg_ptr[1];
 
     if (data_hdr_value == 0) {
-
         // Count is 0, so no data
         return true;
     }
@@ -789,8 +791,8 @@ static inline bool eieio_commmand_parse_packet(eieio_msg_t eieio_msg_ptr,
     return true;
 }
 
-static inline bool packet_handler_selector(eieio_msg_t eieio_msg_ptr,
-                                           uint16_t length) {
+static inline bool packet_handler_selector(
+	eieio_msg_t eieio_msg_ptr, uint16_t length) {
     log_debug("packet_handler_selector");
 
     uint16_t data_hdr_value = eieio_msg_ptr[0];
@@ -805,7 +807,7 @@ static inline bool packet_handler_selector(eieio_msg_t eieio_msg_ptr,
     }
 }
 
-void fetch_and_process_packet(void) {
+static void fetch_and_process_packet(void) {
     uint32_t last_len = 2;
 
     log_debug("in fetch_and_process_packet");
@@ -895,7 +897,7 @@ void fetch_and_process_packet(void) {
     }
 }
 
-void send_buffer_request_pkt(void) {
+static void send_buffer_request_pkt(void) {
     uint32_t space = get_sdram_buffer_space_available();
     if ((space >= space_before_data_request) &&
             ((space != last_space) || (space == buffer_region_size))) {
@@ -911,7 +913,7 @@ void send_buffer_request_pkt(void) {
     }
 }
 
-bool read_parameters(address_t region_address) {
+static bool read_parameters(address_t region_address) {
     struct configuration_t *config_ptr = (struct configuration_t *) region_address;
 
     // Get the configuration data
@@ -981,7 +983,7 @@ bool read_parameters(address_t region_address) {
     return true;
 }
 
-bool setup_buffer_region(address_t region_address) {
+static bool setup_buffer_region(address_t region_address) {
     buffer_region = (uint8_t *) region_address;
     read_pointer = buffer_region;
     write_pointer = buffer_region;
@@ -1018,7 +1020,7 @@ static void provenance_callback(address_t address) {
     provenance_ptr->late_packets = late_packets;
 }
 
-bool initialise(uint32_t *timer_period) {
+static bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -1061,11 +1063,10 @@ bool initialise(uint32_t *timer_period) {
     return true;
 }
 
-void resume_callback(void) {
-
+static void resume_callback(void) {
     address_t address = data_specification_get_data_address();
     setup_buffer_region(data_specification_get_region(
-        BUFFER_REGION, address));
+	    BUFFER_REGION, address));
 
     // set the code to start sending packet requests again
     send_packet_reqs = true;
@@ -1080,17 +1081,16 @@ void resume_callback(void) {
     stopped = false;
 }
 
-void timer_callback(uint unused0, uint unused1) {
+static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time++;
 
     log_debug("timer_callback, final time: %d, current time: %d,"
-              "next packet buffer time: %d", simulation_ticks, time,
-              next_buffer_time);
+	    "next packet buffer time: %d", simulation_ticks, time,
+	    next_buffer_time);
 
     if (stopped || ((infinite_run != TRUE) && (time >= simulation_ticks))) {
-
         // Enter pause and resume state to avoid another tick
         simulation_handle_pause_resume(resume_callback);
 
@@ -1136,7 +1136,7 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-void sdp_packet_callback(uint mailbox, uint port) {
+static void sdp_packet_callback(uint mailbox, uint port) {
     use(port);
 
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
@@ -1153,7 +1153,6 @@ void sdp_packet_callback(uint mailbox, uint port) {
 
 // Entry point
 void c_main(void) {
-
     // Configure system
     uint32_t timer_period = 0;
     if (!initialise(&timer_period)) {

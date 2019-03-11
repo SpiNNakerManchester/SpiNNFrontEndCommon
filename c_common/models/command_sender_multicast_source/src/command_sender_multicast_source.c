@@ -64,6 +64,8 @@ enum time_id {
     FIRST_TIME = 0
 };
 
+void c_main(void);
+
 static void transmit_command(command *command_to_send) {
     // check for repeats
     if (command_to_send->repeats != 0) {
@@ -122,7 +124,7 @@ static void run_start_resume_commands() {
     }
 }
 
-bool read_scheduled_parameters(timed_commands_t *message_ptr) {
+static bool read_scheduled_parameters(timed_commands_t *message_ptr) {
     n_timed_commands = message_ptr->size;
     log_info("%d timed commands", n_timed_commands);
 
@@ -148,7 +150,7 @@ bool read_scheduled_parameters(timed_commands_t *message_ptr) {
     return true;
 }
 
-bool read_start_resume_commands(triggered_commands_t *message_ptr) {
+static bool read_start_resume_commands(triggered_commands_t *message_ptr) {
     n_start_resume_commands = message_ptr->size;
     log_info("%u start/resume commands", n_start_resume_commands);
 
@@ -170,7 +172,7 @@ bool read_start_resume_commands(triggered_commands_t *message_ptr) {
     return true;
 }
 
-bool read_pause_stop_commands(triggered_commands_t *message_ptr) {
+static bool read_pause_stop_commands(triggered_commands_t *message_ptr) {
     n_pause_stop_commands = message_ptr->size;
     log_info("%u pause/stop commands", n_pause_stop_commands);
 
@@ -193,7 +195,7 @@ bool read_pause_stop_commands(triggered_commands_t *message_ptr) {
 }
 
 // Callbacks
-void timer_callback(uint unused0, uint unused1) {
+static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
     time++;
@@ -227,8 +229,7 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-bool initialize(uint32_t *timer_period) {
-
+static bool initialize(uint32_t *timer_period) {
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
 

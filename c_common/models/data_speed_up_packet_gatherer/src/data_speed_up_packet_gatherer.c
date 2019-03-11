@@ -84,11 +84,11 @@ enum callback_priorities{
 };
 
 
-void resume_callback() {
+static void resume_callback(void) {
     time = UINT32_MAX;
 }
 
-void send_data(){
+static void send_data(void) {
     //log_info("last element is %d", data[position_in_store - 1]);
     //log_info("first element is %d", data[0]);
 
@@ -113,7 +113,7 @@ void send_data(){
     data[0] = seq_num;
 }
 
-void receive_data(uint key, uint payload) {
+static void receive_data(uint key, uint payload) {
     //log_info("packet!");
     if (key == new_sequence_key) {
         if (position_in_store != 1) {

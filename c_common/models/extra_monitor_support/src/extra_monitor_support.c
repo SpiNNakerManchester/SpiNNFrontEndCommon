@@ -501,7 +501,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-void reinjection_read_packet_types(struct reinject_config_t *config_ptr){
+static void reinjection_read_packet_types(struct reinject_config_t *config_ptr) {
     // process multicast reinject flag
     if (config_ptr->reinject_multicast == 1) {
         reinject_mc = false;
@@ -662,7 +662,7 @@ static uint handle_reinjection_command(sdp_msg_t *msg) {
 }
 
 // \brief SARK level timer interrupt setup
-void reinjection_configure_timer() {
+static void reinjection_configure_timer() {
     // Clear the interrupt
     tc[T1_CONTROL] = 0;
     tc[T1_INT_CLR] = 1;
@@ -673,13 +673,13 @@ void reinjection_configure_timer() {
 }
 
 // \brief pass, not a clue.
-void reinjection_configure_comms_controller() {
+static void reinjection_configure_comms_controller() {
     // remember SAR register contents (p2p source ID)
     cc_sar = cc[CC_SAR] & 0x0000ffff;
 }
 
 // \brief sets up SARK and router to have a interrupt when a packet is dropped
-void reinjection_configure_router() {
+static void reinjection_configure_router() {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) |
 	    ROUTER_INITIAL_TIMEOUT;
@@ -718,7 +718,7 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 //! \param[in] number_of_elements_to_send: the number of multicast packets to send
 //! \param[in] first_packet_key: the first key to transmit with, afterward,
 //! defaults to the default key.
-void send_data_block(
+static void send_data_block(
         uint32_t current_dma_pointer, uint32_t number_of_elements_to_send,
         uint32_t first_packet_key) {
     //log_info("first data is %d", data_to_transmit[current_dma_pointer][0]);
@@ -743,7 +743,7 @@ void send_data_block(
 //! \param[in] dma_tag the DMA tag associated with this read.
 //!            transmission or retransmission
 //! \param[in] offset where in the data array to start writing to
-void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
+static void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
     // set off DMA
     transmit_dma_pointer = (transmit_dma_pointer + 1) % N_DMA_BUFFERS;
 
@@ -765,12 +765,12 @@ void read(uint32_t dma_tag, uint32_t offset, uint32_t items_to_read) {
 }
 
 //! \brief sends a end flag via multicast
-void data_speed_up_send_end_flag() {
+static void data_speed_up_send_end_flag(void) {
     send_fixed_route_packet(end_flag_key, END_FLAG);
 }
 
 //! \brief DMA complete callback for reading for original transmission
-void dma_complete_reading_for_original_transmission(){
+static void dma_complete_reading_for_original_transmission(void) {
     // set up state
     uint32_t current_dma_pointer = transmit_dma_pointer;
     uint32_t key_to_transmit = basic_data_key;
@@ -838,7 +838,7 @@ void dma_complete_reading_for_original_transmission(){
 //! \param[in] data: data to write into SDRAM
 //! \param[in] length: length of data
 //! \param[in] start_offset: where in the data to start writing in from.
-void write_missing_sdp_seq_nums_into_sdram(
+static void write_missing_sdp_seq_nums_into_sdram(
         uint32_t data[], ushort length, uint32_t start_offset) {
     for (ushort offset=start_offset; offset < length; offset ++) {
         missing_sdp_seq_num_sdram_address[
@@ -860,7 +860,7 @@ void write_missing_sdp_seq_nums_into_sdram(
 //! \param[in] length: how much data to read
 //! \param[in] first: if first packet about missing sequence numbers. If so
 //! there is different behaviour
-void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
+static void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
     uint32_t start_reading_offset = 1;
     if (first){
         number_of_missing_seq_sdp_packets =
@@ -896,7 +896,7 @@ void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
 }
 
 //! \brief sets off a DMA for retransmission stuff
-void retransmission_dma_read() {
+static void retransmission_dma_read() {
     // locate where we are in SDRAM
     address_t data_sdram_position =
         &missing_sdp_seq_num_sdram_address[position_for_retransmission];
@@ -918,7 +918,7 @@ void retransmission_dma_read() {
 
 //! \brief reads in missing sequence numbers and sets off the reading of
 //! SDRAM for the equivalent data
-void the_dma_complete_read_missing_seqeuence_nums() {
+static void the_dma_complete_read_missing_seqeuence_nums() {
     //! check if at end of read missing sequence numbers
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
@@ -967,7 +967,7 @@ void the_dma_complete_read_missing_seqeuence_nums() {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data
-void dma_complete_reading_retransmission_data() {
+static void dma_complete_reading_retransmission_data() {
     //log_info("just read data for a given missing sequence number");
 
     // set sequence number as first element
@@ -990,14 +990,14 @@ void dma_complete_reading_retransmission_data() {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data
-void dma_complete_writing_missing_seq_to_sdram() {
+static void dma_complete_writing_missing_seq_to_sdram() {
     io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
 //! \brief the handler for all messages coming in for data speed up
 //! functionality.
 //! \param[in] msg: the SDP message (without SCP header)
-void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
+static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
     struct sending_data_header_t *header = (struct sending_data_header_t *)
 	    msg->data;
     switch (header->command) {
@@ -1185,7 +1185,7 @@ static inline void *region_address(uint32_t region_index) {
 }
 
 //! \brief sets up data required by the reinjection functionality
-void reinjection_initialise() {
+static void reinjection_initialise() {
     // set up config region and process data
     reinjection_read_packet_types(region_address(CONFIG_REINJECTION));
 
@@ -1208,7 +1208,7 @@ void reinjection_initialise() {
 }
 
 //! \brief sets up data required by the data speed up functionality
-void data_speed_up_initialise() {
+static void data_speed_up_initialise() {
     struct data_speed_config_t *config_ptr =
 	    region_address(CONFIG_DATA_SPEED_UP);
 
