@@ -72,7 +72,7 @@ endif
 
 # Set up the default C Flags
 FEC_OPT = $(OTIME)
-WARNING_FLAGS = -Wall -Wextra -Wshadow -Wduplicated-branches -Wduplicated-cond -Wmissing-prototypes
+WARNING_FLAGS = -Wall -Wextra -Wshadow -Wmissing-prototypes
 CFLAGS += $(WARNING_FLAGS) -D$(FEC_DEBUG) -D$(PROFILER) $(FEC_OPT) 
 
 # Get the application name hash by running md5sum on application name and 
