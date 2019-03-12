@@ -9,7 +9,6 @@ import signal
 import sys
 from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
-import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities import __version__ as spinn_utils_version
@@ -41,15 +40,14 @@ from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds,
-    read_config, read_config_boolean, read_config_int,
-    set_up_report_specifics, set_up_output_application_data_specifics,
-    sort_out_downed_chips_cores_links, write_finished_file)
+    sort_out_downed_chips_cores_links)
 from spinn_front_end_common.utilities.report_functions import EnergyReport
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.provenance import (
@@ -65,20 +63,16 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
-CONFIG_FILE = "spinnaker.cfg"
 
 # Number of cores to be used when using a Virtual Machine and not specified
 DEFAULT_N_VIRTUAL_CORES = 16
 
 
-class AbstractSpinnakerBase(SimulatorInterface):
+class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow
     """
 
     __slots__ = [
-        # the interface to the cfg files. supports get get_int etc
-        "_config",
-
         # the object that contains a set of file paths, which should encompass
         # all locations where binaries are for this simulation.
         "_executable_finder",
@@ -248,14 +242,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #
         "_app_id",
 
-        #
-        "_report_default_directory",
-
         # If not None path to append pacman exutor provenance info to
         "_pacman_executor_provenance_path",
-
-        #
-        "_app_data_runtime_folder",
 
         #
         "_json_folder",
@@ -283,15 +271,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         #
         "_n_calls_to_run",
-
-        #
-        "_this_run_time_string",
-
-        #
-        "_report_simulation_top_directory",
-
-        #
-        "_app_data_top_simulation_folder",
 
         #
         "_command_sender",
@@ -346,15 +325,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             n_chips_required=None, default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         # pylint: disable=too-many-arguments
-
-        # global params
-        if default_config_paths is None:
-            default_config_paths = []
-        default_config_paths.insert(0, os.path.join(
-            os.path.dirname(__file__), CONFIG_FILE))
-
-        self._load_config(filename=configfile, defaults=default_config_paths,
-                          validation_cfg=validation_cfg)
+        ConfigHandler.__init__(
+            self, configfile, default_config_paths, validation_cfg)
 
         # timings
         self._mapping_time = 0.0
@@ -454,18 +426,14 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._no_machine_time_steps = None
         self._machine_time_step = None
         self._time_scale_factor = None
-        self._this_run_time_string = None
         self._infinite_run = False
 
-        self._app_id = read_config_int(self._config, "Machine", "app_id")
+        self._app_id = self._read_config_int("Machine", "app_id")
 
         # folders
-        self._report_default_directory = None
         self._report_simulation_top_directory = None
-        self._app_data_runtime_folder = None
-        self._app_data_top_simulation_folder = None
         self._pacman_executor_provenance_path = None
-        self._set_up_output_folders()
+        self._set_up_output_folders(self._n_calls_to_run)
 
         self._json_folder = os.path.join(
             self._report_default_directory, "json_files")
@@ -589,11 +557,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Only one type of graph can be used during live output. "
                     "Please fix and try again")
 
-    def _load_config(self, filename, defaults, validation_cfg):
-        self._config = conf_loader.load_config(
-            filename=filename, defaults=defaults,
-            validation_cfg=validation_cfg)
-
     # options names are all lower without _ inside config
     DEBUG_ENABLE_OPTS = frozenset([
         "reportsenabled", "displayalgorithmtimings",
@@ -663,39 +626,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._config.set("Reports", "write_board_chip_report", "False")
                 logger.info("[Reports]write_board_chip_report has been set to"
                             " False as using virtual boards")
-
-    def _set_up_output_folders(self):
-        """ Sets up the outgoing folders (reports and app data) by creating\
-            a new timestamp folder for each and clearing
-
-        :rtype: None
-        """
-
-        # set up reports default folder
-        (self._report_default_directory, self._report_simulation_top_directory,
-         self._this_run_time_string) = set_up_report_specifics(
-             default_report_file_path=self._config.get(
-                 "Reports", "default_report_file_path"),
-             max_reports_kept=self._config.getint(
-                 "Reports", "max_reports_kept"),
-             n_calls_to_run=self._n_calls_to_run,
-             this_run_time_string=self._this_run_time_string)
-
-        # set up application report folder
-        self._app_data_runtime_folder, self._app_data_top_simulation_folder = \
-            set_up_output_application_data_specifics(
-                max_application_binaries_kept=self._config.getint(
-                    "Reports", "max_application_binaries_kept"),
-                where_to_write_application_data_files=self._config.get(
-                    "Reports", "default_application_data_file_path"),
-                n_calls_to_run=self._n_calls_to_run,
-                this_run_time_string=self._this_run_time_string)
-
-        if self._read_config_boolean("Reports",
-                                     "writePacmanExecutorProvenance"):
-            self._pacman_executor_provenance_path = os.path.join(
-                self._report_default_directory,
-                "pacman_executor_provenance.rpt")
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
@@ -898,7 +828,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # reset has been called.
         if (self._has_ran and application_graph_changed and
                 self._has_reset_last):
-            self._set_up_output_folders()
+            self._set_up_output_folders(self._n_calls_to_run)
 
         # verify that the if graph has changed, and has ran, that a reset has
         # been called, otherwise system go boom boom
@@ -1201,9 +1131,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                write_finished_file(
-                    self._app_data_top_simulation_folder,
-                    self._report_simulation_top_directory)
+                self.write_finished_file()
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
@@ -1321,7 +1249,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
-            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
+            inputs["MachineHasWrapAroundsFlag"] = self.read_config_boolean(
                 "Machine", "requires_wrap_arounds")
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
@@ -1780,8 +1708,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = read_config(
-            self._config, "Mapping", "loading_algorithms")
+        loading_algorithm = self._read_config("Mapping", "loading_algorithms")
         if loading_algorithm is not None and application_graph_changed:
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
@@ -2595,9 +2522,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 message = "Provenance from run {}".format(i)
             self._check_provenance(provenance_items, message)
 
-        write_finished_file(
-            self._app_data_top_simulation_folder,
-            self._report_simulation_top_directory)
+        self.write_finished_file()
 
         if exc_info is not None:
             reraise(*exc_info)
@@ -2700,16 +2625,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     initial_message_printed = True
                 logger.warning(item.message)
 
-    def _read_config(self, section, item):
-        return read_config(self._config, section, item)
-
-    def _read_config_int(self, section, item):
-        return read_config_int(self._config, section, item)
-
-    def _read_config_boolean(self, section, item):
-        return read_config_boolean(
-            self._config, section, item)
-
     def _turn_off_on_board_to_save_power(self, config_flag):
         """ Executes the power saving mode of either on or off of the\
             SpiNNaker machine.
@@ -2719,8 +2634,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
         # check if machine should be turned off
-        turn_off = read_config_boolean(
-            self._config, "EnergySavings", config_flag)
+        turn_off = self._read_config_boolean("EnergySavings", config_flag)
         if turn_off is None:
             return
 
