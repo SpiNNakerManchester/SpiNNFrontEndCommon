@@ -264,9 +264,9 @@ class ConfigHandler(object):
 
         # create sub folder within reports for sub runs
         # (where changes need to be recorded)
-            self._app_data_runtime_folder = self.child_folder(
-                self._app_data_top_simulation_folder, "run_{}".format(
-                    n_calls_to_run))
+        self._app_data_runtime_folder = self.child_folder(
+            self._app_data_top_simulation_folder, "run_{}".format(
+                n_calls_to_run))
 
     def _set_up_output_folders(self, n_calls_to_run):
         """ Sets up all outgoing folders by creating\
