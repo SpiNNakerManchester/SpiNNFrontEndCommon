@@ -64,7 +64,7 @@ static void reset_core_counters(void)
 
 //! \brief the function to call when resuming a simulation
 //! \return None
-void resume_callback() {
+static void resume_callback(void) {
     // change simulation ticks to be a number related to sampling frequency
     simulation_ticks = (simulation_ticks * timer) / sample_frequency;
     log_info("total_sim_ticks = %d", simulation_ticks);
@@ -97,7 +97,7 @@ static void sample_in_slot(uint unused0, uint unused1)
         simulation_ready_to_read();
     }
 
-    uint32_t sc = ++sample_count;
+    uint32_t counter_value = ++sample_count;
     uint32_t offset = get_random_busy();
     // TODO: use SARK to do this short delay
     while (offset --> 0) {
@@ -113,7 +113,7 @@ static void sample_in_slot(uint unused0, uint unused1)
         }
     }
 
-    if (sc >= sample_count_limit) {
+    if (counter_value >= sample_count_limit) {
         record_aggregate_sample();
         reset_core_counters();
     }
@@ -122,7 +122,7 @@ static void sample_in_slot(uint unused0, uint unused1)
 
 }
 
-bool read_parameters(struct parameters_t *params)
+static bool read_parameters(struct parameters_t *params)
 {
     sample_count_limit = params->sample_count_limit;
     sample_frequency = params->sample_frequency;
@@ -133,12 +133,12 @@ bool read_parameters(struct parameters_t *params)
     return true;
 }
 
-static bool initialize(uint32_t *timer)
+static bool initialize(uint32_t *timer_ptr)
 {
     address_t address = data_specification_get_data_address();
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
-            APPLICATION_NAME_HASH, timer, &simulation_ticks,
+            APPLICATION_NAME_HASH, timer_ptr, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         return false;
     }
@@ -148,7 +148,7 @@ static bool initialize(uint32_t *timer)
     }
 
     // change simulation ticks to be a number related to sampling frequency
-    simulation_ticks = (simulation_ticks * *timer) / sample_frequency;
+    simulation_ticks = (simulation_ticks * *timer_ptr) / sample_frequency;
     log_info("total_sim_ticks = %d", simulation_ticks);
 
     address_t recording_region =

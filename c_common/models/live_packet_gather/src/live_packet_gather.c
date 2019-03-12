@@ -84,7 +84,7 @@ static uint16_t sdp_dest; // Not in the configuration_region_t; type different
 //! Does the packet type include a double-width payload?
 #define HAVE_WIDE_LOAD(pkt_type)	FLAG_IS_SET(pkt_type, 0x2)
 
-void flush_events(void) {
+static void flush_events(void) {
 
     // Send the event message only if there is data
     if (buffer_index > 0) {
@@ -137,14 +137,14 @@ void flush_events(void) {
 }
 
 //! \brief function to store provenance data elements into SDRAM
-void record_provenance_data(address_t provenance_region_address) {
+static void record_provenance_data(address_t provenance_region_address) {
     // Copy provenance data into SDRAM region
     spin1_memcpy(provenance_region_address, &provenance_data,
            sizeof(provenance_data));
 }
 
 // Callbacks
-void timer_callback(uint unused0, uint unused1) {
+static void timer_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
@@ -167,7 +167,7 @@ void timer_callback(uint unused0, uint unused1) {
     }
 }
 
-void flush_events_if_full(void) {
+static void flush_events_if_full(void) {
     uint8_t event_count;
 
     if (HAVE_PAYLOAD(config.packet_type)) {
@@ -182,7 +182,7 @@ void flush_events_if_full(void) {
 }
 
 // processes an incoming multicast packet without payload
-void process_incoming_event(uint key) {
+static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
     // process the received spike
@@ -229,7 +229,7 @@ void process_incoming_event(uint key) {
 }
 
 // processes an incoming multicast packet with payload
-void process_incoming_event_payload(uint key, uint payload) {
+static void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 
     // process the received spike
@@ -275,7 +275,7 @@ void process_incoming_event_payload(uint key, uint payload) {
     flush_events_if_full();
 }
 
-void incoming_event_process_callback(uint unused0, uint unused1) {
+static void incoming_event_process_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
@@ -293,7 +293,7 @@ void incoming_event_process_callback(uint unused0, uint unused1) {
     } while (processing_events);
 }
 
-void incoming_event_callback(uint key, uint unused) {
+static void incoming_event_callback(uint key, uint unused) {
     use(unused);
     log_debug("Received key %x", key);
     if (circular_buffer_add(without_payload_buffer, key)) {
@@ -306,7 +306,7 @@ void incoming_event_callback(uint key, uint unused) {
     }
 }
 
-void incoming_event_payload_callback(uint key, uint payload) {
+static void incoming_event_payload_callback(uint key, uint payload) {
     log_debug("Received key %x, payload %x", key, payload);
     if (circular_buffer_add(with_payload_buffer, key)) {
         circular_buffer_add(with_payload_buffer, payload);
@@ -319,7 +319,7 @@ void incoming_event_payload_callback(uint key, uint payload) {
     }
 }
 
-void read_parameters(address_t region_address) {
+static void read_parameters(address_t region_address) {
     struct configuration_region_t *config_ptr =
 	    (struct configuration_region_t *) region_address;
 
@@ -340,7 +340,7 @@ void read_parameters(address_t region_address) {
     log_info("packets_per_timestamp: %d\n", config.packets_per_timestamp);
 }
 
-bool initialize(uint32_t *timer_period_ptr) {
+static bool initialize(uint32_t *timer_period_ptr) {
 
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
@@ -373,7 +373,7 @@ bool initialize(uint32_t *timer_period_ptr) {
     return true;
 }
 
-bool configure_sdp_msg(void) {
+static bool configure_sdp_msg(void) {
     log_info("configure_sdp_msg\n");
 
     void *temp_ptr;
