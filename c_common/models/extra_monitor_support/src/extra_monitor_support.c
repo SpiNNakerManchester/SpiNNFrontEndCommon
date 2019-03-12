@@ -511,7 +511,7 @@ static INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-static static void reinjection_read_packet_types(
+static void reinjection_read_packet_types(
         struct reinject_config_t *config_ptr) {
     // process multicast reinject flag
     if (config_ptr->reinject_multicast == 1) {
