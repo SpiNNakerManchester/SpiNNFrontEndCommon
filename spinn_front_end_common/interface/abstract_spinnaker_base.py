@@ -258,9 +258,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_exec_dse_on_host",
 
         #
-        "_use_virtual_board",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
@@ -441,10 +438,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._exec_dse_on_host = self._config.getboolean(
             "SpecExecution", "spec_exec_on_host")
 
-        # set up machine targeted data
-        self._use_virtual_board = self._config.getboolean(
-            "Machine", "virtual_board")
-
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
@@ -546,68 +539,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     REPORT_DISABLE_OPTS = frozenset([
         "displayalgorithmtimings",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-
-    def _adjust_config(self, runtime):
-        """ Adjust and checks config based on runtime and mode
-
-        :param runtime:
-        :type runtime: int or bool
-        :raises ConfigurationException
-        """
-        if self._config.get("Mode", "mode") == "Debug":
-            for option in self._config.options("Reports"):
-                # options names are all lower without _ inside config
-                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
-                    try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "True")
-                            logger.info("As mode == \"Debug\", [Reports] {} "
-                                        "has been set to True", option)
-                    except ValueError:
-                        pass
-        elif not self._config.getboolean("Reports", "reportsEnabled"):
-            for option in self._config.options("Reports"):
-                # options names are all lower without _ inside config
-                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
-                    try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "False")
-                            logger.info(
-                                "As reportsEnabled == \"False\", [Reports] {} "
-                                "has been set to False", option)
-                    except ValueError:
-                        pass
-
-        if runtime is None:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as runtime is set to forever")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as runtime is set to forever")
-
-        if self._use_virtual_board:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as using virtual boards")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as s using virtual boards")
-            if self._config.getboolean(
-                    "Reports", "write_board_chip_report") is True:
-                self._config.set("Reports", "write_board_chip_report", "False")
-                logger.info("[Reports]write_board_chip_report has been set to"
-                            " False as using virtual boards")
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine

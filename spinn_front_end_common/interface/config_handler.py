@@ -22,8 +22,6 @@ class ConfigHandler(object):
     of the config and the order its methods are called
     """
 
-#self._json_folder
-    #_provenance_file_path
     __slots__ = [
         #
         "_app_data_runtime_folder",
@@ -48,6 +46,9 @@ class ConfigHandler(object):
 
         #
         "_this_run_time_string",
+
+        #
+        "_use_virtual_board",
     ]
 
     def __init__(
@@ -63,6 +64,10 @@ class ConfigHandler(object):
             filename=configfile, defaults=default_config_paths,
             validation_cfg=validation_cfg)
 
+        # set up machine targeted data
+        self._use_virtual_board = self._config.getboolean(
+            "Machine", "virtual_board")
+
         self._app_data_runtime_folder = None
         self._app_data_top_simulation_folder = None
         self._json_folder = None
@@ -70,6 +75,68 @@ class ConfigHandler(object):
         self._report_default_directory = None
         self._report_simulation_top_directory = None
         self._this_run_time_string = None
+
+    def _adjust_config(self, runtime):
+        """ Adjust and checks config based on runtime and mode
+
+        :param runtime:
+        :type runtime: int or bool
+        :raises ConfigurationException
+        """
+        if self._config.get("Mode", "mode") == "Debug":
+            for option in self._config.options("Reports"):
+                # options names are all lower without _ inside config
+                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
+                    try:
+                        if not self._config.get_bool("Reports", option):
+                            self._config.set("Reports", option, "True")
+                            logger.info("As mode == \"Debug\", [Reports] {} "
+                                        "has been set to True", option)
+                    except ValueError:
+                        pass
+        elif not self._config.getboolean("Reports", "reportsEnabled"):
+            for option in self._config.options("Reports"):
+                # options names are all lower without _ inside config
+                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
+                    try:
+                        if not self._config.get_bool("Reports", option):
+                            self._config.set("Reports", option, "False")
+                            logger.info(
+                                "As reportsEnabled == \"False\", [Reports] {} "
+                                "has been set to False", option)
+                    except ValueError:
+                        pass
+
+        if runtime is None:
+            if self._config.getboolean(
+                    "Reports", "write_energy_report") is True:
+                self._config.set("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as runtime is set to forever")
+            if self._config.get_bool(
+                    "EnergySavings", "turn_off_board_after_discovery") is True:
+                self._config.set(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as runtime is set to forever")
+
+        if self._use_virtual_board:
+            if self._config.getboolean(
+                    "Reports", "write_energy_report") is True:
+                self._config.set("Reports", "write_energy_report", "False")
+                logger.info("[Reports]write_energy_report has been set to "
+                            "False as using virtual boards")
+            if self._config.get_bool(
+                    "EnergySavings", "turn_off_board_after_discovery") is True:
+                self._config.set(
+                    "EnergySavings", "turn_off_board_after_discovery", "False")
+                logger.info("[EnergySavings]turn_off_board_after_discovery has"
+                            " been set to False as s using virtual boards")
+            if self._config.getboolean(
+                    "Reports", "write_board_chip_report") is True:
+                self._config.set("Reports", "write_board_chip_report", "False")
+                logger.info("[Reports]write_board_chip_report has been set to"
+                            " False as using virtual boards")
 
     def child_folder(self, parent, child_name):
         child = os.path.join(parent, child_name)
@@ -230,7 +297,6 @@ class ConfigHandler(object):
             self._report_default_directory, "provenance_data")
         if not os.path.exists(self._provenance_file_path):
             os.makedirs(self._provenance_file_path)
-
 
     def write_finished_file(self):
         # write a finished file that allows file removal to only remove folders
