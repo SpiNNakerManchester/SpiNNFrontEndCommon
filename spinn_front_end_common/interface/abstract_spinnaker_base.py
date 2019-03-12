@@ -246,12 +246,6 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         "_pacman_executor_provenance_path",
 
         #
-        "_json_folder",
-
-        #
-        "_provenance_file_path",
-
-        #
         "_do_timings",
 
         #
@@ -431,20 +425,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._app_id = self._read_config_int("Machine", "app_id")
 
         # folders
-        self._report_simulation_top_directory = None
         self._pacman_executor_provenance_path = None
         self._set_up_output_folders(self._n_calls_to_run)
-
-        self._json_folder = os.path.join(
-            self._report_default_directory, "json_files")
-        if not os.path.exists(self._json_folder):
-            os.makedirs(self._json_folder)
-
-        # make a folder for the provenance data storage
-        self._provenance_file_path = os.path.join(
-            self._report_default_directory, "provenance_data")
-        if not os.path.exists(self._provenance_file_path):
-            os.makedirs(self._provenance_file_path)
 
         # timing provenance elements
         self._do_timings = self._config.getboolean(

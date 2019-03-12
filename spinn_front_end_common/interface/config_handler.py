@@ -22,6 +22,8 @@ class ConfigHandler(object):
     of the config and the order its methods are called
     """
 
+#self._json_folder
+    #_provenance_file_path
     __slots__ = [
         #
         "_app_data_runtime_folder",
@@ -31,6 +33,12 @@ class ConfigHandler(object):
 
         # the interface to the cfg files. supports get get_int etc
         "_config",
+
+        #
+        "_json_folder",
+
+        #
+        "_provenance_file_path",
 
         #
         "_report_default_directory",
@@ -57,7 +65,10 @@ class ConfigHandler(object):
 
         self._app_data_runtime_folder = None
         self._app_data_top_simulation_folder = None
+        self._json_folder = None
+        self._provenance_file_path = None
         self._report_default_directory = None
+        self._report_simulation_top_directory = None
         self._this_run_time_string = None
 
     def child_folder(self, parent, child_name):
@@ -208,6 +219,18 @@ class ConfigHandler(object):
             self._pacman_executor_provenance_path = os.path.join(
                 self._report_default_directory,
                 "pacman_executor_provenance.rpt")
+
+        self._json_folder = os.path.join(
+            self._report_default_directory, "json_files")
+        if not os.path.exists(self._json_folder):
+            os.makedirs(self._json_folder)
+
+        # make a folder for the provenance data storage
+        self._provenance_file_path = os.path.join(
+            self._report_default_directory, "provenance_data")
+        if not os.path.exists(self._provenance_file_path):
+            os.makedirs(self._provenance_file_path)
+
 
     def write_finished_file(self):
         # write a finished file that allows file removal to only remove folders
