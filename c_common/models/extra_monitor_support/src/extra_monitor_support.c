@@ -4,9 +4,6 @@
 #include <math.h>
 #include <common-typedefs.h>
 
-extern void spin1_wfi();
-extern INT_HANDLER sark_int_han(void);
-
 // ------------------------------------------------------------------------
 // constants
 // ------------------------------------------------------------------------
@@ -343,31 +340,80 @@ static uint32_t first_data_key = 0;
 static uint32_t end_flag_key = 0;
 static uint32_t stop = 0;
 
+#ifdef INT_HANDLER
+#undef INT_HANDLER
+#define INT_HANDLER void __attribute__((interrupt("IRQ")))
+#endif
+
+extern void spin1_wfi();
+extern INT_HANDLER sark_int_han(void);
+
 // ------------------------------------------------------------------------
 // reinjector main functions
 // ------------------------------------------------------------------------
 
+static inline void check_ready_to_reinject(void) {
+    // access packet queue with FIQ disabled
+    uint cpsr = cpu_fiq_disable();
+    // if queue not empty turn on packet bouncing
+    bool queue_not_empty = (pkt_queue.tail != pkt_queue.head);
+    // restore FIQ after queue access
+    cpu_int_restore(cpsr);
+
+    if (queue_not_empty) {
+        // enable communications controller. interrupt to bounce packets
+        vic[VIC_ENABLE] = 1 << CC_TNF_INT;
+    }
+}
+
+static inline void do_reinjection(void) {
+    // access packet queue with FIQ disabled,
+    uint cpsr = cpu_fiq_disable();
+
+    // if queue not empty bounce packet, ...
+    if (pkt_queue.tail != pkt_queue.head) {
+        // dequeue packet...
+        uint hdr = pkt_queue.queue[pkt_queue.head].hdr;
+        uint pld = pkt_queue.queue[pkt_queue.head].pld;
+        uint key = pkt_queue.queue[pkt_queue.head].key;
+
+        // update queue pointer...
+        pkt_queue.head = (pkt_queue.head + 1) % PKT_QUEUE_SIZE;
+
+        // restore FIQ queue access...
+        cpu_int_restore(cpsr);
+
+        // write header and route...
+        cc[CC_TCR] = hdr & PKT_CONTROL_MASK;
+        cc[CC_SAR] = cc_sar | (hdr & PKT_ROUTE_MASK);
+
+        // maybe write payload,
+        if (hdr & PKT_PLD_MASK) {
+            cc[CC_TXDATA] = pld;
+        }
+
+        // write key to fire packet...
+        cc[CC_TXKEY] = key;
+
+        // and add to statistics.
+        n_reinjected_packets += 1;
+    } else {
+        // restore FIQ after queue access...
+        cpu_int_restore(cpsr);
+
+        // and disable communications controller interrupts
+        vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+    }
+}
+
 //! \brief the plugin callback for the timer
-INT_HANDLER reinjection_timer_callback() {
+static INT_HANDLER reinjection_timer_callback() {
     // clear interrupt in timer,
     tc[T1_INT_CLR] = 1;
 
     // check if router not blocked
     if ((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) == 0) {
-        // access packet queue with FIQ disabled,
-        uint cpsr = cpu_fiq_disable();
-
-        // if queue not empty turn on packet bouncing,
-        if (pkt_queue.tail != pkt_queue.head) {
-            // restore FIQ after queue access,
-            cpu_int_restore(cpsr);
-
-            // enable communications controller. interrupt to bounce packets
-            vic[VIC_ENABLE] = 1 << CC_TNF_INT;
-        } else {
-            // restore FIQ after queue access
-            cpu_int_restore(cpsr);
-        }
+        check_ready_to_reinject();
     }
 
     // and tell VIC we're done
@@ -375,48 +421,12 @@ INT_HANDLER reinjection_timer_callback() {
 }
 
 //! \brief the plugin callback for sending packets????
-INT_HANDLER reinjection_ready_to_send_callback() {
+static INT_HANDLER reinjection_ready_to_send_callback() {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
     if ((rtr[RTR_STATUS] & RTR_BLOCKED_MASK) == 0) {
-        // access packet queue with FIQ disabled,
-        uint cpsr = cpu_fiq_disable();
-
-        // if queue not empty bounce packet,
-        if (pkt_queue.tail != pkt_queue.head) {
-            // dequeue packet,
-            uint hdr = pkt_queue.queue[pkt_queue.head].hdr;
-            uint pld = pkt_queue.queue[pkt_queue.head].pld;
-            uint key = pkt_queue.queue[pkt_queue.head].key;
-
-            // update queue pointer,
-            pkt_queue.head = (pkt_queue.head + 1) % PKT_QUEUE_SIZE;
-
-            // restore FIQ queue access,
-            cpu_int_restore(cpsr);
-
-            // write header and route,
-            cc[CC_TCR] = hdr & PKT_CONTROL_MASK;
-            cc[CC_SAR] = cc_sar | (hdr & PKT_ROUTE_MASK);
-
-            // maybe write payload,
-            if (hdr & PKT_PLD_MASK) {
-                cc[CC_TXDATA] = pld;
-            }
-
-            // write key to fire packet,
-            cc[CC_TXKEY] = key;
-
-            // Add to statistics
-            n_reinjected_packets += 1;
-        } else {
-            // restore FIQ after queue access,
-            cpu_int_restore(cpsr);
-
-            // and disable communications controller interrupts
-            vic[VIC_DISABLE] = 1 << CC_TNF_INT;
-        }
+        do_reinjection();
     } else {
         // disable communications controller interrupts
         vic[VIC_DISABLE] = 1 << CC_TNF_INT;
@@ -427,7 +437,7 @@ INT_HANDLER reinjection_ready_to_send_callback() {
 }
 
 //! \brief the callback plugin for handling dropped packets
-INT_HANDLER reinjection_dropped_packet_callback() {
+static INT_HANDLER reinjection_dropped_packet_callback() {
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
     uint pld = rtr[RTR_DDAT];
@@ -436,7 +446,7 @@ INT_HANDLER reinjection_dropped_packet_callback() {
     // clear dump status and interrupt in router,
     uint rtr_dstat = rtr[RTR_DSTAT];
     uint rtr_dump_outputs = rtr[RTR_DLINK];
-    uint is_processor_dump = (rtr_dump_outputs >> 6) & RTR_FPE_MASK;
+    uint is_processor_dump = (rtr_dump_outputs >> RTR_LE_BIT) & RTR_FPE_MASK;
     uint is_link_dump = rtr_dump_outputs & RTR_LE_MASK;
 
     // only reinject if configured
@@ -501,7 +511,8 @@ INT_HANDLER reinjection_dropped_packet_callback() {
 
 //! \brief reads a memory location to set packet types for reinjection
 //! \param[in] address: memory address to read the reinjection packet types
-static void reinjection_read_packet_types(struct reinject_config_t *config_ptr) {
+static static void reinjection_read_packet_types(
+        struct reinject_config_t *config_ptr) {
     // process multicast reinject flag
     if (config_ptr->reinject_multicast == 1) {
         reinject_mc = false;
@@ -1051,7 +1062,7 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
             retransmission_dma_read();
             break;
         }
-        // fallthrough...
+        /* no break */
 
     case SDP_COMMAND_FOR_MORE_MISSING_SDP_PACKETS:
         // reset state, as could be here from multiple attempts
@@ -1098,7 +1109,7 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
 }
 
 //! \brief the handler for all DMA'S complete!
-INT_HANDLER speed_up_handle_dma() {
+static INT_HANDLER speed_up_handle_dma() {
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (stop) {
@@ -1121,7 +1132,9 @@ INT_HANDLER speed_up_handle_dma() {
 //-----------------------------------------------------------------------------
 // common code
 //-----------------------------------------------------------------------------
-void __real_sark_int(void *pc);
+extern void __real_sark_int(void *pc);
+extern void __wrap_sark_int(void *pc);
+
 void __wrap_sark_int(void *pc) {
     // Check for extra messages added by this core
     uint cmd = sark.vcpu->mbox_ap_cmd;

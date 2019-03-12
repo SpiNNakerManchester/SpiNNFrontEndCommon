@@ -83,11 +83,6 @@ enum callback_priorities{
     DMA = 0
 };
 
-
-static void resume_callback(void) {
-    time = UINT32_MAX;
-}
-
 static void send_data(void) {
     //log_info("last element is %d", data[position_in_store - 1]);
     //log_info("first element is %d", data[0]);
