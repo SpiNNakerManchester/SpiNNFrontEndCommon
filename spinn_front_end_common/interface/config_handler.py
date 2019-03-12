@@ -194,7 +194,7 @@ class ConfigHandler(object):
 
             # global reports folder
             report_default_directory = self.child_folder(
-                directory, self.REPORTS_DIRNAME)
+                directory, REPORTS_DIRNAME)
         elif default_report_file_path == "REPORTS":
             report_default_directory = REPORTS_DIRNAME
             if not os.path.exists(report_default_directory):
