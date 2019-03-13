@@ -7,6 +7,7 @@ import math
 import os
 import signal
 import sys
+import time
 from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
 from spinn_utilities.timer import Timer
@@ -66,6 +67,9 @@ logger = FormatAdapter(logging.getLogger(__name__))
 
 # Number of cores to be used when using a Virtual Machine and not specified
 DEFAULT_N_VIRTUAL_CORES = 16
+
+# The minimum time a board is kept in the off state in seconds
+MINIMUM_OFF_STATE_TIME = 20
 
 
 class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
@@ -301,7 +305,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         # time taken by the front end extracting things
         "_extraction_time",
 
-        # power save mode. Only True if power saver has turned off board
+        # power save mode. time board turned off or None if not turned off
         "_machine_is_turned_off",
 
         # Version information from the front end
@@ -442,7 +446,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         self._raise_keyboard_interrupt = False
 
         # By default board is kept on once started later
-        self._machine_is_turned_off = False
+        self._machine_is_turned_off = None
 
         globals_variables.set_simulator(self)
 
@@ -2298,7 +2302,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         if self._use_virtual_board:
             return
 
-        if self._machine_is_turned_off:
+        if self._machine_is_turned_off is not None:
             logger.info("Shutdown skipped as board is off for power save")
             return
 
@@ -2567,7 +2571,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
         :rtype: bool
         """
         # already off or no machine to turn off
-        if self._machine_is_turned_off or self._use_virtual_board:
+        if self._machine_is_turned_off is not None or self._use_virtual_board:
             return False
 
         if self._machine_allocation_controller is not None:
@@ -2577,14 +2581,25 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
 
         self._txrx.power_off_machine()
 
-        self._machine_is_turned_off = True
+        self._machine_is_turned_off = time.time()
         return True
 
     def _turn_on_board_if_saving_power(self):
         # Only required if previously turned off which never happens
         # on virtual machine
-        if not self._machine_is_turned_off:
+        if self._machine_is_turned_off is None:
             return False
+
+        # Ensure the machine is completely powered down and
+        # all residual electrons have gone
+        already_off = time.time() - self._machine_is_turned_off
+        if already_off < MINIMUM_OFF_STATE_TIME:
+            delay = MINIMUM_OFF_STATE_TIME - already_off
+            logger.warning(
+                "Delaying turning machine back on for {} seconds. Consider "
+                "disabling turn_off_board_after_discovery for scripts that "
+                "have short preparation time.".format(delay))
+            time.sleep(delay)
 
         if self._machine_allocation_controller is not None:
             # switch power state if needed
@@ -2594,7 +2609,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             self._txrx.power_on_machine()
 
         self._txrx.ensure_board_is_ready()
-        self._machine_is_turned_off = False
+        self._machine_is_turned_off = None
         return True
 
     @property
