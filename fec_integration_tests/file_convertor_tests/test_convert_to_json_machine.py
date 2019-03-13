@@ -25,11 +25,31 @@ class TestConvertJson(unittest.TestCase):
         os.chdir(path)
 
     def json_compare(self, file1, file2):
+        if filecmp.cmp(file1, file2):
+            return
         with open(file1) as json_file:
             json1 = json.load(json_file)
         with open(file2) as json_file:
             json2 = json.load(json_file)
-        self.assertEqual(json1, json2)
+        if json1 == json2:
+            return
+        if json1.keys() != json2.keys():
+            raise AssertionError("Keys differ {} {}".format(
+                json1.keys(), json2.keys()))
+        for key in json1.keys():
+            if key == "chips":
+                chips1 = json1[key]
+                chips2 = json2[key]
+                for i in range(len(chips1)):
+                    if (chips1[i] != chips2[i]):
+                        raise AssertionError("Chip {} differ {} {}".format(
+                            i, chips1[i], chips2[i]))
+            else:
+                if json1[key] != json2[key]:
+                    raise AssertionError(
+                        "Values differ for {} found {} {}".format(
+                        key, json1[key], json2[key]))
+        raise AssertionError("Some wierd difference")
 
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
