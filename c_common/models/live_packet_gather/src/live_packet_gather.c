@@ -106,8 +106,8 @@ static void flush_events(void) {
             sdp_msg_aer_header[0] |= temp_header;
             sdp_msg_aer_header[0] |= CLAMP8(event_count);
 
-            g_event_message.length = sizeof(sdp_hdr_t) + header_len
-                                     + event_count * event_size;
+            g_event_message.length =
+                    sizeof(sdp_hdr_t) + header_len + event_count * event_size;
 
             if (config.payload_apply_prefix && config.payload_timestamp) {
                 uint16_t *temp = (uint16_t *) sdp_msg_aer_payload_prefix;
@@ -140,7 +140,7 @@ static void flush_events(void) {
 static void record_provenance_data(address_t provenance_region_address) {
     // Copy provenance data into SDRAM region
     spin1_memcpy(provenance_region_address, &provenance_data,
-           sizeof(provenance_data));
+            sizeof(provenance_data));
 }
 
 // Callbacks
@@ -279,13 +279,12 @@ static void incoming_event_process_callback(uint unused0, uint unused1) {
     use(unused0);
     use(unused1);
 
-    uint32_t key;
+    uint32_t key, payload;
     do {
        if (circular_buffer_get_next(without_payload_buffer, &key)) {
            process_incoming_event(key);
-       } else if (circular_buffer_get_next(with_payload_buffer, &key)) {
-           uint32_t payload;
-           circular_buffer_get_next(with_payload_buffer, &payload);
+       } else if (circular_buffer_get_next(with_payload_buffer, &key)
+               && circular_buffer_get_next(with_payload_buffer, &payload)) {
            process_incoming_event_payload(key, payload);
        } else {
            processing_events = false;
@@ -321,7 +320,7 @@ static void incoming_event_payload_callback(uint key, uint payload) {
 
 static void read_parameters(address_t region_address) {
     struct configuration_region_t *config_ptr =
-	    (struct configuration_region_t *) region_address;
+            (struct configuration_region_t *) region_address;
 
     config = *config_ptr;
     sdp_dest = config_ptr->sdp_destination;
@@ -358,8 +357,8 @@ static bool initialize(uint32_t *timer_period_ptr) {
         return false;
     }
     simulation_set_provenance_function(
-        record_provenance_data,
-        data_specification_get_region(PROVENANCE_REGION, address));
+            record_provenance_data,
+            data_specification_get_region(PROVENANCE_REGION, address));
 
     // Fix simulation ticks to be one extra timer period to soak up last events
     if (infinite_run != TRUE) {
@@ -368,8 +367,7 @@ static bool initialize(uint32_t *timer_period_ptr) {
 
     // Read the parameters
     read_parameters(
-        data_specification_get_region(CONFIGURATION_REGION, address));
-
+            data_specification_get_region(CONFIGURATION_REGION, address));
     return true;
 }
 
@@ -428,44 +426,38 @@ static bool configure_sdp_msg(void) {
     if (config.apply_prefix) {
 
         // pointer to key prefix
-        sdp_msg_aer_key_prefix = (sdp_msg_aer_header + 1);
-        temp_ptr = (void *) (sdp_msg_aer_header + 2);
+        sdp_msg_aer_key_prefix = &sdp_msg_aer_header[1];
+        temp_ptr = &sdp_msg_aer_header[2];
         sdp_msg_aer_key_prefix[0] = (uint16_t) config.prefix;
         header_len += 2;
     } else {
         sdp_msg_aer_key_prefix = NULL;
-        temp_ptr = (void *) (sdp_msg_aer_header + 1);
+        temp_ptr = &sdp_msg_aer_header[1];
     }
 
     if (config.payload_apply_prefix) {
+        // pointer to payload prefix
         sdp_msg_aer_payload_prefix = temp_ptr;
-        uint16_t *a = (uint16_t *) sdp_msg_aer_payload_prefix;
+        uint16_t *a = sdp_msg_aer_payload_prefix;
 
         log_debug("temp_ptr: %08x\n", (uint32_t) temp_ptr);
         log_debug("a: %08x\n", (uint32_t) a);
 
-        // pointer to payload prefix
-        sdp_msg_aer_payload_prefix = temp_ptr;
-
         if (!HAVE_WIDE_LOAD(config.packet_type)) {
-
             //16 bit payload prefix
-            temp_ptr = (void *) (a + 1);
+            temp_ptr = &a[1];
             header_len += 2;
             if (!config.payload_timestamp) {
-
                 // add payload prefix as required - not a timestamp
                 a[0] = config.payload_prefix;
             }
             log_debug("16 bit - temp_ptr: %08x\n", (uint32_t) temp_ptr);
 
         } else {
-
             //32 bit payload prefix
-            temp_ptr = (void *) (a + 2);
+            temp_ptr = &a[2];
             header_len += 4;
             if (!config.payload_timestamp) {
-
                 // add payload prefix as required - not a timestamp
                 a[0] = CLAMP16(config.payload_prefix);
                 a[1] = CLAMP16(config.payload_prefix >> 16);
@@ -477,25 +469,21 @@ static bool configure_sdp_msg(void) {
     }
 
     // pointer to write data
-    sdp_msg_aer_data = (void *) temp_ptr;
+    sdp_msg_aer_data = temp_ptr;
 
     switch (config.packet_type) {
     case 0:
         event_size = 2;
         break;
-
     case 1:
         event_size = 4;
         break;
-
     case 2:
         event_size = 4;
         break;
-
     case 3:
         event_size = 8;
         break;
-
     default:
         log_error("unknown packet type: %d\n", config.packet_type);
         return false;
@@ -503,9 +491,9 @@ static bool configure_sdp_msg(void) {
 
     log_debug("sdp_msg_aer_header: %08x\n", (uint32_t) sdp_msg_aer_header);
     log_debug("sdp_msg_aer_key_prefix: %08x\n",
-              (uint32_t) sdp_msg_aer_key_prefix);
+            (uint32_t) sdp_msg_aer_key_prefix);
     log_debug("sdp_msg_aer_payload_prefix: %08x\n",
-              (uint32_t) sdp_msg_aer_payload_prefix);
+            (uint32_t) sdp_msg_aer_payload_prefix);
     log_debug("sdp_msg_aer_data: %08x\n", (uint32_t) sdp_msg_aer_data);
 
     packets_sent = 0;
@@ -516,7 +504,6 @@ static bool configure_sdp_msg(void) {
 
 // Entry point
 void c_main(void) {
-
     // Configure system
     uint32_t timer_period = 0;
     if (!initialize(&timer_period)) {
@@ -539,9 +526,9 @@ void c_main(void) {
     // Register callbacks
     spin1_callback_on(MC_PACKET_RECEIVED, incoming_event_callback, MC_PACKET);
     spin1_callback_on(
-        MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
+            MCPL_PACKET_RECEIVED, incoming_event_payload_callback, MC_PACKET);
     spin1_callback_on(
-        USER_EVENT, incoming_event_process_callback, USER);
+            USER_EVENT, incoming_event_process_callback, USER);
     spin1_callback_on(TIMER_TICK, timer_callback, TIMER);
 
     // Start the time at "-1" so that the first tick will be 0

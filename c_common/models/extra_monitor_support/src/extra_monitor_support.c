@@ -469,7 +469,7 @@ static INT_HANDLER reinjection_dropped_packet_callback() {
                 // packet, as this indicates how many processors this packet
                 // was meant to go to.
                 n_processor_dumped_packets +=
-                    __builtin_popcount(is_processor_dump);
+                        __builtin_popcount(is_processor_dump);
             }
 
             if (is_link_dump > 0) {
@@ -477,7 +477,7 @@ static INT_HANDLER reinjection_dropped_packet_callback() {
                 // packet, as this indicates how many links this packet was
                 // meant to go to.
                 n_link_dumped_packets +=
-                    __builtin_popcount(is_link_dump);
+                        __builtin_popcount(is_link_dump);
             }
         }
 
@@ -514,32 +514,123 @@ static INT_HANDLER reinjection_dropped_packet_callback() {
 static void reinjection_read_packet_types(
         struct reinject_config_t *config_ptr) {
     // process multicast reinject flag
-    if (config_ptr->reinject_multicast == 1) {
-        reinject_mc = false;
-    } else {
-        reinject_mc = true;
-    }
+    reinject_mc = (config_ptr->reinject_multicast != 1);
 
     // process point to point flag
-    if (config_ptr->reinject_point_to_point == 1) {
-        reinject_pp = false;
-    } else {
-        reinject_pp = true;
-    }
+    reinject_pp = (config_ptr->reinject_point_to_point != 1);
 
     // process fixed route flag
-    if (config_ptr->reinject_fixed_route == 1) {
-        reinject_fr = false;
-    } else {
-        reinject_fr = true;
-    }
+    reinject_fr = (config_ptr->reinject_fixed_route != 1);
 
     // process fixed route flag
-    if (config_ptr->reinject_nearest_neighbour == 1) {
-        reinject_nn = false;
-    } else {
-        reinject_nn = true;
+    reinject_nn = (config_ptr->reinject_nearest_neighbour != 1);
+}
+
+static ushort set_router_timeout(sdp_msg_t *msg) {
+    // Set the router wait1 timeout
+    if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
+        return RC_ARG;
     }
+    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
+            | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
+
+    // set SCP command to OK, as successfully completed
+    return RC_OK;
+}
+
+static ushort set_router_emergency_timeout(sdp_msg_t *msg) {
+    // Set the router wait2 timeout
+    if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
+        return RC_ARG;
+    }
+    rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
+            | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
+
+    // set SCP command to OK, as successfully completed
+    return RC_OK;
+}
+
+static ushort set_packet_types(sdp_msg_t *msg) {
+    // Set the re-injection options
+    reinject_mc = msg->arg1;
+    reinject_pp = msg->arg2;
+    reinject_fr = msg->arg3;
+    reinject_nn = msg->data[0];
+    // set SCP command to OK, as successfully completed
+    return RC_OK;
+}
+
+static uint get_status(struct reinjector_status_t *data) {
+    // Put the router timeouts in the packet
+    uint control = (uint) (rtr[RTR_CONTROL] & 0xFFFF0000);
+    data->timeout = (control >> 16) & ROUTER_TIMEOUT_MASK;
+    data->emergency_timeout = (control >> 24) & ROUTER_TIMEOUT_MASK;
+
+    // Put the statistics in the packet
+    data->n_dropped_packets = n_dropped_packets;
+    data->n_missed_dropped_packets = n_missed_dropped_packets;
+    data->n_dropped_packet_overflows = n_dropped_packet_overflows;
+    data->n_reinjected_packets = n_reinjected_packets;
+    data->n_link_dumped_packets = n_link_dumped_packets;
+    data->n_processor_dumped_packets = n_processor_dumped_packets;
+
+    io_printf(IO_BUF, "dropped packets %d\n", n_dropped_packets);
+
+    // Put the current services enabled in the packet
+    data->packet_types_reinjected = 0;
+    bool values_to_check[] = {
+            reinject_mc, reinject_pp, reinject_nn, reinject_fr};
+    int flags[] = {
+            DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
+            DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR};
+    for (int i = 0; i < 4; i++) {
+        if (values_to_check[i]) {
+            data->packet_types_reinjected |= flags[i];
+        }
+    }
+    return sizeof(struct reinjector_status_t);
+}
+
+static ushort reset_counters(void) {
+    // Reset the counters
+    n_dropped_packets = 0;
+    n_missed_dropped_packets = 0;
+    n_dropped_packet_overflows = 0;
+    n_reinjected_packets = 0;
+    n_link_dumped_packets = 0;
+    n_processor_dumped_packets = 0;
+    // set SCP command to OK, as successfully completed
+    return RC_OK;
+}
+
+static ushort stop_reinjection(void) {
+    uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
+
+    vic[VIC_DISABLE] = int_select;
+    vic[VIC_DISABLE] = (1 << CC_TNF_INT);
+    vic[VIC_SELECT] = 0;
+    run = false;
+
+    // set SCP command to OK , as successfully completed
+    return RC_OK;
+}
+
+static ushort clear_queue(void) {
+    // Disable FIQ for queue access
+    uint cpsr = cpu_fiq_disable();
+
+    // Clear any stored dropped packets
+    pkt_queue.head = 0;
+    pkt_queue.tail = 0;
+
+    // restore FIQ after queue access,
+    cpu_int_restore(cpsr);
+
+    // and disable communications controller interrupts
+    vic[VIC_DISABLE] = 1 << CC_TNF_INT;
+
+    // set SCP command to OK, as successfully completed
+    return RC_OK;
 }
 
 //! \brief handles the commands for the reinjector code.
@@ -548,132 +639,42 @@ static void reinjection_read_packet_types(
 static uint handle_reinjection_command(sdp_msg_t *msg) {
     switch (msg->cmd_rc) {
     case CMD_DPRI_SET_ROUTER_TIMEOUT:
-        // Set the router wait1 timeout
-        if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
-            msg->cmd_rc = RC_ARG;
-            return 0;
-        }
-        rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0xff00ffff)
-                | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 16);
-
-        // set SCP command to OK , as successfully completed
-        msg->cmd_rc = RC_OK;
+        msg->cmd_rc = set_router_timeout(msg);
         return 0;
-
     case CMD_DPRI_SET_ROUTER_EMERGENCY_TIMEOUT:
-        // Set the router wait2 timeout
-        if (msg->arg1 > ROUTER_TIMEOUT_MASK) {
-            msg->cmd_rc = RC_ARG;
-            return 0;
-        }
-        rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x00ffffff)
-                | ((msg->arg1 & ROUTER_TIMEOUT_MASK) << 24);
-
-        // set SCP command to OK , as successfully completed
-        msg->cmd_rc = RC_OK;
+        msg->cmd_rc = set_router_emergency_timeout(msg);
         return 0;
-
     case CMD_DPRI_SET_PACKET_TYPES:
-        // Set the re-injection options
-        reinject_mc = msg->arg1;
-        reinject_pp = msg->arg2;
-        reinject_fr = msg->arg3;
-        reinject_nn = msg->data[0];
-
-        // set SCP command to OK , as successfully completed
-        msg->cmd_rc = RC_OK;
+        msg->cmd_rc = set_packet_types(msg);
         return 0;
 
-    case CMD_DPRI_GET_STATUS: {
-        // Get the status and put it in the packet
-	struct reinjector_status_t *data = (struct reinjector_status_t *)
-		&msg->arg1;
-
-        // Put the router timeouts in the packet
-        uint control = (uint) (rtr[RTR_CONTROL] & 0xFFFF0000);
-        data->timeout = (control >> 16) & ROUTER_TIMEOUT_MASK;
-        data->emergency_timeout = (control >> 24) & ROUTER_TIMEOUT_MASK;
-
-        // Put the statistics in the packet
-        data->n_dropped_packets = n_dropped_packets;
-        data->n_missed_dropped_packets = n_missed_dropped_packets;
-        data->n_dropped_packet_overflows = n_dropped_packet_overflows;
-        data->n_reinjected_packets = n_reinjected_packets;
-        data->n_link_dumped_packets = n_link_dumped_packets;
-        data->n_processor_dumped_packets = n_processor_dumped_packets;
-
-        io_printf(IO_BUF, "dropped packets %d\n", n_dropped_packets);
-
-        // Put the current services enabled in the packet
-        data->packet_types_reinjected = 0;
-        bool values_to_check[] = {reinject_mc, reinject_pp,
-                                  reinject_nn, reinject_fr};
-        int flags[] = {DPRI_PACKET_TYPE_MC, DPRI_PACKET_TYPE_PP,
-                       DPRI_PACKET_TYPE_NN, DPRI_PACKET_TYPE_FR};
-        for (int i = 0; i < 4; i++) {
-            if (values_to_check[i]) {
-                data->packet_types_reinjected |= flags[i];
-            }
-        }
-
-        // set SCP command to OK , as successfully completed
+    case CMD_DPRI_GET_STATUS:
+        // set SCP command to OK, as (will be) successfully completed
         msg->cmd_rc = RC_OK;
         // Return the number of bytes in the packet
-        return sizeof(struct reinjector_status_t);
-    }
+        return get_status((struct reinjector_status_t *) &msg->arg1);
 
     case CMD_DPRI_RESET_COUNTERS:
-	// Reset the counters
-        n_dropped_packets = 0;
-        n_missed_dropped_packets = 0;
-        n_dropped_packet_overflows = 0;
-        n_reinjected_packets = 0;
-        n_link_dumped_packets = 0;
-        n_processor_dumped_packets = 0;
-
-        // set SCP command to OK , as successfully completed
-        msg->cmd_rc = RC_OK;
+        // Reset the counters
+        msg->cmd_rc = reset_counters();
         return 0;
-
-    case CMD_DPRI_EXIT: {
-        uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT);
-
-        vic[VIC_DISABLE] = int_select;
-        vic[VIC_DISABLE] = (1 << CC_TNF_INT);
-        vic[VIC_SELECT] = 0;
-        run = false;
-
-        // set SCP command to OK , as successfully completed
-        msg->cmd_rc = RC_OK;
+    case CMD_DPRI_EXIT:
+        msg->cmd_rc = stop_reinjection();
         return 0;
-    }
-
-    case CMD_DPRI_CLEAR: {
-        // Disable FIQ for queue access
-        uint cpsr = cpu_fiq_disable();
-
-        // Clear any stored dropped packets
-        pkt_queue.head = 0;
-        pkt_queue.tail = 0;
-        // restore FIQ after queue access,
-        cpu_int_restore(cpsr);
-        // and disable communications controller interrupts
-        vic[VIC_DISABLE] = 1 << CC_TNF_INT;
-        // set SCP command to OK , as successfully completed
-        msg->cmd_rc = RC_OK;
+    case CMD_DPRI_CLEAR:
+        msg->cmd_rc = clear_queue();
         return 0;
-    }
 
     default:
-	// If we are here, the command was not recognised, so fail (ARG as the
-	// command is an argument)
-	msg->cmd_rc = RC_ARG;
-	return 0;
+        // If we are here, the command was not recognised, so fail (ARG as the
+        // command is an argument)
+        msg->cmd_rc = RC_ARG;
+        return 0;
     }
 }
 
 // \brief SARK level timer interrupt setup
-static void reinjection_configure_timer() {
+static void reinjection_configure_timer(void) {
     // Clear the interrupt
     tc[T1_CONTROL] = 0;
     tc[T1_INT_CLR] = 1;
@@ -684,16 +685,16 @@ static void reinjection_configure_timer() {
 }
 
 // \brief pass, not a clue.
-static void reinjection_configure_comms_controller() {
+static void reinjection_configure_comms_controller(void) {
     // remember SAR register contents (p2p source ID)
     cc_sar = cc[CC_SAR] & 0x0000ffff;
 }
 
 // \brief sets up SARK and router to have a interrupt when a packet is dropped
-static void reinjection_configure_router() {
+static void reinjection_configure_router(void) {
     // re-configure wait values in router
     rtr[RTR_CONTROL] = (rtr[RTR_CONTROL] & 0x0000ffff) |
-	    ROUTER_INITIAL_TIMEOUT;
+            ROUTER_INITIAL_TIMEOUT;
 
     // clear router interrupts,
     (void) rtr[RTR_STATUS];
@@ -717,7 +718,7 @@ static inline void send_fixed_route_packet(uint32_t key, uint32_t data) {
 
     // Wait for a router slot
     while ((cc[CC_TCR] & TX_NOT_FULL_MASK) == 0) {
-	// Empty body; CC array is volatile
+        // Empty body; CC array is volatile
     }
     cc[CC_TCR] = PKT_FR_PL;
     cc[CC_TXDATA] = data;
@@ -738,7 +739,7 @@ static void send_data_block(
     for (uint data_position = 0; data_position < number_of_elements_to_send;
             data_position++) {
         uint32_t current_data =
-            data_to_transmit[current_dma_pointer][data_position];
+                data_to_transmit[current_dma_pointer][data_position];
 
         send_fixed_route_packet(first_packet_key, current_data);
 
@@ -1149,8 +1150,7 @@ void __wrap_sark_int(void *pc) {
             sark_msg_cpy(msg, shm_msg);
             sark_shmsg_free(shm_msg);
 
-            //io_printf(
-            //    IO_BUF,
+            //io_printf(IO_BUF,
             //    "port %d\n", (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
 
             switch ((msg->dest_port & PORT_MASK) >> PORT_SHIFT) {
@@ -1172,7 +1172,7 @@ void __wrap_sark_int(void *pc) {
                 break;
             default:
                 io_printf(IO_BUF, "unexpected port %d\n",
-                	(msg->dest_port & PORT_MASK) >> PORT_SHIFT);
+                        (msg->dest_port & PORT_MASK) >> PORT_SHIFT);
                 // Do nothing
             }
             sark_msg_free(msg);
@@ -1193,7 +1193,7 @@ static inline void *region_address(uint32_t region_index) {
     // Get the address this core's DTCM data starts at from SRAM
     vcpu_t *sark_virtual_processor_info = (vcpu_t *) SV_VCPU;
     address_t address = (address_t)
-	    sark_virtual_processor_info[sark.virt_cpu].user0;
+            sark_virtual_processor_info[sark.virt_cpu].user0;
     return (void *) address[DSG_HEADER + region_index];
 }
 
@@ -1223,7 +1223,7 @@ static void reinjection_initialise() {
 //! \brief sets up data required by the data speed up functionality
 static void data_speed_up_initialise() {
     struct data_speed_config_t *config_ptr =
-	    region_address(CONFIG_DATA_SPEED_UP);
+            region_address(CONFIG_DATA_SPEED_UP);
 
     basic_data_key = config_ptr->my_key;
     new_sequence_key = config_ptr->new_seq_key;
@@ -1234,8 +1234,8 @@ static void data_speed_up_initialise() {
     vic_controls[DMA_SLOT] = 0x20 | DMA_DONE_INT;
 
     for (uint32_t i = 0; i < 2; i++) {
-        data_to_transmit[i] = (uint32_t *) sark_xalloc(
-        	sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
+        data_to_transmit[i] = sark_xalloc(
+                sark.heap, ITEMS_PER_DATA_PACKET * sizeof(uint32_t), 0,
 		ALLOC_LOCK);
         if (data_to_transmit[i] == NULL){
             io_printf(IO_BUF, "failed to allocate dtcm for DMA buffers\n");
@@ -1269,7 +1269,7 @@ void c_main() {
     // set up VIC callbacks and interrupts accordingly
     // Disable the interrupts that we are configuring (except CPU for WDOG)
     uint int_select = (1 << TIMER1_INT) | (1 << RTR_DUMP_INT) |
-        (1 << DMA_DONE_INT);
+            (1 << DMA_DONE_INT);
     vic[VIC_DISABLE] = int_select;
     vic[VIC_DISABLE] = (1 << CC_TNF_INT);
 

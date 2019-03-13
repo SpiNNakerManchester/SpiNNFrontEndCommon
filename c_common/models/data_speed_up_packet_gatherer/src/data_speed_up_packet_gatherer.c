@@ -88,19 +88,19 @@ static void send_data(void) {
     //log_info("first element is %d", data[0]);
 
     spin1_memcpy(&my_msg.data, data,
-	    position_in_store * WORD_TO_BYTE_MULTIPLIER);
+            position_in_store * WORD_TO_BYTE_MULTIPLIER);
     my_msg.length =
-	    LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
-    //log_info("my length is %d with position %d", my_msg.length, position_in_store);
+            LENGTH_OF_SDP_HEADER + (position_in_store * WORD_TO_BYTE_MULTIPLIER);
+    //log_info("my length is %d with position %d",
+    //        my_msg.length, position_in_store);
 
     if (seq_num > max_seq_num) {
-        log_error(
-        	"got a funky seq num in sending. max is %d, received %d",
-		max_seq_num, seq_num);
+        log_error("got a funky seq num in sending. max is %d, received %d",
+                max_seq_num, seq_num);
     }
 
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, 100)) {
-	// Empty body
+        // Empty body
     }
 
     position_in_store = 1;
@@ -121,9 +121,8 @@ static void receive_data(uint key, uint payload) {
         position_in_store = 1;
 
         if (payload > max_seq_num) {
-            log_error(
-        	    "got a funky seq num. max is %d, received %d",
-		    max_seq_num, payload);
+            log_error("got a funky seq num. max is %d, received %d",
+                    max_seq_num, payload);
         }
     } else {
         //log_info(" payload = %d posiiton = %d", payload, position_in_store);
@@ -178,13 +177,13 @@ static bool initialize(uint32_t *timer_period) {
     }
 
     config_t *config_ptr = (config_t *)
-	    data_specification_get_region(CONFIG, address);
+            data_specification_get_region(CONFIG, address);
     new_sequence_key = config_ptr->new_sequence_key;
     first_data_key = config_ptr->first_data_key;
     end_flag_key = config_ptr->end_flag_key;
 
     my_msg.tag = config_ptr->sdp_tag;		// IPTag 1
-    my_msg.dest_port = PORT_ETH;		// Ethernet
+    my_msg.dest_port = PORT_ETH;	    	// Ethernet
     my_msg.dest_addr = sv->eth_addr;		// Nearest Ethernet chip
 
     // fill in SDP source & flag fields

@@ -69,20 +69,17 @@ void c_main(void);
 static void transmit_command(command *command_to_send) {
     // check for repeats
     if (command_to_send->repeats != 0) {
-        for (uint32_t repeat_count = 0;
-                repeat_count <= command_to_send->repeats;
-                repeat_count++) {
+        for (uint32_t i = 0; i <= command_to_send->repeats; i++) {
             if (command_to_send->has_payload) {
-                log_debug(
-                    "Sending %08x, %08x at time %u with %u repeats and "
-                    "%u delay ", command_to_send->key, command_to_send->payload,
-                    time, command_to_send->repeats, command_to_send->delay);
+                log_debug("Sending %08x, %08x at time %u with %u repeats and "
+                        "%u delay ", command_to_send->key,
+                        command_to_send->payload, time,
+                        command_to_send->repeats, command_to_send->delay);
                 spin1_send_mc_packet(
-                	command_to_send->key, command_to_send->payload,
-			WITH_PAYLOAD);
+                        command_to_send->key, command_to_send->payload,
+                        WITH_PAYLOAD);
             } else {
-                log_debug(
-                    "Sending %08x at time %u with %u repeats and "
+                log_debug("Sending %08x at time %u with %u repeats and "
                     "%u delay ", command_to_send->key, time,
                     command_to_send->repeats, command_to_send->delay);
                 spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
@@ -95,14 +92,13 @@ static void transmit_command(command *command_to_send) {
         }
     } else {
         if (command_to_send->has_payload) {
-            log_debug(
-                "Sending %08x, %08x at time %u",
-                command_to_send->key, command_to_send->payload, time);
+            log_debug("Sending %08x, %08x at time %u",
+                    command_to_send->key, command_to_send->payload, time);
 
             //if no repeats, then just send the message
             spin1_send_mc_packet(
-        	    command_to_send->key, command_to_send->payload,
-		    WITH_PAYLOAD);
+                    command_to_send->key, command_to_send->payload,
+                    WITH_PAYLOAD);
         } else {
             log_debug("Sending %08x at time %u", command_to_send->key, time);
             spin1_send_mc_packet(command_to_send->key, 0, NO_PAYLOAD);
@@ -132,21 +128,18 @@ static bool read_scheduled_parameters(timed_commands_t *message_ptr) {
     if (n_timed_commands == 0) {
         return true;
     }
+    uint size = n_timed_commands * sizeof(timed_command);
 
     // Allocate the space for the scheduled_commands
-    timed_commands = (timed_command *)
-	    spin1_malloc(n_timed_commands * sizeof(timed_command));
+    timed_commands = spin1_malloc(size);
     if (timed_commands == NULL) {
         log_error("Could not allocate the scheduled commands");
         return false;
     }
 
-    spin1_memcpy(
-	    timed_commands, message_ptr->commands,
-	    n_timed_commands * sizeof(timed_command));
-
+    spin1_memcpy(timed_commands, message_ptr->commands, size);
     log_info("Schedule commands starts at time %u",
-	    timed_commands[FIRST_TIME].time);
+            timed_commands[FIRST_TIME].time);
     return true;
 }
 
@@ -157,18 +150,16 @@ static bool read_start_resume_commands(triggered_commands_t *message_ptr) {
     if (n_start_resume_commands == 0) {
         return true;
     }
+    uint size = n_start_resume_commands * sizeof(command);
 
     // Allocate the space for the start resume
-    start_resume_commands = (command *)
-	    spin1_malloc(n_start_resume_commands * sizeof(command));
+    start_resume_commands = spin1_malloc(size);
     if (start_resume_commands == NULL) {
         log_error("Could not allocate the start/resume commands");
         return false;
     }
 
-    spin1_memcpy(
-	    start_resume_commands, message_ptr->commands,
-	    n_start_resume_commands * sizeof(command));
+    spin1_memcpy(start_resume_commands, message_ptr->commands, size);
     return true;
 }
 
@@ -179,18 +170,16 @@ static bool read_pause_stop_commands(triggered_commands_t *message_ptr) {
     if (n_pause_stop_commands == 0) {
         return true;
     }
+    uint size = n_pause_stop_commands * sizeof(command);
 
     // Allocate the space for the start resume
-    pause_stop_commands = (command *)
-	    spin1_malloc(n_pause_stop_commands * sizeof(command));
+    pause_stop_commands = spin1_malloc(size);
     if (pause_stop_commands == NULL) {
         log_error("Could not allocate the pause/stop commands");
         return false;
     }
 
-    spin1_memcpy(
-	    pause_stop_commands, message_ptr->commands,
-	    n_pause_stop_commands * sizeof(command));
+    spin1_memcpy(pause_stop_commands, message_ptr->commands, size);
     return true;
 }
 
@@ -224,7 +213,7 @@ static void timer_callback(uint unused0, uint unused1) {
 
     while ((next_timed_command < n_timed_commands) &&
             (timed_commands[next_timed_command].time == time)) {
-        transmit_command(&(timed_commands[next_timed_command].command));
+        transmit_command(&timed_commands[next_timed_command].command);
         ++next_timed_command;
     }
 }
@@ -246,19 +235,16 @@ static bool initialize(uint32_t *timer_period) {
         return false;
     }
     simulation_set_provenance_data_address(
-        data_specification_get_region(PROVENANCE_REGION, address));
+            data_specification_get_region(PROVENANCE_REGION, address));
     simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
-    read_scheduled_parameters(
-	    (timed_commands_t *) data_specification_get_region(
-		    COMMANDS_WITH_ARBITRARY_TIMES, address));
-    read_start_resume_commands(
-	    (triggered_commands_t *) data_specification_get_region(
-		    COMMANDS_AT_START_RESUME, address));
-    read_pause_stop_commands(
-	    (triggered_commands_t *) data_specification_get_region(
-		    COMMANDS_AT_STOP_PAUSE, address));
+    read_scheduled_parameters((timed_commands_t *)
+            data_specification_get_region(COMMANDS_WITH_ARBITRARY_TIMES, address));
+    read_start_resume_commands((triggered_commands_t *)
+            data_specification_get_region(COMMANDS_AT_START_RESUME, address));
+    read_pause_stop_commands((triggered_commands_t *)
+            data_specification_get_region(COMMANDS_AT_STOP_PAUSE, address));
     return true;
 }
 
