@@ -1,4 +1,5 @@
 import filecmp
+import json
 import os
 import sys
 import unittest
@@ -23,6 +24,13 @@ class TestConvertJson(unittest.TestCase):
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
 
+    def json_compare(self, file1, file2):
+        with open(file1) as json_file:
+            json1 = json.load(json_file)
+        with open(file2) as json_file:
+            json2 = json.load(json_file)
+        self.assertEqual(json1, json2)
+
     def testSpin4(self):
         if not Ping.host_is_reachable(self.spin4Host):
             raise unittest.SkipTest(self.spin4Host + " appears to be down")
@@ -36,7 +44,7 @@ class TestConvertJson(unittest.TestCase):
         fn = "test_spinn4.json"
         filename = jsonAlgo(machine, str(fn))
 
-        assert filecmp.cmp(filename, "spinn4.json")
+        self.json_compare(filename, "spinn4.json")
 
         # Create a machione with Exception
         chip = machine.get_chip_at(1, 1)
@@ -49,7 +57,7 @@ class TestConvertJson(unittest.TestCase):
 
         fn = "test_spinn4_fiddle.json"
         filename = jsonAlgo(machine, str(fn))
-        assert filecmp.cmp(filename, "spinn4_fiddle.json")
+        self.json_compare(filename, "spinn4_fiddle.json")
 
         trans.close()
 
@@ -76,6 +84,6 @@ class TestConvertJson(unittest.TestCase):
         fn = "test_spinn2.json"
         filename = jsonAlgo(machine, str(fn))
 
-        assert filecmp.cmp(filename, "spinn2.json")
+        self.json_compare(filename, "spinn2.json")
 
         trans.close()
