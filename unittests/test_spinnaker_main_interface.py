@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 from spinn_front_end_common.utilities.exceptions import ConfigurationException
-import spinn_front_end_common.interface.abstract_spinnaker_base as base
+import spinn_front_end_common.interface.config_handler as config_handler
 from spinn_front_end_common.interface.abstract_spinnaker_base import (
     AbstractSpinnakerBase)
 from spinn_front_end_common.utilities.utility_objs import ExecutableFinder
@@ -25,7 +25,7 @@ class MainInterfaceTimingImpl(AbstractSpinnakerBase):
 
     def __init__(self, machine_time_step=None, time_scale_factor=None):
         super(MainInterfaceTimingImpl, self).__init__(
-            base.CONFIG_FILE, ExecutableFinder())
+            config_handler.CONFIG_FILE, ExecutableFinder())
         self.set_up_timings(machine_time_step, time_scale_factor)
 
 
@@ -38,7 +38,8 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        interface = AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
+        interface = AbstractSpinnakerBase(
+            config_handler.CONFIG_FILE, ExecutableFinder())
         mock_contoller = Close_Once()
         interface._machine_allocation_controller = mock_contoller
         self.assertFalse(mock_contoller.closed)
@@ -53,7 +54,7 @@ class TestSpinnakerMainInterface(unittest.TestCase):
         class_file = sys.modules[self.__module__].__file__
         path = os.path.dirname(os.path.abspath(class_file))
         os.chdir(path)
-        AbstractSpinnakerBase(base.CONFIG_FILE, ExecutableFinder())
+        AbstractSpinnakerBase(config_handler.CONFIG_FILE, ExecutableFinder())
 
     def test_timings(self):
 
