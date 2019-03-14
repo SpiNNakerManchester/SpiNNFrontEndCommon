@@ -2578,8 +2578,8 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
             # switch power state if needed
             if self._machine_allocation_controller.power:
                 self._machine_allocation_controller.set_power(False)
-
-        self._txrx.power_off_machine()
+        else:
+            self._txrx.power_off_machine()
 
         self._machine_is_turned_off = time.time()
         return True
