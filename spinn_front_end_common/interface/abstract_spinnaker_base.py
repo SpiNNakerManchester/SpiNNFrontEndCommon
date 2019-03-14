@@ -1166,7 +1166,7 @@ class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
                 "Machine", "width")
             inputs["MachineHeight"] = self._read_config_int(
                 "Machine", "height")
-            inputs["MachineHasWrapAroundsFlag"] = self.read_config_boolean(
+            inputs["MachineHasWrapAroundsFlag"] = self._read_config_boolean(
                 "Machine", "requires_wrap_arounds")
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
