@@ -18,20 +18,6 @@
 // well)
 #define MAX_DMA_CALLBACK_TAG 16
 
-// the position and human readable terms for each element from the region
-// containing the timing details.
-typedef enum region_elements{
-    APPLICATION_MAGIC_NUMBER, SIMULATION_TIMER_PERIOD,
-    SIMULATION_CONTROL_SDP_PORT, SIMULATION_N_TIMING_DETAIL_WORDS
-} region_elements;
-
-//! elements that are always grabbed for provenance if possible when requested
-typedef enum provenance_data_elements{
-    TRANSMISSION_EVENT_OVERFLOW, CALLBACK_QUEUE_OVERLOADED,
-    DMA_QUEUE_OVERLOADED, TIMER_TIC_HAS_OVERRUN,
-    MAX_NUMBER_OF_TIMER_TIC_OVERRUN, PROVENANCE_DATA_ELEMENTS
-} provenance_data_elements;
-
 typedef enum simulation_commands{
     CMD_STOP = 6, CMD_RUNTIME = 7, PROVENANCE_DATA_GATHERING = 8,
     IOBUF_CLEAR = 9

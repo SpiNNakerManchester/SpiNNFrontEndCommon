@@ -4,6 +4,15 @@
 #include <debug.h>
 
 //---------------------------------------
+// Types
+//---------------------------------------
+
+typedef struct profiler_region_t {
+    uint32_t count;
+    uint32_t data[];
+} profiler_region_t;
+
+//---------------------------------------
 // Globals
 //---------------------------------------
 uint32_t *profiler_count = NULL;
@@ -14,10 +23,11 @@ uint32_t *profiler_output = NULL;
 // Functions
 //---------------------------------------
 void profiler_init(uint32_t* data_region) {
-    log_info("Reading profile setup from 0x%08x", data_region);
-    profiler_samples_remaining = data_region[0];
-    profiler_count = &data_region[0];
-    profiler_output = &data_region[1];
+    profiler_region_t *region = (profiler_region_t *) data_region;
+    log_info("Reading profile setup from 0x%08x", region);
+    profiler_samples_remaining = region->count;
+    profiler_count = &region->count;
+    profiler_output = region->data;
 
     log_info("Initialising profiler with storage for %u samples starting "
             "at 0x%08x", profiler_samples_remaining, profiler_output);

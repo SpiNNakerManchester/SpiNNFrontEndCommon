@@ -11,6 +11,12 @@
 // The mask to apply to the version number to get the minor version
 #define VERSION_MASK 0xFFFF
 
+typedef struct dse_region_meta_t {
+    uint32_t magic_number;
+    uint32_t version;
+    address_t region_address[];
+} dse_region_meta_t;
+
 typedef enum region_elements {
     dse_magic_number, dse_version,
 } region_elements;
@@ -49,23 +55,23 @@ address_t data_specification_get_data_address() {
 //! \return boolean where True is when the header is correct and False if there
 //!         is a conflict with the DSE magic number
 bool data_specification_read_header(uint32_t* address) {
+    dse_region_meta_t *meta = (dse_region_meta_t *) address;
 
     // Check for the magic number
-    if (address[dse_magic_number] != DATA_SPECIFICATION_MAGIC_NUMBER) {
-        log_error("Magic number is incorrect: %08x", address[dse_magic_number]);
-        return (false);
+    if (meta->magic_number != DATA_SPECIFICATION_MAGIC_NUMBER) {
+        log_error("Magic number is incorrect: %08x", meta->magic_number);
+        return false;
     }
 
-    if (address[dse_version] != DATA_SPECIFICATION_VERSION) {
-        log_error("Version number is incorrect: %08x", address[dse_version]);
-        return (false);
+    if (meta->version != DATA_SPECIFICATION_VERSION) {
+        log_error("Version number is incorrect: %08x", meta->version);
+        return false;
     }
 
     // Log what we have found
-    log_info("magic = %08x, version = %d.%d", address[dse_magic_number],
-            address[dse_version] >> VERSION_SHIFT,
-            address[dse_version] & VERSION_MASK);
-    return (true);
+    log_info("magic = %08x, version = %d.%d", meta->magic_number,
+            meta->version >> VERSION_SHIFT, meta->version & VERSION_MASK);
+    return true;
 }
 
 //! \brief Returns the absolute SDRAM memory address for a given region value.
@@ -78,5 +84,6 @@ bool data_specification_read_header(uint32_t* address) {
 //!         start of the requested region.
 address_t data_specification_get_region(
         uint32_t region, address_t data_address) {
-    return (address_t) (data_address[REGION_START_INDEX + region]);
+    dse_region_meta_t *meta = (dse_region_meta_t *) data_address;
+    return meta->region_address[region];
 }
