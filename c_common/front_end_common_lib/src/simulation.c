@@ -51,39 +51,34 @@ static callback_t sdp_callback[NUM_SDP_PORTS];
 //! the list of DMA callbacks for DMA complete callbacks
 static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 
-//! \brief handles the storing of basic provenance data
-//! \return the address after which new provenance data can be stored
-static address_t store_provenance_data(void) {
-    //! gets access to the diagnostics object from SARK
+//! \brief helper function for running provenance data storage
+static void execute_provenance_storage(void) {
     extern diagnostics_t diagnostics;
 
-    // store the data into the provenance data region
-    stored_provenance_data->transmission_event_overflow =
-            diagnostics.tx_packet_queue_full;
-    stored_provenance_data->callback_queue_overload =
-            diagnostics.task_queue_full;
-    stored_provenance_data->dma_queue_overload =
-            diagnostics.dma_queue_full;
-    stored_provenance_data->timer_tick_has_overrun =
-            diagnostics.total_times_tick_tic_callback_overran;
-    stored_provenance_data->max_timer_tick_overrun_count =
-            diagnostics.largest_number_of_concurrent_timer_tic_overruns;
-    return &stored_provenance_data[1];
-}
-
-//! \brief helper private method for running provenance data storage
-static void execute_provenance_storage() {
     if (stored_provenance_data != NULL) {
         log_info("Starting basic provenance gathering");
-        address_t address_to_start_with = store_provenance_data();
-        if (stored_provenance_function != NULL){
+
+        // store the data into the provenance data region
+        stored_provenance_data->transmission_event_overflow =
+                diagnostics.tx_packet_queue_full;
+        stored_provenance_data->callback_queue_overload =
+                diagnostics.task_queue_full;
+        stored_provenance_data->dma_queue_overload =
+                diagnostics.dma_queue_full;
+        stored_provenance_data->timer_tick_has_overrun =
+                diagnostics.total_times_tick_tic_callback_overran;
+        stored_provenance_data->max_timer_tick_overrun_count =
+                diagnostics.largest_number_of_concurrent_timer_tic_overruns;
+
+        if (stored_provenance_function != NULL) {
             log_info("running other provenance gathering");
-            stored_provenance_function(address_to_start_with);
+            void *extra_prov_ptr = &stored_provenance_data[1];
+            stored_provenance_function(extra_prov_ptr);
         }
     }
 }
 
-void simulation_run() {
+void simulation_run(void) {
     // go into spin1 API start, but paused (no SYNC yet)
     spin1_start_paused();
 }
@@ -104,11 +99,11 @@ void simulation_handle_pause_resume(resume_callback_t callback){
 
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
-void simulation_exit(){
+void simulation_exit(void) {
     simulation_handle_pause_resume(NULL);
 }
 
-void simulation_ready_to_read() {
+void simulation_ready_to_read(void) {
     sark_cpu_state(CPU_STATE_WAIT);
 }
 
