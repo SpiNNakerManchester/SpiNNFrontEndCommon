@@ -3,6 +3,7 @@ import logging
 import struct
 import datetime
 import shutil
+
 from spinn_utilities.log import FormatAdapter
 from spinn_machine import CoreSubsets
 from spinnman.model.enums import CPUState

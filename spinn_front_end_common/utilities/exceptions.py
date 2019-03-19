@@ -39,3 +39,8 @@ class BufferableRegionTooSmall(SpinnFrontEndException):
 class BufferedRegionNotPresent(SpinnFrontEndException):
     """ Raised when trying to issue buffered packets for a region not managed
     """
+
+
+class CantFindSDRAMToUseException(SpinnFrontEndException):
+    """ Raised when malloc and sdram stealing cannot occur.
+    """

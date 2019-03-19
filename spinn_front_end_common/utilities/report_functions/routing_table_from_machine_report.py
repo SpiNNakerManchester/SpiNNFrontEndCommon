@@ -16,6 +16,7 @@ class RoutingTableFromMachineReport(object):
     def __call__(
             self, report_default_directory, routing_tables, transceiver,
             app_id):
+
         # pylint: disable=protected-access
         tables = list(routing_tables.routing_tables)
         progress = ProgressBar(tables, "Reading Routing Tables from Machine")
@@ -35,7 +36,8 @@ class RoutingTableFromMachineReport(object):
 
         return machine_routing_tables
 
-    def _read_routing_table(self, txrx, table, app_id):
+    @staticmethod
+    def _read_routing_table(txrx, table, app_id):
         machine_routing_table = \
             CompressedMulticastRoutingTable(table.x, table.y)
         for routing_entry in txrx.get_multicast_routes(
