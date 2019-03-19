@@ -15,14 +15,14 @@
 #define RECORDING_DMA_COMPLETE_TAG_ID 15
 
 //! \brief Callback for recording completion.
-typedef void (*recording_complete_callback_t) ();
+typedef void (*recording_complete_callback_t) (void);
 
-typedef struct {
+typedef struct read_request_packet_header_t {
     uint16_t eieio_header_command;
     uint16_t chip_id;
 } read_request_packet_header;
 
-typedef struct {
+typedef struct read_request_packet_data_t {
     uint8_t processor_and_request;
     uint8_t sequence;
     uint8_t channel;
@@ -31,20 +31,20 @@ typedef struct {
     uint32_t space_to_be_read;
 } read_request_packet_data;
 
-typedef struct {
+typedef struct host_data_read_packet_header_t {
     uint16_t eieio_header_command;
     uint8_t request;
     uint8_t sequence;
 } host_data_read_packet_header;
 
-typedef struct {
+typedef struct host_data_read_packet_data_t {
     uint16_t zero;
     uint8_t channel;
     uint8_t region;
     uint32_t space_read;
 } host_data_read_packet_data;
 
-typedef struct {
+typedef struct host_data_read_ack_packet_header_t {
     uint16_t eieio_header_command;
     uint8_t sequence;
 } host_data_read_ack_packet_header;
@@ -81,7 +81,7 @@ bool recording_record_and_notify(
 
 //! \brief Finishes recording - should only be called if recording_flags is
 //!        not 0
-void recording_finalise();
+void recording_finalise(void);
 
 //! \brief initialises the recording of data
 //! \param[in] recording_data_address The start of the data about the recording
@@ -117,7 +117,7 @@ bool recording_initialize(
         address_t recording_data_address, uint32_t *recording_flags);
 
 //! \brief resets recording to the state just after initialisation
-void recording_reset();
+void recording_reset(void);
 
 //! \brief Call once per timestep to ensure buffering is done - should only
 //!        be called if recording flags is not 0

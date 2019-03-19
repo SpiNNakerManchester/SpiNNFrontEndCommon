@@ -205,7 +205,7 @@ static bool initialize(uint32_t *timer_period) {
  *
  * SOURCE
  */
-void c_main() {
+void c_main(void) {
     log_info("starting packet gatherer\n");
 
     // Load DTCM data

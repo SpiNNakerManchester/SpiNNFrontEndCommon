@@ -27,23 +27,25 @@ typedef enum region_elements {
 // The amount of shift to apply to the version number to get the major version
 #define VERSION_SHIFT 16
 
+static inline vcpu_t *virtual_processor_info(void) {
+    return (vcpu_t *) SV_VCPU;
+}
+
 //! \brief Locates the start address for a core in SDRAM. This value is
 //!        loaded into the user0 register of the core during the tool chain
 //!        loading.
 //! \return the SDRAM start address for this core.
-address_t data_specification_get_data_address() {
-
+address_t data_specification_get_data_address(void) {
     // Get pointer to 1st virtual processor info struct in SRAM
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    vcpu_t *vp = virtual_processor_info();
 
     // Get the address this core's DTCM data starts at from the user data member
     // of the structure associated with this virtual processor
-    address_t address =
-            (address_t) sark_virtual_processor_info[spin1_get_core_id()].user0;
+    uint address = vp[spin1_get_core_id()].user0;
 
     log_debug("SDRAM data begins at address: %08x", address);
 
-    return address;
+    return (address_t) address;
 }
 
 //! \brief Reads the header written by a DSE and checks that the magic number
@@ -54,7 +56,7 @@ address_t data_specification_get_data_address() {
 //!            header from.
 //! \return boolean where True is when the header is correct and False if there
 //!         is a conflict with the DSE magic number
-bool data_specification_read_header(uint32_t* address) {
+bool data_specification_read_header(address_t address) {
     dse_region_meta_t *meta = (dse_region_meta_t *) address;
 
     // Check for the magic number
@@ -85,5 +87,6 @@ bool data_specification_read_header(uint32_t* address) {
 address_t data_specification_get_region(
         uint32_t region, address_t data_address) {
     dse_region_meta_t *meta = (dse_region_meta_t *) data_address;
+
     return meta->region_address[region];
 }

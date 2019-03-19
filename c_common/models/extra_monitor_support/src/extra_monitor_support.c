@@ -407,7 +407,7 @@ static inline void do_reinjection(void) {
 }
 
 //! \brief the plugin callback for the timer
-static INT_HANDLER reinjection_timer_callback() {
+static INT_HANDLER reinjection_timer_callback(void) {
     // clear interrupt in timer,
     tc[T1_INT_CLR] = 1;
 
@@ -421,7 +421,7 @@ static INT_HANDLER reinjection_timer_callback() {
 }
 
 //! \brief the plugin callback for sending packets????
-static INT_HANDLER reinjection_ready_to_send_callback() {
+static INT_HANDLER reinjection_ready_to_send_callback(void) {
     // TODO: may need to deal with packet timestamp.
 
     // check if router not blocked
@@ -437,7 +437,7 @@ static INT_HANDLER reinjection_ready_to_send_callback() {
 }
 
 //! \brief the callback plugin for handling dropped packets
-static INT_HANDLER reinjection_dropped_packet_callback() {
+static INT_HANDLER reinjection_dropped_packet_callback(void) {
     // get packet from router,
     uint hdr = rtr[RTR_DHDR];
     uint pld = rtr[RTR_DDAT];
@@ -908,7 +908,7 @@ static void store_missing_seq_nums(uint32_t data[], ushort length, bool first) {
 }
 
 //! \brief sets off a DMA for retransmission stuff
-static void retransmission_dma_read() {
+static void retransmission_dma_read(void) {
     // locate where we are in SDRAM
     address_t data_sdram_position =
         &missing_sdp_seq_num_sdram_address[position_for_retransmission];
@@ -930,7 +930,7 @@ static void retransmission_dma_read() {
 
 //! \brief reads in missing sequence numbers and sets off the reading of
 //! SDRAM for the equivalent data
-static void the_dma_complete_read_missing_seqeuence_nums() {
+static void the_dma_complete_read_missing_seqeuence_nums(void) {
     //! check if at end of read missing sequence numbers
     if (position_in_read_data > ITEMS_PER_DATA_PACKET) {
         position_for_retransmission += ITEMS_PER_DATA_PACKET;
@@ -979,7 +979,7 @@ static void the_dma_complete_read_missing_seqeuence_nums() {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data
-static void dma_complete_reading_retransmission_data() {
+static void dma_complete_reading_retransmission_data(void) {
     //log_info("just read data for a given missing sequence number");
 
     // set sequence number as first element
@@ -1002,7 +1002,7 @@ static void dma_complete_reading_retransmission_data() {
 }
 
 //! \brief DMA complete callback for have read missing sequence number data
-static void dma_complete_writing_missing_seq_to_sdram() {
+static void dma_complete_writing_missing_seq_to_sdram(void) {
     io_printf(IO_BUF, "Need to figure what to do here\n");
 }
 
@@ -1110,7 +1110,7 @@ static void handle_data_speed_up(struct sdp_msg_pure_data *msg) {
 }
 
 //! \brief the handler for all DMA'S complete!
-static INT_HANDLER speed_up_handle_dma() {
+static INT_HANDLER speed_up_handle_dma(void) {
     // reset the interrupt.
     dma[DMA_CTRL] = 0x8;
     if (stop) {
@@ -1198,7 +1198,7 @@ static inline void *region_address(uint32_t region_index) {
 }
 
 //! \brief sets up data required by the reinjection functionality
-static void reinjection_initialise() {
+static void reinjection_initialise(void) {
     // set up config region and process data
     reinjection_read_packet_types(region_address(CONFIG_REINJECTION));
 
@@ -1221,7 +1221,7 @@ static void reinjection_initialise() {
 }
 
 //! \brief sets up data required by the data speed up functionality
-static void data_speed_up_initialise() {
+static void data_speed_up_initialise(void) {
     struct data_speed_config_t *config_ptr =
             region_address(CONFIG_DATA_SPEED_UP);
 
@@ -1252,7 +1252,7 @@ static void data_speed_up_initialise() {
 //-----------------------------------------------------------------------------
 // main method
 //-----------------------------------------------------------------------------
-void c_main() {
+void c_main(void) {
     sark_cpu_state(CPU_STATE_RUN);
 
     // Configure

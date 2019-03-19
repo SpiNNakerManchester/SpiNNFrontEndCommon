@@ -106,14 +106,14 @@ static void transmit_command(command *command_to_send) {
     }
 }
 
-static void run_stop_pause_commands() {
+static void run_stop_pause_commands(void) {
     log_info("Transmit pause/stop commands");
     for (uint32_t i = 0; i < n_pause_stop_commands; i++) {
         transmit_command(&(pause_stop_commands[i]));
     }
 }
 
-static void run_start_resume_commands() {
+static void run_start_resume_commands(void) {
     log_info("Transmit start/resume commands");
     for (uint32_t i = 0; i < n_start_resume_commands; i++) {
         transmit_command(&(start_resume_commands[i]));

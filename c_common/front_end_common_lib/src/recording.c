@@ -21,6 +21,7 @@ extern void spin1_wfi();
 //---------------------------------------
 // Structures
 //---------------------------------------
+
 //! structure that defines a channel in memory.
 typedef struct recording_channel_t {
     uint8_t *start;
@@ -68,7 +69,7 @@ typedef union {
 static circular_buffer dma_complete_buffer;
 
 //! array containing all possible channels. In DTCM.
-static recording_channel_t *g_recording_channels = NULL;
+static recording_channel_t *channels = NULL;
 //! array containing all possible channels. In SDRAM.
 static recording_channel_t **region_addresses = NULL;
 static uint32_t *region_sizes = NULL;
@@ -98,7 +99,7 @@ static read_request_packet_data *data_ptr;
 //! \param[in] channel the channel to check
 //! \return True if the channel has been initialised or false otherwise
 static inline bool has_been_initialsed(uint8_t channel) {
-    return g_recording_channels[channel].start != NULL;
+    return channels[channel].start != NULL;
 }
 
 //----------------------------------------
@@ -108,8 +109,8 @@ static inline bool has_been_initialsed(uint8_t channel) {
 //! \param[in] channel the channel to close
 //! \return True if the channel was successfully closed and False otherwise.
 static inline bool close_channel(uint8_t channel) {
-    g_recording_channels[channel].start = NULL;
-    g_recording_channels[channel].end = NULL;
+    channels[channel].start = NULL;
+    channels[channel].end = NULL;
     return true;
 }
 
@@ -130,22 +131,17 @@ static inline void host_data_read(
     for (i = 0; i < n_requests; i++) {
         uint8_t channel = hdr_msg->payload[i].channel;
         uint32_t space_read = hdr_msg->payload[i].space_read;
-        uint32_t temp_value = (uint32_t) (
-                g_recording_channels[channel].current_read + space_read);
+        uint8_t *temp_value = channels[channel].current_read + space_read;
 
         log_debug("channel %d, updating read pointer by %d bytes, from 0x%08x",
-                channel, space_read, g_recording_channels[channel].current_read);
-        if (temp_value >= (uint32_t) g_recording_channels[channel].end) {
-            uint32_t channel_space_total = (uint32_t) (
-                    g_recording_channels[channel].end -
-                    g_recording_channels[channel].start);
-            temp_value = temp_value - channel_space_total;
+                channel, space_read, channels[channel].current_read);
+        if (temp_value >= channels[channel].end) {
+            temp_value -= channels[channel].end - channels[channel].start;
             log_debug("channel %d, read wrap around", channel);
         }
 
-        g_recording_channels[channel].current_read = (uint8_t *) temp_value;
-        g_recording_channels[channel].last_buffer_operation =
-                BUFFER_OPERATION_READ;
+        channels[channel].current_read = temp_value;
+        channels[channel].last_buffer_operation = BUFFER_OPERATION_READ;
     }
 }
 
@@ -194,13 +190,12 @@ static inline void eieio_packet_handler(
 }
 
 // Work out the space available in the given channel for recording
-static uint32_t compute_available_space_in_channel(uint8_t channel) {
-    uint8_t *buffer_region = g_recording_channels[channel].start;
-    uint8_t *end_of_buffer_region = g_recording_channels[channel].end;
-    uint8_t *write_pointer = g_recording_channels[channel].current_write;
-    uint8_t *read_pointer = g_recording_channels[channel].current_read;
-    buffered_operations last_buffer_operation =
-            g_recording_channels[channel].last_buffer_operation;
+static uint32_t compute_available_space_in_channel(uint8_t chan) {
+    uint8_t *buffer_region = channels[chan].start;
+    uint8_t *end_of_buffer_region = channels[chan].end;
+    uint8_t *write_pointer = channels[chan].current_write;
+    uint8_t *read_pointer = channels[chan].current_read;
+    buffered_operations last_op = channels[chan].last_buffer_operation;
 
     if (read_pointer < write_pointer) {
         uint32_t final_space =
@@ -210,7 +205,7 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
         return final_space + initial_space;
     } else if (write_pointer < read_pointer) {
         return (uint32_t) read_pointer - (uint32_t) write_pointer;
-    } else if (last_buffer_operation == BUFFER_OPERATION_WRITE) {
+    } else if (last_op == BUFFER_OPERATION_WRITE) {
         // If pointers are equal, buffer is full if last operation is write
         return 0;
     } else {
@@ -220,11 +215,11 @@ static uint32_t compute_available_space_in_channel(uint8_t channel) {
 }
 
 static void write(
-        uint8_t channel, void *data, void *write_pointer, uint32_t length,
+        uint8_t chan, void *data, void *write_pointer, uint32_t length,
         void *finished_write_pointer, recording_complete_callback_t callback) {
     if (callback != NULL) {
         // add to DMA complete tracker
-        circular_buffer_add(dma_complete_buffer, (uint32_t) channel);
+        circular_buffer_add(dma_complete_buffer, (uint32_t) chan);
         circular_buffer_add(
                 dma_complete_buffer, (uint32_t) finished_write_pointer);
         circular_buffer_add(dma_complete_buffer, (uint32_t) callback);
@@ -237,42 +232,38 @@ static void write(
         }
     } else {
         spin1_memcpy(write_pointer, data, length);
-        g_recording_channels[channel].dma_current_write =
-                (uint8_t *) finished_write_pointer;
+        channels[chan].dma_current_write = finished_write_pointer;
     }
 }
 
 // Add a packet to the SDRAM
 static inline bool write_memory(
-        uint8_t channel, void *data, uint32_t length,
+        uint8_t chan, void *data, uint32_t length,
         recording_complete_callback_t callback) {
-    uint8_t *buffer_region = g_recording_channels[channel].start;
-    uint8_t *end_of_buffer_region = g_recording_channels[channel].end;
-    uint8_t *write_pointer = g_recording_channels[channel].current_write;
-    uint8_t *read_pointer = g_recording_channels[channel].current_read;
-    buffered_operations last_buffer_operation =
-            g_recording_channels[channel].last_buffer_operation;
+    uint8_t *buffer_region = channels[chan].start;
+    uint8_t *end_of_buffer_region = channels[chan].end;
+    uint8_t *write_pointer = channels[chan].current_write;
+    uint8_t *read_pointer = channels[chan].current_read;
+    buffered_operations last_op = channels[chan].last_buffer_operation;
 
-    log_debug("t = %u, channel = %u, start = 0x%08x, read = 0x%08x,"
+    log_debug("t = %u, channel = %u, start = 0x%08x, read = 0x%08x, "
             "write = 0x%08x, end = 0x%08x, operation == read = %u, len = %u",
-            spin1_get_simulation_time(), channel, buffer_region,
+            spin1_get_simulation_time(), chan, buffer_region,
             read_pointer, write_pointer, end_of_buffer_region,
-            last_buffer_operation == BUFFER_OPERATION_READ, length);
+            last_op == BUFFER_OPERATION_READ, length);
 
     if ((read_pointer < write_pointer) ||
-           (read_pointer == write_pointer &&
-               last_buffer_operation == BUFFER_OPERATION_READ)) {
-        uint32_t final_space =
-                (uint32_t) end_of_buffer_region - (uint32_t) write_pointer;
+           (read_pointer == write_pointer && last_op == BUFFER_OPERATION_READ)) {
+        uint32_t final_space = (uint32_t)
+                (end_of_buffer_region - write_pointer);
 
         if (final_space >= length) {
             log_debug("Packet fits in final space of %u", final_space);
-            write(channel, data, write_pointer, length,
-                    write_pointer + length, callback);
+            write(chan, data, write_pointer, length, write_pointer + length,
+                    callback);
             write_pointer += length;
         } else {
-            uint32_t total_space =
-                    final_space + ((uint32_t) read_pointer - (uint32_t) buffer_region);
+            uint32_t total_space = final_space + (read_pointer - buffer_region);
             if (total_space < length) {
                 log_debug("Not enough space in final area (%u bytes)", total_space);
                 return false;
@@ -280,8 +271,7 @@ static inline bool write_memory(
 
             log_debug("Copying first %d bytes to final space of %u", final_space);
 
-            write(channel, data, write_pointer, final_space, buffer_region,
-                    NULL);
+            write(chan, data, write_pointer, final_space, buffer_region, NULL);
 
             write_pointer = buffer_region;
             data += final_space;
@@ -289,14 +279,13 @@ static inline bool write_memory(
             uint32_t final_len = length - final_space;
             log_debug("Copying remaining %u bytes", final_len);
 
-            write(channel, data, write_pointer, final_len,
+            write(chan, data, write_pointer, final_len,
                     write_pointer + final_len, callback);
 
             write_pointer += final_len;
         }
     } else if (write_pointer < read_pointer) {
-        uint32_t middle_space =
-            (uint32_t) read_pointer - (uint32_t) write_pointer;
+        uint32_t middle_space = (uint32_t) (read_pointer - write_pointer);
 
         if (middle_space < length) {
             log_debug("Not enough space in middle (%u bytes)", middle_space);
@@ -304,8 +293,7 @@ static inline bool write_memory(
         }
 
         log_debug("Packet fits in middle space of %u", middle_space);
-        write(
-                channel, data, write_pointer, length, write_pointer + length,
+        write(chan, data, write_pointer, length, write_pointer + length,
                 callback);
         write_pointer += length;
     } else {
@@ -317,11 +305,10 @@ static inline bool write_memory(
 
     if (write_pointer == end_of_buffer_region) {
         write_pointer = buffer_region;
-        log_debug("channel %u, write wrap around", channel);
+        log_debug("channel %u, write wrap around", chan);
     }
-    g_recording_channels[channel].current_write = write_pointer;
-    g_recording_channels[channel].last_buffer_operation =
-            BUFFER_OPERATION_WRITE;
+    channels[chan].current_write = write_pointer;
+    channels[chan].last_buffer_operation = BUFFER_OPERATION_WRITE;
     return true;
 }
 
@@ -331,7 +318,7 @@ static void create_buffer_message(
     data_ptr[n_requests].processor_and_request = 0;
     data_ptr[n_requests].sequence = 0;
     data_ptr[n_requests].channel = channel;
-    data_ptr[n_requests].region = g_recording_channels[channel].region_id;
+    data_ptr[n_requests].region = channels[channel].region_id;
     data_ptr[n_requests].start_address = (uint32_t) read_pointer;
     data_ptr[n_requests].space_to_be_read = space_to_be_read;
 }
@@ -341,50 +328,39 @@ static inline void send_buffering_out_trigger_message(
     uint msg_size = 16 + sizeof(read_request_packet_header);
     uint n_requests = 0;
 
-    for (uint channel = 0; channel < n_recording_regions; channel++) {
-        uint32_t channel_space_total =
-            (uint32_t) (g_recording_channels[channel].end -
-                        g_recording_channels[channel].start);
-        uint32_t channel_space_available =
-                compute_available_space_in_channel(channel);
+    for (uint chan = 0; chan < n_recording_regions; chan++) {
+        uint32_t space_total = channels[chan].end - channels[chan].start;
+        uint32_t space_available = compute_available_space_in_channel(chan);
 
-        if (has_been_initialsed(channel) && (flush_all ||
-                (channel_space_total - channel_space_available) >=
-                     buffer_size_before_trigger)) {
-            uint8_t *buffer_region = g_recording_channels[channel].start;
-            uint8_t *end_of_buffer_region = g_recording_channels[channel].end;
-            uint8_t *write_pointer =
-                    g_recording_channels[channel].dma_current_write;
-            uint8_t *read_pointer = g_recording_channels[channel].current_read;
-            buffered_operations last_buffer_operation =
-                    g_recording_channels[channel].last_buffer_operation;
+        if (has_been_initialsed(chan) && (flush_all ||
+                space_total - space_available >= buffer_size_before_trigger)) {
+            uint8_t *buffer_region = channels[chan].start;
+            uint8_t *end_of_buffer_region = channels[chan].end;
+            uint8_t *write_pointer = channels[chan].dma_current_write;
+            uint8_t *read_pointer = channels[chan].current_read;
+            buffered_operations last_op = channels[chan].last_buffer_operation;
 
             if (read_pointer < write_pointer) {
-                create_buffer_message(
-                        data_ptr, n_requests, channel, read_pointer,
+                create_buffer_message(data_ptr, n_requests, chan, read_pointer,
                         write_pointer - read_pointer);
                 n_requests++;
             } else if ((write_pointer < read_pointer) ||
-                    (write_pointer == read_pointer &&
-                     last_buffer_operation == BUFFER_OPERATION_WRITE)) {
-                create_buffer_message(
-                        data_ptr, n_requests, channel, read_pointer,
+                    (write_pointer == read_pointer && last_op == BUFFER_OPERATION_WRITE)) {
+                create_buffer_message(data_ptr, n_requests, chan, read_pointer,
                         end_of_buffer_region - read_pointer);
                 n_requests++;
 
-                create_buffer_message(
-                        data_ptr, n_requests, channel, buffer_region,
+                create_buffer_message(data_ptr, n_requests, chan, buffer_region,
                         write_pointer - buffer_region);
                 n_requests++;
             } else {
                 /* something somewhere went terribly wrong this should never
                  * happen */
-                log_error(
-                        "Unknown channel state - channel: %d, start pointer: %d,"
+                log_error("Unknown channel state - channel: %d, start pointer: %d,"
                         " end pointer: %d, read_pointer: %d, write_pointer: %d,"
-                        " last operation==READ: %d", channel, buffer_region,
+                        " last operation==READ: %d", chan, buffer_region,
                         end_of_buffer_region, read_pointer, write_pointer,
-                        last_buffer_operation == BUFFER_OPERATION_READ);
+                        last_op == BUFFER_OPERATION_READ);
             }
         }
     }
@@ -393,8 +369,7 @@ static inline void send_buffering_out_trigger_message(
         // eieio command packet with command ID 8
         req_hdr->eieio_header_command = 0x4008;
         req_hdr->chip_id = spin1_get_chip_id();
-        data_ptr[0].processor_and_request =
-                (spin1_get_core_id() << 3) | n_requests;
+        data_ptr[0].processor_and_request = (spin1_get_core_id() << 3) | n_requests;
         data_ptr[0].sequence = sequence_number;
         log_debug("Sending request with sequence %d", sequence_number);
         msg_size += (n_requests * sizeof(read_request_packet_data));
@@ -407,10 +382,8 @@ static inline void send_buffering_out_trigger_message(
 static void buffering_in_handler(uint mailbox, uint port) {
     use(port);
     sdp_msg_t *msg = (sdp_msg_t *) mailbox;
-    uint16_t length = msg->length;
-    eieio_msg_t eieio_msg_ptr = (eieio_msg_t) &(msg->cmd_rc);
 
-    eieio_packet_handler(eieio_msg_ptr, length - 8);
+    eieio_packet_handler((eieio_msg_t) &msg->cmd_rc, msg->length - 8);
 
     log_debug("Freeing message");
     spin1_msg_free(msg);
@@ -418,21 +391,21 @@ static void buffering_in_handler(uint mailbox, uint port) {
 }
 
 bool recording_record_and_notify(
-        uint8_t channel, void *data, uint32_t size_bytes,
+        uint8_t chan, void *data, uint32_t size_bytes,
         recording_complete_callback_t callback) {
-    if (has_been_initialsed(channel)) {
-        uint32_t space_available = compute_available_space_in_channel(channel);
+    if (has_been_initialsed(chan)) {
+        uint32_t space_available = compute_available_space_in_channel(chan);
 
         // If there's space to record
         if (space_available >= size_bytes) {
             // Copy data into recording channel
-            write_memory(channel, data, size_bytes, callback);
+            write_memory(chan, data, size_bytes, callback);
             return true;
         }
 
-        if (!g_recording_channels[channel].missing_info) {
-            log_info("WARNING: recording channel %u out of space", channel);
-            g_recording_channels[channel].missing_info = 1;
+        if (!channels[chan].missing_info) {
+            log_info("WARNING: recording channel %u out of space", chan);
+            channels[chan].missing_info = 1;
         }
     }
 
@@ -443,25 +416,23 @@ bool recording_record_and_notify(
     return false;
 }
 
-bool recording_record(uint8_t channel, void *data, uint32_t size_bytes) {
+bool recording_record(uint8_t chan, void *data, uint32_t size_bytes) {
     // Because callback is NULL, spin1_memcpy will be used
-    return recording_record_and_notify(channel, data, size_bytes, NULL);
+    return recording_record_and_notify(chan, data, size_bytes, NULL);
 }
 
 //! \brief this writes the state data to the regions
 static void buffer_state_data_write(void) {
     for (uint32_t i = 0; i < n_recording_regions; i++) {
-        address_t recording_region_address = (address_t) region_addresses[i];
-        spin1_memcpy(recording_region_address, &g_recording_channels[i],
-                sizeof(recording_channel_t));
+        recording_channel_t *channel = region_addresses[i];
+        spin1_memcpy(channel, &channels[i], sizeof(recording_channel_t));
         log_debug("Storing channel %d state info starting at 0x%08x",
-                i, recording_region_address);
+                i, channel);
     }
 
     /* store info related to the state of the transmission to avoid possible
      * duplication of info on the host side */
     *last_sequence_number = sequence_number;
-
 }
 
 void recording_finalise(void) {
@@ -476,22 +447,22 @@ void recording_finalise(void) {
     buffer_state_data_write();
 
     // Loop through channels
-    for (uint32_t channel = 0; channel < n_recording_regions; channel++) {
+    for (uint32_t chan = 0; chan < n_recording_regions; chan++) {
         // If this channel's in use
-        if (has_been_initialsed(channel)) {
+        if (has_been_initialsed(chan)) {
             /* Calculate the number of bytes that have been written and write
              * back to SDRAM counter */
-            if (g_recording_channels[channel].missing_info) {
+            if (channels[chan].missing_info) {
                 log_info("\tFinalising channel %u - dropped information while"
-                        "buffering - state info stored in SDRAM", channel);
+                        " buffering - state info stored in SDRAM", chan);
             } else {
                 log_info("\tFinalising channel %u - state info stored in SDRAM",
-                        channel);
+                        chan);
             }
-            if (!close_channel(channel)) {
-                log_error("could not close channel %u.", channel);
+            if (!close_channel(chan)) {
+                log_error("could not close channel %u.", chan);
             } else {
-                log_info("closed channel %u.", channel);
+                log_info("closed channel %u.", chan);
             }
         }
     }
@@ -501,9 +472,8 @@ void recording_finalise(void) {
 static void dma_finished(uint unused, uint tag) {
     use(unused);
     use(tag);
-    uint32_t channel_id;
-    uint32_t dma_current_write;
-    uint32_t callback_address;
+
+    uint32_t channel_id, dma_current_write, callback_address;
 
     // pop region and write pointer from circular queue
     circular_buffer_get_next(dma_complete_buffer, &channel_id);
@@ -514,18 +484,15 @@ static void dma_finished(uint unused, uint tag) {
             (recording_complete_callback_t) callback_address;
 
     // update recording region dma_current_write
-    g_recording_channels[(uint8_t) channel_id].dma_current_write =
-            (uint8_t *) dma_current_write;
+    channels[channel_id].dma_current_write = (uint8_t *) dma_current_write;
 
     if (callback != NULL) {
         callback();
     }
 }
 
-bool recording_initialize(
-        address_t recording_data_address, uint32_t *recording_flags) {
-    recording_data_t *recording_data =
-            (recording_data_t *) recording_data_address;
+bool recording_initialize(address_t address, uint32_t *recording_flags) {
+    recording_data_t *recording_data = (recording_data_t *) address;
 
     // build DMA address circular queue
     dma_complete_buffer = circular_buffer_initialize(DMA_QUEUE_SIZE * 4);
@@ -540,7 +507,7 @@ bool recording_initialize(
     if (time_between_triggers < MIN_TIME_BETWEEN_TRIGGERS) {
         time_between_triggers = MIN_TIME_BETWEEN_TRIGGERS;
     }
-    last_sequence_number = &(recording_data->last_sequence_number);
+    last_sequence_number = &recording_data->last_sequence_number;
 
     log_info("Recording %d regions, using output tag %d, "
             "size before trigger %d, time between triggers %d",
@@ -548,8 +515,8 @@ bool recording_initialize(
             buffer_size_before_trigger, time_between_triggers);
 
     // Set up the space for holding recording pointers and sizes
-    region_addresses =
-            spin1_malloc(n_recording_regions * sizeof(recording_channel_t *));
+    region_addresses = spin1_malloc(
+            n_recording_regions * sizeof(recording_channel_t *));
     if (region_addresses == NULL) {
         log_error("Not enough space to allocate recording addresses");
         return false;
@@ -568,35 +535,36 @@ bool recording_initialize(
     /* Reserve the actual recording regions.
      *
      * An extra sizeof(recording_channel_t) bytes are reserved per channel
-     * to store the data after recording */
-    for (uint32_t counter = 0; counter < n_recording_regions; counter++) {
+     * to store the data after recording. */
+    for (uint32_t i = 0; i < n_recording_regions; i++) {
         uint32_t size = (uint32_t)
-                recording_data->region_pointers[n_recording_regions + counter];
+                recording_data->region_pointers[n_recording_regions + i];
         if (size > 0) {
-            region_sizes[counter] = size;
-            region_addresses[counter] = sark_xalloc(
+            region_sizes[i] = size;
+            region_addresses[i] = sark_xalloc(
                     sv->sdram_heap, size + sizeof(recording_channel_t), 0,
                     ALLOC_LOCK + ALLOC_ID + (sark_vec->app_id << 8));
-            if (region_addresses[counter] == NULL) {
+            if (region_addresses[i] == NULL) {
                 log_error("Could not allocate recording region %u of %u bytes",
-                        counter, size);
+                        i, size);
                 return false;
             }
-            recording_data->region_pointers[counter] = region_addresses[counter];
-            *recording_flags = (*recording_flags | (1 << counter));
+            recording_data->region_pointers[i] = region_addresses[i];
+            if (recording_flags != NULL) {
+                *recording_flags |= 1 << i;
+            }
         } else {
-            recording_data->region_pointers[counter] = 0;
-            region_addresses[counter] = 0;
-            region_sizes[counter] = 0;
+            recording_data->region_pointers[i] = 0;
+            region_addresses[i] = 0;
+            region_sizes[i] = 0;
         }
     }
-    g_recording_channels =
-            spin1_malloc(n_recording_regions * sizeof(recording_channel_t));
-    if (!g_recording_channels) {
+    channels = spin1_malloc(n_recording_regions * sizeof(recording_channel_t));
+    if (!channels) {
         log_error("Not enough space to create recording channels");
         return false;
     }
-    log_debug("Allocated recording channels to 0x%08x", g_recording_channels);
+    log_debug("Allocated recording channels to 0x%08x", channels);
 
     // Set up the channels and write the initial state data
     recording_reset();
@@ -621,6 +589,17 @@ bool recording_initialize(
     return true;
 }
 
+static inline void init_channel(uint32_t idx, uint8_t *data_addr, uint32_t size) {
+    channels[idx].start = data_addr;
+    channels[idx].current_write = data_addr;
+    channels[idx].dma_current_write = data_addr;
+    channels[idx].current_read = data_addr;
+    channels[idx].end = data_addr + size;
+    channels[idx].last_buffer_operation = BUFFER_OPERATION_READ;
+    channels[idx].region_id = idx;
+    channels[idx].missing_info = 0;
+}
+
 void recording_reset(void) {
     // Go through the regions and set up the data
     for (uint32_t i = 0; i < n_recording_regions; i++) {
@@ -628,37 +607,16 @@ void recording_reset(void) {
         log_debug("region size %d", region_size);
         if (region_size > 0) {
             recording_channel_t *region_ptr = region_addresses[i];
-
-            log_debug("%d is size of buffer state in words",
-                    sizeof(recording_channel_t) / sizeof(address_t));
-
-            uint8_t *region_data_address = (uint8_t *) &region_ptr[1];
+            // Recording area is immediately after the metadata
 
             // store pointers to the start, current position and end of this
-            g_recording_channels[i].start = region_data_address;
-            g_recording_channels[i].current_write = region_data_address;
-            g_recording_channels[i].dma_current_write = region_data_address;
-            g_recording_channels[i].current_read = region_data_address;
-            g_recording_channels[i].end = region_data_address + region_size;
-            g_recording_channels[i].last_buffer_operation =
-                    BUFFER_OPERATION_READ;
-            g_recording_channels[i].region_id = i;
-            g_recording_channels[i].missing_info = 0;
+            init_channel(i, (uint8_t *) &region_ptr[1], region_size);
 
             log_info("Recording channel %u configured to use %u byte memory "
                     "block starting at 0x%08x", i, region_size,
-                    g_recording_channels[i].start);
+                    channels[i].start);
         } else {
-            g_recording_channels[i].start = NULL;
-            g_recording_channels[i].current_write = NULL;
-            g_recording_channels[i].dma_current_write = NULL;
-            g_recording_channels[i].current_read = NULL;
-            g_recording_channels[i].end = NULL;
-            g_recording_channels[i].last_buffer_operation =
-                    BUFFER_OPERATION_READ;
-            g_recording_channels[i].region_id = i;
-            g_recording_channels[i].missing_info = 0;
-
+            init_channel(i, NULL, 0);
             log_info("Recording channel %u left uninitialised", i);
         }
     }
@@ -669,7 +627,7 @@ void recording_reset(void) {
 
 void recording_do_timestep_update(uint32_t time) {
     if (!sequence_ack &&
-            ((time - last_time_buffering_trigger) > time_between_triggers)) {
+            (time - last_time_buffering_trigger > time_between_triggers)) {
         log_debug("Sending buffering trigger message");
         send_buffering_out_trigger_message(0);
         last_time_buffering_trigger = time;

@@ -28,22 +28,24 @@ typedef struct simulation_provenance_t {
 } simulation_provenance_t;
 
 //! the pointer to the simulation time used by application models
-static uint32_t *pointer_to_simulation_time;
+static uint32_t *sim_time_ptr;
 
 //! the pointer to the flag for if it is a infinite run
-static uint32_t *pointer_to_infinite_run;
+static uint32_t *inf_run_flag_ptr;
 
-//! the function call to run when extracting provenance data from the chip
-static prov_callback_t stored_provenance_function = NULL;
-
-//! the function call to run when received a exit command.
-static exit_callback_t stored_exit_function = NULL;
-
-//! the function call to run just before resuming a simulation
-static resume_callback_t stored_resume_function = NULL;
-
-//! the region ID for storing provenance data from the chip
-static simulation_provenance_t *stored_provenance_data = NULL;
+//! general collection of provenance-related information
+static struct {
+    //! the function call to run when extracting provenance data from the chip
+    prov_callback_t extra_prov_provider;
+    //! the function call to run when received a exit command.
+    exit_callback_t exit_callback;
+    //! the function call to run just before resuming a simulation
+    resume_callback_t resume_callback;
+    //! the region ID for storing provenance data from the chip
+    simulation_provenance_t *data;
+} provenance = {
+    NULL, NULL, NULL, NULL
+};
 
 //! the list of SDP callbacks for ports
 static callback_t sdp_callback[NUM_SDP_PORTS];
@@ -55,25 +57,24 @@ static callback_t dma_complete_callbacks[MAX_DMA_CALLBACK_TAG];
 static void execute_provenance_storage(void) {
     extern diagnostics_t diagnostics;
 
-    if (stored_provenance_data != NULL) {
+    if (provenance.data != NULL) {
         log_info("Starting basic provenance gathering");
 
         // store the data into the provenance data region
-        stored_provenance_data->transmission_event_overflow =
+        provenance.data->transmission_event_overflow =
                 diagnostics.tx_packet_queue_full;
-        stored_provenance_data->callback_queue_overload =
-                diagnostics.task_queue_full;
-        stored_provenance_data->dma_queue_overload =
-                diagnostics.dma_queue_full;
-        stored_provenance_data->timer_tick_has_overrun =
+        provenance.data->callback_queue_overload = diagnostics.task_queue_full;
+        provenance.data->dma_queue_overload = diagnostics.dma_queue_full;
+        provenance.data->timer_tick_has_overrun =
                 diagnostics.total_times_tick_tic_callback_overran;
-        stored_provenance_data->max_timer_tick_overrun_count =
+        provenance.data->max_timer_tick_overrun_count =
                 diagnostics.largest_number_of_concurrent_timer_tic_overruns;
 
-        if (stored_provenance_function != NULL) {
+        if (provenance.extra_prov_provider != NULL) {
             log_info("running other provenance gathering");
-            void *extra_prov_ptr = &stored_provenance_data[1];
-            stored_provenance_function(extra_prov_ptr);
+
+            void *extra_prov_ptr = &provenance.data[1];
+            provenance.extra_prov_provider(extra_prov_ptr);
         }
     }
 }
@@ -87,11 +88,11 @@ void simulation_run(void) {
 //!        the resetting up of states as required to resume.
 //! \param[in] resume_function The function to call just before the simulation
 //!            is resumed (to allow the resetting of the simulation)
-void simulation_handle_pause_resume(resume_callback_t callback){
+void simulation_handle_pause_resume(resume_callback_t callback) {
     // Pause the simulation
     spin1_pause();
 
-    stored_resume_function = callback;
+    provenance.resume_callback = callback;
 
     // Store provenance data as required
     execute_provenance_storage();
@@ -110,15 +111,19 @@ void simulation_ready_to_read(void) {
 //! \brief method for sending OK response to the host when a command message
 //! is received.
 //! \param[in] msg: the message object to send to the host.
-static void send_ok_response(sdp_msg_t *msg){
+static void send_ok_response(sdp_msg_t *msg) {
     msg->cmd_rc = RC_OK;
     msg->length = 12;
+
+    // reverse the direction of the message by swapping ports and addresses
     uint dest_port = msg->dest_port;
-    uint dest_addr = msg->dest_addr;
     msg->dest_port = msg->srce_port;
     msg->srce_port = dest_port;
+
+    uint dest_addr = msg->dest_addr;
     msg->dest_addr = msg->srce_addr;
     msg->srce_addr = dest_addr;
+
     spin1_send_sdp_msg(msg, 10);
 }
 
@@ -140,9 +145,9 @@ static void control_scp_callback(uint mailbox, uint port) {
         spin1_msg_free(msg);
 
         // call any stored exit callbacks
-        if (stored_exit_function != NULL){
+        if (provenance.exit_callback != NULL) {
             log_info("Calling pre-exit function");
-            stored_exit_function();
+            provenance.exit_callback();
         }
         log_info("Exiting");
         spin1_exit(0);
@@ -154,13 +159,13 @@ static void control_scp_callback(uint mailbox, uint port) {
                 msg->arg2);
 
         // resetting the simulation time pointer
-        *pointer_to_simulation_time = msg->arg1;
-        *pointer_to_infinite_run = msg->arg2;
+        *sim_time_ptr = msg->arg1;
+        *inf_run_flag_ptr = msg->arg2;
 
-        if (stored_resume_function != NULL) {
+        if (provenance.resume_callback != NULL) {
             log_info("Calling pre-resume function");
-            stored_resume_function();
-            stored_resume_function = NULL;
+            provenance.resume_callback();
+            provenance.resume_callback = NULL;
         }
         log_info("Resuming");
         spin1_resume(SYNC_WAIT);
@@ -181,9 +186,9 @@ static void control_scp_callback(uint mailbox, uint port) {
         execute_provenance_storage();
 
         // call any stored exit callbacks
-        if (stored_exit_function != NULL){
+        if (provenance.exit_callback != NULL) {
             log_info("Calling pre-exit function");
-            stored_exit_function();
+            provenance.exit_callback();
         }
         spin1_msg_free(msg);
         spin1_exit(1);
@@ -211,7 +216,7 @@ static void control_scp_callback(uint mailbox, uint port) {
 
 //! \brief handles the SDP callbacks interface.
 static void sdp_callback_handler(uint mailbox, uint port) {
-    if (sdp_callback[port] != NULL) {
+    if (port < NUM_SDP_PORTS && sdp_callback[port] != NULL) {
         // if a callback is associated with the port, process it
         sdp_callback[port](mailbox, port);
     } else {
@@ -222,7 +227,7 @@ static void sdp_callback_handler(uint mailbox, uint port) {
 }
 
 bool simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
-    if (sdp_callback[sdp_port] != NULL) {
+    if (sdp_port >= NUM_SDP_PORTS || sdp_callback[sdp_port] != NULL) {
         log_error("Cannot allocate SDP callback on port %d as its already "
                 "been allocated.", sdp_port);
         return false;
@@ -232,7 +237,9 @@ bool simulation_sdp_callback_on(uint sdp_port, callback_t callback) {
 }
 
 void simulation_sdp_callback_off(uint sdp_port) {
-    sdp_callback[sdp_port] = NULL;
+    if (sdp_port < NUM_SDP_PORTS) {
+        sdp_callback[sdp_port] = NULL;
+    }
 }
 
 //! \brief handles the DMA transfer done callbacks interface.
@@ -262,7 +269,9 @@ bool simulation_dma_transfer_done_callback_on(uint tag, callback_t callback) {
 }
 
 void simulation_dma_transfer_done_callback_off(uint tag) {
-    dma_complete_callbacks[tag] = NULL;
+    if (tag < MAX_DMA_CALLBACK_TAG) {
+        dma_complete_callbacks[tag] = NULL;
+    }
 }
 
 bool simulation_initialise(
@@ -271,6 +280,7 @@ bool simulation_initialise(
         uint32_t *infinite_run_pointer, int sdp_packet_callback_priority,
         int dma_transfer_done_callback_priority) {
     simulation_config_t *config = (simulation_config_t *) address;
+
     // handle the timing reading
     if (config->magic_number != expected_app_magic_number) {
         log_error("Unexpected magic number 0x%08x instead of 0x%08x at 0x%08x",
@@ -290,8 +300,8 @@ bool simulation_initialise(
     *timer_period = config->timer_period;
 
     // handle the SDP callback for the simulation
-    pointer_to_simulation_time = simulation_ticks_pointer;
-    pointer_to_infinite_run = infinite_run_pointer;
+    sim_time_ptr = simulation_ticks_pointer;
+    inf_run_flag_ptr = infinite_run_pointer;
 
     spin1_callback_on(SDP_PACKET_RX, sdp_callback_handler,
             sdp_packet_callback_priority);
@@ -304,16 +314,16 @@ bool simulation_initialise(
 }
 
 void simulation_set_provenance_data_address(address_t provenance_data_address) {
-    stored_provenance_data = (simulation_provenance_t *) provenance_data_address;
+    provenance.data = (simulation_provenance_t *) provenance_data_address;
 }
 
 void simulation_set_provenance_function(
         prov_callback_t provenance_function,
         address_t provenance_data_address) {
-    stored_provenance_function = provenance_function;
-    stored_provenance_data = (simulation_provenance_t *) provenance_data_address;
+    provenance.extra_prov_provider = provenance_function;
+    provenance.data = (simulation_provenance_t *) provenance_data_address;
 }
 
 void simulation_set_exit_function(exit_callback_t exit_function) {
-    stored_exit_function = exit_function;
+    provenance.exit_callback = exit_function;
 }

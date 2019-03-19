@@ -1,29 +1,29 @@
 #ifndef PROFILER_H
 #define PROFILER_H
 
-#define PROFILER_N_HEADER_WORDS 1
-
-//---------------------------------------
-// Declared functions
-//---------------------------------------
-// Initialised the profiler from a SDRAM region
-void profiler_init(uint32_t* data_region);
-
-// Finalises profiling - potentially slow process of writing profiler_count to
-// SDRAM
-void profiler_finalise();
-
-#ifdef PROFILER_ENABLED
-
-#include <stdint.h>
-#include <spin1_api.h>
-
 //---------------------------------------
 // Macros
 //---------------------------------------
 // Types of profiler event
 #define PROFILER_ENTER          (1 << 31)
 #define PROFILER_EXIT           0
+
+#define PROFILER_N_HEADER_WORDS 1
+
+//---------------------------------------
+// Declared functions
+//---------------------------------------
+// Initialised the profiler from a SDRAM region
+void profiler_init(uint32_t *data_region);
+
+// Finalises profiling - potentially slow process of writing profiler_count to
+// SDRAM
+void profiler_finalise(void);
+
+#ifdef PROFILER_ENABLED
+
+#include <stdint.h>
+#include <spin1_api.h>
 
 //---------------------------------------
 // Externals

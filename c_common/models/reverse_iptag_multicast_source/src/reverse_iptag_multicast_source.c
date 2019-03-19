@@ -452,6 +452,13 @@ static inline bool add_eieio_packet_to_sdram(
     return true;
 }
 
+static inline bool key_matches(uint32_t key) {
+    if (!check) {
+        return true;
+    }
+    return (key & mask) == key_space;
+}
+
 static inline void process_16_bit_packets(
         uint16_t* data_ptr, bool prefix_upper, uint32_t count,
         uint32_t key_prefix, uint32_t payload_prefix, bool has_payload,
@@ -484,24 +491,24 @@ static inline void process_16_bit_packets(
 
         log_debug("check before send packet: check=%d, key=0x%08x, mask=0x%08x,"
                 " key_space=%d: %d", check, key, mask, key_space,
-                (!check) || (check && ((key & mask) == key_space)));
+                key_matches(key));
+        if (!key_matches(key)) {
+            incorrect_keys++;
+            continue;
+        }
 
-        if (!check || (check && ((key & mask) == key_space))) {
-            n_send_packets++;
-            if (has_payload && !payload_is_timestamp) {
-                log_debug("mc packet 16-bit key=%d, payload=%d",
-                        key, payload);
-                while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
-                    spin1_delay_us(1);
-                }
-            } else {
-                log_debug("mc packet 16-bit key=%d", key);
-                while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
-                    spin1_delay_us(1);
-                }
+        n_send_packets++;
+        if (has_payload && !payload_is_timestamp) {
+            log_debug("mc packet 16-bit key=%d, payload=%d",
+                    key, payload);
+            while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                spin1_delay_us(1);
             }
         } else {
-            incorrect_keys++;
+            log_debug("mc packet 16-bit key=%d", key);
+            while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                spin1_delay_us(1);
+            }
         }
     }
 }
@@ -531,25 +538,24 @@ static inline void process_32_bit_packets(
         key |= key_prefix;
         payload |= payload_prefix;
 
-        log_debug("check before send packet: %d",
-                (!check) || (check && ((key & mask) == key_space)));
+        log_debug("check before send packet: %d", key_matches(key));
+        if (!key_matches(key)) {
+            incorrect_keys++;
+            continue;
+        }
 
-        if (!check || (check && ((key & mask) == key_space))) {
-            n_send_packets++;
-            if (has_payload && !payload_is_timestamp) {
-                log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
-                        key, payload);
-                while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
-                    spin1_delay_us(1);
-                }
-            } else {
-                log_debug("mc packet 32-bit key=0x%08x", key);
-                while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
-                    spin1_delay_us(1);
-                }
+        n_send_packets++;
+        if (has_payload && !payload_is_timestamp) {
+            log_debug("mc packet 32-bit key=0x%08x, payload=0x%08x",
+                    key, payload);
+            while (!spin1_send_mc_packet(key, payload, WITH_PAYLOAD)) {
+                spin1_delay_us(1);
             }
         } else {
-            incorrect_keys++;
+            log_debug("mc packet 32-bit key=0x%08x", key);
+            while (!spin1_send_mc_packet(key, 0, NO_PAYLOAD)) {
+                spin1_delay_us(1);
+            }
         }
     }
 }
@@ -920,7 +926,7 @@ static bool read_parameters(configuration_t *config_ptr) {
     req_ptr = (req_packet_sdp_t*) &(req.cmd_rc);
     req_ptr->eieio_header_command = 1 << 14 | SPINNAKER_REQUEST_BUFFERS;
     req_ptr->chip_id = spin1_get_chip_id();
-    req_ptr->processor = (spin1_get_core_id() << 3);
+    req_ptr->processor = spin1_get_core_id() << 3;
     req_ptr->pad1 = 0;
     req_ptr->region = BUFFER_REGION & 0x0F;
 
@@ -1034,7 +1040,7 @@ static void resume_callback(void) {
     stopped = false;
 }
 
-static inline void suspend_running() {
+static inline void suspend_running(void) {
     // Enter pause and resume state to avoid another tick
     simulation_handle_pause_resume(resume_callback);
 

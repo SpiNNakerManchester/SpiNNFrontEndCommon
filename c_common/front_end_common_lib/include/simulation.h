@@ -27,11 +27,11 @@ typedef enum simulation_commands{
 typedef void (*prov_callback_t)(address_t);
 
 //! the definition of the callback used by pause and resume
-typedef void (*resume_callback_t)();
+typedef void (*resume_callback_t)(void);
 
 //! the definition of the callback used by pause and resume when exit command
 //! is sent and models want to do cleaning up
-typedef void (*exit_callback_t)();
+typedef void (*exit_callback_t)(void);
 
 //! \brief initialises the simulation interface which involves:
 //! 1. Reading the timing details for the simulation out of a region,
@@ -91,14 +91,14 @@ void simulation_handle_pause_resume(resume_callback_t resume_function);
 
 //! \brief a helper method for people not using the auto pause and
 //! resume functionality
-void simulation_exit();
+void simulation_exit(void);
 
 //! \brief Starts the simulation running, returning when it is complete,
-void simulation_run();
+void simulation_run(void);
 
 //! \brief Indicates that all data has been written and the core is going
 //!        idle, so any data can now be read
-void simulation_ready_to_read();
+void simulation_ready_to_read(void);
 
 //! \brief Registers an additional SDP callback on a given SDP port.  This is
 //!        required when using simulation_register_sdp_callback, as this will

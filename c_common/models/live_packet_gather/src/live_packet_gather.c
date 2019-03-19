@@ -6,7 +6,7 @@
 #include <spin1_api.h>
 
 // Globals
-static sdp_msg_t g_event_message;
+static sdp_msg_t event_message;
 static uint16_t *sdp_msg_aer_header;
 static uint16_t *sdp_msg_aer_key_prefix;
 static void *sdp_msg_aer_payload_prefix;
@@ -46,7 +46,7 @@ enum regions_e {
 
 //! Human readable definitions of each element in the configuration region in
 //! SDRAM
-struct configuration_region_t {
+typedef struct configuration_region_t {
     // P bit
     uint32_t apply_prefix;
     // Prefix data
@@ -68,9 +68,9 @@ struct configuration_region_t {
     uint32_t sdp_tag;
     uint32_t sdp_destination;
     uint32_t packets_per_timestamp;
-};
+} configuration_region_t;
 
-struct configuration_region_t config;
+configuration_region_t config;
 static uint16_t sdp_dest; // Not in the configuration_region_t; type different
 
 //! How to test if a bit flag is set
@@ -85,7 +85,6 @@ static uint16_t sdp_dest; // Not in the configuration_region_t; type different
 #define HAVE_WIDE_LOAD(pkt_type)	FLAG_IS_SET(pkt_type, 0x2)
 
 static void flush_events(void) {
-
     // Send the event message only if there is data
     if (buffer_index > 0) {
         uint8_t event_count;
@@ -106,7 +105,7 @@ static void flush_events(void) {
             sdp_msg_aer_header[0] |= temp_header;
             sdp_msg_aer_header[0] |= CLAMP8(event_count);
 
-            g_event_message.length =
+            event_message.length =
                     sizeof(sdp_hdr_t) + header_len + event_count * event_size;
 
             if (config.payload_apply_prefix && config.payload_timestamp) {
@@ -120,7 +119,7 @@ static void flush_events(void) {
                 }
             }
 
-            spin1_send_sdp_msg(&g_event_message, 1);
+            spin1_send_sdp_msg(&event_message, 1);
             packets_sent++;
         }
 
@@ -181,51 +180,74 @@ static void flush_events_if_full(void) {
     }
 }
 
+// processes an incoming multicast 16-bit packet without payload
+static inline void process_incoming_16bit_event(
+        uint key, uint16_t *buf_pointer) {
+    // 16 bit packet
+    buf_pointer[buffer_index++] = CLAMP16(key >> config.key_right_shift);
+
+    // if there is a payload to be added
+    if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        buf_pointer[buffer_index++] = 0;
+    } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        buf_pointer[buffer_index++] = CLAMP16(time);
+    }
+}
+
+// processes an incoming multicast 32-bit packet without payload
+static inline void process_incoming_32bit_event(
+        uint key, uint32_t *buf_pointer) {
+    // 32 bit packet
+    buf_pointer[buffer_index++] = key;
+
+    // if there is a payload to be added
+    if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        buf_pointer[buffer_index++] = 0;
+    } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        buf_pointer[buffer_index++] = time;
+    }
+}
+
 // processes an incoming multicast packet without payload
 static void process_incoming_event(uint key) {
     log_debug("Processing key %x", key);
 
     // process the received spike
-    uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
     if (!HAVE_WIDE_LOAD(config.packet_type)) {
-
-        // 16 bit packet
-        buf_pointer[buffer_index] = CLAMP16(key >> config.key_right_shift);
-        buffer_index++;
-
-        // if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            buf_pointer[buffer_index] = 0;
-            buffer_index++;
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            buf_pointer[buffer_index] = CLAMP16(time);
-            buffer_index++;
-        }
+        process_incoming_16bit_event(key, sdp_msg_aer_data);
     } else {
-
-        // 32 bit packet
-        uint16_t spike_index = buffer_index << 1;
-
-        buf_pointer[spike_index] = CLAMP16(key);
-        buf_pointer[spike_index + 1] = CLAMP16(key >> 16);
-        buffer_index++;
-
-        // if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            spike_index = buffer_index << 1;
-            buf_pointer[spike_index] = 0;
-            buf_pointer[spike_index + 1] = 0;
-            buffer_index++;
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            spike_index = buffer_index << 1;
-            buf_pointer[spike_index] = CLAMP16(time);
-            buf_pointer[spike_index + 1] = CLAMP16(time >> 16);
-            buffer_index++;
-        }
+        process_incoming_32bit_event(key, sdp_msg_aer_data);
     }
 
     // send packet if enough data is stored
     flush_events_if_full();
+}
+
+// processes an incoming multicast 16-bit packet with payload
+static inline void process_incoming_16bit_event_payload(
+        uint key, uint payload, uint16_t *buf_pointer) {
+    //16 bit packet
+    buf_pointer[buffer_index++] = CLAMP16(key >> config.key_right_shift);
+
+    //if there is a payload to be added
+    if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        buf_pointer[buffer_index++] = CLAMP16(payload >> config.payload_right_shift);
+    } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        buf_pointer[buffer_index++] = CLAMP16(time);
+    }
+}
+
+static inline void process_incoming_32bit_event_payload(
+        uint key, uint payload, uint32_t *buf_pointer) {
+    //32 bit packet
+    buf_pointer[buffer_index++] = key;
+
+    //if there is a payload to be added
+    if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
+        buf_pointer[buffer_index++] = payload;
+    } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
+        buf_pointer[buffer_index++] = time;
+    }
 }
 
 // processes an incoming multicast packet with payload
@@ -235,40 +257,9 @@ static void process_incoming_event_payload(uint key, uint payload) {
     // process the received spike
     uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
     if (!HAVE_WIDE_LOAD(config.packet_type)) {
-
-        //16 bit packet
-        buf_pointer[buffer_index] = CLAMP16(key >> config.key_right_shift);
-        buffer_index++;
-
-        //if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            buf_pointer[buffer_index] = CLAMP16(payload >> config.payload_right_shift);
-            buffer_index++;
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            buf_pointer[buffer_index] = CLAMP16(time);
-            buffer_index++;
-        }
+        process_incoming_16bit_event_payload(key, payload, sdp_msg_aer_data);
     } else {
-
-        //32 bit packet
-        uint16_t spike_index = buffer_index << 1;
-
-        buf_pointer[spike_index] = CLAMP16(key);
-        buf_pointer[spike_index + 1] = CLAMP16(key >> 16);
-        buffer_index++;
-
-        //if there is a payload to be added
-        if (HAVE_PAYLOAD(config.packet_type) && !config.payload_timestamp) {
-            spike_index = buffer_index << 1;
-            buf_pointer[spike_index] = CLAMP16(payload);
-            buf_pointer[spike_index + 1] = CLAMP16(payload >> 16);
-            buffer_index++;
-        } else if (HAVE_PAYLOAD(config.packet_type) && config.payload_timestamp) {
-            spike_index = buffer_index << 1;
-            buf_pointer[spike_index] = CLAMP16(time);
-            buf_pointer[spike_index + 1] = CLAMP16(time >> 16);
-            buffer_index++;
-        }
+        process_incoming_32bit_event_payload(key, payload, sdp_msg_aer_data);
     }
 
     // send packet if enough data is stored
@@ -319,8 +310,7 @@ static void incoming_event_payload_callback(uint key, uint payload) {
 }
 
 static void read_parameters(address_t region_address) {
-    struct configuration_region_t *config_ptr =
-            (struct configuration_region_t *) region_address;
+    configuration_region_t *config_ptr = (configuration_region_t *) region_address;
 
     config = *config_ptr;
     sdp_dest = config_ptr->sdp_destination;
@@ -340,7 +330,6 @@ static void read_parameters(address_t region_address) {
 }
 
 static bool initialize(uint32_t *timer_period_ptr) {
-
     // Get the address this core's DTCM data starts at from SRAM
     address_t address = data_specification_get_data_address();
 
@@ -380,45 +369,45 @@ static bool configure_sdp_msg(void) {
     event_size = 0;
 
     // initialise SDP header
-    g_event_message.tag = config.sdp_tag;
+    event_message.tag = config.sdp_tag;
 
     // No reply required
-    g_event_message.flags = 0x07;
+    event_message.flags = 0x07;
 
     // Chip 0,0
-    g_event_message.dest_addr = sdp_dest;
+    event_message.dest_addr = sdp_dest;
 
     // Dump through Ethernet
-    g_event_message.dest_port = PORT_ETH;
+    event_message.dest_port = PORT_ETH;
 
     // Set up monitoring address and port
-    g_event_message.srce_addr = spin1_get_chip_id();
-    g_event_message.srce_port = (3 << PORT_SHIFT) | spin1_get_core_id();
+    event_message.srce_addr = spin1_get_chip_id();
+    event_message.srce_port = (3 << PORT_SHIFT) | spin1_get_core_id();
 
     // check incompatible options
     if (config.payload_timestamp && config.payload_apply_prefix
             && HAVE_PAYLOAD(config.packet_type)) {
-        log_error("Timestamp can either be included as payload prefix or as"
-                  "payload to each key, not both\n");
+        log_error("Timestamp can either be included as payload prefix or as "
+                "payload to each key, not both\n");
         return false;
     }
     if (config.payload_timestamp && !config.payload_apply_prefix
             && !HAVE_PAYLOAD(config.packet_type)) {
-        log_error("Timestamp can either be included as payload prefix or as"
-                  "payload to each key, but current configuration does not"
-                  "specify either of these\n");
+        log_error("Timestamp can either be included as payload prefix or as "
+                "payload to each key, but current configuration does not "
+                "specify either of these\n");
         return false;
     }
 
     // initialise AER header
     // pointer to data space
-    sdp_msg_aer_header = &g_event_message.cmd_rc;
+    sdp_msg_aer_header = &event_message.cmd_rc;
 
-    temp_header |= (config.apply_prefix << 15);
-    temp_header |= (config.prefix_type << 14);
-    temp_header |= (config.payload_apply_prefix << 13);
-    temp_header |= (config.payload_timestamp << 12);
-    temp_header |= (config.packet_type << 10);
+    temp_header |= config.apply_prefix << 15;
+    temp_header |= config.prefix_type << 14;
+    temp_header |= config.payload_apply_prefix << 13;
+    temp_header |= config.payload_timestamp << 12;
+    temp_header |= config.packet_type << 10;
 
     header_len = 2;
 
