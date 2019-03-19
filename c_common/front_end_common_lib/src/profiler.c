@@ -22,7 +22,7 @@ uint32_t *profiler_output = NULL;
 //---------------------------------------
 // Functions
 //---------------------------------------
-void profiler_init(address_t data_region) {
+void profiler_init(uint32_t *data_region) {
     profiler_region_t *region = (profiler_region_t *) data_region;
     log_info("Reading profile setup from 0x%08x", region);
     profiler_samples_remaining = region->count;
