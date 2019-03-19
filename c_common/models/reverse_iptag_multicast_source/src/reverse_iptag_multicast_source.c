@@ -7,7 +7,7 @@
 #include "recording.h"
 
 // Declare wfi function
-extern void spin1_wfi();
+extern void spin1_wfi(void);
 
 #ifndef APPLICATION_NAME_HASH
 #define APPLICATION_NAME_HASH 0

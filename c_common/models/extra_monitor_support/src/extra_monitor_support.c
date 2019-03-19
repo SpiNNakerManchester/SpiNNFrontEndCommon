@@ -295,8 +295,8 @@ static bool reinject_fr;
 static bool run = true;
 
 // VIC
-typedef void (*isr_t) ();
-volatile isr_t* const vic_vectors  = (isr_t *) (VIC_BASE + 0x100);
+typedef void (*isr_t) (void);
+volatile isr_t* const vic_vectors = (isr_t *) (VIC_BASE + 0x100);
 volatile uint* const vic_controls = (uint *) (VIC_BASE + 0x200);
 
 // ------------------------------------------------------------------------
@@ -345,7 +345,7 @@ static uint32_t stop = 0;
 #define INT_HANDLER void __attribute__((interrupt("IRQ")))
 #endif
 
-extern void spin1_wfi();
+extern void spin1_wfi(void);
 extern INT_HANDLER sark_int_han(void);
 
 // ------------------------------------------------------------------------

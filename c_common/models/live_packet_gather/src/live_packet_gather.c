@@ -255,7 +255,6 @@ static void process_incoming_event_payload(uint key, uint payload) {
     log_debug("Processing key %x, payload %x", key, payload);
 
     // process the received spike
-    uint16_t *buf_pointer = (uint16_t *) sdp_msg_aer_data;
     if (!HAVE_WIDE_LOAD(config.packet_type)) {
         process_incoming_16bit_event_payload(key, payload, sdp_msg_aer_data);
     } else {
