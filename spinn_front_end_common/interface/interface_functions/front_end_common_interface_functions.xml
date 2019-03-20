@@ -96,7 +96,6 @@
             <param_name>router_tables</param_name>
             <param_name>transceiver</param_name>
             <param_name>machine</param_name>
-            <param_name>graph_mapper</param_name>
             <param_name>placements</param_name>
             <param_name>default_report_folder</param_name>
             <param_name>produce_report</param_name>
@@ -110,6 +109,7 @@
         <optional_inputs>
             <param_name>time_to_try_for_each_iteration</param_name>
             <param_name>target_length</param_name>
+            <param_name>graph_mapper</param_name>
         </optional_inputs>
         <outputs>
             <param_type>MemoryCompressedRoutingTables</param_type>
@@ -219,7 +219,6 @@
             <param_name>app_id</param_name>
             <param_name>provenance_file_path</param_name>
             <param_name>machine_graph</param_name>
-            <param_name>graph_mapper</param_name>
             <param_name>placements</param_name>
             <param_name>produce_report</param_name>
             <param_name>default_report_folder</param_name>
@@ -235,6 +234,7 @@
         <optional_inputs>
             <param_name>compress_only_when_needed</param_name>
             <param_name>compress_as_much_as_possible</param_name>
+            <param_name>graph_mapper</param_name>
         </optional_inputs>
         <outputs>
             <token part="MulticastRoutesLoaded">DataLoaded</token>
