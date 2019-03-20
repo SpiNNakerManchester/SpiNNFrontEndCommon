@@ -43,5 +43,6 @@ setup(
                       'requests >= 2.4.1',
                       'scipy >= 0.16.0',
                       'numpy',
+                      'futures; python_version == "2.7"',
                       'six']
 )

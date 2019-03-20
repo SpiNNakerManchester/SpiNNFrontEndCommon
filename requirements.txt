@@ -10,3 +10,4 @@ spalloc >= 1.0.1, < 2.0.0
 requests >= 2.4.1
 scipy >= 0.16.0
 numpy
+futures; python_version == "2.7"

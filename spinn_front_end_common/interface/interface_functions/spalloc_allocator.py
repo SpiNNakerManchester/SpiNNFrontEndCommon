@@ -1,4 +1,6 @@
 import math
+import six
+import sys
 from spinn_utilities.overrides import overrides
 from spalloc import Job
 from spalloc.states import JobState
@@ -51,6 +53,9 @@ class _SpallocJobController(MachineAllocationController):
             if self._state != JobState.destroyed:
                 self._state = self._job.wait_for_state_change(self._state)
         except Exception:
+            if not self._exited:
+                six.reraise(*sys.exc_info())
+        except TypeError:
             pass
         return self._state != JobState.destroyed
 

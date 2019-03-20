@@ -2,7 +2,11 @@ language: python
 python:
   - 2.7
   - 3.6
-dist: trusty
+dist: xenial
+matrix:
+  include:
+    - python: 3.7
+      sudo: true
 
 addons:
   apt:
@@ -57,7 +61,7 @@ script:
   # C  # Vera before make to avoid vera seeing modified stuff
   - support/run-vera.sh c_common/front_end_common_lib
   - support/run-vera.sh c_common/models
-  - make -C c_common
+  - CFLAGS=-fdiagnostics-color make -C c_common
   # Docs
   - support/travis-sphinx.sh html -T -E -b html -d _build/doctrees-readthedocsdirhtml -D language=en . _build/html
   - support/travis-sphinx.sh json -T -b json -d _build/doctrees-json -D language=en . _build/json

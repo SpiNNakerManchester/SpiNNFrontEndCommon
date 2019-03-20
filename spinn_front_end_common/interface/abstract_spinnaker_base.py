@@ -7,9 +7,9 @@ import math
 import os
 import signal
 import sys
+import time
 from six import iteritems, iterkeys, reraise
 from numpy import __version__ as numpy_version
-import spinn_utilities.conf_loader as conf_loader
 from spinn_utilities.timer import Timer
 from spinn_utilities.log import FormatAdapter
 from spinn_utilities import __version__ as spinn_utils_version
@@ -41,15 +41,14 @@ from spinn_front_end_common.utilities.function_list import (
     get_front_end_common_pacman_xml_paths)
 from spinn_front_end_common.utilities.helpful_functions import (
     convert_time_diff_to_total_milliseconds,
-    read_config, read_config_boolean, read_config_int,
-    set_up_report_specifics, set_up_output_application_data_specifics,
-    sort_out_downed_chips_cores_links, write_finished_file)
+    sort_out_downed_chips_cores_links)
 from spinn_front_end_common.utilities.report_functions import EnergyReport
 from spinn_front_end_common.utilities.utility_objs import (
     ExecutableType, ProvenanceDataItem)
 from spinn_front_end_common.utility_models import (
     CommandSender, CommandSenderMachineVertex,
     DataSpeedUpPacketGatherMachineVertex)
+from spinn_front_end_common.interface.config_handler import ConfigHandler
 from spinn_front_end_common.interface.buffer_management.buffer_models import (
     AbstractReceiveBuffersToHost)
 from spinn_front_end_common.interface.provenance import (
@@ -65,17 +64,19 @@ except ImportError:
     scipy_version = "scipy not installed"
 
 logger = FormatAdapter(logging.getLogger(__name__))
-CONFIG_FILE = "spinnaker.cfg"
+
+# Number of cores to be used when using a Virtual Machine and not specified
+DEFAULT_N_VIRTUAL_CORES = 16
+
+# The minimum time a board is kept in the off state in seconds
+MINIMUM_OFF_STATE_TIME = 20
 
 
-class AbstractSpinnakerBase(SimulatorInterface):
+class AbstractSpinnakerBase(ConfigHandler, SimulatorInterface):
     """ Main interface into the tools logic flow
     """
 
     __slots__ = [
-        # the interface to the cfg files. supports get get_int etc
-        "_config",
-
         # the object that contains a set of file paths, which should encompass
         # all locations where binaries are for this simulation.
         "_executable_finder",
@@ -216,9 +217,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_create_database",
 
         #
-        "_database_file_path",
-
-        #
         "_has_ran",
 
         #
@@ -248,20 +246,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
         #
         "_app_id",
 
-        #
-        "_report_default_directory",
-
         # If not None path to append pacman exutor provenance info to
         "_pacman_executor_provenance_path",
-
-        #
-        "_app_data_runtime_folder",
-
-        #
-        "_json_folder",
-
-        #
-        "_provenance_file_path",
 
         #
         "_do_timings",
@@ -276,22 +262,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
         "_exec_dse_on_host",
 
         #
-        "_use_virtual_board",
-
-        #
         "_raise_keyboard_interrupt",
 
         #
         "_n_calls_to_run",
-
-        #
-        "_this_run_time_string",
-
-        #
-        "_report_simulation_top_directory",
-
-        #
-        "_app_data_top_simulation_folder",
 
         #
         "_command_sender",
@@ -331,7 +305,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # time taken by the front end extracting things
         "_extraction_time",
 
-        # power save mode. Only True if power saver has turned off board
+        # power save mode. time board turned off or None if not turned off
         "_machine_is_turned_off",
 
         # Version information from the front end
@@ -346,15 +320,8 @@ class AbstractSpinnakerBase(SimulatorInterface):
             n_chips_required=None, default_config_paths=None,
             validation_cfg=None, front_end_versions=None):
         # pylint: disable=too-many-arguments
-
-        # global params
-        if default_config_paths is None:
-            default_config_paths = []
-        default_config_paths.insert(0, os.path.join(
-            os.path.dirname(__file__), CONFIG_FILE))
-
-        self._load_config(filename=configfile, defaults=default_config_paths,
-                          validation_cfg=validation_cfg)
+        ConfigHandler.__init__(
+            self, configfile, default_config_paths, validation_cfg)
 
         # timings
         self._mapping_time = 0.0
@@ -442,7 +409,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._database_socket_addresses.update(database_socket_addresses)
         self._database_interface = None
         self._create_database = None
-        self._database_file_path = None
 
         # holder for timing related values
         self._has_ran = False
@@ -455,29 +421,13 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._no_machine_time_steps = None
         self._machine_time_step = None
         self._time_scale_factor = None
-        self._this_run_time_string = None
         self._infinite_run = False
 
-        self._app_id = read_config_int(self._config, "Machine", "app_id")
+        self._app_id = self._read_config_int("Machine", "app_id")
 
         # folders
-        self._report_default_directory = None
-        self._report_simulation_top_directory = None
-        self._app_data_runtime_folder = None
-        self._app_data_top_simulation_folder = None
         self._pacman_executor_provenance_path = None
-        self._set_up_output_folders()
-
-        self._json_folder = os.path.join(
-            self._report_default_directory, "json_files")
-        if not os.path.exists(self._json_folder):
-            os.makedirs(self._json_folder)
-
-        # make a folder for the provenance data storage
-        self._provenance_file_path = os.path.join(
-            self._report_default_directory, "provenance_data")
-        if not os.path.exists(self._provenance_file_path):
-            os.makedirs(self._provenance_file_path)
+        self._set_up_output_folders(self._n_calls_to_run)
 
         # timing provenance elements
         self._do_timings = self._config.getboolean(
@@ -492,15 +442,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
         self._exec_dse_on_host = self._config.getboolean(
             "SpecExecution", "spec_exec_on_host")
 
-        # set up machine targeted data
-        self._use_virtual_board = self._config.getboolean(
-            "Machine", "virtual_board")
-
         # Setup for signal handling
         self._raise_keyboard_interrupt = False
 
         # By default board is kept on once started later
-        self._machine_is_turned_off = False
+        self._machine_is_turned_off = None
 
         globals_variables.set_simulator(self)
 
@@ -590,11 +536,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     "Only one type of graph can be used during live output. "
                     "Please fix and try again")
 
-    def _load_config(self, filename, defaults, validation_cfg):
-        self._config = conf_loader.load_config(
-            filename=filename, defaults=defaults,
-            validation_cfg=validation_cfg)
-
     # options names are all lower without _ inside config
     DEBUG_ENABLE_OPTS = frozenset([
         "reportsenabled", "displayalgorithmtimings",
@@ -602,101 +543,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
     REPORT_DISABLE_OPTS = frozenset([
         "displayalgorithmtimings",
         "clear_iobuf_during_run", "extract_iobuf", "extract_iobuf_during_run"])
-
-    def _adjust_config(self, runtime):
-        """ Adjust and checks config based on runtime and mode
-
-        :param runtime:
-        :type runtime: int or bool
-        :raises ConfigurationException
-        """
-        if self._config.get("Mode", "mode") == "Debug":
-            for option in self._config.options("Reports"):
-                # options names are all lower without _ inside config
-                if option in self.DEBUG_ENABLE_OPTS or option[:5] == "write":
-                    try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "True")
-                            logger.info("As mode == \"Debug\", [Reports] {} "
-                                        "has been set to True", option)
-                    except ValueError:
-                        pass
-        elif not self._config.getboolean("Reports", "reportsEnabled"):
-            for option in self._config.options("Reports"):
-                # options names are all lower without _ inside config
-                if option in self.REPORT_DISABLE_OPTS or option[:5] == "write":
-                    try:
-                        if not self._config.get_bool("Reports", option):
-                            self._config.set("Reports", option, "False")
-                            logger.info(
-                                "As reportsEnabled == \"False\", [Reports] {} "
-                                "has been set to False", option)
-                    except ValueError:
-                        pass
-
-        if runtime is None:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as runtime is set to forever")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as runtime is set to forever")
-
-        if self._use_virtual_board:
-            if self._config.getboolean(
-                    "Reports", "write_energy_report") is True:
-                self._config.set("Reports", "write_energy_report", "False")
-                logger.info("[Reports]write_energy_report has been set to "
-                            "False as using virtual boards")
-            if self._config.get_bool(
-                    "EnergySavings", "turn_off_board_after_discovery") is True:
-                self._config.set(
-                    "EnergySavings", "turn_off_board_after_discovery", "False")
-                logger.info("[EnergySavings]turn_off_board_after_discovery has"
-                            " been set to False as s using virtual boards")
-            if self._config.getboolean(
-                    "Reports", "write_board_chip_report") is True:
-                self._config.set("Reports", "write_board_chip_report", "False")
-                logger.info("[Reports]write_board_chip_report has been set to"
-                            " False as using virtual boards")
-
-    def _set_up_output_folders(self):
-        """ Sets up the outgoing folders (reports and app data) by creating\
-            a new timestamp folder for each and clearing
-
-        :rtype: None
-        """
-
-        # set up reports default folder
-        (self._report_default_directory, self._report_simulation_top_directory,
-         self._this_run_time_string) = set_up_report_specifics(
-             default_report_file_path=self._config.get(
-                 "Reports", "default_report_file_path"),
-             max_reports_kept=self._config.getint(
-                 "Reports", "max_reports_kept"),
-             n_calls_to_run=self._n_calls_to_run,
-             this_run_time_string=self._this_run_time_string)
-
-        # set up application report folder
-        self._app_data_runtime_folder, self._app_data_top_simulation_folder = \
-            set_up_output_application_data_specifics(
-                max_application_binaries_kept=self._config.getint(
-                    "Reports", "max_application_binaries_kept"),
-                where_to_write_application_data_files=self._config.get(
-                    "Reports", "default_application_data_file_path"),
-                n_calls_to_run=self._n_calls_to_run,
-                this_run_time_string=self._this_run_time_string)
-
-        if self._read_config_boolean("Reports",
-                                     "writePacmanExecutorProvenance"):
-            self._pacman_executor_provenance_path = os.path.join(
-                self._report_default_directory,
-                "pacman_executor_provenance.rpt")
 
     def set_up_timings(self, machine_time_step=None, time_scale_factor=None):
         """ Set up timings of the machine
@@ -899,7 +745,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         # reset has been called.
         if (self._has_ran and application_graph_changed and
                 self._has_reset_last):
-            self._set_up_output_folders()
+            self._set_up_output_folders(self._n_calls_to_run)
 
         # verify that the if graph has changed, and has ran, that a reset has
         # been called, otherwise system go boom boom
@@ -996,8 +842,11 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 loading_done = True
 
         # Run for each of the given steps
-        logger.info("Running for {} steps for a total of {}ms",
-                    len(steps), run_time)
+        if run_time is not None:
+            logger.info("Running for {} steps for a total of {}ms",
+                        len(steps), run_time)
+        else:
+            logger.info("Running forever")
         for i, step in enumerate(steps):
             logger.info("Run {} of {}", i + 1, len(steps))
             self._do_run(step, loading_done, run_until_complete)
@@ -1089,35 +938,36 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         for placement in self._placements.placements:
             vertex = placement.vertex
+            resources = vertex.resources_required
+            if (placement.x, placement.y) not in sdram_tracker:
+                sdram_tracker[placement.x, placement.y] = \
+                    self._machine.get_chip_at(
+                        placement.x, placement.y).sdram.size
+            sdram = resources.sdram.get_value()
             if isinstance(vertex, AbstractReceiveBuffersToHost):
-
-                resources = vertex.resources_required
-                if (placement.x, placement.y) not in sdram_tracker:
-                    sdram_tracker[placement.x, placement.y] = \
-                        self._machine.get_chip_at(
-                            placement.x, placement.y).sdram.size
-                sdram = (
-                    resources.sdram.get_value() -
-                    vertex.get_minimum_buffer_sdram_usage())
-                sdram_tracker[placement.x, placement.y] -= sdram
+                sdram -= vertex.get_minimum_buffer_sdram_usage()
                 vertex_by_chip[placement.x, placement.y].append(vertex)
+            sdram_tracker[placement.x, placement.y] -= sdram
 
         # Go through the chips and divide up the remaining SDRAM, finding
         # the minimum number of machine timesteps to assign
-        min_time_steps = None
+        min_time_steps = n_machine_time_steps
         for x, y in vertex_by_chip:
             vertices_on_chip = vertex_by_chip[x, y]
             sdram_per_vertex = int(sdram_tracker[x, y] / len(vertices_on_chip))
-            min_time_steps = min(
+            min_time_steps_this_chip = min(
                 int(vertex.get_n_timesteps_in_buffer_space(
                     sdram_per_vertex, self._machine_time_step))
                 for vertex in vertices_on_chip)
+            if min_time_steps is None:
+                min_time_steps = min_time_steps_this_chip
+            else:
+                min_time_steps = min(
+                    min_time_steps, min_time_steps_this_chip)
 
         # clear injectable
         clear_injectables()
 
-        if min_time_steps is None:
-            return [n_machine_time_steps]
         return self._generate_steps(n_machine_time_steps, min_time_steps)
 
     @staticmethod
@@ -1198,9 +1048,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             exc_info = sys.exc_info()
             try:
                 self._shutdown()
-                write_finished_file(
-                    self._app_data_top_simulation_folder,
-                    self._report_simulation_top_directory)
+                self.write_finished_file()
             except Exception:
                 logger.warning("problem when shutting down", exc_info=True)
             reraise(*exc_info)
@@ -1272,9 +1120,12 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 self._machine_graph.n_vertices > 0):
             inputs["MemoryMachineGraph"] = self._machine_graph
 
-        # add max SDRAM size which we're going to allow (debug purposes)
+        # add max SDRAM size and n_cores which we're going to allow
+        # (debug purposes)
         inputs["MaxSDRAMSize"] = self._read_config_int(
             "Machine", "max_sdram_allowed_per_chip")
+        inputs["MaxCoreID"] = self._read_config_int(
+            "Machine", "core_limit")
 
         # Set the total run time
         inputs["TotalRunTime"] = total_run_time
@@ -1294,8 +1145,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 "Machine", "auto_detect_bmp")
             inputs["ScampConnectionData"] = self._read_config(
                 "Machine", "scamp_connections_data")
-            inputs["MaxCoreId"] = self._read_config_int(
-                "Machine", "core_limit")
 
             algorithms.append("MachineGenerator")
 
@@ -1322,12 +1171,10 @@ class AbstractSpinnakerBase(SimulatorInterface):
             inputs["BMPDetails"] = None
             inputs["AutoDetectBMPFlag"] = False
             inputs["ScampConnectionData"] = None
-            inputs["CPUsPerVirtualChip"] = \
-                self._read_config_int("Machine", "NCoresPerChip")
             inputs["RouterTableEntriesPerRouter"] = \
                 self._read_config_int("Machine", "RouterTableEntriesPerRouter")
-            inputs["MaxSDRAMSize"] = self._read_config_int(
-                "Machine", "MaxSDRAMSize")
+            if inputs["MaxCoreID"] is None:
+                inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             algorithms.append("VirtualMachineGenerator")
 
@@ -1380,7 +1227,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                         "no vertices to work out the size of the machine "
                         "required and n_chips_required has not been set")
 
-            inputs["CPUsPerVirtualChip"] = 16
+            inputs["MaxCoreID"] = DEFAULT_N_VIRTUAL_CORES
 
             do_partitioning = False
             if need_virtual_board:
@@ -1778,8 +1625,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             # Get the executable targets
             algorithms.append("GraphBinaryGatherer")
 
-        loading_algorithm = read_config(
-            self._config, "Mapping", "loading_algorithms")
+        loading_algorithm = self._read_config("Mapping", "loading_algorithms")
         if loading_algorithm is not None and application_graph_changed:
             algorithms.extend(loading_algorithm.split(","))
         algorithms.extend(self._extra_load_algorithms)
@@ -2010,7 +1856,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
 
         # ensure we exploit the parallel of data extraction by running it at\
         # end regardless of multirun, but only run if using a real machine
-        if not self._use_virtual_board:
+        if not self._use_virtual_board and run_time is not None:
             algorithms.append("BufferExtractor")
 
         if self._config.getboolean("Reports", "write_provenance_data"):
@@ -2456,7 +2302,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         if self._use_virtual_board:
             return
 
-        if self._machine_is_turned_off:
+        if self._machine_is_turned_off is not None:
             logger.info("Shutdown skipped as board is off for power save")
             return
 
@@ -2593,9 +2439,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
                 message = "Provenance from run {}".format(i)
             self._check_provenance(provenance_items, message)
 
-        write_finished_file(
-            self._app_data_top_simulation_folder,
-            self._report_simulation_top_directory)
+        self.write_finished_file()
 
         if exc_info is not None:
             reraise(*exc_info)
@@ -2698,16 +2542,6 @@ class AbstractSpinnakerBase(SimulatorInterface):
                     initial_message_printed = True
                 logger.warning(item.message)
 
-    def _read_config(self, section, item):
-        return read_config(self._config, section, item)
-
-    def _read_config_int(self, section, item):
-        return read_config_int(self._config, section, item)
-
-    def _read_config_boolean(self, section, item):
-        return read_config_boolean(
-            self._config, section, item)
-
     def _turn_off_on_board_to_save_power(self, config_flag):
         """ Executes the power saving mode of either on or off of the\
             SpiNNaker machine.
@@ -2717,8 +2551,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: None
         """
         # check if machine should be turned off
-        turn_off = read_config_boolean(
-            self._config, "EnergySavings", config_flag)
+        turn_off = self._read_config_boolean("EnergySavings", config_flag)
         if turn_off is None:
             return
 
@@ -2738,24 +2571,35 @@ class AbstractSpinnakerBase(SimulatorInterface):
         :rtype: bool
         """
         # already off or no machine to turn off
-        if self._machine_is_turned_off or self._use_virtual_board:
+        if self._machine_is_turned_off is not None or self._use_virtual_board:
             return False
 
         if self._machine_allocation_controller is not None:
             # switch power state if needed
             if self._machine_allocation_controller.power:
                 self._machine_allocation_controller.set_power(False)
+        else:
+            self._txrx.power_off_machine()
 
-        self._txrx.power_off_machine()
-
-        self._machine_is_turned_off = True
+        self._machine_is_turned_off = time.time()
         return True
 
     def _turn_on_board_if_saving_power(self):
         # Only required if previously turned off which never happens
         # on virtual machine
-        if not self._machine_is_turned_off:
+        if self._machine_is_turned_off is None:
             return False
+
+        # Ensure the machine is completely powered down and
+        # all residual electrons have gone
+        already_off = time.time() - self._machine_is_turned_off
+        if already_off < MINIMUM_OFF_STATE_TIME:
+            delay = MINIMUM_OFF_STATE_TIME - already_off
+            logger.warning(
+                "Delaying turning machine back on for {} seconds. Consider "
+                "disabling turn_off_board_after_discovery for scripts that "
+                "have short preparation time.".format(delay))
+            time.sleep(delay)
 
         if self._machine_allocation_controller is not None:
             # switch power state if needed
@@ -2765,7 +2609,7 @@ class AbstractSpinnakerBase(SimulatorInterface):
             self._txrx.power_on_machine()
 
         self._txrx.ensure_board_is_ready()
-        self._machine_is_turned_off = False
+        self._machine_is_turned_off = None
         return True
 
     @property
