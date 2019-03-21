@@ -156,7 +156,7 @@ class MachineBitFieldRouterCompressor(object):
                 [bit_field_sorter_executable_path])
         except SpinnmanException:
             self._handle_failure_for_bit_field_router_compressor(
-                compressor_executable_targets, transceiver)
+                compressor_executable_targets, on_host_chips)
 
         # start the host side compressions if needed
         if len(on_host_chips) != 0:
@@ -166,11 +166,15 @@ class MachineBitFieldRouterCompressor(object):
             host_compressor = HostBasedBitFieldRouterCompressor()
             compressed_pacman_router_tables = MulticastRoutingTables()
 
+            key_atom_map = host_compressor.generate_key_to_atom_map(
+                machine_graph, routing_infos, graph_mapper)
+
             for (chip_x, chip_y) in progress_bar.over(on_host_chips, False):
                 bit_field_sdram_base_addresses = defaultdict(dict)
                 host_compressor.collect_bit_field_sdram_base_addresses(
                     chip_x, chip_y, machine, placements, transceiver,
-                    graph_mapper, bit_field_sdram_base_addresses)
+                    graph_mapper, bit_field_sdram_base_addresses,
+                    machine_graph)
 
                 host_compressor.start_compression_selection_process(
                     router_table=routing_tables.get_routing_table_for_chip(
@@ -188,7 +192,8 @@ class MachineBitFieldRouterCompressor(object):
                         time_to_try_for_each_iteration),
                     use_timer_cut_off=use_timer_cut_off,
                     compressed_pacman_router_tables=(
-                        compressed_pacman_router_tables))
+                        compressed_pacman_router_tables),
+                    key_atom_map=key_atom_map)
 
             # load host compressed routing tables
             for table in compressed_pacman_router_tables.routing_tables:

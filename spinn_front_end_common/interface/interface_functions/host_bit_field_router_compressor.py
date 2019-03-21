@@ -17,13 +17,13 @@ from pacman.operations.router_compressors.mundys_router_compressor. \
     routing_table_condenser import MundyRouterCompressor
 from spinn_front_end_common.abstract_models import \
     AbstractProvidesNKeysForPartition
+from spinn_front_end_common.abstract_models.\
+    abstract_supports_bit_field_routing_compression import \
+    AbstractSupportsBitFieldRoutingCompression
 from spinn_machine import MulticastRoutingEntry
 from spinn_utilities.default_ordered_dict import DefaultOrderedDict
 from spinn_utilities.find_max_success import find_max_success
 from spinn_utilities.progress_bar import ProgressBar
-from spinn_front_end_common.abstract_models. \
-    abstract_supports_bit_field_generation import \
-    AbstractSupportsBitFieldGeneration
 from spinn_front_end_common.utilities import ordered_covering as \
     rigs_compressor
 from spinn_front_end_common.utilities import constants
@@ -159,6 +159,9 @@ class HostBasedBitFieldRouterCompressor(object):
         # compressed router table
         compressed_pacman_router_tables = MulticastRoutingTables()
 
+        key_atom_map = self.generate_key_to_atom_map(
+            machine_graph, routing_infos, graph_mapper)
+
         # holder for the bitfields in
         bit_field_sdram_base_addresses = defaultdict(dict)
         for router_table in progress.over(router_tables.routing_tables, False):
@@ -174,7 +177,7 @@ class HostBasedBitFieldRouterCompressor(object):
                 bit_field_sdram_base_addresses, transceiver, machine_graph,
                 placements, machine, graph_mapper, target_length,
                 time_to_try_for_each_iteration, use_timer_cut_off,
-                compressed_pacman_router_tables)
+                compressed_pacman_router_tables, key_atom_map)
         # return compressed tables
         return compressed_pacman_router_tables
 
@@ -191,7 +194,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
                 # locate api vertex
                 api_vertex = self.locate_vertex_with_the_api(
-                    machine_graph, graph_mapper)
+                    machine_vertex, graph_mapper)
 
                 # get data
                 if api_vertex is not None:
@@ -240,7 +243,8 @@ class HostBasedBitFieldRouterCompressor(object):
     def generate_report_path(self, default_report_folder):
         report_folder_path = \
             os.path.join(default_report_folder, self._REPORT_FOLDER_NAME)
-        os.mkdir(report_folder_path)
+        if not os.path.exists(report_folder_path):
+            os.mkdir(report_folder_path)
         return report_folder_path
 
     def start_compression_selection_process(
@@ -248,7 +252,7 @@ class HostBasedBitFieldRouterCompressor(object):
             bit_field_sdram_base_addresses, transceiver, machine_graph,
             placements, machine, graph_mapper, target_length,
             time_to_try_for_each_iteration, use_timer_cut_off,
-            compressed_pacman_router_tables):
+            compressed_pacman_router_tables, key_atom_map):
         """ entrance method for doing on host compression. Utilisable as a 
         public method for other compressors. 
         
@@ -267,6 +271,7 @@ class HostBasedBitFieldRouterCompressor(object):
         compression attempt for
         :param use_timer_cut_off: bool flag that indicates if the timer cut \
         off is to be used 
+        :param key_atom_map: key to atoms map
         should be allowed to handle per time step
         :param compressed_pacman_router_tables: a data holder for compressed \
         tables
@@ -298,7 +303,7 @@ class HostBasedBitFieldRouterCompressor(object):
         # execute binary search
         self._start_binary_search(
             router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off)
+            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map)
 
         # add final to compressed tables
         compressed_pacman_router_tables.add_routing_table(
@@ -495,11 +500,13 @@ class HostBasedBitFieldRouterCompressor(object):
 
     @staticmethod
     def locate_vertex_with_the_api(machine_vertex, graph_mapper):
-        if isinstance(machine_vertex, AbstractSupportsBitFieldGeneration):
+        if isinstance(
+                machine_vertex, AbstractSupportsBitFieldRoutingCompression):
             return machine_vertex
         elif graph_mapper is not None:
             app_vertex = graph_mapper.get_application_vertex(machine_vertex)
-            if isinstance(app_vertex, AbstractSupportsBitFieldGeneration):
+            if isinstance(
+                    app_vertex, AbstractSupportsBitFieldRoutingCompression):
                 return app_vertex
         else:
             return None
@@ -586,7 +593,7 @@ class HostBasedBitFieldRouterCompressor(object):
 
     def _start_binary_search(
             self, router_table, sorted_bit_fields, target_length,
-            time_to_try_for_each_iteration, use_timer_cut_off):
+            time_to_try_for_each_iteration, use_timer_cut_off, key_atom_map):
         """ start binary search of the merging of bitfield to router table
 
         :param router_table: uncompressed router table
@@ -596,6 +603,7 @@ class HostBasedBitFieldRouterCompressor(object):
             to run for.
         :param use_timer_cut_off: bool flag for if we should use the timer \
             cutoff for compression
+        :param key_atom_map: map from key to atoms
         :return: final_routing_table, bit_fields_merged
         """
 
@@ -615,7 +623,8 @@ class HostBasedBitFieldRouterCompressor(object):
             self._binary_search_check, sorted_bit_fields=sorted_bit_fields,
             routing_table=router_table, target_length=target_length,
             time_to_try_for_each_iteration=time_to_try_for_each_iteration,
-            use_timer_cut_off=use_timer_cut_off))
+            use_timer_cut_off=use_timer_cut_off,
+            key_to_n_atoms_map=key_atom_map))
 
     def _binary_search_check(
             self, mid_point, sorted_bit_fields, routing_table, target_length,

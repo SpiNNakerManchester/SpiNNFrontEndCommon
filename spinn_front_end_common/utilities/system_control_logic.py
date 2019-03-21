@@ -49,7 +49,6 @@ def run_system_application(
 
     # Wait for the executable to finish
     succeeded = False
-    check_targets = None
     if binaries_to_track is None:
         check_targets = executable_cores
     else:
