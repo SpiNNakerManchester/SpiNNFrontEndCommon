@@ -1166,15 +1166,18 @@ void __wrap_sark_int(void *pc) {
 // initializers
 //-----------------------------------------------------------------------------
 
+static inline void *get_dsg_region(data_spec_regions region_id) {
+    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
+    uint32_t *dsg_header = (uint32_t *)
+            sark_virtual_processor_info[sark.virt_cpu].user0;
+    return (void *) dsg_header[DSG_HEADER + region_id];
+}
 
 //! \brief sets up data required by the reinjection functionality
 void reinjection_initialise() {
     // set up config region
     // Get the address this core's DTCM data starts at from SRAM
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_REINJECTION]);
+    address_t address = get_dsg_region(CONFIG_REINJECTION);
 
     // process data
     reinjection_read_packet_types(address);
@@ -1199,10 +1202,7 @@ void reinjection_initialise() {
 
 //! \brief sets up data required by the data speed up functionality
 void data_speed_up_initialise() {
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    address_t address =
-        (address_t) sark_virtual_processor_info[sark.virt_cpu].user0;
-    address = (address_t) (address[DSG_HEADER + CONFIG_DATA_SPEED_UP]);
+    address_t address = get_dsg_region(CONFIG_DATA_SPEED_UP);
     basic_data_key = address[MY_KEY];
     new_sequence_key = address[NEW_SEQ_KEY];
     first_data_key = address[FIRST_DATA_KEY];

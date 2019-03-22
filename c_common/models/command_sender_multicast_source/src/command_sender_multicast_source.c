@@ -228,7 +228,8 @@ void timer_callback(uint unused0, uint unused1) {
 bool initialize(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *address =
+            data_specification_get_data_address();
 
     // Read the header
     if (!data_specification_read_header(address)) {
@@ -243,16 +244,16 @@ bool initialize(uint32_t *timer_period) {
         return false;
     }
     simulation_set_provenance_data_address(
-        data_specification_get_region(PROVENANCE_REGION, address));
+            data_specification_get_region(PROVENANCE_REGION, address));
     simulation_set_exit_function(run_stop_pause_commands);
 
     // Read the parameters
     read_scheduled_parameters(data_specification_get_region(
-        COMMANDS_WITH_ARBITRARY_TIMES, address));
+            COMMANDS_WITH_ARBITRARY_TIMES, address));
     read_start_resume_commands(data_specification_get_region(
-        COMMANDS_AT_START_RESUME, address));
+            COMMANDS_AT_START_RESUME, address));
     read_pause_stop_commands(data_specification_get_region(
-        COMMANDS_AT_STOP_PAUSE, address));
+            COMMANDS_AT_STOP_PAUSE, address));
     return true;
 }
 

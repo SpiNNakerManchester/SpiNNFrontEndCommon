@@ -132,7 +132,11 @@ bool read_parameters(address_t address)
 
 static bool initialize(uint32_t *timer)
 {
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *address =
+            data_specification_get_data_address();
+    if (!data_specification_read_header(address)) {
+        return false;
+    }
     if (!simulation_initialise(
             data_specification_get_region(SYSTEM, address),
             APPLICATION_NAME_HASH, timer, &simulation_ticks,
@@ -149,7 +153,7 @@ static bool initialize(uint32_t *timer)
     log_info("total_sim_ticks = %d", simulation_ticks);
 
     address_t recording_region =
-        data_specification_get_region(RECORDING, address);
+            data_specification_get_region(RECORDING, address);
     bool success = recording_initialize(recording_region, &recording_flags);
     return success;
 }

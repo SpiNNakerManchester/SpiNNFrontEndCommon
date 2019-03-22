@@ -994,7 +994,8 @@ static void provenance_callback(address_t address) {
 bool initialise(uint32_t *timer_period) {
 
     // Get the address this core's DTCM data starts at from SRAM
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *address =
+            data_specification_get_data_address();
 
     // Read the header
     if (!data_specification_read_header(address)) {
@@ -1009,8 +1010,8 @@ bool initialise(uint32_t *timer_period) {
         return false;
     }
     simulation_set_provenance_function(
-        provenance_callback,
-        data_specification_get_region(PROVENANCE_REGION, address));
+            provenance_callback,
+            data_specification_get_region(PROVENANCE_REGION, address));
 
     // Read the parameters
     if (!read_parameters(
@@ -1036,9 +1037,10 @@ bool initialise(uint32_t *timer_period) {
 
 void resume_callback() {
 
-    address_t address = data_specification_get_data_address();
+    data_specification_metadata_t *address =
+            data_specification_get_data_address();
     setup_buffer_region(data_specification_get_region(
-        BUFFER_REGION, address));
+            BUFFER_REGION, address));
 
     // set the code to start sending packet requests again
     send_packet_reqs = true;
