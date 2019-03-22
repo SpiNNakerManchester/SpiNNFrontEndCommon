@@ -161,24 +161,25 @@ static bool initialize(uint32_t *timer_period) {
     log_info("Initialise: started\n");
 
     // Get the address this core's DTCM data starts at from SRAM
-    data_specification_metadata_t *address =
+    data_specification_metadata_t *ds_regions =
             data_specification_get_data_address();
 
     // Read the header
-    if (!data_specification_read_header(address)) {
+    if (!data_specification_read_header(ds_regions)) {
         log_error("failed to read the data spec header");
         return false;
     }
 
     // Get the timing details and set up the simulation interface
     if (!simulation_initialise(
-            data_specification_get_region(SYSTEM_REGION, address),
+            data_specification_get_region(SYSTEM_REGION, ds_regions),
             APPLICATION_NAME_HASH, timer_period, &simulation_ticks,
             &infinite_run, SDP, DMA)) {
         return false;
     }
 
-    address_t config_address = data_specification_get_region(CONFIG, address);
+    address_t config_address =
+            data_specification_get_region(CONFIG, ds_regions);
     new_sequence_key = config_address[NEW_SEQ_KEY];
     first_data_key = config_address[FIRST_DATA_KEY];
     end_flag_key = config_address[END_FLAG_KEY];
