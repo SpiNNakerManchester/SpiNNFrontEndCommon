@@ -24,7 +24,9 @@
 
 //! interrupt priorities
 typedef enum interrupt_priority{
-    TIMER_TICK_PRIORITY = -1, SDP_PRIORITY = 0, COMPRESSION_START_PRIORITY = 2
+    TIMER_TICK_PRIORITY = -1,
+    SDP_PRIORITY = 0,
+    COMPRESSION_START_PRIORITY = 2
 } interrupt_priority;
 
 //! \brief the timer control logic.
@@ -66,8 +68,10 @@ uint32_t control_core_id = 1;
 //! \brief sdp message to send acks to the control core with
 sdp_msg_pure_data my_msg;
 
+// ---------------------------------------------------------------------
+
 //! \brief sends a sdp message back to the control core
-void send_sdp_message_response(){
+void send_sdp_message_response(void) {
     my_msg.dest_port = (RANDOM_PORT << PORT_SHIFT) | control_core_id;
     // send sdp packet
     while (!spin1_send_sdp_msg((sdp_msg_t *) &my_msg, _SDP_TIMEOUT)) {
@@ -86,7 +90,7 @@ void return_malloc_response_message(){
 }
 
 //! \brief send a success response message
-void return_success_response_message(){
+void return_success_response_message(void) {
     // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = SUCCESSFUL_COMPRESSION;
 
@@ -96,7 +100,7 @@ void return_success_response_message(){
 }
 
 //! \brief send a failed response due to the control forcing it to stop
-void return_failed_by_force_response_message(){
+void return_failed_by_force_response_message(void) {
        // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = FORCED_BY_COMPRESSOR_CONTROL;
 
@@ -105,7 +109,7 @@ void return_failed_by_force_response_message(){
 }
 
 //! \brief sends a failed response due to running out of time
-void return_failed_by_time_response_message(){
+void return_failed_by_time_response_message(void) {
        // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = RAN_OUT_OF_TIME;
 
@@ -115,7 +119,7 @@ void return_failed_by_time_response_message(){
 
 //! \brief send a failed response where finished compression but failed to
 //! fit into allocated size.
-void return_failed_by_space_response_message(){
+void return_failed_by_space_response_message(void) {
        // set message ack finished state to malloc fail
     my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA] = FAILED_TO_COMPRESS;
 
@@ -126,27 +130,26 @@ void return_failed_by_space_response_message(){
 //! \brief stores the compressed routing tables into the compressed sdram
 //! location
 //! \returns bool if was successful or now
-bool store_into_compressed_address(){
+bool store_into_compressed_address(void) {
     if (routing_table_sdram_get_n_entries(
-            routing_tables, n_tables) > TARGET_LENGTH){
+            routing_tables, n_tables) > TARGET_LENGTH) {
         log_error("not enough space in routing table");
         return false;
     }
-    else{
-        log_info("starting store of %d tables", n_tables);
-        bool success = routing_table_sdram_store(
+
+    log_info("starting store of %d tables", n_tables);
+    bool success = routing_table_sdram_store(
             routing_tables, n_tables, sdram_loc_for_compressed_entries);
-        log_info("finished store");
-        if (!success){
-            log_error("failed to store entries into sdram. ");
-            return false;
-        }
+    log_info("finished store");
+    if (!success) {
+        log_error("failed to store entries into sdram.");
+        return false;
     }
     return true;
 }
 
 //! \brief starts the compression process
-void start_compression_process(uint unused0, uint unused1){
+void start_compression_process(uint unused0, uint unused1) {
     // api requirement
     use(unused0);
     use(unused1);
@@ -162,46 +165,40 @@ void start_compression_process(uint unused0, uint unused1){
 
     // run compression
     bool success = oc_minimise(
-        routing_tables, n_tables, TARGET_LENGTH, &aliases, failed_by_malloc,
-        finished_by_compressor_force, timer_for_compression_attempt,
-        finish_compression_flag, compress_only_when_needed,
-        compress_as_much_as_possible);
+            routing_tables, n_tables, TARGET_LENGTH, &aliases, failed_by_malloc,
+            finished_by_compressor_force, timer_for_compression_attempt,
+            finish_compression_flag, compress_only_when_needed,
+            compress_as_much_as_possible);
 
     // check state
     log_info("success was %d", success);
-    if (success){
+    if (success) {
         log_info("store into compressed");
         success = store_into_compressed_address();
-        if (success){
+        if (success) {
             log_info("success response");
             return_success_response_message();
-        }
-        else{
+        } else {
             log_info("failed by space response");
             return_failed_by_space_response_message();
         }
-    }
-    else{  // if not a success, could be one of 4 states
-        if (failed_by_malloc){  // malloc failed somewhere
+    } else {  // if not a success, could be one of 4 states
+        if (failed_by_malloc) {  // malloc failed somewhere
             log_info("failed malloc response");
             return_malloc_response_message();
-        }
-        else if (finished_by_compressor_force){  // control killed it
+        } else if (finished_by_compressor_force) {  // control killed it
             log_info("force fail response");
-            if (!sent_force_ack){
+            if (!sent_force_ack) {
                 return_failed_by_force_response_message();
                 sent_force_ack = true;
                 log_info("send ack");
-            }
-            else{
+            } else {
                 log_info("ignoring as already sent ack");
             }
-        }
-        else if (timer_for_compression_attempt){  // ran out of time
+        } else if (timer_for_compression_attempt) {  // ran out of time
             log_info("time fail response");
             return_failed_by_time_response_message();
-        }
-        else{  // after finishing compression, still could not fit into table.
+        } else {  // after finishing compression, still could not fit into table.
             log_info("failed by space response");
             return_failed_by_space_response_message();
         }
@@ -226,133 +223,118 @@ void _sdp_handler(uint mailbox, uint port) {
     log_info("command code is %d", msg->data[COMMAND_CODE]);
 
     // get command code
-    if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT){
-        if (msg->data[COMMAND_CODE] == START_DATA_STREAM){
+    if (msg->srce_port >> PORT_SHIFT == RANDOM_PORT) {
+        if (msg->data[COMMAND_CODE] == START_DATA_STREAM) {
             // update response tracker
             sent_force_ack = false;
             n_tables = 0;
 
             // process packet
-            start_stream_sdp_packet_t* first_command_packet =
-                (start_stream_sdp_packet_t*) &msg->data[
-                    START_OF_SPECIFIC_MESSAGE_DATA];
-    
+            start_stream_sdp_packet_t *first_command_packet =
+                    (start_stream_sdp_packet_t *)
+                    &msg->data[START_OF_SPECIFIC_MESSAGE_DATA];
+
             // location where to store the compressed (size
             sdram_loc_for_compressed_entries =
-                first_command_packet->address_for_compressed;
-    
+                    first_command_packet->address_for_compressed;
+
             // set up fake heap
             log_info("setting up fake heap for sdram usage");
             platform_new_heap_creation(first_command_packet->fake_heap_data);
             log_info("finished setting up fake heap for sdram usage");
-    
+
             // set up packet tracker
             number_of_packets_waiting_for =
-                first_command_packet->n_sdp_packets_till_delivered;
-    
+                    first_command_packet->n_sdp_packets_till_delivered;
+
             number_of_packets_waiting_for -= 1;
-    
+
             // set up addresses data holder
-            log_info(
-                "allocating %d bytes for %d total n tables",
-                first_command_packet->total_n_tables * sizeof(table_t**),
-                first_command_packet->total_n_tables);
+            log_info("allocating %d bytes for %d total n tables",
+                    first_command_packet->total_n_tables * sizeof(table_t**),
+                    first_command_packet->total_n_tables);
             routing_tables = MALLOC(
-                first_command_packet->total_n_tables * sizeof(table_t**));
-    
-            if (routing_tables == NULL){
-                log_error(
-                    "failed to allocate memory for holding the addresses "
-                    "locations");
-                sark_msg_free((sdp_msg_t*) msg);
+                    first_command_packet->total_n_tables * sizeof(table_t**));
+
+            if (routing_tables == NULL) {
+                log_error("failed to allocate memory for holding the addresses "
+                        "locations");
+                sark_msg_free((sdp_msg_t *) msg);
                 return_malloc_response_message();
-            }
-            else{
-    
+            } else {
                 // store this set into the store
                 log_info("store routing table addresses into store");
-                log_info(
-                    "there are %d addresses in packet",
-                    first_command_packet->n_tables_in_packet);
-                for(uint32_t rt_index = 0; rt_index <
-                        first_command_packet->n_tables_in_packet; rt_index++){
+                log_info("there are %d addresses in packet",
+                        first_command_packet->n_tables_in_packet);
+                for (uint32_t rt_index = 0; rt_index <
+                        first_command_packet->n_tables_in_packet; rt_index++) {
                     routing_tables[rt_index] =
-                        (table_t*) first_command_packet->tables[rt_index];
+                            (table_t *) first_command_packet->tables[rt_index];
                 }
-    
+
                 // keep tracker updated
                 n_tables += first_command_packet->n_tables_in_packet;
                 log_info("finished storing routing table address into store");
-    
+
                 // if no more packets to locate, then start compression process
-                if (number_of_packets_waiting_for == 0){
+                if (number_of_packets_waiting_for == 0) {
                     spin1_schedule_callback(
-                        start_compression_process, 0, 0,
-                        COMPRESSION_START_PRIORITY);
+                            start_compression_process, 0, 0,
+                            COMPRESSION_START_PRIORITY);
                 }
-    
+
                 // free message
-                sark_msg_free((sdp_msg_t*) msg);
+                sark_msg_free((sdp_msg_t *) msg);
             }
-        }
-        else if (msg->data[COMMAND_CODE] == EXTRA_DATA_STREAM){
-            if (routing_tables == NULL){
-                log_error(
-                    "ignoring extra routing table addresses packet, as"
-                    " cant store them");
-            }
-            else{
+        } else if (msg->data[COMMAND_CODE] == EXTRA_DATA_STREAM) {
+            if (routing_tables == NULL) {
+                log_error("ignoring extra routing table addresses packet, as"
+                        " cant store them");
+            } else {
                 // start the storing of the data
-                extra_stream_sdp_packet_t* extra_command_packet =
-                    (extra_stream_sdp_packet_t*) msg->data[
-                        START_OF_SPECIFIC_MESSAGE_DATA];
-    
+                extra_stream_sdp_packet_t *extra_command_packet =
+                        (extra_stream_sdp_packet_t *)
+                        &msg->data[START_OF_SPECIFIC_MESSAGE_DATA];
+
                 // store this set into the store
                 log_info("store extra routing table addresses into store");
-                for(uint32_t rt_index = 0; rt_index <
+                for (uint32_t rt_index = 0; rt_index <
                         extra_command_packet->n_tables_in_packet;
-                        rt_index++){
+                        rt_index++) {
                     routing_tables[rt_index] =
-                        (table_t*) extra_command_packet->tables[rt_index];
+                            (table_t *) extra_command_packet->tables[rt_index];
                 }
-                log_info(
-                    "finished storing extra routing table address into store");
+                log_info( "finished storing extra routing table address into store");
 
                 // keep tracker updated
                 n_tables += extra_command_packet->n_tables_in_packet;
                 number_of_packets_waiting_for -= 1;
-    
+
                 // if no more packets to locate, then start compression process
-                if (number_of_packets_waiting_for == 0){
+                if (number_of_packets_waiting_for == 0) {
                     spin1_schedule_callback(
-                        start_compression_process, 0, 0,
-                        COMPRESSION_START_PRIORITY);
+                            start_compression_process, 0, 0,
+                            COMPRESSION_START_PRIORITY);
                 }
             }
-    
+
             // free message
             sark_msg_free((sdp_msg_t*) msg);
-        }
-        else if(msg->data[COMMAND_CODE] == COMPRESSION_RESPONSE){
+        } else if (msg->data[COMMAND_CODE] == COMPRESSION_RESPONSE) {
             log_error("I really should not be receiving this!!! WTF");
             sark_msg_free((sdp_msg_t*) msg);
-        }
-        else if (msg->data[COMMAND_CODE] == STOP_COMPRESSION_ATTEMPT){
+        } else if (msg->data[COMMAND_CODE] == STOP_COMPRESSION_ATTEMPT) {
             log_info("been forced to stop by control");
             *finished_by_compressor_force = true;
             sark_msg_free((sdp_msg_t*) msg);
-        }
-        else{
-            log_error(
-                "no idea what to do with message with command code %d Ignoring",
-                msg->data[COMMAND_CODE]);
+        } else {
+            log_error("no idea what to do with message with command code %d; ignoring",
+                    msg->data[COMMAND_CODE]);
             sark_msg_free((sdp_msg_t*) msg);
         }
-    }
-    else{
-        log_error(
-            "no idea what to do with message. on port %d Ignoring",
-            msg->srce_port >> PORT_SHIFT);
+    } else {
+        log_error("no idea what to do with message. on port %d; ignoring",
+                msg->srce_port >> PORT_SHIFT);
         sark_msg_free((sdp_msg_t*) msg);
     }
 }
@@ -367,26 +349,26 @@ void timer_callback(uint unused0, uint unused1) {
 }
 
 //! \brief the callback for setting off the router compressor
-void initialise() {
+void initialise(void) {
     log_info("Setting up stuff to allow bitfield compressor to occur.");
 
     log_info("reading time_for_compression_attempt");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    uint32_t time_for_compression_attempt = sark_virtual_processor_info[
-        spin1_get_core_id()].user1;
+    vcpu_t *this_processor = &sark_virtual_processor_info[spin1_get_core_id()];
+
+    uint32_t time_for_compression_attempt = this_processor->user1;
     log_info("user 1 = %d", time_for_compression_attempt);
 
     // bool from int conversion happening here
-    uint32_t int_value =
-        (uint32_t) sark_virtual_processor_info[spin1_get_core_id()].user2;
+    uint32_t int_value = this_processor->user2;
     log_info("user 2 = %d", int_value);
-    if (int_value == 1){
+    if (int_value == 1) {
         compress_only_when_needed = true;
     }
 
-    int_value = sark_virtual_processor_info[spin1_get_core_id()].user3;
+    int_value = this_processor->user3;
     log_info("user 3 = %d", int_value);
-    if (int_value == 1){
+    if (int_value == 1) {
         compress_as_much_as_possible = true;
     }
 
@@ -407,9 +389,8 @@ void initialise() {
     my_msg.length = LENGTH_OF_SDP_HEADER + (sizeof(response_sdp_packet_t));
     log_info("finished sdp message bits");
     log_info("my core id is %d", spin1_get_core_id());
-    log_info(
-        "srce_port = %d the core id is %d",
-        my_msg.srce_port, my_msg.srce_port & CPU_MASK);
+    log_info("srce_port = %d the core id is %d",
+            my_msg.srce_port, my_msg.srce_port & CPU_MASK);
 }
 
 //! \brief the main entrance.

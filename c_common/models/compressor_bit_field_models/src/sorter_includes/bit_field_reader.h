@@ -1,10 +1,10 @@
 #ifndef __BIT_FIELD_READER_H__
+#define __BIT_FIELD_READER_H__
 
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
 //! \return bool that states if it succeeded or not.
-bool read_in_bit_fields(){
-
+bool read_in_bit_fields(void) {
     // count how many bitfields there are in total
     uint position_in_region_data = 0;
     n_bf_addresses = 0;
@@ -305,29 +305,25 @@ bool read_in_bit_fields(){
 
     // free the data holders we don't care about now that we've got our
     // sorted bitfields list
-    for(uint r_id = 0; r_id < n_pairs_of_addresses; r_id++){
+    for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
         coverage_t* cov_element = coverage[r_id];
         FREE(cov_element->bit_field_addresses);
         FREE(cov_element->processor_ids);
         FREE(cov_element);
         _proc_cov_by_bitfield_t* proc_cov_element =
-            proc_cov_by_bf[r_id];
+                proc_cov_by_bf[r_id];
         FREE(proc_cov_element->redundant_packets);
         FREE(proc_cov_element);
     }
     FREE(coverage);
     FREE(proc_cov_by_bf);
 
-    for(uint32_t bf_index = 0; bf_index < n_bf_addresses; bf_index++){
-        log_info(
-            "bitfield address for sorted in index %d is %x",
-            bf_index, sorted_bit_fields[bf_index]);
+    for (uint32_t bf_index = 0; bf_index < n_bf_addresses; bf_index++) {
+        log_info("bitfield address for sorted in index %d is %x",
+                bf_index, sorted_bit_fields[bf_index]);
     }
 
     return true;
 }
 
-
-
-#define __BIT_FIELD_READER_H__
 #endif  // __BIT_FIELD_READER_H__
