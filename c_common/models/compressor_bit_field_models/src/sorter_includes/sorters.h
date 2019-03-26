@@ -6,7 +6,7 @@
 //! \param[in] worst_core_id: the core id to sort
 void sorter_sort_by_redundant_packet_count(
         _proc_cov_by_bitfield_t** proc_cov_by_bit_field, 
-        uint32_t length_of_internal_array, uint32_t worst_core_id){
+        int length_of_internal_array, uint32_t worst_core_id){
 
     // sort by bubble sort so that the most redundant packet count
     // addresses are at the front
@@ -15,7 +15,7 @@ void sorter_sort_by_redundant_packet_count(
         moved = false;
         uint32_t element =
             proc_cov_by_bit_field[worst_core_id]->redundant_packets[0];
-        for (uint index = 1; index < length_of_internal_array; index ++){
+        for (int index = 1; index < length_of_internal_array; index ++){
             uint32_t compare_element = proc_cov_by_bit_field[
                     worst_core_id]->redundant_packets[index];
                     
@@ -87,11 +87,11 @@ void sorter_sort_by_n_bit_fields(
 //! \param[in/out] coverage: the array of structs to sort
 //! \param[in] length_of_array: length of array of structs
 void sorter_sort_bitfields_so_most_impact_at_front(
-        coverage_t** coverage, uint32_t length_of_array){
+        coverage_t** coverage, int length_of_array){
     // print for sanity
-    for (uint index = 0; index < length_of_array; index ++){
+    for (int index = 0; index < length_of_array; index ++){
         coverage_t* element = coverage[index];
-        for (uint in_index = 1; in_index < element->length_of_list;
+        for (int in_index = 1; in_index < element->length_of_list;
                 in_index ++){
             log_debug(
                 "before address of element %d, in list %d is %x",
@@ -103,7 +103,7 @@ void sorter_sort_bitfields_so_most_impact_at_front(
     while (moved){
         moved = false;
         coverage_t* element = coverage[0];
-        for (uint index = 1; index < length_of_array; index ++){
+        for (int index = 1; index < length_of_array; index ++){
 
             coverage_t* compare_element = coverage[index];
 
@@ -127,9 +127,9 @@ void sorter_sort_bitfields_so_most_impact_at_front(
     }
 
     // print for sanity
-    for (uint index = 0; index < length_of_array; index ++){
+    for (int index = 0; index < length_of_array; index ++){
         coverage_t* element = coverage[index];
-        for (uint in_index = 1; in_index < element->length_of_list;
+        for (int in_index = 1; in_index < element->length_of_list;
                 in_index ++){
             log_debug(
                 "after address of element %d, in list %d is %x",

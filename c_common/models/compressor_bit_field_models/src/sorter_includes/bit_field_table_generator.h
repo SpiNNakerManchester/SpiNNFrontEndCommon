@@ -288,8 +288,9 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
     // add the uncompressed table, for allowing the bitfield table generator to
     // edit accordingly.
     *n_rt_addresses += 1;
-    address_t uncompressed_table = clone_un_compressed_routing_table(
-        user_register_content);
+    address_t uncompressed_table =
+        helpful_functions_clone_un_compressed_routing_table(
+            user_register_content);
     if (uncompressed_table == NULL){
         log_error(
             "failed to clone uncompressed tables for attempt %d", mid_point);

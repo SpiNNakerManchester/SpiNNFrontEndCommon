@@ -240,7 +240,7 @@ void _sdp_handler(uint mailbox, uint port) {
     sdp_msg_pure_data *msg = (sdp_msg_pure_data *) mailbox;
 
     // record control core.
-    control_core_id = (msg->srce_port && CPU_MASK);
+    control_core_id = (msg->srce_port & CPU_MASK);
     log_info("control core is %d", control_core_id);
 
     log_info("command code is %d", msg->data[COMMAND_CODE]);

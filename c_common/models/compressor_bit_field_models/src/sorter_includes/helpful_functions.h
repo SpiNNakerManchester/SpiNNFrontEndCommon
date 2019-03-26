@@ -11,10 +11,10 @@ uint32_t helpful_functions_locate_processor_id_from_bit_field_address(
         address_t bit_field_address, address_t* user_register_content,
         _bit_field_by_processor_t* bit_field_by_processor){
 
-    uint32_t n_pairs = user_register_content[REGION_ADDRESSES][N_PAIRS];
-    for (uint32_t bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++){
+    int n_pairs = user_register_content[REGION_ADDRESSES][N_PAIRS];
+    for (int bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++){
         _bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
-        for (uint32_t addr_index = 0; addr_index < element.length_of_list;
+        for (int addr_index = 0; addr_index < element.length_of_list;
                 addr_index ++){
             if (element.bit_field_addresses[addr_index] == bit_field_address){
                 return element.processor_id;
