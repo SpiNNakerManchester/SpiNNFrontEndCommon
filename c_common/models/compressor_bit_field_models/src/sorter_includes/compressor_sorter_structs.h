@@ -59,7 +59,7 @@ typedef struct master_pop_bit_field_t{
     // the master pop key
     uint32_t master_pop_key;
     // the number of bitfields with this key
-    uint32_t n_bitfields_with_key;
+    int n_bitfields_with_key;
 } master_pop_bit_field_t;
 
 //! \brief struct address_region_data

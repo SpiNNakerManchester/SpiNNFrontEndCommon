@@ -34,12 +34,11 @@ typedef struct entry_t{
 typedef struct table_t{
 
     // Number of entries in the table
-    uint32_t size;
+    int size;
 
     // Entries in the table
     entry_t entries[];
 } table_t;
-
 
 //! \brief Get a mask of the Xs in a key_mask
 //! \param[in] km: the key mask to get as xs
@@ -80,13 +79,27 @@ static inline key_mask_t key_mask_merge(key_mask_t a, key_mask_t b){
     return c;
 }
 
+//! \brief gets the length of the group of routing tables
+//! \param[in] routing_tables: the addresses list
+//! \param[in] n_tables: how many in list
+//! \return the total number of entries over all the tables.
+static inline uint32_t routing_table_sdram_get_n_entries(
+        table_t** routing_tables, uint32_t n_tables){
+    uint32_t current_point_tracking = 0;
+    for (uint32_t rt_index = 0; rt_index < n_tables; rt_index++){
+        // get how many entries are in this block
+        current_point_tracking += routing_tables[rt_index]->size;
+    }
+    return current_point_tracking - 1;
+}
+
 //! \brief gets a entry at a given position in the lists of tables in sdram
 //! \param[in] routing_tables: the addresses list
 //! \param[in] n_tables: how many in list
 //! \param[in] entry_id_to_find: the entry your looking for
 //! \param[out] entry_to_fill: the pointer to entry struct to fill in data
 //! \return the pointer in sdram to the entry
-entry_t* routing_table_sdram_stores_get_entry(
+static inline entry_t* routing_table_sdram_stores_get_entry(
         table_t** routing_tables, uint32_t n_tables, uint32_t entry_id_to_find){
 
     uint32_t current_point_tracking = 0;
@@ -105,26 +118,12 @@ entry_t* routing_table_sdram_stores_get_entry(
         }
     }
 
-    log_error("should never get here. If so WTF!");
+    log_error(
+        "should never get here. If so WTF! was looking for entry %d when there"
+        " are only %d entries", entry_id_to_find,
+        routing_table_sdram_get_n_entries(routing_tables, n_tables));
     rt_error(RTE_SWERR);
     return NULL;
-}
-
-//! \brief gets the length of the group of routing tables
-//! \param[in] routing_tables: the addresses list
-//! \param[in] n_tables: how many in list
-//! \return the total number of entries over all the tables.
-uint32_t routing_table_sdram_get_n_entries(
-        table_t** routing_tables, uint32_t n_tables){
-    uint32_t current_point_tracking = 0;
-    for (uint32_t rt_index = 0; rt_index < n_tables; rt_index++){
-        // get how many entries are in this block
-        log_info(
-            "size of routing table at index %d is %d",
-            rt_index, routing_tables[rt_index]->size);
-        current_point_tracking += routing_tables[rt_index]->size;
-    }
-    return current_point_tracking;
 }
 
 //! \brief stores the routing tables entries into sdram at a specific sdram
@@ -142,49 +141,49 @@ bool routing_table_sdram_store(
     // locate n entries overall and write to struct
     uint32_t n_entries = routing_table_sdram_get_n_entries(
         routing_tables, n_tables);
-    log_info("compressed entries = %d", n_entries);
+    log_debug("compressed entries = %d", n_entries);
     table_format->size = n_entries;
     uint32_t main_entry_index = 0;
 
     // iterate though the entries writing to the struct as we go
-    log_info("start copy over");
+    log_debug("start copy over");
     for (uint32_t rt_index = 0; rt_index < n_tables; rt_index++){
 
         // get how many entries are in this block
         uint32_t entries_stored_here = routing_tables[rt_index]->size;
-        log_info("copying over %d entries", entries_stored_here);
+        log_debug("copying over %d entries", entries_stored_here);
         if(entries_stored_here != 0){
             // take entry and plonk data in right sdram location
-            log_info("doing sark copy");
+            log_debug("doing sark copy");
             sark_mem_cpy(
                 &table_format->entries[main_entry_index],
                 routing_tables[rt_index]->entries,
                 entries_stored_here * sizeof(entry_t));
-            log_info("finished sark copy");
+            log_debug("finished sark copy");
             main_entry_index += entries_stored_here;
-            log_info("updated the main index to %d", main_entry_index);
+            log_debug("updated the main index to %d", main_entry_index);
         }
     }
-    log_info("finished copy");
+    log_debug("finished copy");
 
     // print out content of sdram, for sanity purposes
     int n_entries_sdram = sdram_loc_for_compressed_entries[0];
     int position = 1;
     for (int entry_index = 0; entry_index < n_entries_sdram;
             entry_index++){
-        log_info(
+        log_debug(
             "entry %d key is %x",
             entry_index,
             sdram_loc_for_compressed_entries[position]);
-        log_info(
+        log_debug(
             "entry %d mask is %x",
             entry_index,
             sdram_loc_for_compressed_entries[position + 1]);
-        log_info(
+        log_debug(
             "entry %d route is %x",
             entry_index,
             sdram_loc_for_compressed_entries[position + 2]);
-        log_info(
+        log_debug(
             "entry %d source is %x",
             entry_index,
             sdram_loc_for_compressed_entries[position + 3]);
@@ -200,7 +199,7 @@ bool routing_table_sdram_store(
 //! \param[in] size_to_remove: the amount of size to remove from the table sets
 void routing_table_remove_from_size(
         table_t** routing_tables, uint32_t n_tables,
-        uint32_t size_to_remove){
+        int size_to_remove){
 
     // iterate backwards, as you removing from the bottom, which is the last
     // table upwards
@@ -226,7 +225,7 @@ void routing_table_remove_from_size(
 //! \brief deduces sdram requirements for a given size of table
 //! \param[in] n_entries: the number of entries expected to be in the table.
 //! \return the number of bytes needed for this routing table
-uint32_t routing_table_sdram_size_of_table(uint32_t n_entries){
+static inline uint32_t routing_table_sdram_size_of_table(uint32_t n_entries){
     return sizeof(uint32_t) + (sizeof(entry_t) * n_entries);
 }
 

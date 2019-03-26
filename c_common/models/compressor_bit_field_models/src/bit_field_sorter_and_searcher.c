@@ -9,6 +9,9 @@
 #include "common/constants.h"
 #include "sorter_includes/compressor_sorter_structs.h"
 #include "sorter_includes/sorters.h"
+#include "sorter_includes/bit_field_table_generator.h"
+#include "sorter_includes/helpful_functions.h"
+#include "sorter_includes/constants.h"
 /*****************************************************************************/
 /* SpiNNaker routing table minimisation with bitfield integration control core.
  *
@@ -16,76 +19,19 @@
  * components.
  */
 
-//=============================================================================
-
-//! enum mapping for elements in uncompressed routing table region
-typedef enum uncompressed_routing_table_region_elements{
-    APPLICATION_APP_ID = 0, N_ENTRIES = 1, START_OF_UNCOMPRESSED_ENTRIES = 2
-} uncompressed_routing_table_region_elements;
-
-//! enum for the compressor cores data elements (used for programmer debug)
-typedef enum compressor_core_elements{
-    N_COMPRESSOR_CORES = 0, START_OF_COMP_CORE_IDS = 1
-} compressor_core_elements;
-
-//! enum mapping user register to data that's in there (only used by
-//! programmer for documentation)
-typedef enum user_register_maps{
-    APPLICATION_POINTER_TABLE = 0, UNCOMP_ROUTER_TABLE = 1,
-    REGION_ADDRESSES = 2, USABLE_SDRAM_REGIONS = 3,
-    USER_REGISTER_LENGTH = 4
-} user_register_maps;
-
-//! enum mapping of elements in the key to atom mapping
-typedef enum key_to_atom_map_elements{
-    SRC_BASE_KEY = 0, SRC_N_ATOMS = 1, LENGTH_OF_KEY_ATOM_PAIR = 2
-} key_to_atom_map_elements;
-
-//! enum mapping addresses in addresses region
-typedef enum addresses_elements{
-    BITFIELD_REGION = 0, KEY_TO_ATOM_REGION = 1, PROCESSOR_ID = 2,
-    ADDRESS_PAIR_LENGTH = 3
-} addresses_elements;
-
-//! enum mapping bitfield region top elements
-typedef enum bit_field_data_top_elements{
-    N_BIT_FIELDS = 0, START_OF_BIT_FIELD_TOP_DATA = 1
-} bit_field_data_top_elements;
-
-//! enum mapping top elements of the addresses space
-typedef enum top_level_addresses_space_elements{
-    THRESHOLD = 0, N_PAIRS = 1, START_OF_ADDRESSES_DATA = 2
-} top_level_addresses_space_elements;
-
-//! enum stating the components of a bitfield struct
-typedef enum bit_field_data_elements{
-    BIT_FIELD_BASE_KEY = 0, BIT_FIELD_N_WORDS = 1, START_OF_BIT_FIELD_DATA = 2
-} bit_field_data_elements;
-
-//! callback priorities
-typedef enum priorities{
-    COMPRESSION_START_PRIORITY = 3, SDP_PRIORITY = -1
-}priorities;
-
 //============================================================================
 
 //! flag for saying compression core doing nowt
 #define DOING_NOWT -1
+
+//! time step for safety timer tick interupt
+#define TIME_STEP 10000
 
 //! bits in a word
 #define BITS_IN_A_WORD 32
 
 //! bit shift for the app id for the route
 #define ROUTE_APP_ID_BIT_SHIFT 24
-
-//! max number of processors on chip used for app purposes
-#define MAX_PROCESSORS 18
-
-//! max number of links on a router
-#define MAX_LINKS_PER_ROUTER 6
-
-//! neuron level mask
-#define NEURON_LEVEL_MASK 0xFFFFFFFF
 
 //! how many tables the uncompressed router table entries is
 #define N_UNCOMPRESSED_TABLE 1
@@ -127,21 +73,21 @@ int n_bf_addresses = 0;
 uint32_t total_entries_in_uncompressed_router_table = 0;
 
 //! the list of bitfields in sorted order based off best effect.
-address_t * sorted_bit_fields;
+address_t* sorted_bit_fields;
 
 //! list of bitfield associated processor ids. sorted order based off best
 //! effort linked to sorted_bit_fields, but separate to avoid sdram rewrites
-uint32_t * sorted_bit_fields_processor_ids;
+uint32_t* sorted_bit_fields_processor_ids;
 
 //! the list of the addresses of the routing table entries for the bitfields 
 //! and reduced routing table
-address_t * bit_field_routing_tables;
+address_t* bit_field_routing_tables;
 
 // the list of compressor cores to bitfield routing table sdram addresses
-comp_core_store_t * comp_cores_bf_tables;
+comp_core_store_t* comp_cores_bf_tables;
 
 //! list of processor ids which will be running the compressor binary
-uint32_t * compressor_cores;
+uint32_t* compressor_cores;
 
 //! how many compression cores there are
 uint32_t n_compression_cores;
@@ -156,7 +102,7 @@ bit_field_t tested_mid_points;
 bit_field_t mid_points_successes;
 
 //! tracker for what each compressor core is doing (in terms of midpoints)
-int * comp_core_mid_point;
+int* comp_core_mid_point;
 
 //! the bitfield by processor global holder
 _bit_field_by_processor_t* bit_field_by_processor;
@@ -202,8 +148,7 @@ bool load_routing_table_into_router() {
     // application ID we also need to include it as the most significant
     // byte in the route (see `sark_hw.c`).
     log_info("loading %d entries into router", last_compressed_table->size);
-    for (uint32_t entry_id = 0; entry_id < last_compressed_table->size;
-            entry_id++) {
+    for (int entry_id = 0; entry_id < last_compressed_table->size; entry_id++) {
         entry_t entry = last_compressed_table->entries[entry_id];
         uint32_t route = entry.route | (app_id << ROUTE_APP_ID_BIT_SHIFT);
         rtr_mc_set(
@@ -252,302 +197,6 @@ bool set_up_search_bitfields(){
     return true;
 }
 
-//! \brief reads in the addresses region and from there reads in the key atom
-// map and from there searches for a given key. when found, returns the n atoms
-//! \param[in] key: the key to locate n atoms for
-//! \return atom for the key
-uint32_t locate_key_atom_map(uint32_t key){
-    // locate n address pairs
-    uint32_t position_in_address_region = 0;
-    uint32_t n_address_pairs =
-        user_register_content[REGION_ADDRESSES][
-            position_in_address_region + N_PAIRS];
-
-    // cycle through key to atom regions to locate key
-    position_in_address_region += START_OF_ADDRESSES_DATA;
-    for (uint32_t r_id = 0; r_id < n_address_pairs; r_id++){
-        // get key address region
-        address_t key_atom_sdram_address =
-            (address_t) user_register_content[REGION_ADDRESSES][
-                position_in_address_region + KEY_TO_ATOM_REGION];
-
-        // read how many keys atom pairs there are
-        uint32_t position_ka_pair = 0;
-        uint32_t n_key_atom_pairs = key_atom_sdram_address[position_ka_pair];
-        position_ka_pair += 1;
-
-        // cycle through keys in this region looking for the key find atoms of
-        for (uint32_t key_atom_pair_id = 0; key_atom_pair_id <
-                n_key_atom_pairs; key_atom_pair_id++){
-            uint32_t key_to_check =
-                key_atom_sdram_address[position_ka_pair + SRC_BASE_KEY];
-
-            // if key is correct, return atoms
-            if (key_to_check == key){
-                return key_atom_sdram_address[
-                    position_ka_pair + SRC_N_ATOMS];
-            }
-
-            // move to next key pair
-            position_ka_pair += LENGTH_OF_KEY_ATOM_PAIR;
-        }
-
-        // move to next key to atom sdram region
-        position_in_address_region += ADDRESS_PAIR_LENGTH;
-    }
-
-    log_error("cannot find the key %d at all?! WTF", key);
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
-    return 0;
-}
-
-//! \brief gets data about the bitfields being considered
-//! \param[in/out] keys: the data holder to populate
-//! \param[in] mid_point: the point in the sorted bit fields to look for
-//! \return the number of unique keys founds.
-uint32_t population_master_pop_bit_field_ts(
-        master_pop_bit_field_t * keys, uint32_t mid_point){
-
-    uint32_t n_keys = 0;
-    // check each bitfield to see if the key been recorded already
-    for (uint32_t bit_field_index = 0; bit_field_index < mid_point;
-            bit_field_index++){
-
-        // get key
-        uint32_t key = sorted_bit_fields[bit_field_index][BIT_FIELD_BASE_KEY];
-
-        // start cycle looking for a clone
-        uint32_t keys_index = 0;
-        bool found = false;
-        while(!found && keys_index < n_keys){
-            if (keys[keys_index].master_pop_key == key){
-                found = true;
-                keys[keys_index].n_bitfields_with_key ++;
-            }
-            keys_index ++;
-        }
-        if (!found){
-            keys[n_keys].master_pop_key = key;
-            keys[n_keys].n_bitfields_with_key = 1;
-            n_keys ++;
-        }
-    }
-    return n_keys;
-}
-
-//! locates a entry within a routing table, extracts the data, then removes
-//! it from the table, updating locations and sizes
-//! \param[in] uncompressed_table_address:
-//! \param[in] master_pop_key: the key to locate the entry for
-//! \param[in/out] entry_to_store: entry to store the found entry in
-//! \return: None
-void extract_and_remove_entry_from_table(
-        address_t uncompressed_table_address, uint32_t master_pop_key,
-        entry_t* entry_to_store){
-
-    // cas the address to the struct for easier work
-    table_t* table_cast = (table_t*) uncompressed_table_address;
-
-    // flag for when found. no point starting move till after
-    bool found = false;
-
-    // iterate through all entries
-    for(uint32_t entry_id=0; entry_id < table_cast->size; entry_id++){
-
-        // if key matches, sort entry (assumes only 1 entry, otherwise boomed)
-        if (table_cast->entries[entry_id].key_mask.key == master_pop_key){
-            entry_to_store->route = table_cast->entries[entry_id].route;
-            entry_to_store->source = table_cast->entries[entry_id].source;
-            entry_to_store->key_mask.key =
-                table_cast->entries[entry_id].key_mask.key;
-            entry_to_store->key_mask.mask =
-                table_cast->entries[entry_id].key_mask.mask;
-            found = true;
-        }
-        else{  // not found entry here. check if already found
-            if (found){  // if found, move entry up one. to sort out memory
-                table_cast->entries[entry_id - 1].route =
-                    table_cast->entries[entry_id].route;
-                table_cast->entries[entry_id - 1].source =
-                    table_cast->entries[entry_id].source;
-                table_cast->entries[entry_id - 1].key_mask.key =
-                    table_cast->entries[entry_id].key_mask.key;
-                table_cast->entries[entry_id - 1].key_mask.mask =
-                    table_cast->entries[entry_id].key_mask.mask;
-            }
-        }
-    }
-
-    // update size by the removal of 1 entry
-    table_cast->size -= 1;
-}
-
-//! \brief finds the processor id of a given bitfield address (search though
-//! the bit field by processor
-//! \param[in] bit_field_address: the location in sdram where the bitfield
-//! starts
-//! \return the processor id that this bitfield address is associated.
-uint32_t locate_processor_id_from_bit_field_address(
-        address_t bit_field_address){
-
-    uint32_t n_pairs = user_register_content[REGION_ADDRESSES][N_PAIRS];
-    for (uint32_t bf_by_proc = 0; bf_by_proc < n_pairs; bf_by_proc++){
-        _bit_field_by_processor_t element = bit_field_by_processor[bf_by_proc];
-        for (uint32_t addr_index = 0; addr_index < element.length_of_list;
-                addr_index ++){
-            if (element.bit_field_addresses[addr_index] == bit_field_address){
-                return element.processor_id;
-            }
-        }
-    }
-    log_error(
-        "failed to find the bitfield address %x anywhere.", bit_field_address);
-    vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
-    sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
-    return 0;
-}
-
-//! \brief sets a bitfield so that processors within the original route which
-//! are not filterable, are added to the new route.
-//! \param[in] processors: bitfield processors new route
-//! \param[in] original_entry: the original router entry
-//! \param[in] bit_field_processors: the processors which are filterable.
-//! \param[in] n_bit_fields: the number of bitfields being assessed
-void set_new_route_with_fixed_processors(
-        bit_field_t processors, entry_t* original_entry,
-        uint32_t * bit_field_processors, uint32_t n_bit_fields){
-
-    // cast original entry route to a bitfield for ease of use
-    bit_field_t original_route = (bit_field_t) &original_entry->route;
-
-    // only set entries in the new route from the old route if the core has not
-    // got a bitfield associated with it.
-    for (uint32_t processor_id = 0; processor_id < MAX_PROCESSORS;
-            processor_id++){
-        // original route has this processor
-        if (bit_field_test(
-                original_route,
-                (MAX_PROCESSORS - processor_id) + MAX_LINKS_PER_ROUTER)){
-
-            // search through the bitfield processors to see if it exists
-            bool found = false;
-            for (uint32_t bit_field_index = 0; bit_field_index < n_bit_fields;
-                    bit_field_index++){
-                if(bit_field_processors[bit_field_index] == processor_id){
-                    found = true;
-                }
-            }
-
-            // if not a bitfield core, add to new route, as cant filter this
-            // away.
-            if (!found){
-                bit_field_set(
-                    processors,
-                    (MAX_PROCESSORS - processor_id) + MAX_LINKS_PER_ROUTER);
-            }
-        }
-    }
-}
-
-//! \brief generates the router table entries for the original entry in the
-//! original routing table, where the new entries are atom level entries based
-//! off the bitfields.
-//! \param[in] addresses: the addresses in sdram where the bitfields exist
-//! \param[in] n_bit_fields: the number of bitfields we are considering here
-//! \param[in] original_entry: the original routing table entry that is being
-//! expanded by the bitfields
-//! \param[in] rt_address_ptr: the sdram address where the new atom level table
-//! will be put once completed.
-//! \return bool that states that if the atom routing table was generated or not
-bool generate_entries_from_bitfields(
-        address_t* addresses, uint32_t n_bit_fields, entry_t* original_entry,
-        address_t* rt_address_ptr){
-
-    // get processors by bitfield
-    uint32_t * bit_field_processors = MALLOC(n_bit_fields * sizeof(uint32_t));
-    if (bit_field_processors == NULL){
-        log_error("failed to allocate memory for bitfield processors");
-        return false;
-    }
-
-    // get the processor ids
-    for(uint32_t bf_proc = 0; bf_proc < n_bit_fields; bf_proc++){
-        bit_field_processors[bf_proc] =
-            locate_processor_id_from_bit_field_address(addresses[bf_proc]);
-    }
-
-    // create sdram holder for the table we're going to generate
-    uint32_t n_atoms = locate_key_atom_map(original_entry->key_mask.key);
-    *rt_address_ptr = MALLOC_SDRAM(
-        (uint) routing_table_sdram_size_of_table(n_atoms));
-
-    if (*rt_address_ptr == NULL){
-        FREE(bit_field_processors);
-        log_error("can not allocate sdram for the sdram routing table");
-        return false;
-    }
-
-    // update the tracker for the rt address
-    table_t* sdram_table = (table_t*) *rt_address_ptr;
-
-    // update the size of the router table, as we know there will be one entry
-    // per atom
-    sdram_table->size = n_atoms;
-
-    // set up the new route process
-    uint32_t size = get_bit_field_size(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
-    bit_field_t processors =
-        bit_field_alloc(MAX_PROCESSORS + MAX_LINKS_PER_ROUTER);
-
-    if (processors == NULL){
-        log_error(
-            "could not allocate memory for the processor tracker when "
-            "making entries from bitfields");
-        FREE(bit_field_processors);
-        FREE(sdram_table);
-        return false;
-    }
-
-    // iterate though each atom and set the route when needed
-    for (uint32_t atom = 0; atom < n_atoms; atom++){
-
-        // wipe history
-        clear_bit_field(processors, size);
-
-        // update the processors so that the fixed none filtered processors
-        // are set
-        set_new_route_with_fixed_processors(
-            processors, original_entry, bit_field_processors, n_bit_fields);
-
-        // iterate through the bitfield cores and see if they need this atom
-        for (uint32_t bf_index = 0; bf_index < n_bit_fields; bf_index++){
-            bool needed = bit_field_test(
-                (bit_field_t) &addresses[bf_index][START_OF_BIT_FIELD_DATA],
-                atom);
-            if (needed){
-                bit_field_set(processors, bit_field_processors[bf_index]);
-            }
-        }
-
-        // get the entry and fill in details.
-        entry_t* new_entry = &sdram_table->entries[atom];
-        new_entry->key_mask.key = original_entry->key_mask.key + atom;
-        new_entry->key_mask.mask = NEURON_LEVEL_MASK;
-        new_entry->source = original_entry->source;
-        sark_mem_cpy(
-            &new_entry->route, &original_entry->route, sizeof(uint32_t));
-    }
-
-    FREE(bit_field_processors);
-    FREE(processors);
-    // do not remove sdram store, as that's critical to how this stuff works
-    return true;
-
-}
-
 //! \brief counts how many cores are actually doing something.
 //! \return the number of compressor cores doing something at the moment.
 uint32_t count_many_on_going_compression_attempts_are_running(){
@@ -559,162 +208,6 @@ uint32_t count_many_on_going_compression_attempts_are_running(){
         }
     }
     return count;
-}
-
-//! generates the routing table entries from this set of bitfields
-//! \param[in] master_pop_key: the key to locate the bitfields for
-//! \param[in] uncompressed_table: the location for the uncompressed table
-//! \param[in] n_bfs_for_key: how many bitfields are needed for this key
-//! \param[in] mid_point: the point where the search though sorted bit fields
-//! ends.
-//! \param[in] rt_address_ptr: the location in sdram to store the routing table
-//! generated from the bitfields and original entry.
-//! \return bool saying if it was successful or not
-bool generate_rt_from_bit_field(
-        uint32_t master_pop_key, address_t uncompressed_table,
-        uint32_t n_bfs_for_key, uint32_t mid_point, address_t* rt_address_ptr){
-
-    //for(uint32_t bf_index = 0; bf_index < n_bf_addresses; bf_index++){
-    //    log_info(
-    //        "bitfield address for sorted in index %d is %x",
-    //        bf_index, sorted_bit_fields[bf_index]);
-    //}
-
-    // reduce future iterations, by finding the exact bitfield addresses
-    address_t* addresses = MALLOC(n_bfs_for_key * sizeof(address_t));
-    uint32_t index = 0;
-    for (uint32_t bit_field_index = 0; bit_field_index < mid_point;
-            bit_field_index++){
-        if (sorted_bit_fields[bit_field_index][BIT_FIELD_BASE_KEY] ==
-                master_pop_key){
-            addresses[index] = sorted_bit_fields[bit_field_index];
-            index += 1;
-        }
-    }
-
-    // extract original routing entry from uncompressed table
-    entry_t* original_entry = MALLOC(sizeof(entry_t));
-    if (original_entry == NULL){
-        log_error("can not allocate memory for the original entry.");
-        FREE(addresses);
-        return false;
-    }
-
-    extract_and_remove_entry_from_table(
-        uncompressed_table, master_pop_key, original_entry);
-
-    // create table entries with bitfields
-    bool success = generate_entries_from_bitfields(
-        addresses, n_bfs_for_key, original_entry, rt_address_ptr);
-    if (!success){
-        log_error(
-            "can not create entries for key %d with %x bitfields.",
-            master_pop_key, n_bfs_for_key);
-        FREE(original_entry);
-        FREE(addresses);
-        return false;
-    }
-
-    FREE(original_entry);
-    FREE(addresses);
-    return true;
-}
-
-//! \brief clones the un compressed routing table, to another sdram location
-//! \return: address of new clone, or null if it failed to clone
-address_t clone_un_compressed_routing_table(){
-
-    uncompressed_table_region_data_t* region =
-        (uncompressed_table_region_data_t*) user_register_content[
-            UNCOMP_ROUTER_TABLE];
-    uint32_t sdram_used = routing_table_sdram_size_of_table(
-        region->uncompressed_table.size);
-
-    // allocate sdram for the clone
-    address_t where_was_cloned = MALLOC_SDRAM(sdram_used);
-    if (where_was_cloned == NULL){
-        log_error("failed to allocate sdram for the cloned routing table for "
-                  "uncompressed compression attempt");
-        return NULL;
-    }
-
-    // copy over data
-    sark_mem_cpy(
-        where_was_cloned, &region->uncompressed_table.size, sdram_used);
-    return where_was_cloned;
-}
-
-//! takes a midpoint and reads the sorted bitfields up to that point generating
-//! bitfield routing tables and loading them into sdram for transfer to a
-//! compressor core
-//! \param[in] mid_point: where in the sorted bitfields to go to
-//! \param[out] n_rt_addresses: how many addresses are needed for the
-//! tables
-//! \return bool saying if it successfully built them into sdram
-bool create_bit_field_router_tables(
-        uint32_t mid_point, uint32_t* n_rt_addresses){
-    // sort out bitfields by key
-
-    // get n keys that exist
-    master_pop_bit_field_t * keys = MALLOC(
-        mid_point * sizeof(master_pop_bit_field_t));
-    if (keys == NULL){
-        log_error("cannot allocate memory for keys");
-        return false;
-    }
-
-    // populate the master pop bit field
-    *n_rt_addresses = population_master_pop_bit_field_ts(keys, mid_point);
-
-    // add the uncompressed table, for allowing the bitfield table generator to
-    // edit accordingly.
-    *n_rt_addresses += 1;
-    address_t uncompressed_table = clone_un_compressed_routing_table();
-    if (uncompressed_table == NULL){
-        log_error(
-            "failed to clone uncompressed tables for attempt %d", mid_point);
-        FREE(keys);
-        return false;
-    }
-
-    bit_field_routing_tables = MALLOC(*n_rt_addresses * sizeof(address_t));
-    if (bit_field_routing_tables == NULL){
-        log_info("failed to allocate memory for bitfield routing tables");
-        FREE(keys);
-        return false;
-    }
-
-    // add clone to front of list, to ensure its easily accessible (plus its
-    // part of the expected logic)
-
-    bit_field_routing_tables[0] = uncompressed_table;
-
-    // iterate through the keys, accumulating bitfields and turn into routing
-    // table entries.
-    for(uint32_t key_index = 1; key_index < *n_rt_addresses; key_index++){
-        // holder for the rt address
-        address_t rt_address;
-
-        // create the routing table from the bitfield
-        bool success = generate_rt_from_bit_field(
-            keys[key_index -1].master_pop_key, uncompressed_table,
-            keys[key_index - 1].n_bitfields_with_key, mid_point, &rt_address);
-
-        // if failed, free stuff and tell above it failed
-        if (!success){
-            log_info("failed to allocate memory for rt table");
-            FREE(keys);
-            FREE(bit_field_routing_tables);
-            return false;
-        }
-
-        // store the rt address for this master pop key
-        bit_field_routing_tables[key_index] = rt_address;
-    }
-
-    // free stuff
-    FREE(keys);
-    return true;
 }
 
 //! \brief frees sdram from the compressor core.
@@ -742,6 +235,8 @@ uint32_t get_core_index_from_id(uint32_t processor_id){
             return comp_core_index;
         }
     }
+    log_error(
+        "failed to find the core id for this core index %d", processor_id);
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
     spin1_exit(0);
@@ -779,7 +274,6 @@ bool record_address_data_for_response_functionality(
         address_t compressed_address, uint32_t mid_point){
 
     //free previous if there is any
-    log_debug("n rt a = %d index = %d", n_rt_addresses, comp_core_index);
     if (comp_cores_bf_tables[comp_core_index].elements != NULL){
         bool success = free_sdram_from_compression_attempt(comp_core_index);
         if (!success){
@@ -827,15 +321,16 @@ void update_mc_message(uint32_t comp_core_index){
 //! \brief figure out how many packets are needed to transfer the addresses over
 //! \param[in] n_rt_addresses: how many addresses to send
 //! \return the number of packets needed
-uint32_t deduce_total_packets(uint32_t n_rt_addresses){
+int deduce_total_packets(int n_rt_addresses){
     uint32_t total_packets = 1;
-    uint32_t n_addresses_for_start =
+    int n_rt_table_safe = n_rt_addresses;
+    int n_addresses_for_start =
         ITEMS_PER_DATA_PACKET - sizeof(start_stream_sdp_packet_t);
-    if (n_addresses_for_start < n_rt_addresses){
-        n_rt_addresses -= n_addresses_for_start;
-        total_packets += n_rt_addresses / (
+    if (n_addresses_for_start < n_rt_table_safe){
+        n_rt_table_safe -= n_addresses_for_start;
+        total_packets += n_rt_table_safe / (
             ITEMS_PER_DATA_PACKET - sizeof(extra_stream_sdp_packet_t));
-        uint32_t left_over = n_rt_addresses % (
+        uint32_t left_over = n_rt_table_safe % (
             ITEMS_PER_DATA_PACKET - sizeof(extra_stream_sdp_packet_t));
         if (left_over != 0){
             total_packets += 1;
@@ -852,12 +347,12 @@ uint32_t deduce_total_packets(uint32_t n_rt_addresses){
 //! \param[in] addresses_sent: the amount of addresses already sent by other
 //! sdp messages
 //! \return: the number of addresses in this packet.
-uint32_t deduce_elements_this_packet(
-        uint32_t packet_id, uint32_t n_rt_addresses, uint32_t addresses_sent){
-    uint32_t n_addresses_this_message = 0;
-    uint32_t size_first =
+int deduce_elements_this_packet(
+        int packet_id, int n_rt_addresses, int addresses_sent){
+    int n_addresses_this_message = 0;
+    int size_first =
         ITEMS_PER_DATA_PACKET - sizeof(start_stream_sdp_packet_t);
-    uint32_t size_extra =
+    int size_extra =
         ITEMS_PER_DATA_PACKET - sizeof(extra_stream_sdp_packet_t);
 
     // if first packet
@@ -887,8 +382,8 @@ uint32_t deduce_elements_this_packet(
 //! \param[in] n_rt_addresses: how many bit field addresses.
 //! \param[in] n_addresses_this_message: the addresses to put in this
 void set_up_first_packet(
-        uint32_t total_packets, address_t compressed_address,
-        uint32_t n_rt_addresses, uint32_t n_addresses_this_message){
+        int total_packets, address_t compressed_address,
+        int n_rt_addresses, int n_addresses_this_message){
     my_msg.data[COMMAND_CODE] = START_DATA_STREAM;
 
     // create cast
@@ -901,29 +396,28 @@ void set_up_first_packet(
     data->fake_heap_data = user_register_content[USABLE_SDRAM_REGIONS];
     data->total_n_tables = n_rt_addresses;
     data->n_tables_in_packet = n_addresses_this_message;
-    log_debug(
-        "mem cpy tables to dest = %d, from source = %d, bytes = %d",
-        &data->tables[0], &bit_field_routing_tables[0],
-        n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER);
-
-    sark_mem_cpy(
-        &data->tables[0], &bit_field_routing_tables[0],
-        n_addresses_this_message * WORD_TO_BYTE_MULTIPLIER);
+    for (int address_index = 0; address_index < n_addresses_this_message;
+            address_index ++){
+        data->tables[address_index] = bit_field_routing_tables[address_index];
+    }
 
     my_msg.length = (
         LENGTH_OF_SDP_HEADER + (
             (n_addresses_this_message + sizeof(start_stream_sdp_packet_t)) *
             WORD_TO_BYTE_MULTIPLIER));
 
-    log_debug(
+    log_info(
         "message contains command code %d, n sdp packets till "
-        "delivered %d, address for compressed %d, fake heap data "
-        "address %d total n tables %d, n tables in packet %d",
+        "delivered %d, address for compressed %x, fake heap data "
+        "address %x total n tables %d, n tables in packet %d",
         my_msg.data[COMMAND_CODE], data->n_sdp_packets_till_delivered,
         data->address_for_compressed, data->fake_heap_data,
-        data->total_n_tables);
-    for(uint32_t rt_id = 0; rt_id < n_addresses_this_message; rt_id++){
-        log_debug("table address is %x", data->tables[rt_id]);
+        data->total_n_tables, data->n_tables_in_packet);
+    for(int rt_id = 0; rt_id < n_addresses_this_message; rt_id++){
+        if (data->tables[rt_id][0] > 256){
+            log_info("table address is %x", data->tables[rt_id]);
+            log_info("table size for %d is %d", rt_id, data->tables[rt_id][0]);
+        }
     }
     log_debug("message length = %d", my_msg.length);
 }
@@ -935,7 +429,7 @@ void setup_extra_packet(
         uint32_t n_addresses_this_message, uint32_t addresses_sent){
     my_msg.data[COMMAND_CODE] = EXTRA_DATA_STREAM;
     extra_stream_sdp_packet_t* data =(extra_stream_sdp_packet_t*)
-        my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA];
+        &my_msg.data[START_OF_SPECIFIC_MESSAGE_DATA];
     data->n_tables_in_packet = n_addresses_this_message;
     sark_mem_cpy(
         &data->tables, &bit_field_routing_tables[addresses_sent],
@@ -954,10 +448,13 @@ void setup_extra_packet(
 //!  into
 //! \param[in] mid_point: the mid point in the binary search
 bool set_off_bit_field_compression(
-        uint32_t n_rt_addresses, uint32_t mid_point){
+        int n_rt_addresses, uint32_t mid_point){
 
     // select compressor core to execute this
     uint32_t comp_core_index = select_compressor_core_index(mid_point);
+    log_info(
+        "using core %d for %d rts",
+        compressor_cores[comp_core_index], n_rt_addresses);
 
     // allocate space for the compressed routing entries if required
     address_t compressed_address =
@@ -986,14 +483,15 @@ bool set_off_bit_field_compression(
     update_mc_message(comp_core_index);
 
     // deduce how many packets
-    uint32_t total_packets = deduce_total_packets(n_rt_addresses);
-    log_debug("total packets = %d", total_packets);
+    int total_packets = deduce_total_packets(n_rt_addresses);
+    log_debug(
+        "total packets = %d, n rts is still %d", total_packets);
 
     // generate the packets and fire them to the compressor core
-    uint32_t addresses_sent = 0;
-    for (uint32_t packet_id =0; packet_id < total_packets; packet_id++){
+    int addresses_sent = 0;
+    for (int packet_id =0; packet_id < total_packets; packet_id++){
         // if just one packet worth, set to left over addresses
-        uint32_t n_addresses_this_message = deduce_elements_this_packet(
+        int n_addresses_this_message = deduce_elements_this_packet(
             packet_id, n_rt_addresses, addresses_sent);
         log_debug(
             "sending %d addresses this message", n_addresses_this_message);
@@ -1024,27 +522,31 @@ bool set_off_bit_field_compression(
 //! \param[in] mid_point: the mid point to start at
 //! \return bool fag if it fails for memory issues
 bool create_tables_and_set_off_bit_compressor(uint32_t mid_point){
-    uint32_t n_rt_addresses = 0;
+    int n_rt_addresses = 0;
     log_debug("started create bit field router tables");
-    bool success = create_bit_field_router_tables(mid_point, &n_rt_addresses);
+    bit_field_routing_tables =
+        bit_field_table_generator_create_bit_field_router_tables(
+            mid_point, &n_rt_addresses, user_register_content,
+            bit_field_by_processor, sorted_bit_fields);
+    if (bit_field_routing_tables == NULL){
+        log_debug(
+            "failed to create bitfield tables for midpoint %d", mid_point);
+        return false;
+    }
+
     log_debug("finished creating bit field router tables");
 
     // if successful, try setting off the bitfield compression
-    if (success){
-        success = set_off_bit_field_compression(n_rt_addresses, mid_point);
+    bool success = set_off_bit_field_compression(n_rt_addresses, mid_point);
 
-         // if successful, move to next search point.
-         if (!success){
-            log_debug("failed to set off bitfield compression");
-            return false;
-         }
-         else{
-            return true;
-         }
+    // if successful, move to next search point.
+    if (!success){
+        log_debug("failed to set off bitfield compression");
+        return false;
     }
-
-    log_debug("failed to create bitfield tables for midpoint %d", mid_point);
-    return false;
+    else{
+        return true;
+    }
 }
 
 //! \brief try running compression on just the uncompressed (attempt to check
@@ -1137,9 +639,9 @@ bool start_binary_search(){
 //! \param[out] sorted_bf_by_processor: the sorted stuff
 bool sort_sorted_to_cores(
         proc_bit_field_keys_t* sorted_bf_by_processor){
-    sorted_bf_by_processor = MALLOC(
-        user_register_content[REGION_ADDRESSES][N_PAIRS] *
-        sizeof(proc_bit_field_keys_t));
+
+    int n_regions = user_register_content[REGION_ADDRESSES][N_PAIRS];
+    sorted_bf_by_processor = MALLOC(n_regions * sizeof(proc_bit_field_keys_t));
     if (sorted_bf_by_processor == NULL){
         log_error(
             "failed to allocate memory for the sorting of bitfield to keys");
@@ -1148,14 +650,11 @@ bool sort_sorted_to_cores(
 
     //locate how many bitfields in the search space accepted that are of a
     // given core.
-    uint position_in_region_data = START_OF_ADDRESSES_DATA;
-    for (uint32_t r_id = 0;
-            r_id < user_register_content[REGION_ADDRESSES][N_PAIRS];
-            r_id++){
+    for (uint32_t r_id = 0; r_id < n_regions; r_id++){
 
         // locate processor id for this region
         uint32_t region_proc_id = user_register_content[
-            REGION_ADDRESSES][position_in_region_data + PROCESSOR_ID];
+            REGION_ADDRESSES][START_OF_ADDRESSES_DATA + PROCESSOR_ID];
         sorted_bf_by_processor[r_id].processor_id = region_proc_id;
 
         // count entries
@@ -1662,6 +1161,24 @@ void carry_on_binary_search(uint unused0, uint unused1){
     still_trying_to_carry_on = false;
 }
 
+
+//! \brief timer interrupt for controlling time taken to try to compress table
+//! \param[in] unused0: not used
+//! \param[in] unused1: not used
+void timer_callback(uint unused0, uint unused1) {
+    use(unused0);
+    use(unused1);
+
+    // protects against any race conditions where everything has finished but
+    // due to interrupt priorities, sdp message mailbox limits etc. Best way
+    // will be to periodically assess if we need to do anything
+    if (count_many_on_going_compression_attempts_are_running() == 0 &&
+            !reading_bit_fields && !still_trying_to_carry_on){
+        spin1_schedule_callback(
+            carry_on_binary_search, 0, 0, COMPRESSION_START_PRIORITY);
+    }
+}
+
 //! \brief processes the response from the compressor attempt
 //! \param[in] comp_core_index: the compressor core id
 //! \param[in] the response code / finished state
@@ -1857,7 +1374,8 @@ void sdp_handler(uint mailbox, uint port) {
         }
         else if (msg->data[COMMAND_CODE] == STOP_COMPRESSION_ATTEMPT){
             log_error(
-                "no idea why im receiving a stop message. Ignoring");
+                "no idea why im receiving a stop message from core %d. "
+                "Ignoring", (msg->srce_port & CPU_MASK));
             sark_msg_free((sdp_msg_t*) msg);
         }
         else{
@@ -1881,11 +1399,11 @@ void sdp_handler(uint mailbox, uint port) {
 //! \param[in] bit_field_struct: the location of the bitfield
 //! \return how many redundant packets there are
 uint32_t detect_redundant_packet_count(address_t bit_field_struct){
-    //log_info("address's location is %d", bit_field_struct);
-    //log_info(" key is %d", bit_field_struct[BIT_FIELD_BASE_KEY]);
+    log_debug("address's location is %d", bit_field_struct);
+    log_debug(" key is %d", bit_field_struct[BIT_FIELD_BASE_KEY]);
     uint32_t n_filtered_packets = 0;
-    uint32_t n_neurons =
-        locate_key_atom_map(bit_field_struct[BIT_FIELD_BASE_KEY]);
+    uint32_t n_neurons = helpful_functions_locate_key_atom_map(
+        bit_field_struct[BIT_FIELD_BASE_KEY], user_register_content);
     for (uint neuron_id = 0; neuron_id < n_neurons; neuron_id++){
         if (!bit_field_test(
                 (bit_field_t) &bit_field_struct[START_OF_BIT_FIELD_DATA],
@@ -1893,7 +1411,7 @@ uint32_t detect_redundant_packet_count(address_t bit_field_struct){
             n_filtered_packets += 1;
         }
     }
-    //log_info("n filtered packets = %d", n_filtered_packets);
+    log_debug("n filtered packets = %d", n_filtered_packets);
     return n_filtered_packets;
 }
 
@@ -1911,7 +1429,7 @@ uint32_t locate_and_add_bit_fields(
         uint32_t *cores_to_add_for, uint32_t cores_to_add_length, uint32_t diff,
         uint32_t covered){
 
-    for (uint32_t processor_id_index =0;
+    for (uint32_t processor_id_index = 0;
             processor_id_index < coverage[coverage_index]->length_of_list;
             processor_id_index++){
         // check for the processor id's in the cores to add from, and add the
@@ -1921,19 +1439,29 @@ uint32_t locate_and_add_bit_fields(
             coverage_index]->processor_ids[processor_id_index];
 
         // look inside cores to add for
-        for (uint32_t processor_to_check_index=0;
-                processor_to_check_index<cores_to_add_length;
+        for (uint32_t processor_to_check_index = 0;
+                processor_to_check_index < cores_to_add_length;
                 processor_to_check_index++){
             uint32_t processor_id_to_work_on =
                 cores_to_add_for[processor_to_check_index];
             if(processor_id_to_check == processor_id_to_work_on){
-                if (covered < diff){
+                if (covered < diff &&
+                        coverage[coverage_index]->bit_field_addresses[
+                            processor_to_check_index] != NULL){
                     // add to sorted bitfield
                     covered += 1;
                     sorted_bit_fields[sorted_bit_field_current_fill_loc] =
                         coverage[coverage_index]->bit_field_addresses[
                             processor_to_check_index];
                     sorted_bit_field_current_fill_loc += 1;
+
+                    log_debug(
+                        "dumping into sorted at index %d address %x and is %x",
+                        sorted_bit_field_current_fill_loc,
+                        coverage[coverage_index]->bit_field_addresses[
+                            processor_to_check_index],
+                        sorted_bit_fields[
+                            sorted_bit_field_current_fill_loc - 1]);
 
                     // delete (aka set to null, to bypass lots of data moves)
                     coverage[coverage_index]->bit_field_addresses[
@@ -1943,19 +1471,10 @@ uint32_t locate_and_add_bit_fields(
                     log_debug(
                         "removing from indexs %d, %d",
                         coverage_index, processor_to_check_index);
-
-                    log_debug(
-                        "dumping into sorted at index %d address %x and is %x",
-                        sorted_bit_field_current_fill_loc,
-                        coverage[coverage_index]->bit_field_addresses[
-                            processor_to_check_index],
-                        sorted_bit_fields[sorted_bit_field_current_fill_loc]);
                 }
             }
         }
     }
-
-
     return covered;
 }
 
@@ -1975,7 +1494,39 @@ void order_bit_fields_based_on_impact(
 
     // sort processor coverage by bitfield so that ones with longest length are
     // at the front of the list
-    sort_by_n_bit_fields(proc_cov_by_bit_field, n_pairs);
+
+    // print all coverage for sanity purposes
+    for (uint32_t coverage_index = 0;
+            coverage_index < n_unique_redundant_packet_counts;
+            coverage_index++){
+        for(uint32_t bit_field_index = 0;
+                bit_field_index < coverage[coverage_index]->length_of_list;
+                bit_field_index ++){
+            log_debug(
+                "before sort by n bitfields bitfield address in coverage at "
+                "index %d in array index %d is %x",
+                coverage_index, bit_field_index,
+                 coverage[coverage_index]->bit_field_addresses[
+                    bit_field_index]);
+        }
+    }
+    sorter_sort_by_n_bit_fields(proc_cov_by_bit_field, n_pairs);
+
+    // print all coverage for sanity purposes
+    for (uint32_t coverage_index = 0;
+            coverage_index < n_unique_redundant_packet_counts;
+            coverage_index++){
+        for(uint32_t bit_field_index = 0;
+                bit_field_index < coverage[coverage_index]->length_of_list;
+                bit_field_index ++){
+            log_debug(
+                "after sort by n bitfields bitfield address in coverage at "
+                "index %d in array index %d is %x",
+                coverage_index, bit_field_index,
+                 coverage[coverage_index]->bit_field_addresses[
+                    bit_field_index]);
+        }
+    }
 
     // move bit_fields over from the worst affected cores. The list of worst
     // affected cores will grow in time as the worst cores are balanced out
@@ -1991,19 +1542,52 @@ void order_bit_fields_based_on_impact(
         cores_to_add_for[cores_to_add_length] =
             proc_cov_by_bit_field[worst_core_id]->processor_id;
         cores_to_add_length += 1;
-        log_info(
+        log_debug(
             "adding core %d into the search",
             proc_cov_by_bit_field[worst_core_id]->processor_id);
 
         // determine difference between the worst and next worst
         uint32_t diff = proc_cov_by_bit_field[worst_core_id]->length_of_list -
              proc_cov_by_bit_field[worst_core_id + 1]->length_of_list;
-        log_info("diff is %d", diff);
+        log_debug("diff is %d", diff);
 
         // sort by bubble sort so that the most redundant packet count
         // addresses are at the front
-        sort_by_redundant_packet_count(
+
+        // print all coverage for sanity purposes
+        for (uint32_t coverage_index = 0;
+                coverage_index < n_unique_redundant_packet_counts;
+                coverage_index++){
+            for(uint32_t bit_field_index = 0;
+                    bit_field_index < coverage[coverage_index]->length_of_list;
+                    bit_field_index ++){
+                log_debug(
+                    "before sort by redudant in coverage at "
+                    "index %d in array index %d is %x",
+                    coverage_index, bit_field_index,
+                     coverage[coverage_index]->bit_field_addresses[
+                        bit_field_index]);
+            }
+        }
+
+        sorter_sort_by_redundant_packet_count(
             proc_cov_by_bit_field, n_pairs, worst_core_id);
+
+        // print all coverage for sanity purposes
+        for (uint32_t coverage_index = 0;
+                coverage_index < n_unique_redundant_packet_counts;
+                coverage_index++){
+            for(uint32_t bit_field_index = 0;
+                    bit_field_index < coverage[coverage_index]->length_of_list;
+                    bit_field_index ++){
+                log_debug(
+                    "after sort by redudant in coverage at "
+                    "index %d in array index %d is %x",
+                    coverage_index, bit_field_index,
+                     coverage[coverage_index]->bit_field_addresses[
+                        bit_field_index]);
+            }
+        }
 
         // print for sanity
         for(uint32_t r_packet_index = 0;
@@ -2014,21 +1598,6 @@ void order_bit_fields_based_on_impact(
                 "order of redundant packet count at index %d is %d",
                 proc_cov_by_bit_field[worst_core_id]->redundant_packets[
                     r_packet_index]);
-        }
-
-        // print all coverage for sanity purposes
-        for (uint32_t coverage_index = 0;
-                coverage_index < n_unique_redundant_packet_counts;
-                coverage_index++){
-            for(uint32_t bit_field_index = 0;
-                    bit_field_index < coverage[coverage_index]->length_of_list;
-                    bit_field_index ++){
-                log_debug(
-                    "bitfield address in coverage at index %d in array index"
-                     "%d is %x", coverage_index, bit_field_index,
-                     coverage[coverage_index]->bit_field_addresses[
-                        bit_field_index]);
-            }
         }
 
         for (uint32_t coverage_index = 0;
@@ -2056,8 +1625,6 @@ void order_bit_fields_based_on_impact(
             uint32_t x_redundant_packets = proc_cov_by_bit_field[
                 worst_core_id]->redundant_packets[redundant_packet_count_index];
 
-
-
             // locate the bitfield with coverage that matches the x redundant
             // packets
             for (uint32_t coverage_index = 0; 
@@ -2072,14 +1639,14 @@ void order_bit_fields_based_on_impact(
             }
 
             // print all coverage for sanity purposes
-            /**for (uint32_t coverage_index = 0;
+            for (uint32_t coverage_index = 0;
                     coverage_index < n_unique_redundant_packet_counts;
                     coverage_index++){
                 for(uint32_t bit_field_index = 0;
                         bit_field_index < coverage[
                             coverage_index]->length_of_list;
                         bit_field_index ++){
-                    log_info(
+                    log_debug(
                         "bitfield address in coverage at index %d in array "
                         "index %d is %x", coverage_index, bit_field_index,
                          coverage[coverage_index]->bit_field_addresses[
@@ -2094,7 +1661,7 @@ void order_bit_fields_based_on_impact(
                         bit_field_index < coverage[
                             coverage_index]->length_of_list;
                         bit_field_index ++){
-                    log_info(
+                    log_debug(
                         "bitfield proc in coverage after a move to sorted at "
                         "index %d in array index %d is %x", coverage_index,
                         bit_field_index,
@@ -2102,14 +1669,14 @@ void order_bit_fields_based_on_impact(
                             bit_field_index]);
                 }
             }
-            log_info("next cycle of moving to sorted");*/
+            log_debug("next cycle of moving to sorted");
         }
     }
 
 
 
     // sort bitfields by coverage by n_redundant_packets so biggest at front
-    sort_bitfields_so_most_impact_at_front(
+    sorter_sort_bitfields_so_most_impact_at_front(
         coverage, n_unique_redundant_packet_counts);
 
     // iterate through the coverage and add any that are left over.
@@ -2123,11 +1690,11 @@ void order_bit_fields_based_on_impact(
                 sorted_bit_fields[sorted_bit_field_current_fill_loc] =
                         coverage[index]->bit_field_addresses[bit_field_index];
 
-                //log_info(
-                //    "dumping into sorted at index %d address %x and is %x",
-                //    sorted_bit_field_current_fill_loc,
-                //    coverage[index]->bit_field_addresses[bit_field_index],
-                //    sorted_bit_fields[sorted_bit_field_current_fill_loc]);
+                log_debug(
+                    "dumping into sorted at index %d address %x and is %x",
+                    sorted_bit_field_current_fill_loc,
+                    coverage[index]->bit_field_addresses[bit_field_index],
+                    sorted_bit_fields[sorted_bit_field_current_fill_loc]);
 
                 sorted_bit_fields_processor_ids[
                     sorted_bit_field_current_fill_loc] = coverage[
@@ -2146,7 +1713,8 @@ bool set_off_no_bit_field_compression(){
     // allocate and clone uncompressed entry
     log_info("start cloning of uncompressed table");
     address_t sdram_clone_of_routing_table =
-        clone_un_compressed_routing_table();
+        helpful_functions_clone_un_compressed_routing_table(
+            user_register_content);
     if (sdram_clone_of_routing_table == NULL){
         log_error("could not allocate memory for uncompressed table for no "
                   "bit field compression attempt.");
@@ -2176,6 +1744,7 @@ bool set_off_no_bit_field_compression(){
 bool read_in_bit_fields(){
 
     // count how many bitfields there are in total
+
     uint position_in_region_data = 0;
     n_bf_addresses = 0;
     uint32_t n_pairs_of_addresses =
@@ -2231,9 +1800,6 @@ bool read_in_bit_fields(){
         log_debug("bit_field_region = %x", bit_field_address);
         position_in_region_data += ADDRESS_PAIR_LENGTH;
 
-        log_debug(
-            "safety check. bit_field key is %d",
-             bit_field_address[BIT_FIELD_BASE_KEY]);
         uint32_t pos_in_bitfield_region = N_BIT_FIELDS;
         uint32_t core_n_bit_fields = bit_field_address[pos_in_bitfield_region];
         log_debug("there are %d core bit fields", core_n_bit_fields);
@@ -2269,14 +1835,13 @@ bool read_in_bit_fields(){
         //                  2 n redundant packets
         for (uint32_t bit_field_id = 0; bit_field_id < core_n_bit_fields;
                 bit_field_id++){
-            bit_field_by_processor[r_id].bit_field_addresses[
-                bit_field_id] =
-                    (address_t) &bit_field_address[pos_in_bitfield_region];
+
+            bit_field_by_processor[r_id].bit_field_addresses[bit_field_id] =
+                (address_t) &bit_field_address[pos_in_bitfield_region];
             log_debug(
                 "bitfield at region %d at index %d is at address %x",
                 r_id, bit_field_id,
-                bit_field_by_processor[r_id].bit_field_addresses[
-                    bit_field_id]);
+                bit_field_by_processor[r_id].bit_field_addresses[bit_field_id]);
 
             uint32_t n_redundant_packets =
                 detect_redundant_packet_count(
@@ -2287,6 +1852,10 @@ bool read_in_bit_fields(){
                 "prov cov by bitfield for region %d, redundant packets "
                 "at index %d, has n redundant packets of %d",
                 r_id, bit_field_id, n_redundant_packets);
+
+            log_debug(
+                "safety check. bit_field key is %d",
+                bit_field_address[pos_in_bitfield_region + BIT_FIELD_BASE_KEY]);
             
             pos_in_bitfield_region += 
                 START_OF_BIT_FIELD_DATA + bit_field_address[
@@ -2327,6 +1896,10 @@ bool read_in_bit_fields(){
 
     uint length_n_redundant_packets = 0;
     uint * redundant_packets = MALLOC(n_bf_addresses * sizeof(uint));
+    if (redundant_packets == NULL){
+        log_error("cannot allocate memory for the redundant packet counts");
+        return false;
+    }
 
     // filter out duplicates in the n redundant packets
     position_in_region_data = START_OF_ADDRESSES_DATA;
@@ -2342,8 +1915,9 @@ bool read_in_bit_fields(){
         // check that each bitfield redundant packets are unqiue and add to set
         for (uint32_t bit_field_id = 0; bit_field_id < core_n_bit_fields;
                 bit_field_id++){
-            uint x_packets = proc_cov_by_bf[
-                r_id]->redundant_packets[bit_field_id];
+            uint x_packets =
+                proc_cov_by_bf[r_id]->redundant_packets[bit_field_id];
+
             // check if seen this before
             bool found = false;
             for (uint index = 0; index < length_n_redundant_packets; index++){
@@ -2401,6 +1975,7 @@ bool read_in_bit_fields(){
                 }
             }
         }
+        log_debug("size going to be %d", n_bf_with_same_r_packets);
         
         // update length of list
         coverage[r_packet_index]->length_of_list = n_bf_with_same_r_packets;
@@ -2458,9 +2033,13 @@ bool read_in_bit_fields(){
                 }
             }
         }
-        //log_info(
-        //    "processor id index = %d and need to fill in %d elements",
-        //    processor_id_index, n_bf_with_same_r_packets);
+        log_debug(
+            "processor id index = %d and need to fill in %d elements",
+            processor_id_index, n_bf_with_same_r_packets);
+        if (processor_id_index != n_bf_with_same_r_packets){
+            log_error("WTF!");
+            rt_error(RTE_SWERR);
+        }
     }
 
     // free the redundant packet tracker, as now tailored ones are in the dict
@@ -2488,7 +2067,7 @@ bool read_in_bit_fields(){
     FREE(proc_cov_by_bf);
 
     for(int bf_index = 0; bf_index < n_bf_addresses; bf_index++){
-        log_debug(
+        log_info(
             "bitfield address for sorted in index %d is %x",
             bf_index, sorted_bit_fields[bf_index]);
     }
@@ -2682,6 +2261,8 @@ void c_main(void) {
     }
 
     spin1_callback_on(SDP_PACKET_RX, sdp_handler, SDP_PRIORITY);
+    spin1_set_timer_tick(TIME_STEP);
+    spin1_callback_on(TIMER_TICK, timer_callback, TIMER_TICK_PRIORITY);
 
     // kick-start the process
     spin1_schedule_callback(

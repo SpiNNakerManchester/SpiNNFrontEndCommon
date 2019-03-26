@@ -212,6 +212,13 @@ class HostBasedBitFieldRouterCompressor(object):
 
     @staticmethod
     def generate_key_to_atom_map(machine_graph, routing_infos, graph_mapper):
+        """ THIS IS NEEDED due to the link from key to edge being lost. 
+        
+        :param machine_graph: machine graph
+        :param routing_infos: routing infos
+        :param graph_mapper: graph mapper
+        :return: 
+        """
         # build key to n atoms map
         key_to_n_atoms_map = dict()
         for vertex in machine_graph.vertices:
@@ -221,23 +228,25 @@ class HostBasedBitFieldRouterCompressor(object):
                 key = routing_infos.get_first_key_from_pre_vertex(
                     vertex, outgoing_partition.identifier)
 
-                if isinstance(vertex, AbstractProvidesNKeysForPartition):
-                    key_to_n_atoms_map[key] = vertex.get_n_keys_for_partition(
-                        outgoing_partition)
-                elif graph_mapper is not None:
+                if graph_mapper is not None:
                     app_vertex = graph_mapper.get_application_vertex(vertex)
                     if isinstance(
                             app_vertex, AbstractProvidesNKeysForPartition):
                         key_to_n_atoms_map[key] = \
                             app_vertex.get_n_keys_for_partition(
-                                outgoing_partition)
+                                outgoing_partition, graph_mapper)
                     else:
                         key_to_n_atoms_map[key] = \
                             graph_mapper.get_slice(vertex).n_atoms
                 else:
-                    key_to_n_atoms_map[
-                        routing_infos.get_first_key_from_pre_vertex(
-                            vertex, outgoing_partition.identifier)] = 1
+                    if isinstance(vertex, AbstractProvidesNKeysForPartition):
+                        key_to_n_atoms_map[key] = \
+                            vertex.get_n_keys_for_partition(
+                                outgoing_partition, None)
+                    else:
+                        key_to_n_atoms_map[
+                            routing_infos.get_first_key_from_pre_vertex(
+                                vertex, outgoing_partition.identifier)] = 1
         return key_to_n_atoms_map
 
     def generate_report_path(self, default_report_folder):

@@ -123,7 +123,7 @@ static inline aliases_t aliases_init(void){
 //! \param[in] node: ????????
 //! \param[in] key: ????????
 //! \return ???????????
-static inline node_t* _aliases_find_node(node_t *node, a_key_t key){
+static node_t* _aliases_find_node(node_t *node, a_key_t key){
     while (node != NULL){
         if (key.as_int == node->key.as_int){
             // This is the requested item, return it
@@ -146,7 +146,7 @@ static inline node_t* _aliases_find_node(node_t *node, a_key_t key){
 //! \param[in] a: ??????????
 //! \param[in] key: ????????????
 //! \return ?????????????
-static inline alias_list_t* aliases_find(aliases_t *a, key_mask_t key){
+static alias_list_t* aliases_find(aliases_t *a, key_mask_t key){
     // Search the tree
     node_t *node = _aliases_find_node(a->root, (a_key_t) key);
     if (node == NULL){
@@ -162,14 +162,14 @@ static inline alias_list_t* aliases_find(aliases_t *a, key_mask_t key){
 //! \param[in] a: alias
 //! \param[in] key: the key mask struct
 //! \return bool saying if the alias has the key mask.
-static inline bool aliases_contains(aliases_t *a, key_mask_t key){
+static bool aliases_contains(aliases_t *a, key_mask_t key){
     return aliases_find(a, key) != NULL;
 }
 
 //! \brief ???????
 //! \param[in] n: ??????????
 //! \return ??????????
-static inline node_t* _aliases_skew(node_t *n){
+static node_t* _aliases_skew(node_t *n){
     if (n == NULL){
         return NULL;
     }
@@ -190,7 +190,7 @@ static inline node_t* _aliases_skew(node_t *n){
 //! \brief ??????????
 //! \param[in] n: ??????????
 //! \return ??????????
-static inline node_t* _aliases_split(node_t *n){
+static node_t* _aliases_split(node_t *n){
     if (n == NULL){
       return NULL;
     }
@@ -214,7 +214,7 @@ static inline node_t* _aliases_split(node_t *n){
 //! \param[in] key: ????????
 //! \param[in] val: ?????????
 //! \return ??????????
-static inline node_t* _aliases_insert(
+static node_t* _aliases_insert(
         node_t *n, a_key_t key, alias_list_t *val){
     if (n == NULL){
         // If the node is NULL then create a new Node

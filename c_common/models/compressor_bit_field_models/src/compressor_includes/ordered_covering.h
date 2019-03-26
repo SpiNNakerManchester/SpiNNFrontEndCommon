@@ -519,7 +519,7 @@ static inline bool oc_get_best_merge(
             &working, merge_goodness(best), aliases, failed_by_malloc,
             routing_tables, n_tables);
         if (!success){
-            log_error("failed to down check. ");
+            log_error("failed to down check.");
 
             // free bits we already done
             FREE(&best);
@@ -594,7 +594,7 @@ static inline void oc_merge_apply(
         routing_tables, n_tables, key_mask_count_xs(merge->key_mask));
 
     // Keep track of the amount of reduction of the finished table
-    unsigned int reduced_size = 0;
+    int reduced_size = 0;
 
     // Create a new aliases list with sufficient space for the key_masks of all
     // of the entries in the merge.
@@ -748,14 +748,18 @@ static inline bool oc_minimise(
 
     // start the merger process
     log_info("start compression true attempt");
+    int attempts = 0;
     while ((routing_table_sdram_get_n_entries(
             routing_tables, n_tables) > target_length) &&
-            !timer_for_compression_attempt && !finished_by_control){
+            !*timer_for_compression_attempt && !*finished_by_control){
         
         if (*finish_compression_flag){
-            log_error("failed due to timing limitations");
+            log_error(
+                "failed due to timing limitations. reached %d entries over %d"
+                " attempts",
+                routing_table_sdram_get_n_entries(routing_tables, n_tables),
+                attempts);
             *timer_for_compression_attempt = true;
-            spin1_pause();
             return false;
         }
 
@@ -774,19 +778,33 @@ static inline bool oc_minimise(
         if (count > 1){
             // Apply the merge to the table if it would result in merging
             // actually occurring.
+            log_info("going to merge %d", count);
             oc_merge_apply(&merge, aliases, routing_tables, n_tables);
         }
 
         // Free any memory used by the merge
+        log_info("merge delete");
         merge_delete(&merge);
 
         // Break out of the loop if no merge could be performed (indicating
         // that no more minimisation is possible).
         if (count < 2){
+            log_info("breaking out");
             break;
         }
+        log_info("cycle");
+        attempts += 1;
     }
+
+    log_info(
+        "entries = %d, timer = %d, finished by control = %d",
+        routing_table_sdram_get_n_entries(routing_tables, n_tables),
+        *timer_for_compression_attempt, *finished_by_control);
+
     log_info("compressed!!!");
+    log_info(
+        "produced table with %d entries",
+        routing_table_sdram_get_n_entries(routing_tables, n_tables));
     return true;
 }
 

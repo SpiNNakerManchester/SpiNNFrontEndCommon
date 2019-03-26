@@ -23,15 +23,14 @@ from spinnman.model.enums import CPUState
 
 from spinn_front_end_common.utilities.exceptions import \
     CantFindSDRAMToUseException
-from spinn_front_end_common.abstract_models. \
-    abstract_supports_bit_field_routing_compression import \
-    AbstractSupportsBitFieldRoutingCompression
 from spinn_front_end_common.utilities import system_control_logic
 
 logger = logging.getLogger(__name__)
 
 # sdram allocation for addresses
 SIZE_OF_SDRAM_ADDRESS_IN_BYTES = (17 * 2 * 4) + (3 * 4)
+
+SECOND_TO_MICRO_SECOND = 1000000
 
 
 class MachineBitFieldRouterCompressor(object):
@@ -203,9 +202,6 @@ class MachineBitFieldRouterCompressor(object):
                         table.x, table.y, table.multicast_routing_entries,
                         app_id=app_id)
 
-        # update progress bar to reflect chip compression complete
-        progress_bar.update()
-
         # complete progress bar
         progress_bar.end()
 
@@ -355,6 +351,10 @@ class MachineBitFieldRouterCompressor(object):
 
         return run_by_host
 
+    @staticmethod
+    def _convert_to_microseconds(seconds):
+        return seconds * SECOND_TO_MICRO_SECOND
+
     def _load_compressor_data(
             self, chip_x, chip_y, time_per_iteration, transceiver,
             bit_field_compressor_executable_path, cores,
@@ -387,7 +387,9 @@ class MachineBitFieldRouterCompressor(object):
                 transceiver.get_user_3_register_address_from_core(processor_id)
             transceiver.write_memory(
                 chip_x, chip_y, user1_base_address,
-                self._ONE_WORDS.pack(time_per_iteration), self._USER_BYTES)
+                self._ONE_WORDS.pack(
+                    self._convert_to_microseconds(time_per_iteration)),
+                self._USER_BYTES)
             transceiver.write_memory(
                 chip_x, chip_y, user2_base_address,
                 self._ONE_WORDS.pack(compress_only_when_needed),

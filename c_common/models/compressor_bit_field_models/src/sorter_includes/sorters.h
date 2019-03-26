@@ -4,7 +4,7 @@
 //! \param[in/out] proc_cov_by_bit_field: the array of struct to be sorted
 //! \param[in] length_of_internal_array: length of internal array
 //! \param[in] worst_core_id: the core id to sort
-void sort_by_redundant_packet_count(
+void sorter_sort_by_redundant_packet_count(
         _proc_cov_by_bitfield_t** proc_cov_by_bit_field, 
         uint32_t length_of_internal_array, uint32_t worst_core_id){
 
@@ -48,7 +48,7 @@ void sort_by_redundant_packet_count(
 //!  are at the front of the list
 //! \param[in/out] proc_cov_by_bit_field: the array of structs to sort
 //! \param[in] length_of_array: length of the array of structs
-void sort_by_n_bit_fields(
+void sorter_sort_by_n_bit_fields(
         _proc_cov_by_bitfield_t** proc_cov_by_bit_field,
         uint32_t length_of_array){
     bool moved = true;
@@ -86,8 +86,19 @@ void sort_by_n_bit_fields(
 // \brief sort bitfields by coverage by n_redundant_packets so biggest at front
 //! \param[in/out] coverage: the array of structs to sort
 //! \param[in] length_of_array: length of array of structs
-void sort_bitfields_so_most_impact_at_front(
+void sorter_sort_bitfields_so_most_impact_at_front(
         coverage_t** coverage, uint32_t length_of_array){
+    // print for sanity
+    for (uint index = 0; index < length_of_array; index ++){
+        coverage_t* element = coverage[index];
+        for (uint in_index = 1; in_index < element->length_of_list;
+                in_index ++){
+            log_debug(
+                "before address of element %d, in list %d is %x",
+                index, in_index, element->bit_field_addresses[in_index]);
+        }
+    }
+
     bool moved = true;
     while (moved){
         moved = false;
@@ -112,6 +123,17 @@ void sort_bitfields_so_most_impact_at_front(
             else{  // move to next element
                 element = coverage[index];
             }
+        }
+    }
+
+    // print for sanity
+    for (uint index = 0; index < length_of_array; index ++){
+        coverage_t* element = coverage[index];
+        for (uint in_index = 1; in_index < element->length_of_list;
+                in_index ++){
+            log_debug(
+                "after address of element %d, in list %d is %x",
+                index, in_index, element->bit_field_addresses[in_index]);
         }
     }
 }
