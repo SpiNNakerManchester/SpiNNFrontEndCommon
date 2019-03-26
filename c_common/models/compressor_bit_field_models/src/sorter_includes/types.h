@@ -22,6 +22,14 @@ typedef enum key_to_atom_map_elements {
     SRC_N_ATOMS = 1,
     LENGTH_OF_KEY_ATOM_PAIR = 2
 } key_to_atom_map_elements;
+typedef struct key_atom_pair_t {
+    uint32_t base_key;
+    uint32_t n_atoms;
+} key_atom_pair_t;
+typedef struct key_atom_map_t {
+    uint32_t n_pairs;
+    key_atom_pair_t pairs[];
+} key_atom_map_t;
 
 //! enum mapping addresses in addresses region
 typedef enum addresses_elements {
@@ -55,6 +63,10 @@ typedef struct bit_field_data_t {
     uint32_t n_words;
     uint32_t data[];
 } bit_field_data_t;
+typedef struct bit_field_top_t {
+    uint32_t n_bitfields;
+    bit_field_data_t bitfields[];
+} bit_field_top_t;
 
 //! callback priorities
 typedef enum priorities {
@@ -64,7 +76,7 @@ typedef enum priorities {
 
 typedef struct pairs_t {
     address_t bitfield;
-    address_t key_atom;
+    key_atom_map_t *key_atom;
     uint32_t processor;
 } pairs_t;
 
