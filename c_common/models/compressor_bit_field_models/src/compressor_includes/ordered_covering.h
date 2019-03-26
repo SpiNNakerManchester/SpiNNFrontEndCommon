@@ -465,6 +465,7 @@ static inline bool oc_get_best_merge(
 
     // For every entry in the table see with which other entries it could be
     // merged.
+    log_info("starting search for merge entry");
     for (unsigned int i = 0;
             i < routing_table_sdram_get_n_entries(routing_tables, n_tables);
             i++){
@@ -489,6 +490,7 @@ static inline bool oc_get_best_merge(
             routing_tables, n_tables, i);
 
         // Try to merge with other entries
+        log_info("starting second search at index %d", i);
         for (unsigned int j = i+1;
                 j < routing_table_sdram_get_n_entries(
                     routing_tables, n_tables);
@@ -510,6 +512,7 @@ static inline bool oc_get_best_merge(
             }
         }
 
+        log_info("finished first");
         if (merge_goodness(&working) <= merge_goodness(best)){
             continue;
         }
@@ -527,6 +530,7 @@ static inline bool oc_get_best_merge(
 
             return false;
         }
+        log_info("finished down check");
 
         if (merge_goodness(&working) <= merge_goodness(best)){
             continue;
@@ -534,6 +538,7 @@ static inline bool oc_get_best_merge(
 
         // Perform the up check, seeing if this actually makes a change to the
         // size of the merge.
+        log_info("upcheck");
         if (oc_up_check(
                 &working, merge_goodness(best), routing_tables, n_tables)){
             if (merge_goodness(&working) <= merge_goodness(best)){
@@ -545,6 +550,7 @@ static inline bool oc_get_best_merge(
             success = oc_down_check(
                 &working, merge_goodness(best), aliases, failed_by_malloc,
                 routing_tables, n_tables);
+            log_info("finished rerun of down check");
             if (!success){
                 log_error("failed to down check. ");
 
@@ -556,6 +562,7 @@ static inline bool oc_get_best_merge(
             }
 
         }
+        log_info("about to swap merges");
 
         // If the merge is still better than the current best merge we swap the
         // current and best merges to record the new best merge.
@@ -567,6 +574,7 @@ static inline bool oc_get_best_merge(
     }
 
     // Tidy up
+    log_info("tidy");
     merge_delete(&working);
     bit_set_delete(&considered);
 
@@ -742,19 +750,15 @@ static inline bool oc_minimise(
         target_length = 0;
     }
 
-    // start the timer tick interrupt count down
-    log_info("set off timer tracker");
-    spin1_resume(SYNC_NOWAIT);
-
     // start the merger process
     log_info("start compression true attempt");
     int attempts = 0;
     while ((routing_table_sdram_get_n_entries(
             routing_tables, n_tables) > target_length) &&
             !*timer_for_compression_attempt && !*finished_by_control){
-        
+        log_info("cycle");
         if (*finish_compression_flag){
-            log_error(
+            log_info(
                 "failed due to timing limitations. reached %d entries over %d"
                 " attempts",
                 routing_table_sdram_get_n_entries(routing_tables, n_tables),
@@ -769,9 +773,10 @@ static inline bool oc_minimise(
         bool success = oc_get_best_merge(
             routing_tables, n_tables, aliases, &merge, failed_by_malloc);
         if (!success){
-            log_error("failed to do get best merge.");
+            log_info("failed to do get best merge.");
             return false;
         }
+        log_info("found best merge");
 
         unsigned int count = merge.entries.count;
 
@@ -792,9 +797,11 @@ static inline bool oc_minimise(
             log_info("breaking out");
             break;
         }
-        log_info("cycle");
         attempts += 1;
     }
+
+    // shut down timer. as passed the compression
+    spin1_pause();
 
     log_info(
         "entries = %d, timer = %d, finished by control = %d",

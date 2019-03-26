@@ -24,7 +24,7 @@
 //! flag for saying compression core doing nowt
 #define DOING_NOWT -1
 
-//! time step for safety timer tick interupt
+//! time step for safety timer tick interrupt
 #define TIME_STEP 10000
 
 //! bits in a word
@@ -647,12 +647,14 @@ bool sort_sorted_to_cores(
 
     //locate how many bitfields in the search space accepted that are of a
     // given core.
+    uint position_in_region_data = START_OF_ADDRESSES_DATA;
     for (int r_id = 0; r_id < n_regions; r_id++){
 
         // locate processor id for this region
         uint32_t region_proc_id = user_register_content[
-            REGION_ADDRESSES][START_OF_ADDRESSES_DATA + PROCESSOR_ID];
+            REGION_ADDRESSES][position_in_region_data + PROCESSOR_ID];
         sorted_bf_by_processor[r_id].processor_id = region_proc_id;
+        position_in_region_data += ADDRESS_PAIR_LENGTH;
 
         // count entries
         int n_entries = 0;
@@ -1427,50 +1429,55 @@ uint32_t locate_and_add_bit_fields(
         int *cores_to_add_for, int cores_to_add_length, int diff,
         int covered){
 
-    for (int processor_id_index = 0;
-            processor_id_index < coverage[coverage_index]->length_of_list;
-            processor_id_index++){
+    log_debug(
+        "going to look for %d cores with a diff of %d",
+        cores_to_add_length, diff);
+    for(int index = 0; index < cores_to_add_length; index++){
+        log_debug("am allowed to add from core %d", cores_to_add_for[index]);
+    }
+
+    coverage_t* coverage_e = coverage[coverage_index];
+    log_debug(
+        "taking from coverage %d which has r packets of %d",
+        coverage_index, coverage_e->n_redundant_packets);
+
+    for (int p_index = 0; p_index < coverage_e->length_of_list; p_index++){
         // check for the processor id's in the cores to add from, and add the
         // bitfield with that redundant packet rate and processor to the sorted
         // bitfields
-        int processor_id_to_check = coverage[
-            coverage_index]->processor_ids[processor_id_index];
+        int proc = coverage_e->processor_ids[p_index];
 
-        // look inside cores to add for
-        for (int processor_to_check_index = 0;
-                processor_to_check_index < cores_to_add_length;
-                processor_to_check_index++){
-            int processor_id_to_work_on =
-                cores_to_add_for[processor_to_check_index];
-            if(processor_id_to_check == processor_id_to_work_on){
-                if (covered < diff &&
-                        coverage[coverage_index]->bit_field_addresses[
-                            processor_to_check_index] != NULL){
-                    // add to sorted bitfield
-                    covered += 1;
+        // look to see if the core is one of those allowed to merge
+        for (int allow_p_index = 0; allow_p_index < cores_to_add_length;
+                allow_p_index++){
+
+            int allowed_p = cores_to_add_for[allow_p_index];
+            if(proc == allowed_p && covered < diff &&
+                    coverage_e->bit_field_addresses[proc] != NULL){
+
+                // add to sorted bitfield
+                sorted_bit_fields.bit_fields[
+                    sorted_bit_field_current_fill_loc] =
+                        coverage_e->bit_field_addresses[p_index];
+                sorted_bit_field_current_fill_loc += 1;
+
+                log_debug(
+                    "dumping into sorted at index %d address %x and is %x"
+                    " from coverage entry %d, ",
+                    sorted_bit_field_current_fill_loc - 1,
+                    coverage_e->bit_field_addresses[p_index],
                     sorted_bit_fields.bit_fields[
-                        sorted_bit_field_current_fill_loc] =
-                            coverage[coverage_index]->bit_field_addresses[
-                                processor_to_check_index];
-                    sorted_bit_field_current_fill_loc += 1;
+                        sorted_bit_field_current_fill_loc - 1]);
 
-                    log_info(
-                        "dumping into sorted at index %d address %x and is %x",
-                        sorted_bit_field_current_fill_loc,
-                        coverage[coverage_index]->bit_field_addresses[
-                            processor_to_check_index],
-                        sorted_bit_fields.bit_fields[
-                            sorted_bit_field_current_fill_loc - 1]);
+                // delete (aka set to null, to bypass lots of data moves)
+                coverage_e->bit_field_addresses[p_index] = NULL;
+                coverage_e->processor_ids[p_index] = NULL;
 
-                    // delete (aka set to null, to bypass lots of data moves)
-                    coverage[coverage_index]->bit_field_addresses[
-                            processor_to_check_index] = NULL;
-                    coverage[coverage_index]->processor_ids[
-                        processor_to_check_index] = NULL;
-                    log_debug(
-                        "removing from indexs %d, %d",
-                        coverage_index, processor_to_check_index);
-                }
+                // update coverage so that it can reflect merger
+                covered += 1;
+
+                log_debug(
+                    "removing from index's %d, %d", coverage_index, p_index);
             }
         }
     }
@@ -1518,7 +1525,7 @@ void order_bit_fields_based_on_impact(
         for(int bit_field_index = 0;
                 bit_field_index < coverage[coverage_index]->length_of_list;
                 bit_field_index ++){
-            log_info(
+            log_debug(
                 "after sort by n bitfields bitfield address in coverage at "
                 "index %d in array index %d is %x",
                 coverage_index, bit_field_index,
@@ -1579,7 +1586,7 @@ void order_bit_fields_based_on_impact(
             for(int bit_field_index = 0;
                     bit_field_index < coverage[coverage_index]->length_of_list;
                     bit_field_index ++){
-                log_info(
+                log_debug(
                     "after sort by redudant in coverage at "
                     "index %d in array index %d is %x",
                     coverage_index, bit_field_index,
@@ -1605,9 +1612,9 @@ void order_bit_fields_based_on_impact(
             for(int bit_field_index = 0;
                     bit_field_index < coverage[coverage_index]->length_of_list;
                     bit_field_index ++){
-                log_info(
+                log_debug(
                     "bitfield proc in coverage at index %d in array index"
-                     "%d is %x", coverage_index, bit_field_index,
+                     " %d is %d", coverage_index, bit_field_index,
                      coverage[coverage_index]->processor_ids[bit_field_index]);
             }
         }
@@ -1690,7 +1697,7 @@ void order_bit_fields_based_on_impact(
                     sorted_bit_field_current_fill_loc] =
                         coverage[index]->bit_field_addresses[bit_field_index];
 
-                log_info(
+                log_debug(
                     "dumping into sorted at index %d address %x and is %x",
                     sorted_bit_field_current_fill_loc,
                     coverage[index]->bit_field_addresses[bit_field_index],
@@ -1712,7 +1719,7 @@ void order_bit_fields_based_on_impact(
 bool set_off_no_bit_field_compression(){
 
     // allocate and clone uncompressed entry
-    log_info("start cloning of uncompressed table");
+    log_debug("start cloning of uncompressed table");
     address_t sdram_clone_of_routing_table =
         helpful_functions_clone_un_compressed_routing_table(
             user_register_content);
@@ -1721,20 +1728,20 @@ bool set_off_no_bit_field_compression(){
                   "bit field compression attempt.");
         return false;
     }
-    log_info("finished cloning of uncompressed table");
+    log_debug("finished cloning of uncompressed table");
 
     // set up the bitfield routing tables so that it'll map down below
-    log_info("allocating bf routing tables");
+    log_debug("allocating bf routing tables");
     bit_field_routing_tables = MALLOC(sizeof(address_t*));
-    log_info("malloc finished");
+    log_debug("malloc finished");
     if (bit_field_routing_tables == NULL){
         log_error(
             "failed to allocate memory for the bit_field_routing tables");
         return false;
     }
-    log_info("allocate to array");
+    log_debug("allocate to array");
     bit_field_routing_tables[0] = sdram_clone_of_routing_table;
-    log_info("allocated bf routing tables");
+    log_debug("allocated bf routing tables");
 
     // run the allocation and set off of a compressor core
     return set_off_bit_field_compression(N_UNCOMPRESSED_TABLE, 0);
@@ -2067,7 +2074,7 @@ bool read_in_bit_fields(){
     FREE(proc_cov_by_bf);
 
     for(int bf_index = 0; bf_index < n_bf_addresses; bf_index++){
-        log_info(
+        log_debug(
             "bitfield address for sorted in index %d is %x",
             bf_index, sorted_bit_fields.bit_fields[bf_index]);
     }

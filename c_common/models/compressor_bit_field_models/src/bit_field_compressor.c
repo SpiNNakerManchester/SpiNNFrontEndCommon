@@ -171,6 +171,9 @@ static inline void start_compression_process(uint unused0, uint unused1){
         &finish_compression_flag, compress_only_when_needed,
         compress_as_much_as_possible);
 
+    spin1_pause();
+    log_info("finished oc minimise");
+
     // check state
     if (success){
         success = store_into_compressed_address();
