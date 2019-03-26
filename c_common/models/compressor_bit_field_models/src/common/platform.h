@@ -1,7 +1,8 @@
-#include <common-typedefs.h>
-
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__
+
+#include <sark.h>
+#include <common-typedefs.h>
 
 //! a extra heap, that exploits sdram which can be easily regenerated.
 static heap_t *stolen_sdram_heap = NULL;
