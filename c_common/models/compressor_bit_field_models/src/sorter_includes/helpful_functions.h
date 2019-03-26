@@ -95,7 +95,7 @@ uint32_t helpful_functions_locate_key_atom_map(
 //! \return the number of unique keys founds.
 uint32_t helpful_functions_population_master_pop_bit_field_ts(
         master_pop_bit_field_t * keys, uint32_t mid_point,
-        address_t* sorted_bit_fields){
+        sorted_bit_fields_t sorted_bit_fields){
 
     uint32_t n_keys = 0;
     // check each bitfield to see if the key been recorded already
@@ -103,14 +103,16 @@ uint32_t helpful_functions_population_master_pop_bit_field_ts(
             bit_field_index++){
 
         // safety feature
-        if((uint32_t) sorted_bit_fields[bit_field_index] <= 0x60000000){
+        if((uint32_t) sorted_bit_fields.bit_fields[bit_field_index] <=
+                0x60000000){
             log_error(
                 "reading something off at address %x",
-                sorted_bit_fields[bit_field_index]);
+                sorted_bit_fields.bit_fields[bit_field_index]);
         }
 
         // get key
-        uint32_t key = sorted_bit_fields[bit_field_index][BIT_FIELD_BASE_KEY];
+        uint32_t key = sorted_bit_fields.bit_fields[bit_field_index][
+            BIT_FIELD_BASE_KEY];
 
         // start cycle looking for a clone
         uint32_t keys_index = 0;

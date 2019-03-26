@@ -72,12 +72,9 @@ int n_bf_addresses = 0;
 //! how many entries are in the uncompressed version
 uint32_t total_entries_in_uncompressed_router_table = 0;
 
-//! the list of bitfields in sorted order based off best effect.
-address_t* sorted_bit_fields;
-
-//! list of bitfield associated processor ids. sorted order based off best
-//! effort linked to sorted_bit_fields, but separate to avoid sdram rewrites
-uint32_t* sorted_bit_fields_processor_ids;
+//! the list of bitfields in sorted order based off best effect, and
+//! processor ids.
+sorted_bit_fields_t sorted_bit_fields;
 
 //! the list of the addresses of the routing table entries for the bitfields 
 //! and reduced routing table
@@ -239,7 +236,7 @@ uint32_t get_core_index_from_id(uint32_t processor_id){
         "failed to find the core id for this core index %d", processor_id);
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
+    rt_error(RTE_SWERR);
     return 0;
 }
 
@@ -259,7 +256,7 @@ uint32_t select_compressor_core_index(uint32_t midpoint){
     log_error("cant find a core to allocate to you");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-    spin1_exit(0);
+    rt_error(RTE_SWERR);
     return 0;  // needed for compiler warning to shut up
 }
 
@@ -587,7 +584,7 @@ bool start_binary_search(){
     for (int index = 0; index < n_bf_addresses; index++){
         log_debug(
             "sorted bitfields address at index %d is %x",
-            index, sorted_bit_fields[index]);
+            index, sorted_bit_fields.bit_fields[index]);
     }
 
     // iterate till either ran out of cores, or failed to malloc sdram during
@@ -660,7 +657,7 @@ bool sort_sorted_to_cores(
         // count entries
         int n_entries = 0;
         for(int bf_index = 0; bf_index < best_search_point; bf_index++){
-            if (sorted_bit_fields_processor_ids[bf_index] == region_proc_id){
+            if (sorted_bit_fields.processor_ids[bf_index] == region_proc_id){
                 n_entries ++;
             }
         }
@@ -686,9 +683,10 @@ bool sort_sorted_to_cores(
         // put keys in the array
         uint32_t array_index = 0;
         for(int bf_index = 0; bf_index < best_search_point; bf_index++){
-            if (sorted_bit_fields_processor_ids[bf_index] == region_proc_id){
+            if (sorted_bit_fields.processor_ids[bf_index] == region_proc_id){
                 sorted_bf_by_processor->master_pop_keys[array_index] =
-                    sorted_bit_fields[bf_index][BIT_FIELD_BASE_KEY];
+                    sorted_bit_fields.bit_fields[bf_index][
+                        BIT_FIELD_BASE_KEY];
                 array_index ++;
             }
         }
@@ -721,7 +719,7 @@ address_t find_processor_bit_field_region(uint32_t processor_id){
     log_error("failed to find the right region. WTF");
     vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
     sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_SWERR;
-    spin1_exit(0);
+    rt_error(RTE_SWERR);
     return NULL;
 }
 
@@ -1450,17 +1448,18 @@ uint32_t locate_and_add_bit_fields(
                             processor_to_check_index] != NULL){
                     // add to sorted bitfield
                     covered += 1;
-                    sorted_bit_fields[sorted_bit_field_current_fill_loc] =
-                        coverage[coverage_index]->bit_field_addresses[
-                            processor_to_check_index];
+                    sorted_bit_fields.bit_fields[
+                        sorted_bit_field_current_fill_loc] =
+                            coverage[coverage_index]->bit_field_addresses[
+                                processor_to_check_index];
                     sorted_bit_field_current_fill_loc += 1;
 
-                    log_debug(
+                    log_info(
                         "dumping into sorted at index %d address %x and is %x",
                         sorted_bit_field_current_fill_loc,
                         coverage[coverage_index]->bit_field_addresses[
                             processor_to_check_index],
-                        sorted_bit_fields[
+                        sorted_bit_fields.bit_fields[
                             sorted_bit_field_current_fill_loc - 1]);
 
                     // delete (aka set to null, to bypass lots of data moves)
@@ -1580,7 +1579,7 @@ void order_bit_fields_based_on_impact(
             for(int bit_field_index = 0;
                     bit_field_index < coverage[coverage_index]->length_of_list;
                     bit_field_index ++){
-                log_debug(
+                log_info(
                     "after sort by redudant in coverage at "
                     "index %d in array index %d is %x",
                     coverage_index, bit_field_index,
@@ -1606,7 +1605,7 @@ void order_bit_fields_based_on_impact(
             for(int bit_field_index = 0;
                     bit_field_index < coverage[coverage_index]->length_of_list;
                     bit_field_index ++){
-                log_debug(
+                log_info(
                     "bitfield proc in coverage at index %d in array index"
                      "%d is %x", coverage_index, bit_field_index,
                      coverage[coverage_index]->processor_ids[bit_field_index]);
@@ -1687,16 +1686,18 @@ void order_bit_fields_based_on_impact(
                 bit_field_index++){
             if (coverage[index]->bit_field_addresses[bit_field_index] != NULL){
 
-                sorted_bit_fields[sorted_bit_field_current_fill_loc] =
+                sorted_bit_fields.bit_fields[
+                    sorted_bit_field_current_fill_loc] =
                         coverage[index]->bit_field_addresses[bit_field_index];
 
                 log_info(
                     "dumping into sorted at index %d address %x and is %x",
                     sorted_bit_field_current_fill_loc,
                     coverage[index]->bit_field_addresses[bit_field_index],
-                    sorted_bit_fields[sorted_bit_field_current_fill_loc]);
+                    sorted_bit_fields.bit_fields[
+                        sorted_bit_field_current_fill_loc]);
 
-                sorted_bit_fields_processor_ids[
+                sorted_bit_fields.processor_ids[
                     sorted_bit_field_current_fill_loc] = coverage[
                         index]->processor_ids[bit_field_index];
 
@@ -1879,15 +1880,15 @@ bool read_in_bit_fields(){
 
     // populate the bitfield by coverage
     log_info("n bitfield addresses = %d", n_bf_addresses);
-    sorted_bit_fields = MALLOC(n_bf_addresses * sizeof(address_t));
-    if(sorted_bit_fields == NULL){
+    sorted_bit_fields.bit_fields = MALLOC(n_bf_addresses * sizeof(address_t));
+    if(sorted_bit_fields.bit_fields == NULL){
         log_error("cannot allocate memory for the sorted bitfield addresses");
         return false;
     }
 
-    sorted_bit_fields_processor_ids =
+    sorted_bit_fields.processor_ids =
         MALLOC(n_bf_addresses * sizeof(uint32_t));
-    if (sorted_bit_fields_processor_ids == NULL){
+    if (sorted_bit_fields.processor_ids == NULL){
         log_error("cannot allocate memory for the sorted bitfields with "
                   "processors ids");
         return false;
@@ -2068,7 +2069,7 @@ bool read_in_bit_fields(){
     for(int bf_index = 0; bf_index < n_bf_addresses; bf_index++){
         log_info(
             "bitfield address for sorted in index %d is %x",
-            bf_index, sorted_bit_fields[bf_index]);
+            bf_index, sorted_bit_fields.bit_fields[bf_index]);
     }
 
     return true; 
@@ -2090,7 +2091,7 @@ void start_compression_process(uint unused0, uint unused1){
     if (! success_reading_in_bit_fields){
         log_error("failed to read in bitfields, failing");
         sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_MALLOC;
-        spin1_exit(0);
+        rt_error(RTE_SWERR);
     }
 
     log_info("starting the binary search");
@@ -2100,7 +2101,7 @@ void start_compression_process(uint unused0, uint unused1){
     if (!success_start_binary_search){
         log_error("failed to compress the routing table at all. Failing");
         sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-        spin1_exit(0);
+        rt_error(RTE_SWERR);
     }
 }
 
@@ -2256,7 +2257,7 @@ void c_main(void) {
         log_error("failed to init");
         vcpu_t *sark_virtual_processor_info = (vcpu_t*) SV_VCPU;
         sark_virtual_processor_info[spin1_get_core_id()].user1 = EXIT_FAIL;
-        spin1_exit(0);
+        rt_error(RTE_SWERR);
     }
 
     spin1_callback_on(SDP_PACKET_RX, sdp_handler, SDP_PRIORITY);

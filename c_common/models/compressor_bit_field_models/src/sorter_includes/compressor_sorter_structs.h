@@ -1,6 +1,7 @@
 #ifndef __COMPRESSOR_SORTER_STRUCTS_H__
 
-
+//! holds data for each compressor core, used to free stuff properly when
+//! requried
 typedef struct comp_core_store_t{
     // how many rt tables used here
     uint32_t n_elements;
@@ -11,6 +12,16 @@ typedef struct comp_core_store_t{
     // elements
     address_t * elements;
 } comp_core_store_t;
+
+//! \brief holder for the bitfield addresses and the processor ids
+typedef struct sorted_bit_fields_t{
+    //! the list of bitfields in sorted order based off best effect.
+    address_t* bit_fields;
+    //! list of bitfield associated processor ids. sorted order based off best
+    //! effort linked to sorted_bit_fields, but separate to avoid sdram
+    //! rewrites
+    uint32_t*  processor_ids;
+} sorted_bit_fields_t;
 
 //! \brief struct for bitfield by processor
 typedef struct _bit_field_by_processor_t{

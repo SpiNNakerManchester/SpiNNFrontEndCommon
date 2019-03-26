@@ -214,7 +214,7 @@ bool generate_rt_from_bit_field(
         int n_bfs_for_key, uint32_t mid_point, address_t* rt_address_ptr,
         address_t* user_register_content,
         _bit_field_by_processor_t* bit_field_by_processor,
-        address_t* sorted_bit_fields){
+        sorted_bit_fields_t sorted_bit_fields){
 
     // reduce future iterations, by finding the exact bitfield addresses
     address_t* addresses = MALLOC(n_bfs_for_key * sizeof(address_t));
@@ -222,9 +222,9 @@ bool generate_rt_from_bit_field(
     uint32_t index = 0;
     for (uint32_t bit_field_index = 0; bit_field_index < mid_point;
             bit_field_index++){
-        if (sorted_bit_fields[bit_field_index][BIT_FIELD_BASE_KEY] ==
-                master_pop_key){
-            addresses[index] = sorted_bit_fields[bit_field_index];
+        if (sorted_bit_fields.bit_fields[bit_field_index][
+                BIT_FIELD_BASE_KEY] == master_pop_key){
+            addresses[index] = sorted_bit_fields.bit_fields[bit_field_index];
             index += 1;
         }
     }
@@ -270,7 +270,7 @@ address_t* bit_field_table_generator_create_bit_field_router_tables(
         uint32_t mid_point, int* n_rt_addresses,
         address_t* user_register_content,
         _bit_field_by_processor_t* bit_field_by_processor,
-        address_t* sorted_bit_fields){
+        sorted_bit_fields_t sorted_bit_fields){
 
     // get n keys that exist
     master_pop_bit_field_t * keys = MALLOC(
