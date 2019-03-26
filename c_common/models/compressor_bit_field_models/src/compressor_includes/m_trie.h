@@ -76,7 +76,7 @@ static inline m_trie_t *m_trie_new(void) {
 }
 
 // Delete an existing tree
-static inline void m_trie_delete(m_trie_t *node) {
+static void m_trie_delete(m_trie_t *node) {
     if (node != NULL) {
         // Free any children
         m_trie_delete(node->child_0);
@@ -89,7 +89,7 @@ static inline void m_trie_delete(m_trie_t *node) {
 }
 
 // Count the number of paths travelling through a node
-static unsigned int m_trie_count(m_trie_t *node){
+static unsigned int m_trie_count(m_trie_t *node) {
     if (node == NULL) {
         return 0;  // Not a node, so return 0
     } else if (!node->bit) {
@@ -151,50 +151,50 @@ static inline m_trie_t **get_child(
 // Traverse a path through the tree, adding elements as necessary
 static m_trie_t* m_trie_traverse(
         m_trie_t *node, uint32_t key, uint32_t mask, uint32_t source) {
-    if (!node->bit) {
-        // If we are a leaf then update our source and return our parent
-        node->source |= source;
-        return node->parent;
+    while (node->bit) {
+        // See where to turn at this node
+        m_trie_t **child = get_child(node, key, mask);
+
+        // If no child was returned then the given key and mask were invalid
+        if (!child) {
+            return NULL;
+        }
+
+        // If the child is NULL then create a new child
+        if (!*child) {
+            *child = m_trie_new_node(node, node->bit >> 1);
+        }
+
+        // Delegate the traversal to the child
+        node = *child;
     }
 
-    // See where to turn at this node
-    m_trie_t **child = get_child(node, key, mask);
-
-    // If no child was returned then the given key and mask were invalid
-    if (!child) {
-        return NULL;
-    }
-
-    // If the child is NULL then create a new child
-    if (!*child) {
-        *child = m_trie_new_node(node, node->bit >> 1);
-    }
-
-    // Delegate the traversal to the child
-    return m_trie_traverse(*child, key, mask, source);
+    // If we are a leaf then update our source and return our parent
+    node->source |= source;
+    return node->parent;
 }
 
 // Check if a path exists in a sub-trie
-static bool path_exists(m_trie_t *node, uint32_t key, uint32_t mask) {
-    if (!node->bit) {
-        // If we are a leaf then the path must exist
-        return true;
+static inline bool path_exists(m_trie_t *node, uint32_t key, uint32_t mask) {
+    while (node->bit) {
+        // See where to turn at this node
+        m_trie_t **child = get_child(node, key, mask);
+
+        // If there is no child then the path does not exist or the given path
+        // was invalid.
+        if (!child || !*child) {
+            return false;
+        }
+
+        // Delegate the traversal to the child
+        node = *child;
     }
 
-    // See where to turn at this node
-    m_trie_t **child = get_child(node, key, mask);
-
-    // If there is no child then the path does not exist or the given path
-    // was invalid.
-    if (!child || !*child) {
-        return false;
-    }
-
-    // Delegate the traversal to the child
-    return path_exists(*child, key, mask);
+    // If we are a leaf then the path must exist
+    return true;
 }
 
-static inline bool m_trie_un_traverse(
+static bool m_trie_un_traverse(
         m_trie_t *node, uint32_t key, uint32_t mask) {
     if (!node->bit) {
         // If a leaf then free ourselves and then return to true to indicate
@@ -206,7 +206,7 @@ static inline bool m_trie_un_traverse(
     // Get the child to attempt to un traverse
     m_trie_t **child = get_child(node, key, mask);
 
-    if (m_trie_un_traverse(*child, key, mask)){
+    if (m_trie_un_traverse(*child, key, mask)) {
         // The child has been freed, so remove our reference to it
         *child = NULL;
     }
@@ -222,45 +222,44 @@ static inline bool m_trie_un_traverse(
     }
 }
 
-static uint32_t get_source_from_child(
+static inline uint32_t get_source_from_child(
         m_trie_t *node, uint32_t key, uint32_t mask) {
-    if (!node->bit) {
-        // If we are a leaf then return the source
-        return node->source;
+    while (node->bit) {
+        // See where to turn at this node
+        m_trie_t **child = get_child(node, key, mask);
+
+        // If there is no child then the path does not exist or the given path
+        // was invalid.
+        if (!child || !*child) {
+            return false;
+        }
+
+        // Delegate the traversal to the child
+        node = *child;
     }
 
-    // See where to turn at this node
-    m_trie_t **child = get_child(node, key, mask);
-
-    // If there is no child then the path does not exist or the given path
-    // was invalid.
-    if (!child || !*child) {
-        return false;
-    }
-
-    // Delegate the traversal to the child
-    return get_source_from_child(*child, key, mask);
+    // If we are a leaf then return the source
+    return node->source;
 }
 
-static void add_source_to_child(
+static inline void add_source_to_child(
         m_trie_t *node, uint32_t key, uint32_t mask, uint32_t source) {
-    if (!node->bit) {
-        // If we are a leaf then modify the source
-        node->source |= source;
-        return;
+    while (node->bit) {
+        // See where to turn at this node
+        m_trie_t **child = get_child(node, key, mask);
+
+        // If there is no child then the path does not exist or the given path
+        // was invalid.
+        if (!child || !*child) {
+            return;
+        }
+
+        // Delegate the traversal to the child
+        node = *child;
     }
 
-    // See where to turn at this node
-    m_trie_t **child = get_child(node, key, mask);
-
-    // If there is no child then the path does not exist or the given path
-    // was invalid.
-    if (!child || !*child) {
-        return;
-    }
-
-    // Delegate the traversal to the child
-    add_source_to_child(*child, key, mask, source);
+    // If we are a leaf then modify the source
+    node->source |= source;
 }
 
 static inline void un_traverse_in_child(
@@ -277,11 +276,11 @@ static inline void m_trie_insert(
     // reach
     m_trie_t *leaf = m_trie_traverse(root, key, mask, source);
 
-    // Attempt to find overlapping paths
-    while (leaf) {
-        m_trie_t **child_0 = &(leaf->child_0);
-        m_trie_t **child_1 = &(leaf->child_1);
-        m_trie_t **child_X = &(leaf->child_X);
+    // Attempt to find overlapping paths, going up the tree
+    for (; leaf != NULL; leaf = leaf->parent) {
+        m_trie_t **child_0 = &leaf->child_0;
+        m_trie_t **child_1 = &leaf->child_1;
+        m_trie_t **child_X = &leaf->child_X;
 
         if (*child_0 != NULL && path_exists(*child_0, key, mask) &&
                 *child_1 != NULL && path_exists(*child_1, key, mask)) {
@@ -300,8 +299,8 @@ static inline void m_trie_insert(
             un_traverse_in_child(child_1, key, mask);
 
             // Update the key and mask
-            key &= ~(leaf->bit);
-            mask &= ~(leaf->bit);
+            key &= ~leaf->bit;
+            mask &= ~leaf->bit;
         } else if (*child_X != NULL && path_exists(*child_X, key, mask) &&
                  *child_0 != NULL && path_exists(*child_0, key, mask)){
             // Get the source for packets matching the `0'
@@ -314,8 +313,8 @@ static inline void m_trie_insert(
             add_source_to_child(*child_X, key, mask, source);
 
             // Update the key and mask
-            key &= ~(leaf->bit);
-            mask &= ~(leaf->bit);
+            key &= ~leaf->bit;
+            mask &= ~leaf->bit;
         } else if (*child_X != NULL && path_exists(*child_X, key, mask) &&
                  *child_1 != NULL && path_exists(*child_1, key, mask)){
             // Get the source for packets matching the `1'
@@ -328,12 +327,9 @@ static inline void m_trie_insert(
             add_source_to_child(*child_X, key, mask, source);
 
             // Update the key and mask
-            key &= ~(leaf->bit);
-            mask &= ~(leaf->bit);
+            key &= ~leaf->bit;
+            mask &= ~leaf->bit;
         }
-
-        // Move up a level
-        leaf = leaf->parent;
     }
 }
 
@@ -378,7 +374,7 @@ static inline void sub_table_expand(sub_table_t *sb, table_t *table) {
 }
 
 // Delete a set of sub tables
-static inline void sub_table_delete(sub_table_t *sb) {
+static void sub_table_delete(sub_table_t *sb) {
     // Delete local entries
     FREE(sb->entries);
     sb->entries = NULL;
