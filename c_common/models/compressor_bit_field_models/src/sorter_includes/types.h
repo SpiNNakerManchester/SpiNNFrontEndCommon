@@ -57,4 +57,16 @@ typedef enum priorities {
     SDP_PRIORITY = -1
 } priorities;
 
+typedef struct pairs_t {
+    address_t bitfield;
+    address_t key_atom;
+    uint32_t processor;
+} pairs_t;
+
+typedef struct region_addresses_t {
+    uint32_t threshold;
+    uint32_t n_pairs;
+    pairs_t pairs[];
+} region_addresses_t;
+
 #endif //__SORTER__TYPES_H__

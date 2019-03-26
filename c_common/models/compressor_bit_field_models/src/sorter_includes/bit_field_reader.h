@@ -1,6 +1,7 @@
 #ifndef __BIT_FIELD_READER_H__
 #define __BIT_FIELD_READER_H__
 
+#include <spin1_api.h>
 #include "types.h"
 
 //! \brief reads in bitfields, makes a few maps, sorts into most priority.
@@ -14,33 +15,32 @@ bool read_in_bit_fields(void) {
     log_info("n pairs of addresses = %d", n_pairs_of_addresses);
 
     // malloc the bt fields by processor
-    bit_field_by_processor = MALLOC(
-        n_pairs_of_addresses * sizeof(_bit_field_by_processor_t));
-    if (bit_field_by_processor == NULL){
+    bit_field_by_processor =
+            MALLOC(n_pairs_of_addresses * sizeof(_bit_field_by_processor_t));
+    if (bit_field_by_processor == NULL) {
         log_error("failed to allocate memory for pairs, if it fails here. "
-                  "might as well give up");
+                "might as well give up");
         return false;
     }
 
     // build processor coverage by bitfield
-    _proc_cov_by_bitfield_t** proc_cov_by_bf = MALLOC(
-        n_pairs_of_addresses * sizeof(_proc_cov_by_bitfield_t*));
-    if (proc_cov_by_bf == NULL){
+    _proc_cov_by_bitfield_t** proc_cov_by_bf =
+            MALLOC(n_pairs_of_addresses * sizeof(_proc_cov_by_bitfield_t*));
+    if (proc_cov_by_bf == NULL) {
         log_error("failed to allocate memory for processor coverage by "
-                  "bitfield, if it fails here. might as well give up");
+                "bitfield, if it fails here. might as well give up");
         return false;
     }
     log_info("finished malloc proc_cov_by_bf");
 
     // iterate through a processors bitfield region and get n bitfields
-    for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++){
+    for (uint r_id = 0; r_id < n_pairs_of_addresses; r_id++) {
 
         // malloc for n redundant packets
-        proc_cov_by_bf[r_id] = MALLOC(sizeof(
-            _proc_cov_by_bitfield_t));
-        if (proc_cov_by_bf[r_id] == NULL){
+        proc_cov_by_bf[r_id] = MALLOC(sizeof(_proc_cov_by_bitfield_t));
+        if (proc_cov_by_bf[r_id] == NULL) {
             log_error("failed to allocate memory for processor coverage for "
-                      "region %d. might as well give up", r_id);
+                    "region %d. might as well give up", r_id);
             return false;
         }
 
@@ -50,7 +50,7 @@ bool read_in_bit_fields(void) {
         proc_cov_by_bf[r_id]->processor_id =
                 region_addresses[position_in_region_data + PROCESSOR_ID];
         log_info("bit_field_by_processor in region %d processor id = %d",
-                 r_id, bit_field_by_processor[r_id].processor_id);
+                r_id, bit_field_by_processor[r_id].processor_id);
 
         // locate data for malloc memory calcs
         address_t bit_field_address = (address_t)
@@ -59,7 +59,7 @@ bool read_in_bit_fields(void) {
         position_in_region_data += ADDRESS_PAIR_LENGTH;
 
         log_info("safety check. bit_field key is %d",
-                 bit_field_address[BIT_FIELD_BASE_KEY]);
+                bit_field_address[BIT_FIELD_BASE_KEY]);
         uint32_t pos_in_bitfield_region = N_BIT_FIELDS;
         uint32_t core_n_bit_fields = bit_field_address[pos_in_bitfield_region];
         log_info("there are %d core bit fields", core_n_bit_fields);
@@ -70,23 +70,23 @@ bool read_in_bit_fields(void) {
         proc_cov_by_bf[r_id]->length_of_list = core_n_bit_fields;
         bit_field_by_processor[r_id].length_of_list = core_n_bit_fields;
         log_info("bit field by processor with region %d, has length of %d",
-                 r_id, core_n_bit_fields);
+                r_id, core_n_bit_fields);
 
         // malloc for bitfield region addresses
-        bit_field_by_processor[r_id].bit_field_addresses = MALLOC(
-            core_n_bit_fields * sizeof(address_t));
-        if (bit_field_by_processor[r_id].bit_field_addresses == NULL){
+        bit_field_by_processor[r_id].bit_field_addresses =
+                MALLOC(core_n_bit_fields * sizeof(address_t));
+        if (bit_field_by_processor[r_id].bit_field_addresses == NULL) {
             log_error("failed to allocate memory for bitfield addresses for "
-                      "region %d, might as well fail", r_id);
+                    "region %d, might as well fail", r_id);
             return false;
         }
 
         // malloc for n redundant packets
-        proc_cov_by_bf[r_id]->redundant_packets = MALLOC(
-            core_n_bit_fields * sizeof(uint));
-        if (proc_cov_by_bf[r_id]->redundant_packets == NULL){
+        proc_cov_by_bf[r_id]->redundant_packets =
+                MALLOC(core_n_bit_fields * sizeof(uint));
+        if (proc_cov_by_bf[r_id]->redundant_packets == NULL) {
             log_error("failed to allocate memory for processor coverage for "
-                      "region %d, might as well fail", r_id);
+                    "region %d, might as well fail", r_id);
             return false;
         }
 
@@ -135,16 +135,16 @@ bool read_in_bit_fields(void) {
     // populate the bitfield by coverage
     log_info("n bitfield addresses = %d", n_bf_addresses);
     sorted_bit_fields = MALLOC(n_bf_addresses * sizeof(address_t));
-    if(sorted_bit_fields == NULL){
+    if(sorted_bit_fields == NULL) {
         log_error("cannot allocate memory for the sorted bitfield addresses");
         return false;
     }
 
     sorted_bit_fields_processor_ids =
-        MALLOC(n_bf_addresses * sizeof(uint32_t));
-    if (sorted_bit_fields_processor_ids == NULL){
+            MALLOC(n_bf_addresses * sizeof(uint32_t));
+    if (sorted_bit_fields_processor_ids == NULL) {
         log_error("cannot allocate memory for the sorted bitfields with "
-                  "processors ids");
+                "processors ids");
         return false;
     }
 

@@ -56,9 +56,9 @@ uint32_t time_per_iteration = 0;
 uint32_t finish_compression_flag = 0;
 
 //! easier programming tracking of the user registers
-uncompressed_table_region_data_t *uncompressed_router_table;
-address_t region_addresses;
-void *usable_sdram_regions;
+uncompressed_table_region_data_t *uncompressed_router_table; // user1
+address_t region_addresses; // user2
+void *usable_sdram_regions; // user3
 
 //! best routing table position in the search
 uint32_t best_search_point = 0;
